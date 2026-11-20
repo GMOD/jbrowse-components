@@ -39,6 +39,24 @@ export interface Trio {
 
 export const NO_TRANSMISSION: readonly TransmissionEntry[] = []
 
+/**
+ * A feature's transmission rule by its refName, off the rules a fetch was
+ * sent in `regions` order and keyed by each region's refName, the file's
+ * spelling once the worker has renamed it.
+ */
+export function transmissionOfRegions(
+  regions: readonly { refName: string }[],
+  transmission: readonly (readonly TransmissionEntry[])[] = [],
+) {
+  const byRefName = new Map(
+    regions.map((region, i) => [
+      region.refName,
+      transmission[i] ?? NO_TRANSMISSION,
+    ]),
+  )
+  return (refName: string) => byRefName.get(refName) ?? NO_TRANSMISSION
+}
+
 function pedigreeSexOf(value: unknown) {
   const lower = typeof value === 'string' ? value.toLowerCase() : ''
   return lower === 'male' || lower === 'm'

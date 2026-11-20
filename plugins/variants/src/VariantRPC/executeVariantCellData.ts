@@ -15,7 +15,7 @@ import {
   NO_RECORD_FIELD_READS,
   recordFieldReaders,
 } from '../shared/recordFields.ts'
-import { NO_TRANSMISSION } from '../shared/trios.ts'
+import { transmissionOfRegions } from '../shared/trios.ts'
 import { analyzeVariants, simplifyFeatures } from './analyzeVariants.ts'
 import { fetchVariantFeatures } from './fetchVariantFeatures.ts'
 import { groupFeaturesByRegion } from './groupFeaturesByRegion.ts'
@@ -163,7 +163,7 @@ export async function variantCellData({
     bpPerPx,
     maxFeatureDensity,
     trios = [],
-    transmission = [],
+    transmission,
     mendelianFilter,
   } = args
 
@@ -184,12 +184,6 @@ export async function variantCellData({
   }
 
   const features = await fetchVariantFeatures(adapter, regions, args)
-  const transmissionByRefName = new Map(
-    regions.map((region, i) => [
-      region.refName,
-      transmission[i] ?? NO_TRANSMISSION,
-    ]),
-  )
   const progressOpts = {
     statusCallback,
     signal,
@@ -219,8 +213,7 @@ export async function variantCellData({
         keepUncalledSites: layout === 'genomic',
         readGenotypes: sampleFilter?.length !== 0,
         trios,
-        transmissionOf: refName =>
-          transmissionByRefName.get(refName) ?? NO_TRANSMISSION,
+        transmissionOf: transmissionOfRegions(regions, transmission),
         mendelianFilter,
         report,
       }),

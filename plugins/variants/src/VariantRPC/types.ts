@@ -23,7 +23,22 @@ interface BaseVariantRpcArgs {
   filters?: SerializableFilterChain
 }
 
-export interface GetGenotypeMatrixArgs extends BaseVariantRpcArgs {
+// What the worker's Mendelian check of each site reads.
+interface MendelianCheckArgs {
+  // The trios whose Mendelian check each site takes. Sent, the genotypes are
+  // read with no row drawn.
+  trios?: Trio[]
+  // Each region's transmission rule, in `regions` order, resolved on the
+  // main thread against the assembly's aliases: the worker has none, and
+  // keys each by its region's renamed refName, which its features carry.
+  transmission?: (readonly TransmissionEntry[])[]
+  // The display filter's entries on the Mendelian check, which the worker
+  // tests once it has classified a site.
+  mendelianFilter?: FieldPredicate[]
+}
+
+export interface GetGenotypeMatrixArgs
+  extends BaseVariantRpcArgs, MendelianCheckArgs {
   sources: Source[]
   // Which matrix to build: 'haplotype' means one row per haplotype, which
   // needs `samplePloidy`. Unset means one row per sample.
@@ -37,7 +52,8 @@ export interface ClusterGenotypeMatrixArgs extends GetGenotypeMatrixArgs {
   partition?: string[][]
 }
 
-export interface GetCellDataArgs extends BaseVariantRpcArgs, GatedFetchArgs {
+export interface GetCellDataArgs
+  extends BaseVariantRpcArgs, MendelianCheckArgs, GatedFetchArgs {
   // Which samples get rows, as a SET — never an order. The worker builds its own
   // canonical row list (see `buildCanonicalRows`), names it in `rowNames`, and
   // the client places those names against the rows it draws. Sent sorted so a
@@ -61,16 +77,6 @@ export interface GetCellDataArgs extends BaseVariantRpcArgs, GatedFetchArgs {
   // The density budget at `bpPerPx`, sent only while the display's density
   // gate may act (no genotype rows). Not in `rpcProps()`, so no cache key.
   maxFeatureDensity?: number
-  // The trios whose Mendelian check each site takes. Sent, the genotypes are
-  // read with no row drawn.
-  trios?: Trio[]
-  // Each region's transmission rule, in `regions` order, resolved on the
-  // main thread against the assembly's aliases: the worker has none, and
-  // keys each by its region's renamed refName, which its features carry.
-  transmission?: (readonly TransmissionEntry[])[]
-  // The display filter's entries on the Mendelian check, which the worker
-  // tests once it has classified a site.
-  mendelianFilter?: FieldPredicate[]
 }
 
 export interface MultiSampleVariantGetSourcesArgs {

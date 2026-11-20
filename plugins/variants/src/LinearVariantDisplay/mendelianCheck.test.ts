@@ -5,12 +5,20 @@ import { UNIVERSAL_FIELD_PRESETS } from '@jbrowse/core/util/colorScale'
 import { waitFor } from '@testing-library/react'
 import { autorun } from 'mobx'
 
+import { buildGenotypeMatrix } from '../VariantRPC/buildGenotypeMatrix.ts'
 import { variantCellData } from '../VariantRPC/executeVariantCellData.ts'
 import VariantsPlugin from '../index.ts'
 import { cellFill } from '../shared/cellFill.ts'
+import {
+  genotypeMatrixArgs,
+  genotypeMatrixKey,
+} from '../shared/genotypeMatrixKey.ts'
+import { runGenotypeClustering } from '../shared/runGenotypeClustering.ts'
 import { MENDELIAN_FIELD } from '../shared/trios.ts'
 import { getCachedABGR } from '../shared/variantWebglUtils.ts'
 import { RECORDS_BAND_OFF, createTestEnvironment } from './testEnv.ts'
+
+import type { GetGenotypeMatrixArgs } from '../VariantRPC/types.ts'
 
 const PARENTS = [{ name: 'dad' }, { name: 'mom' }]
 const KID = { name: 'kid', father: 'dad', mother: 'mom', sex: 'male' }
@@ -62,29 +70,31 @@ describe('the fetch key', () => {
 
 // trio_x.vcf: x1 1/1 from 0/0 x 0/1, inconsistent with no rule; x2 0/1
 // from 0/0 x 0/0, not in parents; x3 0/1 from 0/1 x 0/0, consistent
-async function fetchedAs(props: Record<string, unknown>) {
+const TRIO_X_ADAPTER = {
+  type: 'VcfAdapter',
+  vcfLocation: {
+    localPath: require.resolve('../VcfAdapter/test_data/trio_x.vcf'),
+    locationType: 'LocalPathLocation',
+  },
+}
+const TRIO_X_REGIONS = [
+  { assemblyName: 'volvox', refName: 'NC_000023.11', start: 0, end: 1000 },
+]
+
+function variantsPluginManager() {
   const pluginManager = new PluginManager([new VariantsPlugin()])
   pluginManager.createPluggableElements()
   pluginManager.configure()
+  return pluginManager
+}
+
+async function fetchedAs(props: Record<string, unknown>) {
   const result = await variantCellData({
-    pluginManager,
+    pluginManager: variantsPluginManager(),
     args: {
       sessionId: 'mendelianCheck',
-      adapterConfig: {
-        type: 'VcfAdapter',
-        vcfLocation: {
-          localPath: require.resolve('../VcfAdapter/test_data/trio_x.vcf'),
-          locationType: 'LocalPathLocation',
-        },
-      },
-      regions: [
-        {
-          assemblyName: 'volvox',
-          refName: 'NC_000023.11',
-          start: 0,
-          end: 1000,
-        },
-      ],
+      adapterConfig: TRIO_X_ADAPTER,
+      regions: TRIO_X_REGIONS,
       siteFilter: [],
       rowsField: 'sample',
       layout: 'genomic',
@@ -190,5 +200,59 @@ test('the cell fetch sends each regionâ€™s rule, resolved through the assemblyâ€
     regions: [expect.objectContaining({ refName: 'ctgA' })],
     trios: [{ child: 'kid', father: 'dad', mother: 'mom', sex: 'male' }],
     transmission: [[{ refName: 'chrA', sex: 'male', from: 'mother' }]],
+  })
+})
+
+describe('the genotype matrix under a filter on the check', () => {
+  const FAILED = [
+    { field: MENDELIAN_FIELD, oneOf: ['notInParents', 'inconsistent'] },
+  ]
+
+  async function sitesOf(args: GetGenotypeMatrixArgs) {
+    const matrix = await buildGenotypeMatrix({
+      pluginManager: variantsPluginManager(),
+      args: { ...args, adapterConfig: TRIO_X_ADAPTER, sessionId: 'matrix' },
+    })
+    return [...matrix.values()].map(row => row.length)
+  }
+
+  test('the export and the clustering read the sites the screen shows', async () => {
+    const display = displayWith(FAILED)
+    const shown = (await fetchedAs(display.rpcProps())).simplifiedFeatures
+    let clustered: GetGenotypeMatrixArgs | undefined
+    await runGenotypeClustering({
+      model: display,
+      rpcManager: {
+        call: (_sessionId, _method, args) => {
+          clustered = args
+          return Promise.resolve({ order: [0, 1, 2], tree: '(dad,kid,mom);' })
+        },
+      },
+      sessionId: 'matrix',
+      regions: TRIO_X_REGIONS,
+      signal: new AbortController().signal,
+      statusCallback: () => {},
+    })
+
+    expect(shown.map(f => f.data.name)).toEqual(['x1', 'x2'])
+    expect(await sitesOf(genotypeMatrixArgs(display, TRIO_X_REGIONS))).toEqual([
+      2, 2, 2,
+    ])
+    expect(clustered && (await sitesOf(clustered))).toEqual([2, 2, 2])
+  })
+
+  test('with no filter on the check every site enters and no trio is sent', async () => {
+    const args = genotypeMatrixArgs(displayWith([]), TRIO_X_REGIONS)
+
+    expect(args).not.toHaveProperty('trios')
+    expect(await sitesOf(args)).toEqual([3, 3, 3])
+  })
+
+  test('the filter keys the exported matrix', () => {
+    const before = JSON.stringify(genotypeMatrixKey(displayWith([])))
+
+    expect(JSON.stringify(genotypeMatrixKey(displayWith(FAILED)))).not.toBe(
+      before,
+    )
   })
 })

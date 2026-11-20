@@ -1,6 +1,9 @@
+import type { TransmissionEntry } from './classifyTrio.ts'
 import type { VariantRowsField } from './constants.ts'
+import type { Trio } from './trios.ts'
 import type { ProcessedSource } from './types.ts'
 import type SerializableFilterChain from '@jbrowse/core/pluggableElementTypes/renderers/util/serializableFilterChain'
+import type { Region } from '@jbrowse/core/util'
 import type { FieldPredicate } from '@jbrowse/core/util/fieldPredicate'
 import type { IStateTreeNode } from '@jbrowse/mobx-state-tree'
 import type { ClusterRunModel } from '@jbrowse/tree-sidebar'
@@ -18,6 +21,16 @@ export interface ReducedModel
   // the display's own rather than restating "off" defaults of their own.
   siteFilter: FieldPredicate[]
   filters?: SerializableFilterChain
+  // The display filter's entries on the Mendelian check and what the worker
+  // classifies a site by for them: the trios, and the assembly's
+  // transmission entries, resolved per region by `transmissionFor`. Both
+  // matrices drop the sites the check drops on screen.
+  mendelianFilter: FieldPredicate[]
+  trios: Trio[]
+  transmissionEntries: TransmissionEntry[]
+  transmissionFor: (
+    regions: Region[],
+  ) => (readonly TransmissionEntry[])[] | undefined
   adapterConfig: Record<string, unknown>
   rowsField: VariantRowsField
   samplePloidy?: Readonly<Record<string, number>>

@@ -1,7 +1,7 @@
 import { ClusterDialog } from '@jbrowse/tree-sidebar'
 import { observer } from 'mobx-react'
 
-import { genotypeMatrixKey } from '../genotypeMatrixKey.ts'
+import { genotypeMatrixArgs, genotypeMatrixKey } from '../genotypeMatrixKey.ts'
 import { runGenotypeClustering } from '../runGenotypeClustering.ts'
 
 import type { ReducedModel } from '../clusterModelTypes.ts'
@@ -41,14 +41,9 @@ const MultiSampleVariantClusterDialog = observer(
         // Same rows the auto path clusters — the ones on screen. Both paths have
         // to agree, or the order pasted back would be indexed against a different
         // sample set than "Run clustering" would have produced.
-        fetchMatrix={({ rpcManager, sessionId, ...args }) =>
+        fetchMatrix={({ rpcManager, sessionId, regions, ...args }) =>
           rpcManager.call(sessionId, 'MultiSampleVariantGetGenotypeMatrix', {
-            sources: model.shownRows,
-            siteFilter: model.siteFilter,
-            filters: model.filters,
-            adapterConfig: model.adapterConfig,
-            rowsField: model.rowsField,
-            samplePloidy: model.samplePloidy,
+            ...genotypeMatrixArgs(model, regions),
             ...args,
           })
         }

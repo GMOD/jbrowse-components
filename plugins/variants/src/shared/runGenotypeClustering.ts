@@ -3,6 +3,8 @@ import {
   clusterProvenanceFromRegions,
 } from '@jbrowse/tree-sidebar'
 
+import { genotypeMatrixArgs } from './genotypeMatrixKey.ts'
+
 import type { ReducedModel } from './clusterModelTypes.ts'
 import type { Region, RpcStatus } from '@jbrowse/core/util'
 import type { RpcMethodCaller } from '@jbrowse/tree-sidebar'
@@ -33,10 +35,9 @@ export async function runGenotypeClustering({
   const {
     shownRows: rows,
     siteFilter,
+    mendelianFilter,
     filters,
-    adapterConfig,
     rowsField,
-    samplePloidy,
   } = model
   if (!model.sourcesBase) {
     return
@@ -49,14 +50,8 @@ export async function runGenotypeClustering({
     rows,
     matrix: () =>
       rpcManager.call(sessionId, 'MultiSampleVariantClusterGenotypeMatrix', {
-        regions,
-        sources: rows,
-        siteFilter,
-        filters,
-        adapterConfig,
+        ...genotypeMatrixArgs(model, regions),
         signal,
-        rowsField,
-        samplePloidy,
         partition: model.clusterPartition,
         statusCallback,
       }),
@@ -65,7 +60,7 @@ export async function runGenotypeClustering({
     // long and the caption is one line.
     provenance: clusterProvenanceFromRegions(regions, [
       { name: 'rows.field', value: rowsField },
-      ...siteFilter.map(({ field, ...tests }) => ({
+      ...[...siteFilter, ...mendelianFilter].map(({ field, ...tests }) => ({
         name: field,
         value: JSON.stringify(tests),
       })),

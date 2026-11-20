@@ -168,7 +168,7 @@ import type { SequenceHoverPosition } from '@jbrowse/core/BaseFeatureWidget'
 import type { TransmissionEntry } from '@jbrowse/core/assemblyManager'
 import type { MenuItem } from '@jbrowse/core/ui'
 import type { ColorScale } from '@jbrowse/core/ui/colorScale'
-import type { Feature } from '@jbrowse/core/util'
+import type { Feature, Region } from '@jbrowse/core/util'
 import type { AdapterRead } from '@jbrowse/core/util/installPrerequisiteFetch'
 import type { CanonicalTranscripts } from '@jbrowse/core/util/isoformRank'
 import type {
@@ -821,6 +821,21 @@ export function stateModelFactory(
           return plainTransmission(
             viewAssembly(self)?.configuration?.transmission ?? [],
           )
+        },
+        /**
+         * #method
+         * Each of `regions`' transmission rule under the view's assembly
+         * entries, which a genotype matrix sends; nothing while no trio is
+         * named.
+         */
+        transmissionFor(regions: Region[]) {
+          const { assemblyManager } = getSession(self)
+          return transmissionArg({
+            trios: self.trios,
+            entries: this.transmissionEntries,
+            regions,
+            assemblyOf: name => assemblyManager.get(name),
+          })
         },
         /**
          * #method
