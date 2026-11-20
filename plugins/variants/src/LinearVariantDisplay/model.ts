@@ -81,7 +81,7 @@ import {
 import { CellSolidColorDialog } from '../shared/lazyDialogs.ts'
 import {
   plainTransmission,
-  regionTransmission,
+  transmissionArg,
 } from '../shared/regionTransmission.ts'
 import { genotypeMap, trioCalls } from '../shared/trios.ts'
 import {
@@ -1513,10 +1513,8 @@ export function stateModelFactory(
             return
           }
           // resolved before the await, so the RPC sends what is marked loaded
-          const { transmissionEntries, ...args } = rpcArgs(self)
-          const assembly = getSession(self).assemblyManager.get(
-            regions[0]!.region.assemblyName,
-          )
+          const { transmissionEntries = [], ...args } = rpcArgs(self)
+          const { assemblyManager } = getSession(self)
           const { bpPerPx } = view
           const fetchedAt = variantLayout === 'columns' ? bpPerPx : undefined
           const { maxFeatureDensity } = self
@@ -1525,14 +1523,12 @@ export function stateModelFactory(
               ctx.callRpc('MultiSampleVariantGetCellData', {
                 ...args,
                 regions: batch.map(r => r.region),
-                transmission:
-                  args.trios.length > 0 && assembly
-                    ? regionTransmission(
-                        transmissionEntries,
-                        batch.map(r => r.region),
-                        assembly,
-                      )
-                    : undefined,
+                transmission: transmissionArg({
+                  trios: args.trios,
+                  entries: transmissionEntries,
+                  regions: batch.map(r => r.region),
+                  assemblyOf: name => assemblyManager.get(name),
+                }),
                 displayedRegionIndices: batch.map(r => r.displayedRegionIndex),
                 bpPerPx,
                 maxFeatureDensity,

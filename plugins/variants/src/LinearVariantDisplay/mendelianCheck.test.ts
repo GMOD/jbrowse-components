@@ -2,6 +2,7 @@ import PluginManager from '@jbrowse/core/PluginManager'
 import { isRegionRefused } from '@jbrowse/core/rpc/byteBudget'
 import { SimpleFeature, getSession } from '@jbrowse/core/util'
 import { UNIVERSAL_FIELD_PRESETS } from '@jbrowse/core/util/colorScale'
+import { waitFor } from '@testing-library/react'
 import { autorun } from 'mobx'
 
 import { variantCellData } from '../VariantRPC/executeVariantCellData.ts'
@@ -28,6 +29,13 @@ describe('the fetch key', () => {
       { child: 'kid', father: 'dad', mother: 'mom', sex: 'male' },
     ])
     expect(display.rpcProps()).not.toEqual(unrelated)
+  })
+
+  test('holds no transmission entries for a track with no trio', () => {
+    const { display } = createTestEnvironment().createDisplay()
+    display.setSources([{ name: 'kid' }, ...PARENTS])
+
+    expect(display.rpcProps()).not.toHaveProperty('transmissionEntries')
   })
 
   test('carries the assembly’s transmission entries', () => {
@@ -154,4 +162,33 @@ test('the feature widget’s calls take the rule of the record’s refName under
   expect(display.trioCallsAt(record)).toEqual([
     { ...display.trios[0], call: 'consistent' },
   ])
+})
+
+test('the cell fetch sends each region’s rule, resolved through the assembly’s aliases', async () => {
+  const env = createTestEnvironment({ displayConfig: RECORDS_BAND_OFF })
+  const { display: first } = env.createDisplay()
+  Object.assign(
+    getSession(first).assemblyManager.get('volvox')?.configuration ?? {},
+    { transmission: [{ refName: 'chrA', sex: 'male', from: 'mother' }] },
+  )
+  env.mockRpcCall.mockImplementation((_sid: string, method: string) =>
+    method === 'MultiSampleVariantGetSources'
+      ? Promise.resolve({ sources: [KID, ...PARENTS], warnings: [] })
+      : new Promise(() => {}),
+  )
+  env.createDisplay()
+
+  const cellDataArgs = () =>
+    env.mockRpcCall.mock.calls.find(
+      ([, method]) => method === 'MultiSampleVariantGetCellData',
+    )?.[2]
+  await waitFor(() => {
+    expect(cellDataArgs()).toBeDefined()
+  })
+
+  expect(cellDataArgs()).toMatchObject({
+    regions: [expect.objectContaining({ refName: 'ctgA' })],
+    trios: [{ child: 'kid', father: 'dad', mother: 'mom', sex: 'male' }],
+    transmission: [[{ refName: 'chrA', sex: 'male', from: 'mother' }]],
+  })
 })

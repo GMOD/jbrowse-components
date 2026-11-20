@@ -32,8 +32,9 @@ export function variantRpcPropsViews(self: VariantRpcPropsHost) {
      * Only what the worker reads, and nothing fetch-derived; a change
      * refetches. `showReference` is one at genomic positions only: columns
      * draw every reference cell. `transmissionEntries`, the assembly's
-     * `transmission`, is resolved per region where the regions are known
-     * and sent as `transmission`.
+     * `transmission`, keys the fetch only while a trio is sent; it is
+     * resolved per region where the regions are known and sent as
+     * `transmission`.
      */
     rpcProps() {
       return {
@@ -47,7 +48,9 @@ export function variantRpcPropsViews(self: VariantRpcPropsHost) {
         showReference: !self.atGenomicPositions || self.showReference,
         trios: self.trios,
         mendelianFilter: self.mendelianFilter,
-        transmissionEntries: self.transmissionEntries,
+        ...(self.trios.length > 0
+          ? { transmissionEntries: self.transmissionEntries }
+          : {}),
       }
     },
   }
