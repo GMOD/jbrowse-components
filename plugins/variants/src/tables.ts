@@ -90,7 +90,7 @@ import { matrixWalkOf } from './VariantRPC/matrixWalk.ts'
 import VcfAdapterF from './VcfAdapter/index.ts'
 import VcfTabixAdapterF from './VcfTabixAdapter/index.ts'
 import { buildSampleIndex, decodeGenotype } from './shared/genotypeCodec.ts'
-import { regionTransmission } from './shared/regionTransmission.ts'
+import { transmissionArg } from './shared/regionTransmission.ts'
 
 import type { RecordsView } from './LinearVariantDisplay/recordsBandViews.ts'
 import type { CellDataResult } from './VariantRPC/executeVariantCellData.ts'
@@ -396,12 +396,12 @@ async function fetchedVariantHost(
         adapterConfig,
         regions: fetchRegions,
         ...props,
-        transmission:
-          props.trios.length > 0
-            ? regionTransmission(transmissionEntries, fetchRegions, {
-                getCanonicalRefName2: refName => refName,
-              })
-            : undefined,
+        transmission: transmissionArg({
+          trios: props.trios,
+          entries: transmissionEntries,
+          regions: fetchRegions,
+          assemblyOf: () => ({ getCanonicalRefName2: refName => refName }),
+        }),
         statusCallback: () => {},
       }
     },

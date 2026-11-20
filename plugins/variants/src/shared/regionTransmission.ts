@@ -7,26 +7,12 @@ interface RefNameResolver {
 }
 
 /**
- * Each region's transmission rule: the assembly's `entries` that hold for
- * its refName, resolved through the assembly's aliases on the main thread,
- * since a worker has no assembly to resolve them against.
- */
-export function regionTransmission<T extends TransmissionEntry>(
-  entries: readonly T[],
-  regions: readonly { refName: string }[],
-  assembly: RefNameResolver,
-) {
-  return regions.map(region =>
-    transmissionEntriesFor(entries, region.refName, assembly),
-  )
-}
-
-/**
  * The `transmission` argument a fetch over `regions` sends: each region's
- * rule under its own assembly, in `regions` order, or nothing while no trio
- * asks for a Mendelian check, so a track with no pedigree sends what it
- * always did. A region whose assembly is unknown takes no entry, the
- * autosomal rule.
+ * rule under its own assembly, in `regions` order, resolved through the
+ * assembly's aliases on the main thread, since a worker has no assembly; or
+ * nothing while no trio asks for a Mendelian check, so a track with no
+ * pedigree sends what it always did. A region whose assembly is unknown
+ * takes no entry, the autosomal rule.
  */
 export function transmissionArg({
   trios,

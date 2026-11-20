@@ -1,11 +1,11 @@
 import VcfParser from '@gmod/vcf'
 import PluginManager from '@jbrowse/core/PluginManager'
+import { transmissionEntriesFor } from '@jbrowse/core/assemblyManager'
 import { isRegionRefused } from '@jbrowse/core/rpc/byteBudget'
 import { SimpleFeature } from '@jbrowse/core/util'
 
 import VcfFeature from '../VcfFeature/index.ts'
 import VariantsPlugin from '../index.ts'
-import { regionTransmission } from '../shared/regionTransmission.ts'
 import { MENDELIAN_FIELD } from '../shared/trios.ts'
 import { analyzeVariants } from './analyzeVariants.ts'
 import { variantCellData } from './executeVariantCellData.ts'
@@ -140,7 +140,7 @@ function trioCellData(args: Partial<GetCellDataArgs>) {
       rowsField: 'sample',
       layout: 'genomic',
       trios: [TRIO],
-      transmission: regionTransmission(hg38, [{ refName: 'chrX' }], assembly),
+      transmission: [transmissionEntriesFor(hg38, 'chrX', assembly)],
       ...args,
     },
   })

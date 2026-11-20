@@ -114,7 +114,7 @@ tetraploid, a haplodiploid male, a ZW female or a yeast mitochondrion.
   assemblies write their own entries (hg38 and hg19: chrX male from mother,
   chrY male from father, chrM either).
 - **Resolved on the main thread.** `transmissionEntriesFor` matches entries
-  through refName aliasing; `regionTransmission` sends one rule per region,
+  through refName aliasing; `transmissionArg` sends one rule per region,
   and the worker keys them by the renamed `regions[i].refName` its features
   carry.
 
