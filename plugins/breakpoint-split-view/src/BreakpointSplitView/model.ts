@@ -21,11 +21,14 @@ import {
 } from '@jbrowse/core/util/withLaunchInput'
 import { addDisposer, cast, types } from '@jbrowse/mobx-state-tree'
 import {
+  exportLaidOut,
   installLinkedViewSync,
   multiLevelRowClickMenuItems,
   multiLevelRowMenuItems,
+  pageLayout,
   rowLabels,
   searchBoxMenuItems,
+  stackLayout,
   storedSearchBoxPrefs,
 } from '@jbrowse/plugin-linear-genome-view'
 import CropFreeIcon from '@mui/icons-material/CropFree'
@@ -326,15 +329,24 @@ export default function stateModelFactory(pluginManager: PluginManager) {
       /**
        * #method
        * renders the view to SVG markup, which it returns; saves it through
-       * FileSaver unless `save: false`
+       * FileSaver unless `save: false`. A `pageWidth` lays every row out to
+       * fill a figure that wide, and puts the on-screen width back after. One
+       * export runs at a time.
        */
       // Promise<string> is stated: renderToSvg is typed against this very
       // model, so an inferred return makes the type reference itself (TS2456)
       async exportSvg(opts: ExportSvgOptions = {}): Promise<string> {
-        return exportViewSvg(
-          self as BreakpointViewModel,
+        const model = self as BreakpointViewModel
+        return exportLaidOut(
+          { node: model, views: model.views },
           opts,
-          () => import('./svgcomponents/SVGBreakpointSplitView.tsx'),
+          stackLayout(model),
+          laidOut =>
+            exportViewSvg(
+              model,
+              laidOut,
+              () => import('./svgcomponents/SVGBreakpointSplitView.tsx'),
+            ),
         )
       },
     }))
@@ -1018,6 +1030,10 @@ export default function stateModelFactory(pluginManager: PluginManager) {
                 {
                   model: self,
                   handleClose,
+                  figureLayout: {
+                    pageLayout: (opts: ExportSvgOptions) =>
+                      pageLayout({ node: self, views: self.views }, opts),
+                  },
                 },
               ])
             },

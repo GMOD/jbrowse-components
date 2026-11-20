@@ -17,7 +17,7 @@ function renderLevel() {
           clipId="test-clip"
           width={800}
           levelHeight={100}
-          trackLabelOffset={0}
+          left={0}
           groundColor="#fff"
           rendering={[
             { key: 'a', node: <rect data-testid="ribbons-a" /> },

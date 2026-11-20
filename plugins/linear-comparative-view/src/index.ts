@@ -21,6 +21,7 @@ import type PluginManager from '@jbrowse/core/PluginManager'
 import type { AbstractViewContainer } from '@jbrowse/core/util'
 
 export { renderToSvg } from './LinearSyntenyView/svgcomponents/SVGLinearSyntenyView.tsx'
+export { syntenyPageSubject } from './LinearSyntenyView/svgcomponents/pageSubject.ts'
 export type { LinearSyntenyViewModel } from './LinearSyntenyView/model.ts'
 export type { MultiWaySyntenyDisplayModel } from './MultiWaySyntenyDisplay/model.ts'
 // For a host drawing its own comparative chrome: the whole stack, one ribbon

@@ -110,14 +110,14 @@ const optionDefs: OptionDef[] = [
     name: 'pageWidth',
     description:
       'Width of the whole figure with its unit, such as 183mm or 7in, in place of --width: the view is laid out to fill it, the SVG states that size, and a PNG or PDF is written at it (PNG at 300 dpi)',
-    modes: ['linear'],
+    modes: ['linear', 'synteny', 'breakpoint'],
   },
   {
     name: 'textSize',
     description:
       'Point size the track labels print at in a --pageWidth figure; the ruler, axes and features scale with it',
     default: DEFAULT_FIGURE_TEXT_PT,
-    modes: ['linear'],
+    modes: ['linear', 'synteny', 'breakpoint'],
   },
   {
     name: 'noRasterize',

@@ -1,5 +1,5 @@
 import { SvgClipRect } from '@jbrowse/core/svg/SvgExport'
-import { exportMargin } from '@jbrowse/core/svg/constants'
+import { parsePhysicalWidth } from '@jbrowse/core/svg/figureSize'
 import { svgNodeId } from '@jbrowse/core/svg/svgId'
 import {
   awaitSvgRenders,
@@ -12,6 +12,7 @@ import { getSession, max } from '@jbrowse/core/util'
 import {
   SVGStackedRow,
   defaultTextHeight,
+  exportMargins,
   getRowHeaderLayout,
   notifySkippedSvgTracks,
   renderViewTracks,
@@ -116,6 +117,11 @@ export async function renderToSvg(model: BSV, opts: ExportSvgOptions) {
       rowTracks.map(r => r.legendWidth),
       0,
     )
+  const physicalWidth = parsePhysicalWidth(opts.pageWidth ?? '')
+  const margins = exportMargins(
+    rowTracks.flatMap(r => r.tracks.map(track => track.displays[0]!)),
+    physicalWidth !== undefined,
+  )
 
   // stack the views top to bottom: one running top offset positions each group,
   // anchors that view's overlay ribbons, and ends as the total content height,
@@ -152,19 +158,21 @@ export async function renderToSvg(model: BSV, opts: ExportSvgOptions) {
       ),
     }
   })
-  const totalHeightSvg = y + exportMargin
+  const totalHeightSvg = y + margins.bottom
 
   // the xlink namespace is used for rendering <image> tag
   return wrapSvgExport({
     theme,
-    width: w,
+    width: margins.left + w + margins.right,
     height: totalHeightSvg,
+    margin: 0,
     fontFamily,
+    physicalWidth,
     Wrapper,
     children: (
       <>
         {keyBand > 0 ? (
-          <SvgConnectionKey rows={keyRows} canvasWidth={w + exportMargin + 4} />
+          <SvgConnectionKey rows={keyRows} canvasWidth={margins.left + w + 4} />
         ) : null}
         {rows.map(({ view, top }, idx) => (
           <SVGStackedRow
@@ -172,7 +180,7 @@ export async function renderToSvg(model: BSV, opts: ExportSvgOptions) {
             view={view}
             rendered={rowTracks[idx]!}
             top={top + headerBand}
-            margin={exportMargin}
+            margin={margins.left}
             fontSize={fontSize}
             textHeight={textHeight}
             rulerHeight={rulerHeight}
@@ -191,7 +199,7 @@ export async function renderToSvg(model: BSV, opts: ExportSvgOptions) {
           />
         ))}
 
-        <g transform={`translate(${trackLabelOffset + exportMargin})`}>
+        <g transform={`translate(${trackLabelOffset + margins.left})`}>
           <SvgClipRect
             id={`clip-bsv-${svgNodeId(model)}`}
             width={width}

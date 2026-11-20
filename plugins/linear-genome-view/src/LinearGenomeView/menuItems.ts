@@ -157,7 +157,8 @@ export function buildMenuItems(self: LinearGenomeViewModel): MenuItem[] {
             model: self,
             handleClose,
             figureLayout: {
-              pageLayout: (opts: ExportSvgOptions) => pageLayout(self, opts),
+              pageLayout: (opts: ExportSvgOptions) =>
+                pageLayout({ node: self, views: [self] }, opts),
             },
             exportR: async (filename: string) => {
               const { saveRScript } =

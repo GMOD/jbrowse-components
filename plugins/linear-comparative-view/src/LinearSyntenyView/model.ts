@@ -29,8 +29,11 @@ import {
   types,
 } from '@jbrowse/mobx-state-tree'
 import {
+  exportLaidOut,
   multiLevelRowClickMenuItems,
   multiLevelRowMenuItems,
+  pageLayout,
+  stackLayout,
 } from '@jbrowse/plugin-linear-genome-view'
 import {
   DiagonalizeProgressMixin,
@@ -79,6 +82,7 @@ import {
 import { syntenyNavigationConfigSchema } from './navigationConfigSchema.ts'
 import { syntenyOffscreenConfigSchema } from './offscreenConfigSchema.ts'
 import { sharedFit } from './sharedFit.ts'
+import { syntenyPageSubject } from './svgcomponents/pageSubject.ts'
 import { liftLegacySyntenyView } from './util/liftViewLevelTracks.ts'
 import { wholeGenomeInShownOrder } from './util/wholeGenomeInShownOrder.ts'
 
@@ -1265,14 +1269,25 @@ export default function stateModelFactory(pluginManager: PluginManager) {
     .actions(self => ({
       /**
        * #action
+       * renders the view to SVG markup, which it returns; saves it through
+       * FileSaver unless `save: false`. A `pageWidth` lays every row out to
+       * fill a figure that wide, and puts the on-screen width back after. One
+       * export runs at a time.
        */
       // Promise<string> is stated: renderToSvg is typed against this very
       // model, so an inferred return makes the type reference itself (TS2456)
       async exportSvg(opts: ExportSvgOptions = {}): Promise<string> {
-        return exportViewSvg(
-          self as LinearSyntenyViewModel,
+        const model = self as LinearSyntenyViewModel
+        return exportLaidOut(
+          syntenyPageSubject(model),
           opts,
-          () => import('./svgcomponents/SVGLinearSyntenyView.tsx'),
+          stackLayout(model),
+          laidOut =>
+            exportViewSvg(
+              model,
+              laidOut,
+              () => import('./svgcomponents/SVGLinearSyntenyView.tsx'),
+            ),
         )
       },
       /**
@@ -1312,6 +1327,13 @@ export default function stateModelFactory(pluginManager: PluginManager) {
             {
               model: self,
               handleClose,
+              figureLayout: {
+                pageLayout: (opts: ExportSvgOptions) =>
+                  pageLayout(
+                    syntenyPageSubject(self as LinearSyntenyViewModel),
+                    opts,
+                  ),
+              },
             },
           ])
         },

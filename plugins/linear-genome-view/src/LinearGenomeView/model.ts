@@ -2761,32 +2761,6 @@ export function stateModelFactory(pluginManager: PluginManager) {
         self.setWidth(width)
         self.settleCoarseBlocks()
       }
-      let exportQueue: Promise<unknown> = Promise.resolve()
-      async function exportAt(opts: ExportSvgOptions) {
-        const { settledPageLayout } =
-          await import('./svgcomponents/pageLayout.ts')
-        const page = await settledPageLayout(self, opts)
-        const { width } = self
-        const viewWidth = page?.plotPx ?? opts.viewWidth ?? width
-        // The on-screen tracks redraw at `viewWidth` until the export ends. A
-        // hidden copy of the view would keep them still, but it needs a
-        // session slot that autosave and undo skip, and new ids for the view,
-        // its tracks and displays, since widgets find them by id.
-        if (viewWidth !== width) {
-          layOutAt(viewWidth)
-        }
-        try {
-          return await exportViewSvg(
-            self as LinearGenomeViewModel,
-            page ? { ...opts, rasterScale: page.rasterScale } : opts,
-            () => import('./svgcomponents/SVGLinearGenomeView.tsx'),
-          )
-        } finally {
-          if (viewWidth !== width) {
-            layOutAt(width)
-          }
-        }
-      }
       return {
         /**
          * #method
@@ -2799,9 +2773,19 @@ export function stateModelFactory(pluginManager: PluginManager) {
         // Promise<string> is stated: renderToSvg is typed against this very
         // model, so an inferred return makes the type reference itself (TS2456)
         async exportSvg(opts: ExportSvgOptions = {}): Promise<string> {
-          const run = exportQueue.then(() => exportAt(opts))
-          exportQueue = run.catch(() => undefined)
-          return run
+          const { exportLaidOut } =
+            await import('./svgcomponents/pageLayout.ts')
+          return exportLaidOut(
+            { node: self, views: [self] },
+            opts,
+            { width: () => self.width, layOutAt },
+            laidOut =>
+              exportViewSvg(
+                self as LinearGenomeViewModel,
+                laidOut,
+                () => import('./svgcomponents/SVGLinearGenomeView.tsx'),
+              ),
+          )
         },
       }
     })

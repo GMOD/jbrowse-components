@@ -5,12 +5,18 @@ description: The export's `fontSize` option reaches the assembly name, scalebar 
 
 # Extra large text SVG mode for pub-ready figures
 
-The linear genome view's page-width export covers the publication case: a
-page width such as 183 mm with a text size in pt scales the whole document, so
-every label keeps its ratio to the track labels (`pageLayout.ts`,
-`figureSize.ts`). What is still open is the px `fontSize` option below, which
-jb2export and `exportSvg` callers can set and which reaches only part of the
-chrome.
+The page-width export covers the publication case for the linear genome,
+linear synteny and breakpoint split views: a page width such as 183 mm with a
+text size in pt scales the whole document, so every label keeps its ratio to
+the track labels (`pageLayout.ts`, `figureSize.ts`). What is still open is the
+px `fontSize` option below, which jb2export and `exportSvg` callers can set and
+which reaches only part of the chrome.
+
+The dotplot and circular views still export at screen size. A dotplot page
+needs its own anchor (the axis labels, not track labels) and a rule for its
+height; a circle needs its radius solved against its label gutter. Stating a
+physical width on the root without relaying out would print a wide window's
+labels near 3 pt, the problem page width exists to fix.
 
 Moved out of [TODO.md](../../TODO.md) on 2026-08-26, when the backlog was cut to
 what v5.0.0 turns on. A feature request with no reader waiting on it.

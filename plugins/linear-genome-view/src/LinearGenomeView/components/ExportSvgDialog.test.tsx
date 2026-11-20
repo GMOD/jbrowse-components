@@ -68,7 +68,6 @@ function figureLayout(plotPx: number) {
       return {
         pageWidth: { value: 183, unit: 'mm' as const },
         textPt,
-        pageHeight: 145,
         scale: textPt / 9.75,
         documentPx: plotPx + 100,
         plotPx,

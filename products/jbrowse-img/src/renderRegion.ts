@@ -23,11 +23,15 @@ import { destroy } from '@jbrowse/mobx-state-tree'
 import { renderToSvg as renderBreakpointToSvg } from '@jbrowse/plugin-breakpoint-split-view'
 import { renderToSvg as renderCircularToSvg } from '@jbrowse/plugin-circular-view'
 import { renderToSvg as renderDotplotToSvg } from '@jbrowse/plugin-dotplot-view'
-import { renderToSvg as renderSyntenyToSvg } from '@jbrowse/plugin-linear-comparative-view'
+import {
+  renderToSvg as renderSyntenyToSvg,
+  syntenyPageSubject,
+} from '@jbrowse/plugin-linear-comparative-view'
 import {
   fetchResults,
   settledPageLayout,
   renderToSvg as renderLinearToSvg,
+  stackLayout,
   openedDisplayType,
   writeFilter,
   writeMembers,
@@ -73,7 +77,11 @@ import type {
 } from '@jbrowse/plugin-circular-view'
 import type { DotplotViewModel } from '@jbrowse/plugin-dotplot-view'
 import type { LinearSyntenyViewModel } from '@jbrowse/plugin-linear-comparative-view'
-import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
+import type {
+  ExportSvgOptions,
+  LinearGenomeViewModel,
+  PageLayoutSubject,
+} from '@jbrowse/plugin-linear-genome-view'
 
 // Drawing with no session was built and removed: the session costs 10–14 ms
 // of a 55–640 ms render (ADR-262).
@@ -295,6 +303,31 @@ async function whenViewReady(view: InitView, session: RenderErrorSources) {
   throwOnRenderError(session)
 }
 
+/**
+ * The export options with the views laid out for a --pageWidth figure, each
+ * of `ready` settled at the plot width the page leaves them.
+ */
+async function pageSvgOpts<O extends ExportSvgOptions>(
+  subject: PageLayoutSubject,
+  layOutAt: (width: number) => void,
+  ready: InitView[],
+  svgOpts: O,
+  session: RenderErrorSources,
+) {
+  const page = await settledPageLayout(subject, svgOpts)
+  if (page) {
+    layOutAt(page.plotPx)
+    for (const view of ready) {
+      await whenViewReady(view, session)
+    }
+  }
+  return { ...svgOpts, rasterScale: page?.rasterScale }
+}
+
+function pageOpts(opts: Opts) {
+  return { pageWidth: opts.pageWidth, textSize: opts.textSize }
+}
+
 // A --spec is the user's unvalidated JSON, so it stays a loose record
 type SpecSettings = Record<string, unknown>
 
@@ -459,23 +492,24 @@ const renderLinear: ModeRenderer = async ctx => {
     )
   }
 
-  const svgOpts = {
-    ...baseSvgOpts(opts),
-    showGridlines,
-    trackLabels,
-    pageWidth: opts.pageWidth,
-    textSize: opts.textSize,
-  }
-  const page = await settledPageLayout(view, svgOpts)
-  if (page) {
-    view.setWidth(page.plotPx)
-    view.settleCoarseBlocks()
-    await whenViewReady(view, model.session)
-  }
-  const svg = await renderLinearToSvg(view, {
-    ...svgOpts,
-    rasterScale: page?.rasterScale,
-  })
+  const svg = await renderLinearToSvg(
+    view,
+    await pageSvgOpts(
+      { node: view, views: [view] },
+      width => {
+        view.setWidth(width)
+        view.settleCoarseBlocks()
+      },
+      [view],
+      {
+        ...baseSvgOpts(opts),
+        showGridlines,
+        trackLabels,
+        ...pageOpts(opts),
+      },
+      model.session,
+    ),
+  )
   return {
     svg,
     spec: loc
@@ -532,11 +566,21 @@ const renderSynteny: ModeRenderer = async ctx => {
     () => syntenyInit(ctx.data),
     viewSettingsFromSpec,
   )
-  return renderSyntenyToSvg(view, {
-    ...baseSvgOpts(ctx.opts),
-    trackLabels: ctx.opts.trackLabels,
-    showGridlines: ctx.opts.showGridlines,
-  })
+  return renderSyntenyToSvg(
+    view,
+    await pageSvgOpts(
+      syntenyPageSubject(view),
+      stackLayout(view).layOutAt,
+      [view, ...view.views],
+      {
+        ...baseSvgOpts(ctx.opts),
+        trackLabels: ctx.opts.trackLabels,
+        showGridlines: ctx.opts.showGridlines,
+        ...pageOpts(ctx.opts),
+      },
+      ctx.model.session,
+    ),
+  )
 }
 
 // showTrack throws on a track with no circular display, aborting the render
@@ -680,11 +724,21 @@ const renderBreakpoint: ModeRenderer = async ctx => {
       },
       opts.view,
     )
-  const svg = await renderBreakpointToSvg(view, {
-    ...baseSvgOpts(opts),
-    trackLabels: opts.trackLabels,
-    showGridlines: opts.showGridlines,
-  })
+  const svg = await renderBreakpointToSvg(
+    view,
+    await pageSvgOpts(
+      { node: view, views: view.views },
+      stackLayout(view).layOutAt,
+      view.views,
+      {
+        ...baseSvgOpts(opts),
+        trackLabels: opts.trackLabels,
+        showGridlines: opts.showGridlines,
+        ...pageOpts(opts),
+      },
+      model.session,
+    ),
+  )
   return {
     svg,
     spec,

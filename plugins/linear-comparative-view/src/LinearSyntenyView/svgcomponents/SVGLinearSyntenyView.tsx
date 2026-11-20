@@ -1,4 +1,4 @@
-import { exportMargin } from '@jbrowse/core/svg/constants'
+import { parsePhysicalWidth } from '@jbrowse/core/svg/figureSize'
 import { svgNodeId } from '@jbrowse/core/svg/svgId'
 import {
   awaitSvgRenders,
@@ -13,6 +13,7 @@ import {
 import {
   SVGStackedRow,
   defaultTextHeight,
+  exportMargins,
   getRowHeaderLayout,
   notifySkippedSvgTracks,
   renderViewTracks,
@@ -126,6 +127,11 @@ export async function renderToSvg(
     session,
   })
   const w = width + trackLabelOffset + legendWidth
+  const physicalWidth = parsePhysicalWidth(opts.pageWidth ?? '')
+  const margins = exportMargins(
+    rowTracks.flatMap(r => r.tracks.map(track => track.displays[0]!)),
+    physicalWidth !== undefined,
+  )
 
   // The export is a vertical stack, top to bottom: each genome view, and
   // directly beneath it the synteny ribbon level between it and the next view.
@@ -142,7 +148,7 @@ export async function renderToSvg(
           view={view}
           rendered={rowTracks[i]!}
           top={rulerTop}
-          margin={exportMargin}
+          margin={margins.left}
           fontSize={fontSize}
           textHeight={textHeight}
           rulerHeight={rulerHeight}
@@ -164,7 +170,7 @@ export async function renderToSvg(
                 clipId={`synclip-${svgNodeId(model)}-${i}`}
                 width={width}
                 levelHeight={level.height}
-                trackLabelOffset={trackLabelOffset}
+                left={margins.left + trackLabelOffset}
                 groundColor={level.groundColor}
                 rendering={renderings[i]!}
                 offscreenMates={
@@ -208,9 +214,11 @@ export async function renderToSvg(
 
   return wrapSvgExport({
     theme,
-    width: w,
-    height: y + exportMargin,
+    width: margins.left + w + margins.right,
+    height: y + margins.bottom,
+    margin: 0,
     fontFamily,
+    physicalWidth,
     Wrapper,
     children,
   })

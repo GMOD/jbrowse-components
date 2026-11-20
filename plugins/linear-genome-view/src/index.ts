@@ -235,7 +235,14 @@ export {
 // resolve it here.
 export { notifySkippedSvgTracks } from '@jbrowse/core/svg/trackNames'
 export { renderViewTracks } from './LinearGenomeView/svgcomponents/renderViewTracks.ts'
-export { settledPageLayout } from './LinearGenomeView/svgcomponents/pageLayout.ts'
+export {
+  exportLaidOut,
+  exportMargins,
+  pageLayout,
+  settledPageLayout,
+  stackLayout,
+} from './LinearGenomeView/svgcomponents/pageLayout.ts'
+export type { PageLayoutSubject } from './LinearGenomeView/svgcomponents/pageLayout.ts'
 export type {
   SvgExportTrack,
   ViewTracksSvg,
