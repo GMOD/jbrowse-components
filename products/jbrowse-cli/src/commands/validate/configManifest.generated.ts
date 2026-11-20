@@ -5903,19 +5903,7 @@ export const configManifest: ConfigManifest = {
             }
           ],
           "schema": "LaneRows",
-          "writes": {
-            "keyedBy": "field",
-            "keyed": [
-              "sort",
-              "labels",
-              "colors",
-              "kept"
-            ],
-            "refines": {
-              "refName": "assembly"
-            },
-            "unwritten": "assembly"
-          }
+          "writes": "members"
         },
         {
           "name": "ribbons",

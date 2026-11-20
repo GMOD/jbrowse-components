@@ -33,9 +33,9 @@ breaks "a gutter draws only what its source states"
 - **`rows.field` says what one lane is**: `assembly` (the default) or
   `refName`, a lane per contig, as the variant display's `rows.field` says
   `sample` or `haplotype` ([ADR-257](adr-257-the-row-axis-owns-its-settings.md)).
-  The lanes' `rows` declares keyed writes with `refines: { refName: 'assembly' }`,
-  so switching keeps `sort`, `labels`, `colors` and `kept`. The track menu's
-  **Lanes → One lane per copy** writes it.
+  The lanes' `rows` still writes member by member, so switching keeps
+  `sort`, `labels`, `colors` and `kept`, which a copy lane reads through its
+  genome's name. The track menu's **Lanes → One lane per copy** writes it.
 - **A copy lane is named as a locstring names a contig with its assembly**,
   `{grape}chr9` (`copyLane.ts`: `copyLaneName`, `laneOf`, `laneKeyIn`). The
   key canonicalizes the assembly and, where the session holds the genome, the

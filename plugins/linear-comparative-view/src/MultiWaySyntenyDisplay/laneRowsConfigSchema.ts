@@ -49,8 +49,9 @@ export const laneRowsConfigSchema = ConfigurationSchema(
      * is named as a locstring names a contig with its assembly,
      * `{grape}chr9`, and answers to its genome's name, so a `sort`, `labels`,
      * `colors` or `kept` entry naming the genome reaches each of its copies,
-     * and switching between the two keeps them. A contig holding under a fifth
-     * of its genome's heaviest contig's evidence draws no lane.
+     * and switching between the two keeps them. A contig holding under a tenth
+     * of its genome's heaviest contig's evidence draws no lane unless `kept`
+     * names it.
      */
     field: {
       type: 'stringEnum',
@@ -114,11 +115,6 @@ export const laneRowsConfigSchema = ConfigurationSchema(
   {
     closed: true,
     plot: true,
-    writes: {
-      keyedBy: 'field',
-      keyed: ['sort', 'labels', 'colors', 'kept'],
-      refines: { refName: 'assembly' },
-    },
     preProcessSnapshot: snap => ({
       ...snap,
       ...stringList(snap, 'sort', 'rows'),

@@ -159,11 +159,13 @@ export function decideLanesOn(
       width,
       anchorReversed,
     })
-  const decided = new Map([
-    ...decide(assemblyNames.slice(0, anchorRow).reverse()),
-    ...decide(assemblyNames.slice(anchorRow)),
-  ])
-  return new Map(assemblyNames.map(name => [name, decided.get(name)]))
+  const below = decide(assemblyNames.slice(anchorRow))
+  return anchorRow > 0
+    ? new Map([
+        ...decide(assemblyNames.slice(0, anchorRow).reverse()),
+        ...below,
+      ])
+    : below
 }
 
 /** undefined once the pivot is off the displayed regions */
