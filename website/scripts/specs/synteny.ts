@@ -41,49 +41,6 @@ const HG38_VERTEBRATES_TREE_ORDER = [
   'bosTau9',
 ]
 
-// The block bars take the colors 'reference' paints these grape chromosomes'
-// ribbons, so a bar and its ribbons read as one copy
-const GAMMA_COPY_BAR_COLORS = {
-  field: 'mateRefName',
-  scale: {
-    domain: ['NC_081815.1', 'NC_081813.1'],
-    range: ['#018592', '#89000b'],
-  },
-}
-
-function gammaCopyGenes(assembly: string) {
-  return {
-    trackId: `${assembly}-ncbiRefSeq`,
-    filter: ['geneLike'],
-    displayMode: 'compact',
-    labels: { name: { show: false }, description: { show: false } },
-    height: 40,
-  }
-}
-
-function gammaCopiesLanes(
-  rows: { copies?: boolean; sort?: string[] },
-  height: number,
-) {
-  return sessionSpec(GRAPE_PEACH_CONFIG, {
-    views: [
-      {
-        type: 'LinearGenomeView',
-        assembly: PEACH,
-        loc: 'chrG7:19,370,000-19,725,000',
-        tracks: [
-          {
-            trackId: 'grape_peach_anchors',
-            type: 'MultiWaySyntenyDisplay',
-            rows: { ...rows, labels: { [PEACH]: 'peach', [GRAPE]: 'grape' } },
-            height,
-          },
-        ],
-      },
-    ],
-  })
-}
-
 export const DOTPLOT_CONFIG = 'test_data/config_dotplot.json'
 const AMYLASE_CONFIG = 'test_data/amylase/config.json'
 // scripts/build_grape_peach_cacao_synteny.sh, which also hosts the pairwise
@@ -2436,72 +2393,32 @@ export const syntenySpecs: ScreenshotSpec[] = [
   {
     mode: 'url',
     name: 'mcscan_synteny/gamma_copies',
+    // a lane per grape copy, the older chr9 one above peach and the ortholog
+    // on chr11 below, each gutter joining peach genes to one copy's
     url: sessionSpec(GRAPE_PEACH_CONFIG, {
       views: [
         {
-          type: 'LinearSyntenyView',
-          views: [
+          type: 'LinearGenomeView',
+          assembly: PEACH,
+          loc: 'chrG7:18,290,000-18,660,000',
+          tracks: [
             {
-              assembly: GRAPE,
-              loc: 'chr9:420,000-900,000',
-              tracks: [gammaCopyGenes(GRAPE)],
-            },
-            {
-              assembly: PEACH,
-              loc: 'chrG7:18,290,000-18,660,000',
-              tracks: [
-                gammaCopyGenes(PEACH),
-                {
-                  trackId: 'grape_peach_anchors_simple',
-                  encoding: { color: GAMMA_COPY_BAR_COLORS },
-                  height: 30,
-                },
-              ],
-            },
-            {
-              assembly: GRAPE,
-              loc: 'chr11:390,000-890,000',
-              tracks: [gammaCopyGenes(GRAPE)],
+              trackId: 'grape_peach_anchors',
+              type: 'MultiWaySyntenyDisplay',
+              rows: {
+                field: 'refName',
+                sort: [`{${GRAPE}}chr9`, PEACH, `{${GRAPE}}chr11`],
+                kept: [`{${GRAPE}}chr9`, `{${GRAPE}}chr11`],
+              },
+              height: 420,
             },
           ],
-          tracks: ['grape_peach_anchors'],
-          mark: { interpolate: 'bump' },
-          encoding: { color: 'reference', opacity: 0.4 },
-          offscreen: { show: false },
-          levelHeights: [170, 170],
         },
       ],
     }),
-    readySelector: displayPainted('synteny_canvas'),
-    readyTimeout: 60000,
-    viewportHeight: 860,
-  },
-
-  {
-    mode: 'url',
-    name: 'mcscan_synteny/gamma_copies_lanes_baseline',
-    url: gammaCopiesLanes({}, 300),
     readySelector: displaySettled('multiway-synteny-display'),
     readyTimeout: 120000,
-    viewportHeight: 620,
-  },
-  {
-    mode: 'url',
-    name: 'mcscan_synteny/gamma_copies_lanes',
-    url: gammaCopiesLanes(
-      {
-        copies: true,
-        sort: [
-          `${GRAPE}@NC_081815.1`,
-          `${GRAPE}@NC_081813.1`,
-          `${GRAPE}@NC_081808.1`,
-        ],
-      },
-      480,
-    ),
-    readySelector: displaySettled('multiway-synteny-display'),
-    readyTimeout: 120000,
-    viewportHeight: 760,
+    viewportHeight: 640,
   },
 
   ...mcscanFilePartSpecs(),
