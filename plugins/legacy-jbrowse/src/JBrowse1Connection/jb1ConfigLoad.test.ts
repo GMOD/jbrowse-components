@@ -44,9 +44,10 @@ test('a data directory with no tracks.conf still loads', async () => {
   expect(labels(tracks as Track[])).toEqual(['genes'])
 })
 
-test('a data directory with neither file yields no tracks', async () => {
-  const { tracks } = await fetchJb1(dataDir, pluginManager)
-  expect(tracks).toEqual([])
+test('a data directory with neither file fails, naming both', async () => {
+  await expect(fetchJb1(dataDir, pluginManager)).rejects.toThrow(
+    'could not read trackList.json or tracks.conf in https://example.com/data',
+  )
 })
 
 test('reads the object-keyed tracks form', async () => {

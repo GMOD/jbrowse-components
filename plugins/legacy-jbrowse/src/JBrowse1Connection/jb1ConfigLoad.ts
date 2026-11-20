@@ -27,24 +27,27 @@ export async function fetchJb1(
 
   async function read(path: string) {
     if (seen.has(path)) {
-      return
+      return false
     }
     seen.add(path)
     const config = await readConfig(dataDir, path, pluginManager)
-    if (!config) {
-      return
+    if (config) {
+      tracks.push(...regularizeTracks(config.tracks, { dataRoot }))
+      const dir = path.replace(/\/[^/]*$/, '')
+      for (const include of [config.include ?? []].flat()) {
+        await read(/^\w[\w+.-]*:/.test(include) ? include : `${dir}/${include}`)
+      }
     }
-    tracks.push(...regularizeTracks(config.tracks, { dataRoot }))
-    const dir = path.replace(/\/[^/]*$/, '')
-    for (const include of [config.include ?? []].flat()) {
-      await read(/^\w[\w+.-]*:/.test(include) ? include : `${dir}/${include}`)
-    }
+    return !!config
   }
 
+  const found: boolean[] = []
   for (const name of TRACK_LISTS) {
-    await read(`${dataRoot}/${name}`)
+    found.push(await read(`${dataRoot}/${name}`))
   }
-
+  if (!found.includes(true)) {
+    throw new Error(`could not read ${TRACK_LISTS.join(' or ')} in ${dataRoot}`)
+  }
   return { dataRoot, tracks }
 }
 

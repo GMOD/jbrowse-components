@@ -28,14 +28,16 @@ export default function stateModelFactory(pluginManager: PluginManager) {
       async connect() {
         const session = getSession(self)
         try {
-          const dataDirLocation = getConf(self, 'dataDirLocation')
           const { fetchJb1 } = await import('./jb1ConfigLoad.ts')
           const { convertTrackConfig } = await import('./jb1ToJb2.ts')
-          const config = await fetchJb1(dataDirLocation, pluginManager)
           const assemblyName = getConf(self, 'assemblyNames')[0]
           if (!assemblyName) {
             throw new Error('assembly name required for JBrowse 1 connection')
           }
+          const config = await fetchJb1(
+            getConf(self, 'dataDirLocation'),
+            pluginManager,
+          )
           // a JBrowse 1 sequence store describes the assembly, which the
           // connection is given rather than supplying. Its ReferenceSequenceTrack
           // schema declares neither assemblyNames nor category, so passing one
@@ -54,12 +56,14 @@ export default function stateModelFactory(pluginManager: PluginManager) {
             self.setTrackConfs(jb2Tracks)
           }
         } catch (error) {
-          console.error(error)
-          session.notifyError(
-            `There was a problem connecting to the JBrowse 1 data directory "${self.name}". Please make sure you have entered a valid location. The error that was thrown is: "${error}"`,
-            error,
-          )
-          session.breakConnection?.(self.configuration)
+          if (isAlive(self)) {
+            console.error(error)
+            session.notifyError(
+              `There was a problem connecting to the JBrowse 1 data directory "${self.name}". Please make sure you have entered a valid location. The error that was thrown is: "${error}"`,
+              error,
+            )
+            session.breakConnection?.(self.configuration)
+          }
         }
       },
     }))

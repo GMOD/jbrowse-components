@@ -3,6 +3,7 @@
 // cover the loader and the per-track conversion, and neither sees what the
 // connection actually hands setTrackConfs.
 import PluginManager from '@jbrowse/core/PluginManager'
+import { when } from 'mobx'
 
 import corePlugins from './corePlugins.ts'
 import rootModelFactory from './rootModel/rootModel.ts'
@@ -98,4 +99,22 @@ test('a connection drops a JBrowse 1 sequence store', async () => {
   ])
   expect(instance.tracks).toHaveLength(1)
   expect(instance.tracks[0]!.type).toBe('FeatureTrack')
+})
+
+test('a data directory it cannot read is reported and the connection breaks', async () => {
+  jest.spyOn(console, 'error').mockImplementation(() => {})
+  const session = setup().session!
+  const conf = session.addConnectionConf({
+    type: 'JBrowse1Connection',
+    connectionId: 'jb1',
+    name: 'legacy',
+    assemblyNames: ['hg19'],
+    dataDirLocation: { uri: DATA_DIR, locationType: 'UriLocation' },
+  })
+  session.makeConnection(conf)
+  await when(() => session.connectionInstances.length === 0)
+
+  expect(session.snackbarMessages.map(m => m.message)).toContainEqual(
+    expect.stringContaining('could not read trackList.json or tracks.conf'),
+  )
 })
