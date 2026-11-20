@@ -175,7 +175,7 @@ export const trioSpecs: ScreenshotSpec[] = [
     viewportHeight: 495,
     // De novo candidates near 196.76 Mb, where the 30x CRAMs show the
     // child's alt allele in a parent the low-coverage calls made hom-ref, and
-    // a run of Mendelian errors across CFHR1, inside the deletion HGSV_9982
+    // a run of Mendelian violations across CFHR1, inside the deletion HGSV_9982
     // that the 1000 Genomes SV callset gives the father and child. The labels'
     // relationship subtitles name the rows' roles.
     url: lgvSession(DEMO_CONFIG, {
@@ -267,17 +267,6 @@ export const trioSpecs: ScreenshotSpec[] = [
     }),
     readyText: 'chr1',
     readyTimeout: 60000,
-    annotations: (
-      [
-        ['Child', 'HG02024 HP1'],
-        ['Mother', 'HG02025 HP1'],
-        ['Father', 'HG02026 HP1'],
-      ] as const
-    ).map(([text, row]) => ({
-      type: 'text' as const,
-      text,
-      anchor: { text: row, alignX: 'right' as const, dx: 70, dy: 14 },
-    })),
   },
 
   {

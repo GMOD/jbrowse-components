@@ -175,8 +175,8 @@ export default function configSchemaFactory() {
        * or `missingness` entry drops it from a VCF with samples, and the
        * columns layout always does. `mendelian` is the site's Mendelian
        * check over the trios a pedigree names, `deNovoCandidate`,
-       * `mendelianError` or `consistent`, and missing where no trio settles
-       * one: `[{ field: "mendelian", oneOf: ["deNovoCandidate", "mendelianError"] }]`
+       * `mendelianViolation` or `consistent`, and missing where no trio settles
+       * one: `[{ field: "mendelian", oneOf: ["deNovoCandidate", "mendelianViolation"] }]`
        * keeps the sites a trio fails. An adapter whose records hand over
        * their genotypes as a `genotypes` record rather than as VCF lines
        * gives no site a `mendelian` value, so a `mendelian` entry naming a

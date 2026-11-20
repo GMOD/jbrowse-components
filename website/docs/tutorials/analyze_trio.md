@@ -173,15 +173,15 @@ made of one allele from each parent's, and colors the alt cells by the answer:
 
 - **De novo candidate:** the child has an allele that neither parent was called
   with. This is the callset's pattern, not a confirmed mutation.
-- **Mendelian error:** no way of taking one allele from each parent gives the
-  child's genotype, as for a hom-alt child of a hom-ref parent. The de novo
+- **Mendelian violation:** no way of taking one allele from each parent gives
+  the child's genotype, as for a hom-alt child of a hom-ref parent. The de novo
   pattern is not counted here, since it has its own color.
 - **Consistent:** one allele from each parent gives the child's genotype.
 
 A site where a no-call leaves the answer open keeps the default color. Near
 CFHR3 and CFHR1 the check flags both kinds of site:
 
-<Figure caption="Color by → Mendelian check across CFHR3 and CFHR1, rows HG02024 (daughter), HG02025 (mother) and HG02026 (father). The child's row has de novo candidate cells left of CFHR3, and the parents' rows have a run of Mendelian error cells across CFHR1." src="/img/trio-mendelian.png"/>
+<Figure caption="Color by → Mendelian check across CFHR3 and CFHR1, rows HG02024 (daughter), HG02025 (mother) and HG02026 (father). The child's row has de novo candidate cells left of CFHR3, and the parents' rows have a run of Mendelian violation cells across CFHR1." src="/img/trio-mendelian.png"/>
 
 This VCF is the 1000 Genomes low-coverage callset, statistically phased, and
 under one percent of its chr1 sites fail the check. Most failures are genotyping
@@ -190,12 +190,13 @@ parent's het that the low-coverage calls missed, as at the site checked below.
 The 1000 Genomes SV callset gives the father and the child a deletion across
 CFHR1 (`HGSV_9982`), and a sample with one copy of a sequence is called
 homozygous for that copy's allele, which accounts for the run of Mendelian
-errors there.
+violations there. Those calls are right for a one-copy sample: the violations
+mark the deletion, not a genotyping error.
 
-- **Filter:** checking **De novo candidate** and **Mendelian error** under
+- **Filter:** checking **De novo candidate** and **Mendelian violation** under
   **Filter by → Mendelian check** keeps the failing sites alone. The menu writes
   the display's `filter` entry
-  `{ "field": "mendelian", "oneOf": ["deNovoCandidate", "mendelianError"] }`,
+  `{ "field": "mendelian", "oneOf": ["deNovoCandidate", "mendelianViolation"] }`,
   which a config can hold too.
 - **Hover and click:** hovering a cell names its site's check, and clicking it
   opens the feature details, whose Mendelian check table lists each trio's
@@ -239,7 +240,7 @@ Choose **Rows → Per haplotype** from the track menu, which splits each sample
 into its two haplotypes. Per-haplotype rows need phased genotypes, written
 `0|1`; unphased calls (`0/1`) need a phasing program such as SHAPEIT first.
 
-<Figure caption="One row per haplotype: the two haplotypes (HP1, HP2) of daughter HG02024, mother HG02025 and father HG02026, top to bottom, under the RefSeq genes, with connector lines tying each matrix column back to the position it came from." src="/img/trio-matrix-phased-clean.png"/>
+<Figure caption="One row per haplotype: the two haplotypes (HP1, HP2) of HG02024, HG02025 and HG02026, top to bottom, each label followed by the pedigree's relationship (daughter, mother, father), under the RefSeq genes, with connector lines tying each matrix column back to the position it came from." src="/img/trio-matrix-phased-clean.png"/>
 
 <Video src="/media/variants/trio_phased_matrix.mp4" caption="Layout → Genotype matrix switched on, then Rows → Per haplotype splitting each trio member into its two haplotype rows." />
 

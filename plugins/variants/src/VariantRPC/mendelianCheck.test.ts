@@ -39,7 +39,7 @@ function featuresUnder(samples: string[], lines: string[], prefix: string) {
 describe('split headers', () => {
   // Kid, dad and mom sit in a different order in each file, so reading the
   // second file's genotypes at the first file's positions would call its
-  // record a Mendelian error: a kid's 1/1 from 0/1 x 0/0.
+  // record a Mendelian violation: a kid's 1/1 from 0/1 x 0/0.
   const features = [
     ...featuresUnder(
       ['kid', 'dad', 'mom'],
@@ -168,7 +168,7 @@ describe('the worker’s Mendelian check', () => {
 
   test('with no rule the hemizygous call reads as an autosome’s', async () => {
     expect(await mendelianByName({ transmission: [] })).toEqual({
-      x1: 'mendelianError',
+      x1: 'mendelianViolation',
       x2: 'deNovoCandidate',
       x3: 'consistent',
     })

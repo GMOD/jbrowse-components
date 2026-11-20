@@ -274,8 +274,10 @@ a sample in the VCF. Phase is ignored, and ploidy is read from each call.
   parent has, and every parent the child can inherit from is called. It names
   the callset's pattern, not a confirmed mutation: on GT alone most are
   genotyping errors, often a parent's het called homozygous.
-- **Mendelian error** (`mendelianError`): no assignment of the child's alleles
-  to its parents fits, whatever a no-call might hide. It excludes the de novo
+- **Mendelian violation** (`mendelianViolation`): no assignment of the child's
+  alleles to its parents fits, whatever a no-call might hide. A violation is a
+  miscall or real biology: across a deletion a one-copy sample is called
+  homozygous, and uniparental disomy does the same. It excludes the de novo
   pattern, which has its own color, so it is narrower than PLINK's and Hail's
   Mendel error counts; Hail's `de_novo` and slivar's `denovo` likewise report de
   novo sites apart.
@@ -290,9 +292,10 @@ JBrowse computes `mendelian` as the track loads, and the record holds no such
 field, so a `jexl:` expression cannot read it.
 
 - **Filter:** **Filter by → Mendelian check** keeps the sites whose check is one
-  of the values checked. Checking **De novo candidate** and **Mendelian error**
-  keeps the sites a trio fails, and writes the display's `filter` entry
-  `{ "field": "mendelian", "oneOf": ["deNovoCandidate", "mendelianError"] }`,
+  of the values checked. Checking **De novo candidate** and **Mendelian
+  violation** keeps the sites a trio fails, and writes the display's `filter`
+  entry
+  `{ "field": "mendelian", "oneOf": ["deNovoCandidate", "mendelianViolation"] }`,
   which a config can hold too.
 - **Hover and click:** hovering a cell names the site's check, and the feature
   details list each trio's genotypes and call.
@@ -331,7 +334,7 @@ can miss an error:
   pseudoautosomal region is still judged by the entry: a son's `1/1` with father
   `0/0` and mother `0/1` reads consistent though his father has no `1`.
 - **No entry:** a son's X written diploid (`1/1`) takes the autosomal rule and
-  can read as a Mendelian error where his father lacks the allele.
+  can read as a Mendelian violation where his father lacks the allele.
 - **Ploidy:** each parent gives half its alleles, rounded either way, so an
   autotetraploid cross is 2 + 2 and a 2x × 4x triploid 1 + 2. A cross no such
   split fits (aneuploidy, unreduced gametes) and double reduction are judged

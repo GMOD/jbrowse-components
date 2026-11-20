@@ -198,7 +198,7 @@ describe('a records-band hit', () => {
 
 test('a cell hover names its record’s Mendelian check', () => {
   const hit = buildVariantHit({
-    info: featureInfoOf('x1', { mendelian: 'mendelianError' }),
+    info: featureInfoOf('x1', { mendelian: 'mendelianViolation' }),
     genotype: '1/1',
     sampleName: 'kid',
     name: 'kid',
@@ -208,6 +208,6 @@ test('a cell hover names its record’s Mendelian check', () => {
   expect(getTooltipRows(hit)).toContainEqual({
     key: 'mendelian',
     label: 'Mendelian check',
-    value: 'Mendelian error',
+    value: 'Mendelian violation',
   })
 })

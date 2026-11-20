@@ -60,8 +60,8 @@ tetraploid, a haplodiploid male, a ZW female or a yeast mitochondrion.
 
 ### The check
 
-- **`mendelian` takes `deNovoCandidate`, `mendelianError` or `consistent`**,
-  and a site with nothing to say is `undefined`. A `mendelianError` here
+- **`mendelian` takes `deNovoCandidate`, `mendelianViolation` or `consistent`**,
+  and a site with nothing to say is `undefined`. A `mendelianViolation` here
   excludes the de novo pattern, which `deNovoCandidate` holds with its own
   color. With several trios the site takes the most severe
   (`mostSevereTrioClass`).
@@ -75,7 +75,7 @@ tetraploid, a haplodiploid male, a ZW female or a yeast mitochondrion.
   aneuploidy and unreduced gametes. That is the general gamete-partition rule:
   one procedure for every ploidy, with no table per case.
 - **Lenient over false errors.** A gamete is drawn from the parent's allele
-  set, so double reduction passes. `mendelianError` is never reported under
+  set, so double reduction passes. `mendelianViolation` is never reported under
   Union, Irregular or `from: either`. A duo the known parent cannot settle is
   `undefined`. A sex entry judges only haploid or homozygous calls, so a het
   falls through to the autosomal rule; with sex missing both readings run and a
@@ -121,7 +121,7 @@ tetraploid, a haplodiploid male, a ZW female or a yeast mitochondrion.
 ## Consequences
 
 - With no entry, a diploid-coded male X or a mitochondrial call can read
-  falsely `mendelianError`; the docs name the entry to write.
+  falsely `mendelianViolation`; the docs name the entry to write.
 - On the `feature.get('genotypes')` fallback, codes are interned after the
   site loop, so the field stays `undefined` there.
 - Reading genotypes with no rows drawn makes `samplePloidy` and
@@ -197,13 +197,18 @@ Rejected:
 
 The classes were first `notInParents` and `inconsistent`, labelled "Not in
 parents" and "Inconsistent". Before any release they became `deNovoCandidate`
-("De novo candidate") and `mendelianError` ("Mendelian error"), the terms a
-geneticist searches for; `consistent` and the colors stay.
+("De novo candidate") and `mendelianViolation` ("Mendelian violation"), the
+terms a geneticist searches for; `consistent` and the colors stay.
 
 - **"Candidate"**, because the class is the callset's pattern, not a confirmed
   mutation: on GT alone most such sites are genotyping errors, as the trio
   tutorial's read check shows on the KHV trio.
-- **`mendelianError` excludes the de novo pattern.** PLINK's `--mendel` and
+- **"Violation", GATK's term, not "error".** "Error" implies a miscall, but the
+  class also holds real biology: the run across CFHR1 on the KHV trio is a
+  deletion in which a one-copy sample is called homozygous, and uniparental
+  disomy and other hemizygous regions do the same. "Violation" names the
+  pattern without blaming the genotyping.
+- **`mendelianViolation` excludes the de novo pattern.** PLINK's `--mendel` and
   Hail's `mendel_errors` count a het child of two hom-ref parents as a Mendel
   error; here it has its own class and color, as Hail's `de_novo` and slivar's
   `denovo` report it apart from other errors.

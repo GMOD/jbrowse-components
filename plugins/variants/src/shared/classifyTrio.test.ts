@@ -68,28 +68,28 @@ describe('autosomal truth table', () => {
       child: '1/1',
       father: '0/1',
       mother: '0/0',
-      expected: 'mendelianError',
+      expected: 'mendelianViolation',
     },
     {
       name: '1/2 from 1/2 x 0/0 needs one-to-one assignment',
       child: '1/2',
       father: '1/2',
       mother: '0/0',
-      expected: 'mendelianError',
+      expected: 'mendelianViolation',
     },
     {
       name: '0/0 from 1/1 x ./.',
       child: '0/0',
       father: '1/1',
       mother: './.',
-      expected: 'mendelianError',
+      expected: 'mendelianViolation',
     },
     {
       name: '1/1 from ./0 x 0/0',
       child: '1/1',
       father: './0',
       mother: '0/0',
-      expected: 'mendelianError',
+      expected: 'mendelianViolation',
     },
     {
       name: '1/1 from 0/1 x 0/1',
@@ -142,7 +142,7 @@ describe("under hg38's entries", () => {
       mother: '0/0',
       sex: 'male',
       rule: hg38X,
-      expected: 'mendelianError',
+      expected: 'mendelianViolation',
     },
     {
       name: 'male X diploid-coded 1/1, father 0/0, mother 0/1',
@@ -169,7 +169,7 @@ describe("under hg38's entries", () => {
       mother: '0/0',
       sex: 'male',
       rule: hg38X,
-      expected: 'mendelianError',
+      expected: 'mendelianViolation',
     },
     {
       name: 'X with sex missing, 1/1, father 0/0, mother 0/1',
@@ -265,7 +265,7 @@ describe('across taxa', () => {
       child: '1/1/1/0',
       father: '0/0/0/1',
       mother: '0/0/0/0',
-      expected: 'mendelianError',
+      expected: 'mendelianViolation',
     },
     {
       name: 'autotetraploid allele in neither parent',
@@ -286,7 +286,7 @@ describe('across taxa', () => {
       child: '1/1/1',
       father: '0/0',
       mother: '1/1/1/1',
-      expected: 'mendelianError',
+      expected: 'mendelianViolation',
     },
     {
       name: 'trisomic child takes the irregular split',
@@ -296,7 +296,7 @@ describe('across taxa', () => {
       expected: 'consistent',
     },
     {
-      name: 'trisomic child with no split is never a Mendelian error',
+      name: 'trisomic child with no split is never a Mendelian violation',
       child: '1/1/1',
       father: '0/0',
       mother: '0/1',
@@ -318,7 +318,7 @@ describe('across taxa', () => {
       mother: '0/0',
       sex: 'male',
       rule: haplodiploid,
-      expected: 'mendelianError',
+      expected: 'mendelianViolation',
     },
     {
       name: 'haplodiploid daughter, haploid father gives 1',
@@ -336,7 +336,7 @@ describe('across taxa', () => {
       mother: '0/0',
       sex: 'female',
       rule: haplodiploid,
-      expected: 'mendelianError',
+      expected: 'mendelianViolation',
     },
     {
       name: 'selfed line 1/1 from 0/1',
@@ -357,14 +357,14 @@ describe('across taxa', () => {
       child: '1/1',
       father: undefined,
       mother: '0/0',
-      expected: 'mendelianError',
+      expected: 'mendelianViolation',
     },
     {
       name: 'duo with opposite homozygotes, father known',
       child: '0/0',
       father: '1/1',
       mother: undefined,
-      expected: 'mendelianError',
+      expected: 'mendelianViolation',
     },
     {
       name: 'duo sharing an allele',
@@ -389,7 +389,7 @@ describe('across taxa', () => {
       mother: '1',
       sex: 'female',
       rule: zwZ,
-      expected: 'mendelianError',
+      expected: 'mendelianViolation',
     },
     {
       name: 'ZW female W from her mother',
@@ -425,7 +425,7 @@ describe('across taxa', () => {
       mother: '0/0',
       sex: 'male',
       rule: xoX,
-      expected: 'mendelianError',
+      expected: 'mendelianViolation',
     },
     {
       name: 'C. elegans hermaphrodite X takes the autosomal rule',
@@ -443,7 +443,7 @@ describe('across taxa', () => {
       mother: '0/1',
       sex: 'other',
       rule: xoX,
-      expected: 'mendelianError',
+      expected: 'mendelianViolation',
     },
     {
       name: 'Bombyx Z as 1, diploid-coded female 1/1 from her father',
@@ -461,7 +461,7 @@ describe('across taxa', () => {
       mother: '1/1',
       sex: 'female',
       rule: zwZ,
-      expected: 'mendelianError',
+      expected: 'mendelianViolation',
     },
     {
       name: 'yeast chrM either, from the father',
@@ -480,7 +480,7 @@ describe('across taxa', () => {
       expected: 'deNovoCandidate',
     },
     {
-      name: 'yeast chrM either is never a Mendelian error',
+      name: 'yeast chrM either is never a Mendelian violation',
       child: '1',
       father: '0',
       mother: './.',
@@ -493,16 +493,16 @@ describe('across taxa', () => {
       father: '0/1',
       mother: '0/0',
       rule: [],
-      expected: 'mendelianError',
+      expected: 'mendelianViolation',
     },
     {
-      name: 'default [] reads a diploid-coded male X falsely a Mendelian error',
+      name: 'default [] reads a diploid-coded male X falsely a Mendelian violation',
       child: '1/1',
       father: '0',
       mother: '0/1',
       sex: 'male',
       rule: [],
-      expected: 'mendelianError',
+      expected: 'mendelianViolation',
     },
   ])('$name is $expected', row => {
     expect(run(row)).toBe(row.expected)
@@ -554,13 +554,13 @@ describe('mostSevereTrioClass', () => {
       expected: 'consistent',
     },
     {
-      name: 'mendelianError over consistent',
-      classes: ['consistent', 'mendelianError'],
-      expected: 'mendelianError',
+      name: 'mendelianViolation over consistent',
+      classes: ['consistent', 'mendelianViolation'],
+      expected: 'mendelianViolation',
     },
     {
-      name: 'deNovoCandidate over mendelianError',
-      classes: ['mendelianError', 'deNovoCandidate', 'consistent'],
+      name: 'deNovoCandidate over mendelianViolation',
+      classes: ['mendelianViolation', 'deNovoCandidate', 'consistent'],
       expected: 'deNovoCandidate',
     },
   ])('$name is $expected', ({ classes, expected }) => {

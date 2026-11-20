@@ -71,7 +71,7 @@ describe('the fetch key', () => {
   })
 })
 
-// trio_x.vcf: x1 1/1 from 0/0 x 0/1, a Mendelian error with no rule; x2 0/1
+// trio_x.vcf: x1 1/1 from 0/0 x 0/1, a Mendelian violation with no rule; x2 0/1
 // from 0/0 x 0/0, a de novo candidate; x3 0/1 from 0/1 x 0/0, consistent
 const TRIO_X_ADAPTER = {
   type: 'VcfAdapter',
@@ -136,7 +136,11 @@ test('a site in neither parent paints the check’s color', async () => {
     getCachedABGR(cellFill(DE_NOVO_COLOR, 128)),
   )
   expect(display.paintedDomain).toEqual(
-    expect.arrayContaining(['deNovoCandidate', 'mendelianError', 'consistent']),
+    expect.arrayContaining([
+      'deNovoCandidate',
+      'mendelianViolation',
+      'consistent',
+    ]),
   )
   dispose()
 })
@@ -214,7 +218,10 @@ test('the cell fetch sends each region’s rule, resolved through the assembly�
 
 describe('the genotype matrix under a filter on the check', () => {
   const FAILED = [
-    { field: MENDELIAN_FIELD, oneOf: ['deNovoCandidate', 'mendelianError'] },
+    {
+      field: MENDELIAN_FIELD,
+      oneOf: ['deNovoCandidate', 'mendelianViolation'],
+    },
   ]
 
   async function sitesOf(args: GetGenotypeMatrixArgs) {
@@ -306,18 +313,21 @@ describe('the Filter by menu’s Mendelian check', () => {
     const display = displayWith([maf])
 
     toggle(display, 'De novo candidate')
-    toggle(display, 'Mendelian error')
+    toggle(display, 'Mendelian violation')
 
     const entry = {
       field: MENDELIAN_FIELD,
-      oneOf: ['deNovoCandidate', 'mendelianError'],
+      oneOf: ['deNovoCandidate', 'mendelianViolation'],
     }
     expect(predicatesOf(display.configuration.filter)).toEqual([maf, entry])
     expect(display.rpcProps().mendelianFilter).toEqual([entry])
-    expect(checked(display)).toEqual(['De novo candidate', 'Mendelian error'])
+    expect(checked(display)).toEqual([
+      'De novo candidate',
+      'Mendelian violation',
+    ])
 
     toggle(display, 'De novo candidate')
-    toggle(display, 'Mendelian error')
+    toggle(display, 'Mendelian violation')
 
     expect(predicatesOf(display.configuration.filter)).toEqual([maf])
     expect(display.rpcProps().mendelianFilter).toEqual([])

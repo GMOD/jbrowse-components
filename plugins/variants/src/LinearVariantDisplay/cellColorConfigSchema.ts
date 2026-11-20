@@ -31,7 +31,7 @@ import {
  * `impact`, the most severe SnpEff/VEP consequence tier; `svType`, the
  * structural-variant class; `phaseSet`, the FORMAT PS block, which paints
  * only under `rows: 'haplotype'`; `mendelian`, the site's most severe call
- * over the trios a pedigree names (`deNovoCandidate`, `mendelianError`,
+ * over the trios a pedigree names (`deNovoCandidate`, `mendelianViolation`,
  * `consistent`), a site no trio settles keeping the default alt color.
  * Any other field is read off the record — `INFO.CLNSIG`, `QUAL`, or a
  * `jexl:` expression — and a numeric one cut into intervals by a `threshold`

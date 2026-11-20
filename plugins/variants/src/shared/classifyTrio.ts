@@ -1,4 +1,4 @@
-export type TrioClass = 'deNovoCandidate' | 'mendelianError' | 'consistent'
+export type TrioClass = 'deNovoCandidate' | 'mendelianViolation' | 'consistent'
 
 export type PedigreeSex = 'male' | 'female' | 'other'
 
@@ -22,7 +22,7 @@ export const MAX_CLASSIFIED_PLOIDY = 16
 
 const severity = {
   consistent: 1,
-  mendelianError: 2,
+  mendelianViolation: 2,
   deNovoCandidate: 3,
 } as const
 
@@ -200,7 +200,7 @@ function classifyWithSex(
       ? undefined
       : (singleParent || (mode.kind === 'split' && mode.regular)) &&
           !assignable(child, f, m, mode)
-        ? 'mendelianError'
+        ? 'mendelianViolation'
         : child.wildcards === 0 &&
             contributors.every(p => !p || p.wildcards === 0) &&
             assignable(child, f, m, mode)
