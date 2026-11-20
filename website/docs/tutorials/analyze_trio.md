@@ -223,6 +223,23 @@ there, so the child's call stands. The mother's CRAM,
 loaded the same way, also has reads with G, so the low-coverage calls missed the
 mother's het.
 
+To check every flagged site this way, the
+[KHV trio review portal](https://jbrowse.org/demos/khv_trio_review/) stacks the
+daughter's, father's and mother's 30x reads under each of the 173 flagged sites
+in chr1:190-200 Mb, with a verdict per site. In a sample of 30 of its 91 de novo
+candidates, the reads showed:
+
+- 11 a child miscall: the child's reads lack the allele, or are homozygous where
+  the call is het
+- 8 a parent's het the calls missed
+- 6 a parent's indel, which the call writes as a different allele
+- 2 the allele in the child's reads alone
+- 3 unclear
+
+[variant-review-portal](https://github.com/cmdcolin/variant-review-portal)
+builds such a portal from a trio VCF, its pedigree and the three alignment
+files.
+
 **Color by → Genotype** returns the cells to the genotype colors the steps below
 use.
 
