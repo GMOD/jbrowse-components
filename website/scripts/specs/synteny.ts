@@ -41,6 +41,26 @@ const HG38_VERTEBRATES_TREE_ORDER = [
   'bosTau9',
 ]
 
+// The block bars take the colors 'reference' paints these grape chromosomes'
+// ribbons, so a bar and its ribbons read as one copy
+const GAMMA_COPY_BAR_COLORS = {
+  field: 'mateRefName',
+  scale: {
+    domain: ['NC_081815.1', 'NC_081813.1', 'NC_081808.1'],
+    range: ['#018592', '#89000b', '#004671'],
+  },
+}
+
+function gammaCopyGenes(assembly: string) {
+  return {
+    trackId: `${assembly}-ncbiRefSeq`,
+    filter: ['geneLike'],
+    displayMode: 'compact',
+    labels: { name: { show: false }, description: { show: false } },
+    height: 40,
+  }
+}
+
 export const DOTPLOT_CONFIG = 'test_data/config_dotplot.json'
 const AMYLASE_CONFIG = 'test_data/amylase/config.json'
 // scripts/build_grape_peach_cacao_synteny.sh, which also hosts the pairwise
@@ -2398,22 +2418,40 @@ export const syntenySpecs: ScreenshotSpec[] = [
         {
           type: 'LinearSyntenyView',
           views: [
-            { assembly: GRAPE, loc: 'chr9:1-8,000,000' },
-            { assembly: PEACH, loc: 'chrG7:18,000,000-22,388,614' },
-            { assembly: GRAPE, loc: 'chr11:1-10,000,000' },
+            {
+              assembly: GRAPE,
+              loc: 'chr9:2,250,000-3,080,000 chr4:400,000-770,000[rev]',
+              tracks: [gammaCopyGenes(GRAPE)],
+            },
+            {
+              assembly: PEACH,
+              loc: 'chrG7:19,370,000-19,725,000',
+              tracks: [
+                gammaCopyGenes(PEACH),
+                {
+                  trackId: 'grape_peach_anchors_simple',
+                  encoding: { color: GAMMA_COPY_BAR_COLORS },
+                  height: 30,
+                },
+              ],
+            },
+            {
+              assembly: GRAPE,
+              loc: 'chr11:1,965,000-2,490,000',
+              tracks: [gammaCopyGenes(GRAPE)],
+            },
           ],
           tracks: ['grape_peach_anchors'],
           mark: { interpolate: 'bump' },
-          encoding: { opacity: 0.6 },
+          encoding: { color: 'reference', opacity: 0.5 },
           offscreen: { show: false },
-          collapseEmptyRows: true,
-          levelHeights: [260, 260],
+          levelHeights: [170, 170],
         },
       ],
     }),
     readySelector: displayPainted('synteny_canvas'),
     readyTimeout: 60000,
-    viewportHeight: 740,
+    viewportHeight: 860,
   },
 
   ...mcscanFilePartSpecs(),
