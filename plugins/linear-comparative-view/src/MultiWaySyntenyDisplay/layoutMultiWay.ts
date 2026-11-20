@@ -4,7 +4,7 @@ import { cutAlignment } from '../mateBpAt.ts'
 import { voteEvidence } from '../syntenyHysteresis.ts'
 import { getMate, getMates, isNamedRecord } from '../syntenyMate.ts'
 import { NO_OPS } from './alignmentOps.ts'
-import { laneGenome } from './copyLane.ts'
+import { isCopyLane, laneGenome } from './copyLane.ts'
 import { forEachLaneGap } from './laneGaps.ts'
 
 import type { SyntenyGroupedMate } from '../syntenyMate.ts'
@@ -702,10 +702,52 @@ export function groupSpansLanes(group: PlacedGroup) {
 }
 
 /**
- * Lanes densest first, `preferred` ones leading in its order, a genome named
- * there leading with each of its copy lanes; `placeless`
- * lanes, which the window shows none of, sit at the foot whatever `preferred`
- * says, since a frameless lane between two others leaves both gutters empty
+ * The `lanes` that `sort` names, in the order its entries are written. An
+ * entry naming a lane takes it; one naming a genome takes each of that
+ * genome's copy lanes no entry of `named` names; one naming a copy takes its
+ * genome's lane where the lanes are genomes, so a sort written for one
+ * `rows.field` orders the other.
+ */
+export function sortedLanes(
+  lanes: readonly string[],
+  sort: readonly string[],
+  keyOf: (lane: string) => string,
+  named: readonly string[] = sort,
+) {
+  const namedKeys = new Set(named.map(keyOf))
+  const byKey = new Map<string, string[]>()
+  const copiesOf = new Map<string, string[]>()
+  const add = (map: Map<string, string[]>, key: string, lane: string) => {
+    map.set(key, [...(map.get(key) ?? []), lane])
+  }
+  for (const lane of lanes) {
+    const key = keyOf(lane)
+    add(byKey, key, lane)
+    if (isCopyLane(lane) && !namedKeys.has(key)) {
+      add(copiesOf, keyOf(laneGenome(lane)), lane)
+    }
+  }
+  const out = new Set<string>()
+  for (const entry of sort) {
+    const key = keyOf(entry)
+    const taken = isCopyLane(entry)
+      ? (byKey.get(key) ??
+        (byKey.get(keyOf(laneGenome(entry))) ?? []).filter(
+          lane => !isCopyLane(lane),
+        ))
+      : [...(byKey.get(key) ?? []), ...(copiesOf.get(key) ?? [])]
+    for (const lane of taken) {
+      out.add(lane)
+    }
+  }
+  return [...out]
+}
+
+/**
+ * Lanes densest first, `preferred` ones leading in its order (`sortedLanes`);
+ * `placeless` lanes, which the window shows none of, sit at the foot whatever
+ * `preferred` says, since a frameless lane between two others leaves both
+ * gutters empty
  */
 export function rowAssembliesOf(
   groups: MultiWayGroup[],
@@ -734,23 +776,14 @@ export function rowAssembliesOf(
     }))
     .sort((a, b) => b.density - a.density || a.appearance - b.appearance)
     .map(lane => lane.assemblyName)
-  const byKey = new Map<string, string[]>()
-  for (const assemblyName of present) {
-    const genome = laneGenome(assemblyName)
-    for (const key of new Set([keyOf(assemblyName), keyOf(genome)])) {
-      byKey.set(key, [...(byKey.get(key) ?? []), assemblyName])
-    }
-  }
-  const pinned = new Set<string>()
-  for (const name of preferred) {
-    for (const assemblyName of byKey.get(keyOf(name)) ?? []) {
-      pinned.add(assemblyName)
-    }
-  }
+  const pinned = new Set(sortedLanes(present, preferred, keyOf))
+  const presentKeys = new Set(
+    present.flatMap(name => [keyOf(name), keyOf(laneGenome(name))]),
+  )
   const foot = new Map<string, string>()
   for (const name of placeless) {
     const key = keyOf(name)
-    if (!byKey.has(key) && !foot.has(key)) {
+    if (!presentKeys.has(key) && !foot.has(key)) {
       foot.set(key, name)
     }
   }

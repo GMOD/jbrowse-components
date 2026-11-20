@@ -1,6 +1,7 @@
 import { SimpleFeature } from '@jbrowse/core/util'
 
 import { fileUnderCopies } from './copyLane.ts'
+import { laneOrderAfterDrop, sortAfterDrop } from './laneDrag.ts'
 import {
   anchorRowOf,
   laneColorOf,
@@ -10,6 +11,7 @@ import {
   laneUniverseOf,
   lanesInForce,
   pickedLanes,
+  unalignedChosenLanesOf,
   withLaneHidden,
   withLaneShown,
 } from './laneSelection.ts'
@@ -241,37 +243,65 @@ describe('copy lanes', () => {
       ...opts,
     })
 
-  test('a copy on the anchor’s own genome draws no lane', () => {
-    expect(rowsOf({})).toEqual(['{grape}chr11', '{grape}chr9'])
+  test('another contig of the anchor’s genome draws a lane, which the anchor’s sort entry leaves unplaced', () => {
+    expect(rowsOf({})).toEqual(['{grape}chr11', '{grape}chr9', '{peach}chrG3'])
+    expect(rowsOf({ preferred: ['peach', '{grape}chr9'] })).toEqual([
+      '{grape}chr9',
+      '{grape}chr11',
+      '{peach}chrG3',
+    ])
   })
 
-  test('a genome named in rows.kept, rows.sort or the hidden lanes reaches each copy', () => {
+  test('a genome named in rows.kept or the hidden lanes reaches each copy', () => {
     expect(rowsOf({ selection: ['Grape'] })).toEqual([
       '{grape}chr11',
       '{grape}chr9',
     ])
-    expect(rowsOf({ hidden: ['grape'] })).toEqual([])
+    expect(rowsOf({ hidden: ['grape'] })).toEqual(['{peach}chrG3'])
     expect(rowsOf({ selection: ['{grape}chr9'] })).toEqual(['{grape}chr9'])
-    expect(rowsOf({ preferred: ['{GRAPE}chr9', 'grape'] })).toEqual([
+  })
+
+  test('a genome kept beside one of its copies keeps only the copies named', () => {
+    expect(rowsOf({ selection: ['grape', '{grape}chr9'] })).toEqual([
       '{grape}chr9',
-      '{grape}chr11',
     ])
   })
 
-  test('the anchor stacks after the lanes rows.sort names before it', () => {
+  test('rows.sort entries place lanes in the order written, a genome filling only its copies named nowhere else', () => {
+    expect(rowsOf({ preferred: ['{GRAPE}chr9', 'grape'] }).slice(0, 2)).toEqual(
+      ['{grape}chr9', '{grape}chr11'],
+    )
+    expect(rowsOf({ preferred: ['grape', '{grape}chr9'] }).slice(0, 2)).toEqual(
+      ['{grape}chr11', '{grape}chr9'],
+    )
+    expect(
+      rowsOf({ preferred: ['grape', '{grape}chr9', '{grape}chr11'] }).slice(
+        0,
+        2,
+      ),
+    ).toEqual(['{grape}chr9', '{grape}chr11'])
+  })
+
+  test('the anchor stacks after the lanes rows.sort places before it, copy lanes only', () => {
     const rows = ['{grape}chr9', '{grape}chr11', 'cacao']
-    expect(anchorRowOf([], rows, 'peach', keyOf)).toBe(0)
-    expect(anchorRowOf(['{grape}chr9', 'Peach'], rows, 'peach', keyOf)).toBe(1)
-    expect(anchorRowOf(['grape', 'peach'], rows, 'peach', keyOf)).toBe(2)
-    expect(anchorRowOf(['gone', 'peach'], rows, 'peach', keyOf)).toBe(0)
+    const rowOf = (sort: string[], field: 'refName' | 'assembly' = 'refName') =>
+      anchorRowOf({ field, sort, rows, anchor: 'peach', keyOf })
+    expect(rowOf([])).toBe(0)
+    expect(rowOf(['{grape}chr9', 'Peach'])).toBe(1)
+    expect(rowOf(['grape', 'peach'])).toBe(2)
+    expect(rowOf(['gone', 'peach'])).toBe(0)
+    // a genome before the anchor fills only its copies named nowhere else
+    expect(rowOf(['grape', 'peach', '{grape}chr11'])).toBe(1)
+    expect(rowOf(['{grape}chr9', 'peach'], 'assembly')).toBe(0)
     // a lane placing nothing sits at the foot, below the anchor
     expect(
-      anchorRowOf(
-        ['{grape}chr9', 'peach', '{grape}chr11'],
-        ['{grape}chr11', '{grape}chr9'],
-        'peach',
+      anchorRowOf({
+        field: 'refName',
+        sort: ['{grape}chr9', 'peach', '{grape}chr11'],
+        rows: ['{grape}chr11', '{grape}chr9'],
+        anchor: 'peach',
         keyOf,
-      ),
+      }),
     ).toBe(0)
     expect(laneOrderOf(rows, 'peach', 1)).toEqual([
       '{grape}chr9',
@@ -311,5 +341,146 @@ describe('copy lanes', () => {
     expect(colorOf('{grape}chr4')).toBe('blue')
     expect(colorOf('{grape}chr9')).toBe('red')
     expect(colorOf('{cacao}tc1')).toBeUndefined()
+  })
+})
+
+describe('switching rows.field', () => {
+  const row = (name: string, i: number, assemblyName: string, ref: string) =>
+    new SimpleFeature({
+      uniqueId: `${name}-${assemblyName}-${ref}`,
+      refName: 'chrG7',
+      start: i * 200,
+      end: i * 200 + 100,
+      name,
+      mate: { assemblyName, refName: ref, start: i * 200, end: i * 200 + 50 },
+    })
+  const genes = Array.from({ length: 10 }, (_, i) => `g${i}`)
+  const grouped = groupFeatures([
+    ...genes.map((n, i) => row(n, i, 'grape', 'chr11')),
+    ...genes.slice(0, 5).map((n, i) => row(n, i, 'grape', 'chr9')),
+    ...genes.map((n, i) => row(n, i, 'cacao', 'tc1')),
+  ])
+  const kept = ['{grape}chr9', '{grape}chr11']
+  const rowsUnder = (copies: boolean, selection: string[], sort: string[]) => {
+    const groups = copies ? fileUnderCopies(grouped) : grouped
+    return laneRowsOf({
+      groups,
+      placeless: unalignedChosenLanesOf(
+        selection,
+        groups,
+        () => true,
+        keyOf,
+        copies ? 'refName' : 'assembly',
+      ),
+      anchor: 'peach',
+      preferred: sort,
+      selection: selection.length ? selection : undefined,
+      hidden: [],
+      keyOf,
+    })
+  }
+
+  test('copy lanes kept give back their genome lane, with no placeless lanes', () => {
+    expect(rowsUnder(false, kept, [])).toEqual(['grape'])
+    expect(rowsUnder(true, kept, [])).toEqual(['{grape}chr11', '{grape}chr9'])
+  })
+
+  test('a genome kept keeps each of its copies, and a kept copy placing nothing stands for its genome', () => {
+    expect(rowsUnder(true, ['grape'], [])).toEqual([
+      '{grape}chr11',
+      '{grape}chr9',
+    ])
+    const noGrape = grouped.map(g => ({
+      ...g,
+      mates: new Map([...g.mates].filter(([name]) => name !== 'grape')),
+    }))
+    expect(
+      unalignedChosenLanesOf(kept, noGrape, () => true, keyOf, 'assembly'),
+    ).toEqual(['grape'])
+    expect(
+      unalignedChosenLanesOf(kept, noGrape, () => true, keyOf, 'refName'),
+    ).toEqual(kept)
+  })
+
+  test('a sort written for copy lanes orders genome lanes', () => {
+    expect(rowsUnder(false, [], ['cacao'])).toEqual(['cacao', 'grape'])
+    expect(rowsUnder(false, [], ['{grape}chr9', 'peach', 'cacao'])).toEqual([
+      'grape',
+      'cacao',
+    ])
+  })
+
+  test('a copy lane drags where rows.sort already names its genome', () => {
+    const orderUnder = (sort: string[]) => {
+      const rows = rowsUnder(true, [], sort)
+      return laneOrderOf(
+        rows,
+        'peach',
+        anchorRowOf({ field: 'refName', sort, rows, anchor: 'peach', keyOf }),
+      )
+    }
+    const sort = ['grape']
+    const order = orderUnder(sort)
+    expect(order).toEqual([
+      'peach',
+      '{grape}chr11',
+      '{grape}chr9',
+      '{cacao}tc1',
+    ])
+    const written = sortAfterDrop(
+      sort,
+      laneOrderAfterDrop(order, '{grape}chr9', 1, 'peach')!,
+      'peach',
+      keyOf,
+    )
+    expect(orderUnder(written)).toEqual([
+      'peach',
+      '{grape}chr9',
+      '{grape}chr11',
+      '{cacao}tc1',
+    ])
+  })
+})
+
+describe('the lane dialog with copy lanes', () => {
+  const universe = laneUniverseOf({
+    anchor: 'peach',
+    mateNames: ['{grape}chr11'],
+    declared: [],
+    trackAssemblies: ['grape', 'peach'],
+    keyOf,
+    labelOf: name => name,
+    selection: undefined,
+    hidden: [],
+    featuresLoaded: true,
+    landedLanes: undefined,
+    underFloor: ['{grape}chr4'],
+  })
+
+  test('lists a genome as placed where its copies draw', () => {
+    expect(universe.find(l => l.name === 'grape')).toMatchObject({
+      placed: true,
+      drawn: true,
+    })
+  })
+
+  test('offers a copy under the floor unticked, and ticking every lane keeps it', () => {
+    expect(universe.find(l => l.name === '{grape}chr4')).toEqual({
+      name: '{grape}chr4',
+      placed: true,
+      drawn: false,
+      underFloor: true,
+    })
+    expect(
+      pickedLanes(
+        {
+          picked: universe.map(l => l.name),
+          offered: universe.filter(l => !l.underFloor).map(l => l.name),
+          inForce: undefined,
+          configured: [],
+        },
+        keyOf,
+      ),
+    ).toEqual(['grape', '{grape}chr11', '{grape}chr4'])
   })
 })

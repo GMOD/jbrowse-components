@@ -51,6 +51,34 @@ test('a source answering lane pairs on the anchor exports its lanes stacked by s
   ])
 })
 
+test('with genome lanes the anchor exports first whatever rows.sort says', async () => {
+  const sorted = await multiwayTables(engine(['lanePairsOnAnchor']), {
+    ...SYRI,
+    display: { rows: { sort: ['Kyo', 'Col-0', 'Sha'] } },
+  })
+  expect(sorted.lanes.assembly.slice(0, 3)).toEqual(['Col-0', 'Kyo', 'Sha'])
+})
+
+test('copy lanes export as the display draws them, rows.kept lifting the floor by any spelling', async () => {
+  const copies = await multiwayTables(engine([]), {
+    ...SYRI,
+    display: { rows: { field: 'refName', sort: ['{Kyo}Chr1', 'Col-0'] } },
+  })
+  expect(copies.lanes.assembly.slice(0, 2)).toEqual(['{Kyo}Chr1', 'Col-0'])
+  const kept = await multiwayTables(engine([]), {
+    ...SYRI,
+    display: { rows: { field: 'refName', kept: ['{Ler}chr3', '{Ler}Chr1'] } },
+    laneAssemblyOf: name =>
+      name === 'Ler'
+        ? {
+            regions: [],
+            canonical: refName => (refName === 'chr3' ? 'Chr3' : refName),
+          }
+        : undefined,
+  })
+  expect(kept.lanes.assembly).toEqual(['Col-0', '{Ler}Chr1', '{Ler}Chr3'])
+})
+
 test('a reference-anchored file not declaring lane pairs on the anchor fails the export naming the missing pair', async () => {
   await expect(multiwayTables(engine([]), SYRI)).rejects.toThrow(
     /no alignments between "Kyo" and "Cvi"/,

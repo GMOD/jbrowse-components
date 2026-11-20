@@ -26,6 +26,7 @@ import {
 } from '../LinearSyntenyRPC/syntenyKinds.ts'
 import { getMate, isNamedRecord } from '../syntenyMate.ts'
 import { lanePairKey } from './alignmentOps.ts'
+import { laneGenome } from './copyLane.ts'
 import { annotatedSpans, geneGlyphGeometry } from './geneGlyph.ts'
 import { STRAND_GAP_PX, stackReach } from './laneStack.ts'
 import {
@@ -103,10 +104,12 @@ function holesOn(lane: Lane, refName: string) {
  * either lane opens a hole inside its stretch, so the hole stays open. The
  * cut lands on the other lane in proportion. Proportion misses the true
  * position by up to the stretches' length difference, so two holes that close
- * in it are one breakpoint, each kept at its own lane's `at`.
+ * in it are one breakpoint, each kept at its own lane's `at`. `upperBelow`
+ * draws `upper`'s side at the gutter's foot, as the anchor's record does
+ * under a copy lane stacked above it.
  */
 function addAcrossHoles(
-  builder: RibbonSink,
+  builder: RibbonBuilder,
   upper: Lane,
   refName1: string,
   start1: number,
@@ -118,6 +121,7 @@ function addAcrossHoles(
   kind: number,
   featureIdx: number,
   color: number,
+  upperBelow = false,
 ) {
   const length1 = end1 - start1
   const toLower = (bp1: number) =>
@@ -152,7 +156,11 @@ function addAcrossHoles(
     const s1 = upper.spanOf(refName1, a.bp1, b.bp1)
     const s2 = lower.spanOf(refName2, a.bp2, b.bp2)
     if (s1 && s2) {
-      builder.add(s1, s2, kind, featureIdx, color)
+      if (upperBelow) {
+        builder.add(s2, s1, kind, featureIdx, color)
+      } else {
+        builder.add(s1, s2, kind, featureIdx, color)
+      }
     }
   }
 }
@@ -207,22 +215,11 @@ function* lanePairs(lanes: Lane[], glyphHeight: number) {
   }
 }
 
-interface RibbonSink {
-  readonly count: number
-  add: (
-    s1: Span,
-    s2: Span,
-    kind: number,
-    featureIdx: number,
-    color: number,
-  ) => void
-}
-
 /**
  * `bp1`→`bp4` is one edge and `bp2`→`bp3` the other, so a reversed span draws
  * the crossed parallelogram of an inversion.
  */
-class RibbonBuilder implements RibbonSink {
+class RibbonBuilder {
   bp1: number[] = []
   bp2: number[] = []
   bp3: number[] = []
@@ -338,9 +335,13 @@ export function mismatchColor(field: string | undefined) {
   return cssColorToABGR(cigarColors.X)
 }
 
-/** False where the record carries no alignment, so the caller draws the ribbon. */
+/**
+ * False where the record carries no alignment, so the caller draws the
+ * ribbon. `upper` holds the record and `lower` its mate, each drawn on its
+ * own side of the gutter (`upperBelow`).
+ */
 function addAlignmentDetail(
-  builder: RibbonSink,
+  builder: RibbonBuilder,
   feature: Feature,
   ops: Uint32Array | undefined,
   upper: Lane,
@@ -348,13 +349,14 @@ function addAlignmentDetail(
   featureIdx: number,
   fill: number,
   mismatch: number,
+  upperBelow = false,
 ) {
   const mate = feature.get('mate') as LinkMate | undefined
   if (
     ops &&
     mate &&
     (mate.assemblyName === undefined ||
-      mate.assemblyName === lower.assemblyName)
+      mate.assemblyName === laneGenome(lower.assemblyName))
   ) {
     const refName: string = feature.get('refName')
     const start: number = feature.get('start')
@@ -381,6 +383,7 @@ function addAlignmentDetail(
         kind,
         featureIdx,
         color,
+        upperBelow,
       )
     }
     visitCigarRenderedSegments(
@@ -595,17 +598,6 @@ export function buildRibbonGeometry({
         !bridged &&
         spans.length === 1 &&
         far.spans.length === 1
-      // the record stating the pair is the mate lane's, either side
-      const detailSink: RibbonSink = farLane.isAnchor
-        ? {
-            get count() {
-              return builder.count
-            },
-            add: (s1, s2, ...rest) => {
-              builder.add(s2, s1, ...rest)
-            },
-          }
-        : builder
       spans.forEach((s1, i) => {
         far.spans.forEach((s2, j) => {
           const record = farLane.isAnchor ? features[i]! : far.features[j]!
@@ -625,7 +617,7 @@ export function buildRibbonGeometry({
               direct &&
               fill >>> 24 !== 0 &&
               addAlignmentDetail(
-                detailSink,
+                builder,
                 record,
                 anchorOps.get(record.id()),
                 farLane.isAnchor ? farLane : upper,
@@ -633,6 +625,7 @@ export function buildRibbonGeometry({
                 target,
                 fill,
                 mismatch,
+                farLane.isAnchor,
               )
             if (!tiled) {
               builder.add(s1, s2, KIND_BASE, target, fill)
@@ -909,12 +902,12 @@ export function buildBandCell({
   const paperColor = cssColorToABGR(paper)
   const stripeColor = cssColorToABGR(stripe)
   const glyphs = new GlyphBuilder()
-  const anchor = rows[0]
-  const bottom = rows.at(-1)
-  if (anchor && bottom) {
+  const first = rows[0]
+  const last = rows.at(-1)
+  if (first && last) {
     const top =
-      cssColorToABGR(page) === paperColor ? anchor.glyphTop + glyphHeight : 0
-    glyphs.rect(0, width, top, bottom.bandEnd - top, paperColor)
+      cssColorToABGR(page) === paperColor ? first.glyphTop + glyphHeight : 0
+    glyphs.rect(0, width, top, last.bandEnd - top, paperColor)
   }
   rows.forEach((band, row) => {
     if (row % 2 === 1) {

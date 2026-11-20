@@ -105,7 +105,14 @@ import {
   releaseHideUnlabelled,
   ribbonColorFieldOf,
 } from './configSlotViews.ts'
-import { fileUnderCopies, laneGenome, laneKeyIn } from './copyLane.ts'
+import {
+  copyLaneFiling,
+  copyLaneName,
+  fileUnderCopies,
+  groupsOfField,
+  laneGenome,
+  laneKeyIn,
+} from './copyLane.ts'
 import { featureWidgetOf } from './featureWidget.ts'
 import { dealGeneColors, geneColorRampOf, geneColors } from './geneColor.ts'
 import { laneGeneTracksOf } from './laneAnnotation.ts'
@@ -217,6 +224,7 @@ import {
 import { RIBBON_GREY } from './ribbonColorConfigSchema.ts'
 import { RIBBON_OPACITY } from './ribbonPaint.ts'
 import {
+  againstAnchorName,
   laneFetchesFor,
   rowsReadAgainstAnchor,
   stacksByStructure,
@@ -722,23 +730,51 @@ export function stateModelFactory(
       get laneField(): LaneRowsField {
         return getConf(self, ['rows', 'field'])
       },
+      /** #getter */
+      get groupedFeatures() {
+        return self.features ? groupFeatures(self.features) : []
+      },
+      /**
+       * #method
+       * how copy lanes file: `rows.kept` lifts the floor, and the anchor's
+       * own contigs file nowhere
+       */
+      copyFiling() {
+        const { assemblyManager } = getSession(self)
+        return copyLaneFiling(
+          getConf(self, ['rows', 'kept']),
+          self.lgv.displayedRegions.map(r =>
+            copyLaneName(r.assemblyName, r.refName),
+          ),
+          lane => laneKeyIn(assemblyManager, lane),
+        )
+      },
       /**
        * #getter
        * each mate filed under its genome's lane, or its copy lane
        */
       get groups() {
-        const grouped = self.features ? groupFeatures(self.features) : []
-        const { assemblyManager } = getSession(self)
-        const kept = new Set(
-          getConf(self, ['rows', 'kept']).map(name =>
-            laneKeyIn(assemblyManager, name),
-          ),
+        return groupsOfField(this.laneField, this.groupedFeatures, () =>
+          this.copyFiling(),
         )
+      },
+      /**
+       * #getter
+       * the copy lanes the window places too little of to draw, which the
+       * lane dialog offers unticked
+       */
+      get copyLanesUnderFloor(): string[] {
+        const drawn = new Set(this.groups.flatMap(g => [...g.mates.keys()]))
         return this.laneField === 'refName'
-          ? fileUnderCopies(grouped, lane =>
-              kept.has(laneKeyIn(assemblyManager, lane)),
-            )
-          : grouped
+          ? [
+              ...new Set(
+                fileUnderCopies(this.groupedFeatures, {
+                  ...this.copyFiling(),
+                  chosen: () => true,
+                }).flatMap(g => [...g.mates.keys()]),
+              ),
+            ].filter(lane => !drawn.has(lane))
+          : []
       },
       /**
        * #getter
@@ -1014,15 +1050,14 @@ export function stateModelFactory(
     .views(self => ({
       /**
        * #getter
-       * a source that names an anchor and answers no lane pairs states each
-       * lane against the anchor alone, so each gutter draws its far lane
-       * against the anchor; so are copy lanes, since two copies of one genome
-       * are paired only through the anchor gene they share
+       * whether each gutter draws its far lane against the anchor
+       * (`rowsReadAgainstAnchor`)
        */
       get rowsVsAnchor(): boolean {
-        return (
-          self.laneField === 'refName' ||
-          rowsReadAgainstAnchor(self.adapterCapabilities, self.starAnchor)
+        return rowsReadAgainstAnchor(
+          self.adapterCapabilities,
+          self.starAnchor,
+          self.laneField,
         )
       },
       /**
@@ -1182,6 +1217,20 @@ export function stateModelFactory(
       },
       /**
        * #getter
+       * the anchor's name in a lane's `vs` badge and the legend where the
+       * lanes read against it: its label beside copy lanes, which name their
+       * genome's label, else its assembly name
+       */
+      get againstAnchor(): string | undefined {
+        return againstAnchorName(
+          self.rowsVsAnchor,
+          self.laneField,
+          self.anchorAssemblyName,
+          lane => this.laneLabel(lane),
+        )
+      },
+      /**
+       * #getter
        * the colors the source declares, the anchor's `anchorColor` among
        * them, keyed by `laneKey`
        */
@@ -1241,6 +1290,7 @@ export function stateModelFactory(
           hidden: self.hiddenLanes,
           featuresLoaded: self.features !== undefined,
           landedLanes: self.features && self.fetchedFeatures?.lanes,
+          underFloor: self.copyLanesUnderFloor,
         })
       },
       /**
@@ -1258,6 +1308,7 @@ export function stateModelFactory(
             self.laneKey,
           ),
           self.laneKey,
+          self.laneField,
         )
       },
       /**
@@ -1306,16 +1357,17 @@ export function stateModelFactory(
     .views(self => ({
       /**
        * #getter
-       * the anchor's row in the stack: after the lanes `rows.sort` names
-       * before its assembly, or first
+       * the anchor's row in the stack: first, or among copy lanes after the
+       * lanes `rows.sort` places before its assembly (`anchorRowOf`)
        */
       get anchorRow(): number {
-        return anchorRowOf(
-          self.domain,
-          self.rowAssemblies,
-          self.anchorAssemblyName,
-          self.laneKey,
-        )
+        return anchorRowOf({
+          field: self.laneField,
+          sort: self.domain,
+          rows: self.rowAssemblies,
+          anchor: self.anchorAssemblyName,
+          keyOf: self.laneKey,
+        })
       },
     }))
     .views(self => ({
@@ -1462,7 +1514,9 @@ export function stateModelFactory(
           pickedLanes(
             {
               picked: names,
-              offered: self.laneUniverse.map(lane => lane.name),
+              offered: self.laneUniverse
+                .filter(lane => !lane.underFloor)
+                .map(lane => lane.name),
               inForce: self.laneSelection,
               configured: self.configuredLanes,
             },
@@ -1814,7 +1868,7 @@ export function stateModelFactory(
             groups: self.fitGroups,
             assemblyNames: self.rowAssemblies,
             anchorRow: self.anchorRow,
-            vsAnchor: self.rowsVsAnchor,
+            vsAnchor: self.laneField === 'refName',
             previous,
             frozen,
             pins: self.pinsInForce,
@@ -2265,9 +2319,7 @@ export function stateModelFactory(
           self.visibleBpSpan,
           self.anchorLocString,
           self.inlineLaneNames ? self.laneStack.glyphHeight : undefined,
-          self.rowsVsAnchor
-            ? self.laneLabel(self.anchorAssemblyName)
-            : undefined,
+          self.againstAnchor,
           self.laneChanges,
           assemblyName => self.placelessOf(assemblyName),
           assemblyName => self.laneColor(assemblyName),
@@ -2823,9 +2875,7 @@ export function stateModelFactory(
                 'descending',
               ]),
               paint: self.ribbonPaint,
-              against: self.rowsVsAnchor
-                ? self.laneLabel(self.anchorAssemblyName)
-                : undefined,
+              against: self.againstAnchor,
             },
           ),
         ]

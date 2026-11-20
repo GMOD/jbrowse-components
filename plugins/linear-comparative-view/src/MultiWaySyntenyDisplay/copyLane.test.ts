@@ -1,9 +1,14 @@
+import { CIGAR_EQ, CIGAR_X } from '@jbrowse/cigar-utils'
 import { SimpleFeature } from '@jbrowse/core/util'
 
+import { KIND_BASE_TILE } from '../LinearSyntenyRPC/syntenyKinds.ts'
 import {
+  copyLaneFiling,
   copyLaneName,
   fileUnderCopies,
+  groupsOfField,
   laneGenome,
+  laneKeyWith,
   laneOf,
 } from './copyLane.ts'
 import { buildLanes, laneGeometry } from './laneStack.ts'
@@ -93,8 +98,96 @@ describe('fileUnderCopies', () => {
 
   test('a contig the reader chose draws its lane however few its genes', () => {
     expect(
-      lanesOf(fileUnderCopies(sparse, lane => lane === '{grape}chr2')),
+      lanesOf(
+        fileUnderCopies(sparse, { chosen: lane => lane === '{grape}chr2' }),
+      ),
     ).toEqual(['{grape}chr11', '{grape}chr9', '{grape}chr2'])
+  })
+
+  // wheat anchored at 1A: an all-against-all source pairs every 1A gene with
+  // itself, and with its homoeologs on 1B and 1D
+  const wheatRows = ['g1', 'g2', 'g3'].flatMap((name, i) =>
+    ['1A', '1A', '1B', '1D'].map(
+      (refName, j) =>
+        new SimpleFeature({
+          uniqueId: `${name}-${refName}-${j}`,
+          refName: '1A',
+          start: i * 200,
+          end: i * 200 + 100,
+          name,
+          assemblyName: 'wheat',
+          mate: {
+            assemblyName: 'wheat',
+            refName,
+            start: i * 200 + j * 10_000,
+            end: i * 200 + j * 10_000 + 100,
+          },
+        }),
+    ),
+  )
+  const filing = copyLaneFiling([], ['{wheat}1A'], lane => lane)
+
+  test('the anchor’s own genome draws a lane per other copy, never its own contig', () => {
+    expect(lanesOf(fileUnderCopies(groupFeatures(wheatRows), filing))).toEqual([
+      '{wheat}1B',
+      '{wheat}1D',
+    ])
+  })
+
+  test('the self-diagonal does not raise the floor its genome’s copies clear', () => {
+    const lopsided = groupFeatures([
+      ...wheatRows,
+      ...Array.from(
+        { length: 40 },
+        (_, i) =>
+          new SimpleFeature({
+            uniqueId: `self${i}`,
+            refName: '1A',
+            start: i * 10,
+            end: i * 10 + 5,
+            name: `s${i}`,
+            assemblyName: 'wheat',
+            mate: { assemblyName: 'wheat', refName: '1A', start: 0, end: 5 },
+          }),
+      ),
+    ])
+    expect(lanesOf(fileUnderCopies(lopsided, filing))).toEqual([
+      '{wheat}1B',
+      '{wheat}1D',
+    ])
+  })
+})
+
+describe('groupsOfField', () => {
+  test('files under genome lanes untouched, never asking how copies file', () => {
+    const grouped = groupFeatures(triplicated)
+    expect(
+      groupsOfField('assembly', grouped, () => {
+        throw new Error('genome lanes need no filing')
+      }),
+    ).toBe(grouped)
+    expect(
+      groupsOfField('refName', grouped, () => ({
+        chosen: () => false,
+        onAnchorContig: () => false,
+      }))[0]!.mates.size,
+    ).toBe(3)
+  })
+})
+
+describe('a copy lane’s key', () => {
+  test('canonicalizes its genome and its contig under that genome', () => {
+    const keyOf = (lane: string) =>
+      laneKeyWith(
+        lane,
+        name => (name === 'grape' ? 'GCF_030704535.1' : name),
+        (genome, refName) =>
+          genome === 'GCF_030704535.1' && refName === 'chr9'
+            ? 'NC_081813.1'
+            : refName,
+      )
+    expect(keyOf('{grape}chr9')).toBe(keyOf('{GCF_030704535.1}NC_081813.1'))
+    expect(keyOf('grape')).toBe('GCF_030704535.1')
   })
 })
 
@@ -220,6 +313,36 @@ describe('copy lanes around an anchor in the middle', () => {
       ).map(r => r.top)
     expect(joined(false)).toEqual(copyPx)
     expect(joined(true)).toEqual(onAnchorPx)
+  })
+
+  test('a mismatch in the record joins its copy base above to its anchor base below', () => {
+    const stack = stackOf(['{grape}chr9', 'peach', '{grape}chr11'])
+    const { cells } = buildRibbonGeometry({
+      stack,
+      anchorOps: new Map([
+        [
+          'g1-chr9',
+          Uint32Array.from(
+            [
+              [50, CIGAR_EQ],
+              [1, CIGAR_X],
+              [49, CIGAR_EQ],
+            ].map(([len, op]) => (len! << 4) | op!),
+          ),
+        ],
+      ]),
+      laneLinks: undefined,
+      ribbonColor: 'grey',
+      drawCurves: false,
+      rowsVsAnchor: true,
+    })
+    const cell = cells.get('ribbons:0')
+    const data = cell?.kind === 'ribbons' ? cell.data : undefined
+    const mark = [...(data?.kinds ?? [])].indexOf(KIND_BASE_TILE)
+    // chr9:1150-1151 at 0.4 px/bp from 0, over chrG7:150-151 at 0.8 px/bp
+    expect(
+      data && [data.bp1[mark], data.bp2[mark], data.bp4[mark], data.bp3[mark]],
+    ).toEqual([460, 460.4, 120, 120.8].map(Math.fround))
   })
 
   test('the anchor’s rule sits beside each copy away from it', () => {

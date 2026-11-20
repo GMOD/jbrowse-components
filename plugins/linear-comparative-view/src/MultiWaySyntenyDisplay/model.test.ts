@@ -21,7 +21,7 @@ import {
   declaredLanesOf,
   resolveCategoricalMode,
 } from '@jbrowse/synteny-core'
-import { autorun, when } from 'mobx'
+import { autorun, observable, runInAction, when } from 'mobx'
 
 import { KIND_BASE } from '../LinearSyntenyRPC/syntenyKinds.ts'
 import { NO_OPS } from './alignmentOps.ts'
@@ -36,7 +36,7 @@ import {
 } from './laneFetch.ts'
 import { laneResetLabel } from './laneSelection.ts'
 import { MIN_LANE_PITCH } from './laneStack.ts'
-import { anchorCentresOn, anchorSpansOn } from './laneStage.ts'
+import * as laneStage from './laneStage.ts'
 import { laneHeaderMenuItems, lanesMenuItem } from './menus.ts'
 import { boxesKey, glyphsKey } from './multiwayGeometry.ts'
 import { createDisplay, createDisplayWithSession } from './testEnv.ts'
@@ -915,9 +915,9 @@ describe('the anchor lane pair stays ordered', () => {
     const px = (coord: number) =>
       view.bpToPx({ refName, coord })!.offsetPx - view.offsetPx
     return {
-      span: anchorSpansOn(display.anchorStage, display.visibleGroups).get(
-        group.key,
-      )!,
+      span: laneStage
+        .anchorSpansOn(display.anchorStage, display.visibleGroups)
+        .get(group.key)!,
       atStart: px(start),
       atEnd: px(end),
     }
@@ -2521,6 +2521,210 @@ describe('one lane per copy', () => {
     expect(display.rowAssemblies).toEqual(['volvox_random'])
     expect(display.rowsVsAnchor).toBe(false)
   })
+
+  test('switching back with copy lanes kept draws their genome lane', () => {
+    const display = setup()
+    setConf(display, ['rows', 'kept'], kept2)
+    expect(display.rowAssemblies).toEqual(kept2)
+    display.setLaneField('assembly')
+    expect(display.rowAssemblies).toEqual(['volvox_random'])
+    expect(display.unalignedChosenLanes).toEqual([])
+  })
+
+  // a gene pair per start on each named contig
+  const pairsOn = (contigs: [string, string, number][]) =>
+    contigs.flatMap(([assemblyName, refName, count]) =>
+      Array.from(
+        { length: count },
+        (_, i) =>
+          new SimpleFeature({
+            uniqueId: `${assemblyName}-${refName}-${i}`,
+            name: `gene${i}`,
+            refName: 'ctgA',
+            start: 100 + i * 100,
+            end: 150 + i * 100,
+            strand: 1,
+            mate: {
+              assemblyName,
+              refName,
+              start: 100 + i * 100,
+              end: 150 + i * 100,
+            },
+          }),
+      ),
+    )
+  const clickLabel = (items: readonly unknown[], label: string) => {
+    const item = items.find(
+      (i): i is { label: string; onClick: () => void } =>
+        typeof i === 'object' &&
+        i !== null &&
+        'label' in i &&
+        i.label === label &&
+        'onClick' in i,
+    )
+    item?.onClick()
+    return item !== undefined
+  }
+  const kept2 = ['{volvox_random}ctgB', '{volvox_random}ctgC']
+
+  test("the tutorial's steps stack the older copy above the anchor and the ortholog below", () => {
+    const { display } = createDisplayWithSession({
+      trackAssemblyNames: ['volvox', 'volvox_random'],
+      geneTracks: [],
+    })
+    // ctgB the ortholog, ctgC an older copy keeping fewer genes
+    display.setFeatures(
+      pairsOn([
+        ['volvox_random', 'ctgB', 8],
+        ['volvox_random', 'ctgC', 3],
+      ]),
+    )
+    const lanesMenu = lanesMenuItem(display)
+    expect(clickLabel(lanesMenu.subMenu, 'One lane per copy')).toBe(true)
+    expect(display.laneOrder).toEqual([
+      'volvox',
+      '{volvox_random}ctgB',
+      '{volvox_random}ctgC',
+    ])
+    const moveUpOlder = () => {
+      const lane = display.laneStack.lanes.find(
+        l => l.assemblyName === '{volvox_random}ctgC',
+      )!
+      return clickLabel(laneHeaderMenuItems(display, lane), 'Move up')
+    }
+    expect(moveUpOlder()).toBe(true)
+    expect(moveUpOlder()).toBe(true)
+    expect(display.laneOrder).toEqual([
+      '{volvox_random}ctgC',
+      'volvox',
+      '{volvox_random}ctgB',
+    ])
+    expect(getConf(display, ['rows', 'sort'])).toEqual([
+      '{volvox_random}ctgC',
+      'volvox',
+      '{volvox_random}ctgB',
+    ])
+  })
+
+  test('with genome lanes the anchor stacks first whatever rows.sort says, and offers no move', () => {
+    const display = setup()
+    display.setLaneField('assembly')
+    display.setDomain(['volvox_random', 'volvox'])
+    expect(display.anchorRow).toBe(0)
+    expect(display.laneOrder).toEqual(['volvox', 'volvox_random'])
+    const anchorLane = display.laneStack.lanes.find(l => l.isAnchor)!
+    expect(
+      laneHeaderMenuItems(display, anchorLane).flatMap(i =>
+        'label' in i ? [i.label] : [],
+      ),
+    ).not.toContain('Move down')
+  })
+
+  test('with genome lanes a star keeps its lane-above alignment and its vs badge names the anchor assembly', () => {
+    const decide = jest.spyOn(laneStage, 'decideLanesOn')
+    const display = setup()
+    display.setLaneField('assembly')
+    setConf(display, ['rows', 'labels'], { volvox: 'Volvox' })
+    display.setAdapterHeader({
+      adapterConfig: display.adapterConfig,
+      value: { anchorAssemblyName: 'volvox' },
+    })
+    expect(display.rowsVsAnchor).toBe(true)
+    expect(display.againstAnchor).toBe('volvox')
+    display.settledLaneDecisions({ previous: new Map(), frozen: new Map() })
+    expect(decide.mock.calls.at(-1)?.[1].vsAnchor).toBe(false)
+    display.setLaneField('refName')
+    expect(display.againstAnchor).toBe('Volvox')
+    display.settledLaneDecisions({ previous: new Map(), frozen: new Map() })
+    expect(decide.mock.calls.at(-1)?.[1].vsAnchor).toBe(true)
+    decide.mockRestore()
+  })
+
+  test('a copy lane under the floor is offered unticked, and choosing it draws it', () => {
+    const { display } = createDisplayWithSession({
+      trackAssemblyNames: ['volvox', 'volvox_random'],
+      geneTracks: [],
+    })
+    display.setFeatures(
+      pairsOn([
+        ['volvox_random', 'ctgB', 20],
+        ['volvox_random', 'ctgC', 1],
+      ]),
+    )
+    display.setLaneField('refName')
+    expect(display.rowAssemblies).toEqual(['{volvox_random}ctgB'])
+    expect(display.laneUniverse.map(l => [l.name, l.placed, l.drawn])).toEqual([
+      ['volvox_random', true, true],
+      ['{volvox_random}ctgB', true, true],
+      ['{volvox_random}ctgC', true, false],
+    ])
+    display.chooseLanes(display.laneUniverse.map(l => l.name))
+    expect(display.rowAssemblies).toEqual([
+      '{volvox_random}ctgB',
+      '{volvox_random}ctgC',
+    ])
+  })
+
+  test("the anchor's own genome draws a lane per other contig, never the anchor's", () => {
+    const { display } = createDisplayWithSession({
+      trackAssemblyNames: ['volvox'],
+      geneTracks: [],
+    })
+    display.setFeatures(
+      pairsOn([
+        ['volvox', 'ctgA', 5],
+        ['volvox', 'ctgB', 4],
+      ]),
+    )
+    expect(display.rowAssemblies).toEqual([])
+    display.setLaneField('refName')
+    expect(display.rowAssemblies).toEqual(['{volvox}ctgB'])
+    expect(display.laneUniverse.map(l => l.name)).toEqual(['{volvox}ctgB'])
+  })
+
+  test('a copy lane rows.sort spells by alias finds its data once its genome loads', () => {
+    const loaded = observable.box(false)
+    const aliased = testAssembly({
+      aliases: { chr9: 'NC_081813.1', chr11: 'NC_081815.1' },
+    })
+    const { display } = createDisplayWithSession({
+      trackAssemblyNames: ['volvox', 'volvox_random'],
+      geneTracks: [],
+      assemblyAliases: { grape: 'volvox_random' },
+      assemblyOf: name =>
+        name === 'volvox_random'
+          ? {
+              ...aliased,
+              get initialized() {
+                return loaded.get()
+              },
+              getCanonicalRefName2: (refName: string) =>
+                loaded.get() ? aliased.getCanonicalRefName2(refName) : refName,
+            }
+          : testAssembly(),
+    })
+    display.setFeatures(
+      pairsOn([
+        ['volvox_random', 'NC_081815.1', 8],
+        ['volvox_random', 'NC_081813.1', 3],
+      ]),
+    )
+    display.setLaneField('refName')
+    display.setDomain(['{grape}chr9', 'volvox', '{grape}chr11'])
+    const orders: string[][] = []
+    const dispose = autorun(() => {
+      orders.push(display.laneOrder)
+    })
+    runInAction(() => {
+      loaded.set(true)
+    })
+    dispose()
+    expect(orders.at(-1)).toEqual([
+      '{volvox_random}NC_081813.1',
+      'volvox',
+      '{volvox_random}NC_081815.1',
+    ])
+  })
 })
 
 test('Move up reorders a lane the order names by another spelling', () => {
@@ -3007,7 +3211,7 @@ test('a record running off the viewport aligns its lane on the part it shows', (
     }),
   ])
   const { lgv } = display
-  const anchorAbsX = anchorCentresOn(
+  const anchorAbsX = laneStage.anchorCentresOn(
     display.anchorStageAt(lgv.offsetPx, lgv.bpPerPx),
     display.fitGroups,
   )

@@ -1,16 +1,23 @@
 import { isNamedRecord } from '../syntenyMate.ts'
 
+import type { LaneRowsField } from './copyLane.ts'
 import type { Feature } from '@jbrowse/core/util'
 
 /**
- * Whether each gutter reads its lower lane against the anchor: a source that
- * names an anchor and answers no lane pairs states each lane against it alone
+ * Whether each gutter reads its far lane against the anchor: a source that
+ * names an anchor and answers no lane pairs states each lane against it
+ * alone, and so does any source for copy lanes, since two copies of one
+ * genome are paired only through the anchor gene they share
  */
 export function rowsReadAgainstAnchor(
   capabilities: readonly string[],
   starAnchor: string | undefined,
+  field: LaneRowsField,
 ) {
-  return starAnchor !== undefined && !capabilities.includes('lanePairsOnAnchor')
+  return (
+    field === 'refName' ||
+    (starAnchor !== undefined && !capabilities.includes('lanePairsOnAnchor'))
+  )
 }
 
 /**
@@ -41,4 +48,22 @@ export function stacksByStructure(
   fetches: { lanePairs: boolean },
 ) {
   return capabilities.includes('lanePairsOnAnchor') && fetches.lanePairs
+}
+
+/**
+ * The anchor's name in a lane's `vs` badge and the legend where the lanes
+ * read against it: its label beside copy lanes, whose labels name their
+ * genome's, else its assembly name
+ */
+export function againstAnchorName(
+  rowsVsAnchor: boolean,
+  field: LaneRowsField,
+  anchor: string,
+  labelOf: (lane: string) => string,
+) {
+  return rowsVsAnchor
+    ? field === 'refName'
+      ? labelOf(anchor)
+      : anchor
+    : undefined
 }

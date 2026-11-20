@@ -12,6 +12,7 @@ import {
   showSubMenuItems,
 } from './menus.ts'
 
+import type { LaneRowsField } from './copyLane.ts'
 import type { LanePlacePin } from './lanePins.ts'
 import type { LaneChange } from './layoutMultiWay.ts'
 import type { HeaderLane } from './menus.ts'
@@ -67,6 +68,7 @@ function headerModel({
   lanesFrozen = false,
   changes = [],
   colorPins = {},
+  laneField = 'assembly',
 }: {
   held?: boolean
   pinned?: string
@@ -75,12 +77,13 @@ function headerModel({
   lanesFrozen?: boolean
   changes?: LaneChange[]
   colorPins?: Record<string, string>
+  laneField?: LaneRowsField
 } = {}) {
   const calls: string[] = []
   const model = {
     rowAssemblies: ['peach', 'cacao'],
     laneOrder: ['grape', 'peach', 'cacao'],
-    anchorRow: 0,
+    laneField,
     anchorAssemblyName: 'grape',
     domain: [] as string[],
     setDomain: (domain: string[]) => {
@@ -623,33 +626,37 @@ test('a lane with no gene track says so once, as a dead menu line', () => {
 test('the anchor lane header opens the view region elsewhere and picks its color', () => {
   const { model, calls } = headerModel()
   const items = laneHeaderMenuItems(model, grape)
-  expect(labelsOf(items)).toEqual([
-    'Move up',
-    'Move down',
-    'Open grape in a new view',
-    'Color...',
-  ])
-  expect(disabledOf(items.slice(0, 2))).toEqual([true, false])
-  click(items[2])
+  expect(labelsOf(items)).toEqual(['Open grape in a new view', 'Color...'])
+  click(items[0])
   expect(calls).toEqual(['open grape chr1:1-1,000'])
 })
 
-test('the anchor moves between the lanes, and the sort then names it', () => {
-  const { model, calls } = headerModel()
-  click(laneHeaderMenuItems(model, grape)[1])
+test('among copy lanes the anchor moves between them, and the sort then names it', () => {
+  const { model, calls } = headerModel({ laneField: 'refName' })
+  const items = laneHeaderMenuItems(model, grape)
+  expect(labelsOf(items).slice(0, 2)).toEqual(['Move up', 'Move down'])
+  expect(disabledOf(items.slice(0, 2))).toEqual([true, false])
+  click(items[1])
   expect(calls).toEqual(['order peach,grape,cacao'])
 })
 
-test('a lane moved under an anchor in the middle leaves the anchor at its row', () => {
+test('a genome lane moves among the lanes below the anchor', () => {
   const { model, calls } = headerModel()
+  const items = laneHeaderMenuItems(model, peach)
+  expect(disabledOf(items.slice(0, 2))).toEqual([true, false])
+  click(items[1])
+  expect(calls).toEqual(['order cacao,peach'])
+})
+
+test('a copy lane moved down past an anchor in the middle swaps with it', () => {
+  const { model, calls } = headerModel({ laneField: 'refName' })
   const middle = {
     ...model,
     laneOrder: ['peach', 'grape', 'cacao'],
-    anchorRow: 1,
     domain: ['peach', 'grape'],
   }
   click(laneHeaderMenuItems(middle, peach)[1])
-  expect(calls).toEqual(['order cacao,grape,peach'])
+  expect(calls).toEqual(['order grape,peach,cacao'])
 })
 
 test('One lane per copy writes the lane field', () => {

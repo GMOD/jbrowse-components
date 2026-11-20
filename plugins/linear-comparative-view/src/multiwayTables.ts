@@ -42,8 +42,12 @@ import { displayedRegionSpans } from './MultiWaySyntenyDisplay/anchorAxis.ts'
 import { configSchemaFactory } from './MultiWaySyntenyDisplay/configSchema.ts'
 import { geneNamesDraw } from './MultiWaySyntenyDisplay/configSlotViews.ts'
 import {
-  fileUnderCopies,
+  copyLaneFiling,
+  copyLaneName,
+  groupsOfField,
   laneGenome,
+  laneKeyWith,
+  laneOf,
 } from './MultiWaySyntenyDisplay/copyLane.ts'
 import {
   laneGroupsFetchSpecsOf,
@@ -89,6 +93,7 @@ import { buildRibbonGeometry } from './MultiWaySyntenyDisplay/multiwayGeometry.t
 import { MULTIWAY_FADE_THIN } from './MultiWaySyntenyDisplay/multiwayRenderTypes.ts'
 import { paintedRibbonColor } from './MultiWaySyntenyDisplay/ribbonColorConfigSchema.ts'
 import {
+  againstAnchorName,
   laneFetchesFor,
   rowsReadAgainstAnchor,
   stacksByStructure,
@@ -100,6 +105,7 @@ import {
 import { getMate, getRecordName } from './syntenyMate.ts'
 
 import type { LaneLinks } from './MultiWaySyntenyDisplay/alignmentOps.ts'
+import type { LaneRowsField } from './MultiWaySyntenyDisplay/copyLane.ts'
 import type { LanePin } from './MultiWaySyntenyDisplay/lanePins.ts'
 import type { Lane, LaneStack } from './MultiWaySyntenyDisplay/laneStack.ts'
 import type { AnchorStage } from './MultiWaySyntenyDisplay/laneStage.ts'
@@ -145,9 +151,10 @@ export interface MultiWayTablesArgs {
    * The display's settings, as a `MultiWaySyntenyDisplay` config writes
    * them: `ribbons.encoding.color` (a field such as `'strand'`, or the color
    * channel's slots such as `{ value: 'grey' }`), `ribbons.encoding.opacity`,
-   * `ribbons.mark.interpolate`, `ribbons.filter`, `rows` (`sort`, the lanes
+   * `ribbons.mark.interpolate`, `ribbons.filter`, `rows` (`field`, a lane
+   * per genome or with `'refName'` per copy of the window, `sort`, the lanes
    * that stack first, `kept`, the lanes drawn, and `labels`, a label for a
-   * lane by assembly name), `labels.name.show`,
+   * lane by name), `labels.name.show`,
    * `labels.lanes.placement` and `height`, the stack's px.
    */
   display?: {
@@ -156,7 +163,12 @@ export interface MultiWayTablesArgs {
       mark?: { interpolate?: RibbonInterpolation }
       filter?: FieldPredicate[]
     }
-    rows?: { sort?: string[]; kept?: string[]; labels?: Record<string, string> }
+    rows?: {
+      field?: LaneRowsField
+      sort?: string[]
+      kept?: string[]
+      labels?: Record<string, string>
+    }
     labels?: {
       name?: { show?: boolean; field?: string }
       lanes?: { placement?: 'above' | 'overlay' }
@@ -188,27 +200,37 @@ const KIND_NAMES: Record<number, string> = {
 
 /**
  * Refuses a `rows.kept` lane the file holds no sequence for, naming the lanes
- * it has here, as the adapter refuses an anchor assembly it lacks.
+ * it has here, as the adapter refuses an anchor assembly it lacks. A lane
+ * compares by its key, and a copy lane needs its genome to hold its contig.
  */
 async function refuseUnknownLanes(
   kept: readonly string[],
   known: readonly string[],
   dataAdapter: AnyDataAdapter,
+  keyOf: (lane: string) => string,
 ) {
-  const has = new Set(known)
+  const has = new Set(known.map(keyOf))
   const unknown: string[] = []
-  for (const name of kept.filter(name => !has.has(name))) {
+  for (const name of kept.filter(name => !has.has(keyOf(name)))) {
+    const { assemblyName, refName } = laneOf(name)
     const contigs =
       dataAdapter instanceof BaseFeatureDataAdapter
-        ? await dataAdapter.getRefNames({ assemblyName: name })
-        : [name]
-    if (contigs.length === 0) {
+        ? await dataAdapter.getRefNames({ assemblyName })
+        : [refName ?? name]
+    const contigKeys = new Set(
+      contigs.map(contig => keyOf(copyLaneName(assemblyName, contig))),
+    )
+    if (
+      refName === undefined
+        ? contigs.length === 0
+        : !contigKeys.has(keyOf(name))
+    ) {
       unknown.push(name)
     }
   }
   if (unknown.length > 0) {
     throw new Error(
-      `rows.kept names ${unknown.join(', ')}, which this file has no lane for; its lanes here are ${[...has].join(', ')}`,
+      `rows.kept names ${unknown.join(', ')}, which this file has no lane for; its lanes here are ${known.join(', ')}`,
     )
   }
 }
@@ -509,7 +531,13 @@ export async function multiwayTables(
       anchorFrame.regions.every(r => !!r.reversed),
     canon: refName => refName,
   }
-  const keyOf = (name: string) => name
+  const keyOf = (name: string) =>
+    laneKeyWith(
+      name,
+      genome => genome,
+      (genome, refName) =>
+        laneAssemblyOf(genome)?.canonical(refName) ?? refName,
+    )
 
   const type = adapterConfig.type
   const capabilities =
@@ -567,11 +595,16 @@ export async function multiwayTables(
     declaresLanes && selection ? [...selection] : undefined,
   )
   const features = dedupe(fetched.features, f => f.id())
-  const copies = settings.laneField === 'refName'
-  const grouped = groupFeatures(features)
-  const groups = copies ? fileUnderCopies(grouped) : grouped
+  const field = settings.laneField
+  const groups = groupsOfField(field, groupFeatures(features), () =>
+    copyLaneFiling(
+      settings.kept,
+      axis.regions.map(r => copyLaneName(anchor, r.refName)),
+      keyOf,
+    ),
+  )
   const openingsOf = laneOpeningsOf(groups)
-  const rowsVsAnchor = copies || rowsReadAgainstAnchor(capabilities, starAnchor)
+  const rowsVsAnchor = rowsReadAgainstAnchor(capabilities, starAnchor, field)
   const fetches = laneFetchesFor(features, rowsVsAnchor, starAnchor)
   const placeless = fetched.deletions.map(d => d.assemblyName)
   await refuseUnknownLanes(
@@ -583,6 +616,7 @@ export async function multiwayTables(
       ...rowAssembliesOf(groups, [], keyOf, placeless),
     ],
     dataAdapter,
+    keyOf,
   )
   const unaligned = unalignedChosenLanesOf(
     settings.kept,
@@ -593,6 +627,7 @@ export async function multiwayTables(
       keyOf,
     ),
     keyOf,
+    field,
   )
   const rows = laneRowsOf({
     groups,
@@ -615,13 +650,19 @@ export async function multiwayTables(
     axis.regions,
     fetched.ops,
   )
-  const anchorRow = anchorRowOf(settings.rowsSort, rows, anchor, keyOf)
+  const anchorRow = anchorRowOf({
+    field,
+    sort: settings.rowsSort,
+    rows,
+    anchor,
+    keyOf,
+  })
   const laneOrder = laneOrderOf(rows, anchor, anchorRow)
   const decisions = decideLanesOn(stage, {
     groups: fit,
     assemblyNames: rows,
     anchorRow,
-    vsAnchor: rowsVsAnchor,
+    vsAnchor: field === 'refName',
     previous: new Map(),
     pins: pinsInForceOf(pins, rows, anchor, keyOf),
     openingsOf,
@@ -700,6 +741,13 @@ export async function multiwayTables(
     0,
     settings.inlineLaneNames,
   )
+  const labelOf = (name: string) =>
+    laneLabelOf(name, {
+      written: settings.rowLabels,
+      heldName: () => undefined,
+      declared: declaredLabels,
+      keyOf,
+    })
   const stack = laneStackOn(stage, {
     assemblyNames: laneOrder,
     anchorRow,
@@ -711,13 +759,7 @@ export async function multiwayTables(
       ),
     refNameAliasOf: name => laneAssemblyOf(laneGenome(name))?.canonical,
     geometry: laneGeom,
-    labelOf: name =>
-      laneLabelOf(name, {
-        written: settings.rowLabels,
-        heldName: () => undefined,
-        declared: declaredLabels,
-        keyOf,
-      }),
+    labelOf,
   })
 
   const channelNames = [
@@ -879,7 +921,7 @@ export async function multiwayTables(
         title: settings.title,
         descending: settings.descending,
         paint: settings.paint,
-        against: rowsVsAnchor ? anchor : undefined,
+        against: againstAnchorName(rowsVsAnchor, field, anchor, labelOf),
       }),
     ),
     height: laneGeom.contentHeight,

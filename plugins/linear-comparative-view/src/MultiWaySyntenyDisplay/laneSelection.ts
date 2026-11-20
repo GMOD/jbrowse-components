@@ -1,16 +1,22 @@
-import { laneGenome, laneOf } from './copyLane.ts'
-import { rowAssembliesOf } from './layoutMultiWay.ts'
+import { isCopyLane, laneGenome, laneOf } from './copyLane.ts'
+import { rowAssembliesOf, sortedLanes } from './layoutMultiWay.ts'
 
+import type { LaneRowsField } from './copyLane.ts'
 import type { MultiWayGroup } from './layoutMultiWay.ts'
 import type { DeclaredLane } from '@jbrowse/synteny-core'
 
-/** `placed` is undefined where the fetch did not ask for the lane. */
+/**
+ * `placed` is undefined where the fetch did not ask for the lane;
+ * `underFloor` marks a copy lane the window places too little of to draw
+ * unless chosen
+ */
 export interface LaneChoice {
   name: string
   label?: string
   group?: string
   placed: boolean | undefined
   drawn: boolean
+  underFloor?: boolean
 }
 
 export interface LaneSelectionModel {
@@ -33,34 +39,53 @@ export function laneResetLabel(
 
 type KeyOf = (name: string) => string
 
-/** a lane's own key, and its genome's where it is a copy lane */
-function answersTo(name: string, keyOf: KeyOf) {
-  return [keyOf(name), keyOf(laneGenome(name))]
+/**
+ * Whether the selection in force chooses a lane, so a selection written for
+ * one `rows.field` reads in the other: a genome lane is chosen by its name or
+ * any of its copies', and a copy lane by its own name, or by its genome's
+ * where the selection names none of that genome's copies
+ */
+function chosenLaneTest(
+  selection: readonly string[] | undefined,
+  keyOf: KeyOf,
+) {
+  const keys = new Set(selection?.map(keyOf))
+  const genomes = new Set(selection?.map(name => keyOf(laneGenome(name))))
+  const copiesNamed = new Set(
+    selection?.filter(isCopyLane).map(name => keyOf(laneGenome(name))),
+  )
+  return (name: string) => {
+    const genome = keyOf(laneGenome(name))
+    return (
+      selection === undefined ||
+      (isCopyLane(name)
+        ? keys.has(keyOf(name)) ||
+          (keys.has(genome) && !copiesNamed.has(genome))
+        : genomes.has(genome))
+    )
+  }
 }
 
 /**
- * Whether a lane draws: chosen by the selection in force and not hidden, a
- * copy lane by its own name or its genome's
+ * Whether a lane draws: chosen by the selection in force, and hidden neither
+ * by its own name nor, for a copy lane, by its genome's
  */
 function drawnLaneTest(
   selection: readonly string[] | undefined,
   hidden: readonly string[],
   keyOf: KeyOf,
 ) {
-  const chosen = selection && new Set(selection.map(keyOf))
+  const chosen = chosenLaneTest(selection, keyOf)
   const hiddenKeys = new Set(hidden.map(keyOf))
-  return (name: string) => {
-    const keys = answersTo(name, keyOf)
-    return (
-      (chosen === undefined || keys.some(key => chosen.has(key))) &&
-      !keys.some(key => hiddenKeys.has(key))
-    )
-  }
+  return (name: string) =>
+    chosen(name) &&
+    !hiddenKeys.has(keyOf(name)) &&
+    !hiddenKeys.has(keyOf(laneGenome(name)))
 }
 
 /**
  * Whether the held fetch answers for a lane: it has landed, and asked for
- * every lane or for this one
+ * every lane or for this one's genome
  */
 export function answeredLaneTest(
   featuresLoaded: boolean,
@@ -69,25 +94,39 @@ export function answeredLaneTest(
 ) {
   const asked = landedLanes && new Set(landedLanes.map(keyOf))
   return (name: string) =>
-    featuresLoaded && (asked === undefined || asked.has(keyOf(name)))
+    featuresLoaded &&
+    (asked === undefined || asked.has(keyOf(laneGenome(name))))
 }
 
 /**
  * The `rows.kept` lanes the held fetch answered for and placed nothing in,
- * each drawn as a row with no alignment in the window
+ * each drawn as a row with no alignment in the window. With genome lanes, a
+ * copy it names stands for its genome; with copy lanes, a genome it names is
+ * placed where any copy of it is.
  */
 export function unalignedChosenLanesOf(
   choice: readonly string[],
   groups: readonly MultiWayGroup[],
   answered: (name: string) => boolean,
   keyOf: KeyOf,
+  field: LaneRowsField,
 ) {
   const placed = new Set(
     groups.flatMap(group =>
-      [...group.mates.keys()].flatMap(name => answersTo(name, keyOf)),
+      [...group.mates.keys()].flatMap(name => [
+        keyOf(name),
+        keyOf(laneGenome(name)),
+      ]),
     ),
   )
-  return choice.filter(name => answered(name) && !placed.has(keyOf(name)))
+  const lanes = new Map<string, string>()
+  for (const name of field === 'refName' ? choice : choice.map(laneGenome)) {
+    const key = keyOf(name)
+    if (!lanes.has(key) && !placed.has(key) && answered(name)) {
+      lanes.set(key, name)
+    }
+  }
+  return [...lanes.values()]
 }
 
 /**
@@ -153,8 +192,9 @@ export function laneColorOf(
 /**
  * The mate lanes the stack draws, in order: `preferred` first, then by their
  * heaviest contig's group weight, then each lane `placeless` names that no
- * group places. A copy lane on the anchor's own genome draws a paralogy hit,
- * and is dropped as a lane on the anchor's assembly is
+ * group places. A lane on the anchor's assembly draws a paralogy hit, so
+ * never draws; an entry of `preferred` naming the anchor places the anchor,
+ * not its genome's copy lanes
  */
 export function laneRowsOf({
   groups,
@@ -175,30 +215,45 @@ export function laneRowsOf({
 }) {
   const anchorKey = keyOf(anchor)
   const drawn = drawnLaneTest(selection, hidden, keyOf)
-  return rowAssembliesOf(groups, preferred, keyOf, placeless).filter(
-    name => keyOf(laneGenome(name)) !== anchorKey && drawn(name),
-  )
+  return rowAssembliesOf(
+    groups,
+    preferred.filter(name => keyOf(name) !== anchorKey),
+    keyOf,
+    placeless,
+  ).filter(name => keyOf(name) !== anchorKey && drawn(name))
 }
 
 /**
- * How many of the mate lanes `rows` stack above the anchor: the leading run
- * that `sort` names before the anchor's assembly, where it names it, else
- * none. A lane placing nothing stacks at the foot whatever `sort` says, so
- * it never counts
+ * How many of the mate lanes `rows` stack above the anchor. With genome
+ * lanes, none. With copy lanes, the leading run that the entries of `sort`
+ * before the anchor's assembly place (`sortedLanes`), where it names it. A
+ * lane placing nothing stacks at the foot whatever `sort` says, so it never
+ * counts
  */
-export function anchorRowOf(
-  sort: readonly string[],
-  rows: readonly string[],
-  anchor: string,
-  keyOf: KeyOf,
-) {
-  const keys = sort.map(keyOf)
-  const before = new Set(
-    keys.slice(0, Math.max(keys.indexOf(keyOf(anchor)), 0)),
-  )
-  const first = rows.findIndex(
-    row => !answersTo(row, keyOf).some(key => before.has(key)),
-  )
+export function anchorRowOf({
+  field,
+  sort,
+  rows,
+  anchor,
+  keyOf,
+}: {
+  field: LaneRowsField
+  sort: readonly string[]
+  rows: readonly string[]
+  anchor: string
+  keyOf: KeyOf
+}) {
+  const anchorKey = keyOf(anchor)
+  const at =
+    field === 'refName' ? sort.findIndex(name => keyOf(name) === anchorKey) : -1
+  return at > 0
+    ? leadingRun(rows, sortedLanes(rows, sort.slice(0, at), keyOf, sort))
+    : 0
+}
+
+function leadingRun(rows: readonly string[], placed: readonly string[]) {
+  const before = new Set(placed)
+  const first = rows.findIndex(row => !before.has(row))
   return first === -1 ? rows.length : first
 }
 
@@ -222,9 +277,15 @@ export interface LaneUniverseInputs {
   hidden: readonly string[]
   featuresLoaded: boolean
   landedLanes: readonly string[] | undefined
+  /** copy lanes the window places too little of to draw unless chosen */
+  underFloor?: readonly string[]
 }
 
-/** Every lane on offer, the anchor excluded: declared, then the track's, then mates. */
+/**
+ * Every lane on offer, the anchor excluded: declared, then the track's, then
+ * mates, then the copy lanes under the floor, offered unticked. A genome is
+ * placed where any of its copy lanes is.
+ */
 export function laneUniverseOf({
   anchor,
   mateNames,
@@ -236,9 +297,12 @@ export function laneUniverseOf({
   hidden,
   featuresLoaded,
   landedLanes,
+  underFloor = [],
 }: LaneUniverseInputs): LaneChoice[] {
   const anchorKey = keyOf(anchor)
-  const placed = new Set(mateNames.map(keyOf))
+  const placed = new Set(
+    mateNames.flatMap(name => [keyOf(name), keyOf(laneGenome(name))]),
+  )
   const drawn = drawnLaneTest(selection, hidden, keyOf)
   const answered = answeredLaneTest(featuresLoaded, landedLanes, keyOf)
   const out = new Map<string, LaneChoice>()
@@ -263,6 +327,19 @@ export function laneUniverseOf({
   }
   for (const name of mateNames) {
     offer({ name })
+  }
+  for (const name of underFloor) {
+    const key = keyOf(name)
+    if (!out.has(key)) {
+      const label = labelOf(name)
+      out.set(key, {
+        name,
+        ...(label === name ? {} : { label }),
+        placed: true,
+        drawn: false,
+        underFloor: true,
+      })
+    }
   }
   return [...out.values()]
 }

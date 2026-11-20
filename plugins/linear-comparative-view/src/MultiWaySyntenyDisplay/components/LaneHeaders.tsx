@@ -162,6 +162,7 @@ const LaneHeaders = observer(function LaneHeaders({
       anchor: { clientX: anchor.clientX, clientY: anchor.clientY },
     })
   }
+  const anchorMoves = model.laneField === 'refName'
   // pointer ys are viewport-relative and the lanes are in stack px
   const { scrollTop } = model
   const dropRow =
@@ -363,21 +364,30 @@ const LaneHeaders = observer(function LaneHeaders({
             style={{
               color: bandInk().text,
               pointerEvents: 'all',
-              cursor: dragLane ? 'grabbing' : 'grab',
+              cursor:
+                row.isAnchor && !anchorMoves
+                  ? undefined
+                  : dragLane
+                    ? 'grabbing'
+                    : 'grab',
               userSelect: 'none',
-              touchAction: 'none',
+              touchAction: row.isAnchor && !anchorMoves ? undefined : 'none',
               overflow: 'hidden',
               textOverflow: 'ellipsis',
               ...(row.inline ? inlineChip : {}),
               ...(row.color ? colorChip(row.color) : {}),
             }}
-            {...pointer}
-            data-lane-drag={row.assemblyName}
-            data-gesture-owner="true"
-            onMouseDown={event => {
-              event.stopPropagation()
-              event.preventDefault()
-            }}
+            {...(row.isAnchor && !anchorMoves
+              ? {}
+              : {
+                  ...pointer,
+                  'data-lane-drag': row.assemblyName,
+                  'data-gesture-owner': 'true',
+                  onMouseDown: (event: React.MouseEvent) => {
+                    event.stopPropagation()
+                    event.preventDefault()
+                  },
+                })}
             onContextMenu={event => {
               openMenu(row.assemblyName, event)
             }}

@@ -1353,7 +1353,7 @@ describe('the band cell', () => {
     },
   )
 
-  test('on a page of the paper the anchor lane body stays off it, keeping the view gridlines', () => {
+  test('on a page of the paper the top lane body stays off it, keeping the view gridlines', () => {
     expect(rectsIn('#fff', paper)).toEqual([
       [s.lanes[0]!.glyphTop + s.glyphHeight, s.lanes[2]!.bandEnd],
     ])

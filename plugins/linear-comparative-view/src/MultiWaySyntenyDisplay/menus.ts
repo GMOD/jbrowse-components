@@ -9,8 +9,8 @@ import {
   colorFieldMenuItems,
 } from '@jbrowse/display-kit/colorByMenu'
 import {
+  moveSectionTo,
   resetOrderItem,
-  sectionMenuItems,
   showHiddenItems,
 } from '@jbrowse/display-kit/groupByMenu'
 import { FEATURE_NAME_FIELD } from '@jbrowse/plugin-features'
@@ -26,7 +26,7 @@ import {
   laneRegion,
 } from './laneHeader.ts'
 import { flipPinOf, placePinOf } from './lanePins.ts'
-import { laneOrderOf, laneResetLabel } from './laneSelection.ts'
+import { laneResetLabel } from './laneSelection.ts'
 
 import type { LaneRowsField } from './copyLane.ts'
 import type { LanePin, LanePlacePin } from './lanePins.ts'
@@ -50,7 +50,7 @@ export type HeaderLane = Pick<
 export interface LaneHeaderModel {
   rowAssemblies: string[]
   laneOrder: string[]
-  anchorRow: number
+  laneField: LaneRowsField
   anchorAssemblyName: string
   domain: readonly string[]
   setDomain: (domain: string[]) => void
@@ -81,7 +81,6 @@ export interface LaneHeaderModel {
 export interface MultiWayMenuModel extends LaneHeaderModel, LaneSelectionModel {
   laneStack: { lanes: readonly HeaderLane[] }
   laneStructureOrder: readonly string[]
-  laneField: LaneRowsField
   setLaneField: (field: LaneRowsField) => void
   hiddenLanes: readonly string[]
   showHiddenLanes: () => void
@@ -121,28 +120,9 @@ export function laneHeaderMenuItems(
   lane: HeaderLane,
 ): MenuItem[] {
   const name = lane.assemblyName
-  const writeOrder = (order: readonly string[]) => {
-    model.setDomain(
-      sortAfterDrop(
-        model.domain,
-        order,
-        model.anchorAssemblyName,
-        model.laneKey,
-      ),
-    )
-  }
   if (lane.isAnchor) {
     return [
-      ...sectionMenuItems(
-        {
-          sections: model.laneOrder.map(key => ({ key, label: key })),
-          domain: [],
-          setDomain: writeOrder,
-          hideGroup: () => {},
-        },
-        name,
-        'lane',
-      ).slice(0, 2),
+      ...(model.laneField === 'refName' ? laneMoveItems(model, name) : []),
       {
         label: `Open ${lane.label} in a new view`,
         onClick: () => {
@@ -156,20 +136,15 @@ export function laneHeaderMenuItems(
   const loc =
     region && assembleLocStringRaw({ ...region, reversed: lane.frame?.flipped })
   return [
-    ...sectionMenuItems(
-      {
-        sections: model.rowAssemblies.map(key => ({ key, label: key })),
-        domain: [],
-        setDomain: rows => {
-          writeOrder(
-            laneOrderOf(rows, model.anchorAssemblyName, model.anchorRow),
-          )
-        },
-        hideGroup: model.hideLane,
+    ...laneMoveItems(model, name),
+    {
+      label: 'Hide lane',
+      disabled: model.rowAssemblies.length < 2,
+      keepMenuOpen: true,
+      onClick: () => {
+        model.hideLane(name)
       },
-      name,
-      'lane',
-    ),
+    },
     ...mateLaneGoItems(model, lane, loc, {
       open: openMateLabel(lane.label),
       reanchor: `Re-anchor on ${lane.label}`,
@@ -197,6 +172,44 @@ export function laneHeaderMenuItems(
             onClick: () => {},
           },
         ]),
+  ]
+}
+
+/**
+ * Move up and Move down, writing `rows.sort`: past the anchor where copy lanes
+ * stack it among them, and among the mate lanes below it otherwise
+ */
+function laneMoveItems(model: LaneHeaderModel, name: string): MenuItem[] {
+  const order =
+    model.laneField === 'refName' ? model.laneOrder : model.rowAssemblies
+  const i = order.indexOf(name)
+  const write = (to: number) => {
+    model.setDomain(
+      sortAfterDrop(
+        model.domain,
+        moveSectionTo(order, name, to),
+        model.anchorAssemblyName,
+        model.laneKey,
+      ),
+    )
+  }
+  return [
+    {
+      label: 'Move up',
+      disabled: i <= 0,
+      keepMenuOpen: true,
+      onClick: () => {
+        write(i - 1)
+      },
+    },
+    {
+      label: 'Move down',
+      disabled: i < 0 || i === order.length - 1,
+      keepMenuOpen: true,
+      onClick: () => {
+        write(i + 1)
+      },
+    },
   ]
 }
 

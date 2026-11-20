@@ -38,6 +38,10 @@ export function laneGenome(lane: string) {
   return laneOf(lane).assemblyName
 }
 
+export function isCopyLane(lane: string) {
+  return laneOf(lane).refName !== undefined
+}
+
 interface LaneAssemblies {
   getCanonicalAssemblyName: (name: string) => string | undefined
   has: (name: string) => boolean
@@ -46,61 +50,135 @@ interface LaneAssemblies {
   ) => { getCanonicalRefName2: (refName: string) => string } | undefined
 }
 
+type KeyOf = (lane: string) => string
+
 /**
- * The canonical name, so two spellings of one lane share a key: a copy lane's
- * assembly and refName each canonical, where the session holds its genome
+ * The key two spellings of one lane share: its genome's, and a copy lane's
+ * contig as `refNameKey` spells it under that genome
  */
-export function laneKeyIn(assemblyManager: LaneAssemblies, lane: string) {
+export function laneKeyWith(
+  lane: string,
+  genomeKey: (assemblyName: string) => string,
+  refNameKey: (genome: string, refName: string) => string,
+) {
   const { assemblyName, refName } = laneOf(lane)
-  const genome =
-    assemblyManager.getCanonicalAssemblyName(assemblyName) ?? assemblyName
+  const genome = genomeKey(assemblyName)
   return refName === undefined
     ? genome
-    : copyLaneName(
-        genome,
-        (assemblyManager.has(genome) &&
-          assemblyManager.get(genome)?.getCanonicalRefName2(refName)) ||
-          refName,
-      )
+    : copyLaneName(genome, refNameKey(genome, refName))
+}
+
+/**
+ * The canonical name, so two spellings of one lane share a key: a copy lane's
+ * assembly and refName each canonical, where the session holds its genome.
+ * The refName's canonical spelling reads the genome's aliases, so a
+ * derivation comparing keys starts the genome loading and runs again once it
+ * has.
+ */
+export function laneKeyIn(assemblyManager: LaneAssemblies, lane: string) {
+  return laneKeyWith(
+    lane,
+    name => assemblyManager.getCanonicalAssemblyName(name) ?? name,
+    (genome, refName) =>
+      (assemblyManager.has(genome) &&
+        assemblyManager.get(genome)?.getCanonicalRefName2(refName)) ||
+      refName,
+  )
+}
+
+export interface CopyLaneFiling {
+  /** a lane `rows.kept` names, which draws under the floor */
+  chosen: (lane: string) => boolean
+  /**
+   * a lane on the anchor's own contig, whose mates are the self-diagonal an
+   * all-against-all source states for every gene
+   */
+  onAnchorContig: (lane: string) => boolean
+}
+
+/**
+ * The filing `rows.kept` and the anchor's contigs, each `{anchor}refName`,
+ * call for, every lane compared by its key
+ */
+export function copyLaneFiling(
+  kept: readonly string[],
+  anchorContigs: readonly string[],
+  keyOf: KeyOf,
+): CopyLaneFiling {
+  const keys = new Map<string, string>()
+  const keyed = (lane: string) => {
+    let key = keys.get(lane)
+    if (key === undefined) {
+      key = keyOf(lane)
+      keys.set(lane, key)
+    }
+    return key
+  }
+  const keptKeys = new Set(kept.map(keyOf))
+  const anchorKeys = new Set(anchorContigs.map(keyOf))
+  return {
+    chosen: lane => keptKeys.has(keyed(lane)),
+    onAnchorContig: lane => anchorKeys.has(keyed(lane)),
+  }
 }
 
 /**
  * `groups` with each mate filed under its contig's copy lane. A contig holding
  * under `COPY_SHARE` of its genome's heaviest contig's evidence is a stray
- * paralog hit, not a copy, and draws no lane unless `chosen` names it.
+ * paralog hit, not a copy, and draws no lane unless `chosen` names it. A mate
+ * on the anchor's own contig files nowhere; one on another contig of the
+ * anchor's genome is a copy like any other.
  */
 export function fileUnderCopies(
   groups: readonly MultiWayGroup[],
-  chosen: (lane: string) => boolean = () => false,
+  {
+    chosen = () => false,
+    onAnchorContig = () => false,
+  }: Partial<CopyLaneFiling> = {},
 ) {
-  const evidence = new Map<string, Map<string, number>>()
-  for (const group of groups) {
-    for (const [assemblyName, placements] of group.mates) {
-      const byContig = evidence.get(assemblyName) ?? new Map<string, number>()
-      evidence.set(assemblyName, byContig)
-      for (const { refName } of placements) {
-        byContig.set(refName, (byContig.get(refName) ?? 0) + group.weight)
-      }
-    }
-  }
-  const floor = new Map(
-    [...evidence].map(([assemblyName, byContig]) => [
-      assemblyName,
-      Math.max(...byContig.values()) * COPY_SHARE,
-    ]),
-  )
-  return groups.map(group => {
+  const filed = groups.map(group => {
     const mates = new Map<string, MatePlacement[]>()
     for (const [assemblyName, placements] of group.mates) {
-      const byContig = evidence.get(assemblyName)!
-      const min = floor.get(assemblyName)!
       for (const p of placements) {
         const lane = copyLaneName(assemblyName, p.refName)
-        if (byContig.get(p.refName)! >= min || chosen(lane)) {
+        if (!onAnchorContig(lane)) {
           mates.set(lane, [...(mates.get(lane) ?? []), p])
         }
       }
     }
-    return { ...group, mates }
+    return { group, mates }
   })
+  const evidence = new Map<string, number>()
+  for (const { group, mates } of filed) {
+    for (const [lane, placements] of mates) {
+      evidence.set(
+        lane,
+        (evidence.get(lane) ?? 0) + group.weight * placements.length,
+      )
+    }
+  }
+  const heaviest = new Map<string, number>()
+  for (const [lane, weight] of evidence) {
+    const genome = laneGenome(lane)
+    heaviest.set(genome, Math.max(heaviest.get(genome) ?? 0, weight))
+  }
+  const drawn = (lane: string) =>
+    evidence.get(lane)! >= heaviest.get(laneGenome(lane))! * COPY_SHARE ||
+    chosen(lane)
+  return filed.map(({ group, mates }) => ({
+    ...group,
+    mates: new Map([...mates].filter(([lane]) => drawn(lane))),
+  }))
+}
+
+/**
+ * The groups `rows.field` draws, the display's and the export's alike: each
+ * mate under its genome's lane, or under its copy lane as `filing` files it
+ */
+export function groupsOfField(
+  field: LaneRowsField,
+  grouped: MultiWayGroup[],
+  filing: () => CopyLaneFiling,
+) {
+  return field === 'refName' ? fileUnderCopies(grouped, filing()) : grouped
 }
