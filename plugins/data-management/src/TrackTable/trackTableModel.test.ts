@@ -496,6 +496,28 @@ describe('columns and facets', () => {
     ])
   })
 
+  test('a field fewer than half the tracks have waits behind More filters, unless the config names it', () => {
+    const { session, table } = setup()
+    addAssayTracks(session, ['DNase', 'DNase', 'ChIP', 'ChIP'])
+    for (const trackId of ['delta', 'echo']) {
+      session.addSessionTrackConf({
+        trackId,
+        name: trackId,
+        assemblyNames: ['volMyt1'],
+        type: 'FeatureTrack',
+        adapter: { type: 'FromConfigAdapter', features: [] },
+      })
+    }
+    expect(table.chipFacets).toEqual([])
+    expect(table.moreFacets).toEqual([
+      'category',
+      'metadata.assay',
+      'metadata.lab',
+    ])
+    setColumns(session, ['metadata.assay'])
+    expect(table.chipFacets).toEqual(['metadata.assay'])
+  })
+
   test('a facet keeps its place when it starts or stops filtering, and a non-grouping column gets none', () => {
     const { session, table } = setup()
     addAssayTracks(session, ['DNase', 'DNase', 'ChIP', 'ChIP'])

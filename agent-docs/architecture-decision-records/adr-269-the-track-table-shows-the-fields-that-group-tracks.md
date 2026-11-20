@@ -16,7 +16,8 @@ opening the table stopped widening the drawer and a dragged name column
 started keeping its width; amended 2026-11-19, after Colin found the table
 "confusing": category leads the columns, the rows list
 in the tree's order, and a name is cut at its end, not its middle (Category
-leads, A name is cut once). Built over five commits
+leads, A name is cut once), and a chip of its own goes only to a field
+at least half the tracks have (Facets are thin). Built over five commits
 after a code review, a product review and a scale review at 5,000 and 20,000
 tracks, judged on the jb2hubs human configs (hg38 799 tracks, hs1 627, hg19
 528). Colin asked that the narrow drawer show "a subset of the total metadata
@@ -108,7 +109,12 @@ found none of the six "Fiber-seq Compendium - THP-1 …" tracks.
   that does not group tracks, configured or shown, gets no facet. Only the
   filters for the first three default columns that group tracks, any grouping
   column the user showed, and any facet still filtering start open; the rest
-  are one collapsed heading each. A facet keeps its place when it starts or
+  are one collapsed heading each. Of those three, a column the config does
+  not name starts open only when at least half the tracks have a value for
+  it (2026-11-19): the hosted hg19's "Views" chip, a UCSC subgroup 75 of its
+  528 tracks carry, sat beside Kind over every screen of the tree, and now
+  waits behind "More filters" with the ten other keys that each belong to a
+  few data sets. A facet keeps its place when it starts or
   stops filtering, so it never moves under the pointer. A facet lists every value
   up to 20, past that its 10 most common plus any checked one, with "Show N
   more".
@@ -151,6 +157,7 @@ found none of the six "Fiber-seq Compendium - THP-1 …" tracks.
 | Object entries in `table.columns` (label, width, open-as-filter) | A label belongs to the field everywhere it shows, a width is the layout's, and open-as-filter is the second list again |
 | Bare metadata keys in `table.columns` | Collide with a metadata key named `category`, `kind` or `name`; the prefix is how a track config spells the path |
 | A configured list that is the whole column set | A two-entry list left the rest of the width empty and dropped category unless repeated |
+| Three chips whatever share of the tracks each field covers (2026-11-16 to 11-19) | A sparse subgroup key took an always-visible chip on every UCSC genome with one composite that had subgroups. Whether a field groups tracks still has no floor (next row); only a chip of its own does |
 | A minimum share of tracks before a field groups them | `metadata.source` on 4 of config_demo hg19's 145 tracks earns a chip, but a lifted hg38 hub's `class` subgroup covers fewer (4 of 799) in the same 2×2 shape; any floor that drops one drops the other, and it is a list-size threshold |
 | Kind and category whenever they have two values | The reference sequence gives every linear-view list a second kind, so every list would show "Feature" beside every name |
 | Per-row precomputed facet strings | Facet counts cost about 30 ms per keystroke at 20,000 tracks once the panel draws few checkboxes; not worth the second copy of each row |

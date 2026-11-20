@@ -616,16 +616,22 @@ export function trackTableModelFactory() {
       },
       /**
        * #getter
-       * The facets offered first: the first three default columns that group
-       * tracks and any grouping column the user showed, each with a chip of
-       * its own. The rest wait behind "More filters", so a hub with many
-       * metadata keys offers them all without a chip for each.
+       * The facets offered first, each with a chip of its own: the first three
+       * default columns that group tracks and that the config names or at
+       * least half the tracks have a value for, and any grouping column the
+       * user showed. The rest wait behind "More filters", so a hub offers
+       * every key without a chip for one that a single data set carries.
        */
       get leadingFacets() {
         const grouping = new Set(self.groupingFields)
+        const configured = new Set(self.configuredColumns)
+        const half = self.columnRows.length / 2
+        const widelySet = (field: string) =>
+          (self.groupableFieldValues.get(field) ?? []).filter(v => v !== '')
+            .length >= half
         return new Set([
           ...self.defaultColumns
-            .filter(f => grouping.has(f))
+            .filter(f => grouping.has(f) && (configured.has(f) || widelySet(f)))
             .slice(0, LEADING_FACETS),
           ...self.chosenColumns.shown.filter(f => grouping.has(f)),
         ])

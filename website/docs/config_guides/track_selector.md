@@ -78,8 +78,10 @@ When category or kind groups nothing, it still shows if at least two tracks
 differ from the rest, so a small track list says what each track is. Until a
 column header is clicked, the rows list in the tree's order, so the tracks of
 one category sit together. The user's Manage columns choices override the
-columns either way. The first three of these columns get a filter chip under the
-filter box, and the other grouping fields sit behind "More filters".
+columns either way. The first three of these columns that at least half the
+tracks have a value for get a filter chip under the filter box, as does any you
+name in `hierarchical.table.columns`; the other grouping fields sit behind "More
+filters".
 
 Where a hub's metadata has many keys of which a few matter, name them, most
 important first, with `hierarchical.table.columns`. The table shows these first,
