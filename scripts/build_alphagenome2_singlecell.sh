@@ -56,6 +56,13 @@ DEMO_CONFIG="${DEMO_CONFIG:-https://jbrowse.org/code/jb2/main/test_data/config_d
 
 : "${ALPHAGENOME_API_KEY:?set ALPHAGENOME_API_KEY to an AlphaGenome API key}"
 
+for tool in curl python3; do
+  command -v "$tool" >/dev/null 2>&1 || {
+    echo "error: '$tool' not found on PATH" >&2
+    exit 1
+  }
+done
+
 # pyBigWig reads the measured PBMC BigWigs over HTTPS with its own libcurl,
 # which on many Linux distributions cannot find the system CA bundle alone.
 if [ -z "${CURL_CA_BUNDLE:-}" ] && [ -f /etc/ssl/certs/ca-certificates.crt ]; then
@@ -217,6 +224,7 @@ def paint_genes(frame):
     per_gene = frame.groupby('gene_name')['raw_score'].mean()
     per_gene = per_gene[per_gene.index.isin(genes.index)]
     painted = np.zeros(window.end - window.start)
+    # where two genes overlap, the larger effect is painted last and shows
     for gene in per_gene.abs().sort_values().index:
         lo = max(int(genes.at[gene, 'Start']) - window.start, 0)
         hi = min(int(genes.at[gene, 'End']) - window.start, len(painted))

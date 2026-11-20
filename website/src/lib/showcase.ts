@@ -24,6 +24,8 @@ export const demoCaptions: Record<string, string> = {
     'Drosophila simulans against D. mauritiana on chrX, from a minimap2 alignment an AI agent ran.',
   alphagenome:
     "AlphaGenome's predicted ATAC and DNase accessibility at TAL1 in K562 and GM12878 cells.",
+  alphagenome2_singlecell:
+    "AlphaGenome 2's predicted effect of an IBD variant on ETS2 in seven ileum immune cell types.",
   analyze_trio: "A 1000 Genomes trio's phased genotypes on chr1.",
   dog10k_lof: 'Dog10K copy number over CYP1A2 on chr30.',
   dog10k_selection:

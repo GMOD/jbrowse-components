@@ -18,7 +18,8 @@ peripheral blood cells (PBMC), one RNA and one ATAC, we:
 - load each set as one multi-wiggle track with a row per cell type
 - open nine RNA marker genes side by side
 - add one row per cell under the pooled RNA rows, from a Zarr store
-- read the ATAC rows at a T-cell and a B-cell marker
+- read the ATAC rows at a T-cell and a B-cell marker, then load AlphaGenome 2's
+  predicted ATAC for the same cell types under them
 
 ## Prerequisites
 
@@ -534,6 +535,68 @@ go into the `subadapters` list like the PBMC files. Percent-encode the `+` in a
 cell-type name (`T_lymphocyte_2_CD4%2B.bw`); left unencoded, the URL breaks and
 the row loads with no data.
 
+## Predicted ATAC under the measured rows
+
+AlphaGenome 2 predicts scATAC from sequence for blood cell types that match each
+of the twelve ATAC labels, so its predictions load as a second track with the
+same rows. The build script on [](/docs/tutorials/alphagenome2_singlecell)
+writes one BigWig per cell type over six PBMC marker loci, and maps each label
+to the blood condition of the same cell type that AlphaGenome 2 has measured
+scATAC for. The predicted track takes the measured track's names, colors and
+groups:
+
+```json addtrack loc=chr2:86,780,000..86,820,000
+{
+  "type": "MultiQuantitativeTrack",
+  "trackId": "ag2_pbmc_scatac_predicted",
+  "name": "AlphaGenome 2 predicted scATAC, PBMC cell types (marker loci)",
+  "category": ["Single cell", "Chromatin accessibility"],
+  "assemblyNames": ["hg38"],
+  "adapter": {
+    "type": "MultiWiggleAdapter",
+    "subadapters": [
+      {
+        "type": "BigWigAdapter",
+        "name": "CD8 Naive",
+        "group": "T cell",
+        "color": "#d62728",
+        "uri": "https://jbrowse.org/demos/alphagenome2_singlecell/pbmc/CD8_Naive.bw"
+      },
+      {
+        "type": "BigWigAdapter",
+        "name": "CD8 Memory",
+        "group": "T cell",
+        "color": "#279e68",
+        "uri": "https://jbrowse.org/demos/alphagenome2_singlecell/pbmc/CD8_Memory.bw"
+      },
+      {
+        "type": "BigWigAdapter",
+        "name": "Naive B",
+        "group": "B cell",
+        "color": "#aec7e8",
+        "uri": "https://jbrowse.org/demos/alphagenome2_singlecell/pbmc/Naive_B.bw"
+      }
+    ]
+  },
+  "displayDefaults": { "mark": "bar", "height": 300 }
+}
+```
+
+The hosted config,
+https://jbrowse.org/demos/alphagenome2_singlecell/config.json, has all twelve
+rows beside the measured track. The BigWigs cover only the marker loci, so the
+rows are empty elsewhere. Open _CD8A_ and _MS4A1_ again:
+
+```text
+chr2:86,780,000-86,820,000 chr11:60,450,000-60,490,000
+```
+
+<Figure caption="The measured ATAC rows above AlphaGenome 2's predicted rows for the same cell types, over CD8A and MS4A1 side by side." src="/img/scatac/pbmc5k_predicted_vs_measured.png" />
+
+At _CD8A_ the predicted peaks fall in the CD8, MAIT and NK rows, as the measured
+ones do. At _MS4A1_ the B rows lead in both tracks, and the predicted track also
+puts two peaks in the T and NK rows where the measured rows are flat.
+
 ## Reproduce it end to end
 
 [`build_scrna_pseudobulk.sh`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/build_scrna_pseudobulk.sh)
@@ -585,6 +648,7 @@ since an unnormalized group's height tracks its cell count.
 
 - [](/docs/tutorials/rnaseq)
 - [](/docs/tutorials/chromhmm)
+- [](/docs/tutorials/alphagenome2_singlecell)
 - [](/docs/config_guides/quantitative_track)
 - [](/docs/config/multiwiggleadapter)
 - [](/docs/models/linearwiggledisplay)

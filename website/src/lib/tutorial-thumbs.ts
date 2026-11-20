@@ -34,6 +34,13 @@ export const TUTORIAL_THUMB_SPECS: Record<string, ThumbSpec> = {
     band: [0.19, 0.91],
     position: 'center',
   },
+  alphagenome2_singlecell: {
+    // The seven cell-type rows over ETS2, two myeloid rows dipping below zero
+    // above five flat lymphoid rows.
+    src: 'alphagenome2/ets2_expression_effects.png',
+    band: [0.4, 0.72],
+    position: 'left',
+  },
   display_settings: {
     src: 'display_settings_url_snapshot.png',
     band: [0.3, 1],

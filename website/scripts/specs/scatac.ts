@@ -35,4 +35,36 @@ export const scatacSpecs: ScreenshotSpec[] = [
     // the app sizes to its content, so a taller viewport only adds slack
     viewportHeight: 680,
   },
+  // The same two loci with AlphaGenome 2's predictions under the measured rows,
+  // from scripts/build_alphagenome2_singlecell.sh. Over six marker loci at
+  // build time, a predicted row's cell-type-specific signal matched its own
+  // measured row at r 0.69 on average and the other rows at -0.06; MS4A1's T
+  // rows were the weakest match, which this frame shows.
+  {
+    mode: 'url',
+    name: 'scatac/pbmc5k_predicted_vs_measured',
+    url: sessionSpec(
+      'https://jbrowse.org/demos/alphagenome2_singlecell/config.json',
+      {
+        views: [
+          {
+            assembly: 'hg38',
+            loc: 'chr2:86,780,000-86,820,000 chr11:60,450,000-60,490,000',
+            type: 'LinearGenomeView',
+            tracks: [
+              {
+                trackId: 'hg38-ncbiRefSeqCurated',
+                displayMode: 'compact',
+                height: 70,
+              },
+              { trackId: 'pbmc5k_scatac_pseudobulk_hg38', height: 300 },
+              { trackId: 'ag2_pbmc_scatac_predicted', height: 300 },
+            ],
+          },
+        ],
+      },
+    ),
+    readyTimeout: 120000,
+    viewportHeight: 820,
+  },
 ]

@@ -18,6 +18,7 @@ import { liveHref } from '../src/lib/code-base.ts'
 import { agentSyntenySpecs } from './specs/agent_synteny.ts'
 import { alignmentsSpecs } from './specs/alignments.ts'
 import { alphagenomeSpecs } from './specs/alphagenome.ts'
+import { alphagenome2Specs } from './specs/alphagenome2.ts'
 import { annotationSpecs } from './specs/annotation.ts'
 import { bigwigSpecs } from './specs/bigwig.ts'
 import { cancerSvSpecs } from './specs/cancer_sv.ts'
@@ -102,6 +103,7 @@ export const specs: ScreenshotSpec[] = [
   ...agentSyntenySpecs,
   ...alignmentsSpecs,
   ...alphagenomeSpecs,
+  ...alphagenome2Specs,
   ...annotationSpecs,
   ...variantsSpecs,
   ...dtuSpecs,

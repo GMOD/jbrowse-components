@@ -159,6 +159,7 @@ export const TUTORIAL_ORDER = [
   'chromhmm',
   'scrna_pseudobulk',
   'alphagenome',
+  'alphagenome2_singlecell',
   'rnaseq',
   'dtu',
   'tp53_structures',
