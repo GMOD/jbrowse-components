@@ -1,5 +1,6 @@
 import { createElement } from 'react'
 
+import { measureText } from '@jbrowse/core/util'
 import { exportedY } from '@jbrowse/display-kit/renderDisplaySvg'
 import { axisPlotBox } from '@jbrowse/display-ui'
 import { onPatch } from '@jbrowse/mobx-state-tree'
@@ -265,7 +266,8 @@ const GROUPS = [
 ]
 
 // The box the labels draw on screen, the x the y scale starts at and the
-// gutter the export parks the sidebar in are one width, 8 px wider per column.
+// gutter the export parks the sidebar in are one width: 8 px wider per column,
+// or as wide as the columns' labels where those reach further than the names.
 test.each([
   [['group']],
   [['group', { field: 'group', scale: { range: ['#111111', '#222222'] } }]],
@@ -281,10 +283,18 @@ test.each([
       labels.querySelector('path')!.getAttribute('d')!,
     )!
     const left = display.valueScales[0]!.left!
-    expect(left).toBeCloseTo(
+    expect(left).toBeGreaterThanOrEqual(
       plain.valueScales[0]!.left! + 8 * annotations.length,
     )
     expect(Number(box[1])).toBeCloseTo(left)
+    const columnLabelEnds = [
+      ...document.querySelectorAll('[data-testid="row-column-label"]'),
+    ].map(
+      label =>
+        Number(label.getAttribute('x')) +
+        measureText(label.textContent, Number(label.getAttribute('font-size'))),
+    )
+    expect(Math.max(...columnLabelEnds)).toBeLessThanOrEqual(left)
     expect(
       display.svgSidebarWidth() - display.svgSidebar!.leftInset!,
     ).toBeCloseTo(left)

@@ -163,6 +163,7 @@ export const RowLabelsOverlay = observer(function RowLabelsOverlay({
             backdrop={labelOffset > 0 ? 'paper' : 'wash'}
             annotations={annotations}
             subtitles={subtitles}
+            columnLabels={columnLabels}
           />
         ) : null}
       </svg>

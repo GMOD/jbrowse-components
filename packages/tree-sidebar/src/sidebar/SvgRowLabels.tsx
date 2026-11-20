@@ -82,6 +82,7 @@ export function SvgRowLabels({
   text,
   annotations = [],
   subtitles,
+  columnLabels,
 }: {
   rows: LabelledRow[]
   rowHeight: number
@@ -92,6 +93,7 @@ export function SvgRowLabels({
   text?: ExportTextStyle
   annotations?: readonly RowAnnotationColumn[]
   subtitles?: ReadonlyMap<string, string>
+  columnLabels?: readonly string[]
 }) {
   const palette = usePalette()
   const fontSize = rowLabelFontSize(rowHeight, text)
@@ -124,6 +126,7 @@ export function SvgRowLabels({
     text,
     annotations,
     subtitles,
+    columnLabels,
   )
   const textX = rowLabelTextX(rows, annotations)
   const baselineY = rowHeight / 2 + fontSize * (TEXT_BASELINE_RATIO - 0.5)

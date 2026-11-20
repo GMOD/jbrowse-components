@@ -84,6 +84,43 @@ export function rowColorColumnCenters(
 /** The line one color column's label takes above the first row. */
 export const ROW_COLUMN_LABEL_LINE_HEIGHT = SCREEN_LABEL_FONT_SIZE
 
+const COLUMN_LABEL_TICK_LENGTH = 4
+export const COLUMN_LABEL_TEXT_GAP = 2
+const COLUMN_LABEL_END_PAD = 4
+
+export function columnLabelFontSize(text?: ExportTextStyle) {
+  return rowLabelFontSize(ROW_COLUMN_LABEL_LINE_HEIGHT, text)
+}
+
+/** Where the color columns' labels start, right of the last column's leader. */
+export function columnLabelTextX(centers: readonly number[]) {
+  return (
+    (centers.at(-1) ?? 0) + COLUMN_LABEL_TICK_LENGTH + COLUMN_LABEL_TEXT_GAP
+  )
+}
+
+// Px from the labels' left the color columns' labels reach, 0 where none draws.
+function columnLabelsWidth(
+  labels: readonly string[],
+  rows: readonly LabelledRow[],
+  rowHeight: number,
+  annotations: readonly RowAnnotationColumn[] | undefined,
+  text: ExportTextStyle | undefined,
+) {
+  const centers = rowColorColumnCenters(rows, rowHeight, annotations)
+  const drawn = labels.slice(0, centers.length)
+  return drawn.length
+    ? columnLabelTextX(centers) +
+        max(
+          drawn.map(label =>
+            measureText(label, columnLabelFontSize(text), text?.fontFamily),
+          ),
+          0,
+        ) +
+        COLUMN_LABEL_END_PAD
+    : 0
+}
+
 /** Px the color columns' labels take above the first row, a line each. */
 export function rowColumnLabelsHeight(labels: readonly string[] = []) {
   return labels.length * ROW_COLUMN_LABEL_LINE_HEIGHT
@@ -192,22 +229,33 @@ function rowTextWidth(
     : labelWidth(label, rowHeight, text)
 }
 
+/**
+ * Px the row labels take, and the color columns' labels above them where those
+ * reach further, so a long column label stays inside the labels' box.
+ */
 export function rowLabelsBoxWidth(
   rows: LabelledRow[],
   rowHeight: number,
   text?: ExportTextStyle,
   annotations?: readonly RowAnnotationColumn[],
   subtitles?: ReadonlyMap<string, string>,
+  columnLabels: readonly string[] = [],
 ) {
-  return rowLabelsCarryText(rowHeight)
-    ? max(
-        rows.map(row =>
-          rowTextWidth(row, rowHeight, text, subtitles?.get(row.name)),
+  return Math.max(
+    rowLabelsCarryText(rowHeight)
+      ? max(
+          rows.map(row =>
+            rowTextWidth(row, rowHeight, text, subtitles?.get(row.name)),
+          ),
+          0,
+        ) +
+          ROW_LABEL_PAD +
+          rowLabelTextX(rows, annotations) -
+          TEXT_INSET
+      : Math.max(
+          rowColorsWidth(rows, rowHeight, annotations),
+          ROW_SWATCH_WIDTH,
         ),
-        0,
-      ) +
-        ROW_LABEL_PAD +
-        rowLabelTextX(rows, annotations) -
-        TEXT_INSET
-    : Math.max(rowColorsWidth(rows, rowHeight, annotations), ROW_SWATCH_WIDTH)
+    columnLabelsWidth(columnLabels, rows, rowHeight, annotations, text),
+  )
 }

@@ -36,6 +36,7 @@ export default observer(function WiggleRowLabels({
         backdrop="wash"
         annotations={rowAnnotationColors}
         subtitles={model.rowSubtitles}
+        columnLabels={model.rowColumnLabels}
       />
       <SvgRowColumnLabels
         labels={model.rowColumnLabels}

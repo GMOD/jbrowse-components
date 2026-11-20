@@ -72,6 +72,7 @@ export function SvgTreeSidebar({
           text={text}
           annotations={annotations}
           subtitles={subtitles}
+          columnLabels={columnLabels}
         />
       ) : null}
       {drawnTree ? (

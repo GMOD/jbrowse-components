@@ -3,10 +3,7 @@ import { TEXT_BASELINE_RATIO } from '@jbrowse/display-ui'
 import { render } from '@testing-library/react'
 
 import { RowLabelsOverlay } from './RowLabelsOverlay.tsx'
-import {
-  SvgRowColumnLabels,
-  rowColumnLabelsWidth,
-} from './SvgRowColumnLabels.tsx'
+import { SvgRowColumnLabels } from './SvgRowColumnLabels.tsx'
 import { SvgTreeSidebar } from './SvgTreeSidebar.tsx'
 import {
   ROW_COLUMN_LABEL_LINE_HEIGHT,
@@ -253,14 +250,13 @@ describe('the column labels on screen and in the export', () => {
         exported.querySelector('g[clip-path] [data-testid="row-column-label"]'),
       ).toBeNull()
       expect(svgSidebarWidth(sidebar)).toBe(
-        Math.max(
-          rowLabelsBoxWidth(colored, rowHeight, undefined, annotations),
-          rowColumnLabelsWidth({
-            labels,
-            rows: colored,
-            rowHeight,
-            annotations,
-          }),
+        rowLabelsBoxWidth(
+          colored,
+          rowHeight,
+          undefined,
+          annotations,
+          undefined,
+          labels,
         ),
       )
     },
