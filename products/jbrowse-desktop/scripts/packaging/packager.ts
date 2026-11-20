@@ -1,7 +1,8 @@
 import fs from 'fs'
 import path from 'path'
 
-import { JBROWSE_PROTOCOL } from '../../electron/launchTarget.ts'
+import { JBROWSE_PROTOCOL } from '@jbrowse/core/util/jbrowseProtocol'
+
 import {
   APP_ID,
   APP_NAME,

@@ -1,6 +1,10 @@
 import path from 'node:path'
 
 import {
+  JBROWSE_PROTOCOL,
+  parseProtocolUrl,
+} from '@jbrowse/core/util/jbrowseProtocol'
+import {
   exportBooleanFlags,
   isDataFile,
   isModifier,
@@ -9,8 +13,6 @@ import {
   launchViewType,
   parseArgv,
 } from '@jbrowse/launch-args'
-
-import { isWebUrl } from './navigationGuard.ts'
 
 import type { LaunchPlanJson, LaunchTarget } from './ipc/channelTypes.ts'
 import type { LaunchPlan } from '@jbrowse/launch-args'
@@ -23,8 +25,6 @@ import type { LaunchPlan } from '@jbrowse/launch-args'
 // renderer; re-exported here, where it is produced, so callers keep one import
 // site.
 export type { LaunchTarget }
-
-export const JBROWSE_PROTOCOL = 'jbrowse'
 
 /**
  * The extension "Save session as..." forces, and with it the one reliable mark
@@ -73,52 +73,6 @@ const LAUNCH_FILE_EXTENSIONS = [SESSION_EXTENSION, '.json']
 function hasLaunchExtension(arg: string) {
   const lower = arg.toLowerCase()
   return LAUNCH_FILE_EXTENSIONS.some(ext => lower.endsWith(ext))
-}
-
-/**
- * Wrap a JBrowse Web url as the jbrowse:// link that opens it in Desktop. The
- * whole url is carried as one encoded parameter (rather than copying its
- * query), so a config relative to the web instance still resolves against it.
- */
-export function toProtocolUrl(webUrl: string) {
-  return `${JBROWSE_PROTOCOL}://open?url=${encodeURIComponent(webUrl)}`
-}
-
-/**
- * The JBrowse Web url a jbrowse:// link carries, or undefined if this isn't a
- * usable one. Never throws: it is fed unvalidated input from the OS.
- *
- * The `open` in `jbrowse://open?url=…` is **not read**. It sits in the slot a
- * hostname would occupy, and there is no host — the link is handled locally —
- * so it is a word that reads as a command, by the convention of `vscode://file/…`
- * and friends. `jbrowse://anything?url=…` is accepted identically.
- *
- * Checking it is not worth it, because the word lands in a different property
- * depending on which of the two valid forms the caller wrote:
- * `jbrowse://open?…` puts it in `host`, `jbrowse:open?…` (no authority, which
- * isProtocolUrl below deliberately accepts) puts it in `pathname`. So a **second
- * action belongs in a query param**, not here — `?action=import` is read the
- * same way from both forms, and this one is already `?url=`-shaped. Adding
- * `jbrowse://import?…` instead would be silently opened as a session by every
- * Desktop already installed, which is the failure this note exists to prevent.
- */
-export function parseProtocolUrl(input: string): string | undefined {
-  let url: URL
-  try {
-    url = new URL(input)
-  } catch {
-    return undefined
-  }
-  if (url.protocol !== `${JBROWSE_PROTOCOL}:`) {
-    return undefined
-  }
-  const wrapped = url.searchParams.get('url')
-  if (!wrapped) {
-    return undefined
-  }
-  // A jbrowse:// url arrives from anywhere that can make the OS open a link,
-  // so `jbrowse://open?url=file:///…` must not turn a click into a local read
-  return isWebUrl(wrapped) ? wrapped : undefined
 }
 
 // URL schemes are case-insensitive, and Windows hands the link back with

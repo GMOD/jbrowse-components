@@ -2,7 +2,7 @@ import { existsSync, readFileSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
 
 import { parseSessionSpecUrl } from '../../packages/app-core/src/SessionSpec/parseSessionSpecUrl.ts'
-import { parseProtocolUrl } from '../../products/jbrowse-desktop/electron/launchTarget.ts'
+import { parseProtocolUrl } from '../../packages/core/src/util/jbrowseProtocol.ts'
 import {
   figureLiveRefs,
   videoLiveRefs,

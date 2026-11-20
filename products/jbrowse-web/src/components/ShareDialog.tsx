@@ -5,6 +5,7 @@ import CascadingMenuButton from '@jbrowse/core/ui/CascadingMenuButton'
 import ShareLinkField from '@jbrowse/core/ui/ShareLinkField'
 import { localStorageGetItem, localStorageSetItem } from '@jbrowse/core/util'
 import { copyTextWithSession } from '@jbrowse/core/util/copyText'
+import { toProtocolUrl } from '@jbrowse/core/util/jbrowseProtocol'
 import { useFetch } from '@jbrowse/core/util/useFetch'
 import { getShareableSessionSnapshot } from '@jbrowse/product-core'
 import BookmarkAddIcon from '@mui/icons-material/BookmarkAdd'
@@ -26,7 +27,6 @@ import SessionJsonDialog from './SessionJsonDialog.tsx'
 import ShareInfoDialog from './ShareInfoDialog.tsx'
 import { buildShareUrl } from './buildShareUrl.ts'
 import { findLocalFileNames } from './localFileTracks.ts'
-import { toDesktopLink } from './toDesktopLink.ts'
 
 import type { SessionShareMode, SessionWithShareURL } from '@jbrowse/core/util'
 
@@ -106,7 +106,7 @@ const ShareDialog = observer(function ShareDialog({
               <span>
                 <Button
                   component="a"
-                  href={disabled ? undefined : toDesktopLink(url)}
+                  href={disabled ? undefined : toProtocolUrl(url)}
                   startIcon={<LaunchIcon />}
                   disabled={disabled}
                 >

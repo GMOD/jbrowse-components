@@ -20,7 +20,8 @@ The pieces, and where each platform registers the scheme:
 
 | Piece                                                 | Where                                                                                                                                                         |
 | ----------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Wrap/unwrap + argv parsing (pure, unit-tested)        | `electron/launchTarget.ts`                                                                                                                                    |
+| Wrap/unwrap (pure, shared with web and the website)   | `@jbrowse/core/util/jbrowseProtocol`                                                                                                                          |
+| argv parsing (pure, unit-tested)                      | `electron/launchTarget.ts`                                                                                                                                    |
 | Delivery: argv, `second-instance`, macOS `open-url`   | `electron/electron.ts`                                                                                                                                        |
 | Handed to the renderer as `?specLink=`                | `electron/window.ts` (`buildAppUrl`)                                                                                                                          |
 | Renderer builds the session                           | `src/components/usePluginManagerLoad.ts` → `openSpecLink` (`StartScreen/util.tsx`)                                                                            |

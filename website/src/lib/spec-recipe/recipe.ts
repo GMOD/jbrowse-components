@@ -30,7 +30,7 @@ import {
   viewFields,
 } from './fields.ts'
 import { configManifest } from '../../../../products/jbrowse-cli/src/commands/validate/configManifest.generated.ts'
-import { toProtocolUrl } from '../../../../products/jbrowse-desktop/electron/launchTarget.ts'
+import { toProtocolUrl } from '../../../../packages/core/src/util/jbrowseProtocol.ts'
 
 import type { SessionSpec, SpecTrackEntry, SpecView } from './decode.ts'
 import type { AgentRecipe } from './agent.ts'

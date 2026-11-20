@@ -5,7 +5,7 @@
 // the same link wrapped for Desktop. Without `loc=` the view opens on the whole
 // genome, as a spec without `loc` does.
 
-import { toProtocolUrl } from '../../../products/jbrowse-desktop/electron/launchTarget.ts'
+import { toProtocolUrl } from '../../../packages/core/src/util/jbrowseProtocol.ts'
 import { CODE_BASE } from './code-base.ts'
 import { defaultConfigUrl } from './default-configs.ts'
 import { configFileUris } from './derive-desktop-steps.ts'

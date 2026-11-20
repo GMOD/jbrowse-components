@@ -1,4 +1,5 @@
 import { SPEC_PREFIX, isObject, sessionParamKind } from '@jbrowse/core/util'
+import { parseProtocolUrl } from '@jbrowse/core/util/jbrowseProtocol'
 
 import { readAllQueryParams } from '../queryParams.ts'
 import {
@@ -54,28 +55,11 @@ export interface ParsedSessionSpec {
 // figure dialogs, genomes.jbrowse.org — so the link someone copies and pastes
 // into "Open JBrowse Web link..." is as often this as the url inside it. It
 // parses as a perfectly good URL whose query has no `session`, which reported
-// "that link has no session in it" about a link that does. Unwrap it instead.
-//
-// Restricted to http(s), and to a single unwrap, for the reason Desktop's own
-// parser is (products/jbrowse-desktop/electron/launchTarget.ts, which gates the
-// OS-delivered copy of this and cannot import from here — it is bundled into the
-// Electron main process): the payload comes from whatever handed us the link.
-function unwrapProtocolUrl(url: URL): URL {
-  if (url.protocol !== 'jbrowse:') {
-    return url
-  }
-  const wrapped = url.searchParams.get('url')
-  if (!wrapped) {
-    return url
-  }
-  try {
-    const inner = new URL(wrapped)
-    return inner.protocol === 'http:' || inner.protocol === 'https:'
-      ? inner
-      : url
-  } catch {
-    return url
-  }
+// "that link has no session in it" about a link that does. Unwrap it instead,
+// with the parser Desktop's protocol handler uses.
+function unwrapProtocolUrl(url: URL) {
+  const inner = parseProtocolUrl(url.href)
+  return inner ? new URL(inner) : url
 }
 
 function resolveConfig(params: URLSearchParams, url: URL) {

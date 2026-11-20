@@ -1,11 +1,14 @@
 import {
+  parseProtocolUrl,
+  toProtocolUrl,
+} from '@jbrowse/core/util/jbrowseProtocol'
+
+import {
   findLaunchTarget,
   openFileTarget,
-  parseProtocolUrl,
   protocolTarget,
   rendererArg,
   targetGate,
-  toProtocolUrl,
 } from './launchTarget.ts'
 
 test('rendererArg reads the value launchArgs skips', () => {

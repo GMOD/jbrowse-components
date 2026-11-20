@@ -1,11 +1,10 @@
 import fs from 'fs'
 import path from 'path'
 
+import { JBROWSE_PROTOCOL } from '@jbrowse/core/util/jbrowseProtocol'
+
 import { ANALYTICS_OPT_OUT_FILE } from '../../electron/analyticsOptOut.ts'
-import {
-  JBROWSE_PROTOCOL,
-  SESSION_EXTENSION,
-} from '../../electron/launchTarget.ts'
+import { SESSION_EXTENSION } from '../../electron/launchTarget.ts'
 import { winArtifacts } from './artifacts.ts'
 import {
   APP_NAME,

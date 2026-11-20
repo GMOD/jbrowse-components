@@ -1,5 +1,6 @@
 import path from 'node:path'
 
+import { JBROWSE_PROTOCOL } from '@jbrowse/core/util/jbrowseProtocol'
 import { autoUpdater as nativeAutoUpdater, app, dialog } from 'electron'
 import pkg from 'electron-updater'
 
@@ -18,7 +19,6 @@ import { registerQuickstartHandlers } from './ipc/quickstartHandlers.ts'
 import { registerSessionHandlers } from './ipc/sessionHandlers.ts'
 import { resolveLaunchMode } from './launchMode.ts'
 import {
-  JBROWSE_PROTOCOL,
   findLaunchTarget,
   openFileTarget,
   protocolTarget,

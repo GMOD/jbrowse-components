@@ -2,11 +2,10 @@
  * @jest-environment node
  */
 
+import { JBROWSE_PROTOCOL } from '@jbrowse/core/util/jbrowseProtocol'
+
 import { ANALYTICS_OPT_OUT_FILE } from '../../electron/analyticsOptOut.ts'
-import {
-  JBROWSE_PROTOCOL,
-  SESSION_EXTENSION,
-} from '../../electron/launchTarget.ts'
+import { SESSION_EXTENSION } from '../../electron/launchTarget.ts'
 import { createNsisScript } from './nsisScript.ts'
 
 // The Windows installer, as source. `pnpm check:nsis` asks the NSIS compiler
