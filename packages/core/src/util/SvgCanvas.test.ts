@@ -274,26 +274,48 @@ describe('rotation', () => {
 })
 
 describe('text baseline', () => {
-  // The halo pattern (drawPeptides) draws one string through strokeText then
-  // fillText. strokeText used to pin dominant-baseline="auto" while fillText
-  // honored textBaseline, so any non-alphabetic baseline slid the halo off the
-  // letters it backs.
-  test('strokeText and fillText resolve the same baseline', () => {
+  function textYs(ctx: SvgCanvas) {
+    return [...ctx.getSerializedSvg().matchAll(/<text[^>]* y="([^"]*)"/g)].map(
+      m => Number(m[1]),
+    )
+  }
+
+  test.each([
+    ['alphabetic', 50],
+    ['top', 57.8],
+    ['hanging', 57.3],
+    ['middle', 52.8],
+    ['bottom', 47.8],
+    ['ideographic', 47.8],
+  ] as const)('%p writes its baseline into y', (textBaseline, y) => {
     const ctx = new SvgCanvas()
+    ctx.font = '10px sans-serif'
+    ctx.textBaseline = textBaseline
+    ctx.fillText('A', 0, 50)
+    expect(ctx.getSerializedSvg()).not.toContain('baseline')
+    expect(textYs(ctx)[0]).toBeCloseTo(y, 6)
+  })
+
+  test('strokeText and fillText land on the same baseline', () => {
+    const ctx = new SvgCanvas()
+    ctx.font = '10px sans-serif'
     ctx.textBaseline = 'middle'
     ctx.strokeText('A', 0, 0)
     ctx.fillText('A', 0, 0)
-
-    const baselines = [
-      ...ctx.getSerializedSvg().matchAll(/dominant-baseline="([^"]*)"/g),
-    ].map(m => m[1])
-    expect(baselines).toEqual(['middle', 'middle'])
+    const ys = textYs(ctx)
+    expect(ys).toHaveLength(2)
+    expect(ys[0]).toBeCloseTo(2.8, 6)
+    expect(ys[1]).toBeCloseTo(2.8, 6)
   })
 
-  test('the default alphabetic baseline emits auto', () => {
+  test('the shift is in the text space, so it follows the transform', () => {
     const ctx = new SvgCanvas()
-    ctx.strokeText('A', 0, 0)
-    expect(ctx.getSerializedSvg()).toContain('dominant-baseline="auto"')
+    ctx.font = '10px sans-serif'
+    ctx.textBaseline = 'middle'
+    ctx.translate(0, 100)
+    ctx.scale(2, 2)
+    ctx.fillText('A', 0, 0)
+    expect(textYs(ctx)[0]).toBeCloseTo(105.6, 6)
   })
 })
 

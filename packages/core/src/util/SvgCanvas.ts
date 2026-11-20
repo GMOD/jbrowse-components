@@ -74,6 +74,28 @@ function fontAttrs(font: string, scale: number) {
     style ? ` font-style="${style}"` : '',
   ].join('')
 }
+/**
+ * How far below `y` each Canvas2D `textBaseline` puts the alphabetic baseline,
+ * in ems, as Chrome draws sans-serif: its em box runs 0.78em above the baseline
+ * and 0.22em below, and its hanging baseline sits 0.73em up. An export writes
+ * this into `y` because Skia and ImageMagick ignore `dominant-baseline`.
+ */
+const BASELINE_SHIFT_EM: Record<CanvasTextBaseline, number> = {
+  alphabetic: 0,
+  top: 0.78,
+  hanging: 0.73,
+  middle: 0.28,
+  bottom: -0.22,
+  ideographic: -0.22,
+}
+
+export function textBaselineShift(
+  textBaseline: CanvasTextBaseline,
+  fontSize: number,
+) {
+  return fontSize * BASELINE_SHIFT_EM[textBaseline]
+}
+
 // SVG ids are document-global (see svg/svgId.ts), so this counter has to be
 // too: one export mounts many SvgCanvas instances — a PaintLayer per display,
 // per band, per legend — and a per-instance counter would have every one of them
@@ -574,30 +596,27 @@ export class SvgCanvas {
   }
 
   // Shared by fillText and strokeText: the halo pattern draws the same string
-  // twice through both, so they must resolve the baseline identically — with
-  // strokeText pinned to "auto" a non-alphabetic textBaseline slid the halo off
-  // the letters it is meant to back.
-  private dominantBaseline() {
-    return this.textBaseline === 'middle'
-      ? 'middle'
-      : this.textBaseline === 'top' || this.textBaseline === 'hanging'
-        ? 'hanging'
-        : 'auto'
+  // twice through both, so they must resolve the baseline identically.
+  private textY(y: number) {
+    return (
+      y +
+      textBaselineShift(this.textBaseline, Number(parseFont(this.font).size))
+    )
   }
 
   fillText(text: string, x: number, y: number) {
-    const [tx, ty] = this.transformPoint(x, y)
+    const [tx, ty] = this.transformPoint(x, this.textY(y))
     const escaped = escapeXml(text)
     this.emit(
-      `<text x="${tx}" y="${ty}" ${this.paintAttr('fill', this.fillStyle)}${fontAttrs(this.font, this.lengthScale)} text-anchor="${this.textAnchor()}" dominant-baseline="${this.dominantBaseline()}">${escaped}</text>`,
+      `<text x="${tx}" y="${ty}" ${this.paintAttr('fill', this.fillStyle)}${fontAttrs(this.font, this.lengthScale)} text-anchor="${this.textAnchor()}">${escaped}</text>`,
     )
   }
 
   strokeText(text: string, x: number, y: number) {
-    const [tx, ty] = this.transformPoint(x, y)
+    const [tx, ty] = this.transformPoint(x, this.textY(y))
     const escaped = escapeXml(text)
     this.emit(
-      `<text x="${tx}" y="${ty}" fill="none"${this.strokeAttrs()}${fontAttrs(this.font, this.lengthScale)} text-anchor="${this.textAnchor()}" dominant-baseline="${this.dominantBaseline()}">${escaped}</text>`,
+      `<text x="${tx}" y="${ty}" fill="none"${this.strokeAttrs()}${fontAttrs(this.font, this.lengthScale)} text-anchor="${this.textAnchor()}">${escaped}</text>`,
     )
   }
 
