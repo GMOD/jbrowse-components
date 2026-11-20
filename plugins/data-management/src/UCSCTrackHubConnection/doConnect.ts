@@ -53,12 +53,18 @@ async function loadGenomeTracks({
   })
 }
 
-// make sure a hub genome is available to attach tracks to: present already, or
-// added as a session assembly from the sequence the hub supplies. A track hub
-// names a genome without supplying one, so it attaches only where the genome
-// is already present.
+type Session = ReturnType<typeof getSession>
+
+// a track hub names a genome without supplying its sequence
+function canAttach(session: Session, genome: RaStanza, genomeName: string) {
+  return (
+    session.assemblyManager.has(genomeName) ||
+    !!(session.addSessionAssembly && genome.data.twoBitPath)
+  )
+}
+
 function ensureAssembly(
-  session: ReturnType<typeof getSession>,
+  session: Session,
   genome: RaStanza,
   genomeName: string,
   baseUri: string,
@@ -146,10 +152,7 @@ async function connectMultiGenomeHub(
       isAlive(self) &&
       (assemblyNames.length === 0 || assemblyNames.includes(genomeName))
     ) {
-      // auto-add an assembly the instance doesn't already have, so a standard
-      // multi-genome hub still loads its tracks; only skip when there's no way
-      // to add one
-      if (ensureAssembly(session, genome, genomeName, genomesBaseUri)) {
+      if (canAttach(session, genome, genomeName)) {
         try {
           const tracks = await loadGenomeTracks({
             genome,
@@ -158,6 +161,7 @@ async function connectMultiGenomeHub(
             pluginManager,
           })
           if (isAlive(self)) {
+            ensureAssembly(session, genome, genomeName, genomesBaseUri)
             self.addTrackConfs(tracks)
             trackCounts[genomeName] = tracks.length
           }
@@ -184,10 +188,11 @@ async function connectMultiGenomeHub(
         'warning',
       )
     }
-    if (!self.silent) {
+    const summary = formatHubLoadSummary(trackCounts, notLoadedAssemblies)
+    if (!self.silent && summary) {
       session.notify(
-        formatHubLoadSummary(trackCounts, notLoadedAssemblies),
-        'success',
+        summary,
+        Object.keys(trackCounts).length > 0 ? 'success' : 'warning',
       )
     }
   }

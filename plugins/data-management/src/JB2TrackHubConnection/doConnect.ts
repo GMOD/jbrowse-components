@@ -13,6 +13,11 @@ type HubAssembly = Record<string, unknown> & { name: string }
 
 type HubTrack = Record<string, unknown> & { assemblyNames?: string[] }
 
+type HubConfig = Record<string, unknown> & {
+  assemblies?: HubAssembly[]
+  tracks?: HubTrack[]
+}
+
 // lazyConnect wraps this in the shared connect-failure handler
 export async function doConnect(
   self: ConnectionDoConnectArg<JB2TrackHubConnectionConfigModel>,
@@ -27,7 +32,7 @@ export async function doConnect(
     )
   }
 
-  const configJson = JSON.parse(
+  const configJson: HubConfig = JSON.parse(
     await openLocation(configJsonLocation, pluginManager).readFile('utf8'),
   )
   if (isAlive(self)) {
@@ -38,8 +43,7 @@ export async function doConnect(
     addRelativeUris(configJson, new URL(configUri))
     const wanted = (name: string) =>
       assemblyNames.length === 0 || assemblyNames.includes(name)
-    const assemblies: HubAssembly[] = configJson.assemblies ?? []
-    for (const assembly of assemblies) {
+    for (const assembly of configJson.assemblies ?? []) {
       if (
         wanted(assembly.name) &&
         !session.assemblyManager.has(assembly.name)
@@ -48,9 +52,12 @@ export async function doConnect(
       }
     }
 
-    const tracks: HubTrack[] = configJson.tracks ?? []
+    const imported = ({ assemblyNames: names = [] }: HubTrack) =>
+      names.some(wanted) &&
+      names.every(name => wanted(name) || session.assemblyManager.has(name))
+    const tracks = configJson.tracks ?? []
     self.addTrackConfs(
-      tracks.filter(track => (track.assemblyNames ?? []).every(wanted)),
+      assemblyNames.length === 0 ? tracks : tracks.filter(imported),
     )
     if (!self.silent) {
       session.notify('Successfully loaded', 'success')

@@ -40,8 +40,8 @@ const GENOMES_TXT =
 const TRACKDB_TXT =
   'track genes\ntype bigBed 12\nbigDataUrl genes.bb\nshortLabel Genes\nlongLabel Genes'
 
-// a multi-genome hub: hub.txt and genomes.txt arrive at once, so the hub adds
-// hubAsm right away, and its tracks arrive with `trackDb`
+// a multi-genome hub: hub.txt and genomes.txt arrive at once, and hubAsm and
+// its tracks arrive with `trackDb`
 function serveHub(trackDb: Promise<string>) {
   mockReadFile.mockImplementation((uri: string) =>
     uri.endsWith('/hub.txt')
@@ -239,9 +239,9 @@ describe('a hub link with a view init', () => {
     return connection.tracks[0]!.trackId
   }
 
-  // a gene-name &loc= searches the index the hub brings with its tracks, so
-  // the hub's assembly appearing is not yet enough to launch against
-  it('launches the view once the hub has loaded, not when its assembly appears', async () => {
+  // a gene-name &loc= searches the index the hub brings with its tracks, and
+  // the hub's assembly arrives with them
+  it('launches the view once the hub has loaded, not while its trackDb is in flight', async () => {
     const { pluginManager, rootModel } = setup()
     let releaseTrackDb = (_text: string) => {}
     serveHub(
@@ -255,14 +255,22 @@ describe('a hub link with a view init', () => {
       pluginManager,
     )
     const session = rootModel.session!
-    await when(() => session.assemblyManager.has('hubAsm'))
+    while (
+      !mockReadFile.mock.calls.some(([uri]) =>
+        `${uri}`.endsWith('/trackDb.txt'),
+      )
+    ) {
+      await flush()
+    }
     await flush()
     expect(session.views).toHaveLength(0)
+    expect(session.assemblyManager.has('hubAsm')).toBe(false)
 
     releaseTrackDb(TRACKDB_TXT)
     await p
 
     expect(session.views).toHaveLength(1)
+    expect(session.assemblyManager.has('hubAsm')).toBe(true)
   })
 
   it('launches with a &tracks= id the hub brings already present', async () => {

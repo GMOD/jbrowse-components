@@ -173,6 +173,25 @@ describe('a JBrowse 2 hub', () => {
     expect(trackIds(session)).toEqual(['b'])
   })
 
+  it('keeps a track that pairs a listed genome with one the site already has', async () => {
+    files[JB2] = JSON.stringify({
+      assemblies: [assembly('asmA'), assembly('asmB')],
+      tracks: [
+        track('a', 'asmA'),
+        track('b', 'asmB'),
+        { ...track('pair', 'asmA'), assemblyNames: ['asmA', 'asmB'] },
+        { ...track('stranger', 'asmA'), assemblyNames: ['asmA', 'asmC'] },
+      ],
+    })
+    const session = setup()
+    session.addSessionAssembly(assembly('asmB'))
+
+    session.makeConnection(addJb2Hub(session, { assemblyNames: ['asmA'] }))
+    await settled(session)
+
+    expect(trackIds(session)).toEqual(['a', 'pair'])
+  })
+
   it('imports every genome when assemblyNames is empty', async () => {
     files[JB2] = JSON.stringify({
       assemblies: [assembly('asmA'), assembly('asmB')],
@@ -228,7 +247,47 @@ describe('a UCSC hub', () => {
 
     expect(session.connectionInstances).toHaveLength(1)
     expect(trackIds(session)).toHaveLength(1)
+    expect(sessionAssemblyNames(session)).toEqual(['good'])
     expect(messages(session)).toContainEqual(expect.stringContaining('broken'))
+  })
+
+  it('adds nothing when it is deleted while a trackDb is in flight', async () => {
+    let arrive = (_body: string) => {}
+    serveUcscHub(
+      'genome hubAsm\ntrackDb hubAsm/trackDb.txt\ntwoBitPath hubAsm/hubAsm.2bit',
+    )
+    files[`${HUB}hubAsm/trackDb.txt`] = new Promise<string>(resolve => {
+      arrive = resolve
+    })
+    const session = setup()
+    const conf = addUcscHub(session)
+    session.makeConnection(conf)
+    await flush()
+
+    session.deleteConnection(conf)
+    arrive(trackDb('genes'))
+    await flush()
+
+    expect(sessionAssemblyNames(session)).toEqual([])
+    expect(messages(session)).toEqual([])
+  })
+
+  it('refuses a single-file hub for a genome the site lacks and the hub does not supply', async () => {
+    jest.spyOn(console, 'error').mockImplementation(() => {})
+    files[`${HUB}hub.txt`] = [
+      'hub myHub\nshortLabel My Hub\nlongLabel x\nuseOneFile on\nemail hub@example.com',
+      'genome hg38',
+      trackDb('genes'),
+    ].join('\n\n')
+    const session = setup()
+
+    session.makeConnection(addUcscHub(session))
+    await when(() => session.connectionInstances.length === 0)
+
+    expect(sessionAssemblyNames(session)).toEqual([])
+    expect(messages(session)).toContainEqual(
+      expect.stringContaining('the hub supplies no sequence for it'),
+    )
   })
 
   it('fails as a whole when no trackDb can be read', async () => {

@@ -15,9 +15,9 @@ their session. The config format is below; the
 ## Connection config format
 
 Every connection has the [](/docs/config/baseconnection) slots (`type`,
-`connectionId`, `name`, and an optional `assemblyNames` that limits which of the
-hub's genomes load), plus one location slot per type. `jbrowse add-connection`
-writes one from the command line
+`connectionId`, `name`, and an `assemblyNames` that limits which of a hub's
+genomes load, or for JBrowse 1 names its one assembly), plus one location slot
+per type. `jbrowse add-connection` writes one from the command line
 ([CLI reference](/docs/cli#jbrowse-add-connection)).
 
 ### UCSC track hub
