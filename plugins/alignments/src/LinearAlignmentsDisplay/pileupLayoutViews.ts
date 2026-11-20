@@ -15,6 +15,7 @@ import {
   layoutGroupsToViewport,
 } from './groupLayout.ts'
 import { buildRawDataByGroup, orderedGroups } from './groupedDataMaps.ts'
+import { knownSections, sectionsHeadingOf } from './knownSections.ts'
 
 import type { RegionBounds } from '../RenderAlignmentDataRPC/sortLayout.ts'
 import type {
@@ -135,6 +136,27 @@ export function groupLayoutViews(self: GroupLayoutHost) {
         self.hiddenGroups,
         sectionOrder(facet?.field ?? '', facet?.sort),
       )
+    },
+
+    /**
+     * #getter
+     * Every section the Sections dialog lists, hidden or not
+     * (`knownSections`). Empty while ungrouped.
+     */
+    get knownSections() {
+      return knownSections(
+        self.rpcDataMap,
+        self.effectiveFacet,
+        self.hiddenGroups,
+      )
+    },
+
+    /**
+     * #getter
+     * The Sections dialog's column header: the facet's field.
+     */
+    get sectionsHeading() {
+      return sectionsHeadingOf(self.effectiveFacet?.field)
     },
 
     /**

@@ -172,3 +172,21 @@ test('a group drawing no reads offers no collapse', () => {
   } as unknown as Partial<LinearAlignmentsDisplayModel>)
   expect(screen.queryByTitle('Show this group’s pileup')).not.toBeNull()
 })
+
+test('with every lane hidden, the restore pill stands alone at the top', () => {
+  renderOverlay({
+    showsGroupLabels: false,
+    hiddenGroups: new Set(['g0', 'g1']),
+    renderSections: [
+      {
+        groupKey: '',
+        label: '',
+        sectionTop: 0,
+        height: SECTION_HEIGHT,
+        collapsed: false,
+      },
+    ] as unknown as LinearAlignmentsDisplayModel['renderSections'],
+  })
+  expect(screen.getByText('Show 2 hidden')).toBeTruthy()
+  expect(screen.queryByText('ungrouped')).toBeNull()
+})

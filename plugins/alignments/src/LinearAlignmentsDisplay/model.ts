@@ -51,6 +51,7 @@ import {
   editPlotMenuItems,
   openPlotDialog as queuePlotDialog,
 } from '@jbrowse/display-kit/plotMenu'
+import { sectionsMenuItems } from '@jbrowse/display-kit/sectionsMenu'
 import { stableIdentityComputed } from '@jbrowse/display-kit/stableIdentityComputed'
 import { subPixelBinBp } from '@jbrowse/display-kit/subPixelBinBp'
 import { viewRegionTable } from '@jbrowse/display-kit/viewRegionTable'
@@ -2801,6 +2802,7 @@ export default function stateModelFactory(
               narrowings: { bases: basesFilterNarrowing(self) },
             }),
             getGroupByMenuItem(self),
+            ...sectionsMenuItems(self),
             ...sectionOrderResetItems(self),
             ...getReadsMenuItems(self),
             getFeatureHeightMenuItem(self, self.featureNoun, pileupGate),

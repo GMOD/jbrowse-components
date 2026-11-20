@@ -58,7 +58,7 @@ const GroupLabelsOverlay = observer(function GroupLabelsOverlay({
 }: {
   model: LinearAlignmentsDisplayModel
 }) {
-  if (!model.showsGroupLabels) {
+  if (!model.showsGroupLabels && model.hiddenGroups.size === 0) {
     return null
   }
   // With the pileup hidden every group's pileup height is 0, so collapse and
@@ -91,7 +91,7 @@ const GroupLabelsOverlay = observer(function GroupLabelsOverlay({
             }
           : undefined
       }
-      sections={renderSections.map(section => {
+      sections={(model.showsGroupLabels ? renderSections : []).map(section => {
         // Off the section, not looked back up by its key: a `renderSections`
         // entry IS its lane, chip state included.
         const { groupKey, label, collapsed } = section
