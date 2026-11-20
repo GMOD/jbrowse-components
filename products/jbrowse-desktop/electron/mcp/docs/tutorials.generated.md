@@ -57,8 +57,10 @@ Paint a child's inherited haplotype blocks from hap-ibd IBD segments, one row pe
 
 Page: https://jbrowse.org/jb2/docs/tutorials/analyze_trio/
 
-- https://hgdownload.soe.ucsc.edu/gbdb/hg38/1000Genomes/trio/HG02024_VN049_KHV/HG02024_VN049_KHVTrio.chr1.vcf.gz
+- https://1000genomes.s3.amazonaws.com/1000G_2504_high_coverage/additional_698_related/data/ERR3988976/HG02024.final.cram
+- https://1000genomes.s3.amazonaws.com/1000G_2504_high_coverage/data/ERR3242042/HG02025.final.cram
 - https://jbrowse.org/code/jb2/main/test_data/config_demo.json
+- https://jbrowse.org/demos/kgp-trio/HG02024_VN049_KHVTrio.chr1.vcf.gz
 - https://jbrowse.org/genomes/GRCh38/fasta/hg38.prefix.fa.gz
 - https://s3.amazonaws.com/jbrowse.org/genomes/GRCh38/ncbi_refseq/GRCh38_latest_genomic.sort.gff.gz
 

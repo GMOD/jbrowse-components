@@ -717,7 +717,8 @@
       "package": "@jbrowse/core",
       "names": [
         "assemblyConfigSchemaFactory",
-        "default"
+        "default",
+        "transmissionEntriesFor"
       ],
       "worker": "real"
     },

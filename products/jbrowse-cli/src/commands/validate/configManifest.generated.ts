@@ -888,6 +888,10 @@ export const configManifest: ConfigManifest = {
         {
           "name": "samplesTsvLocation",
           "type": "((LocalPathLocation | UriLocation | BlobLocation | FileHandleLocation) | undefined)"
+        },
+        {
+          "name": "pedigreeLocation",
+          "type": "((LocalPathLocation | UriLocation | BlobLocation | FileHandleLocation) | undefined)"
         }
       ],
       "shorthandKeys": [
@@ -926,6 +930,10 @@ export const configManifest: ConfigManifest = {
           "type": "((LocalPathLocation | UriLocation | BlobLocation | FileHandleLocation) | undefined)"
         },
         {
+          "name": "pedigreeLocation",
+          "type": "((LocalPathLocation | UriLocation | BlobLocation | FileHandleLocation) | undefined)"
+        },
+        {
           "name": "fetchSizeLimit",
           "type": "number"
         }
@@ -956,6 +964,10 @@ export const configManifest: ConfigManifest = {
         },
         {
           "name": "samplesTsvLocation",
+          "type": "((LocalPathLocation | UriLocation | BlobLocation | FileHandleLocation) | undefined)"
+        },
+        {
+          "name": "pedigreeLocation",
           "type": "((LocalPathLocation | UriLocation | BlobLocation | FileHandleLocation) | undefined)"
         },
         {

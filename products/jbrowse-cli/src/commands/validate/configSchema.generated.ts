@@ -2574,6 +2574,15 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "$ref": "#/$defs/FileLocation"
           }
         },
+        "pedigreeLocation": {
+          "description": "optional pedigree of the VCF's samples, whitespace-separated: a PLINK \`.fam\` or \`.ped\` with no header (FID, IID, PAT, MAT, SEX, PHENO; a \`.ped\`'s genotypes after them are not read), or a table whose header row names its columns \`SampleID\` or \`IID\`, \`FatherID\` or \`PAT\`, \`MotherID\` or \`MAT\`, \`FamilyID\` or \`FID\`, \`Sex\` and \`Phenotype\` or \`PHENO\`, in any case and order, as 1000 Genomes' \`20130606_g1k_3202_samples_ped_population.txt\` does. Each sample gains the attributes \`family\`, \`father\`, \`mother\`, \`sex\` (\`male\`, \`female\` or \`other\`) and \`phenotype\` (\`affected\` or \`unaffected\`), which the variant display groups, sorts, colors and tooltips rows by. A parent of \`0\`, a sex of \`0\`, \`-9\` or \`unknown\` and a phenotype of \`0\` or \`-9\` are no value, and the Mendelian check reads a samples table's \`sex\` column by the same codes. An IID naming no VCF sample is tried as \`FID_IID\`, the sample name PLINK's \`--recode vcf\` writes. A \`samplesTsvLocation\` column of the same name wins over the pedigree's. The pedigree never narrows the samples: its rows naming no VCF sample are skipped, and a pedigree matching none of them adds nothing, with a warning.",
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "$ref": "#/$defs/FileLocation"
+          }
+        },
         "uri": {
           "type": "string",
           "description": "Shorthand: the data file, from which the location slots (and the index location) are derived."
@@ -2631,6 +2640,15 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         },
         "samplesTsvLocation": {
           "description": "optional tab-separated table of per-sample metadata. It needs a header row, whose first cell is not read, and its first column is the sample name exactly as the adapter spells it: a VCF sample, a MultiWiggle subtrack's name, a MAF species id. Every other column (\`population\`, \`tissue\`, ...) becomes an attribute of that sample, which the variant and wiggle displays, and a mark display over a MultiWiggle, group, sort, color and tooltip rows by, and a blank cell is no value; \`label\` and \`color\` name and color the row. A VCF's table ignores a \`sampleName\`, \`HP\` or \`sole\` column, with a warning, since the variant display writes those fields on its haplotype rows. A MAF adapter reads only the \`label\`, \`color\` and \`assemblyName\` columns onto its species rows, over its \`samples\` entries. The table also narrows the adapter's samples to the ones it lists, with a warning naming the rest, and a table naming none of them is an error. An adapter that names no samples (a MAF track discovering its species from the file) takes the table's rows as its samples.",
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "$ref": "#/$defs/FileLocation"
+          }
+        },
+        "pedigreeLocation": {
+          "description": "optional pedigree of the VCF's samples, whitespace-separated: a PLINK \`.fam\` or \`.ped\` with no header (FID, IID, PAT, MAT, SEX, PHENO; a \`.ped\`'s genotypes after them are not read), or a table whose header row names its columns \`SampleID\` or \`IID\`, \`FatherID\` or \`PAT\`, \`MotherID\` or \`MAT\`, \`FamilyID\` or \`FID\`, \`Sex\` and \`Phenotype\` or \`PHENO\`, in any case and order, as 1000 Genomes' \`20130606_g1k_3202_samples_ped_population.txt\` does. Each sample gains the attributes \`family\`, \`father\`, \`mother\`, \`sex\` (\`male\`, \`female\` or \`other\`) and \`phenotype\` (\`affected\` or \`unaffected\`), which the variant display groups, sorts, colors and tooltips rows by. A parent of \`0\`, a sex of \`0\`, \`-9\` or \`unknown\` and a phenotype of \`0\` or \`-9\` are no value, and the Mendelian check reads a samples table's \`sex\` column by the same codes. An IID naming no VCF sample is tried as \`FID_IID\`, the sample name PLINK's \`--recode vcf\` writes. A \`samplesTsvLocation\` column of the same name wins over the pedigree's. The pedigree never narrows the samples: its rows naming no VCF sample are skipped, and a pedigree matching none of them adds nothing, with a warning.",
           "if": {
             "type": "null"
           },
@@ -2723,6 +2741,15 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         },
         "samplesTsvLocation": {
           "description": "optional tab-separated table of per-sample metadata. It needs a header row, whose first cell is not read, and its first column is the sample name exactly as the adapter spells it: a VCF sample, a MultiWiggle subtrack's name, a MAF species id. Every other column (\`population\`, \`tissue\`, ...) becomes an attribute of that sample, which the variant and wiggle displays, and a mark display over a MultiWiggle, group, sort, color and tooltip rows by, and a blank cell is no value; \`label\` and \`color\` name and color the row. A VCF's table ignores a \`sampleName\`, \`HP\` or \`sole\` column, with a warning, since the variant display writes those fields on its haplotype rows. A MAF adapter reads only the \`label\`, \`color\` and \`assemblyName\` columns onto its species rows, over its \`samples\` entries. The table also narrows the adapter's samples to the ones it lists, with a warning naming the rest, and a table naming none of them is an error. An adapter that names no samples (a MAF track discovering its species from the file) takes the table's rows as its samples.",
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "$ref": "#/$defs/FileLocation"
+          }
+        },
+        "pedigreeLocation": {
+          "description": "optional pedigree of the VCF's samples, whitespace-separated: a PLINK \`.fam\` or \`.ped\` with no header (FID, IID, PAT, MAT, SEX, PHENO; a \`.ped\`'s genotypes after them are not read), or a table whose header row names its columns \`SampleID\` or \`IID\`, \`FatherID\` or \`PAT\`, \`MotherID\` or \`MAT\`, \`FamilyID\` or \`FID\`, \`Sex\` and \`Phenotype\` or \`PHENO\`, in any case and order, as 1000 Genomes' \`20130606_g1k_3202_samples_ped_population.txt\` does. Each sample gains the attributes \`family\`, \`father\`, \`mother\`, \`sex\` (\`male\`, \`female\` or \`other\`) and \`phenotype\` (\`affected\` or \`unaffected\`), which the variant display groups, sorts, colors and tooltips rows by. A parent of \`0\`, a sex of \`0\`, \`-9\` or \`unknown\` and a phenotype of \`0\` or \`-9\` are no value, and the Mendelian check reads a samples table's \`sex\` column by the same codes. An IID naming no VCF sample is tried as \`FID_IID\`, the sample name PLINK's \`--recode vcf\` writes. A \`samplesTsvLocation\` column of the same name wins over the pedigree's. The pedigree never narrows the samples: its rows naming no VCF sample are skipped, and a pedigree matching none of them adds nothing, with a warning.",
           "if": {
             "type": "null"
           },
@@ -13026,7 +13053,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
               }
             },
             "field": {
-              "description": "impact, the most severe SnpEff/VEP consequence tier; svType, the structural-variant class; phaseSet, the FORMAT PS block, painting only under rows haplotype; or any record field, INFO.CLNSIG say, or a jexl expression over feature, whose values each paint one range color with a key. A record with no value keeps the default alt color.",
+              "description": "impact, the most severe SnpEff/VEP consequence tier; svType, the structural-variant class; phaseSet, the FORMAT PS block, painting only under rows haplotype; mendelian, the most severe call over the trios a pedigree names; or any record field, INFO.CLNSIG say, or a jexl expression over feature, whose values each paint one range color with a key. A record with no value keeps the default alt color.",
               "default": "",
               "if": {
                 "type": "null"
@@ -22274,7 +22301,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           }
         },
         "assemblyNames": {
-          "description": "optional list of genomes to import from this config.json, if empty all genomes will be imported.",
+          "description": "optional list of genomes to import from this config.json, by name or alias; if empty all genomes will be imported.",
           "if": {
             "type": "null"
           },
@@ -25158,6 +25185,53 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       },
       "unevaluatedProperties": false
     },
+    "TransmissionEntry": {
+      "title": "TransmissionEntry",
+      "type": "object",
+      "x-closed": true,
+      "properties": {
+        "refName": {
+          "description": "the reference sequence the entry holds for; unset, all.",
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "$ref": "#/$defs/PlainString"
+          }
+        },
+        "sex": {
+          "description": "the child's sex the entry holds for; unset, any.",
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "enum": [
+              "male",
+              "female",
+              "other"
+            ]
+          }
+        },
+        "from": {
+          "description": "the parent the child's copy comes from.",
+          "default": "either",
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "enum": [
+              "mother",
+              "father",
+              "either"
+            ]
+          }
+        }
+      },
+      "patternProperties": {
+        "^_+comment": {}
+      },
+      "additionalProperties": false
+    },
     "RefNameAliases": {
       "title": "RefNameAliases",
       "anyOf": [
@@ -25296,6 +25370,17 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "type": "array",
             "items": {
               "type": "string"
+            }
+          }
+        },
+        "transmission": {
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "array",
+            "items": {
+              "$ref": "#/$defs/TransmissionEntry"
             }
           }
         },
@@ -30919,12 +31004,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
               {
                 "type": "object",
                 "properties": {
-                  "tracks": {
-                    "type": "array",
-                    "items": {
-                      "$ref": "#/$defs/Track"
-                    }
-                  },
+                  "tracks": {},
                   "configuration": {
                     "anyOf": [
                       {
@@ -30950,12 +31030,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
               {
                 "type": "object",
                 "properties": {
-                  "tracks": {
-                    "type": "array",
-                    "items": {
-                      "$ref": "#/$defs/Track"
-                    }
-                  },
+                  "tracks": {},
                   "configuration": {
                     "anyOf": [
                       {
@@ -30981,12 +31056,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
               {
                 "type": "object",
                 "properties": {
-                  "tracks": {
-                    "type": "array",
-                    "items": {
-                      "$ref": "#/$defs/Track"
-                    }
-                  },
+                  "tracks": {},
                   "configuration": {
                     "anyOf": [
                       {

@@ -129,7 +129,7 @@ const names: Record<string, string[]> = {
   'react/jsx-runtime': ['Fragment', 'default', 'jsx', 'jsxs'],
   'tss-react': ['cx', 'keyframes', 'makeStyles'],
   'tss-react/mui': ['cx', 'keyframes', 'makeStyles'],
-  '@jbrowse/core/assemblyManager': ['assemblyConfigSchemaFactory', 'default'],
+  '@jbrowse/core/assemblyManager': ['assemblyConfigSchemaFactory', 'default', 'transmissionEntriesFor'],
   '@jbrowse/core/assemblyManager/assembly': ['assemblyContigLengths', 'buildRefNameMaps', 'contigLengthMismatchMessage', 'default', 'detectContigLengthMismatch', 'getSequenceAdapterConfig', 'lookupGeneticCodeId', 'refNameMismatchMessage'],
   '@jbrowse/core/assemblyManager/assemblyConfigSchema': ['default', 'expandAssemblySequence', 'expandAssemblySequenceAdapter', 'expandAssemblyShorthand', 'expandSidecarShorthand', 'refNameAliasAdapterType'],
   '@jbrowse/core/assemblyManager/expandAssemblyConfigShorthand': ['expandAssemblySequence', 'expandAssemblySequenceAdapter', 'expandAssemblyShorthand', 'expandSidecarShorthand', 'refNameAliasAdapterType', 'referenceSequenceTrackId'],
