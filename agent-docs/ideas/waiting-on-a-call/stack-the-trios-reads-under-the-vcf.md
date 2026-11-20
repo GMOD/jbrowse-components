@@ -1,6 +1,6 @@
 ---
 name: stack-the-trios-reads-under-the-vcf
-description: Checking a Mendelian failure means loading the child's and both parents' CRAMs by hand, one track each; a single gesture on a trio could stack all three under the VCF, but the CRAM URLs need a home in the sample metadata first. Read before adding a reads shortcut to the variant display.
+description: Checking a Mendelian failure means loading the trio's three CRAMs by hand; one gesture could stack them under the VCF, once the CRAM URLs have a home in the sample metadata. Read before adding a reads shortcut to the variant display.
 ---
 
 # Stack the trio's reads under the VCF in one gesture

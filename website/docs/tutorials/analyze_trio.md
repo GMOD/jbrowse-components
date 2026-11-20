@@ -21,8 +21,8 @@ child's genotype cannot be made of one allele from each parent. On chr1 of a
   under a flagged site
 - switch the VCF to a genotype matrix with one row per haplotype
 - load hap-ibd's segments, converted to BED, as a multi-row feature track with
-  one colored row per parental haplotype
-- read the crossovers along chr1 off the painted rows
+  one colored row per parental haplotype, and read the crossovers along chr1
+  off the painted rows
 - line the painted rows up with the genotypes at a paternal and a maternal
   crossover
 
@@ -388,12 +388,13 @@ crossover mapping, use a pedigree-aware method such as
 [`build_khv_trio_hapibd.sh`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/build_khv_trio_hapibd.sh)
 runs the whole pipeline. It:
 
-1. downloads the trio VCF, hap-ibd and the genetic map
-2. runs hap-ibd and paints the BED with
-   [`hapibd_to_bed.py`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/hapibd_to_bed.py)
-3. downloads JBrowse
-4. writes `khv_trio_build/jbrowse2` with a `config.json` holding the hg38
-   assembly plus the VCF and hap-ibd tracks
+- downloads the trio VCF, hap-ibd and the genetic map
+- runs hap-ibd and paints the BED with
+  [`hapibd_to_bed.py`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/hapibd_to_bed.py)
+- downloads JBrowse
+- writes `khv_trio_build/jbrowse2` with a `config.json` holding the hg38
+  assembly with its `transmission` entries, the VCF with its pedigree, and the
+  hap-ibd track
 
 Serve the folder and open the URL `serve` prints:
 

@@ -1,6 +1,6 @@
 ---
 status: Accepted
-summary: "A VCF adapter's `pedigreeLocation` gives samples family, parent, sex and phenotype attributes; the worker classifies each site's trios on interned genotype codes into the `mendelian` field (notInParents, inconsistent, consistent) by one gamete-partition rule that is lenient where biology varies; the assembly's `transmission` slot, default `[]` with no name matching, holds sex chromosomes, organelles and haplodiploidy. Reading the pedigree through `samplesTsv`, answering from `VcfFeature.get`, a diploid XY truth table, name-matched defaults and parent-of-origin coloring were declined"
+summary: "A VCF adapter's `pedigreeLocation` gives samples family, parent and sex attributes; the worker classifies each site's trios into a `mendelian` field by one gamete-partition rule, lenient where biology varies; the assembly's `transmission` slot, default `[]`, states sex chromosomes and organelles"
 ---
 
 # ADR-279: A pedigree feeds a per-site Mendelian check, and the assembly states transmission

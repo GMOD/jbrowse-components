@@ -1,6 +1,6 @@
 ---
 name: per-child-mendelian-cell-marking
-description: The Mendelian check gives a site the worst value over all trios, so in a cohort with many trios it marks every alt cell of a site one trio fails; marking only the failing trio's cells needs a per-cell value path. Read before extending the check to large pedigreed cohorts.
+description: The Mendelian check gives a site its worst value over all trios, so in a large cohort one failing trio marks every alt cell there; marking only that trio's cells needs a per-cell value path. Read before extending the check to pedigreed cohorts.
 ---
 
 # Per-child marking of the Mendelian check

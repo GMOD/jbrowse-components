@@ -1,6 +1,6 @@
 ---
 name: parent-of-origin-haplotype-coloring
-description: Coloring each haplotype cell by the parent whose allele it matches would check a phasing against the pedigree, but on trio-phased data HP1 is paternal by construction, so it shows no crossovers there; it needs a per-cell value path the variant display lacks. Read before proposing parent-of-origin or phasing-check coloring.
+description: Coloring haplotype cells by the parent whose allele they match checks a phasing, but shows no crossovers on trio-phased data, where HP1 is paternal by construction; it needs a per-cell value path. Read before proposing parent-of-origin or phasing-check coloring.
 ---
 
 # Parent-of-origin coloring of haplotype cells
