@@ -146,9 +146,9 @@ where every track in the figure has a call.
 
 ## Filtering gnomAD's TP53 variants to predicted loss of function
 
-The **gnomAD v4.1.1 - gnomAD v4.1.1 Exomes** track, under Variation and Repeats,
-opens as a dense run of variant records over _TP53_, one block of color. A
-filter keeps the records that match an expression:
+The **gnomAD v4.1.1 - Exomes** track, under Variation and Repeats, opens as a
+dense run of variant records over _TP53_, one block of color. A filter keeps the
+records that match an expression:
 
 - Choose **Filter by → Edit filters...** in the track menu. The dialog takes one
   [jexl](/docs/config_guides/jexl) expression per line, and a record has to pass
