@@ -7,6 +7,7 @@ import CopyToClipboardButton from './CopyToClipboardButton.tsx'
 import ErrorMessageStackTraceContents from './ErrorMessageStackTraceContents.tsx'
 import InfoDialog from './InfoDialog.tsx'
 import LoadingEllipses from './LoadingEllipses.tsx'
+import { withoutSharePassword } from './errorReport.ts'
 import { formatErrorStack } from './formatErrorStack.ts'
 import { mapStackTrace } from './mapStackTrace.ts'
 
@@ -77,7 +78,7 @@ const ErrorMessageStackTraceDialog = observer(
       `CPU cores: ${navigator.hardwareConcurrency}`,
       `Device pixel ratio: ${window.devicePixelRatio}`,
       `Window size: ${window.innerWidth}x${window.innerHeight}`,
-      `URL: ${window.location.href}`,
+      `URL: ${withoutSharePassword(window.location.href)}`,
       `User agent: ${navigator.userAgent}`,
     ]
       .filter(Boolean)

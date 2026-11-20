@@ -67,7 +67,9 @@ const FatalErrorDialog = observer(function FatalErrorDialog({
       <DialogContent>
         <ErrorBanner error={error} />
         {componentStack ? (
-          <ErrorMessageStackTraceContents text={componentStack} />
+          <ErrorMessageStackTraceContents
+            text={`${error}\n${componentStack}`}
+          />
         ) : null}
       </DialogContent>
       <DialogActions>

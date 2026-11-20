@@ -1,0 +1,91 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description:
+  JBrowse error reports — mails a report sent from the app's error dialog
+
+Parameters:
+  ToAddress:
+    Type: String
+    Default: jbrowse2@berkeley.edu
+  FromAddress:
+    Type: String
+    Default: error-reports@jbrowse.org
+    Description: An address on an SES-verified domain
+  DomainName:
+    Type: String
+    Default: api.jbrowse.org
+    Description: >-
+      Existing API Gateway domain, owned by the jbrowse-blat-proxy stack, that
+      this API is mounted on
+  BasePath:
+    Type: String
+    Default: errors/v1
+    Description: >-
+      Versioned because released clients compile the URL in
+
+Resources:
+  ReportFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: jbrowse-error-reports
+      CodeUri: src/
+      Handler: index.handler
+      Runtime: nodejs22.x
+      Timeout: 10
+      MemorySize: 128
+      ReservedConcurrentExecutions: 2
+      Environment:
+        Variables:
+          TO_ADDRESS: !Ref ToAddress
+          FROM_ADDRESS: !Ref FromAddress
+      Policies:
+        - Statement:
+            - Effect: Allow
+              Action: ses:SendEmail
+              Resource: !Sub arn:aws:ses:${AWS::Region}:${AWS::AccountId}:identity/*
+      Events:
+        Report:
+          Type: HttpApi
+          Properties:
+            Path: /report
+            Method: POST
+            ApiId: !Ref ReportApi
+
+  # Every accepted request becomes an email to ToAddress, so the stage sheds a
+  # flood before it reaches the inbox
+  ReportApi:
+    Type: AWS::Serverless::HttpApi
+    Properties:
+      StageName: prod
+      CorsConfiguration:
+        AllowOrigins:
+          - '*'
+        AllowMethods:
+          - POST
+        AllowHeaders:
+          - content-type
+      DefaultRouteSettings:
+        ThrottlingRateLimit: 1
+        ThrottlingBurstLimit: 5
+
+  ReportApiMapping:
+    Type: AWS::ApiGatewayV2::ApiMapping
+    DependsOn: ReportApiprodStage
+    Properties:
+      ApiId: !Ref ReportApi
+      ApiMappingKey: !Ref BasePath
+      DomainName: !Ref DomainName
+      Stage: prod
+
+  # The log keeps each report too, for one the mail lost
+  ReportFunctionLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: /aws/lambda/jbrowse-error-reports
+      RetentionInDays: 365
+
+Outputs:
+  ReportUrl:
+    Value: !Sub https://${DomainName}/${BasePath}/report
+  ExecuteApiUrl:
+    Value: !Sub https://${ReportApi}.execute-api.${AWS::Region}.amazonaws.com/prod/report

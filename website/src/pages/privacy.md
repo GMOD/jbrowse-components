@@ -21,9 +21,16 @@ panel were opened while you used it. A random ID made fresh on every page load
 ties that report to the first one. The ID is never stored, so it does not link
 one visit to the next.
 
-JBrowse never sends file URLs, track names or your data. The browser reads your
-data files directly, and they never pass through a JBrowse server. Embedded
-JBrowse components collect nothing.
+JBrowse never sends file URLs, track names or your data on its own. The browser
+reads your data files directly, and they never pass through a JBrowse server.
+Embedded JBrowse components collect nothing.
+
+When JBrowse shows an error, its dialog offers a **Send report** button. Nothing
+is sent until you click it. It then sends the report shown in the dialog (the
+error, its stack trace, the JBrowse version, your browser and graphics details
+and the page address, which can name a config file), with any note and email
+address you add, to the JBrowse team at jbrowse2@berkeley.edu. A password in the
+page address is replaced before the report is shown.
 
 jbrowse-desktop also asks GitHub for the newest release so it can offer an
 update. That request reaches GitHub, which handles it under the
