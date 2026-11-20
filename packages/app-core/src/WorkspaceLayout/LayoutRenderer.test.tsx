@@ -24,6 +24,7 @@ const noDrag = {
   onPointerUp: () => {},
   onPointerCancel: () => {},
   onLostPointerCapture: () => {},
+  onPointerLeave: () => {},
 }
 
 // an observer re-reading `visibleTree`, as `WorkspaceContainer` does; a

@@ -85,22 +85,14 @@ export function useLayoutDrag(layout: WorkspaceLayout) {
     return { panelId, zone: dropZoneAt(panelRect, x, y) }
   }, [])
 
-  const handlers = usePointerGesture<{ tabId: string; x: number; y: number }>({
+  const handlers = usePointerGesture<{ tabId: string }>({
     escapeCancels: true,
+    slopPx: 5,
     start(event) {
       const { tabId } = event.currentTarget.dataset
-      return tabId === undefined
-        ? undefined
-        : { tabId, x: event.clientX, y: event.clientY }
+      return tabId === undefined ? undefined : { tabId }
     },
     move(pending, event) {
-      // slop, so a click is not a zero-distance drag
-      const moved =
-        Math.abs(event.clientX - pending.x) +
-        Math.abs(event.clientY - pending.y)
-      if (!dragRef.current && moved < 5) {
-        return
-      }
       const target = resolveTarget(event.clientX, event.clientY)
       const next = target ? { tabId: pending.tabId, ...target } : undefined
       showDrag(next && !declines(layout, next) ? next : undefined)

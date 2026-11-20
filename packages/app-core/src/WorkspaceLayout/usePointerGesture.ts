@@ -6,6 +6,7 @@ export interface PointerGestureHandlers {
   onPointerUp: (event: React.PointerEvent<HTMLElement>) => void
   onPointerCancel: (event: React.PointerEvent<HTMLElement>) => void
   onLostPointerCapture: (event: React.PointerEvent<HTMLElement>) => void
+  onPointerLeave: (event: React.PointerEvent<HTMLElement>) => void
 }
 
 export interface PointerGesture<S> {
@@ -15,6 +16,14 @@ export interface PointerGesture<S> {
   /** `completed` is true for a release, false for any way of abandoning it */
   end?: (state: S, completed: boolean) => void
   escapeCancels?: boolean
+  /**
+   * How far, in px summed over both axes, the pointer travels before `move`
+   * runs and the element takes the pointer. A browser sends a captured
+   * press's click and double-click to the capturing element, so a gesture
+   * on an element with clickable children waits; leaving the element first
+   * also starts it.
+   */
+  slopPx?: number
 }
 
 /**
@@ -31,7 +40,15 @@ export function usePointerGesture<S>(
     gestureRef.current = gesture
   })
   const activeRef = useRef<
-    { pointerId: number; element: HTMLElement; state: S } | undefined
+    | {
+        pointerId: number
+        element: HTMLElement
+        state: S
+        x: number
+        y: number
+        captured: boolean
+      }
+    | undefined
   >(undefined)
 
   const handlers = useMemo(() => {
@@ -55,6 +72,14 @@ export function usePointerGesture<S>(
     function owns(event: React.PointerEvent) {
       return activeRef.current?.pointerId === event.pointerId
     }
+    function capture(active: {
+      pointerId: number
+      element: HTMLElement
+      captured: boolean
+    }) {
+      active.captured = true
+      active.element.setPointerCapture(active.pointerId)
+    }
     return {
       onPointerDown(event: React.PointerEvent<HTMLElement>) {
         if (event.button !== 0 || !event.isPrimary) {
@@ -65,12 +90,18 @@ export function usePointerGesture<S>(
         if (state === undefined) {
           return
         }
-        activeRef.current = {
+        const active = {
           pointerId: event.pointerId,
           element: event.currentTarget,
           state,
+          x: event.clientX,
+          y: event.clientY,
+          captured: false,
         }
-        event.currentTarget.setPointerCapture(event.pointerId)
+        activeRef.current = active
+        if (!gestureRef.current.slopPx) {
+          capture(active)
+        }
         if (gestureRef.current.escapeCancels) {
           window.addEventListener('keydown', onKeyDown)
         }
@@ -78,7 +109,23 @@ export function usePointerGesture<S>(
       onPointerMove(event: React.PointerEvent<HTMLElement>) {
         const active = activeRef.current
         if (active && owns(event)) {
-          gestureRef.current.move(active.state, event)
+          if (!active.captured) {
+            const travel =
+              Math.abs(event.clientX - active.x) +
+              Math.abs(event.clientY - active.y)
+            if (travel >= (gestureRef.current.slopPx ?? 0)) {
+              capture(active)
+            }
+          }
+          if (active.captured) {
+            gestureRef.current.move(active.state, event)
+          }
+        }
+      },
+      onPointerLeave(event: React.PointerEvent<HTMLElement>) {
+        const active = activeRef.current
+        if (active && owns(event) && !active.captured) {
+          capture(active)
         }
       },
       onPointerUp(event: React.PointerEvent<HTMLElement>) {

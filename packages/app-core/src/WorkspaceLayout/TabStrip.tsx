@@ -259,6 +259,7 @@ const Tab = observer(function Tab({
       onPointerUp={dragHandlers.onPointerUp}
       onPointerCancel={dragHandlers.onPointerCancel}
       onLostPointerCapture={dragHandlers.onLostPointerCapture}
+      onPointerLeave={dragHandlers.onPointerLeave}
       className={className}
       style={tabColors(cellActive, selected)}
     >

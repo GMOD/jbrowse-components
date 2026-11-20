@@ -69,6 +69,7 @@ const Workspace = observer(function Workspace({
           onPointerUp: () => {},
           onPointerCancel: () => {},
           onLostPointerCapture: () => {},
+          onPointerLeave: () => {},
         },
         renderTabLabel: tab => <span>{tab.id}</span>,
         renderTabContent: tab => (

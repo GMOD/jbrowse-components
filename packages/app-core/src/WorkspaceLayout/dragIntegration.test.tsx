@@ -118,6 +118,10 @@ beforeAll(() => {
   Element.prototype.releasePointerCapture = () => {}
 })
 
+afterEach(() => {
+  jest.restoreAllMocks()
+})
+
 function setup(tabMenu?: boolean, onTabClose?: (tabId: string) => void) {
   const session = TestSession.create({ name: 't' })
   const left = session.panels[0]!.id
@@ -506,6 +510,51 @@ test('a press on a tab menu never starts a drag, so its click survives', () => {
 
   expect(session.findTab(tabA)?.panel.id).toBe(left)
   expect(session.panels.map(p => p.id)).toEqual(before)
+})
+
+// The same retargeting takes a double-click on the tab's title, which renames
+// it, so the tab captures only once a press travels past the slop.
+test('a press on a tab takes no capture until it drags', () => {
+  const capture = jest.spyOn(Element.prototype, 'setPointerCapture')
+  const { tabA } = setup()
+  const tab = screen.getByTestId(`tab-${tabA}`)
+
+  act(() => {
+    fireEvent.pointerDown(tab, { clientX: 10, clientY: 10 })
+    fireEvent.pointerMove(tab, { clientX: 12, clientY: 11 })
+    fireEvent.pointerUp(tab, { clientX: 12, clientY: 11 })
+  })
+  expect(capture).not.toHaveBeenCalled()
+
+  act(() => {
+    fireEvent.pointerDown(tab, { clientX: 10, clientY: 10 })
+    fireEvent.pointerMove(tab, { clientX: 600, clientY: 200 })
+  })
+  expect(capture).toHaveBeenCalledTimes(1)
+  expect(document.querySelector('[data-drop-indicator]')).not.toBeNull()
+  act(() => {
+    fireEvent.pointerCancel(tab)
+  })
+})
+
+test('a press leaving its tab inside the slop captures, so the drag keeps the pointer', () => {
+  const capture = jest.spyOn(Element.prototype, 'setPointerCapture')
+  const { session, right, tabA } = setup()
+  const tab = screen.getByTestId(`tab-${tabA}`)
+
+  act(() => {
+    fireEvent.pointerDown(tab, { clientX: 10, clientY: 10 })
+    fireEvent.pointerLeave(tab.closest('[role="tab"]')!, {
+      clientX: 11,
+      clientY: 10,
+    })
+  })
+  expect(capture).toHaveBeenCalledTimes(1)
+  act(() => {
+    fireEvent.pointerMove(tab, { clientX: 600, clientY: 200 })
+    fireEvent.pointerUp(tab, { clientX: 600, clientY: 200 })
+  })
+  expect(session.findTab(tabA)?.panel.id).toBe(right)
 })
 
 test('the strip leaves Enter on the tab menu button to the button', () => {
