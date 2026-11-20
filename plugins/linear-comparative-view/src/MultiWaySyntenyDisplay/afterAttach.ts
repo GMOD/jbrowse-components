@@ -3,6 +3,7 @@ import { isRegionRefused } from '@jbrowse/core/rpc/byteBudget'
 import { dedupe, getEnv, getSession } from '@jbrowse/core/util'
 import { fanOutStatus } from '@jbrowse/core/util/fetchContext'
 import { installFetch } from '@jbrowse/core/util/installFetch'
+import { isDataCurrent } from '@jbrowse/core/util/isDataCurrent'
 import { getTrackAssemblyNames } from '@jbrowse/core/util/tracks'
 import { installAnimationDeadline } from '@jbrowse/display-kit/displayAutoruns'
 import { installGlobalFetchAutorun } from '@jbrowse/display-kit/installGlobalFetchAutorun'
@@ -13,7 +14,7 @@ import {
   installLodTierInfoFetch,
   regionsInAdapterNamespace,
 } from '@jbrowse/synteny-core'
-import { autorun, reaction, untracked } from 'mobx'
+import { action, autorun, observable, reaction, untracked } from 'mobx'
 
 import { getMate } from '../syntenyMate.ts'
 import { lanePairKey } from './alignmentOps.ts'
@@ -54,6 +55,54 @@ interface MultiWayFetchArgs {
 const DEPENDENT_FETCH_DELAY = 500
 
 const DESCRIBE_DEADLINE_MS = 20_000
+
+const VIEW_STILL_MS = 200
+
+/**
+ * Whether the view has stopped moving: at once where the move settled the
+ * coarse blocks itself, as a jump does, and otherwise once VIEW_STILL_MS pass
+ * without another. The coarse blocks alone cannot say, since their throttle
+ * catches up with a view that is still travelling.
+ */
+function installViewStill(self: MultiWaySyntenyDisplayModel) {
+  const still = observable.box(true)
+  const setStill = action((flag: boolean) => {
+    still.set(flag)
+  })
+  let timer: ReturnType<typeof setTimeout> | undefined
+  addDisposer(
+    self,
+    reaction(
+      () => {
+        const view = self.lgv
+        return view.initialized ? `${view.offsetPx}|${view.bpPerPx}` : undefined
+      },
+      (_placed, previous) => {
+        const view = self.lgv
+        const landed =
+          previous === undefined ||
+          (view.coarseBpPerPx === view.bpPerPx &&
+            view.coarseOffsetPx === view.offsetPx)
+        clearTimeout(timer)
+        setStill(landed)
+        if (!landed) {
+          timer = setTimeout(() => {
+            setStill(true)
+          }, VIEW_STILL_MS)
+        }
+      },
+      { name: 'MultiWayViewStill' },
+    ),
+  )
+  addDisposer(self, () => {
+    clearTimeout(timer)
+  })
+  return () => still.get()
+}
+
+function anchorRecordsCurrent(self: MultiWaySyntenyDisplayModel) {
+  return isDataCurrent(self.loadedFetchKey, self.currentFetchKey)
+}
 
 function callSyntenyAdapter(
   self: MultiWaySyntenyDisplayModel,
@@ -217,6 +266,7 @@ async function fetchLanePairBatch(
  */
 function installLaneFetch<Spec extends LaneFetchSpec, Result extends HeldLane>(
   self: MultiWaySyntenyDisplayModel,
+  viewStill: () => boolean,
   {
     name,
     fetchSpecs,
@@ -225,8 +275,11 @@ function installLaneFetch<Spec extends LaneFetchSpec, Result extends HeldLane>(
     fetchMany,
     empty,
     commit,
+    ready = () => true,
   }: {
     name: string
+    /** a tracked skip beside the minimized and moving ones */
+    ready?: () => boolean
     fetchSpecs: () => Spec[]
     state: () => LaneFetchState<HeldLane>
     fetchOne: (spec: Spec, ctx: FetchContext) => Promise<Result>
@@ -245,7 +298,7 @@ function installLaneFetch<Spec extends LaneFetchSpec, Result extends HeldLane>(
     delay: DEPENDENT_FETCH_DELAY,
     idleLeading: true,
     report: { statusWindow: self.statusWindow },
-    gate: () => !self.isMinimized,
+    gate: () => !self.isMinimized && viewStill() && ready(),
     prepare: () => {
       const specs = fetchSpecs()
       const current = state()
@@ -439,14 +492,16 @@ export function doAfterAttach(self: MultiWaySyntenyDisplayModel) {
     alsoWhen: () => self.adapterDeclaresLanes,
     lanes: () => self.fetchLaneSelection,
   })
+  const viewStill = installViewStill(self)
   installGlobalFetchAutorun(self, {
     ...fetchPhases(self),
     delay: 1000,
     idleLeading: true,
+    gate: viewStill,
     name: 'MultiWaySyntenyFetch',
   })
 
-  installLaneFetch(self, {
+  installLaneFetch(self, viewStill, {
     name: 'MultiWayLaneGenes',
     fetchSpecs: () => self.laneGenesFetchSpecs,
     state: () => self.laneGenes,
@@ -471,10 +526,11 @@ export function doAfterAttach(self: MultiWaySyntenyDisplayModel) {
     commit: self.setLaneGenes,
   })
 
-  installLaneFetch(self, {
+  installLaneFetch(self, viewStill, {
     name: 'MultiWayLaneLinks',
     fetchSpecs: () => self.laneLinksFetchSpecs,
     state: () => self.laneLinks,
+    ready: () => anchorRecordsCurrent(self),
     fetchOne: async (spec, ctx) => {
       const { features: links, ops } = await callSyntenyAdapter(self, ctx, {
         regions: spec.onAnchor
@@ -500,7 +556,7 @@ export function doAfterAttach(self: MultiWaySyntenyDisplayModel) {
     commit: self.setLaneLinks,
   })
 
-  installLaneFetch(self, {
+  installLaneFetch(self, viewStill, {
     name: 'MultiWayLaneGroups',
     fetchSpecs: () => self.laneGroupsFetchSpecs,
     state: () => self.laneGroups,
@@ -515,7 +571,7 @@ export function doAfterAttach(self: MultiWaySyntenyDisplayModel) {
     commit: self.setLaneGroups,
   })
 
-  installLaneFetch(self, {
+  installLaneFetch(self, viewStill, {
     name: 'MultiWayLaneLayers',
     fetchSpecs: () => self.laneLayersFetchSpecs,
     state: () => self.laneLayerData,

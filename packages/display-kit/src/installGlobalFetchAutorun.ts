@@ -131,6 +131,8 @@ export function installGlobalFetchAutorun<TArgs, TResult>(
   opts: GlobalFetchPhases<TArgs, TResult> & {
     delay: number
     idleLeading?: boolean
+    /** a further tracked skip, beside the family's own gate */
+    gate?: () => boolean
     name: string
   },
 ) {
@@ -143,7 +145,8 @@ export function installGlobalFetchAutorun<TArgs, TResult>(
     gate: () =>
       self.host.initialized &&
       !self.isMinimized &&
-      !self.gateSkipsMeasuredViewport,
+      !self.gateSkipsMeasuredViewport &&
+      opts.gate?.() !== false,
     heldAnswers: issue =>
       heldDataAnswers(self.regionTooLarge, () =>
         isDataCurrent(self.loadedFetchKey, issue.signature),
