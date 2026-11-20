@@ -1,6 +1,6 @@
 ---
 name: connection-tracks-frozen
-description: "A connection's fetched tracks are frozen plain configs and bases their edits diff against. Waiting on: saving an opened hub track as a session track, and the undo and stalled-hub bugs in the same code."
+description: "A connection's fetched tracks are frozen plain configs and bases their edits diff against. Parked: saving an opened hub track as a session track. Open: the undo, trackId-keyed delta and stalled-hub bugs, and three UI decisions for Colin."
 ---
 
 # Connection tracks go frozen
@@ -54,7 +54,11 @@ ran; their findings are either fixed in those commits or listed under
 
 ## Next
 
-Each step can land by itself, in this order.
+Nothing is queued. Hubs are rarely used, and the step below costs more
+surface than it removes: a `connectionId` on the track config, a track
+selector change and a snapshot migration, against deleting
+`connectionTrackConfigs` and fixing the obscure trackId-keyed delta bug below.
+Take it up when hub use grows or that bug is reported.
 
 - **Save an opened hub track as a session track with its `connectionId`.**
   A `sessionTracks` entry is already a base (ADR-158), and the deltas over the
@@ -71,6 +75,7 @@ Each step can land by itself, in this order.
   - a snapshot migration for saved sessions that hold `connectionTrackConfigs`.
     An old session's entry is the edited config itself, with no delta, so it
     becomes the base and Reset returns to it, not to the hub's original.
+
 ## Reasons that could stop the move to frozen
 
 - **`jbrowse-plugin-hubs` sets `assemblyNames` on a JBrowse 2 hub.** The first
