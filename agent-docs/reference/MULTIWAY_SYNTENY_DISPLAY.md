@@ -44,17 +44,24 @@ every cost is linear in lanes.
   through the gene they share. A gutter beside the anchor joins it to one
   copy; one away from it draws its far copy against the anchor's rule; lanes
   vote and align against the anchor (`vsAnchor`). A copy lane is
-  `{assembly}refName`, keyed with both canonical (`laneKeyIn`), and answers to
-  its genome's name in `rows.sort`, `labels`, `colors`, `kept` and the hidden
-  lanes. A contig under `COPY_SHARE` of its genome's heaviest evidence draws
-  no lane unless `rows.kept` names it; a copy on the anchor's own genome draws
-  none, as a mate on the anchor's assembly never has. Every path that treats a
-  lane as an assembly reads `laneGenome`. Continuing a LinearSyntenyView's
-  ribbons into each row as faint columns was the declined alternative: it
-  painted over the ruler, track headers and block bars (ADR-278).
-- **The anchor stacks where `rows.sort` names its assembly** (`anchorRowOf`),
-  after the leading lanes the sort names before it, or first. A drag of the
-  anchor's label or its lane menu's Move up/down writes it; a lane dropped on
+  `{assembly}refName`, keyed with both canonical (`laneKeyWith`), and answers
+  to its genome's name in `labels`, `colors` and the hidden lanes; in
+  `rows.sort` a genome places only its copies no other entry names
+  (`sortedLanes`), and in `kept` it keeps its copies unless a copy of it is
+  kept. With genome lanes a copy in `kept` or `sort` stands for its genome,
+  so switching `rows.field` keeps both. A contig under `COPY_SHARE` of its
+  genome's heaviest evidence draws no lane unless `rows.kept` names it, and
+  the lane dialog offers it unticked; only the anchor's own contig draws no
+  copy lane, so the anchor genome's other copies draw. The display and
+  `multiwayTables` share the wiring (`groupsOfField`, `rowsReadAgainstAnchor`,
+  `anchorRowOf`). Every path that treats a lane as an assembly reads
+  `laneGenome`. Continuing a LinearSyntenyView's ribbons into each row as
+  faint columns was the declined alternative: it painted over the ruler,
+  track headers and block bars (ADR-278).
+- **Among copy lanes the anchor stacks where `rows.sort` names its
+  assembly** (`anchorRowOf`), after the lanes the entries before it place, or
+  first; genome lanes always stack it first. A drag of the anchor's label or
+  its lane menu's Move up/down writes it, copy lanes only; a lane dropped on
   the anchor's band lands beside it on its own side (`dropTargetRow`). Lanes
   above the anchor decide outward from it (`decideLanesOn`), a star gutter
   above it mirrors the one below (`anchorRuleAboveY`), and a lane pair is

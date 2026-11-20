@@ -9378,7 +9378,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           }
         },
         "sort": {
-          "description": "the lanes that stack first, by name, in this order; the rest follow densest-first, or each beside the lane most alike where the source joins neighbouring lanes; the anchor's assembly named here stacks the anchor there.",
+          "description": "the lanes that stack first, by name, in this order; the rest follow densest-first, or each beside the lane most alike where the source joins neighbouring lanes; among copy lanes the anchor's assembly named here stacks the anchor there.",
           "if": {
             "type": "null"
           },

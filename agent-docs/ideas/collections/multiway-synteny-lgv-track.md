@@ -31,11 +31,13 @@ hosting, so they belong with the tutorial-data pipeline work.
 **A self-comparison's copy lanes.** A lane per copy of the window landed as
 `rows.field: 'refName'`
 ([ADR-278](../../architecture-decision-records/adr-278-a-copy-of-the-window-draws-as-its-own-lane.md)).
-The homoeolog self-comparison stays out: `oat_homoeologs` names one assembly
-twice, and a copy on the anchor's own genome draws no lane, since paralogy
-records in an all-vs-all PAF name the anchor as their own mate. A
-self-comparison mode has to tell "this track compares wheat to itself on
-purpose" from "this record is a repeat hit". The blocks adapter's copy columns
+A copy on another contig of the anchor's genome draws as a lane there, and
+only the anchor's own contig (the self-diagonal) is dropped, so wheat
+anchored at 1A shows 1B and 1D. What stays out: `oat_homoeologs` names one
+assembly twice, and a repeat hit elsewhere in the anchor's genome clears
+the floor like a homoeolog does. Telling "this track compares wheat to itself
+on purpose" from "this record is a repeat hit" is the unbuilt part. The
+blocks adapter's copy columns
 (`columnsFor` in MCScanBlocksAdapter) carry the purposeful case, and would key
 a copy lane more sharply than its contig, once a grouped mate says which
 column it came from.

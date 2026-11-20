@@ -120,7 +120,9 @@ From [TrackHeightMixin](../trackheightmixin): <span id="volatile-scrolltop">[`sc
 | <span id="getter-livelodtier">**liveLodTier**</span><br><code>LodTier</code> |  |
 | <span id="getter-viewsignature">**viewSignature**</span><br><code>string &#124; undefined</code> |  |
 | <span id="getter-lanefield">**laneField**</span><br><code>"assembly" &#124; "refName"</code> | `rows.field`: a lane per genome, or per copy of the window a genome holds |
+| <span id="getter-groupedfeatures">**groupedFeatures**</span><br><code>MultiWayGroup[]</code> |  |
 | <span id="getter-groups">**groups**</span><br><code>MultiWayGroup[]</code> | each mate filed under its genome's lane, or its copy lane |
+| <span id="getter-copylanesunderfloor">**copyLanesUnderFloor**</span><br><code>string[]</code> | the copy lanes the window places too little of to draw, which the lane dialog offers unticked |
 | <span id="getter-laneindels">**laneIndels**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>{ openings: (assemblyName: string, refName: string) =&gt; readonly…</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>{ openings: (assemblyName: string, refName: string) =&gt; readonly LaneOpening[]; changes: (assemblyName: string, refName: string) =&gt; readonly LaneChange[]; }</code></pre></dialog></span> | each lane's holes and stated changes against the anchor, read off every fetched group rather than the viewport's, so one appears once both its pieces arrive and not as the second scrolls in |
 | <span id="getter-laneopenings">**laneOpenings**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>(assemblyName, refName) =&gt; readonly LaneOpening[]</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>(assemblyName: string, refName: string) =&gt; readonly LaneOpening[]</code></pre></dialog></span> | each lane's holes, one per deletion `laneIndels` opens |
 | <span id="getter-lanechanges">**laneChanges**</span><br><code>(assemblyName: string, refName: string) =&gt; readonly LaneChange[]</code> | each lane's deletions, insertions and inversions as its records state them, for the header |
@@ -140,7 +142,7 @@ From [TrackHeightMixin](../trackheightmixin): <span id="volatile-scrolltop">[`sc
 | <span id="getter-adapterpairsonanchor">**adapterPairsOnAnchor**</span><br><code>boolean</code> |  |
 | <span id="getter-adapterbatcheslanepairs">**adapterBatchesLanePairs**</span><br><code>boolean</code> | the adapter answers a window's `lanePairs` in one call |
 | <span id="getter-sessiontracksbyid">**sessionTracksById**</span><br><code>ReadonlyMap&lt;string, AnyTrackConfig&gt;</code> | every session track, connections' included |
-| <span id="getter-rowsvsanchor">**rowsVsAnchor**</span><br><code>boolean</code> | a source that names an anchor and answers no lane pairs states each lane against the anchor alone, so each gutter draws its far lane against the anchor; so are copy lanes, since two copies of one genome are paired only through the anchor gene they share |
+| <span id="getter-rowsvsanchor">**rowsVsAnchor**</span><br><code>boolean</code> | whether each gutter draws its far lane against the anchor (`rowsReadAgainstAnchor`) |
 | <span id="getter-lanefetchkinds">**laneFetchKinds**</span><br><code>{ lanePairs: boolean; laneRows: boolean; }</code> | the fetches beyond the anchor's that its records call for |
 | <span id="getter-domain">**domain**</span><br><code>string[]</code> | `rows.sort` in each placed lane's own spelling, so an order a config wrote with an alias merges with one a drag writes |
 | <span id="getter-configuredlanes">**configuredLanes**</span><br><code>string[]</code> | the track's assemblies beside the anchor for a source that declares the lanes itself, empty for every other source |
@@ -152,12 +154,13 @@ From [TrackHeightMixin](../trackheightmixin): <span id="volatile-scrolltop">[`sc
 | <span id="getter-anchorlocstring">**anchorLocString**</span><br><code>string</code> |  |
 | <span id="getter-declaredlanelabels">**declaredLaneLabels**</span><br><code>Map&lt;string, string&gt;</code> | keyed by `laneKey` |
 | <span id="getter-rowlabels">**rowLabels**</span><br><code>Map&lt;string, string&gt;</code> | `rows.labels`, keyed by `laneKey` |
+| <span id="getter-againstanchor">**againstAnchor**</span><br><code>string &#124; undefined</code> | the anchor's name in a lane's `vs` badge and the legend where the lanes read against it: its label beside copy lanes, which name their genome's label, else its assembly name |
 | <span id="getter-declaredlanecolors">**declaredLaneColors**</span><br><code>Map&lt;string, string&gt;</code> | the colors the source declares, the anchor's `anchorColor` among them, keyed by `laneKey` |
 | <span id="getter-rowcolors">**rowColors**</span><br><code>Map&lt;string, string&gt;</code> | `rows.colors`, keyed by `laneKey` |
 | <span id="getter-laneuniverse">**laneUniverse**</span><br><code>LaneChoice[]</code> | the anchor is never a lane |
 | <span id="getter-unalignedchosenlanes">**unalignedChosenLanes**</span><br><code>string[]</code> | the lanes `rows.kept` names that the held fetch answered for and placed nothing in; an unchosen lane placing nothing draws no row |
 | <span id="getter-rowassemblies">**rowAssemblies**</span><br><code>string[]</code> | a paralogy mate on the anchor assembly draws on its axis, not as a row |
-| <span id="getter-anchorrow">**anchorRow**</span><br><code>number</code> | the anchor's row in the stack: after the lanes `rows.sort` names before its assembly, or first |
+| <span id="getter-anchorrow">**anchorRow**</span><br><code>number</code> | the anchor's row in the stack: first, or among copy lanes after the lanes `rows.sort` places before its assembly (`anchorRowOf`) |
 | <span id="getter-laneorder">**laneOrder**</span><br><code>string[]</code> | every lane in the order it stacks, the anchor's included |
 | <span id="getter-pinsinforce">**pinsInForce**</span><br><code>LanePin[]</code> | the pins that hold under the anchor, each naming its lane as `rowAssemblies` spells it |
 | <span id="getter-structurelanekeys">**structureLaneKeys**</span><br><code>string[]</code> | every fetched lane's key, chained by its deletions and insertions against the anchor |
@@ -279,6 +282,7 @@ From [BaseDisplay](../basedisplay): <span id="getter-parenttrack">[`parentTrack`
 <!-- prettier-ignore -->
 | Member | Description |
 | --- | --- |
+| <span id="method-copyfiling">**copyFiling**</span><br><code>() =&gt; CopyLaneFiling</code> | how copy lanes file: `rows.kept` lifts the floor, and the anchor's own contigs file nowhere |
 | <span id="method-lanekey">**laneKey**</span><br><code>(lane: string) =&gt; string</code> | the canonical name, so two spellings of one lane share a key: a copy lane's assembly and refName each canonical, where the session holds its genome |
 | <span id="method-lanespellings">**laneSpellings**</span><br><code>(lane: string) =&gt; string[]</code> | the lane's genome and every alias the session holds it under |
 | <span id="method-namedlanetracks">**namedLaneTracks**</span><br><code>(entries: readonly string[], key: string) =&gt; AnyTrackConfig[]</code> | the tracks `entries` names for the lane keyed `key`, best first: plain ids, then `{assembly}` entries, each in entry order |

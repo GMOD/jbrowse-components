@@ -2572,15 +2572,28 @@ describe('one lane per copy', () => {
       trackAssemblyNames: ['volvox', 'volvox_random'],
       geneTracks: [],
     })
-    // ctgB the ortholog, ctgC an older copy keeping fewer genes
+    // ctgB the ortholog, ctgC an older copy keeping fewer genes, ctgD a third
     display.setFeatures(
       pairsOn([
         ['volvox_random', 'ctgB', 8],
         ['volvox_random', 'ctgC', 3],
+        ['volvox_random', 'ctgD', 2],
       ]),
     )
-    const lanesMenu = lanesMenuItem(display)
-    expect(clickLabel(lanesMenu.subMenu, 'One lane per copy')).toBe(true)
+    expect(
+      clickLabel(lanesMenuItem(display).subMenu, 'One lane per copy'),
+    ).toBe(true)
+    expect(display.rowAssemblies).toEqual([
+      '{volvox_random}ctgB',
+      '{volvox_random}ctgC',
+      '{volvox_random}ctgD',
+    ])
+    // Choose lanes, unticking ctgD
+    display.chooseLanes(
+      display.laneUniverse
+        .filter(l => l.drawn && l.name !== '{volvox_random}ctgD')
+        .map(l => l.name),
+    )
     expect(display.laneOrder).toEqual([
       'volvox',
       '{volvox_random}ctgB',
@@ -2719,6 +2732,11 @@ describe('one lane per copy', () => {
       loaded.set(true)
     })
     dispose()
+    expect(orders[0]).toEqual([
+      'volvox',
+      '{volvox_random}NC_081815.1',
+      '{volvox_random}NC_081813.1',
+    ])
     expect(orders.at(-1)).toEqual([
       '{volvox_random}NC_081813.1',
       'volvox',

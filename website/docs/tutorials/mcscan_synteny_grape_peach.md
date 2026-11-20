@@ -278,9 +278,11 @@ turn on the .anchors track:
   **Lanes → One lane per copy**. Each grape chromosome holding a copy of the
   window gets its own lane, with its gene track, and every ribbon joins a peach
   gene to the grape gene MCScan paired it with.
-- **Lanes → Choose lanes...** keeps grape chr9 and chr11.
-- Drag the peach lane's name between the two grape lanes, or pick **Move down**
-  in its lane menu, so each copy faces peach across its own gutter.
+- In **Lanes → Choose lanes...**, untick every grape chromosome but chr9 and
+  chr11.
+- Pick **Move up** twice in the grape chr9 lane's menu (right-click its name),
+  so the older copy sits above peach and the ortholog below, each facing peach
+  across its own gutter.
 
 <Figure caption="A 370 kb stretch of peach chrG7 between an older grape copy on chr9 (above) and its grape ortholog on chr11 (below), one lane per copy, each gutter joining peach genes to one copy's." src="/img/mcscan_synteny/gamma_copies.png" />
 

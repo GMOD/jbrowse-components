@@ -1,6 +1,6 @@
 ---
 status: Accepted
-summary: "MultiWaySyntenyDisplay `rows.field: 'refName'` draws a lane per contig holding a copy of the anchor window, named `{assembly}refName`; copy lanes read against the anchor alone, and `rows.sort` naming the anchor stacks it between them. Synteny-view ribbon columns into each row were declined"
+summary: "MultiWaySyntenyDisplay `rows.field: 'refName'` draws a lane per contig holding a copy of the anchor window, named `{assembly}refName`, read against the anchor alone; `rows.sort` naming the anchor stacks it between copies, and genome lanes are unchanged. Synteny-view ribbon columns were declined"
 ---
 
 # ADR-278: A copy of the window draws as its own lane
@@ -33,21 +33,33 @@ breaks "a gutter draws only what its source states"
 - **`rows.field` says what one lane is**: `assembly` (the default) or
   `refName`, a lane per contig, as the variant display's `rows.field` says
   `sample` or `haplotype` ([ADR-257](adr-257-the-row-axis-owns-its-settings.md)).
-  The lanes' `rows` still writes member by member, so switching keeps
-  `sort`, `labels`, `colors` and `kept`, which a copy lane reads through its
-  genome's name. The track menu's **Lanes → One lane per copy** writes it.
+  The lanes' `rows` still writes member by member, and switching keeps
+  `sort`, `labels`, `colors` and `kept`: a copy lane reads a genome's entry,
+  and a genome lane reads a copy's entry in `kept` or `sort` as its genome's
+  (`chosenLaneTest`, `unalignedChosenLanesOf`, `sortedLanes`). The track
+  menu's **Lanes → One lane per copy** writes it.
+- **Genome lanes are unchanged.** The anchor stacks first, a star's lanes
+  decide against the lane above, its badge and legend name the anchor's
+  assembly, and the anchor's label neither drags nor moves; `anchorRowOf`
+  answers 0 and `decideLanesOn` takes `vsAnchor` only for copy lanes.
 - **A copy lane is named as a locstring names a contig with its assembly**,
-  `{grape}chr9` (`copyLane.ts`: `copyLaneName`, `laneOf`, `laneKeyIn`). The
+  `{grape}chr9` (`copyLane.ts`: `copyLaneName`, `laneOf`, `laneKeyWith`). The
   key canonicalizes the assembly and, where the session holds the genome, the
   refName, so `{grape}chr9` and `{GCF_030704535.1}NC_081813.1` are one lane
-  and a share link carries whichever spelling was written. A copy lane answers
-  to its genome's name: a `sort`, `kept` or hidden entry naming the genome
-  reaches each copy, and an unlabelled copy reads "grape chr9", its genome's
-  label and its contig.
+  and a share link carries whichever spelling was written. The refName's
+  canonical spelling reads the genome's aliases, so the derivation comparing
+  keys loads the genome and runs again once it has. An unlabelled copy reads
+  "grape chr9", its genome's label and its contig.
+- **One ordering rule** (`sortedLanes`): `rows.sort` entries place lanes in
+  the order written; a genome entry places only its copies no other entry
+  names, so a sort naming the genome still lets a copy be dragged. A genome
+  in `kept` keeps each of its copies unless `kept` names one of them.
 - **A contig under a tenth of its genome's heaviest contig's evidence draws no
   lane** (`COPY_SHARE`) unless `rows.kept` names it. The `alsoOn` share, a
   fifth, dropped the figure's own copy: an old duplication keeps few genes,
-  and grape chr9 holds a fifth of chr11's pairs over that window.
+  and grape chr9 holds a fifth of chr11's pairs over that window. The lane
+  dialog offers such a copy unticked, lists a genome as placed where its
+  copies are, and offers no lane that cannot draw.
 - **Copy lanes read against the anchor alone**, through the star sources' rule
   (`rowsVsAnchor`): a gutter beside the anchor joins it to one copy, gene to
   gene; a gutter between two copies draws its far copy against the anchor's
@@ -56,20 +68,24 @@ breaks "a gutter draws only what its source states"
   copy to copy, which a pairwise source never states. A table that does state
   a triad row (wheat A, B, D together) draws it against the anchor too, the
   lenient reading.
-- **The anchor stacks where `rows.sort` names its assembly**, after the
-  leading lanes the sort names before it, as jcvi's microsynteny layout puts
-  its reference in the middle. Dragging the anchor's label, or its lane menu's
-  **Move up**/**Move down**, writes the sort with the anchor in it; a lane
-  dropped on the anchor's band lands beside it on its own side. Lanes above
+- **Among copy lanes the anchor stacks where `rows.sort` names its
+  assembly**, after the lanes the entries before it place, as jcvi's
+  microsynteny layout puts its reference in the middle. Dragging the anchor's
+  label, or its lane menu's **Move up**/**Move down**, writes the sort with
+  the anchor in it; a copy lane's own Move up/down passes the anchor, and a
+  lane dropped on the anchor's band lands beside it on its own side. Lanes above
   the anchor decide outward from it, and a star gutter above it mirrors the one
   below.
 - **A lane is a contig, not a block.** Two copies on one contig stay one lane,
   whose header names the other block (`· also at`), since a block's extent
   moves with the window and could not key a label, pin or share link.
-- **The anchor's own paralogs draw no lane**, as a mate on the anchor's
-  assembly never did: an all-against-all source names the anchor as its own
-  mate for every repeat hit. A self-comparison (`oat_homoeologs`) stays a
-  synteny-view figure.
+- **Only the anchor's own contig draws no copy lane.** An all-against-all
+  source pairs every anchor gene with itself, so a mate on the anchor's
+  contig files nowhere and counts toward no floor (`onAnchorContig`); the
+  anchor genome's other contigs are copies like any other, so wheat anchored
+  at 1A draws 1B and 1D. Genome lanes still drop every mate on the anchor's
+  assembly. A repeat hit elsewhere in the anchor's genome clears the floor
+  only where its contig holds a tenth of the heaviest copy's evidence.
 - **Opt-in.** A genome lane stays the default, so no stack with one copy per
   genome changes. It could become the default for a source with one mate
   genome, where every gutter already pairs with the anchor and the copies are
@@ -83,7 +99,9 @@ breaks "a gutter draws only what its source states"
   as an assembly reads its genome (`laneGenome`): gene and layer fetch regions,
   descriptions and temporary assemblies, **Open in new view**, re-anchoring
   and the synteny launch's panels.
-- `multiwayTables` reads `rows.field` and the anchor's row, so an export
+- `multiwayTables` shares the display's wiring (`groupsOfField`,
+  `rowsReadAgainstAnchor`, `anchorRowOf`, `againstAnchorName`), keys copy
+  lanes through `laneAssemblyOf`, and takes `rows.field` typed, so an export
   stacks as the display does.
 - MCScan `.blocks` copy columns (`columnsFor` in `MCScanBlocksAdapter`) would
   be a sharper lane identity than the contig, but a grouped mate does not

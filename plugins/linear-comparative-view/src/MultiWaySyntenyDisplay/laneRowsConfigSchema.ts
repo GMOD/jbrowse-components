@@ -12,8 +12,8 @@ import { LANE_ROWS_FIELDS } from './copyLane.ts'
  * arrangement a reader gives the lanes, by name, and writing it changes only
  * the members stated. `sort` lists the lanes that stack first, in order, the
  * rest following densest-first so a ribbon chain through adjacent lanes is
- * cut as late as possible; the anchor's assembly named in it stacks the
- * anchor at that place, where otherwise it stacks first. `kept` names the
+ * cut as late as possible; among copy lanes the anchor's assembly named in
+ * it stacks the anchor at that place, where otherwise it stacks first. `kept` names the
  * lanes drawn, empty drawing the track's lanes or every lane. Haplotype lanes
  * read off a graph follow by structure instead, below any lanes `sort` pins,
  * so lanes whose deletions and insertions against the anchor match sit
@@ -47,11 +47,14 @@ export const laneRowsConfigSchema = ConfigurationSchema(
      * holding a copy of the window, a polyploid's homoeologs or an old
      * duplication's ohnologs, each read against the anchor alone. A copy lane
      * is named as a locstring names a contig with its assembly,
-     * `{grape}chr9`, and answers to its genome's name, so a `sort`, `labels`,
-     * `colors` or `kept` entry naming the genome reaches each of its copies,
-     * and switching between the two keeps them. A contig holding under a tenth
-     * of its genome's heaviest contig's evidence draws no lane unless `kept`
-     * names it.
+     * `{grape}chr9`, and answers to its genome's name: a `labels` or
+     * `colors` entry naming the genome reaches each of its copies, a `kept`
+     * one keeps each copy unless `kept` names one of them, and a `sort` one
+     * places the copies no other entry names. With genome lanes a copy named
+     * in `kept` or `sort` stands for its genome, so switching keeps both. A
+     * contig holding under a tenth of its genome's heaviest contig's evidence
+     * draws no lane unless `kept` names it. The anchor's own contig draws no
+     * lane; its genome's other contigs draw as copies.
      */
     field: {
       type: 'stringEnum',
@@ -64,14 +67,14 @@ export const laneRowsConfigSchema = ConfigurationSchema(
      * #slot sort
      * The lanes that stack first, by name, in this order; the rest follow
      * densest-first, or each beside the lane most alike where the source joins
-     * neighbouring lanes. The anchor's assembly named here stacks the anchor
-     * at that place.
+     * neighbouring lanes. Among copy lanes, the anchor's assembly named here
+     * stacks the anchor at that place.
      */
     sort: {
       type: 'stringArray',
       defaultValue: [],
       description:
-        "the lanes that stack first, by name, in this order; the rest follow densest-first, or each beside the lane most alike where the source joins neighbouring lanes; the anchor's assembly named here stacks the anchor there",
+        "the lanes that stack first, by name, in this order; the rest follow densest-first, or each beside the lane most alike where the source joins neighbouring lanes; among copy lanes the anchor's assembly named here stacks the anchor there",
     },
     /**
      * #slot labels
