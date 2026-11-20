@@ -12,7 +12,9 @@ import { rampEncodingOf, valueRampOf } from '@jbrowse/display-kit/valueRamp'
 
 import { ALT_HUE } from './cellFill.ts'
 import { PHASE_SET_FIELD } from './getPhasedColor.ts'
+import { MENDELIAN_FIELD } from './trios.ts'
 
+import type { TrioClass } from './classifyTrio.ts'
 import type { VariantRowsField } from './constants.ts'
 import type { HeldSlots } from '@jbrowse/core/ui/colors'
 import type { Feature } from '@jbrowse/core/util'
@@ -164,9 +166,11 @@ export function cellHueReaderOf(
   {
     jexl,
     rowsField,
+    mendelian = new Map(),
   }: {
     jexl: JexlInstance
     rowsField: VariantRowsField
+    mendelian?: ReadonlyMap<string, TrioClass>
   },
 ): CellHueReader {
   if (read === undefined) {
@@ -186,6 +190,9 @@ export function cellHueReaderOf(
   }
   if (read.field === PHASE_SET_FIELD) {
     return { byPhaseSet: rowsField === 'haplotype' }
+  }
+  if (read.field === MENDELIAN_FIELD) {
+    return { value: feature => mendelian.get(feature.id()) }
   }
   const get = fieldReader(read.field, jexl)
   return { value: feature => valueText(get(feature)) }

@@ -1,4 +1,5 @@
 import { SV_TYPE_FIELD } from '@jbrowse/core/util/categoricalField'
+import { compilePredicates } from '@jbrowse/core/util/fieldPredicate'
 
 import {
   alleleBucketCounts,
@@ -15,12 +16,15 @@ import {
   isSiteField,
   summarizeAlleleCounts,
 } from '../shared/minorAlleleFrequencyUtils.ts'
+import { NO_TRANSMISSION, makeMendelianCheck } from '../shared/trios.ts'
 import { featureHasConsequence } from '../shared/variantConsequence.ts'
 
+import type { TransmissionEntry, TrioClass } from '../shared/classifyTrio.ts'
 import type {
   AlleleSummary,
   FilteredVariant,
 } from '../shared/minorAlleleFrequencyUtils.ts'
+import type { Trio } from '../shared/trios.ts'
 import type SerializableFilterChain from '@jbrowse/core/pluggableElementTypes/renderers/util/serializableFilterChain'
 import type { Feature, ProgressReporter } from '@jbrowse/core/util'
 import type { FieldPredicate } from '@jbrowse/core/util/fieldPredicate'
@@ -111,6 +115,8 @@ interface AnalyzedVariants {
   featureGenotypeCodes: Map<string, Uint32Array>
   genotypeDict: string[]
   sampleNames: string[]
+  // each kept feature's Mendelian check, where a trio settles one
+  mendelian: Map<string, TrioClass>
 }
 
 // Canonical sample order for the code arrays: the union of every header sample
@@ -207,6 +213,9 @@ export function analyzeVariants({
   filterChain,
   keepUncalledSites = false,
   readGenotypes = true,
+  trios = [],
+  transmissionOf = () => NO_TRANSMISSION,
+  mendelianFilter = [],
   report,
 }: {
   features: Feature[]
@@ -222,6 +231,13 @@ export function analyzeVariants({
   // stays. Off when no sample is asked for, so `genotypes.show` off draws
   // what a sites-only VCF draws.
   readGenotypes?: boolean
+  // The trios whose Mendelian check each site takes, by sample name, and the
+  // transmission rule of a feature's refName.
+  trios?: readonly Trio[]
+  transmissionOf?: (refName: string) => readonly TransmissionEntry[]
+  // The `filter` entries on the Mendelian check, tested beside the site
+  // filter once a site's genotypes are read.
+  mendelianFilter?: readonly FieldPredicate[]
   report?: ProgressReporter
 }): AnalyzedVariants {
   const ploidyRanks: Record<string, number> = {}
@@ -256,6 +272,17 @@ export function analyzeVariants({
   const numSamples = sampleNames.length
   const sampleIndexByName = buildSampleIndex(sampleNames)
   const headerRemapOf = makeHeaderRemapper(sampleIndexByName)
+  const mendelianOf = makeMendelianCheck({
+    trios,
+    columnByName: sampleIndexByName,
+    genotypeDict,
+  })
+  const passesMendelian =
+    compilePredicates<TrioClass | undefined>(mendelianFilter, () => ({
+      kind: 'get',
+      get: value => value,
+    })) ?? (() => true)
+  const mendelian = new Map<string, TrioClass>()
 
   // Per-site memo of genotype ranges already seen, as parallel arrays so the
   // scan allocates nothing. `memoKey` is the packed genotype
@@ -283,6 +310,7 @@ export function analyzeVariants({
     let codes: Uint32Array | undefined
     let record: Record<string, string> | undefined
     let alleleCounts: Record<string, number>
+    let mendelianValue: TrioClass | undefined
 
     if (hasProcessGenotypes(feature) && numSamples > 0) {
       const siteCodes = spareCodes ?? new Uint32Array(numSamples)
@@ -395,6 +423,10 @@ export function analyzeVariants({
         )
       }
       alleleCounts = alleleBucketCounts(overflow)
+      mendelianValue = mendelianOf?.(
+        siteCodes,
+        transmissionOf(feature.get('refName')),
+      )
     } else {
       // A sites-only VCF has no genotypes field at all
       record = readGenotypes
@@ -436,9 +468,15 @@ export function analyzeVariants({
         (numSamples === 0 &&
           record !== undefined &&
           Object.keys(record).length === 0))
-    if (keptUncalled || passesSite(summary)) {
+    if (
+      (keptUncalled || passesSite(summary)) &&
+      passesMendelian(mendelianValue)
+    ) {
       const featureId = feature.id()
       filteredVariants.push({ feature, mostFrequentAlt })
+      if (mendelianValue !== undefined) {
+        mendelian.set(featureId, mendelianValue)
+      }
       if (codes) {
         featureGenotypeCodes.set(featureId, codes)
       } else if (record) {
@@ -509,6 +547,7 @@ export function analyzeVariants({
     featureGenotypeCodes,
     genotypeDict,
     sampleNames,
+    mendelian,
   }
 }
 

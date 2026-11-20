@@ -1,3 +1,4 @@
+import type { TrioClass } from './classifyTrio.ts'
 import type { ContextMenuAnchor } from '@jbrowse/core/ui'
 import type { Feature } from '@jbrowse/core/util'
 
@@ -69,6 +70,9 @@ interface VariantFeatureBase {
   groupKey: string
   labelName: string
   labelDescription: string
+  // The record's Mendelian check over the trios the fetch was sent, unset
+  // where none settles one: what the hover names.
+  mendelian?: TrioClass
 }
 
 // Genotype strings are interned into the shared `CellDataResult.genotypeDict`;

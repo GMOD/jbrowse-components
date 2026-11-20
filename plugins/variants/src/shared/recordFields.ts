@@ -1,6 +1,9 @@
 import { fieldReader } from '@jbrowse/core/util/fieldReader'
 import { valueText } from '@jbrowse/core/util/groupKeys'
 
+import { MENDELIAN_FIELD } from './trios.ts'
+
+import type { TrioClass } from './classifyTrio.ts'
 import type { Feature } from '@jbrowse/core/util'
 import type { JexlInstance } from '@jbrowse/core/util/jexlStrings'
 
@@ -26,21 +29,34 @@ export const NO_RECORD_FIELD_READS: RecordFieldReads = {
   labelDescription: '',
 }
 
-function textReader(field: string, jexl: JexlInstance) {
-  const read = field === '' ? undefined : fieldReader(field, jexl)
-  return (feature: Feature) => (read ? valueText(read(feature)) : '')
+function textReader(
+  field: string,
+  jexl: JexlInstance,
+  mendelian: ReadonlyMap<string, TrioClass>,
+) {
+  const read =
+    field === '' || field === MENDELIAN_FIELD
+      ? undefined
+      : fieldReader(field, jexl)
+  return field === MENDELIAN_FIELD
+    ? (feature: Feature) => mendelian.get(feature.id()) ?? ''
+    : (feature: Feature) => (read ? valueText(read(feature)) : '')
 }
 
-/** What the cell loop reads off each record for {@link RecordFieldReads}. */
+/**
+ * What the cell loop reads off each record for {@link RecordFieldReads}, the
+ * Mendelian check out of `mendelian`, since no record carries it.
+ */
 export function recordFieldReaders(
   reads: RecordFieldReads,
   jexl: JexlInstance,
+  mendelian: ReadonlyMap<string, TrioClass> = new Map(),
 ) {
   return {
-    tooltip: textReader(reads.tooltip, jexl),
-    groupKey: textReader(reads.facet, jexl),
-    labelName: textReader(reads.labelName, jexl),
-    labelDescription: textReader(reads.labelDescription, jexl),
+    tooltip: textReader(reads.tooltip, jexl, mendelian),
+    groupKey: textReader(reads.facet, jexl, mendelian),
+    labelName: textReader(reads.labelName, jexl, mendelian),
+    labelDescription: textReader(reads.labelDescription, jexl, mendelian),
   }
 }
 

@@ -15,6 +15,7 @@ import {
   NO_RECORD_FIELD_READS,
   recordFieldReaders,
 } from '../shared/recordFields.ts'
+import { NO_TRANSMISSION } from '../shared/trios.ts'
 import { analyzeVariants, simplifyFeatures } from './analyzeVariants.ts'
 import { fetchVariantFeatures } from './fetchVariantFeatures.ts'
 import { groupFeaturesByRegion } from './groupFeaturesByRegion.ts'
@@ -161,6 +162,9 @@ export async function variantCellData({
     byteLimit,
     bpPerPx,
     maxFeatureDensity,
+    trios = [],
+    transmission = [],
+    mendelianFilter,
   } = args
 
   const adapter = await getFeatureAdapterOrThrow({ ...args, pluginManager })
@@ -180,6 +184,13 @@ export async function variantCellData({
   }
 
   const features = await fetchVariantFeatures(adapter, regions, args)
+  const transmissionByRefName = new Map(
+    regions.map((region, i) => [
+      region.refName,
+      transmission[i] ?? NO_TRANSMISSION,
+    ]),
+  )
+  const drawsRows = sampleFilter?.length !== 0
   const progressOpts = {
     statusCallback,
     signal,
@@ -194,6 +205,7 @@ export async function variantCellData({
     featureGenotypeCodes,
     genotypeDict,
     sampleNames,
+    mendelian,
   } = await withProgress(
     {
       ...progressOpts,
@@ -203,10 +215,14 @@ export async function variantCellData({
     report =>
       analyzeVariants({
         features,
-        siteFilter,
+        siteFilter: drawsRows ? siteFilter : undefined,
         filterChain: filters,
         keepUncalledSites: layout === 'genomic',
-        readGenotypes: sampleFilter?.length !== 0,
+        readGenotypes: drawsRows || trios.length > 0,
+        trios,
+        transmissionOf: refName =>
+          transmissionByRefName.get(refName) ?? NO_TRANSMISSION,
+        mendelianFilter,
         report,
       }),
   )
@@ -233,9 +249,14 @@ export async function variantCellData({
   const hue = cellHueReaderOf(color, {
     jexl: pluginManager.jexl,
     rowsField,
+    mendelian,
   })
   const colorByPhaseSet = hue.byPhaseSet ?? false
-  const readers = recordFieldReaders(recordFields, pluginManager.jexl)
+  const readers = recordFieldReaders(
+    recordFields,
+    pluginManager.jexl,
+    mendelian,
+  )
 
   // The worker's own row list, in its own arbitrary order — see
   // buildCanonicalRows. Phased mode expands to per-haplotype rows here, using
@@ -305,6 +326,7 @@ export async function variantCellData({
           featureGenotypeCodes,
           genotypeDict,
           sampleNames,
+          mendelian,
           report,
         })
       }
