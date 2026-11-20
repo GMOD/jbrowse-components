@@ -383,11 +383,12 @@ starts on the right.
 ## Track table
 
 The Tree | Table toggle at the top of "Available tracks" shows all tracks as a
-filterable table, with the tracks whose name matches the filter box listed
-first. The filter chips carry over between the tree and the table. In table
-mode, the track selector's ☰ menu shows or hides any column through Manage
-columns, and switches the checkboxes to adding tracks to the selection instead
-of turning them on or off. Tracks with `metadata` fields get extra columns:
+filterable table. The rows follow the tree's order, with each track's category
+in the column beside its name, until you click a column header to sort; a search
+lists the tracks whose name matches first. The filter chips carry over between
+the tree and the table. In table mode, the track selector's ☰ menu shows or
+hides any column through Manage columns. Tracks with `metadata` fields get extra
+columns:
 
 ```json
 {
