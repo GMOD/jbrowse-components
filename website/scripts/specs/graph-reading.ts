@@ -1,8 +1,4 @@
-import {
-  PARK_CURSOR,
-  sessionSpec,
-  trackMenuIcon,
-} from '../screenshot-spec-helpers.ts'
+import { PARK_CURSOR, sessionSpec } from '../screenshot-spec-helpers.ts'
 import { PORTAL_CONFIG } from './genomes_pangenome.ts'
 import {
   GRAPH_DRAWN,
@@ -89,7 +85,15 @@ function kiv2WalksGraphTrack(pane: Record<string, unknown> = {}) {
   })
 }
 
-const HG00133_ITEM = '[data-testid^="cascading-menuitem-hg00133"]'
+// GRCh38 and two of the lanes track's haplotypes; of the three, HG00133 has
+// the most sequence off GRCh38's path.
+const KIV2_THREADS = [
+  'GRCh38#0#chr6',
+  'HG00097#1#JBIRDD010000043.1',
+  'HG00133#1#CM090050.1',
+]
+
+const threads = (walks: string[]) => walks.map(walk => ({ walk }))
 
 const kiv2WalksSpec: ScreenshotSpec = {
   mode: 'url',
@@ -104,8 +108,11 @@ const kiv2WalksSpec: ScreenshotSpec = {
           hg38GeneLane(40),
           hprcBubblesLane(50),
           { ...hprcSegmentsLane(KIV2_BUBBLE_REGION), height: 70 },
-          // the figure holds the reference straight
-          kiv2WalksGraphTrack({ layoutEngine: 'stress' }),
+          kiv2WalksGraphTrack({
+            walkLayers: threads(KIV2_THREADS),
+            heightMode: 'fit',
+            paneHeight: 520,
+          }),
         ],
       },
     ],
@@ -113,40 +120,9 @@ const kiv2WalksSpec: ScreenshotSpec = {
   readySelector: GRAPH_DRAWN,
   readyTimeout: 240000,
   viewportWidth: 1400,
-  viewportHeight: 910,
+  viewportHeight: 1010,
   tooltip: 'hide',
-  clicksChange: "lift HG00133's walk out of the graph",
-  actions: [
-    trackMenuIcon(LANES_TRACK),
-    {
-      type: 'hover',
-      selector: '[data-testid="cascading-submenu-haplotypes"]',
-    },
-    { type: 'waitForSelector', selector: HG00133_ITEM },
-    { type: 'click', selector: HG00133_ITEM },
-    // a radio row leaves both menu levels standing
-    { type: 'press', key: 'Escape' },
-    { type: 'press', key: 'Escape' },
-    { type: 'waitForSelector', selector: HG00133_ITEM, hidden: true },
-    { type: 'click', selector: 'body' },
-    PARK_CURSOR,
-    { type: 'waitForSelector', selector: WALK_READOUT },
-  ],
-  annotations: [
-    // the readout is the legend's top entry; a tight pad keeps the box off
-    // the legend's headings
-    { type: 'box', pad: 2, anchor: { selector: WALK_READOUT } },
-    // 165798390 is the loop's far wall, a CHM13 KIV2 copy HG00133 also walks
-    {
-      type: 'text',
-      text: 'HG00133 walks this loop',
-      fontSize: 18,
-      leader: true,
-      anchor: { graphNode: '165798390' },
-      dx: 130,
-      dy: 60,
-    },
-  ],
+  actions: [{ type: 'waitForSelector', selector: WALK_READOUT }, PARK_CURSOR],
 }
 
 // `uniform` keeps GRCh38's bar the legend's shared-sequence blue.
@@ -204,6 +180,72 @@ const kiv2WalkRowsSpec: ScreenshotSpec = {
   ],
 }
 
+const C4_WINDOW = 'chr6:31,980,000-32,050,000'
+// GRCh38 and two of the lanes track's haplotypes. In the walk file both skip
+// chr6:32,017,404-32,023,863, the HERV-K in C4B, and HG00128 alone walks
+// 26.4 kb the other two do not, a third C4-CYP21-TNX module.
+const C4_THREADS = [
+  'GRCh38#0#chr6',
+  'HG00128#1#CM090080.1',
+  'HG00133#1#CM090050.1',
+]
+const C4_MATRIX_ROWS = ['HG00128 HP1', 'HG00133 HP1']
+
+// The Graph launch's variant matrix, narrowed to the highlighted haplotypes.
+function c4MatrixRows() {
+  return {
+    trackId: 'hprc2_wave_grch38',
+    type: 'LinearVariantDisplay',
+    rows: { field: 'haplotype', kept: C4_MATRIX_ROWS, sort: C4_MATRIX_ROWS },
+    height: 130,
+  }
+}
+
+function c4ThreadsSpec(
+  name: string,
+  viewportHeight: number,
+  pane: Record<string, unknown>,
+): ScreenshotSpec {
+  return {
+    mode: 'url',
+    name,
+    url: sessionSpec(PORTAL_CONFIG, {
+      views: [
+        {
+          type: 'LinearGenomeView',
+          assembly: 'hg38',
+          loc: C4_WINDOW,
+          tracks: [
+            hg38GeneLane(60),
+            c4MatrixRows(),
+            graphTrack(LANES_TRACK, {
+              layoutMode: 'force',
+              walkLayers: threads(C4_THREADS),
+              ...pane,
+            }),
+          ],
+        },
+      ],
+    }),
+    readySelector: GRAPH_DRAWN,
+    readyTimeout: 240000,
+    viewportWidth: 1400,
+    viewportHeight,
+    tooltip: 'hide',
+    actions: [{ type: 'waitForAppSettled', timeout: 180000 }, PARK_CURSOR],
+  }
+}
+
+const c4WalkThreadsSpec = c4ThreadsSpec('pangenome/hprc_c4_threads', 962, {
+  heightMode: 'fit',
+  paneHeight: 480,
+})
+
+const c4WalkPanelsSpec = c4ThreadsSpec('pangenome/hprc_c4_panels', 1022, {
+  facet: 'walk',
+  paneHeight: 540,
+})
+
 const NNT_WINDOW = 'chr13:119,440,000-119,600,000'
 
 // s130043141+ is the Nnt allele C57BL/6J lacks.
@@ -257,6 +299,8 @@ const nntHalosSpec: ScreenshotSpec = {
 
 export const graphReadingSpecs: ScreenshotSpec[] = [
   kiv2WalksSpec,
+  c4WalkThreadsSpec,
+  c4WalkPanelsSpec,
   kiv2WalkRowsSpec,
   nntHalosSpec,
 ]

@@ -6,8 +6,9 @@ sidebar_label: Pangenome (HPRC pt 1, graph alleles)
 description:
   Open HPRC release 2's pangenome graph from genomes.jbrowse.org as a track of
   the linear view, trace an allele to the assembly it came from, list every
-  haplotype with it from the release's phased VCF, and read the same alleles as
-  aligned bases in the release's multiple alignment
+  haplotype with it from the release's phased VCF, read the same alleles as
+  aligned bases in the release's multiple alignment, and follow single
+  haplotypes through the graph as colored threads
 guide_category: Tutorials
 tutorial_category: Pangenomes
 tutorial_subcategory: HPRC release 2
@@ -29,7 +30,8 @@ in MHC class II. We:
 - open the assembly an allele beside _HLA-DRB5_ came from with **Open in**
 - load the phased VCF as a variant track with one row per haplotype, and cluster
   the rows
-- load HPRC's multiple alignment as a MAF track at C4
+- load HPRC's multiple alignment as a MAF track at C4, and highlight three
+  haplotypes' routes through C4 as colored threads on a graph track
 
 :::caution Experimental
 
@@ -299,6 +301,45 @@ module, which is the dashed arc in the C4 graph. Every alignment row in the
 white block has that deletion in the VCF. The narrower blocks are haplotypes
 that lack the 6.4 kb HERV-K (endogenous retrovirus) in a C4 gene's intron, which
 GRCh38 has, the difference between a long and a short C4.
+
+## Following haplotypes through C4 {#haplotype-threads}
+
+The graph track above draws the sequence that exists at C4. A graph cut from the
+haplotypes' walks also draws the route each haplotype takes: a **walk** is one
+haplotype's path through the graph, and a highlighted walk is a colored thread
+along the nodes it passes through. In the same window:
+
+- Turn on **HPRC release 2 haplotypes vs GRCh38, read from the haplotype walk
+  files** in the track selector. It opens as a force-directed graph of GRCh38's
+  walk and eight haplotypes' walks.
+- Check `GRCh38`, `HG00128` and `HG00133` under **Haplotypes** in its track
+  menu.
+- Take **Track sizing → Fit graph to track height** <!-- menu-path-ok --> in the
+  same menu, which draws the whole graph inside the track.
+
+<Figure caption="C4 with GRCh38, HG00128 and HG00133 highlighted in the haplotypes track, under those two haplotypes' rows of the variant matrix. Each thread takes its color in the key, and the rest of the graph is grey." src="/img/pangenome/hprc_c4_threads.png" />
+
+Read the threads this way:
+
+- **Threads side by side pass through the same nodes.** The three run together
+  through _C4A_ and most of the window.
+- **A thread that leaves the others takes another allele.** In _C4B_, GRCh38's
+  thread runs through the HERV-K insertion and HG00133's takes the link that
+  skips it, the deletion on its row of the variant matrix.
+- **A loop in one color is sequence only that haplotype has here.** At the same
+  place HG00128 alone runs the large loop, a further C4-CYP21-TNX module. The
+  genes on it come from HG00128's own annotation, so each name ends with the
+  haplotype.
+- **Hover a node**, and the key gives its position on each highlighted
+  haplotype's own contig.
+
+**Haplotypes → A panel per haplotype** <!-- menu-path-ok --> draws the same
+layout once for each highlighted haplotype, shaded light to dark from the start
+of its walk to the end. A panel's title gives the stretch of the haplotype's
+contig the walk covers and its length, and clicking a title highlights that
+haplotype alone.
+
+<Figure caption="The same three haplotypes with a panel each. A panel's title gives its walk's stretch of its contig and its length." src="/img/pangenome/hprc_c4_panels.png" />
 
 ## Limits of the graph and the page {#limits}
 
