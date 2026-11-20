@@ -18,6 +18,8 @@ type Mode =
   | { kind: 'union' }
   | { kind: 'split'; regular: boolean; pairs: [number, number][] }
 
+export const MAX_CLASSIFIED_PLOIDY = 16
+
 const severity = {
   consistent: 1,
   inconsistent: 2,
@@ -218,7 +220,10 @@ export function classifyTrio(
   const childCall = parseCall(child)
   const fatherCall = father === undefined ? undefined : parseCall(father)
   const motherCall = mother === undefined ? undefined : parseCall(mother)
-  if (!fatherCall && !motherCall) {
+  if (
+    (!fatherCall && !motherCall) ||
+    childCall.alleles.length > MAX_CLASSIFIED_PLOIDY
+  ) {
     return undefined
   } else if (sex === undefined && rule.some(e => e.sex !== undefined)) {
     const asMale = classifyWithSex(

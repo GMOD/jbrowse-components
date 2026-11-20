@@ -1,4 +1,8 @@
-import { classifyTrio, mostSevereTrioClass } from './classifyTrio.ts'
+import {
+  MAX_CLASSIFIED_PLOIDY,
+  classifyTrio,
+  mostSevereTrioClass,
+} from './classifyTrio.ts'
 
 import type {
   PedigreeSex,
@@ -502,6 +506,33 @@ describe('across taxa', () => {
     },
   ])('$name is $expected', row => {
     expect(run(row)).toBe(row.expected)
+  })
+})
+
+describe('the ploidy cap', () => {
+  const calls = (ploidy: number, allele: string) =>
+    Array.from({ length: ploidy }, () => allele).join('/')
+
+  it('classifies a child at the cap', () => {
+    expect(
+      classifyTrio(
+        calls(MAX_CLASSIFIED_PLOIDY, '1'),
+        calls(MAX_CLASSIFIED_PLOIDY, '0'),
+        calls(MAX_CLASSIFIED_PLOIDY, '0'),
+        { sex: undefined, rule: [] },
+      ),
+    ).toBe('notInParents')
+  })
+
+  it('leaves a child past the cap unclassified', () => {
+    expect(
+      classifyTrio(
+        calls(MAX_CLASSIFIED_PLOIDY + 1, '1'),
+        calls(MAX_CLASSIFIED_PLOIDY + 1, '0'),
+        calls(MAX_CLASSIFIED_PLOIDY + 1, '0'),
+        { sex: undefined, rule: [] },
+      ),
+    ).toBeUndefined()
   })
 })
 
