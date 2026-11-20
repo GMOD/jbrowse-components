@@ -5,22 +5,16 @@ import BaseLayout from '../layouts/BaseLayout.astro'
 import { baseUrl } from '../lib/base-url.ts'
 import {
   demoSections,
-  docHref,
-  featuredDemo,
   figureLiveHref,
-  findDoc,
+  genomePreviewFigure,
   referenceGenomes,
 } from '../lib/showcase.ts'
-import btn from '../styles/button.module.css'
 
 const docs = await getCollection('docs')
 
-const featuredTutorial = findDoc(docs, featuredDemo.tutorial)
-const featured = {
-  ...featuredDemo,
-  live: figureLiveHref(featuredDemo.figure),
-  tutorialTitle: featuredTutorial.data.title,
-  tutorialHref: docHref(baseUrl, featuredTutorial),
+const preview = {
+  img: `${baseUrl}/img/${genomePreviewFigure}.png`,
+  live: figureLiveHref(genomePreviewFigure),
 }
 
 const sections = demoSections(docs, baseUrl)
@@ -28,7 +22,7 @@ const sections = demoSections(docs, baseUrl)
 
 <BaseLayout
   title="Demos"
-  description="Try JBrowse in your browser with nothing to install. Start from a featured view, a human reference genome for your own files, or a view from a tutorial."
+  description="Try JBrowse in your browser with nothing to install. Start from a human reference genome for your own files, or from a view in one of the tutorials."
 >
   <div class="demos">
     <h1>Demos</h1>
@@ -38,54 +32,48 @@ const sections = demoSections(docs, baseUrl)
     </p>
 
     <section class="featured">
-      <a href={featured.live} class="featured-shot">
+      <a href={preview.live} class="featured-shot">
         <img
-          src={`${baseUrl}/img/${featured.figure}.png`}
+          src={preview.img}
           width="1400"
           height="900"
           alt="TP53 on hg38: RefSeq genes, ENCODE candidate regulatory elements, H3K4me3 and H3K27ac with a row per cell line, and phyloP conservation"
         />
       </a>
       <div class="featured-text">
-        <h2>{featured.title}</h2>
-        <p>{featured.blurb}</p>
-        <a class:list={[btn.btn, btn.btnAccent]} href={featured.live}>
-          Open demo
-        </a>
-        <p class="from">
-          From the tutorial{' '}
-          <a href={featured.tutorialHref}>{featured.tutorialTitle}</a>
+        <h2>A human genome in your browser</h2>
+        <p>
+          TP53 with genes, ENCODE regulatory elements, H3K4me3 and H3K27ac in
+          seven cell lines, and conservation, a few of the tracks in the full
+          hg38 track set.
         </p>
-      </div>
-    </section>
-
-    <section>
-      <h2>Your own data on a reference genome</h2>
-      <p>
-        Open a genome, then choose <strong>File → Open track</strong> to add a
-        BAM, VCF, BED, GFF or bigWig from your computer or a URL. JBrowse reads
-        files from your computer in the browser, without uploading them.
-      </p>
-      <ul class="genomes">
-        {referenceGenomes.map(genome => (
+        <ul class="genomes">
+          {referenceGenomes.map(genome => (
+            <li>
+              <span class="genome-name">{genome.name}</span>
+              <a class="genome-open" href={genome.open}>
+                {'Open'}
+              </a>
+              <span class="sep">·</span>
+              <a class="genome-full" href={genome.full}>
+                {'full track set ↗'}
+              </a>
+            </li>
+          ))}
           <li>
-            <span class="genome-name">{genome.name}</span>
-            <a class="genome-open" href={genome.open}>
-              Open
-            </a>
-            <span class="sep">·</span>
-            <a class="genome-full" href={genome.full}>
-              full track set on genomes.jbrowse.org ↗
+            <span class="genome-name">Other organisms</span>
+            <a class="genome-full" href="https://genomes.jbrowse.org/">
+              {'genomes.jbrowse.org ↗'}
             </a>
           </li>
-        ))}
-        <li>
-          <span class="genome-name">Other organisms</span>
-          <a class="genome-full" href="https://genomes.jbrowse.org/">
-            genomes.jbrowse.org ↗
-          </a>
-        </li>
-      </ul>
+        </ul>
+        <p class="from">
+          Choose Open for the genome with only its genes, or full track set for
+          the tracks on genomes.jbrowse.org. In either, choose{' '}
+          <strong>File → Open track</strong> to add your own BAM, VCF, BED, GFF
+          or bigWig, from your computer or a URL.
+        </p>
+      </div>
     </section>
 
     <section>
@@ -187,7 +175,7 @@ const sections = demoSections(docs, baseUrl)
   }
   .genome-name {
     display: inline-block;
-    min-width: 10em;
+    min-width: 8.5em;
     font-weight: 500;
   }
   .genome-open {

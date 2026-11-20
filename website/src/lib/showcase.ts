@@ -17,13 +17,7 @@ interface DocEntry {
   data: { title: string; tutorial_category?: string }
 }
 
-export const featuredDemo = {
-  figure: 'home/tp53_promoter',
-  title: 'The TP53 promoter',
-  blurb:
-    "In seven cell lines, H3K4me3 and H3K27ac peak at TP53's promoter, where ENCODE marks candidate regulatory elements and phyloP scores are high.",
-  tutorial: 'tutorials/genomes_basics',
-}
+export const genomePreviewFigure = 'home/tp53_promoter'
 
 export const demoCaptions: Record<string, string> = {
   agent_synteny:
@@ -225,12 +219,8 @@ function demoImageSize(figure: string) {
   return { width, height: Math.round((size.height * width) / size.width) }
 }
 
-export function docHref(baseUrl: string, entry: DocEntry) {
+function docHref(baseUrl: string, entry: DocEntry) {
   return `${baseUrl}/docs/${entrySlug(entry.id)}/`
-}
-
-export function findDoc(docs: DocEntry[], id: string) {
-  return docs.find(d => d.id === id) ?? missing(`${id} is not a doc`)
 }
 
 export function figureLiveHref(name: string) {
