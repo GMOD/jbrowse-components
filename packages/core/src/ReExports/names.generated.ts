@@ -184,7 +184,7 @@ const names: Record<string, string[]> = {
   '@jbrowse/core/rpc/RpcManager': ['default'],
   '@jbrowse/core/rpc/RpcRegistry': [],
   '@jbrowse/core/rpc/WebWorkerRpcDriver': ['default'],
-  '@jbrowse/core/svg/constants': ['exportMargin'],
+  '@jbrowse/core/svg/constants': ['exportFontFamily', 'exportMargin'],
   '@jbrowse/core/svg/exportViewSvg': ['exportViewSvg'],
   '@jbrowse/core/svg/figureSize': ['CSS_PX_PER_INCH', 'DEFAULT_FIGURE_TEXT_PT', 'EXPORT_RASTER_DPI', 'parsePhysicalWidth', 'physicalRootSize', 'physicalWidthInches', 'pxToPt', 'resolveFigureSize', 'sizeSvgForRaster', 'svgRootIsPhysical'],
   '@jbrowse/core/svg/saveSvgAsImage': ['saveSvgAsImage', 'svgHtmlToPngBlob'],

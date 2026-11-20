@@ -1356,6 +1356,7 @@
     "@jbrowse/core/svg/constants": {
       "package": "@jbrowse/core",
       "names": [
+        "exportFontFamily",
         "exportMargin"
       ],
       "worker": "real"
