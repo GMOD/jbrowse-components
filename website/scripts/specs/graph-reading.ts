@@ -205,7 +205,6 @@ const C4_MATRIX_ROWS = ['HG00128 HP1', 'HG00133 HP1']
 function c4MatrixRows() {
   return {
     trackId: 'hprc2_wave_grch38',
-    type: 'LinearVariantDisplay',
     rows: { field: 'haplotype', kept: C4_MATRIX_ROWS, sort: C4_MATRIX_ROWS },
     height: 130,
   }

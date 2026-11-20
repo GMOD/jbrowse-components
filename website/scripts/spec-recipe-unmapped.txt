@@ -11,6 +11,7 @@ connectedView
 connectors.show
 encoding.color
 encoding.opacity
+facet
 gene
 geneGlyphMode
 geneTrackId

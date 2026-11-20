@@ -357,6 +357,19 @@ export const hostedConfigs: Record<string, HostedConfig> = {
         }
       },
       {
+        "trackId": "hprc2_wave_grch38",
+        "name": "HPRC2 pangenome structural variants (464 haplotypes)",
+        "type": "VariantTrack",
+        "adapter": {
+          "type": "VcfTabixAdapter"
+        },
+        "displays": [
+          {
+            "type": "LinearVariantDisplay"
+          }
+        ]
+      },
+      {
         "trackId": "hprc_v2_1_walk_lanes",
         "name": "HPRC release 2 haplotypes vs GRCh38, read from the haplotype walk files",
         "type": "GraphTrack",
