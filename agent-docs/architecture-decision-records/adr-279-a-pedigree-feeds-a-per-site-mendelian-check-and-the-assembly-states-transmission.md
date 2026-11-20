@@ -93,10 +93,11 @@ tetraploid, a haplodiploid male, a ZW female or a yeast mitochondrion.
   any field but MAF. The worker ships the value and the main thread paints it
   (ADR-203), with a fixed preset in `UNIVERSAL_FIELD_PRESETS`.
 - **The `mendelian` field has no `jexl:` function** and is not in the filter
-  dialog's picker: it is a `filter` entry and a **Color by** preset. No record
-  holds it, so a jexl reader over the feature would find nothing.
+  dialog's picker: it is a `filter` entry, which **Filter by → Mendelian check**
+  writes, and a **Color by** preset. No record holds it, so a jexl reader over
+  the feature would find nothing.
 - **The feature widget alone re-runs `classifyTrio`**, over the full record it
-  fetches, to list each trio's call (`TrioCallsTable`).
+  fetches, to list each trio's genotypes and call (`TrioCallsTable`).
 
 ### Transmission
 
