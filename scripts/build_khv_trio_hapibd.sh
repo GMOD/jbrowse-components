@@ -48,6 +48,10 @@ MAPZIP="https://bochet.gcc.biostat.washington.edu/beagle/genetic_maps/plink.GRCh
 HG38_FA="https://jbrowse.org/genomes/GRCh38/fasta/GRCh38.fa.gz"
 
 VCF=HG02024_VN049_KHVTrio.chr1.vcf.gz
+# jbrowse.org copies the config.json tracks read, so the app does not depend on
+# UCSC's server.
+VCF_HOSTED="https://jbrowse.org/demos/kgp-trio/HG02024_VN049_KHVTrio.chr1.vcf.gz"
+PEDIGREE="https://jbrowse.org/demos/kgp-trio/20130606_g1k_3202_samples_ped_population.txt"
 # 1000 Genomes pedigree line: VN049 HG02024 HG02026 HG02025 (father, mother).
 CHILD=HG02024; FATHER=HG02026; MOTHER=HG02025
 
@@ -90,18 +94,29 @@ APP=jbrowse2
 # hg38 assembly (remote bgzip FASTA, refnames match the trio VCF's "1")
 jb add-assembly "$HG38_FA" --name hg38 --force --out "$APP"
 
-# trio VCF track, served straight from UCSC
-jb add-track "$VCF_URL" \
+jb add-track "$VCF_HOSTED" \
   --name "KHV trio phased variants (chr1)" \
   --trackId khv_trio_vcf --assemblyNames hg38 --force --out "$APP"
 
-# hap-ibd track: copy the BED in, then add the FeatureTrack with the multi-row
-# display (the CLI can't set `rows`, so patch config.json).
+# The CLI sets neither a pedigree, an assembly's transmission nor a display's
+# rows, so patch config.json: the trio VCF reads the 1000 Genomes pedigree for
+# the Mendelian check, hg38 names its X, Y and MT inheritance, and the hap-ibd
+# BED gets the multi-row display.
 cp trio.hapibd.bed.gz trio.hapibd.bed.gz.csi "$APP"/
-python3 - "$APP/config.json" <<'PY'
+python3 - "$APP/config.json" "$PEDIGREE" <<'PY'
 import json, sys
-path = sys.argv[1]
+path, pedigree = sys.argv[1], sys.argv[2]
 cfg = json.load(open(path))
+for assembly in cfg["assemblies"]:
+    if assembly["name"] == "hg38":
+        assembly["transmission"] = [
+            {"refName": "X", "sex": "male", "from": "mother"},
+            {"refName": "Y", "sex": "male", "from": "father"},
+            {"refName": "MT", "from": "either"},
+        ]
+for t in cfg["tracks"]:
+    if t.get("trackId") == "khv_trio_vcf":
+        t["adapter"]["pedigreeLocation"] = {"uri": pedigree}
 track = {
     "type": "FeatureTrack",
     "trackId": "khv_trio_hapibd",
@@ -129,7 +144,7 @@ json.dump(cfg, open(path, "w"), indent=2)
 PY
 
 echo
-echo "Built $APP/config.json with the hg38 assembly + trio VCF + hap-ibd tracks."
+echo "Built $APP/config.json with the hg38 assembly + trio VCF (with its pedigree) + hap-ibd tracks."
 echo "Serve it and open in a browser, e.g.:"
 echo "  npx serve $(pwd)/$APP"
 echo "or open $(pwd)/$APP/config.json in JBrowse Desktop via File -> Session ->"
