@@ -6,6 +6,8 @@ import { observer } from 'mobx-react'
 // ButtonBase + TouchRipple + two SvgIcon instances per row.
 const checkedPath =
   'M19 3H5c-1.11 0-2 .9-2 2v14c0 1.1.89 2 2 2h14c1.11 0 2-.9 2-2V5c0-1.1-.89-2-2-2m-9 14-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8z'
+const indeterminatePath =
+  'M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2m-2 10H7v-2h10z'
 const blankPath =
   'M19 5v14H5V5zm0-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2'
 
@@ -57,6 +59,7 @@ const CheckboxLite = observer(function CheckboxLite({
   className,
   label,
   id,
+  indeterminate,
 }: {
   checked: boolean
   onChange: (event: React.ChangeEvent<HTMLInputElement>) => void
@@ -64,13 +67,14 @@ const CheckboxLite = observer(function CheckboxLite({
   className?: string
   label?: string
   id?: string
+  indeterminate?: boolean
 }) {
   const { classes, cx } = useStyles()
   return (
     <span
       className={cx(
         classes.root,
-        checked ? classes.checked : undefined,
+        checked || indeterminate ? classes.checked : undefined,
         disabled ? classes.disabled : undefined,
         className,
       )}
@@ -78,6 +82,11 @@ const CheckboxLite = observer(function CheckboxLite({
       <input
         type="checkbox"
         id={id}
+        ref={input => {
+          if (input) {
+            input.indeterminate = !!indeterminate
+          }
+        }}
         className={classes.input}
         checked={checked}
         onChange={onChange}
@@ -85,7 +94,15 @@ const CheckboxLite = observer(function CheckboxLite({
         aria-label={label}
       />
       <svg className={classes.svg} viewBox="0 0 24 24" aria-hidden>
-        <path d={checked ? checkedPath : blankPath} />
+        <path
+          d={
+            indeterminate
+              ? indeterminatePath
+              : checked
+                ? checkedPath
+                : blankPath
+          }
+        />
       </svg>
     </span>
   )

@@ -39,6 +39,12 @@ and proposal captures side by side:
   Expand all categories sit in the ☰. Rows indent by how many drawn rows they
   sit under, so Favorites and Recent start at the left edge too.
 
+Amended 2026-11-20: a table row answers a click as a tree row does. Colin found
+the table's checkboxes showed no pointer and its names ignored a plain click.
+The name is a label for its row's checkbox, so a click on it shows or hides the
+track; the two modes share the Ctrl/Cmd-click handler, the hover and selection
+tints, and one checkbox glyph, the header's mixed state included.
+
 ## Context
 
 ADR-269 left the facet panel off in the drawer, reachable only through "Show

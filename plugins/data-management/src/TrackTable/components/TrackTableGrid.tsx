@@ -3,7 +3,6 @@ import { useId } from 'react'
 import VirtualTable, {
   CHECKBOX_WIDTH,
   DEFAULT_COL_WIDTH,
-  TableCheckbox,
 } from '@jbrowse/core/ui/VirtualTable'
 import { coarseStripHTML } from '@jbrowse/core/util'
 import { highlightPatterns } from '@jbrowse/core/util/searchText'
@@ -35,7 +34,7 @@ const TrackTableGrid = observer(function TrackTableGrid({
   width: number
   emptyMessage?: string
 }) {
-  const { classes } = useTableStyles()
+  const { classes, cx } = useTableStyles()
   const gridId = useId()
   const checkboxId = (rowId: string) => `${gridId}-${encodeURIComponent(rowId)}`
   const columns = getTableColumns({ table, model, fields, checkboxId })
@@ -71,51 +70,55 @@ const TrackTableGrid = observer(function TrackTableGrid({
   }
 
   return (
-    <div className={classes.grid}>
-      <VirtualTable
-        highlightPatterns={highlightPatterns(filterText)}
-        rows={sortedRows}
-        columns={columns}
-        width={width}
-        widths={available =>
-          fitColumnWidths(
-            Object.fromEntries(
-              columns.map(col => [
-                col.id,
-                initialWidths[col.id] ?? DEFAULT_COL_WIDTH,
-              ]),
-            ),
-            available,
-            id => columnFloor(id, available),
-          )
-        }
-        resetKey={JSON.stringify([filterText, [...filters]])}
-        sortField={sortField}
-        sortAscending={sortAscending}
-        onSort={(field, ascending) => {
-          table.setSort(field, ascending)
-        }}
-        leading={{
-          width: CHECKBOX_WIDTH,
-          header: () =>
-            narrowed ? (
-              <TableCheckbox
-                checked={allShown}
-                indeterminate={someShown}
-                label="Show all matching tracks"
-                onChange={toggleAll}
-              />
-            ) : null,
-          cell: checkboxCell,
-        }}
-        isRowSelected={row => model.selectionSet.has(row.id)}
-        emptyMessage={
-          table.allRows.length
-            ? 'No tracks match the current search and filters'
-            : emptyMessage
-        }
-      />
-    </div>
+    <VirtualTable
+      highlightPatterns={highlightPatterns(filterText)}
+      rows={sortedRows}
+      columns={columns}
+      width={width}
+      widths={available =>
+        fitColumnWidths(
+          Object.fromEntries(
+            columns.map(col => [
+              col.id,
+              initialWidths[col.id] ?? DEFAULT_COL_WIDTH,
+            ]),
+          ),
+          available,
+          id => columnFloor(id, available),
+        )
+      }
+      resetKey={JSON.stringify([filterText, [...filters]])}
+      sortField={sortField}
+      sortAscending={sortAscending}
+      onSort={(field, ascending) => {
+        table.setSort(field, ascending)
+      }}
+      leading={{
+        width: CHECKBOX_WIDTH,
+        header: () =>
+          narrowed ? (
+            <CheckboxLite
+              className={classes.rowCheckbox}
+              checked={allShown}
+              indeterminate={someShown}
+              label="Show all matching tracks"
+              onChange={toggleAll}
+            />
+          ) : null,
+        cell: checkboxCell,
+      }}
+      rowClassName={row =>
+        cx(
+          classes.trackRow,
+          model.selectionSet.has(row.id) && classes.selectedTrackRow,
+        )
+      }
+      emptyMessage={
+        table.allRows.length
+          ? 'No tracks match the current search and filters'
+          : emptyMessage
+      }
+    />
   )
 })
 

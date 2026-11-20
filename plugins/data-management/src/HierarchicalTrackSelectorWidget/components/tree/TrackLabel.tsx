@@ -1,4 +1,3 @@
-import { alpha } from '@jbrowse/core/ui/palette'
 import { coarseStripHTML } from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { observer } from 'mobx-react'
@@ -9,6 +8,7 @@ import OverrideBadge from './OverrideBadge.tsx'
 import TrackNameText from './TrackNameText.tsx'
 import TrackSelectorTrackMenu from './TrackSelectorTrackMenu.tsx'
 import { selectOnModifierClick } from './selectOnModifierClick.ts'
+import { trackRowTints } from './trackRowTints.ts'
 
 import type { HierarchicalTrackSelectorModel } from '../../model.ts'
 import type { TreeTrackNode } from '../../types.ts'
@@ -41,13 +41,11 @@ const useStyles = makeStyles()(theme => ({
     // past the drawer and taking the ... menu with it
     minWidth: 0,
     '&:hover': {
-      backgroundColor: theme.palette.action.selected,
+      backgroundColor: trackRowTints(theme).hover,
     },
   },
   selected: {
-    // twice the dark hover tint (action.selected), four times the light one,
-    // and still under white text in dark mode
-    background: alpha(theme.palette.accent, 0.32),
+    background: trackRowTints(theme).selected,
   },
   label: {
     display: 'flex',

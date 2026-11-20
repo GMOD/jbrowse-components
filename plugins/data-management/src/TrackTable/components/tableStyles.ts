@@ -1,14 +1,18 @@
 import { ROW_HEIGHT } from '@jbrowse/core/ui/VirtualTable'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 
+import { trackRowTints } from '../../HierarchicalTrackSelectorWidget/components/tree/trackRowTints.ts'
+
 const CHECKBOX_ICON_SIZE = '1.15rem'
 
 export const useTableStyles = makeStyles()(theme => ({
-  grid: {
-    height: '100%',
-    '& tbody tr:has(input[type="checkbox"]):hover > td': {
-      background: theme.palette.action.hover,
+  trackRow: {
+    '&:hover > td': {
+      background: trackRowTints(theme).hover,
     },
+  },
+  selectedTrackRow: {
+    background: trackRowTints(theme).selected,
   },
   rowCheckbox: {
     width: '100%',

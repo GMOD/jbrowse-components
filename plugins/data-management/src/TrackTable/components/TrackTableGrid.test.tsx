@@ -178,6 +178,19 @@ test('show-all appears only while a filter narrows the list, and shows what it k
   expect(model.selection.length).toBe(0)
 })
 
+test('show-all reads as mixed while only some matching tracks are shown', async () => {
+  const { model, table } = setup()
+  const { getByLabelText } = renderGrid(model, table)
+  act(() => {
+    table.setFilterText('C')
+  })
+  expect(getByLabelText('Show all matching tracks')).not.toBePartiallyChecked()
+  fireEvent.click(getByLabelText('Show fooC'))
+  await waitFor(() => {
+    expect(getByLabelText('Show all matching tracks')).toBePartiallyChecked()
+  })
+})
+
 test('ctrl-click on a name adds the track to the selection without showing it', () => {
   const { view, model, table } = setup()
   const { getByText } = renderGrid(model, table)

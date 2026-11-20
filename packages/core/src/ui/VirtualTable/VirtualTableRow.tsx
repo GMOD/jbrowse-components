@@ -11,6 +11,7 @@ const VirtualTableRow = observer(function VirtualTableRow<R>({
   leadingCell,
   height,
   isRowSelected,
+  rowClassName,
   onRowClick,
 }: {
   row: R
@@ -18,6 +19,7 @@ const VirtualTableRow = observer(function VirtualTableRow<R>({
   leadingCell?: (row: R) => React.ReactNode
   height: number
   isRowSelected?: (row: R) => boolean
+  rowClassName?: (row: R) => string | undefined
   onRowClick?: (row: R) => void
 }) {
   const { classes } = useVirtualTableStyles()
@@ -28,6 +30,7 @@ const VirtualTableRow = observer(function VirtualTableRow<R>({
         selected && classes.selectedRow,
         onRowClick && classes.clickableRow,
         onRowClick && selected && classes.selectedClickableRow,
+        rowClassName?.(row),
       )}
       style={{
         height,

@@ -61,6 +61,7 @@ const VirtualTable = observer(function VirtualTable<
   leading,
   rowHeight = ROW_HEIGHT,
   isRowSelected,
+  rowClassName,
   onRowClick,
   sortField,
   sortAscending,
@@ -82,6 +83,8 @@ const VirtualTable = observer(function VirtualTable<
   /** each row's height, for rows taller than a line of text */
   rowHeight?: number
   isRowSelected?: (row: R) => boolean
+  /** a row's own class, for a caller that marks rows its own way */
+  rowClassName?: (row: R) => string | undefined
   onRowClick?: (row: R) => void
   sortField: string
   sortAscending: boolean
@@ -169,6 +172,7 @@ const VirtualTable = observer(function VirtualTable<
               leadingCell={leading?.cell}
               height={rowHeight}
               isRowSelected={isRowSelected}
+              rowClassName={rowClassName}
               onRowClick={onRowClick}
             />
           ))}
