@@ -170,11 +170,12 @@ export const trioSpecs: ScreenshotSpec[] = [
   {
     mode: 'url',
     name: 'trio-mendelian',
-    viewportHeight: 520,
+    viewportHeight: 470,
     // Not-in-parents sites near 196.76 Mb, where the 30x CRAMs show the
     // child's alt allele in a parent the low-coverage calls made hom-ref, and
     // a run of inconsistent sites across CFHR1, inside the deletion HGSV_9982
-    // that the 1000 Genomes SV callset gives the father and child.
+    // that the 1000 Genomes SV callset gives the father and child. The caption
+    // names the rows' roles: callouts beside the labels cover the cells.
     url: lgvSession(DEMO_CONFIG, {
       assembly: 'hg38',
       loc: 'chr1:196,745,000-196,850,000',
@@ -182,24 +183,14 @@ export const trioSpecs: ScreenshotSpec[] = [
         TRIO_GENE_LANE,
         {
           trackId: TRIO_VCF_TRACK,
-          height: 200,
+          height: 160,
           encoding: { color: 'mendelian' },
+          records: { show: false },
         },
       ],
     }),
     readyText: 'chr1',
     readyTimeout: 60000,
-    annotations: (
-      [
-        ['Child', 'HG02024'],
-        ['Mother', 'HG02025'],
-        ['Father', 'HG02026'],
-      ] as const
-    ).map(([text, row]) => ({
-      type: 'text' as const,
-      text,
-      anchor: { text: row, alignX: 'right' as const, dx: 45 },
-    })),
   },
 
   {
