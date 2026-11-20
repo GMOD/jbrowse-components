@@ -209,13 +209,12 @@ facets a cohort's rows by clinical annotation.
 **Group by** and the **Samples** entries under **Color by** in the track menu
 change the grouping and colors after the track is open.
 
-## Families and the Mendelian check
+## Families and pedigrees
 
 A VCF adapter's
 [`pedigreeLocation`](/docs/config/vcftabixadapter/#slot-pedigreelocation) reads
-a pedigree of the VCF's samples, and its father and mother columns let JBrowse
-check each site's genotypes against inheritance. JBrowse reads the format from
-the columns:
+a pedigree of the VCF's samples, naming each one's family, parents, sex and
+phenotype. JBrowse reads the format from the columns:
 
 - **A header row** naming `SampleID` or `IID`, `FatherID` or `PAT`, `MotherID`
   or `MAT`, `FamilyID` or `FID`, `Sex` and `Phenotype`, in any case and order,
@@ -244,9 +243,8 @@ name in a muted color, as `HG02024 (daughter)`. The display's
 [`rows.subtitle`](/docs/config/variantrows/#slot-subtitle) names that attribute,
 and `"subtitle": ""` turns it off.
 
-The config below loads the 1000 Genomes KHV trio with its pedigree, bands the
-rows by `facet: "family"`, and colors the cells by the Mendelian check across
-CFHR3 and CFHR1 (chr1:196,745,000-196,850,000):
+The config below loads the 1000 Genomes KHV trio with its pedigree and bands the
+rows by `facet: "family"`:
 
 ```json addtrack loc=chr1:196,745,000-196,850,000
 {
@@ -256,94 +254,23 @@ CFHR3 and CFHR1 (chr1:196,745,000-196,850,000):
   "assemblyNames": ["hg38"],
   "adapter": {
     "type": "VcfTabixAdapter",
-    "uri": "https://jbrowse.org/demos/kgp-trio/HG02024_VN049_KHVTrio.chr1.vcf.gz",
+    "uri": "https://jbrowse.org/demos/kgp-trio/HG02024_VN049_KHVTrio.chr1.merr.vcf.gz",
     "pedigreeLocation": {
       "uri": "https://jbrowse.org/demos/kgp-trio/20130606_g1k_3202_samples_ped_population.txt"
     }
   },
-  "displayDefaults": {
-    "facet": "family",
-    "encoding": { "color": "mendelian" }
-  }
+  "displayDefaults": { "facet": "family" }
 }
 ```
 
-**Color by → Mendelian check** (under **Cells**) colors each site's alt cells by
-its check over the pedigree's trios: each sample whose father or mother is also
-a sample in the VCF. Phase is ignored, and ploidy is read from each call.
-
-- **De novo candidate** (`deNovoCandidate`): the child has an allele neither
-  parent has, and every parent the child can inherit from is called. It names
-  the callset's pattern, not a confirmed mutation: on GT alone most are
-  genotyping errors, often a parent's het called homozygous.
-- **Mendelian violation** (`mendelianViolation`): no assignment of the child's
-  alleles to its parents fits, whatever a no-call might hide. A violation is a
-  miscall or real biology: across a deletion a one-copy sample is called
-  homozygous, and uniparental disomy does the same. It excludes the de novo
-  pattern, which has its own color, so it is narrower than PLINK's and Hail's
-  Mendel error counts; Hail's `de_novo` and slivar's `denovo` likewise report de
-  novo sites apart.
-- **Consistent** (`consistent`): an assignment fits, with every allele called.
-- **No value:** a no-call leaves the answer open, or in a duo the absent parent
-  could have given the allele; the cell keeps the default alt color.
-
-<Figure caption="The KHV trio colored by the Mendelian check across CFHR3 and CFHR1, rows HG02024 (daughter), HG02025 (mother) and HG02026 (father)." src="/img/trio-mendelian.png" />
-
-With several trios, a site takes its most severe value, in the order above.
-JBrowse computes `mendelian` as the track loads, and the record holds no such
-field, so a `jexl:` expression cannot read it.
-
-- **Filter:** **Filter by → Mendelian check** keeps the sites whose check is one
-  of the values checked. Checking **De novo candidate** and **Mendelian
-  violation** keeps the sites a trio fails, and writes the display's `filter`
-  entry
-  `{ "field": "mendelian", "oneOf": ["deNovoCandidate", "mendelianViolation"] }`,
-  which a config can hold too.
-- **Hover and click:** hovering a cell names the site's check, and the feature
-  details list each trio's genotypes and call.
-- **Callset QC:** the check reads GT alone, with no genotype quality, so on
-  low-coverage calls most failures are genotyping errors. The
-  [phased trio tutorial](/docs/tutorials/analyze_trio#checking-the-trios-calls-against-the-pedigree)
-  checks one against the child's high-coverage reads.
-
-### Sex chromosomes and organelles
-
-A sequence a child does not inherit as one copy from each parent needs an entry
-in the assembly's [`transmission`](/docs/config/baseassembly/#slot-transmission)
-list. Each entry names a `refName` (unset, every sequence), a child's `sex` as
-the pedigree gives it (unset, any child), and `from`: `mother`, `father` or
-`either`. The default is no entries, so a sequence takes the autosomal rule
-until an entry names it: sacCer3's `chrX` is an autosome, and _Bombyx mori_'s Z
-is `1`.
-
-| Genome                               | Entries                                                                                                                                |
-| ------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------- |
-| XY (mammals, _Drosophila_, _Silene_) | X `{ "sex": "male", "from": "mother" }`, Y `{ "sex": "male", "from": "father" }`                                                       |
-| XO (_C. elegans_)                    | X `{ "sex": "male", "from": "mother" }`; a hermaphrodite, sex `other`, takes the autosomal rule                                        |
-| ZW (birds, Lepidoptera)              | Z `{ "sex": "female", "from": "father" }`, W `{ "sex": "female", "from": "mother" }`                                                   |
-| Haplodiploidy (bees, ants, wasps)    | `{ "sex": "male", "from": "mother" }` with no `refName`                                                                                |
-| Mitochondria                         | `mother` in most animals, `either` in _S. cerevisiae_, `father` in cucumber and banana, and in _Chlamydomonas_ whichever parent is mt− |
-| Plastids                             | `mother` in most flowering plants, `father` in conifers                                                                                |
-
-The
-[phased trio tutorial](/docs/tutorials/analyze_trio#loading-the-hg38-assembly)
-writes hg38's entries. Several sex chromosomes, as the platypus's X1 to X5, take
-one entry each. Where biology varies, the check takes the lenient reading, which
-can miss an error:
-
-- **Pseudoautosomal regions:** an entry with a `sex` judges only a haploid or
-  homozygous call, so a son's het takes the autosomal rule. A homozygote in a
-  pseudoautosomal region is still judged by the entry: a son's `1/1` with father
-  `0/0` and mother `0/1` reads consistent though his father has no `1`.
-- **No entry:** a son's X written diploid (`1/1`) takes the autosomal rule and
-  can read as a Mendelian violation where his father lacks the allele.
-- **Ploidy:** each parent gives half its alleles, rounded either way, so an
-  autotetraploid cross is 2 + 2 and a 2x × 4x triploid 1 + 2. A cross no such
-  split fits (aneuploidy, unreduced gametes) and double reduction are judged
-  leniently, and a haploid child's alleles may come from either parent.
-- **Outside the model:** Pool-seq, somatic mosaicism, gene conversion and
-  paternal leakage. Each sample is read as one individual with the genotype its
-  GT states.
+JBrowse does not check genotypes against the pedigree. bcftools'
+[`+mendelian2`](https://samtools.github.io/bcftools/bcftools.html#plugin) plugin
+does, with built-in rules for the sex chromosomes, the pseudoautosomal regions
+and chrM, and `-m a` writes `INFO/MERR`, the number of trios with a Mendelian
+error at each site. This VCF carries it, so coloring by `INFO.MERR` with a
+`threshold` scale cut at 1 marks the error sites, as the
+[phased trio tutorial](/docs/tutorials/analyze_trio#coloring-the-trios-calls-by-mendelian-errors)
+does.
 
 ## Clustering samples by genotype
 

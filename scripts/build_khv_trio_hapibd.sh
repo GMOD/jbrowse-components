@@ -4,14 +4,16 @@
 # website/docs/tutorials/analyze_trio.md, then wire up a runnable JBrowse.
 #
 # It downloads the phased 1000 Genomes Kinh-Vietnamese trio (HG02024, chr1),
-# runs hap-ibd to find identical-by-descent segments, collapses them into the
-# painted BED9 track, downloads JBrowse, and writes a config.json with the hg38
-# assembly plus the trio VCF and the hap-ibd tracks.
+# annotates each site's Mendelian errors with bcftools +mendelian2, runs hap-ibd
+# to find identical-by-descent segments, collapses them into the painted BED9
+# track, downloads JBrowse, and writes a config.json with the hg38 assembly plus
+# the annotated trio VCF and the hap-ibd tracks.
 #
 # Everything is pinned (fixed input URLs, fixed hap-ibd thresholds), so
 # re-running reproduces the same track.
 #
-# Requires: java (8+), python3, curl, unzip, sort, bgzip/tabix (htslib), and
+# Requires: java (8+), python3, curl, unzip, sort, bgzip/tabix (htslib),
+#           bcftools (with its plugins, for +mendelian2), and
 #           node (for the JBrowse CLI, fetched via npx unless $JBROWSE is set).
 # Usage:    bash scripts/build_khv_trio_hapibd.sh [outdir]
 #
@@ -21,7 +23,7 @@ set -euo pipefail
 # sibling hapibd_to_bed.py resolves no matter where the script is run from.
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
-for tool in curl java unzip python3 sort bgzip tabix node; do
+for tool in curl java unzip python3 sort bgzip tabix bcftools node; do
   command -v "$tool" >/dev/null 2>&1 || {
     echo "error: '$tool' not found on PATH" >&2
     exit 1
@@ -48,9 +50,7 @@ MAPZIP="https://bochet.gcc.biostat.washington.edu/beagle/genetic_maps/plink.GRCh
 HG38_FA="https://jbrowse.org/genomes/GRCh38/fasta/GRCh38.fa.gz"
 
 VCF=HG02024_VN049_KHVTrio.chr1.vcf.gz
-# jbrowse.org copies the config.json tracks read, so the app does not depend on
-# UCSC's server.
-VCF_HOSTED="https://jbrowse.org/demos/kgp-trio/HG02024_VN049_KHVTrio.chr1.vcf.gz"
+MERR_VCF=HG02024_VN049_KHVTrio.chr1.merr.vcf.gz
 PEDIGREE="https://jbrowse.org/demos/kgp-trio/20130606_g1k_3202_samples_ped_population.txt"
 # 1000 Genomes pedigree line: VN049 HG02024 HG02026 HG02025 (father, mother).
 CHILD=HG02024; FATHER=HG02026; MOTHER=HG02025
@@ -64,6 +64,14 @@ if [ ! -f plink.chr1.GRCh38.map ]; then
   unzip -o maps.zip 'no_chr_in_chrom_field/plink.chr1.GRCh38.map' -d maps >/dev/null
   cp maps/no_chr_in_chrom_field/plink.chr1.GRCh38.map plink.chr1.GRCh38.map
 fi
+
+# ── Annotate Mendelian errors ───────────────────────────────────────────────
+# -p takes child,father,mother; -m a adds INFO/MERR, the number of trios with a
+# Mendelian error at the site; --rules GRCh38 applies the sex chromosome, PAR
+# and chrM rules, which matter only for a whole-genome trio.
+bcftools +mendelian2 "$VCF" -p "$CHILD,$FATHER,$MOTHER" --rules GRCh38 -m a \
+  -Oz -o "$MERR_VCF"
+tabix -f -p vcf "$MERR_VCF"
 
 # ── Run hap-ibd ─────────────────────────────────────────────────────────────
 java -jar hap-ibd.jar \
@@ -94,26 +102,18 @@ APP=jbrowse2
 # hg38 assembly (remote bgzip FASTA, refnames match the trio VCF's "1")
 jb add-assembly "$HG38_FA" --name hg38 --force --out "$APP"
 
-jb add-track "$VCF_HOSTED" \
+jb add-track "$MERR_VCF" --load copy \
   --name "KHV trio phased variants (chr1)" \
   --trackId khv_trio_vcf --assemblyNames hg38 --force --out "$APP"
 
-# The CLI sets neither a pedigree, an assembly's transmission nor a display's
-# rows, so patch config.json: the trio VCF reads the 1000 Genomes pedigree for
-# the Mendelian check, hg38 names its X, Y and MT inheritance, and the hap-ibd
-# BED gets the multi-row display.
+# The CLI sets neither a pedigree nor a display's rows, so patch config.json:
+# the trio VCF reads the 1000 Genomes pedigree for its relationship labels, and
+# the hap-ibd BED gets the multi-row display.
 cp trio.hapibd.bed.gz trio.hapibd.bed.gz.csi "$APP"/
 python3 - "$APP/config.json" "$PEDIGREE" <<'PY'
 import json, sys
 path, pedigree = sys.argv[1], sys.argv[2]
 cfg = json.load(open(path))
-for assembly in cfg["assemblies"]:
-    if assembly["name"] == "hg38":
-        assembly["transmission"] = [
-            {"refName": "X", "sex": "male", "from": "mother"},
-            {"refName": "Y", "sex": "male", "from": "father"},
-            {"refName": "MT", "from": "either"},
-        ]
 for t in cfg["tracks"]:
     if t.get("trackId") == "khv_trio_vcf":
         t["adapter"]["pedigreeLocation"] = {"uri": pedigree}
@@ -144,7 +144,7 @@ json.dump(cfg, open(path, "w"), indent=2)
 PY
 
 echo
-echo "Built $APP/config.json with the hg38 assembly + trio VCF (with its pedigree) + hap-ibd tracks."
+echo "Built $APP/config.json with the hg38 assembly + annotated trio VCF (with its pedigree) + hap-ibd tracks."
 echo "Serve it and open in a browser, e.g.:"
 echo "  npx serve $(pwd)/$APP"
 echo "or open $(pwd)/$APP/config.json in JBrowse Desktop via File -> Session ->"

@@ -12,13 +12,14 @@ A child inherits one copy of each chromosome from each parent, and each copy is
 a patchwork of the parent's own two copies, switching at the crossovers of that
 meiosis. In a phased trio, hap-ibd finds the stretches where the child's
 haplotypes match a parent's, so the patchwork and its crossovers can be painted
-along a chromosome. Before painting, a pedigree check marks the sites where the
-child's genotype cannot be made of one allele from each parent. On chr1 of a
-1000 Genomes trio, we:
+along a chromosome. Before painting, bcftools marks the sites where the child's
+genotype cannot be made of one allele from each parent. On chr1 of a 1000
+Genomes trio, we:
 
-- load the trio's phased VCF as a variant track, with the 1000 Genomes pedigree
-- color the VCF by the Mendelian check, and open the child's high-coverage reads
-  under a flagged site
+- load the trio's phased VCF, annotated by bcftools, as a variant track, with
+  the 1000 Genomes pedigree
+- color the VCF by its Mendelian error count, and open the child's high-coverage
+  reads under a flagged site
 - switch the VCF to a genotype matrix with one row per haplotype
 - load hap-ibd's segments, converted to BED, as a multi-row feature track with
   one colored row per parental haplotype, and read the crossovers along chr1 off
@@ -36,19 +37,20 @@ child's genotype cannot be made of one allele from each parent. On chr1 of a
 - `python3`
 - `node`, for the [JBrowse CLI](/docs/cli)
 - htslib (`bgzip`, `tabix`)
+- bcftools, whose `+mendelian2` plugin marks the Mendelian errors
 
-<!-- BEGIN GENERATED TUTORIAL_INSTALL htslib,node,jbrowse-cli -->
+<!-- BEGIN GENERATED TUTORIAL_INSTALL htslib,bcftools,node,jbrowse-cli -->
 
 ```bash
 # Debian/Ubuntu
-sudo apt install tabix nodejs
+sudo apt install tabix bcftools nodejs
 # or conda, which has every tool above
-conda install -c bioconda -c conda-forge htslib nodejs
+conda install -c bioconda -c conda-forge htslib bcftools nodejs
 # any platform
 npm install -g @jbrowse/cli@next
 ```
 
-<!-- END GENERATED TUTORIAL_INSTALL htslib,node,jbrowse-cli -->
+<!-- END GENERATED TUTORIAL_INSTALL htslib,bcftools,node,jbrowse-cli -->
 
 On Debian/Ubuntu, `apt install default-jre` installs Java. `hap-ibd.jar` is a
 single download from its
@@ -63,8 +65,8 @@ the Kinh-Vietnamese trio HG02024 (daughter), HG02026 (father) and HG02025
 
 The tracks below read local files that the
 [build script](#reproduce-it-end-to-end) writes from these, so run it first, or
-run the hap-ibd steps on the phased VCF of a trio of your own. The script
-fetches everything itself.
+run the bcftools and hap-ibd steps on the phased VCF of a trio of your own. The
+script fetches everything itself.
 
 | What it is                                                                                                                                      | File                                                                                                       |
 | ----------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------- |
@@ -85,9 +87,7 @@ fetches everything itself.
 ## Loading the hg38 assembly
 
 The trio calls are on GRCh38, and the hap-ibd blocks below use its chr1
-coordinates, so we load that assembly first. Its `transmission` list names the
-sequences a child does not inherit as one copy from each parent, which the
-Mendelian check below reads:
+coordinates, so we load that assembly first:
 
 ```json addassembly
 {
@@ -96,25 +96,9 @@ Mendelian check below reads:
   "refNameAliases": {
     "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/GRCh38/hg38_aliases.txt"
   },
-  "cytobands": "https://jbrowse.org/genomes/GRCh38/cytoBand.txt",
-  "transmission": [
-    { "refName": "chrX", "sex": "male", "from": "mother" },
-    { "refName": "chrY", "sex": "male", "from": "father" },
-    { "refName": "chrM", "from": "either" }
-  ]
+  "cytobands": "https://jbrowse.org/genomes/GRCh38/cytoBand.txt"
 }
 ```
-
-- **`chrX` and `chrY`:** a son's X is his mother's and his Y his father's. An
-  entry naming a `sex` judges a haploid or homozygous call of a child of that
-  sex, so a son's het, as in a pseudoautosomal region, takes the autosomal rule.
-- **`chrM`:** `either` accepts a child's allele found in either parent.
-  `"from": "mother"` is the opt-in for maternal inheritance, which flags a
-  child's mitochondrial allele the mother lacks.
-
-The trio VCF covers chr1 alone, which takes the autosomal rule, so these entries
-matter for a whole-genome trio. The add-genome form has no input for
-`transmission`, so in the app it goes in the assembly's entry in `config.json`.
 
 The figures also show NCBI's RefSeq genes as a track:
 
@@ -126,6 +110,27 @@ The figures also show NCBI's RefSeq genes as a track:
   "assemblyNames": ["hg38"]
 }
 ```
+
+## Marking Mendelian errors with bcftools
+
+bcftools' `+mendelian2` plugin asks at each site whether the child's genotype
+can be made of one allele from each parent's, and writes the answer into the VCF
+as INFO fields, which JBrowse reads like any other:
+
+```bash
+# -p names the trio as child,father,mother
+# -m a adds INFO/MERR, the number of trios with a Mendelian error at the site,
+#   beside MGOOD, MMISS and MNORULE (consistent, missing and rule-less trios)
+# --rules GRCh38 applies the X, Y, pseudoautosomal and chrM inheritance rules
+bcftools +mendelian2 trio.vcf.gz -p child,father,mother --rules GRCh38 -m a \
+  -Oz -o trio.merr.vcf.gz
+tabix -p vcf trio.merr.vcf.gz
+```
+
+A site where the child has an allele neither parent was called with counts as an
+error, as does one where no pair of parental alleles gives the child's genotype,
+such as a hom-alt child of a hom-ref parent. MERR does not tell the two apart;
+the genotypes and the reads below do.
 
 ## Loading the trio's phased VCF
 
@@ -147,7 +152,7 @@ infers the adapter and the index but sets no pedigree.
   "assemblyNames": ["hg38"],
   "adapter": {
     "type": "VcfTabixAdapter",
-    "uri": "https://jbrowse.org/demos/kgp-trio/HG02024_VN049_KHVTrio.chr1.vcf.gz",
+    "uri": "https://jbrowse.org/demos/kgp-trio/HG02024_VN049_KHVTrio.chr1.merr.vcf.gz",
     "pedigreeLocation": {
       "uri": "https://jbrowse.org/demos/kgp-trio/20130606_g1k_3202_samples_ped_population.txt"
     }
@@ -159,48 +164,57 @@ infers the adapter and the index but sets no pedigree.
 `VN049 HG02024 HG02026 HG02025` names HG02026 as HG02024's father and HG02025 as
 the mother. It gives each sample `family`, `father`, `mother` and `sex`
 attributes, and a `relationship` the row labels show after the name:
-`HG02024 (daughter)`, `HG02025 (mother)` and `HG02026 (father)`. Where a sample
-and its father or mother are both in the VCF, the track menu offers the
-Mendelian check used in the next step. A PLINK `.fam` works the same way.
+`HG02024 (daughter)`, `HG02025 (mother)` and `HG02026 (father)`. A PLINK `.fam`
+works the same way.
 
 <Figure caption="The VCF on initial load: one row per sample, each genotype at its variant's position." src="/img/trio-basic.png"/>
 
-## Checking the trio's calls against the pedigree
+## Coloring the trio's calls by Mendelian errors
 
-We'll check the calls before analyzing them, with **Color by → Mendelian check**
-in the track menu. At each site JBrowse asks whether the child's genotype can be
-made of one allele from each parent's, and colors the alt cells by the answer:
+We'll check the calls before analyzing them by coloring the alt cells by
+`INFO.MERR`. A `threshold` scale with one cut at 1 gives a site with no error
+one color and a site with any error another. Set it as the variant display's
+`encoding`, or paste the `color` object into **Advanced → Edit plot...** in the
+track menu:
 
-- **De novo candidate:** the child has an allele that neither parent was called
-  with. This is the callset's pattern, not a confirmed mutation.
-- **Mendelian violation:** no way of taking one allele from each parent gives
-  the child's genotype, as for a hom-alt child of a hom-ref parent. The de novo
-  pattern is not counted here, since it has its own color.
-- **Consistent:** one allele from each parent gives the child's genotype.
+```json
+"displays": [
+  {
+    "type": "LinearVariantDisplay",
+    "encoding": {
+      "color": {
+        "field": "INFO.MERR",
+        "scale": {
+          "type": "threshold",
+          "domain": [1],
+          "range": ["#90a4ae", "#c2185b"],
+          "names": ["No Mendelian error", "Mendelian error"]
+        },
+        "legend": { "title": "MERR" }
+      }
+    }
+  }
+]
+```
 
-A site where a no-call leaves the answer open keeps the default color. Near
-CFHR3 and CFHR1 the check flags both kinds of site:
+Near CFHR3 and CFHR1 both kinds of error show:
 
-<Figure caption="Color by → Mendelian check across CFHR3 and CFHR1, rows HG02024 (daughter), HG02025 (mother) and HG02026 (father). The child's row has de novo candidate cells left of CFHR3, and the parents' rows have a run of Mendelian violation cells across CFHR1." src="/img/trio-mendelian.png"/>
+<Figure caption="The trio VCF colored by INFO.MERR across CFHR3 and CFHR1, rows HG02024 (daughter), HG02025 (mother) and HG02026 (father). Left of CFHR3 the child has alt cells at error sites where both parents are hom-ref, and across CFHR1 the parents' rows have a run of error sites." src="/img/trio-merr.png"/>
 
 This VCF is the 1000 Genomes low-coverage callset, statistically phased, and
-under one percent of its chr1 sites fail the check. A de novo candidate here is
-far more often a genotyping error than a mutation. At the site checked below,
-the reads show a parent's het that the low-coverage calls missed. The 1000
-Genomes SV callset gives the father and the daughter a deletion across CFHR1
-(`HGSV_9982`), and a sample with one copy of a sequence is called homozygous for
-that copy's allele, which accounts for the run of Mendelian violations there.
-Those calls are right for a one-copy sample: the violations mark the deletion,
-not a genotyping error.
+under one percent of its chr1 sites have a Mendelian error. A child's allele
+neither parent was called with is a de novo candidate, and here it is far more
+often a genotyping error than a mutation. At the site checked below, the reads
+show a parent's het that the low-coverage calls missed. The 1000 Genomes SV
+callset gives the father and the daughter a deletion across CFHR1 (`HGSV_9982`),
+and a sample with one copy of a sequence is called homozygous for that copy's
+allele, which accounts for the run of errors there. Those calls are right for a
+one-copy sample: the errors mark the deletion, not a genotyping error.
 
-- **Filter:** checking **De novo candidate** and **Mendelian violation** under
-  **Filter by → Mendelian check** keeps the failing sites alone. The menu writes
-  the display's `filter` entry
-  `{ "field": "mendelian", "oneOf": ["deNovoCandidate", "mendelianViolation"] }`,
-  which a config can hold too.
-- **Hover and click:** hovering a cell names its site's check, and clicking it
-  opens the feature details, whose Mendelian check table lists each trio's
-  genotypes and call.
+- **Filter:** the display's `filter` entry `{ "field": "INFO.MERR", "gte": 1 }`
+  keeps the sites with an error alone.
+- **Click:** clicking a cell opens the feature details, which list MERR with the
+  site's other INFO fields and each sample's genotype.
 
 The reads show which call at a flagged site is wrong. The child has a
 high-coverage CRAM from the 1000 Genomes 30x resequencing, streamed from the
@@ -416,12 +430,12 @@ crossover mapping, use a pedigree-aware method such as
 runs the whole pipeline. It:
 
 - downloads the trio VCF, hap-ibd and the genetic map
+- marks the Mendelian errors with bcftools `+mendelian2`
 - runs hap-ibd and paints the BED with
   [`hapibd_to_bed.py`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/hapibd_to_bed.py)
 - downloads JBrowse
 - writes `khv_trio_build/jbrowse2` with a `config.json` holding the hg38
-  assembly with its `transmission` entries, the VCF with its pedigree, and the
-  hap-ibd track
+  assembly, the annotated VCF with its pedigree, and the hap-ibd track
 
 Serve the folder and open the URL `serve` prints:
 
@@ -445,6 +459,9 @@ opens `khv_trio_build/jbrowse2/config.json` directly.
 - [](/docs/config_guides/variant_track)
 
 ## Citations
+
+- Danecek et al. (2021).
+  [Twelve years of SAMtools and BCFtools](https://doi.org/10.1093/gigascience/giab008)
 
 - 1000 Genomes Project Consortium (2015).
   [A global reference for human genetic variation](https://doi.org/10.1038/nature15393)

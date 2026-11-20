@@ -171,13 +171,14 @@ export const trioSpecs: ScreenshotSpec[] = [
 
   {
     mode: 'url',
-    name: 'trio-mendelian',
+    name: 'trio-merr',
     viewportHeight: 495,
-    // De novo candidates near 196.76 Mb, where the 30x CRAMs show the
-    // child's alt allele in a parent the low-coverage calls made hom-ref, and
-    // a run of Mendelian violations across CFHR1, inside the deletion HGSV_9982
-    // that the 1000 Genomes SV callset gives the father and child. The labels'
-    // relationship subtitles name the rows' roles.
+    // The cells colored by bcftools +mendelian2's INFO/MERR, one cut at 1:
+    // de novo candidates near 196.76 Mb, where the 30x CRAMs show the child's
+    // alt allele in a parent the low-coverage calls made hom-ref, and a run of
+    // errors across CFHR1, inside the deletion HGSV_9982 that the 1000 Genomes
+    // SV callset gives the father and child. The labels' relationship
+    // subtitles name the rows' roles.
     url: lgvSession(DEMO_CONFIG, {
       assembly: 'hg38',
       loc: 'chr1:196,745,000-196,850,000',
@@ -186,7 +187,18 @@ export const trioSpecs: ScreenshotSpec[] = [
         {
           trackId: TRIO_VCF_TRACK,
           height: 160,
-          encoding: { color: 'mendelian' },
+          encoding: {
+            color: {
+              field: 'INFO.MERR',
+              scale: {
+                type: 'threshold',
+                domain: [1],
+                range: ['#90a4ae', '#c2185b'],
+                names: ['No Mendelian error', 'Mendelian error'],
+              },
+              legend: { title: 'MERR' },
+            },
+          },
           records: { show: false },
         },
       ],

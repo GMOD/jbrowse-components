@@ -106,35 +106,6 @@ file, key the map by the FASTA's own name. A sidecar TSV
 `refName<TAB>geneticCodeId`) supplies the same map; the inline entry wins if
 both are present.
 
-## Configuring inheritance of sex chromosomes and organelles
-
-The variant display's Mendelian check expects a child to inherit one copy of
-each sequence from each parent.
-[`transmission`](/docs/config/baseassembly/#slot-transmission) lists the
-sequences that differ, each entry naming a `refName` (unset, every sequence),
-the child's `sex` as the pedigree gives it (unset, any child), and the parent
-the copy comes `from`: `mother`, `father` or `either`. Human hg38:
-
-```json addassembly
-{
-  "name": "hg38",
-  "sequence": { "adapter": { "uri": "hg38.fa.gz" } },
-  "transmission": [
-    { "refName": "chrX", "sex": "male", "from": "mother" },
-    { "refName": "chrY", "sex": "male", "from": "father" },
-    { "refName": "chrM", "from": "either" }
-  ]
-}
-```
-
-`refName` matches through refname aliasing, as `geneticCodes` keys do. The
-default is no entries, so a sequence takes the autosomal rule until an entry
-names it, whatever it is called: sacCer3's `chrX` is an autosome.
-`"from": "either"` accepts a child's allele found in either parent, and
-`"from": "mother"` on `chrM` opts into maternal inheritance. Entries for ZW, XO,
-haplodiploid and plant genomes, and the check's limits, are in
-[Families and the Mendelian check](/docs/user_guides/multivariant_track#sex-chromosomes-and-organelles).
-
 ## Sequence adapters
 
 [Sequence file types](/docs/config_guides/file_types#sequence--assembly) maps
