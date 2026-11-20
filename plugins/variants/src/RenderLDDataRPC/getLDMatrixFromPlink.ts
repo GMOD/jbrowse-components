@@ -27,10 +27,35 @@ class LDCellCapError extends Error {
   regionTooLarge = true
 }
 
-// The id is part of the key because two variants can share a position: a site
-// split into one record per allele, or a SNP beside an indel.
-function snpKey(refName: string, bp: number, id = '') {
-  return `${refName}:${bp}:${id}`
+/**
+ * Each SNP's column, by refName, then bp, then id: the id is part of the key
+ * because two variants can share a position, a site split into one record per
+ * allele, or a SNP beside an indel. Nested maps rather than one string key, so
+ * a pair costs lookups and no string building.
+ */
+type SnpColumns = Map<string, Map<number, Map<string, number>>>
+
+function idsAt(columns: SnpColumns, refName: string, bp: number) {
+  let byBp = columns.get(refName)
+  if (!byBp) {
+    byBp = new Map()
+    columns.set(refName, byBp)
+  }
+  let ids = byBp.get(bp)
+  if (!ids) {
+    ids = new Map()
+    byBp.set(bp, ids)
+  }
+  return ids
+}
+
+function columnOf(
+  columns: SnpColumns,
+  refName: string,
+  bp: number,
+  id: string,
+) {
+  return columns.get(refName)!.get(bp)!.get(id)!
 }
 
 function metricValue(record: PlinkLDRecord, ldMetric: LDMetric) {
@@ -59,12 +84,14 @@ function resolveMetric(
  * columns left to right.
  */
 function collectScreenOrderedSnps(records: PlinkLDRecord[], regions: Region[]) {
-  const byKey = new Map<string, { snp: LDSnp; rank: number; pos: number }>()
+  const columns: SnpColumns = new Map()
+  const found: { snp: LDSnp; rank: number; pos: number }[] = []
   const add = (refName: string, bp: number, id: string, maf?: number) => {
-    const key = snpKey(refName, bp, id)
-    if (!byKey.has(key)) {
+    const ids = idsAt(columns, refName, bp)
+    if (!ids.has(id)) {
+      ids.set(id, -1)
       const rank = regionIndexOf(refName, bp, regions)
-      byKey.set(key, {
+      found.push({
         snp: {
           id,
           refName,
@@ -81,7 +108,7 @@ function collectScreenOrderedSnps(records: PlinkLDRecord[], regions: Region[]) {
     add(r.chrA, r.bpA, r.snpA, r.mafA)
     add(r.chrB, r.bpB, r.snpB, r.mafB)
   }
-  return [...byKey.values()]
+  const snps = found
     .sort(
       (a, b) =>
         a.rank - b.rank ||
@@ -89,6 +116,10 @@ function collectScreenOrderedSnps(records: PlinkLDRecord[], regions: Region[]) {
         (a.snp.id ?? '').localeCompare(b.snp.id ?? ''),
     )
     .map(k => k.snp)
+  for (const [column, { refName, end, id = '' }] of snps.entries()) {
+    idsAt(columns, refName, end).set(id, column)
+  }
+  return { snps, columns }
 }
 
 export async function getLDMatrixFromPlink({
@@ -143,22 +174,19 @@ export async function getLDMatrixFromPlink({
   )
   const records = perRegion.flat()
 
-  const snps = collectScreenOrderedSnps(records, regions)
-  const indexByKey = new Map<string, number>()
-  for (const [idx, snp] of snps.entries()) {
-    indexByKey.set(snpKey(snp.refName, snp.end, snp.id), idx)
-  }
+  const { snps, columns } = collectScreenOrderedSnps(records, regions)
 
   // The band is the widest pair the file lists, so it hides nothing: plink's
   // `--ld-window` already bounded the pairs when it wrote the file.
-  const pairs: { slotI: number; slotJ: number; value: number }[] = []
+  const rows = new Int32Array(records.length)
+  const cols = new Int32Array(records.length)
   let band = 0
-  for (const record of records) {
-    const i = indexByKey.get(snpKey(record.chrA, record.bpA, record.snpA))!
-    const j = indexByKey.get(snpKey(record.chrB, record.bpB, record.snpB))!
-    const value = metricValue(record, appliedField)
-    if (i !== j && value !== LD_NOT_COMPUTED) {
-      pairs.push({ slotI: i, slotJ: j, value })
+  for (const [k, r] of records.entries()) {
+    const i = columnOf(columns, r.chrA, r.bpA, r.snpA)
+    const j = columnOf(columns, r.chrB, r.bpB, r.snpB)
+    rows[k] = i
+    cols[k] = j
+    if (i !== j && metricValue(r, appliedField) !== LD_NOT_COMPUTED) {
       band = Math.max(band, Math.abs(i - j))
     }
   }
@@ -173,8 +201,13 @@ export async function getLDMatrixFromPlink({
   // `--ld-window-r2 0.2` leaves most pairs out, and a D' for one of them is no
   // more 0 than it is 1.
   const ldValues = new Float32Array(numCells).fill(LD_NOT_COMPUTED)
-  for (const { slotI, slotJ, value } of pairs) {
-    ldValues[bandPairIndex(slotI, slotJ, band)] = value
+  for (const [k, r] of records.entries()) {
+    const i = rows[k]!
+    const j = cols[k]!
+    const value = metricValue(r, appliedField)
+    if (i !== j && value !== LD_NOT_COMPUTED) {
+      ldValues[bandPairIndex(i, j, band)] = value
+    }
   }
 
   return {
