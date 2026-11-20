@@ -6,10 +6,11 @@ export const HEADER_HEIGHT = 35
 export const CELL_PADDING = '0 10px'
 export const DEFAULT_COL_WIDTH = 100
 export const CHECKBOX_WIDTH = 40
+export const TABLE_BORDER_WIDTH = 1
 
 export const useVirtualTableStyles = makeStyles()(theme => {
   const borderColor = theme.palette.tableBorder
-  const border = `1px solid ${borderColor}`
+  const border = `${TABLE_BORDER_WIDTH}px solid ${borderColor}`
   return {
     root: {
       height: '100%',

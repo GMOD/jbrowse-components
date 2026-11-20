@@ -49,7 +49,7 @@ export function hiddenGroupsViews(self: GroupKeySpaceHost) {
 /**
  * #stateModel HiddenGroupsMixin
  * #category display
- * #crossCuttingMixin The sections a reader hid from an in-track grouping's chips: the `facet.hidden` keys while the stack groups by the facet's field, `hideGroup` and `showAllGroups` writing them, `hiddenGroups` reading them, `groupStateKey` (with the `ownGroupState` hook) for a live figure to key on, and the `dropGroupState` reset that fires when the host's `groupKeySpace` moves
+ * #crossCuttingMixin The sections a reader hid from an in-track grouping's chips: the `facet.hidden` keys while the stack groups by the facet's field, `setHiddenGroups`, `hideGroup` and `showAllGroups` writing them, `hiddenGroups` reading them, `groupStateKey` (with the `ownGroupState` hook) for a live figure to key on, and the `dropGroupState` reset that fires when the host's `groupKeySpace` moves
  *
  * The hidden sections are config, `facet.hidden`, so they ride a session and
  * a share link, and a new `field` written whole starts with none. A key names
@@ -102,24 +102,29 @@ export default function HiddenGroupsMixin() {
     .actions(self => ({
       /**
        * #action
+       * The whole hidden set at once.
+       */
+      setHiddenGroups(keys: readonly string[]) {
+        setConf(keySpaceHost(self), ['facet', 'hidden'], [...new Set(keys)])
+      },
+    }))
+    .actions(self => ({
+      /**
+       * #action
        * Drop a section from the stack. Reversed by `showAllGroups`, which
        * the "Show" menu offers while anything is hidden, since a hidden
        * section has no chip to restore it.
        */
       hideGroup(key: string) {
         if (!self.hiddenGroups.has(key)) {
-          setConf(
-            keySpaceHost(self),
-            ['facet', 'hidden'],
-            [...self.hiddenGroups, key],
-          )
+          self.setHiddenGroups([...self.hiddenGroups, key])
         }
       },
       /**
        * #action
        */
       showAllGroups() {
-        setConf(keySpaceHost(self), ['facet', 'hidden'], [])
+        self.setHiddenGroups([])
       },
       /**
        * #action

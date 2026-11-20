@@ -17,15 +17,15 @@ export interface GroupLabelsModel {
 }
 
 // The whole stack scrolls as one, so a section's screen top is its content
-// top less the scroll. Hiding the last section left would leave no chip to
-// carry the restore button.
+// top less the scroll. The chip's × spares the last section left; with every
+// section hidden another way, the restore button still draws.
 const GroupLabelsLayer = observer(function GroupLabelsLayer({
   model,
 }: {
   model: GroupLabelsModel
 }) {
   const { facet } = model
-  if (!model.showsGroupLabels) {
+  if (!model.showsGroupLabels && model.hiddenGroups.size === 0) {
     return null
   }
   const { scrollTop, height, groupSections } = model

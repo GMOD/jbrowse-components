@@ -45,7 +45,8 @@ export interface GroupChipSection {
  * while its section scrolls past (`groupChipTop`, which the SVG twin shares),
  * and a divider marks each section's top edge after the first. The topmost
  * chip on screen carries the way back from any hidden sections, after the
- * caller's `leading` chips: whatever heads the whole stack. Sections shorter
+ * caller's `leading` chips: whatever heads the whole stack. With no chip on
+ * screen, that way back stands alone at the top. Sections shorter
  * than a chip label every nth (`groupChipTops`).
  */
 export const GroupLabelChips = observer(function GroupLabelChips({
@@ -71,8 +72,29 @@ export const GroupLabelChips = observer(function GroupLabelChips({
   const chipTops = groupChipTops(sections, canvasHeight)
   const topmost = chipTops.findIndex(t => t !== undefined)
   const dropLine = drag.dropLineTop
+  const restore =
+    hiddenCount > 0 && onShowHidden ? (
+      <button
+        type="button"
+        className={classes.pillButton}
+        onClick={onShowHidden}
+        title={`Show ${hiddenCount} hidden group${hiddenCount > 1 ? 's' : ''}`}
+      >
+        Show {hiddenCount} hidden
+      </button>
+    ) : null
   return (
     <>
+      {topmost === -1 && restore ? (
+        <div
+          className={classes.controls}
+          style={{ top: 1 }}
+          data-testid="group-label-chip"
+        >
+          {leading}
+          {restore}
+        </div>
+      ) : null}
       {dropLine !== undefined ? (
         <div
           className={classes.dropLine}
@@ -149,16 +171,7 @@ export const GroupLabelChips = observer(function GroupLabelChips({
                   {action.text}
                 </button>
               ) : null}
-              {i === topmost && hiddenCount > 0 && onShowHidden ? (
-                <button
-                  type="button"
-                  className={classes.pillButton}
-                  onClick={onShowHidden}
-                  title={`Show ${hiddenCount} hidden group${hiddenCount > 1 ? 's' : ''}`}
-                >
-                  Show {hiddenCount} hidden
-                </button>
-              ) : null}
+              {i === topmost ? restore : null}
             </div>
           </Fragment>
         )

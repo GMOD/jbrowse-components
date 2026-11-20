@@ -274,7 +274,7 @@ const loaders: ReExportLoaders = {
   '@jbrowse/core/ui/useSearchHighlight': () => import('../ui/useSearchHighlight.ts'),
   '@jbrowse/core/ui/VerticalScrollbar': () => import('../ui/VerticalScrollbar.tsx').then(ns => ({ ...ns, __esModule: true })),
   '@jbrowse/core/ui/ViewMenuButton': () => Promise.resolve(uiStub),
-  '@jbrowse/core/ui/VirtualTable': () => Promise.resolve(uiNamespace(['CELL_PADDING', 'CHECKBOX_WIDTH', 'CellOverhang', 'CellTextInput', 'DEFAULT_COL_WIDTH', 'EditableTextCell', 'HEADER_HEIGHT', 'ROW_HEIGHT', 'TableCheckbox', 'checkboxLeading', 'default', 'useTableSort'], true)),
+  '@jbrowse/core/ui/VirtualTable': () => Promise.resolve(uiNamespace(['CELL_PADDING', 'CHECKBOX_WIDTH', 'CellOverhang', 'CellTextInput', 'DEFAULT_COL_WIDTH', 'EditableTextCell', 'HEADER_HEIGHT', 'ROW_HEIGHT', 'TABLE_BORDER_WIDTH', 'TableCheckbox', 'checkboxLeading', 'default', 'useTableSort'], true)),
   '@jbrowse/core/ui/zIndexes': () => import('../ui/zIndexes.ts'),
   '@jbrowse/core/util': () => import('../util/index.ts'),
   '@jbrowse/core/util/aborting': () => import('../util/aborting.ts'),

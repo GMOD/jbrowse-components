@@ -23,7 +23,7 @@ const rows = Array.from({ length: 300 }, (_, i) => ({ id: i, name: `r${i}` }))
 function table({
   shown = rows,
   scrollToRowId,
-  onSort = () => {},
+  onSort,
   sortField = '',
   sortAscending = true,
   onRowClick,
@@ -151,6 +151,12 @@ test('a header click cycles ascending, descending, unsorted', () => {
   expect(onSort).toHaveBeenLastCalledWith('', true)
 })
 
+test('without an onSort, a sortable column header is a plain label', () => {
+  const { queryByRole, getByText } = render(table({}))
+  expect(queryByRole('button', { name: 'Name' })).toBeNull()
+  expect(getByText('Name')).toBeTruthy()
+})
+
 test('a row click hands back its row', () => {
   const onRowClick = jest.fn()
   const { getByText } = render(table({ onRowClick }))
@@ -215,9 +221,6 @@ describe('search highlight', () => {
           rows={names.map((name, id) => ({ id, name }))}
           columns={[{ id: 'name', header: 'Name', cell: row => row.name }]}
           widths={() => ({ name: 100 })}
-          sortField=""
-          sortAscending
-          onSort={() => {}}
           emptyMessage="No matching name"
           highlightPatterns={highlightPatterns('name')}
         />
@@ -250,9 +253,6 @@ test('dragging a fill column gives it its width, the table stops stretching, and
           { id: 'id', header: 'Id', cell: row => row.id },
         ]}
         widths={() => ({ name: 300, id: 100 })}
-        sortField=""
-        sortAscending
-        onSort={() => {}}
         emptyMessage="none"
       />
     </ThemeProvider>,

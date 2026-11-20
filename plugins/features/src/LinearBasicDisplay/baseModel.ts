@@ -75,6 +75,7 @@ import {
 } from './components/labelPositioning.ts'
 import { resolveRegionColors } from './components/resolveRegionColors.ts'
 import { featureColorScaleViews } from './derivedColorKey.ts'
+import { knownSections } from './facet.ts'
 import { featureBandViews } from './featureBandViews.ts'
 import { featureContextMenuItems } from './featureContextMenu.ts'
 import {
@@ -211,6 +212,7 @@ const ColorByAttributeDialog = lazy(
   () => import('@jbrowse/display-kit/ColorByAttributeDialog'),
 )
 const GroupByDialog = lazy(() => import('./components/GroupByDialog.tsx'))
+const SectionsDialog = lazy(() => import('./components/SectionsDialog.tsx'))
 const SetColorDialog = lazy(() => import('./components/SetColorDialog.tsx'))
 const JexlFilterDialog = lazy(() => import('@jbrowse/core/ui/JexlFilterDialog'))
 
@@ -374,6 +376,20 @@ export default function baseStateModelFactory(
     }))
     .views(self => featureDisplayConfigViews(self))
     .views(self => hiddenSectionViews(self))
+    .views(self => ({
+      /**
+       * #getter
+       * Every section the Sections dialog lists, in stacking order: those
+       * in the fetched regions, hidden or not, and those the facet names.
+       * Empty while ungrouped.
+       */
+      get knownSections() {
+        const { facet } = self
+        return facet
+          ? knownSections(self.rpcDataMap.values(), facet, self.hiddenGroups)
+          : []
+      },
+    }))
     .views(self => ({
       /**
        * #getter
@@ -1243,6 +1259,16 @@ export default function baseStateModelFactory(
          */
         clearHoveredFeature() {
           self.clearHover()
+        },
+
+        /**
+         * #action
+         */
+        openSectionsDialog() {
+          getDialogHost(self).queueDialog(handleClose => [
+            SectionsDialog,
+            { model: self, handleClose },
+          ])
         },
 
         /**

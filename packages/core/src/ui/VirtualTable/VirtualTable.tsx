@@ -68,8 +68,8 @@ const VirtualTable = observer(function VirtualTable<
   isRowSelected,
   rowClassName,
   onRowClick,
-  sortField,
-  sortAscending,
+  sortField = '',
+  sortAscending = true,
   onSort,
   resetKey,
   scrollToRowId,
@@ -91,10 +91,11 @@ const VirtualTable = observer(function VirtualTable<
   /** a row's own class, for a caller that marks rows its own way */
   rowClassName?: (row: R) => string | undefined
   onRowClick?: (row: R) => void
-  sortField: string
-  sortAscending: boolean
-  /** an empty field is unsorted */
-  onSort: (field: string, ascending: boolean) => void
+  /** empty or unset is unsorted */
+  sortField?: string
+  sortAscending?: boolean
+  /** without it, no header sorts, whatever `sortValue` a column has */
+  onSort?: (field: string, ascending: boolean) => void
   /** scrolls back to the top when it changes, as a sort change does */
   resetKey?: string
   /**

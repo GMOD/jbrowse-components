@@ -141,3 +141,16 @@ test('ungrouped draws nothing', () => {
   })
   expect(queryAllByTestId('group-label-chip')).toHaveLength(0)
 })
+
+test('with every drawn section hidden, the layer still offers the way back', () => {
+  const showAllGroups = jest.fn()
+  const { getByRole } = renderLayer({
+    showsGroupLabels: false,
+    groupSections: [],
+    scrollTop: 0,
+    hiddenGroups: new Set(['1']),
+    showAllGroups,
+  })
+  fireEvent.click(getByRole('button', { name: 'Show 1 hidden' }))
+  expect(showAllGroups).toHaveBeenCalled()
+})

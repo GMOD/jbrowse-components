@@ -116,3 +116,19 @@ test('the leading chips ride the topmost chip on screen, ahead of its pill', () 
   expect(chips[0]!.firstElementChild).toBe(view.getByTestId('lead'))
   expect(chips[0]!.textContent).toContain('B')
 })
+
+test('with every section hidden, the way back stands alone at the top', () => {
+  const onShowHidden = jest.fn()
+  const { getByRole } = render(
+    <ThemeProvider theme={createJBrowseTheme()}>
+      <GroupLabelChips
+        canvasHeight={300}
+        sections={[]}
+        hiddenCount={2}
+        onShowHidden={onShowHidden}
+      />
+    </ThemeProvider>,
+  )
+  fireEvent.click(getByRole('button', { name: 'Show 2 hidden' }))
+  expect(onShowHidden).toHaveBeenCalled()
+})

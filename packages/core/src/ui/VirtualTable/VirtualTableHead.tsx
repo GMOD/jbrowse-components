@@ -35,7 +35,7 @@ const VirtualTableHead = observer(function VirtualTableHead<R>({
   onResetWidth: (colId: string) => void
   sortField: string
   sortAscending: boolean
-  onSort: (field: string, ascending: boolean) => void
+  onSort?: (field: string, ascending: boolean) => void
 }) {
   const { classes } = useVirtualTableStyles()
   return (
@@ -66,7 +66,7 @@ const VirtualTableHead = observer(function VirtualTableHead<R>({
                   : undefined
               }
             >
-              {col.sortValue ? (
+              {col.sortValue && onSort ? (
                 <button
                   type="button"
                   className={cx(headerClass, classes.sortButton)}

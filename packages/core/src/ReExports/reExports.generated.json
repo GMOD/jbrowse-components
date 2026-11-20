@@ -2404,6 +2404,7 @@
         "EditableTextCell",
         "HEADER_HEIGHT",
         "ROW_HEIGHT",
+        "TABLE_BORDER_WIDTH",
         "TableCheckbox",
         "checkboxLeading",
         "default",

@@ -20,6 +20,7 @@ import {
 } from '@jbrowse/display-kit/groupByMenu'
 import { heightModeMenuItems } from '@jbrowse/display-kit/heightModeMenu'
 import { editPlotMenuItems } from '@jbrowse/display-kit/plotMenu'
+import ChecklistIcon from '@mui/icons-material/Checklist'
 import HeightIcon from '@mui/icons-material/Height'
 
 import { DISPLAY_MODE_OPTIONS } from '../RenderFeatureDataRPC/displayModes.ts'
@@ -83,7 +84,13 @@ interface GroupByMenuSelf {
   applyGroupBy: (field: string | undefined, colorByGroup: boolean) => void
 }
 
-interface TrackMenuSelf extends GroupByMenuSelf, FacetSelf, PlotDisplay {
+interface SectionsMenuSelf {
+  facet: FeatureFacet | undefined
+  openSectionsDialog: () => void
+}
+
+interface TrackMenuSelf
+  extends GroupByMenuSelf, FacetSelf, SectionsMenuSelf, PlotDisplay {
   featureNarrowings: () => Reversibles
   featureMarks: () => Reversibles
   showSubmenuMenuItems: () => MenuItem[]
@@ -127,6 +134,20 @@ export function groupByMenuItems(self: GroupByMenuSelf): MenuItem[] {
       ],
     }),
   ]
+}
+
+export function sectionsMenuItems(self: SectionsMenuSelf): MenuItem[] {
+  return self.facet
+    ? [
+        {
+          label: 'Sections...',
+          icon: ChecklistIcon,
+          onClick: () => {
+            self.openSectionsDialog()
+          },
+        },
+      ]
+    : []
 }
 
 function featureSetRecoveryMenuItems(self: TrackMenuSelf): MenuItem[] {
@@ -258,6 +279,7 @@ export function featureTrackMenuItems(self: TrackMenuSelf): MenuItem[] {
   return [
     ...self.colorMenuItems(),
     ...groupByMenuItems(self),
+    ...sectionsMenuItems(self),
     ...resetSectionOrderItems(
       self.facet && {
         domain: self.facet.sort,

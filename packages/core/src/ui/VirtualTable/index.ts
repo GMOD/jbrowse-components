@@ -10,6 +10,7 @@ export {
   DEFAULT_COL_WIDTH,
   HEADER_HEIGHT,
   ROW_HEIGHT,
+  TABLE_BORDER_WIDTH,
 } from './tableStyles.ts'
 export { useTableSort } from './useTableSort.ts'
 

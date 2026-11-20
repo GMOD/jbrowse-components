@@ -89,6 +89,8 @@ Each section has a chip naming it:
 - **Hide:** the × on a chip hides that section. The **Show N hidden** chip at
   the top of the track, or **Show → Show N hidden groups**,<!-- menu-path-ok -->
   puts every hidden section back, and changing the grouping clears them
+- **Pick:** **Sections...** in the track menu lists every section the track
+  knows, with a box each; untick the ones to hide, then **Apply**
 - **Reorder:** drag a chip onto another section to move its section there;
   **Reset section order** in the track menu returns them to the sorted order
 

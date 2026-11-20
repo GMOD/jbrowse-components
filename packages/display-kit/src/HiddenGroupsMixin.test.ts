@@ -65,6 +65,18 @@ test('hide and restore, written to the facet and read back as a fresh Set', () =
   expect(host.hiddenGroups.size).toBe(0)
 })
 
+test('the whole hidden set written at once replaces the one before it', () => {
+  const host = attached({ field: 'source', hidden: ['Chains'] })
+  host.setHiddenGroups(['Domains', 'Repeats', 'Domains'])
+  expect([...host.hiddenGroups]).toEqual(['Domains', 'Repeats'])
+  expect(getSnapshot(host.configuration.facet)).toMatchObject({
+    field: 'source',
+    hidden: ['Domains', 'Repeats'],
+  })
+  host.setHiddenGroups([])
+  expect(host.hiddenGroups.size).toBe(0)
+})
+
 test('a config naming hidden sections opens with them hidden', () => {
   const host = attached({ field: 'strand', hidden: ['0'] })
   expect([...host.hiddenGroups]).toEqual(['0'])

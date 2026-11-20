@@ -398,7 +398,7 @@ const libs: Record<string, unknown> = {
   '@jbrowse/core/ui/useSearchHighlight': m140,
   '@jbrowse/core/ui/VerticalScrollbar': { ...m141, __esModule: true },
   '@jbrowse/core/ui/ViewMenuButton': uiStub,
-  '@jbrowse/core/ui/VirtualTable': uiNamespace(['CELL_PADDING', 'CHECKBOX_WIDTH', 'CellOverhang', 'CellTextInput', 'DEFAULT_COL_WIDTH', 'EditableTextCell', 'HEADER_HEIGHT', 'ROW_HEIGHT', 'TableCheckbox', 'checkboxLeading', 'default', 'useTableSort'], true),
+  '@jbrowse/core/ui/VirtualTable': uiNamespace(['CELL_PADDING', 'CHECKBOX_WIDTH', 'CellOverhang', 'CellTextInput', 'DEFAULT_COL_WIDTH', 'EditableTextCell', 'HEADER_HEIGHT', 'ROW_HEIGHT', 'TABLE_BORDER_WIDTH', 'TableCheckbox', 'checkboxLeading', 'default', 'useTableSort'], true),
   '@jbrowse/core/ui/zIndexes': m144,
   '@jbrowse/core/util': m145,
   '@jbrowse/core/util/aborting': m146,

@@ -51,6 +51,10 @@ test('grouping by strand stacks two labelled sections', () => {
 
   display.facetByField('strand')
   expect(display.facet).toEqual({ field: 'strand', sort: [] })
+  expect(display.knownSections.map(s => s.label)).toEqual([
+    'Forward strand',
+    'Reverse strand',
+  ])
   expect(display.groupSections.map(s => [s.key, s.label, s.top])).toEqual([
     ['1', 'Forward strand', 0],
     ['-1', 'Reverse strand', expect.any(Number)],
@@ -306,4 +310,40 @@ test('a hidden section is written to the facet and costs no fetch', () => {
   display.applyGroupBy('strand', false)
   expect(display.hiddenGroups.size).toBe(0)
   expect(display.plot.facet).toEqual({ field: 'strand' })
+})
+
+test('Sections... is offered while grouped and opens the checklist', () => {
+  const { createDisplay } = createTestEnvironment()
+  const { display } = createDisplay()
+  expect(labelsOf(display.trackMenuItems())).not.toContain('Sections...')
+  display.facetByField('biotype')
+  const row = display
+    .trackMenuItems()
+    .find(i => 'label' in i && i.label === 'Sections...')
+  const opened = jest.spyOn(display, 'openSectionsDialog')
+  if (row && 'onClick' in row) {
+    row.onClick()
+  }
+  expect(opened).toHaveBeenCalled()
+})
+
+test('the known sections are the fetched ones, hidden or not, and the ones the facet names, in stacking order', () => {
+  const { createDisplay } = createTestEnvironment()
+  const { display } = createDisplay()
+  expect(display.knownSections).toEqual([])
+  display.setRpcData(0, strandedRegionData(), ctgA)
+  display.applyPlot({
+    facet: { field: 'biotype', sort: ['snRNA', 'lncRNA'], hidden: ['tRNA'] },
+  })
+  display.hideGroup('protein_coding')
+  expect(display.knownSections.map(s => s.key)).toEqual([
+    'snRNA',
+    'lncRNA',
+    'protein_coding',
+    'tRNA',
+  ])
+  expect(display.knownSections[2]).toEqual({
+    key: 'protein_coding',
+    label: 'protein_coding',
+  })
 })

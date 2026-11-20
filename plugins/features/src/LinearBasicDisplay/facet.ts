@@ -63,6 +63,30 @@ export function hiddenSectionFeatureIds(
 }
 
 /**
+ * Every section the display can name, labelled by its value: each one the
+ * fetched regions hold, hidden or not, and each `known` key besides, the
+ * facet's `sort` and its hidden ones among them, so a section absent from
+ * this window still lists. In stacking order.
+ */
+export function knownSections(
+  regions: Iterable<{ flatbushItems: readonly SectionStamp[] }>,
+  facet: FeatureFacet,
+  known: Iterable<string>,
+): GroupId[] {
+  const field = facetField(facet)
+  const sectionOf = sectionIdsOf(facet)
+  const keys = new Set([...facet.sort, ...known])
+  for (const data of regions) {
+    for (const item of data.flatbushItems) {
+      keys.add(sectionOf(item).key)
+    }
+  }
+  return [...keys]
+    .sort((a, b) => field.compare(a, b))
+    .map(key => ({ key, label: field.label(key) }))
+}
+
+/**
  * The px above each section's first row: its chip's row, or a gap on a host
  * that draws no chips.
  */
