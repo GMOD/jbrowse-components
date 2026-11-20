@@ -30,7 +30,7 @@ function linkParams(url: URL) {
 
 /**
  * The config a JBrowse Web link builds its session on, as the renderer's
- * launchFromLink resolves it; linkPrompt.test.ts holds the two together.
+ * launchFromLink resolves it; linkConfigUrl.test.ts holds the two together.
  *
  * - `config=` resolves against the page, and `config=none` names none
  * - a spec or `&loc=` link without one names none
