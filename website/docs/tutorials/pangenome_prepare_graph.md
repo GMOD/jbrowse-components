@@ -33,9 +33,9 @@ The graph view is a beta plugin. We welcome your [feedback](/contact).
 
 - [the GraphGenomeView plugin](#the-graphgenomeview-plugin)
 - htslib (`bgzip`, `tabix`) and `bcftools`
-- [`gfa-to-tabix`](https://github.com/GMOD/gfa-to-tabix) 4.0.0 or later, for the
+- [`gfa-to-tabix`](https://github.com/GMOD/gfa-to-tabix) 5.0.0 or later, for the
   graph's files in format 2, which the configs below read, and the walk files
-  (walk format 7, the only one the plugin reads)
+  (walk format 8, the only one the plugin reads)
 - [`gfatools`](https://github.com/lh3/gfatools), for an rGFA's bubbles
 - [`minigraph`](https://github.com/lh3/minigraph), for each assembly's path
   through the graph
@@ -454,7 +454,7 @@ gzip -dc hprc-v2.1-mc-grch38.GRCh38.walks.gz | head -4
 ```
 
 ```text output
-#walks	format:i:7	tile:i:65536	revisited:i:0	stay:i:311	abridge:i:1000000	abridgebytes:i:3000000
+#walks	format:i:8	tile:i:65536	revisited:i:0	stay:i:311	abridge:i:1000000	abridgebytes:i:3000000	graph:Z:c9aa0d5f6907f27c	leftout:i:1698
 #reference	GRCh38
 #haplotype	CHM13#0
 #haplotype	HG00097#1
@@ -467,6 +467,9 @@ gzip -dc hprc-v2.1-mc-grch38.GRCh38.walks.gz | head -4
   `--abridge-bytes` budgets. Where a tile's walks cost more, usually in a
   satellite array, gfa-to-tabix moves the costliest walks to detail records that
   a window read skips
+- **`graph` and `leftout`** give the hash of the graph the file was written
+  from, which the graph's index states too, and the number of paths left out
+  because they have no step on a node of the reference
 - **`#reference` and `#haplotype`** list the reference sample, then every other
   haplotype with rows in the file, the other reference included
 
