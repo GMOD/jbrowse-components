@@ -57,6 +57,7 @@ import {
   RecordsFacetFieldDialog,
 } from '../shared/lazyDialogs.ts'
 import { isSiteField } from '../shared/minorAlleleFrequencyUtils.ts'
+import { MENDELIAN_FIELD } from '../shared/trios.ts'
 import { IMPACT_FIELD } from '../shared/variantConsequence.ts'
 import { VARIANT_FILTER_EXAMPLES } from '../shared/variantFilterExamples.ts'
 import { variantFilterFields } from '../shared/variantFilterFields.ts'
@@ -288,7 +289,9 @@ export function variantTrackMenuItems(
     rampEncodingOf(self.colorEncoding)?.field ??
     recordHueField(self.colorEncoding)?.field
   const recordField =
-    hueField === SV_TYPE_FIELD || hueField === IMPACT_FIELD
+    hueField === SV_TYPE_FIELD ||
+    hueField === IMPACT_FIELD ||
+    hueField === MENDELIAN_FIELD
       ? undefined
       : hueField
   const phaseSet = needs(
@@ -361,6 +364,20 @@ export function variantTrackMenuItems(
               checked: self.colorField === SV_TYPE_FIELD,
               onClick: () => {
                 self.colorByField(SV_TYPE_FIELD)
+              },
+            },
+            {
+              label:
+                self.trios.length > 0
+                  ? 'Mendelian check'
+                  : 'Mendelian check (no sample has a parent among the samples)',
+              disabled: self.trios.length === 0,
+              helpText:
+                "Each site's most severe call over the trios: a child's allele in neither parent, an inconsistent genotype, or consistent",
+              type: 'radio',
+              checked: self.colorField === MENDELIAN_FIELD,
+              onClick: () => {
+                self.colorByField(MENDELIAN_FIELD)
               },
             },
             {

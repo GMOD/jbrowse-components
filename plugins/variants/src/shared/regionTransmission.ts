@@ -16,3 +16,15 @@ export function regionTransmission<T extends TransmissionEntry>(
     transmissionEntriesFor(entries, region.refName, assembly),
   )
 }
+
+/**
+ * An assembly's `transmission` entries as plain objects, read off the live
+ * configuration nodes, whose `from` default a snapshot would leave out.
+ */
+export function plainTransmission(entries: readonly TransmissionEntry[]) {
+  return entries.map(({ refName, sex, from }) => ({
+    ...(refName === undefined ? {} : { refName }),
+    ...(sex === undefined ? {} : { sex }),
+    from,
+  }))
+}

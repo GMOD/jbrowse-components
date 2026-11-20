@@ -1,6 +1,9 @@
 import type { GetCellDataArgs } from '../VariantRPC/types.ts'
 import type { CellHueRead } from '../shared/cellHue.ts'
 import type { RecordFieldReads } from '../shared/recordFields.ts'
+import type { Trio } from '../shared/trios.ts'
+import type { TransmissionEntry } from '@jbrowse/core/assemblyManager'
+import type { FieldPredicate } from '@jbrowse/core/util/fieldPredicate'
 
 /** What {@link variantRpcPropsViews} reads: every setting the worker is sent. */
 export interface VariantRpcPropsHost extends Pick<
@@ -12,6 +15,9 @@ export interface VariantRpcPropsHost extends Pick<
   recordFieldReads: RecordFieldReads
   atGenomicPositions: boolean
   showReference: boolean
+  trios: Trio[]
+  mendelianFilter: FieldPredicate[]
+  transmissionEntries: TransmissionEntry[]
 }
 
 /**
@@ -25,7 +31,9 @@ export function variantRpcPropsViews(self: VariantRpcPropsHost) {
      * #method
      * Only what the worker reads, and nothing fetch-derived; a change
      * refetches. `showReference` is one at genomic positions only: columns
-     * draw every reference cell.
+     * draw every reference cell. `transmissionEntries`, the assembly's
+     * `transmission`, is resolved per region where the regions are known
+     * and sent as `transmission`.
      */
     rpcProps() {
       return {
@@ -37,6 +45,9 @@ export function variantRpcPropsViews(self: VariantRpcPropsHost) {
         color: self.cellHueRead,
         recordFields: self.recordFieldReads,
         showReference: !self.atGenomicPositions || self.showReference,
+        trios: self.trios,
+        mendelianFilter: self.mendelianFilter,
+        transmissionEntries: self.transmissionEntries,
       }
     },
   }

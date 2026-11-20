@@ -16,11 +16,13 @@ import { observer } from 'mobx-react'
 import { getTraMate, symbolicAlleleBp } from '../VcfFeature/util.ts'
 import { TANDEM_REPEAT } from '../shared/tandemRepeatRuns.ts'
 import AltFormatter from './AltFormatter.tsx'
+import TrioCallsTable from './TrioCallsTable.tsx'
 import { consequencePanels } from './VariantConsequence/parseConsequences.ts'
 import VariantSampleGrid from './VariantSampleGrid/VariantSampleGrid.tsx'
 import { isSvLaunchFeature } from './svLaunchType.ts'
 import { variantFieldDescriptions } from './variantFieldDescriptions.ts'
 
+import type { TrioCall } from '../shared/trios.ts'
 import type { VariantFeatureWidgetModel } from './stateModelFactory.ts'
 import type { Descriptions, VCFFeatureSerialized } from './types.ts'
 
@@ -92,6 +94,7 @@ const VariantDetails = observer(function VariantDetails({
   // annotated to shed the MST node brand types.frozen() carries on the
   // instance, which a spread would otherwise copy into the descriptions object
   const descriptions: Descriptions | undefined = model.descriptions
+  const trioCalls: TrioCall[] | undefined = model.trioCalls
   const {
     samples,
     genotypes,
@@ -155,6 +158,7 @@ const VariantDetails = observer(function VariantDetails({
           <Typography>Alleles: {`${clickedAlleles}`}</Typography>
         </BaseCard>
       ) : null}
+      {trioCalls?.length ? <TrioCallsTable trioCalls={trioCalls} /> : null}
       <VariantSampleGrid
         feature={raw}
         descriptions={descriptions}

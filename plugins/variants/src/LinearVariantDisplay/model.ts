@@ -1,3 +1,4 @@
+import { transmissionEntriesFor } from '@jbrowse/core/assemblyManager'
 import {
   ConfigurationReference,
   getConf,
@@ -79,6 +80,11 @@ import {
 } from '../shared/getSources.ts'
 import { CellSolidColorDialog } from '../shared/lazyDialogs.ts'
 import {
+  plainTransmission,
+  regionTransmission,
+} from '../shared/regionTransmission.ts'
+import { genotypeMap, trioCalls } from '../shared/trios.ts'
+import {
   sitesBySpan,
   sortSourcesAroundVariant,
 } from './anchoredHaplotypeSort.ts'
@@ -120,6 +126,7 @@ import {
 import { recordCountMeasurements } from './recordsDensityGate.ts'
 import { recordsHighlightViews } from './recordsHighlightViews.ts'
 import { variantRpcPropsViews } from './rpcPropsViews.ts'
+import { variantTrioViews } from './trioViews.ts'
 import {
   variantContextMenuItems,
   variantTrackMenuItems,
@@ -158,6 +165,7 @@ import type {
 } from './matrix/variantMatrixRenderingBackendTypes.ts'
 import type { Placed } from './placeVariantRows.ts'
 import type { SequenceHoverPosition } from '@jbrowse/core/BaseFeatureWidget'
+import type { TransmissionEntry } from '@jbrowse/core/assemblyManager'
 import type { MenuItem } from '@jbrowse/core/ui'
 import type { ColorScale } from '@jbrowse/core/ui/colorScale'
 import type { Feature } from '@jbrowse/core/util'
@@ -170,7 +178,7 @@ import type {
 import type { IndexedRegion } from '@jbrowse/display-kit/planRegionFetch'
 import type { RegionHost } from '@jbrowse/display-kit/regionHost'
 import type { ExportSvgDisplayOptions } from '@jbrowse/display-kit/types'
-import type { Instance } from '@jbrowse/mobx-state-tree'
+import type { IAnyStateTreeNode, Instance } from '@jbrowse/mobx-state-tree'
 import type {
   FeatureMenuHit,
   HitFeatureResult,
@@ -207,6 +215,15 @@ function warnHaplotypeNameCollisions(samples: readonly string[]) {
       `Sample ${collisions.map(name => `"${name}"`).join(', ')} is also the name of another sample's haplotype row, so in phased mode the name is ambiguous: an order, label, color or focus naming it may mean that sample or the other sample's haplotype`,
     )
   }
+}
+
+// The view's assembly, which names the transmission entries and resolves a
+// refName to them
+function viewAssembly(self: IAnyStateTreeNode & { view: RegionHost }) {
+  const name = self.view.assemblyNames?.[0]
+  return name === undefined
+    ? undefined
+    : getSession(self).assemblyManager.get(name)
 }
 
 // Columns fetch the visible regions only: they are laid out by feature index
@@ -793,6 +810,41 @@ export function stateModelFactory(
       }))
       .views(recordsKeyViews)
       .views(recordsSettingsViews)
+      .views(self => variantTrioViews(self))
+      .views(self => ({
+        /**
+         * #getter
+         * The view's assembly's `transmission` entries, which the fetch
+         * resolves per region for the Mendelian check.
+         */
+        get transmissionEntries(): TransmissionEntry[] {
+          return plainTransmission(
+            viewAssembly(self)?.configuration?.transmission ?? [],
+          )
+        },
+        /**
+         * #method
+         * Each trio's Mendelian check at `feature`, a full record holding
+         * every sample's genotype, under the rule its refName resolves to
+         * through the view's assembly's aliases, which the feature widget
+         * lists.
+         */
+        trioCallsAt(feature: Feature) {
+          const assembly = viewAssembly(self)
+          const genotypes = genotypeMap(feature.get('genotypes'))
+          return trioCalls(
+            self.trios,
+            sample => genotypes.get(sample),
+            assembly
+              ? transmissionEntriesFor(
+                  this.transmissionEntries,
+                  feature.get('refName'),
+                  assembly,
+                )
+              : [],
+          )
+        },
+      }))
       .actions(self => {
         const fetchMetadata = createAdapterMetadataFetch(self)
         const openDetails = createFeatureDetailsOpener(self)
@@ -843,7 +895,14 @@ export function stateModelFactory(
            * #action
            */
           selectFeature(feature: Feature) {
-            void openDetails(() => detailsRecordOf(feature))
+            void openDetails(
+              () => detailsRecordOf(feature),
+              undefined,
+              full =>
+                self.trios.length > 0
+                  ? { trioCalls: self.trioCallsAt(full) }
+                  : {},
+            )
           },
           /**
            * #action
@@ -1454,7 +1513,10 @@ export function stateModelFactory(
             return
           }
           // resolved before the await, so the RPC sends what is marked loaded
-          const args = rpcArgs(self)
+          const { transmissionEntries, ...args } = rpcArgs(self)
+          const assembly = getSession(self).assemblyManager.get(
+            regions[0]!.region.assemblyName,
+          )
           const { bpPerPx } = view
           const fetchedAt = variantLayout === 'columns' ? bpPerPx : undefined
           const { maxFeatureDensity } = self
@@ -1463,6 +1525,14 @@ export function stateModelFactory(
               ctx.callRpc('MultiSampleVariantGetCellData', {
                 ...args,
                 regions: batch.map(r => r.region),
+                transmission:
+                  args.trios.length > 0 && assembly
+                    ? regionTransmission(
+                        transmissionEntries,
+                        batch.map(r => r.region),
+                        assembly,
+                      )
+                    : undefined,
                 displayedRegionIndices: batch.map(r => r.displayedRegionIndex),
                 bpPerPx,
                 maxFeatureDensity,

@@ -27,10 +27,12 @@ import {
  * lighter. Unset, the records paint their SV type and the
  * cells the genotype colors. A CSS color or
  * `jexl:` callback in `value` paints every alt cell of a variant; a `field`
- * gives each of its values a color with a key. Three fields are presets:
+ * gives each of its values a color with a key. Four fields are presets:
  * `impact`, the most severe SnpEff/VEP consequence tier; `svType`, the
  * structural-variant class; `phaseSet`, the FORMAT PS block, which paints
- * only under `rows: 'haplotype'`.
+ * only under `rows: 'haplotype'`; `mendelian`, the site's most severe call
+ * over the trios a pedigree names (`notInParents`, `inconsistent`,
+ * `consistent`), a site no trio settles keeping the default alt color.
  * Any other field is read off the record — `INFO.CLNSIG`, `QUAL`, or a
  * `jexl:` expression — and a numeric one cut into intervals by a `threshold`
  * scale or run along a `linear` or `log` ramp. A string is the field.
@@ -92,7 +94,7 @@ export const cellColorConfigSchema = ConfigurationSchema(
     ...colorFieldSlot({
       fieldType: 'featureField',
       field:
-        'impact, the most severe SnpEff/VEP consequence tier; svType, the structural-variant class; phaseSet, the FORMAT PS block, painting only under rows haplotype; or any record field, INFO.CLNSIG say, or a jexl expression over feature, whose values each paint one range color with a key. A record with no value keeps the default alt color',
+        'impact, the most severe SnpEff/VEP consequence tier; svType, the structural-variant class; phaseSet, the FORMAT PS block, painting only under rows haplotype; mendelian, the most severe call over the trios a pedigree names; or any record field, INFO.CLNSIG say, or a jexl expression over feature, whose values each paint one range color with a key. A record with no value keeps the default alt color',
     }),
     /**
      * #slot scale

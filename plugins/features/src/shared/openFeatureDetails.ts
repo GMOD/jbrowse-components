@@ -15,13 +15,15 @@ export interface FeatureDetailsHost extends IStateTreeNode {
 
 /**
  * A factory called once per display inside an `.actions` closure, because the
- * header-metadata memo it holds has to outlive the click.
+ * header-metadata memo it holds has to outlive the click. `extraOf` adds the
+ * display's own fields of the fetched feature to the widget's.
  */
 export function createFeatureDetailsOpener(self: FeatureDetailsHost) {
   const fetchMetadata = createAdapterMetadataFetch(self)
   return (
     fetch: () => Promise<Feature | undefined>,
     parentFeature?: ParentFeatureSummary,
+    extraOf?: (feature: Feature) => Record<string, unknown>,
   ) => {
     let descriptions: unknown
     return withFeatureDetails(
@@ -36,7 +38,7 @@ export function createFeatureDetailsOpener(self: FeatureDetailsHost) {
       feature => {
         openFeatureWidget(self, feature.toJSON(), {
           widget: self.featureWidgetType,
-          extra: { descriptions },
+          extra: { descriptions, ...extraOf?.(feature) },
           feature,
           parentFeature,
         })

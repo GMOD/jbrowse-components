@@ -16,6 +16,7 @@ const VARIANT_FIELD_LABELS: Record<string, string> = {
   length: 'Length',
   insertion: 'Insertion',
   description: 'Description',
+  mendelian: 'Mendelian check',
   carriers: 'Carriers',
   pile: 'Drawn here',
 }

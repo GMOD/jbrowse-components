@@ -63,7 +63,7 @@ export function triosOf(sources: readonly Source[]): Trio[] {
     .flatMap(source => {
       const father = present(source.father)
       const mother = present(source.mother)
-      const sex = pedigreeSexOf(source.sex)
+      const sex: PedigreeSex | undefined = pedigreeSexOf(source.sex)
       return father !== undefined || mother !== undefined
         ? [
             {
@@ -92,16 +92,14 @@ export function trioCalls(
     const child = genotypeOf(trio.child)
     const parent = (name: string | undefined) =>
       name === undefined ? undefined : (genotypeOf(name) ?? '.')
-    return {
-      ...trio,
-      call:
-        child === undefined
-          ? undefined
-          : classifyTrio(child, parent(trio.father), parent(trio.mother), {
-              sex: trio.sex,
-              rule,
-            }),
-    }
+    const call: TrioClass | undefined =
+      child === undefined
+        ? undefined
+        : classifyTrio(child, parent(trio.father), parent(trio.mother), {
+            sex: trio.sex,
+            rule,
+          })
+    return { ...trio, call }
   })
 }
 
@@ -206,4 +204,15 @@ export function makeMendelianCheck({
         }
         return mostSevereTrioClass(classes)
       }
+}
+
+/** A record's `genotypes`, sample to genotype, as read off a full record. */
+export function genotypeMap(genotypes: unknown) {
+  return new Map(
+    typeof genotypes === 'object' && genotypes !== null
+      ? Object.entries(genotypes).filter(
+          (entry): entry is [string, string] => typeof entry[1] === 'string',
+        )
+      : [],
+  )
 }

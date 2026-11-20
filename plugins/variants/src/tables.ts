@@ -58,6 +58,7 @@ import {
   recordsTrackHeightViews,
 } from './LinearVariantDisplay/recordsBandViews.ts'
 import { variantRpcPropsViews } from './LinearVariantDisplay/rpcPropsViews.ts'
+import { variantTrioViews } from './LinearVariantDisplay/trioViews.ts'
 import {
   variantColorSettingViews,
   variantDrawnRowViews,
@@ -94,6 +95,7 @@ import type { RecordsView } from './LinearVariantDisplay/recordsBandViews.ts'
 import type { CellDataResult } from './VariantRPC/executeVariantCellData.ts'
 import type { ProcessedSource, Source } from './shared/types.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
+import type { TransmissionEntry } from '@jbrowse/core/assemblyManager'
 import type { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { TablesRegion } from '@jbrowse/core/data_adapters/tables'
 import type { RpcExecuteArgs } from '@jbrowse/core/rpc/RpcRegistry'
@@ -142,7 +144,15 @@ const base = types
     get regionRecordAlpha(): ReadonlyMap<number, Float32Array | undefined> {
       return new Map()
     },
+    /**
+     * No assembly, so no transmission entries: the Mendelian check takes
+     * the autosomal rule on every sequence.
+     */
+    get transmissionEntries(): TransmissionEntry[] {
+      return []
+    },
   }))
+  .views(self => variantTrioViews(self))
   .views(self => variantRowConfigViews(self))
   .views(self => variantGenotypesShowViews(self))
   .views(self => variantColorSettingViews(self))

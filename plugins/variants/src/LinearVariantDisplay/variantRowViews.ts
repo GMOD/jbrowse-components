@@ -17,6 +17,7 @@ import {
   resolveSampleName,
 } from '../shared/getSources.ts'
 import { isSiteField } from '../shared/minorAlleleFrequencyUtils.ts'
+import { MENDELIAN_FIELD } from '../shared/trios.ts'
 import { DEFAULT_VARIANT_DISPLAY_HEIGHT } from './configSchema.ts'
 import { DEFAULT_ROWS_TRACK_HEIGHT } from './variantTopBands.ts'
 
@@ -372,6 +373,7 @@ export function variantFetchViews(self: VariantFetchHost) {
     get sampleFilter(): string[] | undefined {
       return this.sourcesBase?.map(resolveSampleName).sort()
     },
+
     /**
      * #getter
      * The `filter` list's site fields, `minorAlleleFrequency` and
@@ -384,11 +386,21 @@ export function variantFetchViews(self: VariantFetchHost) {
     },
     /**
      * #getter
+     * The `filter` list's entries on the Mendelian check, which the worker
+     * tests once it has classified a site: no record carries it.
+     */
+    get mendelianFilter(): FieldPredicate[] {
+      return predicatesOf(self.configuration.filter).filter(
+        p => p.field === MENDELIAN_FIELD,
+      )
+    },
+    /**
+     * #getter
      * The `filter` list's other entries as the RPC's `filters` arg.
      */
     get filters() {
       const filters = predicatesOf(self.configuration.filter).filter(
-        p => !isSiteField(p.field),
+        p => !isSiteField(p.field) && p.field !== MENDELIAN_FIELD,
       )
       return filters.length
         ? new SerializableFilterChain({
