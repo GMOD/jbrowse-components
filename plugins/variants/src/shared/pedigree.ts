@@ -7,7 +7,7 @@ export const pedigreeAdapterConfigSchemaFields = {
   pedigreeLocation: {
     type: 'maybeFileLocation',
     description:
-      "optional pedigree of the VCF's samples, whitespace-separated: a PLINK `.fam` or `.ped` with no header (FID, IID, PAT, MAT, SEX, PHENO; a `.ped`'s genotypes after them are not read), or a table whose header row names its columns `SampleID` or `IID`, `FatherID` or `PAT`, `MotherID` or `MAT`, `FamilyID` or `FID`, `Sex` and `Phenotype` or `PHENO`, in any case and order, as 1000 Genomes' `20130606_g1k_3202_samples_ped_population.txt` does. Each sample gains the attributes `family`, `father`, `mother`, `sex` (`male`, `female` or `other`) and `phenotype` (`affected` or `unaffected`), which the variant display groups, sorts, colors and tooltips rows by. A parent of `0`, a sex of `0` or `-9` and a phenotype of `0` or `-9` are no value. An IID naming no VCF sample is tried as `FID_IID`, the sample name PLINK's `--recode vcf` writes. A `samplesTsvLocation` column of the same name wins over the pedigree's. The pedigree never narrows the samples: its rows naming no VCF sample are skipped, and a pedigree matching none of them adds nothing, with a warning",
+      "optional pedigree of the VCF's samples, whitespace-separated: a PLINK `.fam` or `.ped` with no header (FID, IID, PAT, MAT, SEX, PHENO; a `.ped`'s genotypes after them are not read), or a table whose header row names its columns `SampleID` or `IID`, `FatherID` or `PAT`, `MotherID` or `MAT`, `FamilyID` or `FID`, `Sex` and `Phenotype` or `PHENO`, in any case and order, as 1000 Genomes' `20130606_g1k_3202_samples_ped_population.txt` does. Each sample gains the attributes `family`, `father`, `mother`, `sex` (`male`, `female` or `other`) and `phenotype` (`affected` or `unaffected`), which the variant display groups, sorts, colors and tooltips rows by. A parent of `0`, a sex of `0`, `-9` or `unknown` and a phenotype of `0` or `-9` are no value, and the Mendelian check reads a samples table's `sex` column by the same codes. An IID naming no VCF sample is tried as `FID_IID`, the sample name PLINK's `--recode vcf` writes. A `samplesTsvLocation` column of the same name wins over the pedigree's. The pedigree never narrows the samples: its rows naming no VCF sample are skipped, and a pedigree matching none of them adds nothing, with a warning",
   },
 } as const
 
@@ -39,9 +39,16 @@ const PLINK_COLUMNS: Record<PedigreeColumn, number> = {
 
 const MISSING_CODES = new Set(['0', '-9', 'na'])
 
-function sexOf(code: string) {
+const MISSING_SEX_CODES = new Set([...MISSING_CODES, '', 'unknown'])
+
+/**
+ * A sample's sex as a pedigree or a samples table writes it: `1`, `m` or
+ * `male` is male, `2`, `f` or `female` female, in any case; `0`, `-9`, `NA`,
+ * `unknown` or nothing is no value, and any other code `other`.
+ */
+export function pedigreeSexOf(code: string) {
   const lower = code.toLowerCase()
-  return MISSING_CODES.has(lower)
+  return MISSING_SEX_CODES.has(lower)
     ? undefined
     : lower === '1' || lower === 'm' || lower === 'male'
       ? 'male'
@@ -122,7 +129,7 @@ export function parsePedigree(
       const mother = named.mother === name ? undefined : named.mother
       const sexCode = cell('sex')
       const phenotypeCode = cell('phenotype')
-      const sex = sexCode === undefined ? undefined : sexOf(sexCode)
+      const sex = sexCode === undefined ? undefined : pedigreeSexOf(sexCode)
       const phenotype =
         phenotypeCode === undefined ? undefined : phenotypeOf(phenotypeCode)
       attributes.set(

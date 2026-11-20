@@ -250,7 +250,8 @@ export function mostSevereTrioClass(
   classes: readonly (TrioClass | undefined)[],
 ) {
   let worst: TrioClass | undefined
-  for (const c of classes) {
+  for (let i = 0; i < classes.length; i++) {
+    const c = classes[i]
     if (c !== undefined && (!worst || severity[c] > severity[worst])) {
       worst = c
     }

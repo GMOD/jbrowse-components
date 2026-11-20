@@ -1,6 +1,7 @@
 import { UNIVERSAL_FIELD_PRESETS } from '@jbrowse/core/util/colorScale'
 
 import { classifyTrio, mostSevereTrioClass } from './classifyTrio.ts'
+import { pedigreeSexOf } from './pedigree.ts'
 
 import type {
   PedigreeSex,
@@ -57,21 +58,10 @@ export function transmissionOfRegions(
   return (refName: string) => byRefName.get(refName) ?? NO_TRANSMISSION
 }
 
-function pedigreeSexOf(value: unknown) {
-  const lower = typeof value === 'string' ? value.toLowerCase() : ''
-  return lower === 'male' || lower === 'm'
-    ? 'male'
-    : lower === 'female' || lower === 'f'
-      ? 'female'
-      : lower === 'other'
-        ? 'other'
-        : undefined
-}
-
 /**
  * The trios among `sources`, by child name: each sample whose `father` or
- * `mother` attribute names another sample, with its `sex` read as the
- * pedigree writes it.
+ * `mother` attribute names another sample, with its `sex` read as a
+ * pedigree or a samples table writes it (`pedigreeSexOf`).
  */
 export function triosOf(sources: readonly Source[]): Trio[] {
   const names = new Set(sources.map(source => source.name))
@@ -81,7 +71,8 @@ export function triosOf(sources: readonly Source[]): Trio[] {
     .flatMap(source => {
       const father = present(source.father)
       const mother = present(source.mother)
-      const sex: PedigreeSex | undefined = pedigreeSexOf(source.sex)
+      const sex: PedigreeSex | undefined =
+        typeof source.sex === 'string' ? pedigreeSexOf(source.sex) : undefined
       return father !== undefined || mother !== undefined
         ? [
             {
@@ -125,6 +116,11 @@ export type TrioCall = ReturnType<typeof trioCalls>[number]
 
 const SEX_INDEX = { male: 1, female: 2, other: 3 } as const
 
+// a memoized trio no call settles, which a missing memo entry reads as
+// `undefined` too
+const UNSETTLED = 0
+type MemoClass = TrioClass | typeof UNSETTLED
+
 // a code past this skips the memo, whose key packs the sex and three codes
 // into a double's 53 bits
 const CODE_LIMIT = 2 ** 17
@@ -162,10 +158,7 @@ export function makeMendelianCheck({
           },
         ]
   })
-  const memos = new Map<
-    readonly TransmissionEntry[],
-    Map<number, TrioClass | undefined>
-  >()
+  const memos = new Map<readonly TransmissionEntry[], Map<number, MemoClass>>()
   const classes: (TrioClass | undefined)[] = columns.map(() => undefined)
   const genotypeOfKey = (key: number) =>
     key === 0 ? undefined : key === 1 ? '.' : genotypeDict[key - 2]!
@@ -209,12 +202,13 @@ export function makeMendelianCheck({
               ((trio.sexIndex * CODE_LIMIT + child) * CODE_LIMIT + father) *
                 CODE_LIMIT +
               mother
-            if (memo.has(key)) {
-              classes[i] = memo.get(key)
-            } else {
+            const known = memo.get(key)
+            if (known === undefined) {
               const value = classify(child, father, mother, trio.sex, rule)
-              memo.set(key, value)
+              memo.set(key, value ?? UNSETTLED)
               classes[i] = value
+            } else {
+              classes[i] = known === UNSETTLED ? undefined : known
             }
           } else {
             classes[i] = classify(child, father, mother, trio.sex, rule)

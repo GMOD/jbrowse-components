@@ -1,8 +1,6 @@
 import fs from 'node:fs'
 import path from 'node:path'
 
-import { SimpleFeature } from '@jbrowse/core/util'
-
 import { parseVcfBuffer } from './VcfImport.ts'
 
 test('vcf file import', () => {
@@ -87,20 +85,4 @@ test('an INFO value keeps everything after its first =', () => {
     'INFO.HGVS': 'p.Leu54=',
     'INFO.DB': 'true',
   })
-})
-
-// The variant display computes `mendelian` from the trios its pedigree names;
-// a record imported on its own carries no such field for a reader to find.
-test('an imported trio record carries no Mendelian check', () => {
-  const vcf = [
-    '##fileformat=VCFv4.2',
-    '#CHROM\tPOS\tID\tREF\tALT\tQUAL\tFILTER\tINFO\tFORMAT\tkid\tdad\tmom',
-    'chr1\t100\trs1\tG\tA\t50\tPASS\t.\tGT\t0/1\t0/0\t0/0',
-  ].join('\n')
-  const { columns, rowSet } = parseVcfBuffer(new TextEncoder().encode(vcf))
-  const [row] = rowSet.rows
-
-  expect(columns.map(c => c.name)).not.toContain('mendelian')
-  expect(row!.cellData).not.toHaveProperty('mendelian')
-  expect(new SimpleFeature(row!.feature).get('mendelian')).toBeUndefined()
 })

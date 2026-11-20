@@ -63,6 +63,20 @@ describe('split headers', () => {
   })
 })
 
+test('a remembered trio no call settles stays unsettled at the next site', () => {
+  const features = featuresUnder(
+    ['kid', 'dad', 'mom'],
+    [
+      'chr1\t100\t.\tA\tG\t.\t.\t.\tGT\t./1\t0/1\t0/0',
+      'chr1\t200\t.\tA\tG\t.\t.\t.\tGT\t./1\t0/1\t0/0',
+    ],
+    'u',
+  )
+  const { mendelian } = analyzeVariants({ features, trios: [TRIO] })
+
+  expect(Object.fromEntries(mendelian)).toEqual({})
+})
+
 test('a record read through its genotypes record, with no codes, has no Mendelian check', () => {
   const recordOnly = new SimpleFeature({
     uniqueId: 'r0',
@@ -186,6 +200,18 @@ describe('the worker’s Mendelian check', () => {
     expect(value?.sampleNames).toEqual([])
     expect(value?.samplePloidy).toEqual({})
     expect(value?.hasPhasedOrHaploid).toBe(false)
+  })
+
+  test('a track with no trio ships no Mendelian field', async () => {
+    const result = await trioCellData({ trios: [] })
+    const featureInfo = isRegionRefused(result)
+      ? []
+      : Object.values(result.value.perRegionCellData).flatMap(
+          data => data.featureInfo,
+        )
+
+    expect(featureInfo).toHaveLength(3)
+    expect(featureInfo.filter(info => 'mendelian' in info)).toEqual([])
   })
 
   test('with no trios and no rows no genotype is read', async () => {

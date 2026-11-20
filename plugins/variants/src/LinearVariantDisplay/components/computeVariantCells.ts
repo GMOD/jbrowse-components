@@ -176,7 +176,7 @@ export function computeVariantCells({
     const svType = feature.get(SV_TYPE_FIELD)
     const alt = (feature.get('ALT') as string[] | undefined) ?? []
     const ref = feature.get('REF') as string
-    featureInfo.push({
+    const info: VariantFeatureInfo = {
       featureId,
       // a monomorphic record's ALT '.' parses to undefined, and consumers read
       // `alt` unguarded
@@ -193,9 +193,13 @@ export function computeVariantCells({
       groupKey: recordFields.groupKey(feature),
       labelName: recordFields.labelName(feature),
       labelDescription: recordFields.labelDescription(feature),
-      mendelian: mendelian?.get(featureId),
       genotypeCodes: codes,
-    })
+    }
+    const mendelianValue = mendelian?.get(featureId)
+    if (mendelianValue !== undefined) {
+      info.mendelian = mendelianValue
+    }
+    featureInfo.push(info)
     featurePositions[featureIdx * 2] = start
     featurePositions[featureIdx * 2 + 1] = end
     featureIdx++
