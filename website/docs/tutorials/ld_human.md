@@ -97,8 +97,8 @@ panel, where the sweep happened). `*.samples` files list one ID per line.
 
 ```bash
 # -r fetches the 3.4 Mb region by range request from the 2.5 GB chromosome file
-# -e drops symbolic SV records, which are spans; the display correlates
-# allele indicators
+# -e drops symbolic SV records, which are spans; PLINK correlates allele
+# indicators
 bcftools view -r chr2:133800000-137200000 -S unrelated.samples \
   -e 'ALT[0]~"<"' -Oz -o pooled.vcf.gz \
   https://ftp.1000genomes.ebi.ac.uk/vol1/ftp/data_collections/1000G_2504_high_coverage/working/20220422_3202_phased_SNV_INDEL_SV/1kGP_high_coverage_Illumina.chr2.filtered.SNV_INDEL_SV_phased_panel.vcf.gz
