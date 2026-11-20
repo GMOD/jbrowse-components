@@ -245,6 +245,7 @@ const VARIANTS_ARGS = {
   ...REGION_READ_ARGS,
   sequenceAdapter: true,
   byteLimit: true,
+  transmission: true,
 } satisfies ArgKeys<VariantTablesArgs>
 
 const SYNTENY_ARGS = {
