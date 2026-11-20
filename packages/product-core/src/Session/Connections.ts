@@ -1,4 +1,4 @@
-import { getSnapshot, types } from '@jbrowse/mobx-state-tree'
+import { types } from '@jbrowse/mobx-state-tree'
 
 import { asSession } from '../siblingCast.ts'
 import { isBaseSession } from './BaseSession.ts'
@@ -129,9 +129,7 @@ export function ConnectionManagementSessionMixin(pluginManager: PluginManager) {
           )
           const trackIds = [
             ...new Set([
-              ...(connection?.tracks.map(
-                (t: AnyConfigurationModel) => t.trackId,
-              ) ?? []),
+              ...(connection?.tracks.map(t => t.trackId) ?? []),
               ...Object.entries(self.connectionTrackConfigs)
                 .filter(([, e]) => e.connectionId === connectionId)
                 .map(([trackId]) => trackId),
@@ -201,15 +199,9 @@ export function ConnectionManagementSessionMixin(pluginManager: PluginManager) {
         captureConnectionTrack(trackId: string) {
           if (!(trackId in self.connectionTrackConfigs)) {
             for (const conn of self.connectionInstances) {
-              const track = conn.tracks.find(
-                (t: AnyConfigurationModel) => t.trackId === trackId,
-              )
+              const track = conn.tracks.find(t => t.trackId === trackId)
               if (track) {
-                this.setConnectionTrackConfig(
-                  trackId,
-                  conn.connectionId,
-                  structuredClone(getSnapshot(track)),
-                )
+                this.setConnectionTrackConfig(trackId, conn.connectionId, track)
                 break
               }
             }

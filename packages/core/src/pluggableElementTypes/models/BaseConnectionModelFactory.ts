@@ -1,16 +1,15 @@
-import { cast, isAlive, types } from '@jbrowse/mobx-state-tree'
+import { isAlive, types } from '@jbrowse/mobx-state-tree'
 
 import {
   ConfigurationReference,
   readConfObject,
 } from '../../configuration/index.ts'
 import { getNotificationSink } from '../../util/sessionServices.ts'
+import { expandLooseTrackConfig } from '../../util/tracks.ts'
 import configSchema from './baseConnectionConfig.ts'
 
 import type PluginManager from '../../PluginManager.ts'
-import type { AnyConfigurationModel } from '../../configuration/index.ts'
-
-type TrackConf = AnyConfigurationModel | Record<string, unknown>
+import type { TrackConfigEntry } from '../../configuration/index.ts'
 
 /**
  * #stateModel BaseConnectionModel
@@ -23,7 +22,7 @@ function stateModelFactory(pluginManager: PluginManager) {
       /**
        * #property
        */
-      tracks: types.array(pluginManager.pluggableConfigSchemaType('track')),
+      tracks: types.frozen<TrackConfigEntry[]>([]),
 
       /**
        * #property
@@ -85,9 +84,13 @@ function stateModelFactory(pluginManager: PluginManager) {
     }))
     .actions(self => {
       const trackTypes = pluginManager.getElementTypeRecord('track')
-      const hasNoPlugin = ({ type }: TrackConf) =>
-        typeof type === 'string' && !trackTypes.has(type)
-      let refused: TrackConf[] = []
+      const isOfAKnownType = (
+        conf: Record<string, unknown>,
+      ): conf is TrackConfigEntry =>
+        typeof conf.trackId === 'string' &&
+        typeof conf.type === 'string' &&
+        trackTypes.has(conf.type)
+      let refused: Record<string, unknown>[] = []
       // Once per connect and after connect's own snackbar, which would cover it
       function reportRefused() {
         if (refused.length > 0) {
@@ -98,6 +101,13 @@ function stateModelFactory(pluginManager: PluginManager) {
           )
           refused = []
         }
+      }
+      function admit(trackConfs: Record<string, unknown>[]) {
+        const expanded = trackConfs.map(conf =>
+          expandLooseTrackConfig(conf, pluginManager),
+        )
+        refused.push(...expanded.filter(conf => !isOfAKnownType(conf)))
+        return expanded.filter(isOfAKnownType)
       }
       return {
         afterAttach() {
@@ -117,38 +127,28 @@ function stateModelFactory(pluginManager: PluginManager) {
         /**
          * #action
          */
-        addTrackConf(trackConf: TrackConf) {
-          const length = self.tracks.push(trackConf)
-          return self.tracks[length - 1]
-        },
-        /**
-         * #action
-         * Appends the tracks. One whose type comes from a plugin this JBrowse
-         * does not have is left out, and a warning names those types once
-         * `connect` settles.
-         */
-        addTrackConfs(trackConfs: TrackConf[]) {
-          // Sorted out by name before any node is built: a push the track union
-          // refuses builds and then destroys every node ahead of the refused
-          // one, which on a 5,000-track hub ran a 4 GB heap out of memory.
-          refused.push(...trackConfs.filter(hasNoPlugin))
-          const buildable = trackConfs.filter(conf => !hasNoPlugin(conf))
-          // Append in chunks rather than one push per track: MST reconciles the
-          // array on every mutation, and on an 8k-track hub a push per track
-          // measured ~14.7s against ~10.8s for a single assignment, with chunks
-          // of 500 matching the single-assignment number. Chunked rather than
-          // one spread of the whole array so the argument count stays bounded
-          // no matter how large the hub is. What remains is per-config MST node
-          // creation, roughly 1ms per track.
-          for (let i = 0; i < buildable.length; i += 500) {
-            self.tracks.push(...buildable.slice(i, i + 500))
+        addTrackConf(trackConf: Record<string, unknown>) {
+          const [admitted] = admit([trackConf])
+          if (admitted) {
+            self.tracks = [...self.tracks, admitted]
           }
+          return admitted
+        },
+        /**
+         * #action
+         * Appends the tracks, expanding a loose `{ trackId, uri }` one as
+         * `jbrowse.tracks` does. One whose type comes from a plugin this
+         * JBrowse does not have is left out, and a warning names those types
+         * once `connect` settles.
+         */
+        addTrackConfs(trackConfs: Record<string, unknown>[]) {
+          self.tracks = [...self.tracks, ...admit(trackConfs)]
         },
         /**
          * #action
          */
-        setTrackConfs(trackConfs: TrackConf[]) {
-          self.tracks = cast(trackConfs)
+        setTrackConfs(trackConfs: Record<string, unknown>[]) {
+          self.tracks = admit(trackConfs)
         },
       }
     })

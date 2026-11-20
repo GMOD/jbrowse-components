@@ -298,6 +298,53 @@ describe('a JBrowse 2 hub', () => {
 
     expect(messages(session)).toEqual([])
   })
+
+  it('reads a track written as a trackId and a uri', async () => {
+    files[JB2] = JSON.stringify({
+      assemblies: [assembly('asmA')],
+      tracks: [
+        {
+          trackId: 'loose',
+          uri: 'https://example.com/genes.bb',
+          assemblyNames: ['asmA'],
+        },
+      ],
+    })
+    const session = setup()
+
+    session.makeConnection(addJb2Hub(session))
+    await settled(session)
+
+    expect(session.getTrackById('loose')).toMatchObject({
+      type: 'FeatureTrack',
+      adapter: { type: 'BigBedAdapter' },
+    })
+  })
+
+  it('loads every track when one holds a value its slot refuses', async () => {
+    files[JB2] = JSON.stringify({
+      assemblies: [assembly('asmA')],
+      tracks: [
+        track('good', 'asmA'),
+        {
+          ...track('bad', 'asmA'),
+          displays: [
+            {
+              type: 'LinearBasicDisplay',
+              displayId: 'bad-LinearBasicDisplay',
+              heightMode: 'shrink',
+            },
+          ],
+        },
+      ],
+    })
+    const session = setup()
+
+    session.makeConnection(addJb2Hub(session))
+    await settled(session)
+
+    expect(trackIds(session)).toEqual(['good', 'bad'])
+  })
 })
 
 describe('a UCSC hub', () => {

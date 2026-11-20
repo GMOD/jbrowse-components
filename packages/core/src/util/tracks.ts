@@ -77,10 +77,7 @@ import type {
   AnyTrackConfig,
   TrackConfigEntry,
 } from '../configuration/index.ts'
-import type {
-  TrackConfigModel,
-  TrackConfigNode,
-} from '../pluggableElementTypes/models/baseTrackConfig.ts'
+import type { TrackConfigModel } from '../pluggableElementTypes/models/baseTrackConfig.ts'
 import type { TrackConfigSnapshot } from '../pluggableElementTypes/models/migrateTrackConfig.ts'
 import type { DisplayConfSnapshot } from './displayChoice.ts'
 import type {
@@ -1779,8 +1776,8 @@ export async function launchToggleTrackGeneric(
  */
 export function allSessionTracks(session: {
   tracks: TrackConfigEntry[]
-  connectionInstances?: { tracks: TrackConfigNode[] }[]
-}): AnyTrackConfig[] {
+  connectionInstances?: { tracks: TrackConfigEntry[] }[]
+}): TrackConfigEntry[] {
   const connectionTracks = (session.connectionInstances ?? []).flatMap(
     conn => conn.tracks,
   )
@@ -1813,7 +1810,7 @@ export function trackCatalogEntry(
  */
 export function trackCatalog(session: {
   tracks: TrackConfigEntry[]
-  connectionInstances?: { tracks: TrackConfigNode[] }[]
+  connectionInstances?: { tracks: TrackConfigEntry[] }[]
   assemblies: BaseAssemblyConfigModel[]
 }) {
   return allSessionTracks(session).map(conf => trackCatalogEntry(conf, session))
@@ -1829,7 +1826,7 @@ export function trackCatalog(session: {
 export function annotationTrackIds(
   session: {
     tracks: TrackConfigEntry[]
-    connectionInstances?: { tracks: TrackConfigNode[] }[]
+    connectionInstances?: { tracks: TrackConfigEntry[] }[]
     assemblyManager: AssemblyNameResolver
   },
   assemblyName: string,

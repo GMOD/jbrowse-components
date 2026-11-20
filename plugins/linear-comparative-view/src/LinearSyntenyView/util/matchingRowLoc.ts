@@ -1,6 +1,5 @@
 import { hydrateTrackConfig } from '@jbrowse/core/configuration'
 import { isSameAssemblyName } from '@jbrowse/core/util/tracks'
-import { isStateTreeNode } from '@jbrowse/mobx-state-tree'
 import { allSessionTracks } from '@jbrowse/synteny-core'
 
 import { makeMateDiscovery } from '../../LaunchSyntenyView/discoverMates.ts'
@@ -51,9 +50,7 @@ export async function matchingRowLoc({
   const entry = allSessionTracks(session).find(t => t.trackId === trackId)
   // a node, because discovery reads the adapter's tier threshold, which a
   // frozen entry omits at its default
-  const track = isStateTreeNode(entry)
-    ? entry
-    : entry && hydrateTrackConfig(pluginManager, entry)
+  const track = entry && hydrateTrackConfig(pluginManager, entry)
   if (!track) {
     return undefined
   }
