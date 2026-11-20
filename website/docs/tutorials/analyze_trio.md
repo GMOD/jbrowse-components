@@ -173,9 +173,8 @@ works the same way.
 
 We'll check the calls before analyzing them by coloring the alt cells by
 `INFO.MERR`. A `threshold` scale with one cut at 1 gives a site with no error
-one color and a site with any error another. Set it as the variant display's
-`encoding`, or paste the `color` object into **Advanced → Edit plot...** in the
-track menu:
+one color and a site with any error another, set as the variant display's
+`encoding`:
 
 ```json
 "displays": [
