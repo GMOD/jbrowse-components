@@ -464,7 +464,7 @@ describe('pileup-only menus grey out when the pileup is hidden', () => {
     const trackHeight = findMenuItem(advanced, 'Track height')
     expect(trackHeight?.disabled).toBe(true)
     expect(trackHeight?.disabledHelpText).toBeTruthy()
-    expect(hasMenuItem(advanced, 'Max layout height...')).toBe(false)
+    expect(hasMenuItem(advanced, 'Max layout height')).toBe(false)
   })
 
   test.each(['Group by', 'Filter by'])(
@@ -487,12 +487,12 @@ describe('the row cap sits with the other sizing controls', () => {
     const display = createDisplay()
     const items = display.trackMenuItems()
     for (const menu of ['Show', 'Read height']) {
-      expect(
-        hasMenuItem(menuSubItems(items, menu), 'Max layout height...'),
-      ).toBe(false)
+      expect(hasMenuItem(menuSubItems(items, menu), 'Max layout height')).toBe(
+        false,
+      )
     }
     expect(
-      hasMenuItem(menuSubItems(items, 'Advanced'), 'Max layout height...'),
+      hasMenuItem(menuSubItems(items, 'Advanced'), 'Max layout height'),
     ).toBe(true)
   })
 
@@ -2189,9 +2189,9 @@ describe('rows the layer menus hand to other menus', () => {
     expect(labelsUnder(display, 'Advanced')).toEqual([
       'Edit plot...',
       'Coverage axis...',
-      'Max layout height...',
       'Coverage mismatch threshold',
       'Track height',
+      'Max layout height',
     ])
 
     // the arcs bring their everyday filter; the rest are in More filters...
@@ -2208,9 +2208,9 @@ describe('rows the layer menus hand to other menus', () => {
     expect(labelsUnder(display, 'Advanced')).toEqual([
       'Edit plot...',
       'Coverage axis...',
-      'Max layout height...',
       'Coverage mismatch threshold',
       'Track height',
+      'Max layout height',
       'Read connections placement',
       'Read connections line width',
       'Junction placement',

@@ -1,5 +1,6 @@
 import { lazy } from 'react'
 
+import { makeSizeSubMenu } from '@jbrowse/core/ui'
 import { radioItem, radioItems } from '@jbrowse/core/ui/menuItems'
 import { capitalizeFirst, getDialogHost } from '@jbrowse/core/util'
 import { GROW_THE_TRACK_LABEL } from '@jbrowse/display-kit/heightMode'
@@ -20,27 +21,28 @@ interface MaxHeightModel {
   setPileupMaxLayoutHeight: (height?: number) => void
 }
 
+const DEFAULT_MAX_LAYOUT_HEIGHT = 6000
+
 // The pileup row cap: how tall the stack may grow before reads are dropped.
+// It relays the pileup out, so it commits on release.
 function getMaxHeightMenuItem(model: MaxHeightModel) {
-  return {
-    label: 'Max layout height...',
-    onClick: () => {
-      getDialogHost(model).queueDialog(handleClose => [
-        PixelHeightDialog,
-        {
-          title: 'Max layout height',
-          description:
-            'Maximum pixel height of the pileup layout. Reads that pile up beyond this are not stacked; the coverage histogram still reflects the true depth. Raise it for very deep targeted-sequencing data.',
-          label: 'Max layout height (px)',
-          initialValue: model.pileupMaxLayoutHeight,
-          onSubmit: (height: number) => {
-            model.setPileupMaxLayoutHeight(height)
-          },
-          handleClose,
-        },
-      ])
+  return makeSizeSubMenu({
+    label: 'Max layout height',
+    title: 'Max layout height',
+    help: 'Maximum pixel height of the pileup layout. Reads that pile up beyond this are not stacked; the coverage histogram still reflects the true depth. Raise it for very deep targeted-sequencing data.',
+    getValue: () => model.pileupMaxLayoutHeight,
+    min: 500,
+    max: 100000,
+    scale: 'log',
+    commitOnRelease: true,
+    isDefault: model.pileupMaxLayoutHeight === DEFAULT_MAX_LAYOUT_HEIGHT,
+    onChange: n => {
+      model.setPileupMaxLayoutHeight(n)
     },
-  }
+    onReset: () => {
+      model.setPileupMaxLayoutHeight(undefined)
+    },
+  })
 }
 
 const PRESETS = Object.values(COMPACTNESS_PRESETS)

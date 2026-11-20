@@ -1980,7 +1980,7 @@ export const trackFields: Record<string, FieldRecipe> = {
     'Unchecked, the band keeps only the pairs that carry a category — an abnormal insert size or orientation, or a split junction — which on deep coverage is the difference between a readable band and a solid mass.',
   ),
   'pileup.maxLayoutHeight': numberField(n => ({
-    path: `${TRACK_MENU} → Advanced → Max layout height... → ${n}`,
+    path: `${TRACK_MENU} → Advanced → Max layout height → drag the slider to ${n}px`,
   })),
   mark: markStep,
   // `showLabels` and `showDescriptions` have no entry: both lift onto `labels`

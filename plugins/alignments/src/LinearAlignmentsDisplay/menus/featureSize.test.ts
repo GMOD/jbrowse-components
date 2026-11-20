@@ -121,7 +121,7 @@ test('Track height is fixed or autogrow, a fit ticks Fixed, and both need rows',
   expect(display.heightMode).toBe('fixed')
   expect(rows().map(i => 'label' in i && i.label)).toEqual([
     'Track height',
-    'Max layout height...',
+    'Max layout height',
   ])
   const gated = rows({ disabled: true, disabledHelpText: 'no pileup' })
   expect(gated.map(i => 'label' in i && i.label)).toEqual(['Track height'])
