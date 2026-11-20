@@ -437,15 +437,15 @@ export const TUTORIAL_THUMB_SPECS: Record<string, ThumbSpec> = {
     // above the graph pane because the arrow and the callout into it are
     // hand-added paint.
     src: 'pangenome/hprc_graph_vs_callset.png',
-    band: [0.11, 0.51],
+    band: [0.11, 0.468],
   },
   pangenome_hprc_repeats: {
     // The KIV-2 window force-directed with its bubbles haloed: the knot of
-    // loops and the labels naming each bubble, below the linear lanes. Above
-    // and right of the kringle-copies callout and its arrow.
+    // loops and LPA's label, below the linear lanes. Under the kringle-copies
+    // callout and its arrow, and left of the key.
     src: 'pangenome/hprc_lpa_kiv2.png',
-    band: [0.69, 0.84],
-    xband: [0.6, 1],
+    band: [0.61, 0.83],
+    xband: [0.32, 0.75],
     position: 'center',
   },
   pangenome_mouse: {

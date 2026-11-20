@@ -60,13 +60,13 @@ track** with that config, whose adapter is `RgfaTabixAdapter`, and the track
 opens as the graph. [Route 2](#route-2-a-gfa-file) opens a GFA as a file, with
 no index. Skip to [Layouts](#three-layouts) for what the track menu's items do.
 
-The graph opens force-directed, its backbone running left to right in reference
-order under the other tracks. Typing in the location box, a gene search, a click
-on the cytoband and a drag-zoom move the view, and the track cuts the subgraph
-for the new window and lays it out again, keeping the drawing it had. A track
-with a coarse tier, the same graph with one node per bubble, cuts the tier when
-zoomed out past the handover its config names, so a whole chromosome draws as a
-graph.
+The graph opens force-directed under the other tracks. Typing in the location
+box, a gene search, a click on the cytoband and a drag-zoom move the view. The
+track holds its drawing while the view stays inside the cut it drew, and cuts
+the subgraph for the new window and lays it out again once the view leaves it. A
+track with a coarse tier, the same graph with one node per bubble, cuts the tier
+when zoomed out past the handover its config names, so a whole chromosome draws
+as a graph.
 
 `WalkTabixSyntenyAdapter` also cuts a subgraph, from `gfa-to-tabix --walks`
 files, and its cut includes the haplotypes' walks. A `BedTabixAdapter` over the
@@ -276,14 +276,15 @@ and the axes mean something different in each:
 | Ordered               | reference order                          | a lane per allele       |
 | Tube map              | node order                               | a tube per path         |
 | Tube map on reference | reference bp                             | a tube per path         |
-| **Force-directed**    | reference order (stress), nothing (FMMM) | nothing                 |
+| **Force-directed**    | nothing (FMMM), reference order (stress) | nothing                 |
 
-- **Force-directed (stress):** the layout the track opens in. The stress engine
-  lays the backbone out in reference order and keeps the drawing steady as the
-  view moves, with each allele as a loop off it
-- **Force-directed (FMMM):** Bandage's own layout, which can turn the drawing
-  between cuts, and the one a graph opened from a file starts in. A track config
-  picks it with `"layoutEngine": "fmmm"` on its `LinearGraphDisplay`
+- **Force-directed (FMMM):** the layout the track opens in, and the one a graph
+  opened from a file starts in. It is Bandage's own layout, which draws each
+  allele as a loop or a bubble and can turn the drawing between cuts
+- **Force-directed (stress):** the stress engine lays the backbone out straight
+  in reference order, with each allele as a loop off it, and keeps the drawing
+  in place when the view moves to a new cut. A track config picks it with
+  `"layoutEngine": "stress"` on its `LinearGraphDisplay`
 - **Ordered:** x is monotone in reference order, ignoring bp, so a SNP allele
   gets the same room as the kilobase segment beside it, and a bubble draws as a
   lens
