@@ -32,8 +32,8 @@ const DeleteConnectionDialog = observer(function DeleteConnectionDialog({
       }}
     >
       <DialogContentText>
-        This will remove the connection and all of its tracks from the session.
-        The underlying data source will not be modified.
+        This will remove the connection and close all of its tracks. The
+        underlying data source will not be modified.
       </DialogContentText>
     </ConfirmDialog>
   )

@@ -108,6 +108,25 @@ type bigWig
   expect(session.sessionConnections.length).toBe(1)
 }, 20000)
 
+test('a hub that cannot be read is not kept', async () => {
+  jest.spyOn(console, 'error').mockImplementation(() => {})
+  jest.spyOn(global, 'fetch').mockRejectedValue(new Error('hub is down'))
+
+  const { session, user, findByText, getAllByRole, findAllByText } =
+    renderWidget()
+  await user.click(getAllByRole('combobox')[0]!)
+  await user.click((await findAllByText('UCSC Track Hub')).at(-1)!)
+  await user.click(await findByText('Next'))
+  await user.click(await findByText('Connect'))
+
+  await waitFor(() => {
+    expect(session.snackbarMessages.map(m => m.message)).toContainEqual(
+      expect.stringContaining('hub is down'),
+    )
+  })
+  expect(session.connections.length).toBe(0)
+}, 20000)
+
 test('UCSC multi-genome hub auto-adds a missing assembly and its tracks', async () => {
   jest
     .spyOn(global, 'fetch')

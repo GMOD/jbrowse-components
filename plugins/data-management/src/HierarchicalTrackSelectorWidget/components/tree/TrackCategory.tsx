@@ -137,20 +137,14 @@ function subcategoryCollapseMenuItems(
     : []
 }
 
-// an admin removes any connection, anyone else only the ones they added
 function removeConnectionMenuItems(
   model: HierarchicalTrackSelectorModel,
   item: TreeCategoryNode,
 ) {
   const session = getSession(model)
-  const connectionId = model.allTracks.find(g => g.id === item.id)?.connectionId
-  const connectionConf = session.connections.find(
-    c => c.connectionId === connectionId,
-  )
-  return item.nestingLevel === 0 &&
-    connectionConf &&
-    isSessionModelWithConnectionEditing(session) &&
-    (session.adminMode || session.sessionConnections?.includes(connectionConf))
+  const connectionConf =
+    item.nestingLevel === 0 ? model.removableConnection(item.id) : undefined
+  return connectionConf && isSessionModelWithConnectionEditing(session)
     ? [
         {
           label: 'Delete connection...',

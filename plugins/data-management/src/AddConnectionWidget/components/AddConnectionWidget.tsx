@@ -7,13 +7,16 @@ import {
   isSessionModelWithWidgets,
 } from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
+import { isAlive } from '@jbrowse/mobx-state-tree'
 import { Button, Step, StepContent, StepLabel, Stepper } from '@mui/material'
+import { when } from 'mobx'
 import { observer } from 'mobx-react'
 
 import ConfigureConnection from './ConfigureConnection.tsx'
 import ConnectionTypeSelect from './ConnectionTypeSelect.tsx'
 
-import type { Widget } from '@jbrowse/core/util'
+import type { BaseConnectionConfigModel } from '@jbrowse/core/pluggableElementTypes/models/baseConnectionConfig'
+import type { SessionWithConnectionEditing, Widget } from '@jbrowse/core/util'
 
 const useStyles = makeStyles()(theme => ({
   root: {
@@ -32,6 +35,21 @@ const useStyles = makeStyles()(theme => ({
 }))
 
 const steps = ['Select a Connection Type', 'Configure Connection']
+
+// A connect that fails reports itself and drops its live instance, which
+// would leave the config behind as a row that fails again on every expand
+async function forgetIfFirstConnectFails(
+  session: SessionWithConnectionEditing,
+  conf: BaseConnectionConfigModel,
+) {
+  const { connectionId } = conf
+  const live = () =>
+    session.connectionInstances.find(c => c.connectionId === connectionId)
+  await when(() => !isAlive(session) || !live()?.loading)
+  if (isAlive(session) && isAlive(conf) && !live()) {
+    session.deleteConnection(conf)
+  }
+}
 
 const AddConnectionWidget = observer(function AddConnectionWidget({
   model,
@@ -60,7 +78,9 @@ const AddConnectionWidget = observer(function AddConnectionWidget({
   function handleNext() {
     if (isLastStep) {
       if (isSessionModelWithConnectionEditing(session)) {
-        session.makeConnection(session.addConnectionConf(configModel))
+        const conf = session.addConnectionConf(configModel)
+        session.makeConnection(conf)
+        void forgetIfFirstConnectFails(session, conf)
       } else {
         session.notify('This session does not support connections')
       }

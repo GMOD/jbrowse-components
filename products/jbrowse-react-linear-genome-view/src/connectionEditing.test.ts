@@ -23,3 +23,21 @@ test('an embedded session adds and deletes a connection in its config', () => {
   session.deleteConnection(conf)
   expect(session.jbrowse.connections).toHaveLength(0)
 })
+
+test('the track selector offers to delete a connection an embedded session added', () => {
+  const { session } = createViewState({
+    assembly: {
+      name: 'volvox',
+      uri: 'https://jbrowse.org/genomes/volvox/volvox.2bit',
+    },
+  })
+  const conf = session.addConnectionConf({
+    type: 'UCSCTrackHubConnection',
+    connectionId: 'hub',
+    name: 'hub',
+  })
+  const selector = session.view.activateTrackSelector()
+
+  expect(selector.removableConnection('connection-hub')).toBe(conf)
+  expect(selector.removableConnection('Tracks')).toBeUndefined()
+})

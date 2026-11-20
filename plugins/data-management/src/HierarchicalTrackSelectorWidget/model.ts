@@ -1,6 +1,7 @@
 import { getConf, readConfObject } from '@jbrowse/core/configuration'
 import {
   getSession,
+  isSessionModelWithConnectionEditing,
   isSessionModelWithWidgets,
   isSessionWithSessionTracks,
   isTrackContainer,
@@ -602,6 +603,28 @@ export default function stateTreeFactory(pluginManager: PluginManager) {
               }
             }),
           ]
+        },
+
+        /**
+         * #method
+         * the connection a top-level group's row may delete: any for an admin,
+         * otherwise one the session itself holds, which is every connection
+         * where the session and the config are one document
+         */
+        removableConnection(groupId: string) {
+          const session = getSession(self)
+          const connectionId = this.allTracks.find(
+            g => g.id === groupId,
+          )?.connectionId
+          const connectionConf = session.connections.find(
+            c => c.connectionId === connectionId,
+          )
+          return connectionConf &&
+            isSessionModelWithConnectionEditing(session) &&
+            (session.adminMode ||
+              (session.sessionConnections?.includes(connectionConf) ?? true))
+            ? connectionConf
+            : undefined
         },
 
         /**
