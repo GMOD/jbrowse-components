@@ -177,7 +177,10 @@ export default function configSchemaFactory() {
        * check over the trios a pedigree names, `notInParents`,
        * `inconsistent` or `consistent`, and missing where no trio settles
        * one: `[{ field: "mendelian", oneOf: ["notInParents", "inconsistent"] }]`
-       * keeps the sites a trio fails.
+       * keeps the sites a trio fails. An adapter whose records hand over
+       * their genotypes as a `genotypes` record rather than as VCF lines
+       * gives no site a `mendelian` value, so a `mendelian` entry naming a
+       * value drops every one of its sites.
        */
       filter: fieldPredicateList(),
       /**
