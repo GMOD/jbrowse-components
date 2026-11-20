@@ -295,6 +295,34 @@ describe('connection track persistence', () => {
     expect(session.getTrackById('connTrack1')!.name).toBe('Conn Track 1')
   })
 
+  test('an edit to a never-opened connection track keeps its copy, so deleting the dormant hub drops the edit', async () => {
+    const session = makeRootWithConnection().session!
+    session.updateTrackConfiguration({
+      type: 'FeatureTrack',
+      trackId: 'connTrack1',
+      name: 'Edited Name',
+    })
+    expect(session.connectionTrackConfigs.connTrack1?.config.name).toBe(
+      'Conn Track 1',
+    )
+
+    const snap = JSON.parse(JSON.stringify(getSnapshot(session)))
+    const { pluginManager, model } = getRootModelWithPlugins()
+    const root2 = model.create({
+      ...mainThreadConfig,
+      jbrowse: { ...mainThreadConfig.jbrowse, assemblies: [assembly] },
+    })
+    await pluginManager.preloadSessionTypes(snap)
+    root2.setSession(snap)
+    const session2 = root2.session!
+    expect(session2.getTrackById('connTrack1')!.name).toBe('Edited Name')
+    session2.deleteConnection(
+      session2.connections.find(c => c.connectionId === 'conn1')!,
+    )
+    expect(session2.trackConfigDeltas.connTrack1).toBeUndefined()
+    expect(session2.getTrackById('connTrack1')).toBeUndefined()
+  })
+
   test('a config track wins over a connection track of the same id', () => {
     const root = makeRootWithConnection()
     root.jbrowse.addTrackConf({

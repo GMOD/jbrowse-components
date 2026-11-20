@@ -23,11 +23,13 @@ import {
 } from '@jbrowse/mobx-state-tree'
 import { compareStructural, computed } from 'mobx'
 
+import { isSessionWithConnections } from './Connections.ts'
 import { TracksManagerSessionMixin } from './Tracks.ts'
 import { displayForms, hydratedTrackForm } from './hydratedForms.ts'
 import { assertNotReaddedDifferently } from './readdedTrackConf.ts'
 import { assertTrackConfOutlivesItsAssemblies } from './temporaryAssemblyTracks.ts'
 
+import type { ConnectionTrackConfigEntry } from './Connections.ts'
 import type { ReferringNode } from './ReferenceManagement.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { BaseAssemblyConfigModel } from '@jbrowse/core/assemblyManager'
@@ -112,12 +114,13 @@ function assembliesNotInTheCatalog(
 
 /**
  * What a deleted track left behind, for `restoreTrackConf` to put back: its
- * entry and place in the config's tracks or the session's, its edits, and its
- * entry and place in each view that showed it.
+ * entry and place in the config's tracks or the session's, or the copy kept of
+ * a hub track, its edits, and its entry and place in each view that showed it.
  */
 export interface DeletedTrack {
   configEntry?: { index: number; conf: TrackConfigEntry }
   sessionEntry?: { index: number; conf: TrackConfigEntry }
+  connectionEntry?: ConnectionTrackConfigEntry
   delta?: PlainTrackConfig
   shownIn: { tracks: IMSTArray<IAnyType>; index: number; snapshot: unknown }[]
 }
@@ -538,11 +541,16 @@ export function SessionTracksManagerSessionMixin(pluginManager: PluginManager) {
       }
       // Single writer for trackConfigDeltas (pass undefined to clear). Clearing
       // also reverts the working copy, which is what makes a Reset visible in an
-      // open view.
+      // open view. A hub track's copy is kept while it has a delta, so writing
+      // one keeps the copy it was diffed against, and clearing one drops the
+      // copy of a track no view shows.
       function writeDelta(
         trackId: string,
         delta: PlainTrackConfig | undefined,
       ) {
+        if (delta && isSessionWithConnections(self)) {
+          self.captureConnectionTrack(trackId)
+        }
         self.trackConfigDeltas = delta
           ? { ...self.trackConfigDeltas, [trackId]: delta }
           : withoutDelta(self.trackConfigDeltas, trackId)
@@ -550,6 +558,9 @@ export function SessionTracksManagerSessionMixin(pluginManager: PluginManager) {
           revertEditableTrackConfig(trackId)
         }
         stampEditableTrackConfig(trackId)
+        if (!delta && isSessionWithConnections(self)) {
+          self.pruneConnectionTrackConfig(trackId)
+        }
       }
       // Push a *programmatic* update (the config editor's Apply, or any
       // updateTrackConfiguration not driven by this node's own live edits) into
@@ -825,6 +836,9 @@ export function SessionTracksManagerSessionMixin(pluginManager: PluginManager) {
               ? indexedEntry(self.jbrowse.tracks, trackId)
               : undefined,
             sessionEntry: indexedEntry(sessionEntries(self), trackId),
+            connectionEntry: isSessionWithConnections(self)
+              ? self.connectionTrackConfigs[trackId]
+              : undefined,
             delta: self.trackConfigDeltas[trackId],
             shownIn: viewEntries(self.getReferring(trackId)),
           }
@@ -855,9 +869,14 @@ export function SessionTracksManagerSessionMixin(pluginManager: PluginManager) {
         restoreTrackConf({
           configEntry,
           sessionEntry,
+          connectionEntry,
           delta,
           shownIn,
         }: DeletedTrack) {
+          if (connectionEntry && isSessionWithConnections(self)) {
+            const { connectionId, config } = connectionEntry
+            self.setConnectionTrackConfig(config.trackId, connectionId, config)
+          }
           if (configEntry) {
             editableConfig(self).addTrackConf(
               configEntry.conf,

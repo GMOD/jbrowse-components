@@ -35,10 +35,14 @@ ran; their findings are either fixed in those commits or listed under
   deltas ([ADR-031](../architecture-decision-records/adr-031-track-config-hydration-cache-on-pluginmanager.md),
   [ADR-032](../architecture-decision-records/adr-032-track-config-nodes-are-throwaway-views.md),
   [ADR-158](../architecture-decision-records/adr-158-a-session-tracks-entry-is-the-base-its-edits-diff-against.md)).
-- **An opened hub track** is a full frozen copy in `connectionTrackConfigs`
+- **An opened or edited hub track** has a full frozen copy in `connectionTrackConfigs`
   (`packages/product-core/src/Session/Connections.ts`).
-  `captureConnectionTrack` writes the copy after `showTrackGeneric` has shown
-  the track, and from then on the copy wins over the live entry.
+  The copy exists exactly while the track is open in a view or edited:
+  `captureConnectionTrack` writes it when `showTrackGeneric` shows the track
+  or `writeDelta` (`SessionTracks.ts`) stores its first edit, and
+  `pruneConnectionTrackConfig` drops it when the last view closes the track
+  or its edit is cleared. While it exists, the copy wins over the live entry.
+  Delete track's Undo (`DeletedTrack.connectionEntry`) puts the copy back.
 - **A hub track is a base.** `trackBaseById` (`Tracks.ts`) resolves an id to its
   session entry, else its config entry, else its hub's entry, the kept copy
   before the live one. A hub track's edits are deltas in `trackConfigDeltas`
@@ -57,8 +61,9 @@ Each step can land by itself, in this order.
   kept copy carry over unchanged. This step deletes `connectionTrackConfigs`,
   `connectionBasesById`'s second source, the three actions that maintain it
   (`captureConnectionTrack`, `setConnectionTrackConfig`,
-  `pruneConnectionTrackConfig`) and the two calls in
-  `packages/core/src/util/tracks.ts`. The step needs three things:
+  `pruneConnectionTrackConfig`), their calls in
+  `packages/core/src/util/tracks.ts` and `SessionTracks.ts`, and
+  `DeletedTrack.connectionEntry`. The step needs three things:
   - the track selector lists such an entry under its hub's row
     (`allTracks` in `plugins/data-management/src/HierarchicalTrackSelectorWidget/model.ts`);
   - `teardownConnection` closes the session entries that carry its

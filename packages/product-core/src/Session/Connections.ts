@@ -212,7 +212,7 @@ export function ConnectionManagementSessionMixin(pluginManager: PluginManager) {
 
         /**
          * #action
-         * Snapshot a just-opened connection track's config into
+         * Snapshot an opened or edited connection track's config into
          * `connectionTrackConfigs` so it survives session reload; its edits
          * are deltas over that copy. No-op if the track resolves to no hub's
          * entry, a config or session track of the same id included, or is

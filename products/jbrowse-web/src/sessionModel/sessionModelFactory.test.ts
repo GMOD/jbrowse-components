@@ -308,6 +308,61 @@ describe('JBrowseWebSessionModel', () => {
       expect(session.trackConfigDeltas.t1).toBeUndefined()
       expect(session.connectionTrackConfigs.t1).toBeUndefined()
     })
+
+    describe('a closed connection track whose edit is gone keeps no copy', () => {
+      function closedEditedTrack() {
+        const session = createTestSession({
+          sessionSnapshot: {
+            sessionConnections: [connSnap],
+            connectionTrackConfigs: {
+              t1: {
+                connectionId: 'conn1',
+                config: { trackId: 't1', type: 'FeatureTrack', name: 'hub t1' },
+              },
+            },
+          },
+        })
+        session.updateTrackConfiguration({
+          trackId: 't1',
+          type: 'FeatureTrack',
+          name: 'edited',
+        })
+        session.pruneConnectionTrackConfig('t1')
+        expect(session.connectionTrackConfigs.t1).toBeTruthy()
+        return session
+      }
+
+      it('after Reset', () => {
+        const session = closedEditedTrack()
+        session.resetTrackConfiguration('t1')
+        expect(session.connectionTrackConfigs.t1).toBeUndefined()
+      })
+
+      it('after an edit back to its base', () => {
+        const session = closedEditedTrack()
+        session.updateTrackConfiguration({
+          trackId: 't1',
+          type: 'FeatureTrack',
+          name: 'hub t1',
+        })
+        expect(session.trackConfigDeltas.t1).toBeUndefined()
+        expect(session.connectionTrackConfigs.t1).toBeUndefined()
+      })
+
+      it('after Delete track, and its Undo brings back the copy and the edit', () => {
+        const session = closedEditedTrack()
+        session.deleteTrackConfWithUndo(session.getTrackById('t1')!)
+        expect(session.connectionTrackConfigs.t1).toBeUndefined()
+        expect(session.getTrackById('t1')).toBeUndefined()
+
+        session.snackbarMessages
+          .find(m => m.message === 'Deleted edited')!
+          .actions!.find(a => a.name === 'Undo')!
+          .onClick()
+        expect(session.connectionTrackConfigs.t1!.config.name).toBe('hub t1')
+        expect(session.getTrackById('t1')!.name).toBe('edited')
+      })
+    })
   })
 
   // the same session-vs-config split as the two connection adders above, and
