@@ -122,12 +122,12 @@ function loadTarget(win: BrowserWindow, target: LaunchTarget) {
 // is not gated — it only ever comes from the user's own machine (argv or an OS
 // open-file).
 //
-// The origin leads, because it is the question: a link the user really did click
-// on jbrowse.org is accepted on sight, and one that arrived from somewhere else
-// is refused on the same glance. The link itself follows, shortened — see
+// The config's origin leads, because the session is built on it. The page the
+// link points at is no answer: any page can write a link to jbrowse.org whose
+// config is its own. The link itself follows, shortened — see
 // describeLaunchLink for why it cannot be shown whole.
 async function confirmOpenLink(url: string, parent: BrowserWindow | null) {
-  const { origin, displayUrl } = describeLaunchLink(url)
+  const { configUrl, origin, displayUrl } = describeLaunchLink(url)
   const options = {
     type: 'question' as const,
     buttons: ['Open', 'Cancel'],
@@ -137,7 +137,7 @@ async function confirmOpenLink(url: string, parent: BrowserWindow | null) {
     message: origin
       ? `Open a new session from ${origin}?`
       : 'Open a new session from this link?',
-    detail: `${displayUrl}\n\nThis replaces the session you have open.`,
+    detail: `${configUrl ? `Config: ${configUrl}\n\n` : ''}${displayUrl}\n\nThis replaces the session you have open.`,
   }
   // a macOS sheet on a minimized window, or a Windows dialog its minimized
   // owner hides, would ask a question nobody can see

@@ -155,7 +155,9 @@ opened sessions". The **File → Session** menu handles named sessions:
 
 Desktop downloads the config the link names and saves it with the session. A
 short share link is read from the share service that config names, so it needs a
-network connection and the link's `&password=` intact.
+network connection and the link's `&password=` intact. A link opens data from
+the web only: one whose config or session names a file on your computer is
+refused, so open local files from a saved session or config instead.
 
 JBrowse Web's Share dialog has an "Open in JBrowse Desktop" button that opens
 the link it shows, through the same `jbrowse://` link.

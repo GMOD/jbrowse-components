@@ -4,6 +4,7 @@ import { isElectron, isNode } from '../environment.ts'
 import { getBlob, getFileFromCache } from '../tracks.ts'
 import {
   AuthNeededError,
+  isLocalPathLocation,
   isRootModelWithInternetAccounts,
   isUriLocation,
 } from '../types/index.ts'
@@ -45,6 +46,18 @@ export function resolveUriLocation(location: UriLocation) {
   return location.baseUri
     ? { ...location, uri: new URL(location.uri, location.baseUri).href }
     : location
+}
+
+/**
+ * The path on this machine a location reads, or undefined for one that names a
+ * server: the test openLocation makes before it opens either.
+ */
+export function locationLocalPath(location: unknown) {
+  return isLocalPathLocation(location)
+    ? location.localPath
+    : isUriLocation(location)
+      ? uriToLocalPath(resolveUriLocation(location).uri)
+      : undefined
 }
 
 export function openLocation(

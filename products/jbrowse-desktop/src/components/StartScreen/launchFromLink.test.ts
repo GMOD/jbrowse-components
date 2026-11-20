@@ -81,6 +81,44 @@ test('a config rejected by its plugin gate never builds a plugin manager', async
   expect(mockLoadLinkSpec).not.toHaveBeenCalled()
 })
 
+test('a linked config naming a file on this computer never builds a plugin manager', async () => {
+  const fetchConfig = jest.fn().mockResolvedValue({
+    ...config,
+    tracks: [{ adapter: { bamLocation: { localPath: '/home/me/x.bam' } } }],
+  })
+  const createPluginManager = jest.fn()
+
+  await expect(
+    launchFromLink(link, { fetchConfig, createPluginManager, trustPlugins }),
+  ).rejects.toThrow(/names a file on this computer \(\/home\/me\/x\.bam\)/)
+
+  expect(createPluginManager).not.toHaveBeenCalled()
+})
+
+test('a self-contained spec naming a file on this computer is refused before anything loads', async () => {
+  const local = {
+    views: [{ type: 'LinearGenomeView', assembly: 'mine' }],
+    sessionAssemblies: [
+      {
+        name: 'mine',
+        sequence: { adapter: { fastaLocation: { uri: 'file:///g.fa' } } },
+      },
+    ],
+  }
+  const fetchConfig = jest.fn()
+  const createPluginManager = jest.fn()
+
+  await expect(
+    launchFromLink(
+      `https://jbrowse.org/code/jb2/main/?session=spec-${encodeURIComponent(JSON.stringify(local))}`,
+      { fetchConfig, createPluginManager, trustPlugins },
+    ),
+  ).rejects.toThrow(/names a file on this computer/)
+
+  expect(fetchConfig).not.toHaveBeenCalled()
+  expect(createPluginManager).not.toHaveBeenCalled()
+})
+
 test('a spec carrying its own assemblies needs no config fetch', async () => {
   const selfContained = {
     views: [{ type: 'LinearGenomeView', assembly: 'mine' }],

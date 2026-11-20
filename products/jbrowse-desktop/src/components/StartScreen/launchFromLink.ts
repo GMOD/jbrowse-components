@@ -12,6 +12,8 @@ import { resolveTrackId } from '@jbrowse/launch-args/trackIds'
 import { getSnapshot } from '@jbrowse/mobx-state-tree'
 import { decodeSessionFromUrl } from '@jbrowse/product-core'
 
+import { assertReadsNoLocalFiles, linkData } from './linkData.ts'
+
 import type {
   ComparativeLaunchPlanJson,
   LaunchPlanJson,
@@ -62,14 +64,16 @@ async function launchSessionSnapshot(
   link: ParsedSessionSnapshotUrl,
   { fetchConfig, createPluginManager, trustPlugins }: LaunchFromLinkDeps,
 ) {
-  const config = await fetchConfig(link.configUrl)
+  const config = await fetchLinkedConfig(link.configUrl, fetchConfig)
   // a `share-` snapshot comes from the share service the link's own config
   // names, decrypted with the password only the link holds
-  const { sessionPlugins, sessionConnections, ...session } =
+  const { sessionPlugins, sessionConnections, ...session } = linkData(
     await decodeSessionFromUrl(link.session, {
       loadUrl: shareEndpoint(resolveShareUrl(config, link.pageUrl), 'load'),
       password: link.password,
-    })
+    }),
+    link.pageUrl,
+  )
   const configConnections = config.connections ?? []
   const configConnectionIds = new Set(
     configConnections.map(c => c.connectionId),
@@ -100,6 +104,15 @@ async function launchSessionSnapshot(
   return pluginManager
 }
 
+async function fetchLinkedConfig(
+  url: string,
+  fetchConfig: LaunchFromLinkDeps['fetchConfig'],
+) {
+  const config = await fetchConfig(url)
+  assertReadsNoLocalFiles(config)
+  return config
+}
+
 export async function launchFromLink(
   link: string,
   deps: LaunchFromLinkDeps,
@@ -119,15 +132,16 @@ export async function launchFromLink(
     }
     // no spec to run: the config's own defaultSession is the session, the same
     // as opening that config from a file
-    return createPluginManager(await fetchConfig(configUrl))
+    return createPluginManager(await fetchLinkedConfig(configUrl, fetchConfig))
   }
+  const spec = linkData(parsed.spec, parsed.pageUrl)
   // a spec carrying its own sessionAssemblies needs no config; anything else
   // resolves its assembly/track names against the config the link points at
   const config = parsed.configUrl
-    ? await fetchConfig(parsed.configUrl)
+    ? await fetchLinkedConfig(parsed.configUrl, fetchConfig)
     : undefined
   const pluginManager = await createPluginManager(config)
-  await loadLinkSpec(parsed, pluginManager)
+  await loadLinkSpec({ ...parsed, spec }, pluginManager)
   return pluginManager
 }
 

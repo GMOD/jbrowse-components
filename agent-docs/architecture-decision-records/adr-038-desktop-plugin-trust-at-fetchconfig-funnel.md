@@ -15,6 +15,16 @@ Context below describes the loader as it was. The gate is unchanged and still
 needed — a plugin evaluated in a `nodeIntegration` renderer reaches Node through
 `window.require` whatever format it shipped in.
 
+Amended 2026-11-20: a link's data is held to the same line as its plugins.
+`launchFromLink` refuses a linked config, spec or session that names a file on
+this machine (`StartScreen/linkData.ts`, with core's `locationLocalPath` making
+openLocation's own test), since Desktop reads one with Node and on Windows a
+`file://host/share` location offers the user's credentials to that host. The
+check sits in `launchFromLink`, not `fetchConfig`: a favorite or a `--config`
+url is the user's own choice, as a local file is. And the protocol dialog names
+the origin of the config the link loads, not the page it points at, which any
+link can name freely.
+
 ## Context
 
 `electron/window.ts` creates the main window with `nodeIntegration: true`,

@@ -43,6 +43,9 @@ export interface ParsedSessionSpec {
   notice?: string
   // the first `&hubURL=`, which names the session
   hubUrl?: string
+  // the JBrowse Web page the link points at, which the spec's relative files are
+  // relative to
+  pageUrl: string
 }
 
 // A `jbrowse://open?url=<web link>` wrapper carries a JBrowse Web url for
@@ -339,6 +342,7 @@ export function parseSessionSpecUrl(input: string): ParsedSessionSpec {
       ...resolveConfig(params, url),
       ...shorthandSpec(params),
       sessionName: params.get('sessionName') ?? undefined,
+      pageUrl: url.href,
     }
   }
   if (!session.startsWith(SPEC_PREFIX)) {
@@ -358,5 +362,6 @@ export function parseSessionSpecUrl(input: string): ParsedSessionSpec {
     ...resolveConfig(params, url),
     spec,
     sessionName: params.get('sessionName') ?? undefined,
+    pageUrl: url.href,
   }
 }

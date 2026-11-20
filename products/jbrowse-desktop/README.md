@@ -44,7 +44,16 @@ under File → Session once a session is open. Don't claim otherwise in the docs
 **A jbrowse:// url is untrusted input** — any web page can make the OS open one.
 `parseProtocolUrl` therefore only ever yields an `http`/`https` link, so
 `jbrowse://open?url=file:///…` cannot turn a link click into a local-file read.
-Keep that restriction if you touch it.
+That covers the link alone; what it opens can name files too, so
+`launchFromLink` refuses a linked config or session naming a file on this
+machine (`StartScreen/linkData.ts`), after resolving the link's own relative
+files against its page as JBrowse Web does. On Windows a `file://host/share`
+location would otherwise connect to that host and offer it the user's
+credentials. Keep both restrictions if you touch them.
+
+The confirmation dialog names the origin of the **config** the link loads
+(`electron/linkPrompt.ts`), never the page the link points at: any page can
+write a link to jbrowse.org whose config is its own.
 
 Only the pure parsing is unit-tested (`electron/launchTarget.test.ts`); the OS
 registration cannot be tested from a checkout. After changing anything in the
