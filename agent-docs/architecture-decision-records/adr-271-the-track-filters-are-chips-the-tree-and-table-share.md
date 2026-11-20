@@ -123,6 +123,8 @@ on the way back, and the tree could not filter by metadata at all.
 | An add-to-selection mode for the table's checkboxes | One checkbox meant two things, switched from a menu; Ctrl/Cmd-click and "Add matching tracks to selection" select without it (2026-11-18) |
 | A show-all header checkbox on an unfiltered list | One stray click turned on every track of a hub; it appears with "N of M" |
 | A track's ⋯ shown only on hover | Colin wants it always on (2026-11-18); a new user should see that a row has a menu |
+| "1 shown" at the right of a closed category whose tracks are on | Built and declined from today/proposal captures on hg38, where the one shown track sat inside a closed bar (Colin, 2026-11-20) |
+| The drawer's table without its outline and the rule under each row | Declined from the same captures; Colin asked for less wasted width instead, and the checkbox column of every table went from 40 px to 28 |
 
 ## Consequences
 
