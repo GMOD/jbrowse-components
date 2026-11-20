@@ -114,9 +114,9 @@ Take it up when hub use grows or that bug is reported.
   (`packages/core/src/assemblyManager/assemblyManager.ts`) wait on `loading`
   with no bound and show no message.
 - **`JBrowse1Connection` reports failure through its own code**
-  (`plugins/legacy-jbrowse/src/JBrowse1Connection/model.ts`). A reviewer's
-  probe found that a data directory it cannot fetch loads as zero tracks with
-  no message.
+  (`plugins/legacy-jbrowse/src/JBrowse1Connection/model.ts`) rather than
+  `lazyConnect`, which lives in data-management. A data directory with
+  neither track list now fails with a reason (`db1fc68310`).
 
 ## Waiting on Colin
 
