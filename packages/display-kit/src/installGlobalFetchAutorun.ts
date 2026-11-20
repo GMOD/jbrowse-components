@@ -130,12 +130,14 @@ export function installGlobalFetchAutorun<TArgs, TResult>(
   self: GlobalFetchAutorunHost,
   opts: GlobalFetchPhases<TArgs, TResult> & {
     delay: number
+    idleLeading?: boolean
     name: string
   },
 ) {
   installFetch(self, {
     name: opts.name,
     delay: opts.delay,
+    idleLeading: opts.idleLeading,
     rotation: self.fetchRotation,
     contract: 'installGlobalFetchAutorun',
     gate: () =>

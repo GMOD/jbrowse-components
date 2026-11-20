@@ -243,6 +243,7 @@ function installLaneFetch<Spec extends LaneFetchSpec, Result extends HeldLane>(
   installFetch(self, {
     name,
     delay: DEPENDENT_FETCH_DELAY,
+    idleLeading: true,
     report: { statusWindow: self.statusWindow },
     gate: () => !self.isMinimized,
     prepare: () => {
@@ -441,6 +442,7 @@ export function doAfterAttach(self: MultiWaySyntenyDisplayModel) {
   installGlobalFetchAutorun(self, {
     ...fetchPhases(self),
     delay: 1000,
+    idleLeading: true,
     name: 'MultiWaySyntenyFetch',
   })
 

@@ -174,6 +174,8 @@ interface InstallFetchOptionsBase<TArgs, TResult>
   name: string
   /** how long to coalesce reruns once the body has started work once */
   delay: number
+  /** `leadingEdgeAutorun`'s option of the same name */
+  idleLeading?: boolean
   /**
    * An extra skip above `prepare`, reported as `gated` rather than `declined`:
    * the skeleton decided before the family's own gate was consulted, so it is
@@ -336,6 +338,7 @@ export function installFetch<TArgs, TResult>(
   const {
     name,
     delay,
+    idleLeading,
     gate,
     contract,
     fetchKey,
@@ -447,6 +450,6 @@ export function installFetch<TArgs, TResult>(
       return true
     },
     // #endregion
-    { name, delay },
+    { name, delay, idleLeading },
   )
 }
