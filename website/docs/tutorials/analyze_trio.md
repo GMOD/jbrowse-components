@@ -187,11 +187,11 @@ This VCF is the 1000 Genomes low-coverage callset, statistically phased, and
 under one percent of its chr1 sites fail the check. A de novo candidate here is
 far more often a genotyping error than a mutation. At the site checked below,
 the reads show a parent's het that the low-coverage calls missed. The 1000
-Genomes SV callset gives the father and the daughter a deletion
-across CFHR1 (`HGSV_9982`), and a sample with one copy of a sequence is called
-homozygous for that copy's allele, which accounts for the run of Mendelian
-violations there. Those calls are right for a one-copy sample: the violations
-mark the deletion, not a genotyping error.
+Genomes SV callset gives the father and the daughter a deletion across CFHR1
+(`HGSV_9982`), and a sample with one copy of a sequence is called homozygous for
+that copy's allele, which accounts for the run of Mendelian violations there.
+Those calls are right for a one-copy sample: the violations mark the deletion,
+not a genotyping error.
 
 - **Filter:** checking **De novo candidate** and **Mendelian violation** under
   **Filter by → Mendelian check** keeps the failing sites alone. The menu writes
