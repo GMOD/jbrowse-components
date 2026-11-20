@@ -119,7 +119,8 @@ From [TrackHeightMixin](../trackheightmixin): <span id="volatile-scrolltop">[`sc
 | <span id="getter-lodtier">**lodTier**</span><br><code>LodTier</code> | read off the settled zoom, so a passing gesture refetches nothing |
 | <span id="getter-livelodtier">**liveLodTier**</span><br><code>LodTier</code> |  |
 | <span id="getter-viewsignature">**viewSignature**</span><br><code>string &#124; undefined</code> |  |
-| <span id="getter-groups">**groups**</span><br><code>MultiWayGroup[]</code> |  |
+| <span id="getter-lanefield">**laneField**</span><br><code>"assembly" &#124; "refName"</code> | `rows.field`: a lane per genome, or per copy of the window a genome holds |
+| <span id="getter-groups">**groups**</span><br><code>MultiWayGroup[]</code> | each mate filed under its genome's lane, or its copy lane |
 | <span id="getter-laneindels">**laneIndels**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>{ openings: (assemblyName: string, refName: string) =&gt; readonly…</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>{ openings: (assemblyName: string, refName: string) =&gt; readonly LaneOpening[]; changes: (assemblyName: string, refName: string) =&gt; readonly LaneChange[]; }</code></pre></dialog></span> | each lane's holes and stated changes against the anchor, read off every fetched group rather than the viewport's, so one appears once both its pieces arrive and not as the second scrolls in |
 | <span id="getter-laneopenings">**laneOpenings**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>(assemblyName, refName) =&gt; readonly LaneOpening[]</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>(assemblyName: string, refName: string) =&gt; readonly LaneOpening[]</code></pre></dialog></span> | each lane's holes, one per deletion `laneIndels` opens |
 | <span id="getter-lanechanges">**laneChanges**</span><br><code>(assemblyName: string, refName: string) =&gt; readonly LaneChange[]</code> | each lane's deletions, insertions and inversions as its records state them, for the header |
@@ -139,7 +140,7 @@ From [TrackHeightMixin](../trackheightmixin): <span id="volatile-scrolltop">[`sc
 | <span id="getter-adapterpairsonanchor">**adapterPairsOnAnchor**</span><br><code>boolean</code> |  |
 | <span id="getter-adapterbatcheslanepairs">**adapterBatchesLanePairs**</span><br><code>boolean</code> | the adapter answers a window's `lanePairs` in one call |
 | <span id="getter-sessiontracksbyid">**sessionTracksById**</span><br><code>ReadonlyMap&lt;string, AnyTrackConfig&gt;</code> | every session track, connections' included |
-| <span id="getter-rowsvsanchor">**rowsVsAnchor**</span><br><code>boolean</code> | a source that names an anchor and answers no lane pairs states each lane against the anchor alone, so each gutter draws its lower lane against the anchor |
+| <span id="getter-rowsvsanchor">**rowsVsAnchor**</span><br><code>boolean</code> | a source that names an anchor and answers no lane pairs states each lane against the anchor alone, so each gutter draws its far lane against the anchor; so are copy lanes, since two copies of one genome are paired only through the anchor gene they share |
 | <span id="getter-lanefetchkinds">**laneFetchKinds**</span><br><code>{ lanePairs: boolean; laneRows: boolean; }</code> | the fetches beyond the anchor's that its records call for |
 | <span id="getter-domain">**domain**</span><br><code>string[]</code> | `rows.sort` in each placed lane's own spelling, so an order a config wrote with an alias merges with one a drag writes |
 | <span id="getter-configuredlanes">**configuredLanes**</span><br><code>string[]</code> | the track's assemblies beside the anchor for a source that declares the lanes itself, empty for every other source |
@@ -156,11 +157,13 @@ From [TrackHeightMixin](../trackheightmixin): <span id="volatile-scrolltop">[`sc
 | <span id="getter-laneuniverse">**laneUniverse**</span><br><code>LaneChoice[]</code> | the anchor is never a lane |
 | <span id="getter-unalignedchosenlanes">**unalignedChosenLanes**</span><br><code>string[]</code> | the lanes `rows.kept` names that the held fetch answered for and placed nothing in; an unchosen lane placing nothing draws no row |
 | <span id="getter-rowassemblies">**rowAssemblies**</span><br><code>string[]</code> | a paralogy mate on the anchor assembly draws on its axis, not as a row |
+| <span id="getter-anchorrow">**anchorRow**</span><br><code>number</code> | the anchor's row in the stack: after the lanes `rows.sort` names before its assembly, or first |
+| <span id="getter-laneorder">**laneOrder**</span><br><code>string[]</code> | every lane in the order it stacks, the anchor's included |
 | <span id="getter-pinsinforce">**pinsInForce**</span><br><code>LanePin[]</code> | the pins that hold under the anchor, each naming its lane as `rowAssemblies` spells it |
 | <span id="getter-structurelanekeys">**structureLaneKeys**</span><br><code>string[]</code> | every fetched lane's key, chained by its deletions and insertions against the anchor |
 | <span id="getter-lanestructureorder">**laneStructureOrder**</span><br><code>string[]</code> | the drawn lanes in `structureLaneKeys` order, for "Order lanes by structure"; empty for a gene table |
 | <span id="getter-rowoflane">**rowOfLane**</span><br><code>ReadonlyMap&lt;string, string&gt;</code> | each drawn lane's row name by its canonical name, for data keyed by the records' spelling of a lane |
-| <span id="getter-lanestodescribe">**lanesToDescribe**</span><br><code>string[]</code> |  |
+| <span id="getter-lanestodescribe">**lanesToDescribe**</span><br><code>string[]</code> | the genomes the lanes draw that the session lacks, each once however many copy lanes it draws |
 | <span id="getter-laneassemblyconfs">**laneAssemblyConfs**</span><br><code>Map&lt;string, Record&lt;string, unknown&gt;&gt;</code> |  |
 | <span id="getter-canreanchor">**canReanchor**</span><br><code>boolean</code> |  |
 | <span id="getter-visiblebpspan">**visibleBpSpan**</span><br><code>number</code> | the bp the canvas spans: a lane's bpPerPx is this times its rung over `canvasWidthPx`, so the two read one width or every lane but the anchor is scaled against a box it doesn't fill |
@@ -276,13 +279,13 @@ From [BaseDisplay](../basedisplay): <span id="getter-parenttrack">[`parentTrack`
 <!-- prettier-ignore -->
 | Member | Description |
 | --- | --- |
-| <span id="method-lanekey">**laneKey**</span><br><code>(assemblyName: string) =&gt; string</code> | the canonical name, so two spellings of one assembly share a key |
-| <span id="method-lanespellings">**laneSpellings**</span><br><code>(assemblyName: string) =&gt; string[]</code> | `assemblyName` and every alias the session holds it under |
+| <span id="method-lanekey">**laneKey**</span><br><code>(lane: string) =&gt; string</code> | the canonical name, so two spellings of one lane share a key: a copy lane's assembly and refName each canonical, where the session holds its genome |
+| <span id="method-lanespellings">**laneSpellings**</span><br><code>(lane: string) =&gt; string[]</code> | the lane's genome and every alias the session holds it under |
 | <span id="method-namedlanetracks">**namedLaneTracks**</span><br><code>(entries: readonly string[], key: string) =&gt; AnyTrackConfig[]</code> | the tracks `entries` names for the lane keyed `key`, best first: plain ids, then `{assembly}` entries, each in entry order |
 | <span id="method-rpcprops">**rpcProps**</span><br><code>() =&gt; { haplotypes: string[] &#124; undefined; }</code> | reads only user-controlled state, never a fetch's output, or it loops |
-| <span id="method-holdsassembly">**holdsAssembly**</span><br><code>(assemblyName: string) =&gt; boolean</code> |  |
+| <span id="method-holdsassembly">**holdsAssembly**</span><br><code>(lane: string) =&gt; boolean</code> |  |
 | <span id="method-holdstemporarily">**holdsTemporarily**</span><br><code>(assemblyName: string) =&gt; boolean</code> |  |
-| <span id="method-lanelabel">**laneLabel**</span><br><code>(assemblyName: string) =&gt; string</code> |  |
+| <span id="method-lanelabel">**laneLabel**</span><br><code>(lane: string) =&gt; string</code> |  |
 | <span id="method-lanecolor">**laneColor**</span><br><code>(assemblyName: string) =&gt; string &#124; undefined</code> | the color a lane's label bar draws, undefined for none |
 | <span id="method-placelessof">**placelessOf**</span><br><code>(assemblyName: string) =&gt; Placeless &#124; undefined</code> | why a lane the window shows none of draws a row, or undefined where it draws none |
 | <span id="method-laneselectiontrackid">**laneSelectionTrackId**</span><br><code>(assemblyName: string) =&gt; string</code> | the track a lane gene's selection names: the lane's gene track, or one per lane under this display where a described genome brings the genes |
@@ -290,7 +293,7 @@ From [BaseDisplay](../basedisplay): <span id="getter-parenttrack">[`parentTrack`
 | <span id="method-laneframeof">**laneFrameOf**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>(decision: LaneDecision, assemblyName: string) =&gt; RowFrame &#124; …</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>(decision: LaneDecision, assemblyName: string) =&gt; RowFrame &#124; undefined</code></pre></dialog></span> | undefined once the pivot is off the displayed regions |
 | <span id="method-settledlanedecisions">**settledLaneDecisions**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>({ previous, frozen, }: {…}) =&gt; Map&lt;…&gt;</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>({ previous, frozen, }: { previous: ReadonlyMap&lt;string, LaneDecision &#124; undefined&gt;; frozen: ReadonlyMap&lt;string, LaneDecision&gt;; }) =&gt; Map&lt;string, LaneDecision &#124; undefined&gt;</code></pre></dialog></span> | at the settled view, as `fitGroups` are cut to it: which group is the pivot and what the hold test counts are judged in it. A lane in `frozen` keeps its frozen decision |
 | <span id="method-shownchangesof">**shownChangesOf**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>(lane: Pick&lt;…&gt;) =&gt; LaneChange[]</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>(lane: Pick&lt;Lane, "assemblyName" &#124; "canon" &#124; "frame"&gt;) =&gt; LaneChange[]</code></pre></dialog></span> | the changes a lane's header chip names, largest first |
-| <span id="method-guttery">**gutterY**</span><br><code>(index: number) =&gt; number &#124; undefined</code> | the centre, in stack px, of the gutter under the `index`th lane pair |
+| <span id="method-guttery">**gutterY**</span><br><code>(row: number) =&gt; number &#124; undefined</code> | the centre, in stack px, of the gutter under the lane at `row` |
 | <span id="method-bandcellon">**bandCellOn**</span><br><code>(page: string) =&gt; MultiWayCell</code> |  |
 | <span id="method-lanegenelabels">**laneGeneLabels**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>(fontFamily, pinnedGroups?, width?) =&gt; PlacedLaneLabel[]</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>(fontFamily: string &#124; undefined, pinnedGroups?: ReadonlySet&lt;string&gt;, width?: number) =&gt; PlacedLaneLabel[]</code></pre></dialog></span> | placed in the stack's px |
 | <span id="method-coloredlayersof">**coloredLayersOf**</span><br><code>(held: HeldLaneLayer) =&gt; EncodedChannels[]</code> | a held payload's layers, each colored as its mark declares |
@@ -329,6 +332,7 @@ From [BaseDisplay](../basedisplay): <span id="method-renderingprops">[`rendering
 | <span id="action-setlanegroups">**setLaneGroups**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>(fetched, specs, anchor) =&gt; void</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>(fetched: ReadonlyMap&lt;string, HeldLaneGroups&gt;, specs: LaneFetchSpec[], anchor: string) =&gt; void</code></pre></dialog></span> |  |
 | <span id="action-retryfailedlanes">**retryFailedLanes**</span><br><code>() =&gt; void</code> |  |
 | <span id="action-setselectedlanes">**setSelectedLanes**</span><br><code>(names: readonly string[] &#124; undefined) =&gt; void</code> | writes `rows.kept`; undefined restores `configuredLanes`, or every lane |
+| <span id="action-setlanefield">**setLaneField**</span><br><code>(field: "assembly" &#124; "refName") =&gt; void</code> | writes `rows.field`: a lane per genome, or per copy of the window |
 | <span id="action-setribboncolorfield">**setRibbonColorField**</span><br><code>(field: string &#124; undefined) =&gt; void</code> |  |
 | <span id="action-setdomain">**setDomain**</span><br><code>(domain: string[]) =&gt; void</code> | takes the whole pinned order, empty meaning densest-first; merge a partial one with `mergeDomain` first |
 | <span id="action-sethideunlabelled">**setHideUnlabelled**</span><br><code>(flag: boolean) =&gt; void</code> |  |
@@ -363,9 +367,9 @@ From [BaseDisplay](../basedisplay): <span id="method-renderingprops">[`rendering
 | <span id="action-opensolidcolordialog">**openSolidColorDialog**</span><br><code>() =&gt; void</code> | the picker the gene Color by's Solid color... opens |
 | <span id="action-holdreleasedlane">**holdReleasedLane**</span><br><code>(assemblyName: string) =&gt; void</code> | holds a lane's temporary assembly again, after the new view it was released to failed to open |
 | <span id="action-selectfeature">**selectFeature**</span><br><code>(feature: Feature, sourceTrackId?: string) =&gt; void</code> |  |
-| <span id="action-openinnewview">**openInNewView**</span><br><code>(assemblyName: string, loc: string) =&gt; void</code> |  |
+| <span id="action-openinnewview">**openInNewView**</span><br><code>(lane: string, loc: string) =&gt; void</code> |  |
 | <span id="action-zoomto">**zoomTo**</span><br><code>(loc: string) =&gt; void</code> |  |
-| <span id="action-reanchor">**reanchor**</span><br><code>(assemblyName: string, loc: string) =&gt; void</code> |  |
+| <span id="action-reanchor">**reanchor**</span><br><code>(lane: string, loc: string) =&gt; void</code> |  |
 | <span id="action-sethovertarget">**setHoverTarget**</span><br><code>(target: HoverTarget &#124; undefined) =&gt; void</code> |  |
 | <span id="action-startrenderingbackend">**startRenderingBackend**</span><br><code>(backend: MultiWayRenderingBackend) =&gt; void</code> |  |
 | <span id="action-setpointer">**setPointer**</span><br><code>(state?: MouseState) =&gt; void</code> |  |
