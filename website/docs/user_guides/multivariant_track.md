@@ -275,8 +275,8 @@ a sample in the VCF. Phase is ignored, and ploidy is read from each call.
 <Figure caption="The KHV trio colored by the Mendelian check across CFHR3 and CFHR1, rows HG02024 (child), HG02025 (mother) and HG02026 (father)." src="/img/trio-mendelian.png" />
 
 With several trios, a site takes its most severe value, in the order above.
-`mendelian` is computed as the track loads rather than read off the record, so a
-`jexl:` expression cannot read it.
+JBrowse computes `mendelian` as the track loads, and the record holds no such
+field, so a `jexl:` expression cannot read it.
 
 - **Filter:** the display's `filter` entry
   `{ "field": "mendelian", "oneOf": ["notInParents", "inconsistent"] }` keeps
@@ -286,7 +286,7 @@ With several trios, a site takes its most severe value, in the order above.
 - **Callset QC:** the check reads GT alone, with no genotype quality, so on
   low-coverage calls most failures are genotyping errors. The
   [phased trio tutorial](/docs/tutorials/analyze_trio#checking-the-trios-calls-against-the-pedigree)
-  reads them against the child's high-coverage reads.
+  checks one against the child's high-coverage reads.
 
 ### Sex chromosomes and organelles
 
@@ -294,8 +294,9 @@ A sequence a child does not inherit as one copy from each parent needs an entry
 in the assembly's [`transmission`](/docs/config/baseassembly/#slot-transmission)
 list. Each entry names a `refName` (unset, every sequence), a child's `sex` as
 the pedigree gives it (unset, any child), and `from`: `mother`, `father` or
-`either`. The default is no entries, and JBrowse does not guess from names:
-sacCer3's `chrX` is an autosome, and _Bombyx mori_'s Z is `1`.
+`either`. The default is no entries, so a sequence takes the autosomal rule
+until an entry names it: sacCer3's `chrX` is an autosome, and _Bombyx mori_'s Z
+is `1`.
 
 | Genome                               | Entries                                                                                                                                |
 | ------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------- |
@@ -309,8 +310,8 @@ sacCer3's `chrX` is an autosome, and _Bombyx mori_'s Z is `1`.
 The
 [phased trio tutorial](/docs/tutorials/analyze_trio#loading-the-hg38-assembly)
 writes hg38's entries. Several sex chromosomes, as the platypus's X1 to X5, take
-one entry each. The check stays lenient where biology varies, so it can miss an
-error but does not report a false one:
+one entry each. Where biology varies, the check takes the lenient reading, which
+can miss an error:
 
 - **Pseudoautosomal regions:** an entry with a `sex` judges only a haploid or
   homozygous call, so a son's het takes the autosomal rule. A homozygote in a

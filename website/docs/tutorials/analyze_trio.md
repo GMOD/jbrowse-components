@@ -158,8 +158,9 @@ infers the adapter and the index but sets no pedigree.
 `pedigreeLocation` reads the 1000 Genomes pedigree, whose line
 `VN049 HG02024 HG02026 HG02025` names HG02026 as HG02024's father and HG02025 as
 the mother. It gives each sample `family`, `father`, `mother` and `sex`
-attributes, and with a child and a parent among the samples it enables the
-Mendelian check in the next step. A PLINK `.fam` works the same way.
+attributes. Where a sample and its father or mother are both in the VCF, the
+track menu offers the Mendelian check used in the next step. A PLINK `.fam`
+works the same way.
 
 <Figure caption="The VCF on initial load: one row per sample, each genotype at its variant's position." src="/img/trio-basic.png"/>
 
@@ -178,14 +179,14 @@ made of one allele from each parent's, and colors the alt cells by the answer:
 A site where a no-call leaves the answer open keeps the default color. Near
 CFHR3 and CFHR1 the check flags both kinds of site:
 
-<Figure caption="Color by → Mendelian check across CFHR3 and CFHR1, rows HG02024 (child), HG02025 (mother) and HG02026 (father). Not-in-parents cells in the child left of CFHR3, and a run of inconsistent cells in the parents across CFHR1." src="/img/trio-mendelian.png"/>
+<Figure caption="Color by → Mendelian check across CFHR3 and CFHR1, rows HG02024 (child), HG02025 (mother) and HG02026 (father). The child's row has not-in-parents cells left of CFHR3, and the parents' rows have a run of inconsistent cells across CFHR1." src="/img/trio-mendelian.png"/>
 
 This VCF is the 1000 Genomes low-coverage callset, statistically phased, and
 under one percent of its chr1 sites fail the check. Most failures are genotyping
-errors, not de novo mutations. The run across CFHR1 has a second cause: the 1000
-Genomes SV callset gives the father and the child a deletion there
-(`HGSV_9982`), and a sample with one copy of a sequence is called homozygous for
-that copy's allele.
+errors, not de novo mutations. The 1000 Genomes SV callset gives the father and
+the child a deletion across CFHR1 (`HGSV_9982`), and a sample with one copy of a
+sequence is called homozygous for that copy's allele, which accounts for the run
+of inconsistent sites there.
 
 - **Filter:** the display's `filter` entry
   `{ "field": "mendelian", "oneOf": ["notInParents", "inconsistent"] }`, written
@@ -208,11 +209,11 @@ project's S3 bucket:
 ```
 
 At chr1:196,762,950-196,763,030 the callset has the child `0|1` and both parents
-`0|0` at 196,762,987, a not-in-parents site. The child's reads carry the G
-allele there, so the child's call stands. The mother's CRAM,
+`0|0` at 196,762,987, a not-in-parents site. The child's reads show the G allele
+there, so the child's call stands. The mother's CRAM,
 `https://1000genomes.s3.amazonaws.com/1000G_2504_high_coverage/data/ERR3242042/HG02025.final.cram`,
-loaded the same way, has G reads too: the low-coverage calls missed the mother's
-het.
+loaded the same way, also has reads with G, so the low-coverage calls missed the
+mother's het.
 
 **Color by → Genotype** returns the cells to the genotype colors the steps below
 use.
