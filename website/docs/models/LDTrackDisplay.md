@@ -21,6 +21,8 @@ Each section ends with the members a composed model contributes, linked to the p
 | --- | --- |
 | <span id="property-type">**type**</span><br><code>"LDTrackDisplay"</code> | Always `"LDTrackDisplay"`, the name a snapshot selects this model by. |
 | <span id="property-configuration">**configuration**</span><br><code><a href="../../config/ldtrackdisplay">LDTrackDisplayConfig</a></code> | The config node this model reads its settings from, through `getConf`. Its slots are documented on its [config schema page](../../config/ldtrackdisplay). |
+| <span id="property-indexsnp">**indexSnp**</span><br><code>string &#124; undefined</code> | The SNP whose row and column are emphasized, as `chr:bp` with the view's refName and PLINK's 1-based BP, the spelling `LinearManhattanDisplay`'s `indexSnp` takes. A position rather than a column, so it survives a refetch and a saved session. |
+| <span id="property-indexsnpid">**indexSnpId**</span><br><code>string &#124; undefined</code> | The index SNP's id, which tells apart two variants the file lists at one position, a SNP beside an indel. |
 
 <details class="inherited-members" data-pagefind-ignore>
 <summary>2 inherited properties from 2 models</summary>
@@ -33,13 +35,10 @@ From [BaseDisplay](../basedisplay): <span id="property-id">[`id`](../basedisplay
 
 ## Volatiles
 
-<!-- prettier-ignore -->
-| Member | Description |
-| --- | --- |
-| <span id="volatile-indexsnplocus">**indexSnpLocus**</span><br><code>string &#124; undefined</code> | Key (`refName:start:id`) of the SNP whose row and column are emphasized. A key rather than an index, so it survives a refetch. |
+<details class="inherited-members" data-pagefind-ignore open>
+<summary>24 inherited volatiles from 8 models</summary>
 
-<details class="inherited-members" data-pagefind-ignore>
-<summary>23 inherited volatiles from 7 models</summary>
+From [ContextMenuMixin](../contextmenumixin): <span id="volatile-contextmenuinfo">[`contextMenuInfo`](../contextmenumixin#volatile-contextmenuinfo)</span>
 
 From [TriangleMatrixMixin](../trianglematrixmixin): <span id="volatile-rpcdata">[`rpcData`](../trianglematrixmixin#volatile-rpcdata)</span>
 
@@ -130,6 +129,7 @@ From [BaseDisplay](../basedisplay): <span id="getter-parenttrack">[`parentTrack`
 | <span id="method-hittest">**hitTest**</span><br><code>(mouseX: number, mouseY: number) =&gt; LDCellHit &#124; undefined</code> | The computed cell under a display-px point: a pair outside the band, or one no estimator filled, is not drawn and not hit. |
 | <span id="method-configproblemsof">**configProblemsOf**</span><br><code>(conf: AnyConfigurationModel) =&gt; string[]</code> | The schema's rules, then names asked for with no band to draw in. |
 | <span id="method-trackmenuitems">**trackMenuItems**</span><br><code>() =&gt; MenuItem[]</code> |  |
+| <span id="method-contextmenuitems">**contextMenuItems**</span><br><code>() =&gt; MenuItem[]</code> | Either SNP of the right-clicked pair as the index. |
 | <span id="method-rendersvg">**renderSvg**</span><br><code>(opts: ExportSvgDisplayOptions) =&gt; Promise&lt;ReactNode&gt;</code> |  |
 
 <details class="inherited-members" data-pagefind-ignore>
@@ -161,7 +161,9 @@ From [BaseDisplay](../basedisplay): <span id="method-renderingprops">[`rendering
 | <span id="action-startrenderingbackend">**startRenderingBackend**</span><br><code>(backend: LDRenderingBackend) =&gt; void</code> |  |
 
 <details class="inherited-members" data-pagefind-ignore>
-<summary>47 inherited actions from 12 models</summary>
+<summary>49 inherited actions from 13 models</summary>
+
+From [ContextMenuMixin](../contextmenumixin): <span id="action-opencontextmenu">[`openContextMenu`](../contextmenumixin#action-opencontextmenu)</span>, <span id="action-closecontextmenu">[`closeContextMenu`](../contextmenumixin#action-closecontextmenu)</span>
 
 From [TriangleMatrixMixin](../trianglematrixmixin): <span id="action-setrpcdata">[`setRpcData`](../trianglematrixmixin#action-setrpcdata)</span>, <span id="action-cleardisplayspecificdata">[`clearDisplaySpecificData`](../trianglematrixmixin#action-cleardisplayspecificdata)</span>, <span id="action-setheightmode">[`setHeightMode`](../trianglematrixmixin#action-setheightmode)</span>
 

@@ -93,8 +93,8 @@ JBrowse 2 equivalent leaves a placeholder track naming it. Check the result with
 
 JBrowse fetches the hub's track list when the connection loads and holds it in
 memory, and does **not** write it into a saved or shared session. The session
-stores only the tracks you open (under `connectionTrackConfigs`, keyed by
-`trackId`), so a shared session stays small even for a very large hub.
+stores only the tracks you open or edit (under `connectionTrackConfigs`, keyed
+by `trackId`), so a shared session stays small even for a very large hub.
 
 :::
 
