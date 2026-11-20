@@ -7,7 +7,7 @@ import {
   referencePositionColor,
 } from './graph-fixtures.ts'
 
-import type { ScreenshotSpec } from '../screenshot-spec-types.ts'
+import type { Annotation, ScreenshotSpec } from '../screenshot-spec-types.ts'
 
 const NONHUMAN_CONFIG = local(
   'test_data/graphgenomeview/pangenome_nonhuman.json',
@@ -95,6 +95,15 @@ const KIV2_THREADS = [
 
 const threads = (walks: string[]) => walks.map(walk => ({ walk }))
 
+// The key's button that lists the haplotypes to highlight.
+const HAPLOTYPE_BUTTON: Annotation[] = [
+  {
+    type: 'box',
+    pad: 2,
+    anchor: { selector: '[data-testid="graph-haplotype-switch"]' },
+  },
+]
+
 const kiv2WalksSpec: ScreenshotSpec = {
   mode: 'url',
   name: 'pangenome/graph_kiv2_walks',
@@ -123,6 +132,7 @@ const kiv2WalksSpec: ScreenshotSpec = {
   viewportHeight: 1010,
   tooltip: 'hide',
   actions: [{ type: 'waitForSelector', selector: WALK_READOUT }, PARK_CURSOR],
+  annotations: HAPLOTYPE_BUTTON,
 }
 
 // `uniform` keeps GRCh38's bar the legend's shared-sequence blue.
@@ -205,6 +215,7 @@ function c4ThreadsSpec(
   name: string,
   viewportHeight: number,
   pane: Record<string, unknown>,
+  annotations?: Annotation[],
 ): ScreenshotSpec {
   return {
     mode: 'url',
@@ -233,13 +244,16 @@ function c4ThreadsSpec(
     viewportHeight,
     tooltip: 'hide',
     actions: [{ type: 'waitForAppSettled', timeout: 180000 }, PARK_CURSOR],
+    ...(annotations ? { annotations } : {}),
   }
 }
 
-const c4WalkThreadsSpec = c4ThreadsSpec('pangenome/hprc_c4_threads', 962, {
-  heightMode: 'fit',
-  paneHeight: 480,
-})
+const c4WalkThreadsSpec = c4ThreadsSpec(
+  'pangenome/hprc_c4_threads',
+  962,
+  { heightMode: 'fit', paneHeight: 480 },
+  HAPLOTYPE_BUTTON,
+)
 
 const c4WalkPanelsSpec = c4ThreadsSpec('pangenome/hprc_c4_panels', 1022, {
   facet: 'walk',

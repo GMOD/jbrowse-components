@@ -312,14 +312,17 @@ along the nodes it passes through. In the same window:
 - Turn on **HPRC release 2 haplotypes vs GRCh38, read from the haplotype walk
   files** in the track selector. It opens as a force-directed graph of GRCh38's
   walk and eight haplotypes' walks.
-- Check `GRCh38`, `HG00128` and `HG00133` under **Haplotypes** in its track
-  menu.
+- Turn the launch's variant matrix, **HPRC2 pangenome structural variants (464
+  haplotypes)**, back on.
+- Press the button beside **Haplotypes** in the haplotypes track's key, and
+  check `GRCh38`, `HG00128` and `HG00133`.
 - Take **Track sizing → Fit graph to track height** <!-- menu-path-ok --> in the
-  same menu, which draws the whole graph inside the track.
+  track menu, which draws the whole graph inside the track.
 
-<Figure caption="C4 with GRCh38, HG00128 and HG00133 highlighted in the haplotypes track, under those two haplotypes' rows of the variant matrix. Each thread takes its color in the key, and the rest of the graph is grey." src="/img/pangenome/hprc_c4_threads.png" />
+<Figure caption="C4 with GRCh38, HG00128 and HG00133 highlighted in the haplotypes track, under those two haplotypes' rows of the variant matrix. The boxed button in the key lists the haplotypes." src="/img/pangenome/hprc_c4_threads.png" />
 
-Read the threads this way:
+Each highlighted walk takes its color in the key, and the rest of the graph
+fades to grey. Read the threads this way:
 
 - **Threads side by side pass through the same nodes.** The three run together
   through _C4A_ and most of the window.
@@ -333,11 +336,11 @@ Read the threads this way:
 - **Hover a node**, and the key gives its position on each highlighted
   haplotype's own contig.
 
-**Haplotypes → A panel per haplotype** <!-- menu-path-ok --> draws the same
-layout once for each highlighted haplotype, shaded light to dark from the start
-of its walk to the end. A panel's title gives the stretch of the haplotype's
-contig the walk covers and its length, and clicking a title highlights that
-haplotype alone.
+**A panel per haplotype**, further down the same list, draws the same layout
+once for each highlighted haplotype, shaded light to dark from the start of its
+walk to the end. A panel's title gives the stretch of the haplotype's contig the
+walk covers and its length, and clicking a title highlights that haplotype
+alone.
 
 <Figure caption="The same three haplotypes with a panel each. A panel's title gives its walk's stretch of its contig and its length." src="/img/pangenome/hprc_c4_panels.png" />
 

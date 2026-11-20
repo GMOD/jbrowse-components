@@ -128,13 +128,14 @@ reads one per haplotype from tabix-indexed files. In the same window:
 
 The track draws a node thicker the more walks pass through it (as in Bandage),
 so the shared backbone is the thick line and copies on one haplotype are thin
-loops. Check `GRCh38`, `HG00097` and `HG00133` under **Haplotypes**, then take
-**Track sizing → Fit graph to track height** <!-- menu-path-ok -->. Each checked
-walk becomes a thread in its own color and the rest of the graph fades to grey.
-Threads side by side pass through the same copies, and a loop one thread runs
-alone is copies only that haplotype has here.
+loops. Press the button beside **Haplotypes** in the track's key and check
+`GRCh38`, `HG00097` and `HG00133`, then take **Track sizing → Fit graph to track
+height** <!-- menu-path-ok --> in the track menu. Each checked walk becomes a
+thread in its own color and the rest of the graph fades to grey. Threads side by
+side pass through the same copies, and a loop one thread runs alone is copies
+only that haplotype has here.
 
-<Figure caption="The KIV-2 cut with GRCh38, HG00097 and HG00133 highlighted under Haplotypes. A loop in one color is copies on that haplotype's walk alone." src="/img/pangenome/graph_kiv2_walks.png" />
+<Figure caption="The KIV-2 cut with GRCh38, HG00097 and HG00133 highlighted from the boxed Haplotypes button. A loop in one color is copies on that haplotype's walk alone." src="/img/pangenome/graph_kiv2_walks.png" />
 
 ## Every haplotype's KIV-2 array as a bar {#every-haplotypes-copies}
 

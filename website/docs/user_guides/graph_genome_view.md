@@ -364,13 +364,13 @@ A graph with walks, such as a GBZ cut or a GFA with P or W lines, adds:
 - **Route chips:** while the halos are on, in a bubble with a route over a
   kilobase, every route has a chip at the far point of its loop listing the
   walks that take it and the route's length
-- **Haplotypes** in the track menu highlights walks. One highlighted walk is
-  shaded light to dark along itself, and several each take one color, their
-  threads side by side through the nodes they share, so a loop in one color is
-  sequence only that haplotype passes through. Everything else fades, on the
-  reference strip too, so the stretches of reference a walk skips read at their
-  bp. The key names each walk, and for a walk highlighted alone gives the
-  stretch of its contig it covers and its length
+- **Haplotypes**, in the track's key and in the track menu, highlights walks.
+  One highlighted walk is shaded light to dark along itself, and several each
+  take one color, their threads side by side through the nodes they share, so a
+  loop in one color is sequence only that haplotype passes through. Everything
+  else fades, on the reference strip too, so the stretches of reference a walk
+  skips read at their bp. The key names each walk, and for a walk highlighted
+  alone gives the stretch of its contig it covers and its length
 - **Haplotypes → A panel per haplotype** <!-- menu-path-ok --> draws the layout
   once for each highlighted walk, and **Haplotypes → Color highlighted...**
   <!-- menu-path-ok --> sets what each thread's color follows: progress along
