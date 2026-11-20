@@ -49,23 +49,7 @@
       "circularRefNames": ["chrM"],
       "geneticCodes": {
         "chrM": 2
-      },
-      "transmission": [
-        {
-          "refName": "chrX",
-          "sex": "male",
-          "from": "mother"
-        },
-        {
-          "refName": "chrY",
-          "sex": "male",
-          "from": "father"
-        },
-        {
-          "refName": "chrM",
-          "from": "either"
-        }
-      ]
+      }
     }
   ],
   "tracks": [
