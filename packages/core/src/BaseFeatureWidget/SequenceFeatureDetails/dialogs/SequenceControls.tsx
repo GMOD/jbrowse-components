@@ -1,5 +1,6 @@
 import { observer } from 'mobx-react'
 
+import ControlRow from '../../../ui/ControlRow.tsx'
 import { makeStyles } from '../../../util/tss-react/index.ts'
 import { sequenceFileStem } from '../util.ts'
 import SequenceFeatureMenu from './SequenceFeatureMenu.tsx'
@@ -46,7 +47,7 @@ const SequenceControls = observer(function SequenceControls({
 }) {
   const { classes } = useStyles()
   return (
-    <div className={classes.controls}>
+    <ControlRow className={classes.controls}>
       {transcriptSelector}
       <SequenceTypeSelector model={model} feature={feature} mode={mode} />
       <SequenceFeatureMenu
@@ -59,7 +60,7 @@ const SequenceControls = observer(function SequenceControls({
         setRevcomp={setRevcomp}
         extraItems={extraItems}
       />
-    </div>
+    </ControlRow>
   )
 })
 

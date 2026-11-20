@@ -44,6 +44,10 @@ export interface SequenceHoverTarget {
 
 const p = 'sequenceFeatureDetails'
 
+export const DEFAULT_INTRON_BP = 10
+export const DEFAULT_UP_DOWN_BP = 100
+export const DEFAULT_CHARACTERS_PER_ROW = 100
+
 // A row has to hold at least one base: `splitString` advances the string by
 // this, so a width of zero never finishes it.
 function clampCharactersPerRow(n: number) {
@@ -79,11 +83,15 @@ export function SequenceFeatureDetailsF() {
       /**
        * #volatile
        */
-      intronBp: clampBasePairs(localStorageGetNumber(`${p}-intronBp`, 10)),
+      intronBp: clampBasePairs(
+        localStorageGetNumber(`${p}-intronBp`, DEFAULT_INTRON_BP),
+      ),
       /**
        * #volatile
        */
-      upDownBp: clampBasePairs(localStorageGetNumber(`${p}-upDownBp`, 100)),
+      upDownBp: clampBasePairs(
+        localStorageGetNumber(`${p}-upDownBp`, DEFAULT_UP_DOWN_BP),
+      ),
       /**
        * #volatile
        */
@@ -96,7 +104,10 @@ export function SequenceFeatureDetailsF() {
        * state.
        */
       charactersPerRow: clampCharactersPerRow(
-        localStorageGetNumber(`${p}-charactersPerRow`, 100),
+        localStorageGetNumber(
+          `${p}-charactersPerRow`,
+          DEFAULT_CHARACTERS_PER_ROW,
+        ),
       ),
       /**
        * #volatile

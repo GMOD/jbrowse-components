@@ -59,9 +59,9 @@ const HelpDialog = observer(function HelpDialog({
       <ModeList model={model} modes={sequenceModeNames.filter(isGenomic)} />
       <Typography>
         The <MoreVert fontSize="small" /> menu copies or downloads the sequence
-        as FASTA or HTML, reverse-complements the genomic types, shows
-        coordinates, and opens Settings, where you set the intron and
-        up/downstream bases, the bases per row and the capitalization.
+        as FASTA or HTML, reverse-complements the genomic types and shows
+        coordinates. Its sliders set the intron and up/downstream bases for the
+        types that name them, and the bases per row while coordinates show.
       </Typography>
       <Typography>
         Copy HTML keeps the colors, so it pastes into a word processor but not

@@ -29,10 +29,11 @@ The dropdown at the top of the panel picks the type:
 - **Genomic w/ Nbp intron +/- Nbp up+down stream:** the splice-site flanks plus
   the upstream and downstream extension
 
-The gear icon sets the up/downstream extension (100bp by default) and the intron
-flank (10bp).
+With one of those types picked, the panel's ⋮ menu offers a **Flanking bases**
+or **Intron bases** slider (100bp and 10bp by default), and the type's name
+follows it.
 
-<Figure caption="The sequence panel for SELENOP, colored by region: flanks red, UTR blue, CDS yellow, introns white." src="/img/feature_detail_sequence.png" />
+<Figure caption="The sequence panel for HBB, colored by region: flanks red, UTR blue, CDS yellow, introns white." src="/img/feature_detail_sequence.png" />
 
 Selecting the **Protein** type highlights (amber) any residue whose translation
 a `transl_except` attribute overrides, and summarizes the overrides in a legend.
@@ -41,14 +42,15 @@ as `transl_except=(...,aa:Sec)` and translate to selenocysteine (U).
 
 <Figure caption="SELENOP's translation, the transl_except residues highlighted amber." src="/img/feature_detail_protein.png" />
 
-<Figure caption="The sequence type dropdown set to Genomic w/ full introns +/- 100bp up+down stream." src="/img/upstream_downstream_details.png" />
+<Figure caption="The sequence type set to Genomic w/ full introns +/- 100bp up+down stream, with the ⋮ menu's Flanking bases slider open." src="/img/upstream_downstream_details.png" />
 
 <Video src="/media/ui/feature_sequence_types.mp4" caption="A transcript's feature sequence with three types taken from the dropdown in turn." />
 
 ## Other feature types
 
 For other features, **Show feature sequence** shows the sequence under the
-feature as one span, and the gear icon sets the number of flanking bases.
+feature as one span. **Genomic +/- Nbp up+down stream** adds flanking bases, and
+the ⋮ menu's **Flanking bases** slider sets how many.
 
 ## See also
 

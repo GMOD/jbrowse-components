@@ -448,6 +448,11 @@ export const featuresSpecs: ScreenshotSpec[] = [
         type: 'click',
         text: 'Genomic w/ full introns +/- 100bp up+down stream',
       },
+      { type: 'click', selector: '[aria-label="Sequence options"]' },
+      {
+        type: 'hover',
+        selector: '[data-testid="cascading-submenu-flanking_bases"]',
+      },
     ],
   },
 
