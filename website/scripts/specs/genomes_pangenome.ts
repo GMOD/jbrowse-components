@@ -47,7 +47,7 @@ export function portalGraphLaunch({
           },
           graphTrack('hprc_minigraph_segments', {
             layoutMode,
-            color: { field: 'position' },
+            encoding: { color: { field: 'position' } },
             paneHeight: 320,
           }),
         ],

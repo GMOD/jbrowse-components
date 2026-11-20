@@ -482,7 +482,7 @@ export const mafSpecs: ScreenshotSpec[] = [
             graphTrack('hprc_minigraph_segments', {
               layoutMode: 'force',
               paneHeight: 600,
-              color: { field: 'position' },
+              encoding: { color: { field: 'position' } },
               layers: { bubbles: false },
             }),
           ],

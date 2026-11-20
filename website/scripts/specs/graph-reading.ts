@@ -71,10 +71,14 @@ function kiv2WalksGraphTrack(pane: Record<string, unknown> = {}) {
   return graphTrack(LANES_TRACK, {
     subgraphHaplotypes: KIV2_HAPLOTYPES,
     layoutMode: 'force',
-    color: {
-      field: 'position',
-      domainMin: KIV2_BUBBLE_REGION.start,
-      domainMax: KIV2_BUBBLE_REGION.end,
+    encoding: {
+      color: {
+        field: 'position',
+        scale: {
+          domainMin: KIV2_BUBBLE_REGION.start,
+          domainMax: KIV2_BUBBLE_REGION.end,
+        },
+      },
     },
     // At proportional length the 11-105 kb private copies set the frame.
     bubbleSpread: 'compress',

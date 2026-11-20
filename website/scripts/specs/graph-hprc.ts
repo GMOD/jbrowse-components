@@ -416,7 +416,7 @@ export const hprcGraphSpecs: ScreenshotSpec[] = [
               layoutMode: 'force',
               // 600 left 200 px blank between the legend and the drawing
               paneHeight: 440,
-              color: { field: 'position' },
+              encoding: { color: { field: 'position' } },
               maxRegionBp: cutNear(70_000),
               // a route chip sat over the C4A junction
               layers: { bubbles: false },
@@ -537,7 +537,7 @@ export const hprcGraphSpecs: ScreenshotSpec[] = [
             graphTrack(SEGMENTS_TRACK, {
               layoutMode: 'force',
               paneHeight: 600,
-              color: { field: 'position' },
+              encoding: { color: { field: 'position' } },
               layers: { bubbles: true },
               maxRegionBp: cutNear(130_000),
             }),
@@ -600,7 +600,7 @@ export const hprcGraphSpecs: ScreenshotSpec[] = [
             graphTrack(SEGMENTS_TRACK, {
               layoutMode: 'force',
               paneHeight: 600,
-              color: { field: 'position' },
+              encoding: { color: { field: 'position' } },
               maxRegionBp: cutNear(60_000),
             }),
           ],
@@ -961,7 +961,9 @@ export const hprcGraphSpecs: ScreenshotSpec[] = [
             'hprc_minigraph_bubbles',
             'hprc_bubble_score',
             // the tutorial's config names no layout, so this is the default
-            graphTrack(SEGMENTS_TRACK, { color: { field: 'position' } }),
+            graphTrack(SEGMENTS_TRACK, {
+              encoding: { color: { field: 'position' } },
+            }),
           ],
         },
       ],
