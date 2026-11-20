@@ -368,7 +368,7 @@ route through every bubble; see
 - [taffy](https://github.com/ComparativeGenomicsToolkit/taffy), which writes the
   `.tai` index that makes the alignment addressable by locus.
 - [ggbandage](https://github.com/GMOD/ggbandage), which draws
-  [the C4 graph](https://github.com/GMOD/ggbandage/blob/main/docs/gallery.md#c4a-and-c4b-in-the-stress-layout)
+  [the C4 graph](https://github.com/GMOD/ggbandage/blob/main/docs/gallery.md#c4a-and-c4b-force-directed-with-their-genes)
   from the same hosted files as ggplot2 layers in R.
 - [ggtubemap](https://github.com/GMOD/ggtubemap), which draws
   [HLA-A's haplotypes](https://github.com/GMOD/ggtubemap#from-a-walk-file) as a
