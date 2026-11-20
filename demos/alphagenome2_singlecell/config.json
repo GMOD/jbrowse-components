@@ -1,0 +1,632 @@
+{
+  "assemblies": [
+    {
+      "name": "hg38",
+      "displayName": "Human (hg38)",
+      "sequence": {
+        "type": "ReferenceSequenceTrack",
+        "trackId": "hg38-refseq",
+        "metadata": {
+          "description": "Dec. 2013 (GRCh38/hg38)",
+          "nibPath": "/gbdb/hg38",
+          "organism": "Human",
+          "defaultPos": "chr7:155799529-155812871",
+          "active": 1,
+          "orderKey": 50,
+          "genome": "Human",
+          "scientificName": "Homo sapiens",
+          "htmlPath": "/gbdb/hg38/html/description.html",
+          "hgNearOk": 1,
+          "hgPbOk": 0,
+          "sourceName": "GRCh38 Genome Reference Consortium Human Reference 38 (GCA_000001405.15)",
+          "taxId": 9606,
+          "id": "hg38",
+          "name": "hg38",
+          "accession": "hg38",
+          "commonName": "Human",
+          "jbrowseConfig": "https://jbrowse.org/ucsc/hg38/config.json",
+          "jbrowseMinimalConfig": "https://jbrowse.org/ucsc/hg38/minimal.json",
+          "blatDb": "hg38"
+        },
+        "adapter": {
+          "type": "TwoBitAdapter",
+          "uri": "https://hgdownload.soe.ucsc.edu/goldenPath/hg38/bigZips/hg38.2bit",
+          "chromSizes": "https://jbrowse.org/ucsc/hg38/hg38.chrom.sizes"
+        }
+      },
+      "refNameAliases": {
+        "adapter": {
+          "type": "RefNameAliasAdapter",
+          "uri": "https://jbrowse.org/ucsc/hg38/hg38.chromAlias.txt"
+        }
+      },
+      "cytobands": {
+        "adapter": {
+          "type": "CytobandAdapter",
+          "uri": "https://jbrowse.org/ucsc/hg38/hg38.cytoBand.txt.gz"
+        }
+      },
+      "circularRefNames": ["chrM"],
+      "geneticCodes": {
+        "chrM": 2
+      },
+      "transmission": [
+        {
+          "refName": "chrX",
+          "sex": "male",
+          "from": "mother"
+        },
+        {
+          "refName": "chrY",
+          "sex": "male",
+          "from": "father"
+        },
+        {
+          "refName": "chrM",
+          "from": "either"
+        }
+      ]
+    }
+  ],
+  "tracks": [
+    {
+      "type": "FeatureTrack",
+      "trackId": "hg38-ncbiRefSeqCurated",
+      "name": "NCBI RefSeq - RefSeq Curated",
+      "assemblyNames": ["hg38"],
+      "adapter": {
+        "type": "Gff3TabixAdapter",
+        "gffGzLocation": {
+          "uri": "https://jbrowse.org/ucsc/hg38/ncbiRefSeqCurated.gff.gz"
+        },
+        "index": {
+          "indexType": "CSI",
+          "location": {
+            "uri": "https://jbrowse.org/ucsc/hg38/ncbiRefSeqCurated.gff.gz.csi"
+          }
+        }
+      },
+      "metadata": {
+        "ucsc": {
+          "baseColorDefault": "genomicCodons",
+          "baseColorUseCds": "given",
+          "color": "12,12,120",
+          "idXref": "ncbiRefSeqLink mrnaAcc name",
+          "longLabel": "NCBI RefSeq genes, curated subset (NM_*, NR_*, NP_* or YP_*)",
+          "parent": "refSeqComposite on",
+          "priority": "2",
+          "shortLabel": "RefSeq Curated",
+          "track": "ncbiRefSeqCurated"
+        },
+        "differsFromUcsc": {
+          "note": "UCSC's table has no NCBI transcript attributes. Where a transcript's accession.version, span and exons match NCBI's GFF3 exactly, this track adds NCBI's feature type, tag (MANE Select, RefSeq Select), exception and transl_except. JBrowse picks a gene's representative isoform by that tag and translates selenocysteine through transl_except, so those transcripts can draw and translate differently than in the UCSC Genome Browser.",
+          "ncbiAnnotationSource": "NCBI RefSeq GCF_000001405.40-RS_2025_08",
+          "ncbiAnnotationDate": "2025-08-01",
+          "matchedTranscripts": "104996 of 105019"
+        }
+      },
+      "description": "NCBI RefSeq genes, curated subset (NM_*, NR_*, NP_* or YP_*) (differs from UCSC: NCBI's tags and transl_except added where transcripts match NCBI's annotation)",
+      "category": ["Genes and Gene Predictions"]
+    },
+    {
+      "type": "MultiQuantitativeTrack",
+      "trackId": "pbmc5k_scatac_pseudobulk_hg38",
+      "name": "Single-cell ATAC pseudobulk by cell type (10x 5k PBMC, SnapATAC2)",
+      "category": ["Single cell"],
+      "assemblyNames": ["hg38"],
+      "adapter": {
+        "type": "MultiWiggleAdapter",
+        "subadapters": [
+          {
+            "type": "BigWigAdapter",
+            "name": "CD4 Naive",
+            "group": "T cell",
+            "color": "#ff7f0e",
+            "bigWigLocation": {
+              "uri": "https://jbrowse.org/demos/scatac_pbmc5k/CD4_Naive.bw"
+            }
+          },
+          {
+            "type": "BigWigAdapter",
+            "name": "CD4 Memory",
+            "group": "T cell",
+            "color": "#1f77b4",
+            "bigWigLocation": {
+              "uri": "https://jbrowse.org/demos/scatac_pbmc5k/CD4_Memory.bw"
+            }
+          },
+          {
+            "type": "BigWigAdapter",
+            "name": "CD8 Naive",
+            "group": "T cell",
+            "color": "#d62728",
+            "bigWigLocation": {
+              "uri": "https://jbrowse.org/demos/scatac_pbmc5k/CD8_Naive.bw"
+            }
+          },
+          {
+            "type": "BigWigAdapter",
+            "name": "CD8 Memory",
+            "group": "T cell",
+            "color": "#279e68",
+            "bigWigLocation": {
+              "uri": "https://jbrowse.org/demos/scatac_pbmc5k/CD8_Memory.bw"
+            }
+          },
+          {
+            "type": "BigWigAdapter",
+            "name": "MAIT",
+            "group": "T cell",
+            "color": "#e377c2",
+            "bigWigLocation": {
+              "uri": "https://jbrowse.org/demos/scatac_pbmc5k/MAIT.bw"
+            }
+          },
+          {
+            "type": "BigWigAdapter",
+            "name": "NK",
+            "group": "NK",
+            "color": "#17becf",
+            "bigWigLocation": {
+              "uri": "https://jbrowse.org/demos/scatac_pbmc5k/NK.bw"
+            }
+          },
+          {
+            "type": "BigWigAdapter",
+            "name": "Naive B",
+            "group": "B cell",
+            "color": "#aec7e8",
+            "bigWigLocation": {
+              "uri": "https://jbrowse.org/demos/scatac_pbmc5k/Naive_B.bw"
+            }
+          },
+          {
+            "type": "BigWigAdapter",
+            "name": "Memory B",
+            "group": "B cell",
+            "color": "#b5bd61",
+            "bigWigLocation": {
+              "uri": "https://jbrowse.org/demos/scatac_pbmc5k/Memory_B.bw"
+            }
+          },
+          {
+            "type": "BigWigAdapter",
+            "name": "CD14 Mono",
+            "group": "Myeloid",
+            "color": "#aa40fc",
+            "bigWigLocation": {
+              "uri": "https://jbrowse.org/demos/scatac_pbmc5k/CD14_Mono.bw"
+            }
+          },
+          {
+            "type": "BigWigAdapter",
+            "name": "CD16 Mono",
+            "group": "Myeloid",
+            "color": "#8c564b",
+            "bigWigLocation": {
+              "uri": "https://jbrowse.org/demos/scatac_pbmc5k/CD16_Mono.bw"
+            }
+          },
+          {
+            "type": "BigWigAdapter",
+            "name": "cDC",
+            "group": "Myeloid",
+            "color": "#ffbb78",
+            "bigWigLocation": {
+              "uri": "https://jbrowse.org/demos/scatac_pbmc5k/cDC.bw"
+            }
+          },
+          {
+            "type": "BigWigAdapter",
+            "name": "pDC",
+            "group": "Myeloid",
+            "color": "#98df8a",
+            "bigWigLocation": {
+              "uri": "https://jbrowse.org/demos/scatac_pbmc5k/pDC.bw"
+            }
+          }
+        ]
+      },
+      "displays": [
+        {
+          "type": "LinearWiggleDisplay",
+          "displayId": "pbmc5k_scatac_pseudobulk_hg38-LinearWiggleDisplay",
+          "mark": "bar",
+          "height": 400
+        }
+      ]
+    },
+    {
+      "type": "VariantTrack",
+      "trackId": "ets2_ibd_credible_set",
+      "name": "IBD credible set at chr21q22",
+      "assemblyNames": ["hg38"],
+      "adapter": {
+        "type": "VcfTabixAdapter",
+        "uri": "https://jbrowse.org/demos/alphagenome2_singlecell/ets2/credible_set.vcf.gz"
+      }
+    },
+    {
+      "type": "MultiQuantitativeTrack",
+      "trackId": "ag2_ets2_expression_by_cell_type",
+      "name": "rs2836882 effect on expression, by ileum cell type",
+      "category": ["AlphaGenome 2"],
+      "assemblyNames": ["hg38"],
+      "adapter": {
+        "type": "MultiWiggleAdapter",
+        "subadapters": [
+          {
+            "type": "BigWigAdapter",
+            "name": "Macrophage",
+            "group": "Myeloid",
+            "color": "#d62728",
+            "uri": "https://jbrowse.org/demos/alphagenome2_singlecell/ets2/expression_effect_Macrophage.bw"
+          },
+          {
+            "type": "BigWigAdapter",
+            "name": "Monocyte",
+            "group": "Myeloid",
+            "color": "#ff7f0e",
+            "uri": "https://jbrowse.org/demos/alphagenome2_singlecell/ets2/expression_effect_Monocyte.bw"
+          },
+          {
+            "type": "BigWigAdapter",
+            "name": "B cell",
+            "group": "Lymphoid",
+            "color": "#1f77b4",
+            "uri": "https://jbrowse.org/demos/alphagenome2_singlecell/ets2/expression_effect_B_cell.bw"
+          },
+          {
+            "type": "BigWigAdapter",
+            "name": "CD4 T",
+            "group": "Lymphoid",
+            "color": "#17becf",
+            "uri": "https://jbrowse.org/demos/alphagenome2_singlecell/ets2/expression_effect_CD4_T.bw"
+          },
+          {
+            "type": "BigWigAdapter",
+            "name": "CD8 T",
+            "group": "Lymphoid",
+            "color": "#2ca02c",
+            "uri": "https://jbrowse.org/demos/alphagenome2_singlecell/ets2/expression_effect_CD8_T.bw"
+          },
+          {
+            "type": "BigWigAdapter",
+            "name": "Treg",
+            "group": "Lymphoid",
+            "color": "#9467bd",
+            "uri": "https://jbrowse.org/demos/alphagenome2_singlecell/ets2/expression_effect_Treg.bw"
+          },
+          {
+            "type": "BigWigAdapter",
+            "name": "NK",
+            "group": "Lymphoid",
+            "color": "#8c564b",
+            "uri": "https://jbrowse.org/demos/alphagenome2_singlecell/ets2/expression_effect_NK.bw"
+          }
+        ]
+      },
+      "displayDefaults": {
+        "mark": "bar",
+        "height": 240,
+        "encoding": {
+          "y": {
+            "scale": {
+              "domainMin": -0.3,
+              "domainMax": 0.3
+            },
+            "axis": {
+              "title": "log fold change"
+            }
+          }
+        }
+      }
+    },
+    {
+      "type": "MultiQuantitativeTrack",
+      "trackId": "ag2_ets2_macrophage_by_snp",
+      "name": "Macrophage expression effect, by credible-set SNP",
+      "category": ["AlphaGenome 2"],
+      "assemblyNames": ["hg38"],
+      "adapter": {
+        "type": "MultiWiggleAdapter",
+        "subadapters": [
+          {
+            "type": "BigWigAdapter",
+            "name": "rs4817986",
+            "group": "Credible set",
+            "color": "#7f7f7f",
+            "uri": "https://jbrowse.org/demos/alphagenome2_singlecell/ets2/macrophage_effect_rs4817986.bw"
+          },
+          {
+            "type": "BigWigAdapter",
+            "name": "rs2836878",
+            "group": "Credible set",
+            "color": "#7f7f7f",
+            "uri": "https://jbrowse.org/demos/alphagenome2_singlecell/ets2/macrophage_effect_rs2836878.bw"
+          },
+          {
+            "type": "BigWigAdapter",
+            "name": "rs4817987",
+            "group": "Credible set",
+            "color": "#7f7f7f",
+            "uri": "https://jbrowse.org/demos/alphagenome2_singlecell/ets2/macrophage_effect_rs4817987.bw"
+          },
+          {
+            "type": "BigWigAdapter",
+            "name": "rs2836881",
+            "group": "Credible set",
+            "color": "#7f7f7f",
+            "uri": "https://jbrowse.org/demos/alphagenome2_singlecell/ets2/macrophage_effect_rs2836881.bw"
+          },
+          {
+            "type": "BigWigAdapter",
+            "name": "rs9808651",
+            "group": "Credible set",
+            "color": "#7f7f7f",
+            "uri": "https://jbrowse.org/demos/alphagenome2_singlecell/ets2/macrophage_effect_rs9808651.bw"
+          },
+          {
+            "type": "BigWigAdapter",
+            "name": "rs2836882",
+            "group": "Credible set",
+            "color": "#d62728",
+            "uri": "https://jbrowse.org/demos/alphagenome2_singlecell/ets2/macrophage_effect_rs2836882.bw"
+          },
+          {
+            "type": "BigWigAdapter",
+            "name": "rs2836883",
+            "group": "Credible set",
+            "color": "#7f7f7f",
+            "uri": "https://jbrowse.org/demos/alphagenome2_singlecell/ets2/macrophage_effect_rs2836883.bw"
+          }
+        ]
+      },
+      "displayDefaults": {
+        "mark": "bar",
+        "height": 240,
+        "encoding": {
+          "y": {
+            "scale": {
+              "domainMin": -0.3,
+              "domainMax": 0.3
+            },
+            "axis": {
+              "title": "log fold change"
+            }
+          }
+        }
+      }
+    },
+    {
+      "type": "MultiQuantitativeTrack",
+      "trackId": "ag2_ets2_atac_reference",
+      "name": "Predicted scATAC, risk allele (imputed)",
+      "category": ["AlphaGenome 2"],
+      "assemblyNames": ["hg38"],
+      "adapter": {
+        "type": "MultiWiggleAdapter",
+        "subadapters": [
+          {
+            "type": "BigWigAdapter",
+            "name": "Macrophage",
+            "group": "Myeloid",
+            "color": "#d62728",
+            "uri": "https://jbrowse.org/demos/alphagenome2_singlecell/ets2/atac_reference_Macrophage.bw"
+          },
+          {
+            "type": "BigWigAdapter",
+            "name": "Monocyte",
+            "group": "Myeloid",
+            "color": "#ff7f0e",
+            "uri": "https://jbrowse.org/demos/alphagenome2_singlecell/ets2/atac_reference_Monocyte.bw"
+          },
+          {
+            "type": "BigWigAdapter",
+            "name": "B cell",
+            "group": "Lymphoid",
+            "color": "#1f77b4",
+            "uri": "https://jbrowse.org/demos/alphagenome2_singlecell/ets2/atac_reference_B_cell.bw"
+          },
+          {
+            "type": "BigWigAdapter",
+            "name": "CD4 T",
+            "group": "Lymphoid",
+            "color": "#17becf",
+            "uri": "https://jbrowse.org/demos/alphagenome2_singlecell/ets2/atac_reference_CD4_T.bw"
+          },
+          {
+            "type": "BigWigAdapter",
+            "name": "CD8 T",
+            "group": "Lymphoid",
+            "color": "#2ca02c",
+            "uri": "https://jbrowse.org/demos/alphagenome2_singlecell/ets2/atac_reference_CD8_T.bw"
+          },
+          {
+            "type": "BigWigAdapter",
+            "name": "Treg",
+            "group": "Lymphoid",
+            "color": "#9467bd",
+            "uri": "https://jbrowse.org/demos/alphagenome2_singlecell/ets2/atac_reference_Treg.bw"
+          },
+          {
+            "type": "BigWigAdapter",
+            "name": "NK",
+            "group": "Lymphoid",
+            "color": "#8c564b",
+            "uri": "https://jbrowse.org/demos/alphagenome2_singlecell/ets2/atac_reference_NK.bw"
+          }
+        ]
+      },
+      "displayDefaults": {
+        "mark": "bar",
+        "height": 240
+      }
+    },
+    {
+      "type": "MultiQuantitativeTrack",
+      "trackId": "ag2_ets2_atac_change",
+      "name": "Predicted scATAC change, protective minus risk (imputed)",
+      "category": ["AlphaGenome 2"],
+      "assemblyNames": ["hg38"],
+      "adapter": {
+        "type": "MultiWiggleAdapter",
+        "subadapters": [
+          {
+            "type": "BigWigAdapter",
+            "name": "Macrophage",
+            "group": "Myeloid",
+            "color": "#d62728",
+            "uri": "https://jbrowse.org/demos/alphagenome2_singlecell/ets2/atac_change_Macrophage.bw"
+          },
+          {
+            "type": "BigWigAdapter",
+            "name": "Monocyte",
+            "group": "Myeloid",
+            "color": "#ff7f0e",
+            "uri": "https://jbrowse.org/demos/alphagenome2_singlecell/ets2/atac_change_Monocyte.bw"
+          },
+          {
+            "type": "BigWigAdapter",
+            "name": "B cell",
+            "group": "Lymphoid",
+            "color": "#1f77b4",
+            "uri": "https://jbrowse.org/demos/alphagenome2_singlecell/ets2/atac_change_B_cell.bw"
+          },
+          {
+            "type": "BigWigAdapter",
+            "name": "CD4 T",
+            "group": "Lymphoid",
+            "color": "#17becf",
+            "uri": "https://jbrowse.org/demos/alphagenome2_singlecell/ets2/atac_change_CD4_T.bw"
+          },
+          {
+            "type": "BigWigAdapter",
+            "name": "CD8 T",
+            "group": "Lymphoid",
+            "color": "#2ca02c",
+            "uri": "https://jbrowse.org/demos/alphagenome2_singlecell/ets2/atac_change_CD8_T.bw"
+          },
+          {
+            "type": "BigWigAdapter",
+            "name": "Treg",
+            "group": "Lymphoid",
+            "color": "#9467bd",
+            "uri": "https://jbrowse.org/demos/alphagenome2_singlecell/ets2/atac_change_Treg.bw"
+          },
+          {
+            "type": "BigWigAdapter",
+            "name": "NK",
+            "group": "Lymphoid",
+            "color": "#8c564b",
+            "uri": "https://jbrowse.org/demos/alphagenome2_singlecell/ets2/atac_change_NK.bw"
+          }
+        ]
+      },
+      "displayDefaults": {
+        "mark": "bar",
+        "height": 240
+      }
+    },
+    {
+      "type": "MultiQuantitativeTrack",
+      "trackId": "ag2_pbmc_scatac_predicted",
+      "name": "AlphaGenome 2 predicted scATAC, PBMC cell types (marker loci)",
+      "category": ["AlphaGenome 2"],
+      "assemblyNames": ["hg38"],
+      "adapter": {
+        "type": "MultiWiggleAdapter",
+        "subadapters": [
+          {
+            "type": "BigWigAdapter",
+            "name": "CD4 Naive",
+            "group": "T cell",
+            "color": "#ff7f0e",
+            "uri": "https://jbrowse.org/demos/alphagenome2_singlecell/pbmc/CD4_Naive.bw"
+          },
+          {
+            "type": "BigWigAdapter",
+            "name": "CD4 Memory",
+            "group": "T cell",
+            "color": "#1f77b4",
+            "uri": "https://jbrowse.org/demos/alphagenome2_singlecell/pbmc/CD4_Memory.bw"
+          },
+          {
+            "type": "BigWigAdapter",
+            "name": "CD8 Naive",
+            "group": "T cell",
+            "color": "#d62728",
+            "uri": "https://jbrowse.org/demos/alphagenome2_singlecell/pbmc/CD8_Naive.bw"
+          },
+          {
+            "type": "BigWigAdapter",
+            "name": "CD8 Memory",
+            "group": "T cell",
+            "color": "#279e68",
+            "uri": "https://jbrowse.org/demos/alphagenome2_singlecell/pbmc/CD8_Memory.bw"
+          },
+          {
+            "type": "BigWigAdapter",
+            "name": "MAIT",
+            "group": "T cell",
+            "color": "#e377c2",
+            "uri": "https://jbrowse.org/demos/alphagenome2_singlecell/pbmc/MAIT.bw"
+          },
+          {
+            "type": "BigWigAdapter",
+            "name": "NK",
+            "group": "NK",
+            "color": "#17becf",
+            "uri": "https://jbrowse.org/demos/alphagenome2_singlecell/pbmc/NK.bw"
+          },
+          {
+            "type": "BigWigAdapter",
+            "name": "Naive B",
+            "group": "B cell",
+            "color": "#aec7e8",
+            "uri": "https://jbrowse.org/demos/alphagenome2_singlecell/pbmc/Naive_B.bw"
+          },
+          {
+            "type": "BigWigAdapter",
+            "name": "Memory B",
+            "group": "B cell",
+            "color": "#b5bd61",
+            "uri": "https://jbrowse.org/demos/alphagenome2_singlecell/pbmc/Memory_B.bw"
+          },
+          {
+            "type": "BigWigAdapter",
+            "name": "CD14 Mono",
+            "group": "Myeloid",
+            "color": "#aa40fc",
+            "uri": "https://jbrowse.org/demos/alphagenome2_singlecell/pbmc/CD14_Mono.bw"
+          },
+          {
+            "type": "BigWigAdapter",
+            "name": "CD16 Mono",
+            "group": "Myeloid",
+            "color": "#8c564b",
+            "uri": "https://jbrowse.org/demos/alphagenome2_singlecell/pbmc/CD16_Mono.bw"
+          },
+          {
+            "type": "BigWigAdapter",
+            "name": "cDC",
+            "group": "Myeloid",
+            "color": "#ffbb78",
+            "uri": "https://jbrowse.org/demos/alphagenome2_singlecell/pbmc/cDC.bw"
+          },
+          {
+            "type": "BigWigAdapter",
+            "name": "pDC",
+            "group": "Myeloid",
+            "color": "#98df8a",
+            "uri": "https://jbrowse.org/demos/alphagenome2_singlecell/pbmc/pDC.bw"
+          }
+        ]
+      },
+      "displayDefaults": {
+        "mark": "bar",
+        "height": 300
+      }
+    }
+  ]
+}
