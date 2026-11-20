@@ -83,6 +83,6 @@ test('keeps a headerless file whose chrom column looks like a header', async () 
 test('refuses a declared header with no r² or D′ column', async () => {
   const adapter = makeAdapter('./test_data/signed_r.ld.gz')
   await expect(adapter.getHeader()).rejects.toThrow(
-    /Expected at least R2 or DP column/,
+    /Expected at least R2 or DP column.*`plink --r2`/,
   )
 })

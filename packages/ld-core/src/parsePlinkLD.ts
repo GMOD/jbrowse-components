@@ -76,9 +76,11 @@ export function parsePlinkLDHeader(headerLine: string): PlinkLDHeader {
     )
   }
 
+  // A signed r (`plink --r`, plink2's `--r-phased`) is refused rather than
+  // squared: the statistic drawn is the one plink wrote.
   if (r2Idx === -1 && dprimeIdx === -1) {
     throw new Error(
-      `Invalid PLINK LD header. Expected at least R2 or DP column. Got: ${columns.join(', ')}`,
+      `Invalid PLINK LD header. Expected at least R2 or DP column. Got: ${columns.join(', ')}. Write r² with \`plink --r2\` or \`plink2 --r2-phased\`, not the signed r of \`--r\` or \`--r-phased\``,
     )
   }
 
