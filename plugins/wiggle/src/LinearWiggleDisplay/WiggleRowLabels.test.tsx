@@ -12,6 +12,7 @@ test('the live row labels sit on the wash over the plot', () => {
           drawsRowLabels: true,
           rowAnnotationColors: [],
           rowColumnLabels: [],
+          rowSubtitles: new Map(),
         }}
         labelOffset={0}
       />
