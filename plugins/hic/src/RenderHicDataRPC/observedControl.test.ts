@@ -103,6 +103,38 @@ test('a pair the control lacks is left out', async () => {
   expect(data.pairRuns.map(run => run.region2Idx)).toEqual([1])
 })
 
+test('the key names only the normalizations of pairs that drew', async () => {
+  const contacts = twoPairs()
+  contacts.pairs[0]!.appliedNormalization = 'NONE'
+  contacts.appliedNormalizations = ['KR', 'NONE']
+  contacts.pairs[1]!.control = {
+    counts: Float32Array.of(3),
+    depth: 2,
+    controlDepth: 2,
+    contactsPerCount: 1,
+    controlContactsPerCount: 1,
+  }
+  const data = await render(contacts)
+  expect(data.appliedNormalizations).toEqual(['KR'])
+})
+
+test('where no pair drew, the key names what the file applied', async () => {
+  const contacts = twoPairs()
+  contacts.appliedNormalizations = ['KR', 'NONE']
+  contacts.pairs[1]!.control = {
+    counts: Float32Array.of(3),
+    depth: 2,
+    controlDepth: 2,
+    contactsPerCount: 1,
+    controlContactsPerCount: 1,
+  }
+  const data = await render(contacts, {
+    floors: { observed: { min: 100, strict: false } },
+  })
+  expect(data.numContacts).toBe(0)
+  expect(data.appliedNormalizations).toEqual(['KR', 'NONE'])
+})
+
 test('no control matrix at the binsize paints counts and says so', async () => {
   const data = await render(twoPairs())
   expect(data.appliedField).toBe('observed')

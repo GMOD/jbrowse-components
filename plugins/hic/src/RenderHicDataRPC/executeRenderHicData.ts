@@ -92,6 +92,7 @@ export async function executeRenderHicData({
   const resultRegions = buildResultRegions(regions, axisBlocks, binSize)
   const packed = new Float32Array(numContacts * INSTANCE_STRIDE_WORDS)
   const pairRuns: RegionPairRun[] = []
+  const drawnNormalizations = new Set<string>()
   let at = 0
 
   await withProgress(
@@ -105,6 +106,7 @@ export async function executeRenderHicData({
       const pack = ({
         region1Idx,
         region2Idx,
+        appliedNormalization,
         bin1,
         bin2,
         counts,
@@ -186,6 +188,7 @@ export async function executeRenderHicData({
           at++
         }
         if (at > start) {
+          drawnNormalizations.add(appliedNormalization)
           pairRuns.push({
             region1Idx,
             region2Idx,
@@ -212,6 +215,7 @@ export async function executeRenderHicData({
     at,
     quantile,
   )
+  const drawn = appliedNormalizations.filter(n => drawnNormalizations.has(n))
   const operands =
     observedOut && controlOut
       ? {
@@ -231,7 +235,7 @@ export async function executeRenderHicData({
       binWidth: w,
       originBp,
       binSize,
-      appliedNormalizations,
+      appliedNormalizations: drawn.length > 0 ? drawn : appliedNormalizations,
       appliedField,
       operands,
       regions: resultRegions,

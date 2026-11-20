@@ -93,8 +93,9 @@ export interface HicDataResult {
   /** the binsize this matrix was fetched at, in bp; hover loci read it */
   binSize: number
   /**
-   * What the file applied, the requested normalization first: each region
-   * pair falls back on its own, per binsize and per chromosome.
+   * What the drawn pairs carry, the requested normalization first: each region
+   * pair falls back on its own, per binsize and per chromosome, and a pair the
+   * worker leaves out names nothing. Where no pair drew, what the file applied.
    */
   appliedNormalizations: string[]
   /**
