@@ -1,6 +1,6 @@
 ---
 name: a-section-pick-is-a-show-set
-description: A grouped feature track hides sections with `facet.hidden`, which is layout-only, so a combined track narrowed to one source still fetches and density-counts all of them. A `facet.kept` show-set read in the worker fixes that but strands sections it never fetched until adapters list their sources. Read before adding a show-set to `facet`, or when "Too many features" survives a narrowed pick.
+description: A grouped feature track's `facet.hidden` is layout-only, so a narrowed combined track still fetches and density-counts every source; a worker-read `facet.kept` show-set fixes that but strands unfetched sections. Read before adding a show-set to `facet`, or when "Too many features" survives a narrowed pick.
 ---
 
 # A section pick is a show-set
