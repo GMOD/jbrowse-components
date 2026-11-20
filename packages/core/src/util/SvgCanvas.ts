@@ -58,22 +58,50 @@ function parseFont(font: string) {
 // SVG-compatible attributes. The default sans-serif family is left off so
 // feature labels match the raw-JSX <text> elements (ruler, scalebar, etc.),
 // which set no family either; an explicitly-set family is still emitted.
-function fontAttrs(font: string, scale: number) {
+function fontParts(font: string, scale: number) {
   const { prefix, size, family } = parseFont(font)
   const tokens = prefix.split(/\s+/).filter(Boolean)
-  const weight = tokens.find(
-    t => fontWeightTokens.has(t) || /^\d{1,4}$/.test(t),
-  )
-  const style = tokens.find(t => fontStyleTokens.has(t))
+  return {
+    size: Number(size) * scale,
+    family: family === 'sans-serif' ? '' : family,
+    weight: tokens.find(t => fontWeightTokens.has(t) || /^\d{1,4}$/.test(t)),
+    style: tokens.find(t => fontStyleTokens.has(t)),
+  }
+}
+
+function fontAttrs(font: string, scale: number) {
+  const { size, family, weight, style } = fontParts(font, scale)
   return [
-    ` font-size="${Number(size) * scale}"`,
-    family === '' || family === 'sans-serif'
-      ? ''
-      : ` font-family="${escapeXml(family)}"`,
+    ` font-size="${size}"`,
+    family ? ` font-family="${escapeXml(family)}"` : '',
     weight ? ` font-weight="${weight}"` : '',
     style ? ` font-style="${style}"` : '',
   ].join('')
 }
+
+// A tspan inherits its text's font, so it states each part that differs from
+// the text's, resetting one the text set and it does not.
+function tspanFontAttrs(font: string, parentFont: string, scale: number) {
+  const own = fontParts(font, scale)
+  const parent = fontParts(parentFont, scale)
+  return [
+    ` font-size="${own.size}"`,
+    own.family === parent.family
+      ? ''
+      : ` font-family="${escapeXml(own.family || 'sans-serif')}"`,
+    own.weight === parent.weight
+      ? ''
+      : ` font-weight="${own.weight ?? 'normal'}"`,
+    own.style === parent.style ? '' : ` font-style="${own.style ?? 'normal'}"`,
+  ].join('')
+}
+
+export interface TextRun {
+  text: string
+  font: string
+  fillStyle: string
+}
+
 /**
  * How far below `y` each Canvas2D `textBaseline` puts the alphabetic baseline,
  * in ems, as Chrome draws sans-serif: its em box runs 0.78em above the baseline
@@ -597,10 +625,9 @@ export class SvgCanvas {
 
   // Shared by fillText and strokeText: the halo pattern draws the same string
   // twice through both, so they must resolve the baseline identically.
-  private textY(y: number) {
+  private textY(y: number, font = this.font) {
     return (
-      y +
-      textBaselineShift(this.textBaseline, Number(parseFont(this.font).size))
+      y + textBaselineShift(this.textBaseline, Number(parseFont(font).size))
     )
   }
 
@@ -610,6 +637,29 @@ export class SvgCanvas {
     this.emit(
       `<text x="${tx}" y="${ty}" ${this.paintAttr('fill', this.fillStyle)}${fontAttrs(this.font, this.lengthScale)} text-anchor="${this.textAnchor()}">${escaped}</text>`,
     )
+  }
+
+  /**
+   * Sets `runs` as one line placed as `fillText` places one string, each run in
+   * its own font and fill after a space, so the renderer rather than a width
+   * measured in some other face puts each run after the last. The line's
+   * baseline is the first run's.
+   */
+  fillTextRuns(runs: readonly TextRun[], x: number, y: number) {
+    const [first, ...rest] = runs
+    if (first) {
+      const [tx, ty] = this.transformPoint(x, this.textY(y, first.font))
+      const scale = this.lengthScale
+      const tspans = rest
+        .map(
+          run =>
+            ` <tspan ${this.paintAttr('fill', run.fillStyle)}${tspanFontAttrs(run.font, first.font, scale)}>${escapeXml(run.text)}</tspan>`,
+        )
+        .join('')
+      this.emit(
+        `<text x="${tx}" y="${ty}" ${this.paintAttr('fill', first.fillStyle)}${fontAttrs(first.font, scale)} text-anchor="${this.textAnchor()}">${escapeXml(first.text)}${tspans}</text>`,
+      )
+    }
   }
 
   strokeText(text: string, x: number, y: number) {

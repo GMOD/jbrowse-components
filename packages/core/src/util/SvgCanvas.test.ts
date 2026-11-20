@@ -484,3 +484,74 @@ describe('measureText', () => {
     expect(ctx.measureText('MM').width).toBe(measureText('MM', 20))
   })
 })
+
+describe('fillTextRuns', () => {
+  const nameAndBadge = [
+    { text: 'ENST01', font: '11px sans-serif', fillStyle: '#000' },
+    { text: '+4 more', font: 'italic 9px sans-serif', fillStyle: '#1565c0' },
+  ]
+
+  test('sets the runs as one text, each later run a tspan after a space', () => {
+    const ctx = new SvgCanvas()
+    ctx.fillTextRuns(nameAndBadge, 10, 20)
+    expect(ctx.getSerializedSvg()).toContain(
+      '<text x="10" y="20" fill="#000" font-size="11" text-anchor="start">ENST01 <tspan fill="#1565c0" font-size="9" font-style="italic">+4 more</tspan></text>',
+    )
+  })
+
+  test('places the line as fillText would, by the first run', () => {
+    const runs = new SvgCanvas()
+    const single = new SvgCanvas()
+    for (const ctx of [runs, single]) {
+      ctx.translate(5, 100)
+      ctx.scale(2, 2)
+      ctx.textAlign = 'center'
+      ctx.textBaseline = 'middle'
+    }
+    runs.fillTextRuns(nameAndBadge, 10, 20)
+    single.font = '11px sans-serif'
+    single.fillText('ENST01', 10, 20)
+    const textTag = (ctx: SvgCanvas) =>
+      /<text[^>]*>/.exec(ctx.getSerializedSvg())?.[0]
+    expect(textTag(runs)).toBe(textTag(single))
+    expect(textTag(runs)).toContain('text-anchor="middle"')
+  })
+
+  test('a tspan resets the weight, style and family its text set and it does not', () => {
+    const ctx = new SvgCanvas()
+    ctx.fillTextRuns(
+      [
+        { text: 'a', font: 'bold italic 10px monospace', fillStyle: '#000' },
+        { text: 'b', font: '10px sans-serif', fillStyle: 'rgba(0,0,0,0.5)' },
+      ],
+      0,
+      0,
+    )
+    expect(ctx.getSerializedSvg()).toContain(
+      '<tspan fill="rgb(0,0,0)" fill-opacity="0.5" font-size="10" font-family="sans-serif" font-weight="normal" font-style="normal">b</tspan>',
+    )
+  })
+
+  test('leaves the context font and fill as they were', () => {
+    const ctx = new SvgCanvas()
+    ctx.font = 'bold 14px serif'
+    ctx.fillStyle = '#abcdef'
+    ctx.fillTextRuns(nameAndBadge, 0, 0)
+    expect(ctx.font).toBe('bold 14px serif')
+    expect(ctx.fillStyle).toBe('#abcdef')
+  })
+
+  test('escapes each run', () => {
+    const ctx = new SvgCanvas()
+    ctx.fillTextRuns(
+      [
+        { text: 'a<b', font: '10px sans-serif', fillStyle: '#000' },
+        { text: 'c&d', font: '10px sans-serif', fillStyle: '#000' },
+      ],
+      0,
+      0,
+    )
+    expect(ctx.getSerializedSvg()).toContain('a&lt;b <tspan')
+    expect(ctx.getSerializedSvg()).toContain('>c&amp;d</tspan>')
+  })
+})

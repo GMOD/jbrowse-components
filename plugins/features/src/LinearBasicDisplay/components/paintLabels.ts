@@ -9,33 +9,14 @@ import {
 import type { ResolvedLabel } from './labelPositioning.ts'
 import type { Ctx2D } from '@jbrowse/core/util/paintLayer'
 
-export interface TextRun {
-  text: string
-  font: string
-  fillStyle: string
-}
-
-/**
- * A context that can set pieces of text one after another in a single line,
- * each in its own font and fill and separated by a space, where the renderer
- * rather than a measured offset places each piece: an SVG `<text>` with a
- * `<tspan>` per piece after the first.
- */
-export interface TextRunCanvas {
-  fillTextRuns(runs: readonly TextRun[], x: number, y: number): void
-}
-
-function drawsTextRuns(ctx: Ctx2D): ctx is Ctx2D & TextRunCanvas {
-  return 'fillTextRuns' in ctx
-}
-
 /**
  * Owns `ctx.font` because the isoform badge draws smaller and italic, and only
  * assigns it when the kind changes: a real canvas re-resolves the face on every
  * assignment. `fontFamily` is an export's, which its overlay boxes are measured
  * in too. Where the context sets runs of text, a name and the badge after it
  * are one line, so a face wider than the one the badge's offset was measured
- * in cannot run the name into it.
+ * in cannot run the name into it: an SVG `<text>` with the badge in a
+ * `<tspan>`.
  */
 export function paintLabels(
   ctx: Ctx2D,
@@ -44,7 +25,7 @@ export function paintLabels(
   fontFamily = 'sans-serif',
 ) {
   const badgeFont = `italic ${fontSize * MORE_ISOFORMS_FONT_SCALE}px ${fontFamily}`
-  const runs = drawsTextRuns(ctx) ? ctx : undefined
+  const runs = 'fillTextRuns' in ctx ? ctx : undefined
   let curFont = ''
   const setFont = (font: string) => {
     if (font !== curFont) {
@@ -76,8 +57,6 @@ export function paintLabels(
     }
     // labelY is the label's top, so convert to the baseline fillText wants,
     // off the shared line's size so a smaller badge sits on the name's baseline.
-    // An explicit y rather than textBaseline='top', which SvgCanvas maps to
-    // dominant-baseline "hanging" and SVG consumers place inconsistently.
     const lineSize = resolved.kind === 'more' ? fontSize : resolved.fontSize
     const baselineY = Math.round(labelY + lineSize * LABEL_BASELINE_RATIO)
     const badge = labels[i + 1]
