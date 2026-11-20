@@ -16,7 +16,7 @@ gives each of its values a color with a key. Four fields are presets:
 `impact`, the most severe SnpEff/VEP consequence tier; `svType`, the
 structural-variant class; `phaseSet`, the FORMAT PS block, which paints
 only under `rows: 'haplotype'`; `mendelian`, the site's most severe call
-over the trios a pedigree names (`notInParents`, `inconsistent`,
+over the trios a pedigree names (`deNovoCandidate`, `mendelianViolation`,
 `consistent`), a site no trio settles keeping the default alt color.
 Any other field is read off the record — `INFO.CLNSIG`, `QUAL`, or a
 `jexl:` expression — and a numeric one cut into intervals by a `threshold`
@@ -76,7 +76,7 @@ A `field` named here paints through its own scale while `scale.type` is unset, a
 | `strand` | ordinal | `1`, `-1`, `0` | Forward strand, Reverse strand, No strand | `range`: `tomato`, `cornflowerblue`, `goldenrod` |
 | `svType` | ordinal | `DEL`, `DUP`, `INS`, `INV`, `CNV`, `TR`, `BND`, `CPX`, `OTHER` | Deletion, Duplication, Insertion, Inversion, Copy-number variable, Tandem repeat, Breakend / translocation, Complex, Other / mixed | `range`: `#e41a1c`, `#377eb8`, `#800080`, `#ff7f00`, `#7e6148`, `#e7298a`, `#17becf`, `#66a61e`, `#000000`; key "SV type" |
 | `impact` | ordinal | `HIGH`, `MODERATE`, `LOW`, `MODIFIER`, `Unannotated` |  | `range`: `#d32f2f`, `#f57c00`, `#fbc02d`, `#9e9e9e`, `#607d8b`; key "Consequence impact" |
-| `mendelian` | ordinal | `notInParents`, `inconsistent`, `consistent` | Not in parents, Inconsistent, Consistent | `range`: `#c2185b`, `#f57c00`, `#90a4ae`; key "Mendelian check" |
+| `mendelian` | ordinal | `deNovoCandidate`, `mendelianViolation`, `consistent` | De novo candidate, Mendelian violation, Consistent | `range`: `#c2185b`, `#f57c00`, `#90a4ae`; key "Mendelian check" |
 | `score` | linear |  |  |  |
 
 ## Config slots

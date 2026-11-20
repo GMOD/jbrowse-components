@@ -9392,13 +9392,14 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "x-closed": true,
       "properties": {
         "field": {
-          "description": "what one lane is: 'assembly', a lane per genome, or 'refName', a lane per contig holding a copy of the window, named '{<assembly>}<refName>' and answering to its genome's name.",
-          "default": "assembly",
+          "description": "what one lane is: 'assembly', a lane per genome, or 'refName', a lane per contig holding a copy of the window, named '{<assembly>}<refName>' and answering to its genome's name; 'auto' draws 'refName' where the track names at most one genome besides the anchor, else 'assembly'.",
+          "default": "auto",
           "if": {
             "type": "null"
           },
           "else": {
             "enum": [
+              "auto",
               "assembly",
               "refName"
             ]
@@ -12770,6 +12771,16 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
                 }
               }
             },
+            "subtitle": {
+              "description": "the row attribute drawn after each row's label as quieter text in parentheses: relationship by default, which a pedigreeLocation gives each related sample, as HG02024 (daughter); a row lacking it draws none, and '' turns it off.",
+              "default": "relationship",
+              "if": {
+                "type": "null"
+              },
+              "else": {
+                "$ref": "#/$defs/PlainString"
+              }
+            },
             "step": {
               "description": "row height in px, the rows that do not fit scrolling; or \\"fit\\" (the default) to divide the track height between the rows, as heightMode \\"fit\\" does on a feature track.",
               "default": "fit",
@@ -14374,6 +14385,16 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
                 "items": {
                   "$ref": "#/$defs/RowAnnotation"
                 }
+              }
+            },
+            "subtitle": {
+              "description": "the row attribute drawn after each row's label as quieter text in parentheses, as HG02024 (daughter) under relationship; a row lacking it draws none, and empty draws none.",
+              "default": "",
+              "if": {
+                "type": "null"
+              },
+              "else": {
+                "$ref": "#/$defs/PlainString"
               }
             }
           },
@@ -16518,6 +16539,16 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
                 }
               }
             },
+            "subtitle": {
+              "description": "the row attribute drawn after each row's label as quieter text in parentheses, as HG02024 (daughter) under relationship; a row lacking it draws none, and empty draws none.",
+              "default": "",
+              "if": {
+                "type": "null"
+              },
+              "else": {
+                "$ref": "#/$defs/PlainString"
+              }
+            },
             "step": {
               "description": "row height in px, the rows that do not fit scrolling; or \\"fit\\" (the default) to divide the track height between the rows, as heightMode \\"fit\\" does on a feature track.",
               "default": "fit",
@@ -17218,6 +17249,16 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
                 "items": {
                   "$ref": "#/$defs/RowAnnotation"
                 }
+              }
+            },
+            "subtitle": {
+              "description": "the row attribute drawn after each row's label as quieter text in parentheses, as HG02024 (daughter) under relationship; a row lacking it draws none, and empty draws none.",
+              "default": "",
+              "if": {
+                "type": "null"
+              },
+              "else": {
+                "$ref": "#/$defs/PlainString"
               }
             },
             "step": {

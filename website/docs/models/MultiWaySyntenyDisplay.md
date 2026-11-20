@@ -119,7 +119,7 @@ From [TrackHeightMixin](../trackheightmixin): <span id="volatile-scrolltop">[`sc
 | <span id="getter-lodtier">**lodTier**</span><br><code>LodTier</code> | read off the settled zoom, so a passing gesture refetches nothing |
 | <span id="getter-livelodtier">**liveLodTier**</span><br><code>LodTier</code> |  |
 | <span id="getter-viewsignature">**viewSignature**</span><br><code>string &#124; undefined</code> |  |
-| <span id="getter-lanefield">**laneField**</span><br><code>"assembly" &#124; "refName"</code> | `rows.field`: a lane per genome, or per copy of the window a genome holds |
+| <span id="getter-lanefield">**laneField**</span><br><code>"assembly" &#124; "refName"</code> | `rows.field` resolved: a lane per genome, or per copy of the window a genome holds |
 | <span id="getter-groupedfeatures">**groupedFeatures**</span><br><code>MultiWayGroup[]</code> |  |
 | <span id="getter-groups">**groups**</span><br><code>MultiWayGroup[]</code> | each mate filed under its genome's lane, or its copy lane |
 | <span id="getter-copylanesunderfloor">**copyLanesUnderFloor**</span><br><code>string[]</code> | the copy lanes the window places too little of to draw, which the lane dialog offers unticked |
@@ -283,6 +283,7 @@ From [BaseDisplay](../basedisplay): <span id="getter-parenttrack">[`parentTrack`
 | Member | Description |
 | --- | --- |
 | <span id="method-copyfiling">**copyFiling**</span><br><code>() =&gt; CopyLaneFiling</code> | how copy lanes file: `rows.kept` lifts the floor, and the anchor's own contigs file nowhere |
+| <span id="method-inwindow">**inWindow**</span><br><code>({ anchor }: MultiWayGroup) =&gt; boolean</code> | whether the settled viewport shows a group's anchor |
 | <span id="method-lanekey">**laneKey**</span><br><code>(lane: string) =&gt; string</code> | the canonical name, so two spellings of one lane share a key: a copy lane's assembly and refName each canonical, where the session holds its genome |
 | <span id="method-lanespellings">**laneSpellings**</span><br><code>(lane: string) =&gt; string[]</code> | the lane's genome and every alias the session holds it under |
 | <span id="method-namedlanetracks">**namedLaneTracks**</span><br><code>(entries: readonly string[], key: string) =&gt; AnyTrackConfig[]</code> | the tracks `entries` names for the lane keyed `key`, best first: plain ids, then `{assembly}` entries, each in entry order |

@@ -7082,6 +7082,10 @@ export const configManifest: ConfigManifest = {
               "liftsString": true
             },
             {
+              "name": "subtitle",
+              "type": "string"
+            },
+            {
               "name": "step",
               "type": "(number | \"fit\")"
             }
@@ -7970,6 +7974,10 @@ export const configManifest: ConfigManifest = {
                 "string": "field"
               },
               "liftsString": true
+            },
+            {
+              "name": "subtitle",
+              "type": "string"
             }
           ],
           "schema": "QuantitativeRows",
@@ -9840,6 +9848,10 @@ export const configManifest: ConfigManifest = {
               "liftsString": true
             },
             {
+              "name": "subtitle",
+              "type": "string"
+            },
+            {
               "name": "step",
               "type": "(number | \"fit\")"
             },
@@ -10841,6 +10853,10 @@ export const configManifest: ConfigManifest = {
                 "string": "field"
               },
               "liftsString": true
+            },
+            {
+              "name": "subtitle",
+              "type": "string"
             },
             {
               "name": "step",
@@ -11856,6 +11872,10 @@ export const configManifest: ConfigManifest = {
                 "string": "field"
               },
               "liftsString": true
+            },
+            {
+              "name": "subtitle",
+              "type": "string"
             },
             {
               "name": "step",
