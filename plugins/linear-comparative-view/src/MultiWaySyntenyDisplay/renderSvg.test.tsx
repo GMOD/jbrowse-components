@@ -282,7 +282,7 @@ test('the export draws lane headers and names in band ink over a band-ground hal
       }))
   for (const text of ['volvox_random', 'galF_mate']) {
     expect(drawn(text)).toEqual([
-      { stroke: bandGroundColor(), fill: undefined, font: undefined },
+      { stroke: bandGroundColor(), fill: 'none', font: undefined },
       { stroke: undefined, fill: bandInk().text, font: undefined },
     ])
   }

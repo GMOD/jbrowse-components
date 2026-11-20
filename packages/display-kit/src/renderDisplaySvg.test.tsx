@@ -148,13 +148,17 @@ describe('the y axis', () => {
       canvasWidthPx: { value: 806 },
     }) as TestDisplayModel
   }
+  // a haloed label is a stroke copy with no fill under the label itself
+  const labelTexts = (container: HTMLElement) => [
+    ...container.querySelectorAll('text:not([fill="none"])'),
+  ]
   const labelsOf = (container: HTMLElement) =>
-    [...container.querySelectorAll('text')].map(t => t.textContent)
+    labelTexts(container).map(t => t.textContent)
   // Absolute x of each tick label: `YScaleBar` grows its labels away from the
   // spine, so the local x is signed and only the enclosing translates make it
   // absolute.
   function labelXs(container: HTMLElement) {
-    return [...container.querySelectorAll('text')].map(t => {
+    return labelTexts(container).map(t => {
       let x = Number(t.getAttribute('x'))
       for (
         let node = t.parentElement;
@@ -256,7 +260,7 @@ describe('the y axis', () => {
       return {
         xs: labelXs(container),
         anchor: container
-          .querySelector('g[text-anchor]')
+          .querySelector('text[text-anchor]')
           ?.getAttribute('text-anchor'),
       }
     }
@@ -306,9 +310,7 @@ describe('the y axis', () => {
       axisHost([scale({ height: 100, bandTops: [0, 100], caption: 'TLEN' })]),
       [],
     )
-    const captions = [...container.querySelectorAll('text')].filter(
-      t => t.textContent === 'TLEN',
-    )
+    const captions = labelTexts(container).filter(t => t.textContent === 'TLEN')
     expect(captions).toHaveLength(1)
     expect(Number(captions[0]!.getAttribute('y'))).toBe(
       100 - measureText('TLEN', 10) / 2,

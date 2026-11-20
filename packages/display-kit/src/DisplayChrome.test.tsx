@@ -869,8 +869,11 @@ describe('the y axis', () => {
     ticks,
     ...over,
   })
+  // a haloed label is a stroke copy with no fill under the label itself
   const labelsOf = (container: HTMLElement) =>
-    [...container.querySelectorAll('text')].map(t => t.textContent)
+    [...container.querySelectorAll('text:not([fill="none"])')].map(
+      t => t.textContent,
+    )
   const overlays = (container: HTMLElement) =>
     [...container.querySelectorAll('svg')].map(svg => svg.style)
 
@@ -1002,9 +1005,9 @@ describe('the y axis', () => {
       }),
     )
     await findByTestId('probe-canvas')
-    const captions = [...container.querySelectorAll('text')].filter(
-      t => t.textContent === 'TLEN',
-    )
+    const captions = [
+      ...container.querySelectorAll('text:not([fill="none"])'),
+    ].filter(t => t.textContent === 'TLEN')
     expect(captions).toHaveLength(1)
     expect(Number(captions[0]!.getAttribute('y'))).toBe(
       100 - measureText('TLEN', 10) / 2,
