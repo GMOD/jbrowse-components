@@ -43,7 +43,11 @@ Amended 2026-11-20: a table row answers a click as a tree row does. Colin found
 the table's checkboxes showed no pointer and its names ignored a plain click.
 The name is a label for its row's checkbox, so a click on it shows or hides the
 track; the two modes share the Ctrl/Cmd-click handler, the hover and selection
-tints, and one checkbox glyph, the header's mixed state included.
+tints, and one checkbox glyph, the header's mixed state included. A table
+row's checkbox also shows its track through the tree row's call, which records
+it in Recent only once it shows; the table's show-all and a category's Show
+all record nothing, since Recent keeps ten tracks and one bulk show would push
+out every track picked by hand.
 
 Amended 2026-11-20, after a review of captures on the hosted hg38 hub: a tree
 the filter empties says "No tracks match the current search and filters" in the

@@ -1,6 +1,6 @@
 import { capitalizeFirst, coarseStripHTML } from '@jbrowse/core/util'
 
-export interface RowFields {
+interface RowFields {
   metadata?: Record<string, unknown>
   [key: string]: unknown
 }
@@ -33,6 +33,12 @@ export function getRowStr(facet: string, row: RowFields) {
     (isMetadataFacet(facet) ? row.metadata?.[bareFacet(facet)] : row[facet]) ??
     ''
   }`
+}
+
+// what a column sorts by: the text its cell shows, so a value wrapped in
+// markup does not sort under '<'
+export function sortKey(facet: string, row: RowFields) {
+  return coarseStripHTML(getRowStr(facet, row))
 }
 
 // Display label for a facet, shared by the grid column headers, the filter

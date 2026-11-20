@@ -14,6 +14,8 @@ import {
 import { useColumnResize } from './useColumnResize.ts'
 import { useVirtualRows } from './useVirtualRows.ts'
 
+import type { DraggedWidths } from './useColumnResize.ts'
+
 export interface VirtualTableColumn<R> {
   id: string
   header: string
@@ -72,6 +74,7 @@ const VirtualTable = observer(function VirtualTable<
   sortAscending = true,
   onSort,
   resetKey,
+  draggedWidths,
   scrollToRowId,
   emptyMessage,
   highlightPatterns = [],
@@ -98,6 +101,8 @@ const VirtualTable = observer(function VirtualTable<
   onSort?: (field: string, ascending: boolean) => void
   /** scrolls back to the top when it changes, as a sort change does */
   resetKey?: string
+  /** the widths dragged column edges keep, when they outlive the table */
+  draggedWidths?: DraggedWidths
   /**
    * the id of the row to bring into view, which happens when it changes and
    * not when a sort or a filter moves that row
@@ -124,6 +129,7 @@ const VirtualTable = observer(function VirtualTable<
     })
   const { colWidths, resized, resize, reset } = useColumnResize(
     widths((clientWidth || width) - leadingWidth),
+    draggedWidths,
   )
   const fills = (col: VirtualTableColumn<R>) =>
     col.fill && resized[col.id] === undefined

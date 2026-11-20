@@ -1,5 +1,6 @@
 import { useRef, useState } from 'react'
 
+import DelegatedTooltip from '@jbrowse/core/ui/DelegatedTooltip'
 import { alpha } from '@jbrowse/core/ui/palette'
 import { coarseStripHTML } from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
@@ -78,6 +79,7 @@ const FacetChips = observer(function FacetChips({
   const { classes } = useStyles()
   const [open, setOpen] = useState<{ el: HTMLElement; field?: string }>()
   const moreRef = useRef<HTMLDivElement>(null)
+  const popoverRef = useRef<HTMLDivElement>(null)
   const { filters, nonMetadataFieldSet } = table
   const kept = (field: string) => !omit.includes(field) || filters.has(field)
   const filterFacets = table.filterFacets.filter(kept)
@@ -115,7 +117,7 @@ const FacetChips = observer(function FacetChips({
               selected
                 ? () => {
                     table.setFilter(field, [])
-                    if (!table.leadingFacets.has(field)) {
+                    if (!table.chipFacets.filter(kept).includes(field)) {
                       if (table.moreFacets.some(kept)) {
                         moreRef.current?.focus()
                       } else {
@@ -162,7 +164,7 @@ const FacetChips = observer(function FacetChips({
           },
         }}
       >
-        <div className={classes.popover}>
+        <div ref={popoverRef} className={classes.popover}>
           {listed.map(field => (
             <FacetFilter
               key={field}
@@ -173,6 +175,7 @@ const FacetChips = observer(function FacetChips({
             />
           ))}
         </div>
+        <DelegatedTooltip containerRef={popoverRef} />
       </Popover>
     </div>
   ) : null

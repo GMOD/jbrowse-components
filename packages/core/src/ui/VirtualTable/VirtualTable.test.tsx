@@ -278,3 +278,38 @@ test('dragging a fill column gives it its width, the table stops stretching, and
   expect(tableEl.style.width).toBe('')
   expect(tableEl.style.minWidth).toBe('400px')
 })
+
+test('a dragged width the caller holds outlives the table', () => {
+  let held: Record<string, number> = {}
+  const table = () => (
+    <ThemeProvider theme={theme}>
+      <VirtualTable
+        rows={rows}
+        columns={[
+          { id: 'name', header: 'Name', fill: true, cell: row => row.name },
+          { id: 'id', header: 'Id', cell: row => row.id },
+        ]}
+        widths={() => ({ name: 300, id: 100 })}
+        draggedWidths={{
+          widths: held,
+          setWidths: widths => {
+            held = widths
+          },
+        }}
+        emptyMessage="none"
+      />
+    </ThemeProvider>
+  )
+  const first = render(table())
+  const handle = first.container.querySelector<HTMLElement>(
+    '[data-resize-handle]',
+  )!
+  handle.setPointerCapture = () => {}
+  fireEvent.pointerDown(handle, { clientX: 300, pointerId: 1, button: 0 })
+  fireEvent.pointerMove(handle, { clientX: 150, pointerId: 1 })
+  fireEvent.pointerUp(handle, { clientX: 150, pointerId: 1 })
+  first.unmount()
+
+  const second = render(table())
+  expect(second.container.querySelector('col')!.style.width).toBe('150px')
+})

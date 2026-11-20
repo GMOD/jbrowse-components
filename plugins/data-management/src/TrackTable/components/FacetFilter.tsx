@@ -144,13 +144,15 @@ const FacetFilter = observer(function FacetFilter({
             type="button"
             className={classes.toggle}
             aria-expanded={expanded}
-            title={label}
+            data-tooltip=""
             onClick={() => {
               setOpen(!open)
             }}
           >
             <ToggleIcon className={classes.toggleIcon} />
-            <span className={classes.label}>{label}</span>
+            <span data-clip className={classes.label}>
+              {label}
+            </span>
           </button>
           {selected.length ? (
             <button
@@ -176,7 +178,7 @@ const FacetFilter = observer(function FacetFilter({
               const text = coarseStripHTML(value)
               return (
                 <li key={value}>
-                  <label className={classes.value} title={text}>
+                  <label className={classes.value} data-tooltip="">
                     <CheckboxLite
                       className={classes.checkbox}
                       label={text}
@@ -190,7 +192,9 @@ const FacetFilter = observer(function FacetFilter({
                         )
                       }}
                     />
-                    <span className={classes.valueName}>{text}</span>
+                    <span data-clip className={classes.valueName}>
+                      {text}
+                    </span>
                     <span className={classes.count}>{count}</span>
                   </label>
                 </li>

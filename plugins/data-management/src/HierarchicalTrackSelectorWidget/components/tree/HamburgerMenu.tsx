@@ -88,7 +88,7 @@ const HamburgerMenu = observer(function HamburgerMenu({
   tableMenuItems?: () => MenuItem[]
 }) {
   const session = getSession(model)
-  const menuItems = [
+  const menuItems = () => [
     ...(isSessionWithPublishTrackConf(session)
       ? [
           {
@@ -116,7 +116,7 @@ const HamburgerMenu = observer(function HamburgerMenu({
     ...clearListMenuItems(model),
     ...(tableMenuItems ? tableMenuItems() : collapseMenuItems(model)),
   ]
-  return menuItems.length > 0 ? (
+  return tableMenuItems || menuItems().length > 0 ? (
     <CascadingMenuButton
       data-testid="track-selector-hamburger"
       tooltip="Track selector menu"

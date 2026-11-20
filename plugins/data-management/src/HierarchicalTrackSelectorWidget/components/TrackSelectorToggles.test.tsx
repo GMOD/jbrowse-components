@@ -251,3 +251,19 @@ test('the ☰ menu clears the favorites only while that list shows, and Undo put
   })
   expect(model.favorites).toEqual(['genes', 'chromatin'])
 })
+
+test('a favorites list none of whose tracks this view can show says so', async () => {
+  const { model } = setup()
+  model.addToFavorites('a-track-on-another-genome')
+  const { getByTestId, findByText } = render(
+    <ThemeProvider theme={createJBrowseTheme()}>
+      <HierarchicalTrackSelector model={model} />
+    </ThemeProvider>,
+  )
+  fireEvent.click(getByTestId('list-favorites'))
+  expect(
+    await findByText(
+      'None of your favorite tracks can show in this view. Add one from a track’s menu.',
+    ),
+  ).toBeTruthy()
+})

@@ -21,10 +21,8 @@ const useStyles = makeStyles()(theme => ({
 
 const TrackTable = observer(function TrackTable({
   model,
-  emptyMessage,
 }: {
   model: HierarchicalTrackSelectorModel
-  emptyMessage?: string
 }) {
   const { classes } = useStyles()
   const table = model.trackTable
@@ -43,7 +41,7 @@ const TrackTable = observer(function TrackTable({
             table={table}
             fields={shown}
             width={width}
-            emptyMessage={emptyMessage}
+            emptyMessage={model.emptyListMessage}
           />
         ) : null}
       </div>

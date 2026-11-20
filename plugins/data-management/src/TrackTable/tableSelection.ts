@@ -5,8 +5,10 @@ import { isUnsupported } from '../HierarchicalTrackSelectorWidget/util.ts'
 import type { HierarchicalTrackSelectorModel } from '../HierarchicalTrackSelectorWidget/model.ts'
 
 /**
- * Shows or hides a set of tracks by id, for the per-row and show-all
- * checkboxes alike.
+ * Shows or hides a set of tracks by id, for the table's show-all and a tree
+ * category's Show all and Hide all. Recently used lists the tracks picked one
+ * at a time (`toggleTrack`), so a bulk show records none of them: a category
+ * of 30 would push every pick out of the list's 10
  */
 export function setTracksShown(
   model: HierarchicalTrackSelectorModel,
@@ -16,18 +18,12 @@ export function setTracksShown(
   if (shown) {
     // A display's state model may still be a dynamic import away, so the shows
     // cannot sit inside a transaction — they are awaited one at a time, which
-    // also keeps the tracks in the order the caller listed them. Only the
-    // bookkeeping is still batched.
+    // also keeps the tracks in the order the caller listed them
     const { trackContainer } = model
     void (async () => {
       for (const id of ids) {
         await trackContainer?.launchTrack(id)
       }
-      transaction(() => {
-        for (const id of ids) {
-          model.addToRecentlyUsed(id)
-        }
-      })
     })()
   } else {
     transaction(() => {
@@ -49,7 +45,7 @@ export function getShowAllState({
 }: {
   model: HierarchicalTrackSelectorModel
   shownTrackIds: Set<string>
-  rows: { id: string; name: string }[]
+  rows: readonly { id: string; name: string }[]
 }) {
   const showable = rows.filter(row => !isUnsupported(row.name))
   const allShown =

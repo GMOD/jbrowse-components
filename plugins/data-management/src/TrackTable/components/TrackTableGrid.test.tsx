@@ -121,7 +121,7 @@ test('renders a row per track', () => {
   expect(getByText('barC')).toBeTruthy()
 })
 
-test('clicking a row checkbox shows then hides the track on the view', async () => {
+test('clicking a row checkbox shows then hides the track on the view, recording it as recently used', async () => {
   const { view, model, table } = setup()
   const { getByText } = renderGrid(model, table)
 
@@ -134,6 +134,7 @@ test('clicking a row checkbox shows then hides the track on the view', async () 
   await waitFor(() => {
     expect([...model.shownTrackIds]).toEqual(['fooC'])
   })
+  expect(model.recentlyUsed).toEqual(['fooC'])
   fireEvent.click(checkbox)
   await waitFor(() => {
     expect(view.tracks.length).toBe(0)
@@ -195,7 +196,7 @@ test('a cut-off name shows in full on hover, and a name that fits opens nothing'
   expect((await findByRole('tooltip')).textContent).toBe('barC')
 })
 
-test('show-all appears only while a filter narrows the list, and shows what it kept', async () => {
+test('show-all appears only while a filter narrows the list, and shows what it kept without recording it as recently used', async () => {
   const { view, model, table } = setup()
   const { queryByLabelText, getByLabelText } = renderGrid(model, table)
   expect(queryByLabelText('Show all matching tracks')).toBeNull()
@@ -208,6 +209,7 @@ test('show-all appears only while a filter narrows the list, and shows what it k
     expect(view.tracks.map(t => t.configuration.trackId)).toEqual(['fooC'])
   })
   expect(model.selection.length).toBe(0)
+  expect(model.recentlyUsed).toEqual([])
 })
 
 test('show-all reads as mixed while only some matching tracks are shown', async () => {

@@ -548,3 +548,14 @@ describe('columns and facets', () => {
     expect(table.sortedRows.map(r => r.name)).toEqual(['a0', 'Peaks a1 rerun'])
   })
 })
+
+test("Favorites list All's rows, measuring only their own names so short ones leave room for columns", () => {
+  const { model } = setup()
+  const table = model.trackTable
+  const allWidth = table.initialWidths.name!
+  const alpha = table.allRows.find(r => r.id === 'alpha')
+  model.addToFavorites('alpha')
+  model.setTrackList('favorites')
+  expect(table.allRows).toEqual([alpha])
+  expect(table.initialWidths.name).toBeLessThan(allWidth)
+})

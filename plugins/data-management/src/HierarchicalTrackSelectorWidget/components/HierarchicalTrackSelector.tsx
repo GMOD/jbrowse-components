@@ -25,17 +25,10 @@ const useStyles = makeStyles()(theme => ({
   },
 }))
 
-const emptyListMessage = {
-  favorites: 'No favorite tracks yet. Add one from a track’s menu.',
-  recent: 'No recently used tracks yet.',
-}
-
 const TrackTree = observer(function TrackTree({
   model,
-  emptyMessage,
 }: {
   model: HierarchicalTrackSelectorModel
-  emptyMessage?: string
 }) {
   const { classes } = useStyles()
   const [ref, { height }] = useMeasure('height')
@@ -44,7 +37,7 @@ const TrackTree = observer(function TrackTree({
       ? undefined
       : model.trackTable.allRows.length > 0
         ? noMatchingTracksMessage
-        : emptyMessage
+        : model.emptyListMessage
   return (
     <>
       <HierarchicalHeader model={model} />
@@ -73,10 +66,6 @@ const HierarchicalTrackSelector = observer(function HierarchicalTrackSelector({
   toolbarHeight?: number
 }) {
   const { classes } = useStyles()
-  const emptyMessage =
-    model.trackList !== 'all' && model.listedTrackConfigurations.length === 0
-      ? emptyListMessage[model.trackList]
-      : undefined
   return (
     <div
       className={classes.container}
@@ -84,9 +73,9 @@ const HierarchicalTrackSelector = observer(function HierarchicalTrackSelector({
     >
       <TrackSelectorToggles model={model} />
       {model.showTable ? (
-        <TrackTable model={model} emptyMessage={emptyMessage} />
+        <TrackTable model={model} />
       ) : (
-        <TrackTree model={model} emptyMessage={emptyMessage} />
+        <TrackTree model={model} />
       )}
     </div>
   )

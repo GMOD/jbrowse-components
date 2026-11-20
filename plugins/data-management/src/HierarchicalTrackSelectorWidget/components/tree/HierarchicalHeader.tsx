@@ -55,7 +55,7 @@ const HierarchicalTrackSelectorHeader = observer(
         <FacetChips
           table={trackTable}
           filterBoxRef={filterBoxRef}
-          omit={tableMenuItems ? [] : ['category']}
+          omit={model.showTable ? [] : ['category']}
         />
       </>
     )

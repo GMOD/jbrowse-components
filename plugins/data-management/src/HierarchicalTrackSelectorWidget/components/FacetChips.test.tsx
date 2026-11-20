@@ -345,3 +345,14 @@ test("destroying the session destroys its selector's table", () => {
   destroy(getRoot(model))
   expect(isAlive(table)).toBe(false)
 })
+
+test("clearing the tree's category chip hands focus to the filter box", () => {
+  const { model } = setup({ metadata: false, category: true })
+  const { container, getByLabelText } = renderSelector(model)
+  act(() => {
+    model.trackTable.setFilter('category', ['Odd'])
+  })
+  clearByKeyboard(chip(container, 'Category: Odd'))
+  expect(chipLabels(container)).not.toContain('Category: Odd')
+  expect(document.activeElement === getByLabelText('Filter tracks')).toBe(true)
+})

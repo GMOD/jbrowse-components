@@ -7,7 +7,7 @@ import TrackNameText from '../../HierarchicalTrackSelectorWidget/components/tree
 import TrackSelectorTrackMenu from '../../HierarchicalTrackSelectorWidget/components/tree/TrackSelectorTrackMenu.tsx'
 import { selectOnModifierClick } from '../../HierarchicalTrackSelectorWidget/components/tree/selectOnModifierClick.ts'
 import { useTableStyles } from './tableStyles.ts'
-import { facetLabel, getRowStr } from './util.ts'
+import { facetLabel, getRowStr, sortKey } from './util.ts'
 
 import type { HierarchicalTrackSelectorModel } from '../../HierarchicalTrackSelectorWidget/model.ts'
 import type { TrackTableModel, TrackRow } from '../trackTableModel.ts'
@@ -70,7 +70,7 @@ export function getTableColumns({
       id: 'name',
       header: 'Name',
       fill: true,
-      sortValue: row => coarseStripHTML(getRowStr('name', row)),
+      sortValue: row => sortKey('name', row),
       cell: row => (
         <NameCell row={row} model={model} checkboxId={checkboxId(row.id)} />
       ),
@@ -82,7 +82,7 @@ export function getTableColumns({
           ({
             id,
             header: facetLabel(id, nonMetadataFieldSet),
-            sortValue: row => coarseStripHTML(getRowStr(id, row)),
+            sortValue: row => sortKey(id, row),
             // any metadata value (or category/description) can carry markup, and
             // SanitizedHTML short-circuits to a plain span when it doesn't
             cell: row => <ValueCell html={getRowStr(id, row)} />,

@@ -1,6 +1,5 @@
 import { getConf } from '@jbrowse/core/configuration'
 import {
-  coarseStripHTML,
   getEnv,
   localStorageGetJSON,
   localStorageSetJSON,
@@ -20,6 +19,7 @@ import {
   getRowStr,
   isMetadataFacet,
   metadataFacet,
+  sortKey,
 } from './components/util.ts'
 import {
   countFacetValues,
@@ -82,6 +82,22 @@ function trackFields(
         : (trackTypeNames.get(type) ?? type),
     adapter: (track.adapter as { type?: string } | undefined)?.type,
     metadata,
+  }
+}
+
+function trackRow(
+  track: AnyTrackConfig,
+  session: AbstractSessionModel,
+  trackTypeNames: Map<string, string>,
+) {
+  const { name, category, description } = trackCatalogEntry(track, session)
+  return {
+    id: track.trackId,
+    conf: track,
+    name,
+    category: category.join(', '),
+    description,
+    ...trackFields(track, trackTypeNames),
   }
 }
 
@@ -214,6 +230,12 @@ export function trackTableModelFactory() {
        * #volatile
        */
       session: undefined as AbstractSessionModel | undefined,
+      /**
+       * #volatile
+       * the widths the user dragged column edges to, which outlive the grid
+       * across a Tree | Table toggle
+       */
+      draggedWidths: {} as Record<string, number>,
     }))
     .actions(self => ({
       /**
@@ -236,6 +258,12 @@ export function trackTableModelFactory() {
        */
       shareColumnChoices(owner: ColumnChoicesOwner) {
         self.columnChoicesOwner = owner
+      },
+      /**
+       * #action
+       */
+      setDraggedWidths(widths: Record<string, number>) {
+        self.draggedWidths = widths
       },
       /**
        * #action
@@ -324,27 +352,35 @@ export function trackTableModelFactory() {
     .views(self => ({
       /**
        * #getter
-       * Builds row objects from track configs. Cached and only recomputes when
-       * the track list changes, not on every filterText keystroke.
+       * the rows the columns and the facets are chosen from: in the drawer
+       * every track it can list, so Favorites and Recent keep the columns of
+       * All
+       */
+      get columnRows() {
+        const { session, trackTypeNames } = self
+        return session
+          ? (self.getColumnTracks ?? self.getTracks)().map(track =>
+              trackRow(track, session, trackTypeNames),
+            )
+          : []
+      },
+    }))
+    .views(self => ({
+      /**
+       * #getter
+       * the rows the grid lists, which in the drawer are among columnRows,
+       * built once per track list rather than per filterText keystroke
        */
       get allRows() {
-        const session = self.session
-        return session
-          ? self.getTracks().map(track => {
-              const { name, category, description } = trackCatalogEntry(
-                track,
-                session,
-              )
-              return {
-                id: track.trackId,
-                conf: track,
-                name,
-                category: category.join(', '),
-                description,
-                ...trackFields(track, self.trackTypeNames),
-              }
-            })
-          : []
+        const { getColumnTracks, columnRows } = self
+        const tracks = self.getTracks()
+        const byId =
+          getColumnTracks && tracks !== getColumnTracks()
+            ? new Map(columnRows.map(row => [row.id, row]))
+            : undefined
+        return byId
+          ? tracks.flatMap(track => byId.get(track.trackId) ?? [])
+          : columnRows
       },
     }))
     .views(self => ({
@@ -363,21 +399,6 @@ export function trackTableModelFactory() {
       },
     }))
     .views(self => ({
-      /**
-       * #getter
-       * the rows the columns and facets are chosen from
-       */
-      get columnRows() {
-        const { getColumnTracks } = self
-        return getColumnTracks
-          ? getColumnTracks().map(track => ({
-              category: ((track.category as string[] | undefined) ?? []).join(
-                ', ',
-              ),
-              ...trackFields(track, self.trackTypeNames),
-            }))
-          : self.allRows
-      },
       /**
        * #getter
        * the rows the open mode's text search keeps
@@ -691,17 +712,19 @@ export function trackTableModelFactory() {
        * #getter
        * Measured pixel widths for every column that can show. Measured over
        * allRows so widths stay stable and don't recompute on every filterText
-       * keystroke, each distinct value once.
+       * keystroke, each distinct value once; a list of short names leaves
+       * room for more columns.
        */
       get initialWidths(): Record<string, number> {
+        const rows = self.allRows
         return Object.fromEntries(
           self.candidateColumns.map(f => [
             f,
             f === 'name'
-              ? measureNameColumnWidth(self.allRows)
+              ? measureNameColumnWidth(rows)
               : Math.max(
                   measureGridWidth(
-                    [...new Set(self.allRows.map(r => getRowStr(f, r)))],
+                    [...new Set(rows.map(r => getRowStr(f, r)))],
                     { maxWidth: 400, stripHTML: true },
                   ),
                   measureGridWidth([facetLabel(f, self.nonMetadataFieldSet)], {
@@ -739,14 +762,8 @@ export function trackTableModelFactory() {
             : filteredRows
         }
         const dir = sortAscending ? 1 : -1
-        // sort on what the cell displays, not the raw slot: a value wrapped in
-        // markup would otherwise sort under '<'. Keys are stripped once per row
-        // rather than once per comparison.
         return filteredRows
-          .map(row => ({
-            row,
-            key: coarseStripHTML(getRowStr(sortField, row)),
-          }))
+          .map(row => ({ row, key: sortKey(sortField, row) }))
           .sort((a, b) => compareValues(a.key, b.key, dir))
           .map(({ row }) => row)
       },

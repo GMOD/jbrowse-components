@@ -63,12 +63,12 @@ describe('show-all state', () => {
 })
 
 describe('toggles', () => {
-  test('showing a track records recent use', async () => {
+  test('a bulk show leaves the recently used list to the tracks picked one at a time', async () => {
     const { model, shown, recent } = fakeModel()
-    setTracksShown(model, ['t2'], true)
+    setTracksShown(model, ['t1', 't2'], true)
     await settle()
-    expect(shown.has('t2')).toBe(true)
-    expect(recent).toEqual(['t2'])
+    expect([...shown]).toEqual(['t1', 't2'])
+    expect(recent).toEqual([])
   })
 
   test('hiding a track', () => {

@@ -18,6 +18,7 @@ import FolderIcon from '@mui/icons-material/Folder'
 import { CircularProgress, Typography } from '@mui/material'
 import { observer } from 'mobx-react'
 
+import { setTracksShown } from '../../../TrackTable/tableSelection.ts'
 import { isFilterForcedOpen } from '../../model.ts'
 import {
   getAllSubcategories,
@@ -206,22 +207,27 @@ function categoryTrackMenuItems(
     {
       label: 'Show all',
       onClick: () => {
-        // sequential, so the tracks land in the order the category lists them
-        // rather than the order their display chunks happen to resolve in.
-        // An unsupported track's checkbox is disabled, so this skips it too
-        void (async () => {
-          for (const node of trackNodes.filter(n => !isUnsupported(n.name))) {
-            await model.trackContainer?.launchTrack(node.trackId)
-          }
-        })()
+        // an unsupported track's checkbox is disabled, so this skips it too
+        setTracksShown(
+          model,
+          trackNodes
+            .filter(
+              n =>
+                !isUnsupported(n.name) && !model.shownTrackIds.has(n.trackId),
+            )
+            .map(n => n.trackId),
+          true,
+        )
       },
     },
     {
       label: 'Hide all',
       onClick: () => {
-        for (const node of trackNodes) {
-          model.trackContainer?.hideTrack(node.trackId)
-        }
+        setTracksShown(
+          model,
+          trackNodes.map(n => n.trackId),
+          false,
+        )
       },
     },
   ]

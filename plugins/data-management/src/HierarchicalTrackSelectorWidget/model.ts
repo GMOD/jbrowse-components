@@ -722,6 +722,22 @@ export default function stateTreeFactory(pluginManager: PluginManager) {
               .filter(notEmpty)
           : self.allTrackConfigurations
       },
+      /**
+       * #getter
+       * what the tree and the table say when the list itself has no tracks;
+       * favorites are kept across a config's genomes and views, so some may
+       * be ones this view cannot show
+       */
+      get emptyListMessage() {
+        const { trackList } = self
+        return trackList === 'favorites'
+          ? self.favorites.length > 0
+            ? 'None of your favorite tracks can show in this view. Add one from a track’s menu.'
+            : 'No favorite tracks yet. Add one from a track’s menu.'
+          : trackList === 'recent'
+            ? 'No recently used tracks yet.'
+            : 'No tracks'
+      },
     }))
     .views(self => ({
       /**

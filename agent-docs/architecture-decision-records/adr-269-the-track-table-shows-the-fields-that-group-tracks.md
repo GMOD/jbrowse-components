@@ -162,6 +162,7 @@ found none of the six "Fiber-seq Compendium - THP-1 …" tracks.
 | Three chips whatever share of the tracks each field covers (2026-11-16 to 11-19) | A sparse subgroup key took an always-visible chip on every UCSC genome with one composite that had subgroups. Whether a field groups tracks still has no floor (next row); only a chip of its own does |
 | A minimum share of tracks before a field groups them | `metadata.source` on 4 of config_demo hg19's 145 tracks earns a chip, but a lifted hg38 hub's `class` subgroup covers fewer (4 of 799) in the same 2×2 shape; any floor that drops one drops the other, and it is a list-size threshold |
 | Kind and category whenever they have two values | The reference sequence gives every linear-view list a second kind, so every list would show "Feature" beside every name |
+| Measuring the name over every track, so Favorites and Recent fit as many columns as All (2026-11-20) | Built and captured on volvox: four short-named favorites lost their Kind column to a name column sized for All's longest name, mostly empty. The rule picks the same columns for every list; how many fit follows the names on show |
 | Per-row precomputed facet strings | Facet counts cost about 30 ms per keystroke at 20,000 tracks once the panel draws few checkboxes; not worth the second copy of each row |
 
 ## Consequences

@@ -10,7 +10,7 @@ import { observer } from 'mobx-react'
 
 import CheckboxLite from '../../HierarchicalTrackSelectorWidget/components/tree/CheckboxLite.tsx'
 import { isUnsupported } from '../../HierarchicalTrackSelectorWidget/util.ts'
-import { getShowAllState, setTracksShown } from '../tableSelection.ts'
+import { getShowAllState } from '../tableSelection.ts'
 import { columnFloor, fitColumnWidths } from './fitColumnWidths.ts'
 import { getTableColumns } from './getTableColumns.tsx'
 import { useTableStyles } from './tableStyles.ts'
@@ -21,6 +21,30 @@ import type { TrackTableModel, TrackRow } from '../trackTableModel.ts'
 import type { VirtualTableColumn } from '@jbrowse/core/ui/VirtualTable'
 
 export type TableColumn = VirtualTableColumn<TrackRow>
+
+const ShowAllCheckbox = observer(function ShowAllCheckbox({
+  model,
+  rows,
+}: {
+  model: HierarchicalTrackSelectorModel
+  rows: readonly TrackRow[]
+}) {
+  const { classes } = useTableStyles()
+  const { allShown, someShown, toggleAll } = getShowAllState({
+    model,
+    shownTrackIds: model.shownTrackIds,
+    rows,
+  })
+  return (
+    <CheckboxLite
+      className={classes.rowCheckbox}
+      checked={allShown}
+      indeterminate={someShown}
+      label="Show all matching tracks"
+      onChange={toggleAll}
+    />
+  )
+})
 
 const TrackTableGrid = observer(function TrackTableGrid({
   model,
@@ -49,11 +73,6 @@ const TrackTableGrid = observer(function TrackTableGrid({
     initialWidths,
   } = table
 
-  const { allShown, someShown, toggleAll } = getShowAllState({
-    model,
-    shownTrackIds: model.shownTrackIds,
-    rows: sortedRows,
-  })
   const checkboxCell = (row: TrackRow) => {
     const shown = model.shownTrackIds.has(row.id)
     return (
@@ -64,7 +83,7 @@ const TrackTableGrid = observer(function TrackTableGrid({
         disabled={isUnsupported(row.name)}
         label={`Show ${coarseStripHTML(row.name)}`}
         onChange={() => {
-          setTracksShown(model, [row.id], !shown)
+          void model.toggleTrack(row.id)
         }}
       />
     )
@@ -89,6 +108,12 @@ const TrackTableGrid = observer(function TrackTableGrid({
         )
       }
       resetKey={JSON.stringify([filterText, [...filters]])}
+      draggedWidths={{
+        widths: table.draggedWidths,
+        setWidths: widths => {
+          table.setDraggedWidths(widths)
+        },
+      }}
       sortField={sortField}
       sortAscending={sortAscending}
       onSort={(field, ascending) => {
@@ -96,16 +121,8 @@ const TrackTableGrid = observer(function TrackTableGrid({
       }}
       leading={{
         width: CHECKBOX_WIDTH,
-        header: () =>
-          narrowed ? (
-            <CheckboxLite
-              className={classes.rowCheckbox}
-              checked={allShown}
-              indeterminate={someShown}
-              label="Show all matching tracks"
-              onChange={toggleAll}
-            />
-          ) : null,
+        header: rows =>
+          narrowed ? <ShowAllCheckbox model={model} rows={rows} /> : null,
         cell: checkboxCell,
       }}
       rowClassName={row =>
