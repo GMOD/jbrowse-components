@@ -332,14 +332,6 @@ export function getRulerLayout(rulerHeight: number) {
   return { tickTopY, numbersBaselineY: tickTopY - RULER_TICK_LABEL_GAP }
 }
 
-// Ink box of the bold refName label drawn at the top of the ruler, keyed to the
-// size its glyphs are actually drawn at rather than to the export's general
-// `fontSize`. The two are independent: the fit tests upstream (refNameLabelWidth
-// via getScalebarRefNameLabels / refNameLabelFitsInView) all measure at
-// REF_NAME_LABEL_FONT_SIZE, so sizing the label's clip box off `fontSize`
-// instead clipped the descenders of a name like `chrUn_gl000220` at the default
-// 13, and both ends of the glyphs at any smaller export font.
-export const refNameLabelBoxHeight = labelInkHeight(REF_NAME_LABEL_FONT_SIZE)
 export const refNameLabelBaselineY = labelBaselineFromTop(
   0,
   REF_NAME_LABEL_FONT_SIZE,

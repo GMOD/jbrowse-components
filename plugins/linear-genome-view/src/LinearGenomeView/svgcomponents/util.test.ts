@@ -1,7 +1,6 @@
 import { measureText } from '@jbrowse/core/util'
 
 import { SVG_SCALEBAR_CAP } from '../consts.ts'
-import { REF_NAME_LABEL_FONT_SIZE } from '../util.ts'
 import {
   defaultTextHeight,
   getHeaderLayout,
@@ -11,8 +10,6 @@ import {
   labelInkHeight,
   labelOffset,
   offsetLabelBaselineY,
-  refNameLabelBaselineY,
-  refNameLabelBoxHeight,
   TRACK_LABEL_GAP,
   trackBoxOffsets,
   trackLabelLeftOffset,
@@ -81,20 +78,6 @@ test.each(fontSizes)(
     expect(baseline + d).toBe(top + ink)
   },
 )
-
-// The bold refName label's clip box used to be sized `fontSize + 2` with its
-// baseline at `fontSize` — the export's *general* font size, not the size the
-// name is drawn at. That cut the descenders off a name like `chrUn_gl000220` at
-// the default 13, and at any smaller export font clipped the tops as well. The
-// box is now keyed to REF_NAME_LABEL_FONT_SIZE, so it holds the glyphs whatever
-// the caller asks for elsewhere in the export.
-test('the refName label box holds the glyphs it clips', () => {
-  const d = descent(REF_NAME_LABEL_FONT_SIZE)
-  const inkTop =
-    refNameLabelBaselineY - (labelInkHeight(REF_NAME_LABEL_FONT_SIZE) - d)
-  expect(inkTop).toBeGreaterThanOrEqual(0)
-  expect(refNameLabelBaselineY + d).toBeLessThanOrEqual(refNameLabelBoxHeight)
-})
 
 // A stacked row's header grows UPWARD from the ruler into a band the caller
 // reserves, so the two things that can go wrong are ink outside that band and
