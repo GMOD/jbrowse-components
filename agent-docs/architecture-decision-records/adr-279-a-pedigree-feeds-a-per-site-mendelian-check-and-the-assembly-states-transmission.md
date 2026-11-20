@@ -30,7 +30,7 @@ tetraploid, a haplodiploid male, a ZW female or a yeast mitochondrion.
   (`plugins/variants/src/shared/pedigree.ts`), read in
   `vcfSourcesAndWarnings`. It merges `family`, `father`, `mother`, `sex` and
   `phenotype` into the sources, and a `samplesTsvLocation` column of the same
-  name wins with no warning.
+  name wins with no warning, unless it holds a missing code.
 - **The format is detected from the columns**, never the extension: a first
   row naming `SampleID` or `IID` is a header and columns are taken by name
   (`FatherID`/`PAT`, `MotherID`/`MAT`, `FamilyID`/`FID`, `Sex`,
@@ -38,11 +38,16 @@ tetraploid, a haplodiploid male, a ZW female or a yeast mitochondrion.
   the first six columns are read. 1000 Genomes'
   `20130606_g1k_3202_samples_ped_population.txt` loads verbatim, and its
   `Population` column stays the samples table's job.
-- **Codes:** parent `0` is unknown; sex `1` male, `2` female, `0`/`-9`
-  missing, anything else `other` (a hermaphrodite, a monoecious plant). An
-  IID matching no VCF sample is tried as `FID_IID`, PLINK's `--recode vcf`
-  name. A sample naming itself as a parent loses that parent with a warning;
-  father equal to mother is a selfed line and stays.
+- **Codes:** `0`, `-9`, `NA`, `unknown` or an empty cell is no value for a
+  parent, sex or phenotype, and a samples-table cell holding one leaves the
+  pedigree's value; a parent so spelled that names a VCF sample stays. Sex `1`
+  is male, `2` female, anything else `other` (a hermaphrodite, a monoecious
+  plant). A line holding a tab splits on tabs, so an empty cell keeps its
+  column. An IID matching no VCF sample is tried as `FID_IID`, PLINK's
+  `--recode vcf` name. A sample naming itself as a parent loses that parent
+  with a warning, and `parentsOf` keeps the check and the relationship from
+  reading one off a samples table; father equal to mother is a selfed line and
+  stays.
 - **The pedigree never narrows the samples.** Its rows naming no VCF sample are
   skipped, and a pedigree matching none warns where `samplesTsv` throws.
 - **No reserved names.** The attributes are ordinary row attributes;
