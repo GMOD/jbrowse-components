@@ -1,3 +1,5 @@
+import { useId } from 'react'
+
 import VirtualTable, {
   CHECKBOX_WIDTH,
   DEFAULT_COL_WIDTH,
@@ -11,6 +13,7 @@ import CheckboxLite from '../../HierarchicalTrackSelectorWidget/components/tree/
 import { isUnsupported } from '../../HierarchicalTrackSelectorWidget/util.ts'
 import { getShowAllState, setTracksShown } from '../tableSelection.ts'
 import { columnFloor, fitColumnWidths } from './fitColumnWidths.ts'
+import { getTableColumns } from './getTableColumns.tsx'
 import { useTableStyles } from './tableStyles.ts'
 
 import type { HierarchicalTrackSelectorModel } from '../../HierarchicalTrackSelectorWidget/model.ts'
@@ -22,17 +25,20 @@ export type TableColumn = VirtualTableColumn<TrackRow>
 const TrackTableGrid = observer(function TrackTableGrid({
   model,
   table,
-  columns,
+  fields,
   width,
   emptyMessage = 'No tracks',
 }: {
   model: HierarchicalTrackSelectorModel
   table: TrackTableModel
-  columns: TableColumn[]
+  fields: string[]
   width: number
   emptyMessage?: string
 }) {
   const { classes } = useTableStyles()
+  const gridId = useId()
+  const checkboxId = (rowId: string) => `${gridId}-${encodeURIComponent(rowId)}`
+  const columns = getTableColumns({ table, model, fields, checkboxId })
   const {
     narrowed,
     sortedRows,
@@ -52,6 +58,7 @@ const TrackTableGrid = observer(function TrackTableGrid({
     const shown = model.shownTrackIds.has(row.id)
     return (
       <CheckboxLite
+        id={checkboxId(row.id)}
         className={classes.rowCheckbox}
         checked={shown}
         disabled={isUnsupported(row.name)}
@@ -64,49 +71,51 @@ const TrackTableGrid = observer(function TrackTableGrid({
   }
 
   return (
-    <VirtualTable
-      highlightPatterns={highlightPatterns(filterText)}
-      rows={sortedRows}
-      columns={columns}
-      width={width}
-      widths={available =>
-        fitColumnWidths(
-          Object.fromEntries(
-            columns.map(col => [
-              col.id,
-              initialWidths[col.id] ?? DEFAULT_COL_WIDTH,
-            ]),
-          ),
-          available,
-          id => columnFloor(id, available),
-        )
-      }
-      resetKey={JSON.stringify([filterText, [...filters]])}
-      sortField={sortField}
-      sortAscending={sortAscending}
-      onSort={(field, ascending) => {
-        table.setSort(field, ascending)
-      }}
-      leading={{
-        width: CHECKBOX_WIDTH,
-        header: () =>
-          narrowed ? (
-            <TableCheckbox
-              checked={allShown}
-              indeterminate={someShown}
-              label="Show all matching tracks"
-              onChange={toggleAll}
-            />
-          ) : null,
-        cell: checkboxCell,
-      }}
-      isRowSelected={row => model.selectionSet.has(row.id)}
-      emptyMessage={
-        table.allRows.length
-          ? 'No tracks match the current search and filters'
-          : emptyMessage
-      }
-    />
+    <div className={classes.grid}>
+      <VirtualTable
+        highlightPatterns={highlightPatterns(filterText)}
+        rows={sortedRows}
+        columns={columns}
+        width={width}
+        widths={available =>
+          fitColumnWidths(
+            Object.fromEntries(
+              columns.map(col => [
+                col.id,
+                initialWidths[col.id] ?? DEFAULT_COL_WIDTH,
+              ]),
+            ),
+            available,
+            id => columnFloor(id, available),
+          )
+        }
+        resetKey={JSON.stringify([filterText, [...filters]])}
+        sortField={sortField}
+        sortAscending={sortAscending}
+        onSort={(field, ascending) => {
+          table.setSort(field, ascending)
+        }}
+        leading={{
+          width: CHECKBOX_WIDTH,
+          header: () =>
+            narrowed ? (
+              <TableCheckbox
+                checked={allShown}
+                indeterminate={someShown}
+                label="Show all matching tracks"
+                onChange={toggleAll}
+              />
+            ) : null,
+          cell: checkboxCell,
+        }}
+        isRowSelected={row => model.selectionSet.has(row.id)}
+        emptyMessage={
+          table.allRows.length
+            ? 'No tracks match the current search and filters'
+            : emptyMessage
+        }
+      />
+    </div>
   )
 })
 

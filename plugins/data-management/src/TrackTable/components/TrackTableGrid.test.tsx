@@ -9,7 +9,6 @@ import { observer } from 'mobx-react'
 
 import { trackTableModelFactory } from '../trackTableModel.ts'
 import TrackTableGrid from './TrackTableGrid.tsx'
-import { getTableColumns } from './getTableColumns.tsx'
 
 import type * as CheckboxLiteModule from '../../HierarchicalTrackSelectorWidget/components/tree/CheckboxLite.tsx'
 import type { HierarchicalTrackSelectorModel } from '../../HierarchicalTrackSelectorWidget/model.ts'
@@ -103,11 +102,7 @@ function renderGrid(
       <TrackTableGrid
         model={model}
         table={table}
-        columns={getTableColumns({
-          table,
-          model,
-          fields: table.shownColumns(9),
-        })}
+        fields={table.shownColumns(9)}
         width={1200}
       />
     )
@@ -143,6 +138,29 @@ test('clicking a row checkbox shows then hides the track on the view', async () 
   await waitFor(() => {
     expect(view.tracks.length).toBe(0)
   })
+})
+
+test('clicking a name shows then hides the track, as a click on its label does in the tree', async () => {
+  const { view, model, table } = setup()
+  const { getByText } = renderGrid(model, table)
+
+  fireEvent.click(getByText('fooC'))
+  await waitFor(() => {
+    expect([...model.shownTrackIds]).toEqual(['fooC'])
+  })
+  fireEvent.click(getByText('fooC'))
+  await waitFor(() => {
+    expect(view.tracks.length).toBe(0)
+  })
+  expect(model.selection.length).toBe(0)
+})
+
+test('opening a track menu from its name does not toggle the track', () => {
+  const { view, model, table } = setup()
+  const { getByTestId } = renderGrid(model, table)
+  fireEvent.click(getByTestId('htsTrackEntryMenu-fooC'))
+  expect(view.tracks.length).toBe(0)
+  expect(model.shownTrackIds.size).toBe(0)
 })
 
 test('show-all appears only while a filter narrows the list, and shows what it kept', async () => {

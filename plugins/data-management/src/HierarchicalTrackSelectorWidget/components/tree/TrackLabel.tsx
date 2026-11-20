@@ -8,6 +8,7 @@ import CheckboxLite from './CheckboxLite.tsx'
 import OverrideBadge from './OverrideBadge.tsx'
 import TrackNameText from './TrackNameText.tsx'
 import TrackSelectorTrackMenu from './TrackSelectorTrackMenu.tsx'
+import { selectOnModifierClick } from './selectOnModifierClick.ts'
 
 import type { HierarchicalTrackSelectorModel } from '../../model.ts'
 import type { TreeTrackNode } from '../../types.ts'
@@ -123,16 +124,7 @@ const TrackLabel = observer(function TrackLabel({
         className={classes.checkboxLabel}
         data-tooltip={description}
         aria-description={coarseStripHTML(description)}
-        onClick={event => {
-          if (event.ctrlKey || event.metaKey) {
-            if (model.isSelected(trackId)) {
-              model.removeFromSelection([trackId])
-            } else {
-              model.addToSelection([trackId])
-            }
-            event.preventDefault()
-          }
-        }}
+        onClick={selectOnModifierClick(model, trackId)}
       >
         <TrackCheckbox
           model={model}

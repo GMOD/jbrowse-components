@@ -5,6 +5,7 @@ import { observer } from 'mobx-react'
 import OverrideBadge from '../../HierarchicalTrackSelectorWidget/components/tree/OverrideBadge.tsx'
 import TrackNameText from '../../HierarchicalTrackSelectorWidget/components/tree/TrackNameText.tsx'
 import TrackSelectorTrackMenu from '../../HierarchicalTrackSelectorWidget/components/tree/TrackSelectorTrackMenu.tsx'
+import { selectOnModifierClick } from '../../HierarchicalTrackSelectorWidget/components/tree/selectOnModifierClick.ts'
 import { useTableStyles } from './tableStyles.ts'
 import { facetLabel, getRowStr } from './util.ts'
 
@@ -15,43 +16,41 @@ import type { TableColumn } from './TrackTableGrid.tsx'
 const NameCell = observer(function NameCell({
   row,
   model,
+  checkboxId,
 }: {
   row: TrackRow
   model: HierarchicalTrackSelectorModel
+  checkboxId: string
 }) {
   const { classes } = useTableStyles()
   return (
-    <div
+    <label
+      htmlFor={checkboxId}
       className={classes.nameCell}
-      onClick={event => {
-        if (event.ctrlKey || event.metaKey) {
-          if (model.isSelected(row.id)) {
-            model.removeFromSelection([row.id])
-          } else {
-            model.addToSelection([row.id])
-          }
-        }
-      }}
+      onClick={selectOnModifierClick(model, row.id)}
     >
       <TrackNameText name={row.name} />
       <OverrideBadge model={model} trackId={row.id} name={row.name} />
       <TrackSelectorTrackMenu id={row.id} conf={row.conf} model={model} />
-    </div>
+    </label>
   )
 })
 
-// Builds the column list: a name column (with the per-track menu) followed by
-// the facet columns in field order. A metadata column whose bare key collides
-// with a non-metadata column name is disambiguated as "x (from metadata)". All
-// non-name cells share getRowStr for value extraction.
+// Builds the column list: a name column (with the per-track menu, and a label
+// for the row's checkbox, so a click on the name toggles the track as in the
+// tree) followed by the facet columns in field order. A metadata column whose
+// bare key collides with a non-metadata column name is disambiguated as "x
+// (from metadata)". All non-name cells share getRowStr for value extraction.
 export function getTableColumns({
   table,
   model,
   fields,
+  checkboxId,
 }: {
   table: TrackTableModel
   model: HierarchicalTrackSelectorModel
   fields: string[]
+  checkboxId: (rowId: string) => string
 }): TableColumn[] {
   const { nonMetadataFieldSet } = table
   return [
@@ -60,7 +59,9 @@ export function getTableColumns({
       header: 'Name',
       fill: true,
       sortValue: row => coarseStripHTML(getRowStr('name', row)),
-      cell: row => <NameCell row={row} model={model} />,
+      cell: row => (
+        <NameCell row={row} model={model} checkboxId={checkboxId(row.id)} />
+      ),
       title: row =>
         coarseStripHTML(
           row.description ? `${row.name}\n${row.description}` : row.name,

@@ -3,7 +3,6 @@ import useMeasure from '@jbrowse/core/util/useMeasure'
 import { observer } from 'mobx-react'
 
 import TrackTableGrid from '../../TrackTable/components/TrackTableGrid.tsx'
-import { getTableColumns } from '../../TrackTable/components/getTableColumns.tsx'
 import {
   shownFields,
   tableMenuItems,
@@ -42,11 +41,7 @@ const TrackTable = observer(function TrackTable({
           <TrackTableGrid
             model={model}
             table={table}
-            columns={getTableColumns({
-              table,
-              model,
-              fields: shown,
-            })}
+            fields={shown}
             width={width}
             emptyMessage={emptyMessage}
           />

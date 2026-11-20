@@ -6,7 +6,6 @@ import { observer } from 'mobx-react'
 import FacetChips from './FacetChips.tsx'
 import FolderTableHeader from './FolderTableHeader.tsx'
 import TrackTableGrid from './TrackTableGrid.tsx'
-import { getTableColumns } from './getTableColumns.tsx'
 import { shownFields } from './tableLayout.ts'
 import { useWindowSize } from './useWindowSize.ts'
 
@@ -57,7 +56,7 @@ const FolderTable = observer(function FolderTable({
         <TrackTableGrid
           model={model}
           table={table}
-          columns={getTableColumns({ table, model, fields: shown })}
+          fields={shown}
           width={width}
         />
       </div>

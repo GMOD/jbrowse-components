@@ -31,7 +31,10 @@ const useStyles = makeStyles()(theme => ({
     height: '100%',
     margin: 0,
     opacity: 0,
-    cursor: 'inherit',
+    cursor: 'pointer',
+    '&:disabled': {
+      cursor: 'default',
+    },
   },
   svg: {
     // MUI's medium SvgIcon is theme.typography.pxToRem(24), NOT a hardcoded
@@ -53,12 +56,14 @@ const CheckboxLite = observer(function CheckboxLite({
   disabled,
   className,
   label,
+  id,
 }: {
   checked: boolean
   onChange: (event: React.ChangeEvent<HTMLInputElement>) => void
   disabled?: boolean
   className?: string
   label?: string
+  id?: string
 }) {
   const { classes, cx } = useStyles()
   return (
@@ -72,6 +77,7 @@ const CheckboxLite = observer(function CheckboxLite({
     >
       <input
         type="checkbox"
+        id={id}
         className={classes.input}
         checked={checked}
         onChange={onChange}
