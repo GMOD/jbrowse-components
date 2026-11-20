@@ -19,6 +19,7 @@ import { deepEqual } from '@jbrowse/core/util/deepEqual'
 import {
   lowerBoundOf,
   predicatesOf,
+  replaceField,
   upperBoundOf,
   withLowerBound,
   withUpperBound,
@@ -83,7 +84,13 @@ import {
   plainTransmission,
   transmissionArg,
 } from '../shared/regionTransmission.ts'
-import { genotypeMap, trioCalls } from '../shared/trios.ts'
+import {
+  MENDELIAN_FIELD,
+  genotypeMap,
+  mendelianEntries,
+  mendelianValuesOf,
+  trioCalls,
+} from '../shared/trios.ts'
 import {
   sitesBySpan,
   sortSourcesAroundVariant,
@@ -146,6 +153,7 @@ import {
 import type { SimplifiedVariantFeature } from '../VariantRPC/analyzeVariants.ts'
 import type { CellDataResult } from '../VariantRPC/executeVariantCellData.ts'
 import type { ConnectorCoord } from '../shared/ConnectorLines.tsx'
+import type { TrioClass } from '../shared/classifyTrio.ts'
 import type { VariantRowsField } from '../shared/constants.ts'
 import type {
   ProcessedSource,
@@ -1014,6 +1022,22 @@ export function stateModelFactory(
           },
           /**
            * #action
+           * Keeps the sites whose Mendelian check is one of `values`, or
+           * every site for none.
+           */
+          setMendelianFilter(values: readonly TrioClass[]) {
+            setConf(
+              self.configuration,
+              'filter',
+              replaceField(
+                predicatesOf(self.configuration.filter),
+                MENDELIAN_FIELD,
+                mendelianEntries(values),
+              ),
+            )
+          },
+          /**
+           * #action
            */
           setShowReference(arg: boolean) {
             setConf(self, ['genotypes', 'reference', 'show'], arg)
@@ -1115,6 +1139,15 @@ export function stateModelFactory(
          */
         get maxMissingness(): number {
           return upperBoundOf(self.siteFilter, 'missingness') ?? 1
+        },
+
+        /**
+         * #getter
+         * The Mendelian check's values the filter keeps, none for every site:
+         * the menu's checked rows
+         */
+        get mendelianFilterValues() {
+          return mendelianValuesOf(self.mendelianFilter)
         },
 
         /**

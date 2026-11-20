@@ -9,6 +9,7 @@ import type {
   TrioClass,
 } from './classifyTrio.ts'
 import type { Source } from './types.ts'
+import type { FieldPredicate } from '@jbrowse/core/util/fieldPredicate'
 
 /**
  * The field a variant's Mendelian check is read under: its most severe trio
@@ -18,6 +19,35 @@ import type { Source } from './types.ts'
 export const MENDELIAN_FIELD = 'mendelian'
 
 const MENDELIAN_PRESET = UNIVERSAL_FIELD_PRESETS.mendelian
+
+/** The Mendelian check's values, most severe first. */
+export const MENDELIAN_CLASSES = MENDELIAN_PRESET.scale.domain
+
+/** The check's values a `filter` list's entries on it keep. */
+export function mendelianValuesOf(predicates: readonly FieldPredicate[]) {
+  const named = new Set(
+    predicates.flatMap(p =>
+      p.field === MENDELIAN_FIELD
+        ? [...(p.equal === undefined ? [] : [p.equal]), ...(p.oneOf ?? [])]
+        : [],
+    ),
+  )
+  return MENDELIAN_CLASSES.filter(value => named.has(value))
+}
+
+/** The `filter` entries keeping `values` of the check: none for none. */
+export function mendelianEntries(
+  values: readonly TrioClass[],
+): FieldPredicate[] {
+  return values.length === 0
+    ? []
+    : [
+        {
+          field: MENDELIAN_FIELD,
+          oneOf: MENDELIAN_CLASSES.filter(value => values.includes(value)),
+        },
+      ]
+}
 
 /** A Mendelian check value as the key names it. */
 export function mendelianName(value: TrioClass) {
@@ -88,9 +118,9 @@ export function triosOf(sources: readonly Source[]): Trio[] {
 }
 
 /**
- * Each trio's call at one record, from `genotypeOf`, a sample's genotype
- * there. A parent the trio names with no genotype at the record is a no-call,
- * and a child with none is no call to make.
+ * Each trio's genotypes and call at one record, from `genotypeOf`, a sample's
+ * genotype there. A parent the trio names with no genotype at the record is a
+ * no-call, and a child with none is no call to make.
  */
 export function trioCalls(
   trios: readonly Trio[],
@@ -98,17 +128,19 @@ export function trioCalls(
   rule: readonly TransmissionEntry[],
 ) {
   return trios.map(trio => {
-    const child = genotypeOf(trio.child)
     const parent = (name: string | undefined) =>
       name === undefined ? undefined : (genotypeOf(name) ?? '.')
+    const childGenotype = genotypeOf(trio.child)
+    const fatherGenotype = parent(trio.father)
+    const motherGenotype = parent(trio.mother)
     const call: TrioClass | undefined =
-      child === undefined
+      childGenotype === undefined
         ? undefined
-        : classifyTrio(child, parent(trio.father), parent(trio.mother), {
+        : classifyTrio(childGenotype, fatherGenotype, motherGenotype, {
             sex: trio.sex,
             rule,
           })
-    return { ...trio, call }
+    return { ...trio, childGenotype, fatherGenotype, motherGenotype, call }
   })
 }
 

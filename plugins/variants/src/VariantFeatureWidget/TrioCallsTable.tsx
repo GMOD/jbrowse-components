@@ -10,8 +10,11 @@ type TrioCallRow = TrioCall & { id: string }
 
 const columns: DetailTableColumn<TrioCallRow>[] = [
   { field: 'child', value: row => row.child },
+  { field: 'child GT', value: row => row.childGenotype ?? '' },
   { field: 'father', value: row => row.father ?? '' },
+  { field: 'father GT', value: row => row.fatherGenotype ?? '' },
   { field: 'mother', value: row => row.mother ?? '' },
+  { field: 'mother GT', value: row => row.motherGenotype ?? '' },
   { field: 'sex', value: row => row.sex ?? '' },
   {
     field: 'call',
@@ -20,7 +23,7 @@ const columns: DetailTableColumn<TrioCallRow>[] = [
   },
 ]
 
-/** Each trio's Mendelian check at the record, from its full genotypes. */
+/** Each trio's genotypes and Mendelian check at the record. */
 const TrioCallsTable = observer(function TrioCallsTable({
   trioCalls,
 }: {

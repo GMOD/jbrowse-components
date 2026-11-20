@@ -1,7 +1,9 @@
 import PluginManager from '@jbrowse/core/PluginManager'
 import { isRegionRefused } from '@jbrowse/core/rpc/byteBudget'
+import { resolveSubMenu } from '@jbrowse/core/ui'
 import { SimpleFeature, getSession } from '@jbrowse/core/util'
 import { UNIVERSAL_FIELD_PRESETS } from '@jbrowse/core/util/colorScale'
+import { predicatesOf } from '@jbrowse/core/util/fieldPredicate'
 import { waitFor } from '@testing-library/react'
 import { autorun } from 'mobx'
 
@@ -19,6 +21,7 @@ import { getCachedABGR } from '../shared/variantWebglUtils.ts'
 import { RECORDS_BAND_OFF, createTestEnvironment } from './testEnv.ts'
 
 import type { GetGenotypeMatrixArgs } from '../VariantRPC/types.ts'
+import type { MenuItem } from '@jbrowse/core/ui'
 
 const PARENTS = [{ name: 'dad' }, { name: 'mom' }]
 const KID = { name: 'kid', father: 'dad', mother: 'mom', sex: 'male' }
@@ -170,7 +173,13 @@ test('the feature widget’s calls take the rule of the record’s refName under
   })
 
   expect(display.trioCallsAt(record)).toEqual([
-    { ...display.trios[0], call: 'consistent' },
+    {
+      ...display.trios[0],
+      childGenotype: '1/1',
+      fatherGenotype: '0/0',
+      motherGenotype: '0/1',
+      call: 'consistent',
+    },
   ])
 })
 
@@ -254,5 +263,82 @@ describe('the genotype matrix under a filter on the check', () => {
     expect(JSON.stringify(genotypeMatrixKey(displayWith(FAILED)))).not.toBe(
       before,
     )
+  })
+})
+
+describe('the Filter by menu’s Mendelian check', () => {
+  type Display = ReturnType<typeof displayWith>
+
+  function subMenuOf(items: MenuItem[], label: string) {
+    const item = items.find(
+      i =>
+        'label' in i &&
+        typeof i.label === 'string' &&
+        i.label.startsWith(label),
+    )
+    return item && 'subMenu' in item
+      ? { item, rows: resolveSubMenu(item) }
+      : undefined
+  }
+
+  function mendelianMenu(display: Display) {
+    const filterBy = subMenuOf(display.trackMenuItems(), 'Filter by')
+    return subMenuOf(filterBy?.rows ?? [], 'Mendelian check')
+  }
+
+  function toggle(display: Display, label: string) {
+    const row = mendelianMenu(display)?.rows.find(
+      i => 'label' in i && i.label === label,
+    )
+    if (row?.type !== 'checkbox') {
+      throw new Error(`no checkbox row labelled ${label}`)
+    }
+    row.onClick()
+  }
+
+  const checked = (display: Display) =>
+    mendelianMenu(display)?.rows.flatMap(i =>
+      i.type === 'checkbox' && i.checked ? [i.label] : [],
+    )
+
+  test('checking values writes one entry the worker is sent, and unchecking all removes it', () => {
+    const maf = { field: 'minorAlleleFrequency', gte: 0.05 }
+    const display = displayWith([maf])
+
+    toggle(display, 'Not in parents')
+    toggle(display, 'Inconsistent')
+
+    const entry = {
+      field: MENDELIAN_FIELD,
+      oneOf: ['notInParents', 'inconsistent'],
+    }
+    expect(predicatesOf(display.configuration.filter)).toEqual([maf, entry])
+    expect(display.rpcProps().mendelianFilter).toEqual([entry])
+    expect(checked(display)).toEqual(['Not in parents', 'Inconsistent'])
+
+    toggle(display, 'Not in parents')
+    toggle(display, 'Inconsistent')
+
+    expect(predicatesOf(display.configuration.filter)).toEqual([maf])
+    expect(display.rpcProps().mendelianFilter).toEqual([])
+    expect(checked(display)).toEqual([])
+  })
+
+  test('a config’s `equal` entry reads as its value checked', () => {
+    const display = displayWith([
+      { field: MENDELIAN_FIELD, equal: 'notInParents' },
+    ])
+
+    expect(checked(display)).toEqual(['Not in parents'])
+  })
+
+  test('a track with no trio greys it with the reason', () => {
+    const { display } = createTestEnvironment().createDisplay()
+    display.setSources([{ name: 'kid' }, ...PARENTS])
+
+    expect(mendelianMenu(display)?.item).toMatchObject({
+      label: 'Mendelian check (no sample has a parent among the samples)',
+      disabled: true,
+    })
   })
 })
