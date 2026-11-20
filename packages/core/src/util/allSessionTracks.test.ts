@@ -73,3 +73,28 @@ test('a session without connections is passed through by identity', () => {
   expect(allSessionTracks({ tracks })).toBe(tracks)
   expect(allSessionTracks({ tracks, connectionInstances: [] })).toBe(tracks)
 })
+
+test('a session or config track wins over a hub track of the same id', () => {
+  const mine = track('a')
+  const b = connectionTrack('b')
+  const [first, second, ...rest] = allSessionTracks({
+    tracks: [mine],
+    connectionInstances: [{ tracks: [connectionTrack('a'), b] }],
+  })
+  expect(first).toBe(mine)
+  expect(second).toBe(b)
+  expect(rest).toEqual([])
+})
+
+test('a later hub wins over an earlier one with the same trackId', () => {
+  const later = connectionTrack('a')
+  const [only, ...rest] = allSessionTracks({
+    tracks: [],
+    connectionInstances: [
+      { tracks: [connectionTrack('a')] },
+      { tracks: [later] },
+    ],
+  })
+  expect(only).toBe(later)
+  expect(rest).toEqual([])
+})

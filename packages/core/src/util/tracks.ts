@@ -1773,14 +1773,23 @@ export async function launchToggleTrackGeneric(
  *
  * Note `session.tracks` already contains `sessionTracks` — unioning those two
  * yields every session track twice.
+ *
+ * Each trackId is listed once, resolved as the session's `trackBaseById`
+ * resolves it: a session or config track wins over a hub track, and a later
+ * hub over an earlier one.
  */
 export function allSessionTracks(session: {
   tracks: TrackConfigEntry[]
   connectionInstances?: { tracks: TrackConfigEntry[] }[]
 }): TrackConfigEntry[] {
-  const connectionTracks = (session.connectionInstances ?? []).flatMap(
-    conn => conn.tracks,
-  )
+  const own = new Set(session.tracks.map(t => t.trackId))
+  const connectionTracks = [
+    ...new Map(
+      (session.connectionInstances ?? []).flatMap(conn =>
+        conn.tracks.map(t => [t.trackId, t] as const),
+      ),
+    ).values(),
+  ].filter(t => !own.has(t.trackId))
   return connectionTracks.length
     ? [...session.tracks, ...connectionTracks]
     : session.tracks
