@@ -13,6 +13,7 @@ import { observer } from 'mobx-react'
 import { createPortal } from 'react-dom'
 
 import { useStyleTheme } from './PaletteContext.tsx'
+import { UnreachableContext } from './UnreachableContext.ts'
 import { alpha, grey } from './palette.ts'
 import { TOOLTIP_Z_INDEX } from './zIndexes.ts'
 
@@ -181,7 +182,7 @@ const BaseTooltip = observer(function BaseTooltip({
       }}
       {...getFloatingProps()}
     >
-      {children}
+      <UnreachableContext value>{children}</UnreachableContext>
     </div>,
     target,
   )

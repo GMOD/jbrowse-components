@@ -1,10 +1,11 @@
-import { Suspense, lazy, useLayoutEffect, useRef } from 'react'
+import { Suspense, lazy, use, useLayoutEffect, useRef } from 'react'
 
 import { observer } from 'mobx-react'
 
 import { escapeHTML, looksLikeHTML } from '../util/htmlText.ts'
 import { linkify } from '../util/index.ts'
-import { rewriteExternalAnchors } from './rewriteExternalAnchors.ts'
+import { UnreachableContext } from './UnreachableContext.ts'
+import { rewriteAnchors } from './rewriteAnchors.ts'
 
 // The Sanitizer API ships in some browsers only. TypeScript 7.0's DOM lib has
 // no setHTML and 7.1's declares it on every Element, so it is found by looking.
@@ -24,9 +25,11 @@ function needsSanitization(str: string) {
 
 const SetHTML = observer(function SetHTML({
   value,
+  unlink,
   className,
 }: {
   value: string
+  unlink: boolean
   className?: string
 }) {
   const spanRef = useRef<HTMLSpanElement>(null)
@@ -37,12 +40,12 @@ const SetHTML = observer(function SetHTML({
         if (canSetHTML(el)) {
           el.setHTML(value)
         }
-        rewriteExternalAnchors(el)
+        rewriteAnchors(el, unlink)
       } catch (e) {
         console.error(e)
       }
     }
-  }, [value])
+  }, [value, unlink])
   return <span ref={spanRef} className={className} />
 })
 
@@ -53,21 +56,26 @@ const SanitizedHTML = observer(function SanitizedHTML({
   className?: string
   html: unknown
 }) {
+  const unlink = use(UnreachableContext)
   const str = `${pre}`
   if (!needsSanitization(str)) {
     return <span className={className}>{str}</span>
   }
 
-  const html = linkify(str)
+  const html = unlink ? str : linkify(str)
   const value = looksLikeHTML(html) ? html : escapeHTML(html)
 
   if (typeof Element !== 'undefined' && canSetHTML(Element.prototype)) {
-    return <SetHTML value={value} className={className} />
+    return <SetHTML value={value} unlink={unlink} className={className} />
   }
 
   return (
     <Suspense fallback={<span className={className} />}>
-      <DOMPurifySanitizedHTML value={value} className={className} />
+      <DOMPurifySanitizedHTML
+        value={value}
+        unlink={unlink}
+        className={className}
+      />
     </Suspense>
   )
 })

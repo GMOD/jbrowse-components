@@ -2,6 +2,7 @@ import { render, waitFor } from '@testing-library/react'
 
 import BaseTooltip from './BaseTooltip.tsx'
 import { StyleThemeProvider } from './PaletteContext.tsx'
+import SanitizedHTML from './SanitizedHTML.tsx'
 import { resolveStyleTheme } from './styleTheme.ts'
 
 // The tooltip is the one piece of display chrome that is not behind either
@@ -147,4 +148,14 @@ test('a named theme does not lose the configured container', () => {
   })
 
   expect(typeof theme.portalContainer).toBe('function')
+})
+
+test('renders a link in its content as plain text, since nothing in it can be clicked', async () => {
+  const { findByText, queryByRole } = render(
+    <BaseTooltip>
+      <SanitizedHTML html='ID: <a href="https://example.com/x">EH38E1</a>' />
+    </BaseTooltip>,
+  )
+  expect(await findByText('ID: EH38E1')).toBeTruthy()
+  expect(queryByRole('link')).toBeNull()
 })

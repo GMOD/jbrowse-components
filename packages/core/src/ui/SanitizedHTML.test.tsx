@@ -3,6 +3,7 @@ import '@testing-library/jest-dom'
 import { render, waitFor } from '@testing-library/react'
 
 import Sanitize from './SanitizedHTML.tsx'
+import { UnreachableContext } from './UnreachableContext.ts'
 
 test('test basic escaping with bold', async () => {
   const { getByText } = render(<Sanitize html="<b>Test</b>" />)
@@ -90,4 +91,57 @@ test('falls back to dompurify if setHTML is unavailable', async () => {
     // @ts-ignore
     Element.prototype.setHTML = oldSetHTML
   }
+})
+
+test('unwraps links to their text where the pointer cannot reach', () => {
+  const setHTMLMock = jest.fn(function (this: HTMLElement, html: string) {
+    this.innerHTML = html
+  })
+  // @ts-ignore
+  const oldSetHTML = Element.prototype.setHTML
+  // @ts-ignore
+  Element.prototype.setHTML = setHTMLMock
+
+  try {
+    const { getByText, queryByRole } = render(
+      <UnreachableContext value>
+        <Sanitize html='ID: <a href="https://example.com/x">EH38E1</a>' />
+      </UnreachableContext>,
+    )
+    expect(queryByRole('link')).toBeNull()
+    expect(getByText('ID: EH38E1')).toBeInTheDocument()
+  } finally {
+    // @ts-ignore
+    Element.prototype.setHTML = oldSetHTML
+  }
+})
+
+test('unwraps links on the dompurify path where the pointer cannot reach', async () => {
+  // @ts-ignore
+  const oldSetHTML = Element.prototype.setHTML
+  // @ts-ignore
+  delete Element.prototype.setHTML
+
+  try {
+    const { findByText, queryByRole } = render(
+      <UnreachableContext value>
+        <Sanitize html='ID: <a href="https://example.com/x">EH38E1</a>' />
+      </UnreachableContext>,
+    )
+    expect(await findByText('ID: EH38E1')).toBeInTheDocument()
+    expect(queryByRole('link')).toBeNull()
+  } finally {
+    // @ts-ignore
+    Element.prototype.setHTML = oldSetHTML
+  }
+})
+
+test('does not linkify a bare url where the pointer cannot reach', async () => {
+  const { findByText, queryByRole } = render(
+    <UnreachableContext value>
+      <Sanitize html="see https://example.com/x" />
+    </UnreachableContext>,
+  )
+  expect(await findByText('see https://example.com/x')).toBeInTheDocument()
+  expect(queryByRole('link')).toBeNull()
 })

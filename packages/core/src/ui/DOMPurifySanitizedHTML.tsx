@@ -3,13 +3,15 @@ import { useLayoutEffect, useRef } from 'react'
 import dompurify from 'dompurify'
 import { observer } from 'mobx-react'
 
-import { rewriteExternalAnchors } from './rewriteExternalAnchors.ts'
+import { rewriteAnchors } from './rewriteAnchors.ts'
 
 const DOMPurifySanitizedHTML = observer(function DOMPurifySanitizedHTML({
   value,
+  unlink,
   className,
 }: {
   value: string
+  unlink: boolean
   className?: string
 }) {
   const spanRef = useRef<HTMLSpanElement>(null)
@@ -17,9 +19,9 @@ const DOMPurifySanitizedHTML = observer(function DOMPurifySanitizedHTML({
   useLayoutEffect(() => {
     const el = spanRef.current
     if (el) {
-      rewriteExternalAnchors(el)
+      rewriteAnchors(el, unlink)
     }
-  }, [value])
+  }, [value, unlink])
 
   return (
     <span
