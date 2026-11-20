@@ -7728,7 +7728,9 @@ export const configManifest: ConfigManifest = {
         "id",
         "type",
         "parkedColors",
-        "configuration"
+        "configuration",
+        "indexSnp",
+        "indexSnpId"
       ]
     },
     "LinearWiggleDisplay": {

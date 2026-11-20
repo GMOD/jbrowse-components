@@ -344,7 +344,7 @@ const names: Record<string, string[]> = {
   '@jbrowse/core/util/installFetch': ['installFetch', 'runFetchOnce'],
   '@jbrowse/core/util/installInitAutorun': ['installInitAutorun'],
   '@jbrowse/core/util/installPrerequisiteFetch': ['installPrerequisiteFetch', 'isCurrentRead', 'readFor'],
-  '@jbrowse/core/util/io': ['CachedFilehandle', 'RemoteFileWithRangeCache', 'getFetcher', 'openLocation', 'openTabixIndexFilehandle', 'resolveUriLocation'],
+  '@jbrowse/core/util/io': ['CachedFilehandle', 'RemoteFileWithRangeCache', 'getFetcher', 'locationLocalPath', 'openLocation', 'openTabixIndexFilehandle', 'resolveUriLocation'],
   '@jbrowse/core/util/io/RemoteFileWithRangeCache': ['CachedFilehandle', 'RemoteFileWithRangeCache', 'clearCache', 'clearCacheFor', 'sweepIdleCache'],
   '@jbrowse/core/util/isDataCurrent': ['isDataCurrent'],
   '@jbrowse/core/util/isoformRank': ['DEFAULT_CANONICAL_TRANSCRIPTS', 'featureIsoformReader', 'isCanonicalTranscriptsHost', 'isCodingIsoform', 'isoformScorer', 'rankIsoforms', 'serializedIsoformReader'],

@@ -3528,6 +3528,7 @@
         "CachedFilehandle",
         "RemoteFileWithRangeCache",
         "getFetcher",
+        "locationLocalPath",
         "openLocation",
         "openTabixIndexFilehandle",
         "resolveUriLocation"
