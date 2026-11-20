@@ -97,8 +97,10 @@ found none of the six "Fiber-seq Compendium - THP-1 …" tracks.
   however narrow the table, as a shown one does, and a sort on a field no
   longer offered as a column is dropped, so the order is never hidden
   (2026-11-17).
-- **Description is hover text, not a column.** The name cell's title is the
-  name and the description, as the tree's tooltip is.
+- **Description is hover text, not a column.** The table's name shows it in
+  the tree's styled tooltip, after the whole name when the name is cut, and a
+  cut value in any column shows in full the same way; nothing in the table
+  uses a native `title` (Colin finds them slow, 2026-11-20).
 - **A name is cut once, at its end,** in the tree and the table. The table's
   name cell is a flex row, so a long name never hides its ⋮ menu, and its
   hover text is the whole name.

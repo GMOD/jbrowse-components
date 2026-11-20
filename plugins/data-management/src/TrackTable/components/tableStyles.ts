@@ -6,6 +6,9 @@ import { trackRowTints } from '../../HierarchicalTrackSelectorWidget/components/
 const CHECKBOX_ICON_SIZE = '1.15rem'
 
 export const useTableStyles = makeStyles()(theme => ({
+  grid: {
+    height: '100%',
+  },
   trackRow: {
     '&:hover > td': {
       background: trackRowTints(theme).hover,
@@ -18,6 +21,11 @@ export const useTableStyles = makeStyles()(theme => ({
     width: '100%',
     height: ROW_HEIGHT - 1,
     '& svg': { width: CHECKBOX_ICON_SIZE, height: CHECKBOX_ICON_SIZE },
+  },
+  valueCell: {
+    overflow: 'hidden',
+    textOverflow: 'ellipsis',
+    whiteSpace: 'nowrap',
   },
   nameCell: {
     display: 'flex',

@@ -27,12 +27,24 @@ const NameCell = observer(function NameCell({
     <label
       htmlFor={checkboxId}
       className={classes.nameCell}
+      data-tooltip={row.description}
+      aria-description={coarseStripHTML(row.description)}
       onClick={selectOnModifierClick(model, row.id)}
     >
       <TrackNameText name={row.name} />
       <OverrideBadge model={model} trackId={row.id} name={row.name} />
       <TrackSelectorTrackMenu id={row.id} conf={row.conf} model={model} />
     </label>
+  )
+})
+
+// a value shows in full on hover only when its column cuts it
+const ValueCell = observer(function ValueCell({ html }: { html: string }) {
+  const { classes } = useTableStyles()
+  return (
+    <div data-tooltip="" data-clip className={classes.valueCell}>
+      <SanitizedHTML html={html} />
+    </div>
   )
 })
 
@@ -62,10 +74,6 @@ export function getTableColumns({
       cell: row => (
         <NameCell row={row} model={model} checkboxId={checkboxId(row.id)} />
       ),
-      title: row =>
-        coarseStripHTML(
-          row.description ? `${row.name}\n${row.description}` : row.name,
-        ),
     },
     ...fields
       .filter(id => id !== 'name')
@@ -77,8 +85,7 @@ export function getTableColumns({
             sortValue: row => coarseStripHTML(getRowStr(id, row)),
             // any metadata value (or category/description) can carry markup, and
             // SanitizedHTML short-circuits to a plain span when it doesn't
-            cell: row => <SanitizedHTML html={getRowStr(id, row)} />,
-            title: row => coarseStripHTML(getRowStr(id, row)),
+            cell: row => <ValueCell html={getRowStr(id, row)} />,
           }) satisfies TableColumn,
       ),
   ]

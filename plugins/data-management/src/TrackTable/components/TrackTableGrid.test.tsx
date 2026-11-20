@@ -163,6 +163,38 @@ test('opening a track menu from its name does not toggle the track', () => {
   expect(model.shownTrackIds.size).toBe(0)
 })
 
+test('a name shows its description in a styled tooltip, not a native title', async () => {
+  const { session, model, table } = setup()
+  session.addSessionTrackConf({
+    trackId: 'described',
+    name: 'described',
+    description: 'a description',
+    assemblyNames: ['volMyt1'],
+    type: 'FeatureTrack',
+    adapter: { type: 'FromConfigAdapter', features: [] },
+  })
+  const { getByText, findByRole } = renderGrid(model, table)
+  expect(getByText('described').closest('[title]')).toBeNull()
+  fireEvent.mouseOver(getByText('described'))
+  expect((await findByRole('tooltip')).textContent).toBe('a description')
+})
+
+test('a cut-off name shows in full on hover, and a name that fits opens nothing', async () => {
+  const { model, table } = setup()
+  const { getByText, findByRole, queryByRole } = renderGrid(model, table)
+  fireEvent.mouseOver(getByText('fooC'))
+  await new Promise(resolve => setTimeout(resolve, 800))
+  expect(queryByRole('tooltip')).toBeNull()
+
+  const clip = getByText('barC').closest('[data-clip]')!
+  Object.defineProperties(clip, {
+    scrollWidth: { value: 200 },
+    clientWidth: { value: 100 },
+  })
+  fireEvent.mouseOver(getByText('barC'))
+  expect((await findByRole('tooltip')).textContent).toBe('barC')
+})
+
 test('show-all appears only while a filter narrows the list, and shows what it kept', async () => {
   const { view, model, table } = setup()
   const { queryByLabelText, getByLabelText } = renderGrid(model, table)

@@ -17,7 +17,11 @@ const TrackNameText = observer(function TrackNameText({
   name: string
 }) {
   const { classes } = useStyles()
-  return <SanitizedHTML className={classes.name} html={name} />
+  return (
+    <span data-clip className={classes.name}>
+      <SanitizedHTML html={name} />
+    </span>
+  )
 })
 
 export default TrackNameText
