@@ -5,7 +5,7 @@ import {
 } from '@jbrowse/core/configuration'
 import { samplesTsvAdapterConfigSchemaFields } from '@jbrowse/core/util/samplesTsv'
 
-import { pedigreeAdapterConfigSchemaFields } from '../shared/pedigree.ts'
+import { pedigreeAdapterConfigSchemaFields } from '../shared/pedigreeAdapterConfigSchemaFields.ts'
 
 import type { Instance } from '@jbrowse/mobx-state-tree'
 
