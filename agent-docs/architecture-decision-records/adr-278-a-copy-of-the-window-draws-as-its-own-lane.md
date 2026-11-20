@@ -1,6 +1,6 @@
 ---
 status: Accepted
-summary: "MultiWaySyntenyDisplay `rows.field: 'refName'` draws a lane per contig holding a copy of the anchor window, named `{assembly}refName`, read against the anchor alone, and `auto`, the default, picks it where the track names at most one genome besides the anchor; `rows.sort` naming the anchor stacks it between copies. Synteny-view ribbon columns were declined"
+summary: "MultiWaySyntenyDisplay `rows.field: 'refName'` draws a lane per contig holding a copy of the anchor window, read against the anchor alone; `auto`, the default, picks it where the track names at most one other genome. Synteny-view ribbon columns were declined"
 ---
 
 # ADR-278: A copy of the window draws as its own lane

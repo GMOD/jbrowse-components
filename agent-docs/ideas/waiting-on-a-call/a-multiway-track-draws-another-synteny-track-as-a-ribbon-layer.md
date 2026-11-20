@@ -1,6 +1,6 @@
 ---
 name: a-multiway-track-draws-another-synteny-track-as-a-ribbon-layer
-description: MultiWaySyntenyDisplay reads one synteny source, where a LinearSyntenyView level overlays several. A `ribbonLayers` entry would draw another track's ribbons into the lanes the display's own source decides, MCScan's chained `.anchors.simple` under its `.anchors` gene pairs first. Read before overlaying sources on the multiway display or chaining its ribbons.
+description: MultiWaySyntenyDisplay reads one synteny source, where a LinearSyntenyView level overlays several. A `ribbonLayers` entry would draw another track's ribbons into its lanes, MCScan's chained `.anchors.simple` first. Read before overlaying sources on the multiway display or chaining its ribbons.
 ---
 
 # A multiway track draws another synteny track as a ribbon layer
