@@ -1,4 +1,4 @@
-import { fieldHeading } from './sectionsMenu.ts'
+import { fieldHeading } from './sectionsHeading.ts'
 
 test('a field heads the Sections column by its name, an expression as Section', () => {
   expect(fieldHeading('gene_biotype')).toBe('Gene_biotype')

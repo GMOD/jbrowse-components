@@ -2,7 +2,7 @@ import { categoricalField } from '@jbrowse/core/util/categoricalField'
 import { rampDomain } from '@jbrowse/core/util/colorRamp'
 import { FIT_ROWS, resolveRowHeight } from '@jbrowse/core/util/resolveRowHeight'
 import { keyWindowsOf } from '@jbrowse/display-kit/keyWindows'
-import { fieldHeading } from '@jbrowse/display-kit/sectionsMenu'
+import { fieldHeading } from '@jbrowse/display-kit/sectionsHeading'
 import {
   sameAsLast,
   stableIdentityComputed,

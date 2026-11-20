@@ -21,10 +21,8 @@ import {
   hiddenGroupsItems,
   resetSectionOrderItems,
 } from '@jbrowse/display-kit/groupByMenu'
-import {
-  fieldHeading,
-  sectionsMenuItemsFor,
-} from '@jbrowse/display-kit/sectionsMenu'
+import { fieldHeading } from '@jbrowse/display-kit/sectionsHeading'
+import { sectionsMenuItemsFor } from '@jbrowse/display-kit/sectionsMenu'
 import { rampEncodingOf } from '@jbrowse/display-kit/valueRamp'
 import {
   featureHeightMenuItem,

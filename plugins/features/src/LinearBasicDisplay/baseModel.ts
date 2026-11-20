@@ -46,7 +46,7 @@ import {
 import { groupByPlotOf } from '@jbrowse/display-kit/groupByMenu'
 import { openPlotDialog as queuePlotDialog } from '@jbrowse/display-kit/plotMenu'
 import { rpcArgs } from '@jbrowse/display-kit/rpcArgs'
-import { fieldHeading } from '@jbrowse/display-kit/sectionsMenu'
+import { fieldHeading } from '@jbrowse/display-kit/sectionsHeading'
 import { types } from '@jbrowse/mobx-state-tree'
 import { containingLgv } from '@jbrowse/plugin-linear-genome-view'
 import { installUpload } from '@jbrowse/render-core/installUpload'

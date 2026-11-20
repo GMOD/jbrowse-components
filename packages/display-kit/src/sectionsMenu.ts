@@ -1,7 +1,6 @@
 import { lazy } from 'react'
 
-import { capitalizeFirst, getDialogHost } from '@jbrowse/core/util'
-import { isJexl } from '@jbrowse/core/util/jexlStrings'
+import { getDialogHost } from '@jbrowse/core/util'
 import ChecklistIcon from '@mui/icons-material/Checklist'
 
 import type { SectionsDialogModel } from './SectionsDialog.tsx'
@@ -11,14 +10,6 @@ import type { IStateTreeNode } from '@jbrowse/mobx-state-tree'
 const SectionsDialog = lazy(() => import('./SectionsDialog.tsx'))
 
 export type SectionsHost = SectionsDialogModel & IStateTreeNode
-
-/**
- * The Sections dialog's column header for a facet on `field`: the field's
- * own name, or "Section" for an expression or no field.
- */
-export function fieldHeading(field = '') {
-  return field && !isJexl(field) ? capitalizeFirst(field) : 'Section'
-}
 
 /**
  * "Sections...", the checklist of `model`'s sections, while it knows any;

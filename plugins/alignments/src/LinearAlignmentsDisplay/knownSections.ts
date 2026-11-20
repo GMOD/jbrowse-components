@@ -1,6 +1,6 @@
 import { categoricalField } from '@jbrowse/core/util/categoricalField'
 import { OVERFLOW_GROUP_KEY } from '@jbrowse/core/util/groupKeys'
-import { fieldHeading } from '@jbrowse/display-kit/sectionsMenu'
+import { fieldHeading } from '@jbrowse/display-kit/sectionsHeading'
 
 import { FACET_LABELS, fieldTag } from '../shared/facetLabels.ts'
 import { isReadDimension, sectionOrder } from '../shared/groupFeatures.ts'
