@@ -1,4 +1,5 @@
 import { SvgThemeProviders } from '@jbrowse/core/svg/SvgThemeProviders'
+import { exportFontFamily } from '@jbrowse/core/svg/constants'
 import { serializeSvg } from '@jbrowse/core/svg/serializeSvg'
 import { awaitSvgRenders } from '@jbrowse/core/svg/svgReady'
 import {
@@ -141,7 +142,7 @@ export async function paintRingsSvg(
           xmlnsXlink="http://www.w3.org/1999/xlink"
           width={width}
           height={height}
-          fontFamily={opts.fontFamily || undefined}
+          fontFamily={exportFontFamily(opts.fontFamily)}
         >
           {body}
         </svg>

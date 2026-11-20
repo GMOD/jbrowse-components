@@ -93,3 +93,26 @@ test('a physical width goes on the root with its height, over the px viewBox', (
   expect(root({ value: 183, unit: 'mm' })).toContain('viewBox="0 0 692 256"')
   expect(root()).toContain('width="692" height="256"')
 })
+
+// A root with no font-family leaves every label to the viewer's default,
+// which is serif in browsers, librsvg and PDF converters.
+test.each([
+  [undefined, 'sans-serif'],
+  ['', 'sans-serif'],
+  ['serif', 'serif'],
+  ['monospace', 'monospace'],
+])(
+  'the root of an export asked for font %p carries font-family %p',
+  (fontFamily, expected) => {
+    const root = /<svg[^>]*>/.exec(
+      wrapSvgExport({
+        theme: undefined,
+        width: 100,
+        height: 40,
+        fontFamily,
+        children: <text>a</text>,
+      }),
+    )?.[0]
+    expect(root).toContain(`font-family="${expected}"`)
+  },
+)

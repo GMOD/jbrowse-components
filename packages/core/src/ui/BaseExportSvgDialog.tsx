@@ -42,8 +42,8 @@ function shellQuote(filename: string) {
 
 // Generic CSS families only, so exported text resolves in any SVG renderer
 // (browser, Inkscape, Illustrator) without embedding a named font like Roboto.
-// The 'default' sentinel is the selected default; it maps to no font-family so
-// the renderer decides (see the exportSvg call below).
+// The 'default' sentinel is the selected default; it maps to no font-family,
+// which the export's root draws in `exportFontFamily`'s sans-serif.
 const DEFAULT_FONT = 'default'
 const fontFamilyOptions = [
   { value: DEFAULT_FONT, label: 'Default' },

@@ -5,7 +5,7 @@
 
 import { usePalette } from '../ui/PaletteContext.tsx'
 import { stripAlpha } from '../util/svgColorProps.ts'
-import { exportMargin } from './constants.ts'
+import { exportFontFamily, exportMargin } from './constants.ts'
 import { physicalRootSize } from './figureSize.ts'
 import { svgSafeId } from './svgId.ts'
 
@@ -48,9 +48,9 @@ export function SVGExportRoot({
   physicalWidth?: PhysicalWidth
   // Font for the whole export, inherited by every <text> so raw-JSX labels
   // (ruler, scalebar, axes) and SvgCanvas feature labels stay consistent.
-  // Empty/undefined emits no font-family, leaving the renderer default; a
-  // generic family (sans-serif/serif/monospace) resolves in any SVG viewer
-  // without embedding a named font.
+  // Empty/undefined is `exportFontFamily`'s sans-serif; a generic family
+  // (sans-serif/serif/monospace) resolves in any SVG viewer without embedding
+  // a named font.
   fontFamily?: string
   children: React.ReactNode
 }) {
@@ -65,7 +65,7 @@ export function SVGExportRoot({
       xmlns="http://www.w3.org/2000/svg"
       xmlnsXlink="http://www.w3.org/1999/xlink"
       viewBox={`0 0 ${totalWidth} ${height}`}
-      fontFamily={fontFamily ? fontFamily : undefined}
+      fontFamily={exportFontFamily(fontFamily)}
     >
       <SVGBackground width={totalWidth} height={height} />
       {children}
