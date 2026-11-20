@@ -32,7 +32,12 @@
           "type": "CytobandAdapter",
           "uri": "https://jbrowse.org/ucsc/hg19/cytoBandIdeo.bed.gz"
         }
-      }
+      },
+      "transmission": [
+        { "refName": "chrX", "sex": "male", "from": "mother" },
+        { "refName": "chrY", "sex": "male", "from": "father" },
+        { "refName": "chrM", "from": "either" }
+      ]
     },
     {
       "name": "hg38",
@@ -56,7 +61,12 @@
           "type": "CytobandAdapter",
           "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/GRCh38/cytoBand.txt"
         }
-      }
+      },
+      "transmission": [
+        { "refName": "chrX", "sex": "male", "from": "mother" },
+        { "refName": "chrY", "sex": "male", "from": "father" },
+        { "refName": "chrM", "from": "either" }
+      ]
     },
     {
       "name": "hs1",
@@ -5106,6 +5116,10 @@
             "locationType": "UriLocation"
           },
           "indexType": "TBI"
+        },
+        "pedigreeLocation": {
+          "uri": "https://jbrowse.org/demos/kgp-trio/20130606_g1k_3202_samples_ped_population.txt",
+          "locationType": "UriLocation"
         }
       },
       "assemblyNames": ["hg38"]
