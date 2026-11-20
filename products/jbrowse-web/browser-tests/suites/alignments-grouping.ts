@@ -211,6 +211,39 @@ const suite: TestSuite = {
         }
       },
     },
+    {
+      // The chip is draggable, and a pill that took pointer capture on
+      // pointerdown had Chrome deliver the click to the pill instead of the
+      // button pressed, so collapse and hide did nothing. jsdom has no capture.
+      name: 'a chip’s collapse and hide buttons answer a real click',
+      fn: async page => {
+        await loadPileup(page)
+        await groupByMenu(page, 'Strand')
+
+        const collapse = await page.$(
+          'button[title="Collapse this group to coverage only"]',
+        )
+        if (!collapse) {
+          throw new Error('no collapse button on the strand chips')
+        }
+        await collapse.click()
+        await delay(500)
+        if (!(await page.$('button[title="Show this group’s pileup"]'))) {
+          throw new Error('clicking collapse left the group expanded')
+        }
+
+        const hide = await page.$('button[title="Hide \\"Reverse strand\\""]')
+        if (!hide) {
+          throw new Error('no hide button on the Reverse strand chip')
+        }
+        await hide.click()
+        await delay(500)
+        const labels = await chipLabels(page)
+        if (labels.join(' | ') !== 'Forward strand') {
+          throw new Error(`hiding Reverse strand left ${labels.join(' | ')}`)
+        }
+      },
+    },
   ],
 }
 

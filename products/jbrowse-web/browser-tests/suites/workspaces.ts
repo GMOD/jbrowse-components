@@ -198,6 +198,31 @@ const suite: TestSuite = {
       },
     },
     {
+      // A tab is draggable, and a tab that took pointer capture on pointerdown
+      // had Chrome deliver the double-click to the tab instead of its title.
+      // jsdom has no capture, so only a real browser sees this.
+      name: 'double-clicking a tab title opens its rename field',
+      fn: async page => {
+        await navigateToApp(page)
+        await setupWorkspacesViaMoveToTab(page)
+
+        const title = await page.$('[role="tab"] .MuiTypography-root')
+        const box = await title?.boundingBox()
+        if (!box) {
+          throw new Error('no tab title to double-click')
+        }
+        await page.mouse.click(box.x + box.width / 2, box.y + box.height / 2, {
+          count: 2,
+        })
+        await delay(500)
+        if (!(await page.$('[role="tab"] input'))) {
+          throw new Error(
+            'double-clicking the tab title opened no rename field',
+          )
+        }
+      },
+    },
+    {
       name: 'multiple views in workspace - move up and down',
       fn: async page => {
         await navigateToApp(page)
