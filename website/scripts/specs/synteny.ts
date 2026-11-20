@@ -2362,7 +2362,7 @@ export const syntenySpecs: ScreenshotSpec[] = [
           views: [
             {
               assembly: PEACH,
-              loc: 'chrG5:4,700,000-13,000,000',
+              loc: 'chrG7:18,000,000-22,388,614',
               tracks: [
                 {
                   trackId: 'grape_peach_anchors_simple',
@@ -2372,7 +2372,7 @@ export const syntenySpecs: ScreenshotSpec[] = [
             },
             {
               assembly: GRAPE,
-              loc: 'chr2:1-8,200,000',
+              loc: 'chr11:1-10,000,000',
               tracks: [
                 {
                   trackId: 'grape_peach_anchors_simple',
