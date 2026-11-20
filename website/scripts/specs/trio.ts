@@ -155,11 +155,13 @@ export const trioSpecs: ScreenshotSpec[] = [
   {
     mode: 'url',
     name: 'trio-basic',
-    viewportHeight: 420,
+    viewportHeight: 440,
+    // Hom-ref, het and hom-alt calls in every row, with sites where the child
+    // is het between a hom-ref and a hom-alt parent (236,136,627 and 815).
     url: lgvSession(DEMO_CONFIG, {
       assembly: 'hg38',
-      loc: 'chr1:1,000,000-1,001,000',
-      tracks: ['HG02024_VN049_KHVTrio.chr1.vcf'],
+      loc: 'chr1:236,136,450-236,137,250',
+      tracks: [{ trackId: TRIO_VCF_TRACK, height: 240 }],
     }),
     readyText: 'chr1',
     readyTimeout: 60000,

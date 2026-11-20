@@ -62,10 +62,10 @@ The tracks below read local files that the
 run the hap-ibd steps on the phased VCF of a trio of your own. The script
 fetches everything itself.
 
-| What it is                                                                                                                                      | File                                                                                                                                                |
-| ----------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------- |
-| The phased trio VCF                                                                                                                             | [HG02024_VN049_KHVTrio.chr1.vcf.gz](https://hgdownload.soe.ucsc.edu/gbdb/hg38/1000Genomes/trio/HG02024_VN049_KHV/HG02024_VN049_KHVTrio.chr1.vcf.gz) |
-| The GRCh38 PLINK genetic map hap-ibd needs, the `no_chr_in_chrom_field` variant, since the trio VCF calls its chromosome `1` rather than `chr1` | [plink.GRCh38.map.zip](https://bochet.gcc.biostat.washington.edu/beagle/genetic_maps/plink.GRCh38.map.zip)                                          |
+| What it is                                                                                                                                      | File                                                                                                       |
+| ----------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------- |
+| The phased trio VCF                                                                                                                             | [HG02024_VN049_KHVTrio.chr1.vcf.gz](https://jbrowse.org/demos/kgp-trio/HG02024_VN049_KHVTrio.chr1.vcf.gz)  |
+| The GRCh38 PLINK genetic map hap-ibd needs, the `no_chr_in_chrom_field` variant, since the trio VCF calls its chromosome `1` rather than `chr1` | [plink.GRCh38.map.zip](https://bochet.gcc.biostat.washington.edu/beagle/genetic_maps/plink.GRCh38.map.zip) |
 
 ## Loading the hg38 assembly
 
@@ -113,7 +113,7 @@ naming as the assembly. In JBrowse Web you can instead paste the URL into **File
   "assemblyNames": ["hg38"],
   "adapter": {
     "type": "VcfTabixAdapter",
-    "uri": "https://hgdownload.soe.ucsc.edu/gbdb/hg38/1000Genomes/trio/HG02024_VN049_KHV/HG02024_VN049_KHVTrio.chr1.vcf.gz"
+    "uri": "https://jbrowse.org/demos/kgp-trio/HG02024_VN049_KHVTrio.chr1.vcf.gz"
   }
 }
 ```
