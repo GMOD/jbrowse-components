@@ -2390,6 +2390,32 @@ export const syntenySpecs: ScreenshotSpec[] = [
     viewportHeight: 640,
   },
 
+  {
+    mode: 'url',
+    name: 'mcscan_synteny/gamma_copies',
+    url: sessionSpec(GRAPE_PEACH_CONFIG, {
+      views: [
+        {
+          type: 'LinearSyntenyView',
+          views: [
+            { assembly: GRAPE, loc: 'chr9:1-8,000,000' },
+            { assembly: PEACH, loc: 'chrG7:18,000,000-22,388,614' },
+            { assembly: GRAPE, loc: 'chr11:1-10,000,000' },
+          ],
+          tracks: ['grape_peach_anchors'],
+          mark: { interpolate: 'bump' },
+          encoding: { opacity: 0.6 },
+          offscreen: { show: false },
+          collapseEmptyRows: true,
+          levelHeights: [260, 260],
+        },
+      ],
+    }),
+    readySelector: displayPainted('synteny_canvas'),
+    readyTimeout: 60000,
+    viewportHeight: 740,
+  },
+
   ...mcscanFilePartSpecs(),
   {
     mode: 'compose',
