@@ -6,147 +6,154 @@ import BaseLayout from '../layouts/BaseLayout.astro'
 import { baseUrl } from '../lib/base-url.ts'
 import btn from '../styles/button.module.css'
 import page from '../styles/page.module.css'
-const ghRelease = `https://github.com/GMOD/jbrowse-components/releases/tag/${currentVersion}`
-const desktopBase = `https://github.com/GMOD/jbrowse-components/releases/download/${currentVersion}`
-const webZip = `https://github.com/GMOD/jbrowse-components/releases/download/${currentVersion}/jbrowse-web-${currentVersion}.zip`
-const appExamples = 'https://jbrowse.org/storybook/app/'
-const lgvExamples = 'https://jbrowse.org/storybook/lgv/'
-const cgvExamples = 'https://jbrowse.org/storybook/cgv/'
+const releases = 'https://github.com/GMOD/jbrowse-components/releases'
+const releaseNotes = `${releases}/tag/${currentVersion}`
+const assetBase = `${releases}/download/${currentVersion}`
+const webZip = `${assetBase}/jbrowse-web-${currentVersion}.zip`
+const examplesBase = 'https://jbrowse.org/storybook'
 
 const desktopDownloads = [
-  { os: 'MacOS', suffix: 'mac.dmg', icon: 'mdi:apple' },
-  { os: 'Windows', suffix: 'win.exe', icon: 'mdi:microsoft-windows' },
-  { os: 'Linux', suffix: 'linux.AppImage', icon: 'mdi:linux' },
+  {
+    os: 'macOS',
+    detail: 'Apple silicon and Intel',
+    suffix: 'mac.dmg',
+    icon: 'mdi:apple',
+  },
+  {
+    os: 'Windows',
+    detail: '64-bit installer',
+    suffix: 'win.exe',
+    icon: 'mdi:microsoft-windows',
+  },
+  {
+    os: 'Linux',
+    detail: '64-bit AppImage',
+    suffix: 'linux.AppImage',
+    icon: 'mdi:linux',
+  },
+]
+
+const embeddedComponents = [
+  {
+    pkg: '@jbrowse/react-app2',
+    what: 'the full JBrowse app',
+    examples: 'app',
+  },
+  {
+    pkg: '@jbrowse/react-linear-genome-view2',
+    what: 'a linear genome view',
+    examples: 'lgv',
+  },
+  {
+    pkg: '@jbrowse/react-circular-genome-view2',
+    what: 'a circular genome view',
+    examples: 'cgv',
+  },
 ]
 ---
 
 <BaseLayout
-  title="Download JBrowse 2"
+  title="Download JBrowse"
   description="Download JBrowse Desktop or JBrowse Web, install the JBrowse CLI tools, or embed JBrowse as a React component, Jupyter widget, or R/Shiny widget."
 >
   <div class={page.content}>
-    <h1>Download JBrowse 2</h1>
-    <p>
-      JBrowse 2 is a new browser for today's increasingly complex data. We make
-      several different products for use in different scenarios, choose the one
-      below that best fits your needs.
+    <h1>Download JBrowse</h1>
+    <p class="release">
+      Current release {currentVersion} ·{' '}
+      <a href={releaseNotes}>release notes</a>
     </p>
 
     <h2>JBrowse Desktop</h2>
     <p>
-      A standalone app that runs on your own computer that can view data from
-      many sources.
+      An app for your own computer. It opens files on your disk as well as
+      remote data, and updates itself when a new release is out.
     </p>
     <div class="download-cards">
-      {desktopDownloads.map(({ os, suffix, icon }) => (
+      {desktopDownloads.map(({ os, detail, suffix, icon }) => (
         <div class="download-card">
-          <div class="card-icon">
-            <Icon name={icon} width="40" height="40" />
-          </div>
+          <Icon name={icon} width="40" height="40" />
           <h3>{os}</h3>
+          <span class="caption">{detail}</span>
           <a
             class:list={[btn.btn, btn.btnPrimary, btn.btnSmall]}
-            href={`${desktopBase}/jbrowse-desktop-${currentVersion}-${suffix}`}
+            href={`${assetBase}/jbrowse-desktop-${currentVersion}-${suffix}`}
           >
             Download
           </a>
         </div>
       ))}
     </div>
-    <p class="caption">
-      Check out our{' '}
-      <a href={`${baseUrl}/docs/quickstart_desktop/`}>quick start guide</a>{' '}
-      after downloading. Can't find what you're looking for? Check{' '}
-      <a href={ghRelease}>other platforms</a>.
+    <p>
+      Then follow the{' '}
+      <a href={`${baseUrl}/docs/quickstart_desktop/`}>desktop quick start</a>.
+      On Linux, <code>chmod a+x</code> the AppImage before running it.
     </p>
     <p class="caption">
-      Free code signing provided by{' '}
-      <a href="https://about.signpath.io">SignPath.io</a>, certificate by{' '}
-      <a href="https://signpath.org">SignPath Foundation</a> — see our{' '}
-      <a href={`${baseUrl}/code-signing-policy/`}>code signing policy</a>.
+      Windows builds are signed through{' '}
+      <a href="https://about.signpath.io">SignPath.io</a> with a certificate
+      from the <a href="https://signpath.org">SignPath Foundation</a>, and macOS
+      builds are notarized by Apple. See the{' '}
+      <a href={`${baseUrl}/code-signing-policy/`}>code signing policy</a>, or{' '}
+      <a href={releases}>all releases</a> for older versions.
     </p>
 
-    <h2>JBrowse Web</h2>
+    <h2 id="jbrowse-web">JBrowse Web</h2>
     <p>
-      Run a full-featured genome browser with many types of built-in views on
-      your own website.
+      A genome browser you host on your own web server for others to open. It is
+      a folder of static files, and the JBrowse CLI creates it and adds
+      assemblies and tracks to its config:
     </p>
-    <div class="web-download">
-      <a class:list={[btn.btn, btn.btnPrimary]} href={webZip}>
-        Download JBrowse Web
-      </a>
-    </div>
+    <pre><code>npm install -g @jbrowse/cli
+jbrowse create jbrowse2</code></pre>
     <p>
-      Consider installing the JBrowse CLI tools (below), which can be used to
-      create and manage JBrowse Web instances from the command line.
-    </p>
-
-    <h2 id="jbrowse-cli-tools">JBrowse CLI tools</h2>
-    <p>
-      The JBrowse CLI helps administrators add genome assemblies, tracks, and
-      more to their config files.
-    </p>
-    <pre><code>npm install -g @jbrowse/cli</code></pre>
-    <p>
-      After installing, check out our{' '}
-      <a href={`${baseUrl}/docs/quickstart_web/`}>quick-start guide</a>.
+      Then follow the{' '}
+      <a href={`${baseUrl}/docs/quickstart_web/`}>web quick start</a>. To skip
+      the CLI, <a href={webZip}>download the JBrowse Web zip</a> directly.
     </p>
 
     <h2>Static image generator</h2>
     <p>
-      <a href={`${baseUrl}/docs/jbrowse-img/`}>@jbrowse/img</a> generates images
-      of JBrowse 2 statically on the command line. See the{' '}
-      <a href={`${baseUrl}/docs/jbrowse-img/`}>documentation</a> or the{' '}
-      <a href="https://www.npmjs.com/package/@jbrowse/img">NPM package</a>.
+      <a href={`${baseUrl}/docs/jbrowse-img/`}>@jbrowse/img</a> renders JBrowse
+      views to images from the command line, with no browser:
     </p>
+    <pre><code>npm install -g @jbrowse/img</code></pre>
 
     <h2>Embedded components</h2>
+    <p>React components on NPM that put a JBrowse view in your own web app:</p>
     <ul>
-      <li>
-        <a href="https://www.npmjs.com/package/@jbrowse/react-app2">
-          @jbrowse/react-app2
-        </a>{' '}
-        — full JBrowse 2 app React component on NPM (
-        <a href={appExamples}>live examples</a>)
-      </li>
-      <li>
-        <a href="https://www.npmjs.com/package/@jbrowse/react-linear-genome-view2">
-          @jbrowse/react-linear-genome-view2
-        </a>{' '}
-        — linear genome browser React component on NPM (
-        <a href={lgvExamples}>live examples</a>)
-      </li>
-      <li>
-        <a href="https://www.npmjs.com/package/@jbrowse/react-circular-genome-view2">
-          @jbrowse/react-circular-genome-view2
-        </a>{' '}
-        — circular genome browser React component on NPM (
-        <a href={cgvExamples}>live examples</a>)
-      </li>
+      {embeddedComponents.map(({ pkg, what, examples }) => (
+        <li>
+          <a href={`https://www.npmjs.com/package/${pkg}`}>{pkg}</a>, {what}.
+          <a href={`${examplesBase}/${examples}/`}>Live examples</a>
+        </li>
+      ))}
     </ul>
     <p>
-      More info in the{' '}
-      <a href={`${baseUrl}/docs/embedded_components/`}>embedded docs</a>,
-      including examples with create-react-app, vite, next.js, and vanillajs.
+      The <a href={`${baseUrl}/docs/embedded_components/`}>embedded docs</a>{' '}
+      have examples for Vite, Next.js and plain JavaScript.
     </p>
 
-    <h2>Other language bindings</h2>
+    <h2>Python and R</h2>
     <ul>
       <li>
-        Python (anywidget):{' '}
-        <a href={`${baseUrl}/docs/jbrowse_anywidget/`}>Documentation</a>,{' '}
+        Python, as a Jupyter widget:{' '}
+        <a href={`${baseUrl}/docs/jbrowse_anywidget/`}>documentation</a>,{' '}
         <a href="https://github.com/GMOD/jbrowse-anywidget">source code</a>
       </li>
       <li>
-        R/Shiny: <a href={`${baseUrl}/docs/jbrowser/`}>Documentation</a>,{' '}
-        <a href="https://gmod.github.io/JBrowseR/">JBrowseR</a> — R package on
-        CRAN
+        R and Shiny, with the{' '}
+        <a href="https://gmod.github.io/JBrowseR/">JBrowseR</a> package on CRAN:{' '}
+        <a href={`${baseUrl}/docs/jbrowser/`}>documentation</a>
       </li>
     </ul>
   </div>
 </BaseLayout>
 
 <style>
+  .release {
+    color: var(--color-text-muted);
+    margin-top: -0.5rem;
+  }
   .download-cards {
     display: flex;
     gap: 1.5rem;
@@ -165,14 +172,8 @@ const desktopDownloads = [
     align-items: center;
     gap: 0.5rem;
   }
-  .card-icon {
-    font-size: 2rem;
-  }
   .download-card h3 {
     margin: 0;
-  }
-  .web-download {
-    margin: 1rem 0;
   }
   .caption {
     font-size: 0.85rem;
