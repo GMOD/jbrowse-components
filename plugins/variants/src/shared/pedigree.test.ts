@@ -83,6 +83,18 @@ test('a tab-separated table keeps an empty cell in its column', () => {
   })
 })
 
+test('a trailing tab leaves a space-separated line read by its spaces', () => {
+  expect(attributesOf('f1 kid dad mom 1 2\t', ['kid', 'dad'])).toEqual({
+    kid: {
+      family: 'f1',
+      father: 'dad',
+      mother: 'mom',
+      sex: 'male',
+      phenotype: 'affected',
+    },
+  })
+})
+
 test('a headerless tab-separated .fam keeps an empty family in its column', () => {
   expect(attributesOf('\tkid\tdad\tmom\t2\t-9', ['kid', 'dad'])).toEqual({
     kid: { father: 'dad', mother: 'mom', sex: 'female' },

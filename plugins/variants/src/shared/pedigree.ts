@@ -39,7 +39,7 @@ function isMissingCode(code: string) {
  */
 export function pedigreeSexOf(code: string) {
   const lower = code.toLowerCase()
-  return isMissingCode(lower)
+  return isMissingCode(code)
     ? undefined
     : lower === '1' || lower === 'm' || lower === 'male'
       ? 'male'
@@ -83,7 +83,8 @@ export function parsePedigree(
 ) {
   const rows = txt
     .split(/\r\n|\r|\n/)
-    .filter(line => line.trim() !== '')
+    .map(line => line.trimEnd())
+    .filter(Boolean)
     .map(line =>
       line.includes('\t')
         ? line.split('\t').map(cell => cell.trim())
@@ -148,7 +149,9 @@ export function parsePedigree(
   if (attributes.size === 0 && names.length > 0) {
     const sampleColumn = columns.sample
     const example =
-      sampleColumn === undefined ? undefined : bodyRows[0]?.[sampleColumn]
+      sampleColumn === undefined
+        ? undefined
+        : bodyRows.map(cells => cells[sampleColumn]).find(Boolean)
     warnings.push(
       example === undefined
         ? `The pedigree file ${fileLabel} has no sample rows, so it adds nothing`

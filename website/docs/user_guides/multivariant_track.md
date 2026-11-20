@@ -227,14 +227,16 @@ Each sample gains `family`, `father`, `mother`, `sex` and `phenotype`
 attributes, which group, sort, color and label rows as a samples TSV's columns
 do.
 
-- **Codes:** a parent of `0` is unknown; sex `1` is `male`, `2` is `female` and
-  any other code but `0` or `-9` is `other`; phenotype `2` is `affected` and `1`
-  is `unaffected`.
+- **Codes:** `0`, `-9`, `NA`, `unknown` or an empty cell is no value, for a
+  parent, sex or phenotype alike; sex `1` is `male`, `2` is `female` and any
+  other code is `other`; phenotype `2` is `affected` and `1` is `unaffected`.
+- **Separators:** a line holding a tab is split on tabs, so an empty cell keeps
+  its column; any other line is split on runs of spaces.
 - **Sample names:** a sample ID that matches no VCF sample is tried as
   `FID_IID`, the name `plink --recode vcf` writes.
 - **Precedence:** a `samplesTsvLocation` column of the same name wins over the
-  pedigree's, and the pedigree never removes a row: its lines naming no VCF
-  sample are skipped.
+  pedigree's unless it holds one of those missing codes, and the pedigree never
+  removes a row: its lines naming no VCF sample are skipped.
 
 A sample related to another in the VCF also gains a `relationship`, such as
 `daughter`, `father` or `daughter, mother`, which the row label shows after the
