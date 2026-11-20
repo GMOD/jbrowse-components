@@ -190,7 +190,6 @@ export async function variantCellData({
       transmission[i] ?? NO_TRANSMISSION,
     ]),
   )
-  const drawsRows = sampleFilter?.length !== 0
   const progressOpts = {
     statusCallback,
     signal,
@@ -215,10 +214,10 @@ export async function variantCellData({
     report =>
       analyzeVariants({
         features,
-        siteFilter: drawsRows ? siteFilter : undefined,
+        siteFilter,
         filterChain: filters,
         keepUncalledSites: layout === 'genomic',
-        readGenotypes: drawsRows || trios.length > 0,
+        readGenotypes: sampleFilter?.length !== 0,
         trios,
         transmissionOf: refName =>
           transmissionByRefName.get(refName) ?? NO_TRANSMISSION,

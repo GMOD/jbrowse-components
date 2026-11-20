@@ -173,6 +173,21 @@ describe('the worker’s Mendelian check', () => {
     })
   })
 
+  test('hidden genotype rows ship no sample’s genotype, ploidy or name', async () => {
+    const result = await trioCellData({ sampleFilter: [] })
+    const value = isRegionRefused(result) ? undefined : result.value
+    const featureInfo = Object.values(value?.perRegionCellData ?? {}).flatMap(
+      data => data.featureInfo,
+    )
+
+    expect(featureInfo.map(info => info.genotypeCodes.length)).toEqual([
+      0, 0, 0,
+    ])
+    expect(value?.sampleNames).toEqual([])
+    expect(value?.samplePloidy).toEqual({})
+    expect(value?.hasPhasedOrHaploid).toBe(false)
+  })
+
   test('with no trios and no rows no genotype is read', async () => {
     const result = await trioCellData({ sampleFilter: [], trios: [] })
 

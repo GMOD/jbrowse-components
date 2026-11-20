@@ -97,6 +97,8 @@ function accumulatePloidy(
   }
 }
 
+const NO_GENOTYPES: Readonly<Record<string, string>> = {}
+
 interface AnalyzedVariants {
   filteredVariants: FilteredVariant[]
   samplePloidy: Record<string, number>
@@ -227,12 +229,14 @@ export function analyzeVariants({
   // no site field is tested.
   keepUncalledSites?: boolean
   // False reads every site as a VCF with no samples reads it: no genotype is
-  // parsed and, with `keepUncalledSites`, every site the filters admit
+  // kept and, with `keepUncalledSites`, every site the filters admit
   // stays. Off when no sample is asked for, so `genotypes.show` off draws
   // what a sites-only VCF draws.
   readGenotypes?: boolean
   // The trios whose Mendelian check each site takes, by sample name, and the
-  // transmission rule of a feature's refName.
+  // transmission rule of a feature's refName. With trios, each site's
+  // genotypes are read to classify it even while `readGenotypes` is off,
+  // and then dropped.
   trios?: readonly Trio[]
   transmissionOf?: (refName: string) => readonly TransmissionEntry[]
   // The `filter` entries on the Mendelian check, tested beside the site
@@ -268,9 +272,11 @@ export function analyzeVariants({
   const genotypeDict: string[] = []
   const genotypeDictIndex = new Map<string, number>()
   const featureGenotypeCodes = new Map<string, Uint32Array>()
-  const sampleNames = readGenotypes ? collectSampleNames(passing) : []
-  const numSamples = sampleNames.length
-  const sampleIndexByName = buildSampleIndex(sampleNames)
+  const columnNames =
+    readGenotypes || trios.length > 0 ? collectSampleNames(passing) : []
+  const sampleNames = readGenotypes ? columnNames : []
+  const numSamples = columnNames.length
+  const sampleIndexByName = buildSampleIndex(columnNames)
   const headerRemapOf = makeHeaderRemapper(sampleIndexByName)
   const mendelianOf = makeMendelianCheck({
     trios,
@@ -299,10 +305,15 @@ export function analyzeVariants({
   const ploidyRankByColumn = new Int32Array(numSamples)
 
   // only populated on the no-header-sample-list path
-  const pendingRecords: [string, Record<string, string>][] = []
+  const pendingRecords: [string, Readonly<Record<string, string>>][] = []
 
-  // a dropped site's codes, zeroed for the next site to fill
+  // a dropped site's codes, or a kept one's whose rows do not draw, zeroed
+  // for the next site to fill
   let spareCodes: Uint32Array | undefined
+  const recycle = (codes: Uint32Array) => {
+    codes.fill(0)
+    spareCodes = codes
+  }
 
   for (let featureIdx = 0; featureIdx < passing.length; featureIdx++) {
     report?.(featureIdx)
@@ -477,10 +488,13 @@ export function analyzeVariants({
       if (mendelianValue !== undefined) {
         mendelian.set(featureId, mendelianValue)
       }
-      if (codes) {
+      if (codes !== undefined && readGenotypes) {
         featureGenotypeCodes.set(featureId, codes)
-      } else if (record) {
-        pendingRecords.push([featureId, record])
+      } else {
+        if (codes !== undefined) {
+          recycle(codes)
+        }
+        pendingRecords.push([featureId, record ?? NO_GENOTYPES])
       }
       if (!hasConsequence && featureHasConsequence(feature)) {
         hasConsequence = true
@@ -493,14 +507,13 @@ export function analyzeVariants({
       }
       hasSvType ||= !!feature.get(SV_TYPE_FIELD)
     } else if (codes) {
-      codes.fill(0)
-      spareCodes = codes
+      recycle(codes)
     }
   }
 
   // Runs before the record block below, which reads `ploidyRanks`' keys to
-  // extend the canonical order.
-  for (let column = 0; column < numSamples; column++) {
+  // extend the canonical order. No row reads a genotype a trio alone read.
+  for (let column = 0; column < sampleNames.length; column++) {
     const rank = ploidyRankByColumn[column]!
     if (rank > 0) {
       accumulatePloidy(ploidyRanks, sampleNames[column]!, rank)
@@ -540,7 +553,7 @@ export function analyzeVariants({
   return {
     filteredVariants,
     samplePloidy,
-    hasPhasedOrHaploid,
+    hasPhasedOrHaploid: readGenotypes && hasPhasedOrHaploid,
     hasConsequence,
     hasPhaseSet,
     hasSvType,
