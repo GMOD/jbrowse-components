@@ -453,17 +453,21 @@ export function trackSidebarWidth(
 }
 
 // vertical box a single track occupies. Shared by totalHeight (sum) and
-// trackBoxOffsets (prefix-sum) so the two can't drift.
+// trackBoxOffsets (prefix-sum) so the two can't drift. A 'left' label hangs
+// from the box's top beside the body, so a body shorter than the label's band
+// still gets the band, or its descenders land on the next track's name.
 export function trackBoxHeight(
   track: TrackHeights,
   trackLabels: TrackLabelMode,
   textHeight: number,
 ) {
-  return (
+  const height =
     exportedHeight(track.displays[0]!) +
     labelOffset(track, trackLabels, textHeight) +
     trackSpacing
-  )
+  return trackLabelMode(track, trackLabels) === 'left'
+    ? Math.max(height, textHeight)
+    : height
 }
 
 // Top y of each track's box within a stack of them. SVGTracks lays the bodies

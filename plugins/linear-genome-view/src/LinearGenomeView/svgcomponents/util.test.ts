@@ -14,7 +14,9 @@ import {
   refNameLabelBaselineY,
   refNameLabelBoxHeight,
   TRACK_LABEL_GAP,
+  trackBoxOffsets,
   trackLabelLeftOffset,
+  trackSpacing,
 } from './util.ts'
 
 // Chrome reports a 13px Latin string's ink box as 15px tall (12 above the
@@ -218,5 +220,39 @@ describe('labelOffset', () => {
     expect(labelOffset(track(), 'left', 20)).toBe(0)
     expect(labelOffset(track(100), 'overlapping', 20)).toBe(0)
     expect(labelOffset(track(100), 'hidden', 20)).toBe(0)
+  })
+})
+
+describe('trackBoxOffsets', () => {
+  const tracks = (...heights: number[]) =>
+    heights.map(height => ({ displays: [{ height }] }))
+
+  // A 'left' name hangs from its box's top beside the body, its ink to
+  // labelInkHeight below a 1px inset: an 8px track gave it 10px, and the next
+  // track's name was drawn through its descenders.
+  test.each(fontSizes)(
+    'a left name keeps its ink inside a short track at fontSize %i',
+    fontSize => {
+      const textHeight = defaultTextHeight(fontSize)
+      const [, next] = trackBoxOffsets(tracks(8, 8), 'left', textHeight)
+      const inkBottom =
+        insetLabelBaselineY(fontSize) + Math.ceil(fontSize * 0.22)
+      expect(next).toBeGreaterThan(inkBottom)
+    },
+  )
+
+  test('a track taller than the name keeps its own height', () => {
+    expect(trackBoxOffsets(tracks(40, 40), 'left', 20)[1]).toBe(
+      40 + trackSpacing,
+    )
+  })
+
+  test('the other modes reserve no band for a short track', () => {
+    expect(trackBoxOffsets(tracks(8, 8), 'overlapping', 20)[1]).toBe(
+      8 + trackSpacing,
+    )
+    expect(trackBoxOffsets(tracks(8, 8), 'hidden', 20)[1]).toBe(
+      8 + trackSpacing,
+    )
   })
 })
