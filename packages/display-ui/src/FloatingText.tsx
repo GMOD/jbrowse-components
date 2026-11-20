@@ -99,6 +99,7 @@ export function SvgHaloText({
     <>
       <text
         {...attrs}
+        fill="none"
         stroke={halo}
         strokeWidth={haloWidth}
         strokeLinejoin="round"
