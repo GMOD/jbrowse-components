@@ -52,8 +52,10 @@ policy for which action to call lives in the repo `CLAUDE.md`.
   snackbar naming the assembly.
 - `updateTrackConfiguration` on a track with a base stores a delta and clears it
   when the edit nets back to base. Unsetting a slot the base sets is not a
-  net-back: the delta records a `null`. A connection track, or a track with no
-  base, goes to the base mixin's version. The embedded products' `jbrowse`
+  net-back: the delta records a `null`. A hub track's base is the copy kept
+  when it was opened, else the live hub's entry (`trackBaseById`), and a
+  session or config track of the same id wins over it. A track with no base
+  goes to the base mixin's version. The embedded products' `jbrowse`
   (`createConfigModel`) has no `updateTrackConf`, so there the catalog write
   throws.
 - `deleteTrackConf` always dereferences the track (closing every open view

@@ -1,6 +1,6 @@
 ---
 name: connection-tracks-frozen
-description: "A connection's fetched tracks are frozen plain configs. Waiting on: making them bases, saving an opened hub track as a session track, and the undo, trackId-clash and stalled-hub bugs in the same code."
+description: "A connection's fetched tracks are frozen plain configs and bases their edits diff against. Waiting on: saving an opened hub track as a session track, and the undo and stalled-hub bugs in the same code."
 ---
 
 # Connection tracks go frozen
@@ -38,30 +38,34 @@ ran; their findings are either fixed in those commits or listed under
 - **An opened hub track** is a full frozen copy in `connectionTrackConfigs`
   (`packages/product-core/src/Session/Connections.ts`).
   `captureConnectionTrack` writes the copy after `showTrackGeneric` has shown
-  the track, and from then on the copy wins over the live entry in
-  `connectionConfigsById` (`packages/product-core/src/Session/Tracks.ts`).
+  the track, and from then on the copy wins over the live entry.
+- **A hub track is a base.** `trackBaseById` (`Tracks.ts`) resolves an id to its
+  session entry, else its config entry, else its hub's entry, the kept copy
+  before the live one. A hub track's edits are deltas in `trackConfigDeltas`
+  with the edited badge and Reset, as a config track's are. `trackBasesById`
+  stays session and config only, because its readers (desktop text indexing,
+  `promotableTrackIds`) write back to the base. `teardownConnection` closes
+  and resets only the ids that resolve to that hub's own entry, so a config or
+  session track of the same id stays open.
 
 ## Next
 
 Each step can land by itself, in this order.
 
-- **Make hub tracks bases.** Add a live hub's tracks to `trackBasesById`
-  (`Tracks.ts` and `SessionTracks.ts`), so a hub track resolves through the
-  base, `withTrackEdits` and a working copy as a config track does. The
-  `connection ??` arm of `exactTrackById` and `connectionConfigsById` then go.
-  The order of sources in that index settles the trackId clash below, and the
-  order to pick is session entry, then config, then hub.
 - **Save an opened hub track as a session track with its `connectionId`.**
-  A `sessionTracks` entry is already a base (ADR-158), so the hub track's edits
-  become deltas and get the edited badge and Reset. This step deletes
-  `connectionTrackConfigs` and the four actions that maintain it, the branch in
-  `updateTrackConfiguration`, and the two calls in
+  A `sessionTracks` entry is already a base (ADR-158), and the deltas over the
+  kept copy carry over unchanged. This step deletes `connectionTrackConfigs`,
+  `connectionBasesById`'s second source, the three actions that maintain it
+  (`captureConnectionTrack`, `setConnectionTrackConfig`,
+  `pruneConnectionTrackConfig`) and the two calls in
   `packages/core/src/util/tracks.ts`. The step needs three things:
   - the track selector lists such an entry under its hub's row
     (`allTracks` in `plugins/data-management/src/HierarchicalTrackSelectorWidget/model.ts`);
-  - `teardownConnection` closes tracks by their `connectionId`, where it closes
-    by trackId today;
+  - `teardownConnection` closes the session entries that carry its
+    `connectionId`, beside the live hub's own entries;
   - a snapshot migration for saved sessions that hold `connectionTrackConfigs`.
+    An old session's entry is the edited config itself, with no delta, so it
+    becomes the base and Reset returns to it, not to the hub's original.
 ## Reasons that could stop the move to frozen
 
 - **`jbrowse-plugin-hubs` sets `assemblyNames` on a JBrowse 2 hub.** The first
@@ -82,9 +86,6 @@ Each step can land by itself, in this order.
   resets, such as a volatile map on the session keyed by `connectionId`, and
   must handle undoing "add connection", where the instance's config leaves
   with the snapshot.
-- **A hub track replaces a config track with the same trackId**, in views
-  already open (`exactTrackById`), and deleting the hub then closes it. The
-  first step above fixes this by the order of sources.
 - **A hub that never answers stalls a link or session-spec load.**
   `whenConnectionsSettle` (`packages/app-core/src/SessionSpec/loadSessionSpec.ts`)
   and `settleAssemblyResolution`

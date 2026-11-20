@@ -4,10 +4,12 @@ import { asSession } from '../siblingCast.ts'
 import { isBaseSession } from './BaseSession.ts'
 import { ReferenceManagementSessionMixin } from './ReferenceManagement.ts'
 
+import type { SessionWithSessionTracks } from './SessionTracks.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type {
   AnyConfiguration,
   AnyConfigurationModel,
+  TrackConfigEntry,
 } from '@jbrowse/core/configuration'
 import type { BaseConnectionConfigModel } from '@jbrowse/core/pluggableElementTypes/models/baseConnectionConfig'
 import type { IAnyStateTreeNode, Instance } from '@jbrowse/mobx-state-tree'
@@ -19,7 +21,13 @@ import type { IAnyStateTreeNode, Instance } from '@jbrowse/mobx-state-tree'
  */
 export interface ConnectionTrackConfigEntry {
   connectionId: string
-  config: Record<string, unknown>
+  config: TrackConfigEntry
+}
+
+function isSessionWithTrackEdits(
+  session: IAnyStateTreeNode,
+): session is SessionWithSessionTracks {
+  return 'trackBaseById' in session && 'resetTrackConfiguration' in session
 }
 
 /**
@@ -118,26 +126,39 @@ export function ConnectionManagementSessionMixin(pluginManager: PluginManager) {
          * Close every track a connection contributed — the live instance's
          * tracks plus any persisted open-track configs (a dormant connection,
          * never expanded this session, still renders its opened tracks from
-         * `connectionTrackConfigs`) — from all views/widgets, drop the live
-         * instance, and drop the persisted configs. The session is left as if the
-         * connection had never loaded.
+         * `connectionTrackConfigs`) — from all views/widgets, drop their edits,
+         * the live instance and the persisted configs. The session is left as
+         * if the connection had never loaded. A track whose id resolves to
+         * another source, a config track or another hub's, stays open.
          */
         teardownConnection(configuration: AnyConfigurationModel) {
           const { connectionId } = configuration
           const connection = self.connectionInstances.find(
             c => c.connectionId === connectionId,
           )
+          const entries = [
+            ...(connection?.tracks ?? []),
+            ...Object.values(self.connectionTrackConfigs)
+              .filter(e => e.connectionId === connectionId)
+              .map(e => e.config),
+          ]
           const trackIds = [
-            ...new Set([
-              ...(connection?.tracks.map(t => t.trackId) ?? []),
-              ...Object.entries(self.connectionTrackConfigs)
-                .filter(([, e]) => e.connectionId === connectionId)
-                .map(([trackId]) => trackId),
-            ]),
+            ...new Set(
+              entries
+                .filter(
+                  t =>
+                    !isSessionWithTrackEdits(self) ||
+                    self.trackBaseById(t.trackId) === t,
+                )
+                .map(t => t.trackId),
+            ),
           ]
           const referring = session.getReferringMultiple(trackIds)
           for (const trackId of trackIds) {
             session.dereferenceTrack(trackId, referring.get(trackId) ?? [])
+            if (isSessionWithTrackEdits(self)) {
+              self.resetTrackConfiguration(trackId)
+            }
           }
           this.breakConnection(configuration)
           // closing the tracks above prunes their configs via hideTrack; this
@@ -192,38 +213,24 @@ export function ConnectionManagementSessionMixin(pluginManager: PluginManager) {
         /**
          * #action
          * Snapshot a just-opened connection track's config into
-         * `connectionTrackConfigs` so it survives session reload. No-op if the
-         * track isn't connection-provided or is already captured (edits go
-         * through `updateConnectionTrackConfig`).
+         * `connectionTrackConfigs` so it survives session reload; its edits
+         * are deltas over that copy. No-op if the track resolves to no hub's
+         * entry, a config or session track of the same id included, or is
+         * already captured.
          */
         captureConnectionTrack(trackId: string) {
           if (!(trackId in self.connectionTrackConfigs)) {
             for (const conn of self.connectionInstances) {
               const track = conn.tracks.find(t => t.trackId === trackId)
-              if (track) {
+              if (
+                track &&
+                (!isSessionWithTrackEdits(self) ||
+                  self.trackBaseById(trackId) === track)
+              ) {
                 this.setConnectionTrackConfig(trackId, conn.connectionId, track)
                 break
               }
             }
-          }
-        },
-
-        /**
-         * #action
-         * Persist an edit to an opened connection track. The full config is
-         * stored (not a delta): the connection's fetched "base" isn't present at
-         * load, so only a complete config resolves synchronously.
-         */
-        updateConnectionTrackConfig(
-          trackConf: Record<string, unknown> & { trackId: string },
-        ) {
-          const existing = self.connectionTrackConfigs[trackConf.trackId]
-          if (existing) {
-            this.setConnectionTrackConfig(
-              trackConf.trackId,
-              existing.connectionId,
-              trackConf,
-            )
           }
         },
 
@@ -234,7 +241,7 @@ export function ConnectionManagementSessionMixin(pluginManager: PluginManager) {
         setConnectionTrackConfig(
           trackId: string,
           connectionId: string,
-          config: Record<string, unknown>,
+          config: TrackConfigEntry,
         ) {
           self.connectionTrackConfigs = {
             ...self.connectionTrackConfigs,

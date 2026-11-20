@@ -266,7 +266,7 @@ describe('connection track persistence', () => {
     expect(resolved!.name).toBe('Conn Track 1')
   })
 
-  test('editing a connection track persists into connectionTrackConfigs', () => {
+  test('an edit to a connection track is a delta over its captured copy', async () => {
     const session = makeRootWithConnection().session!
     session.captureConnectionTrack('connTrack1')
     session.updateTrackConfiguration({
@@ -275,8 +275,39 @@ describe('connection track persistence', () => {
       name: 'Edited Name',
     })
     expect(session.connectionTrackConfigs.connTrack1?.config.name).toBe(
-      'Edited Name',
+      'Conn Track 1',
     )
+    expect(session.trackConfigDeltas.connTrack1?.name).toBe('Edited Name')
+    expect(session.getTrackById('connTrack1')!.name).toBe('Edited Name')
+    expect(session.isTrackOverride('connTrack1')).toBe(true)
+
+    const snap = JSON.parse(JSON.stringify(getSnapshot(session)))
+    const { pluginManager, model } = getRootModelWithPlugins()
+    const root2 = model.create({
+      ...mainThreadConfig,
+      jbrowse: { ...mainThreadConfig.jbrowse, assemblies: [assembly] },
+    })
+    await pluginManager.preloadSessionTypes(snap)
+    root2.setSession(snap)
+    expect(root2.session!.getTrackById('connTrack1')!.name).toBe('Edited Name')
+
+    session.resetTrackConfiguration('connTrack1')
+    expect(session.getTrackById('connTrack1')!.name).toBe('Conn Track 1')
+  })
+
+  test('a config track wins over a connection track of the same id', () => {
+    const root = makeRootWithConnection()
+    root.jbrowse.addTrackConf({
+      type: 'FeatureTrack',
+      trackId: 'connTrack1',
+      name: 'Config Track',
+      assemblyNames: ['assembly1'],
+      adapter: { type: 'FromConfigAdapter', features: [] },
+    })
+    const session = root.session!
+    expect(session.getTrackById('connTrack1')!.name).toBe('Config Track')
+    session.captureConnectionTrack('connTrack1')
+    expect(session.connectionTrackConfigs.connTrack1).toBeUndefined()
   })
 
   test('pruning drops an unreferenced connection track config', () => {

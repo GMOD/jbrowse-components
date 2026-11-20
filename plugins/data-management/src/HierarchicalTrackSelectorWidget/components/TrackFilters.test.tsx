@@ -183,7 +183,7 @@ test('a track in two groups is drawn in both, listed once in the table, and coun
   expect(status()).toBe('2 of 9')
 })
 
-test('a track in two groups resolves to the connection’s copy, as the session does', async () => {
+test('a track in two groups resolves to the config’s copy, as the session does', async () => {
   const { model, session } = await setup({ connectionTracks: [0] })
   expect(model.allTrackConfigurationMap.get('t0')).toBe(
     session.getTrackById('t0'),

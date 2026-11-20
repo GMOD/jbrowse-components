@@ -81,65 +81,59 @@ export function TracksManagerSessionMixin(pluginManager: PluginManager) {
         },
         { name: 'sequencesById' },
       )
-      // Connection tracks by trackId, which win over both
-      const connectionConfigsById = computed<Record<string, AnyTrackConfig>>(
+      // Each hub track's base by trackId: the copy kept of an opened one, else
+      // the live connection's entry
+      const connectionBasesById = computed<Map<string, TrackConfigEntry>>(
         () => {
           // both come from the connections mixin, which not every session
           // composes. connectionInstances is annotated because its element type
           // is a runtime-pluggable stateModel, so the guard can't infer it.
           const connectionInstances: ConnectionInstance[] =
             isSessionWithConnections(self) ? self.connectionInstances : []
-
           const connectionTrackConfigs = isSessionWithConnections(self)
             ? self.connectionTrackConfigs
             : {}
-
-          return Object.fromEntries([
+          return new Map([
             ...connectionInstances.flatMap(c =>
-              c.tracks.map(t => [t.trackId, t]),
+              c.tracks.map(t => [t.trackId, t] as const),
             ),
-            // Persisted configs of opened connection tracks. Placed last so they
-            // win over the live connection instance: identity-stable across
-            // reload, and resolves even when the connection isn't re-established.
-            ...Object.entries(connectionTrackConfigs).map(([trackId, e]) => [
-              trackId,
-              e.config,
-            ]),
+            ...Object.entries(connectionTrackConfigs).map(
+              ([trackId, e]) => [trackId, e.config] as const,
+            ),
           ])
         },
-        { name: 'connectionConfigsById' },
+        { name: 'connectionBasesById' },
       )
-      const otherConfigsById = computed<Record<string, AnyTrackConfig>>(
-        () => ({
-          ...Object.fromEntries(
+      // A session or config track wins over a hub track of the same id
+      function trackBaseById(id: string): TrackConfigEntry | undefined {
+        return self.trackBasesById.get(id) ?? connectionBasesById.get().get(id)
+      }
+      const sequencesWithEdits = computed<Record<string, AnyTrackConfig>>(
+        () =>
+          Object.fromEntries(
             Object.entries(sequencesById.get()).map(([trackId, sequence]) => [
               trackId,
               self.withSequenceEdits(sequence),
             ]),
           ),
-          ...connectionConfigsById.get(),
-        }),
-        { name: 'otherConfigsById' },
+        { name: 'sequencesWithEdits' },
       )
-      // Kept against the two lists it was built from rather than held, since
+      // Kept against the lists it was built from rather than held, since
       // holding it would rebuild it on every edit
       let tracksById:
         | {
             tracks: TrackConfigEntry[]
-            others: Record<string, AnyTrackConfig>
+            sequences: Record<string, AnyTrackConfig>
+            connectionBases: Map<string, TrackConfigEntry>
             record: Record<string, AnyTrackConfig>
           }
         | undefined
       function exactTrackById(id: string) {
-        const connection = connectionConfigsById.get()[id]
         const sequence = sequencesById.get()[id]
-        const base = self.trackBasesById.get(id)
-        return (
-          connection ??
-          (sequence
-            ? self.withSequenceEdits(sequence)
-            : base && self.withTrackEdits(base))
-        )
+        const base = trackBaseById(id)
+        return sequence
+          ? self.withSequenceEdits(sequence)
+          : base && self.withTrackEdits(base)
       }
       // Each track's `aliases`, mapped to its trackId
       const trackIdsByAlias = computed(
@@ -156,9 +150,7 @@ export function TracksManagerSessionMixin(pluginManager: PluginManager) {
       )
       // Reads the id indexes only, which no settings edit rebuilds
       function canonicalTrackId(id: string) {
-        return id in connectionConfigsById.get() ||
-          id in sequencesById.get() ||
-          self.trackBasesById.has(id)
+        return id in sequencesById.get() || trackBaseById(id)
           ? id
           : (trackIdsByAlias.get().get(id) ?? id)
       }
@@ -206,6 +198,13 @@ export function TracksManagerSessionMixin(pluginManager: PluginManager) {
           },
           /**
            * #method
+           * The entry `id`'s edits diff against: its `trackBasesById` entry,
+           * else its connection's entry, which is the copy kept when the track
+           * was opened or else the live hub's.
+           */
+          trackBaseById,
+          /**
+           * #method
            * Every track config the session can resolve, keyed by trackId.
            * Prefer the per-id reactive `getTrackById(id)`: this map is rebuilt
            * over every track on the first read after any edit, and reading it
@@ -216,14 +215,24 @@ export function TracksManagerSessionMixin(pluginManager: PluginManager) {
            */
           getTracksById(): Record<string, AnyTrackConfig> {
             const { tracks } = self
-            const others = otherConfigsById.get()
-            if (tracksById?.tracks !== tracks || tracksById.others !== others) {
+            const sequences = sequencesWithEdits.get()
+            const connectionBases = connectionBasesById.get()
+            if (
+              tracksById?.tracks !== tracks ||
+              tracksById.sequences !== sequences ||
+              tracksById.connectionBases !== connectionBases
+            ) {
               tracksById = {
                 tracks,
-                others,
+                sequences,
+                connectionBases,
                 record: Object.fromEntries([
+                  ...[...connectionBases.values()].map(t => [
+                    t.trackId,
+                    self.withTrackEdits(t),
+                  ]),
                   ...tracks.map(t => [t.trackId, t]),
-                  ...Object.entries(others),
+                  ...Object.entries(sequences),
                 ]),
               }
             }
@@ -244,7 +253,8 @@ export function TracksManagerSessionMixin(pluginManager: PluginManager) {
                 () => {
                   void self.tracks
                   void self.trackBasesById
-                  otherConfigsById.get()
+                  sequencesWithEdits.get()
+                  connectionBasesById.get()
                 },
                 { name: 'trackIndex' },
               ),
@@ -283,19 +293,7 @@ export function TracksManagerSessionMixin(pluginManager: PluginManager) {
         trackId: string
         [key: string]: unknown
       }) {
-        // an opened connection track lives in connectionTrackConfigs, not
-        // jbrowse.tracks; persist its edit there (jbrowse.updateTrackConf would
-        // no-op, since the track isn't in the config). SessionTracks defers a
-        // connection track's edit here, so without this branch it is lost on
-        // reload.
-        if (
-          isSessionWithConnections(self) &&
-          trackConf.trackId in self.connectionTrackConfigs
-        ) {
-          self.updateConnectionTrackConfig(trackConf)
-        } else {
-          editableConfig(self).updateTrackConf(trackConf)
-        }
+        editableConfig(self).updateTrackConf(trackConf)
       },
 
       /**

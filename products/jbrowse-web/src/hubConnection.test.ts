@@ -8,6 +8,8 @@ import corePlugins from './corePlugins.ts'
 import rootModelFactory from './rootModel/rootModel.ts'
 import sessionModelFactory from './sessionModel/index.ts'
 
+import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
+
 jest.mock('./makeWorkerInstance', () => () => {})
 
 const files: Record<string, string | Promise<string>> = {}
@@ -71,18 +73,22 @@ function serveUcscHub(genomes: string) {
   files[`${HUB}genomes.txt`] = genomes
 }
 
-function setup() {
+function setup(tracks: ReturnType<typeof track>[] = []) {
   const pluginManager = new PluginManager(corePlugins.map(P => new P()))
   pluginManager.createPluggableElements()
   const rootModel = rootModelFactory({
     pluginManager,
     sessionModelFactory,
     adminMode: false,
-  }).create({
-    jbrowse: {
-      configuration: { rpc: { defaultDriver: 'MainThreadRpcDriver' } },
+  }).create(
+    {
+      jbrowse: {
+        configuration: { rpc: { defaultDriver: 'MainThreadRpcDriver' } },
+        tracks,
+      },
     },
-  })
+    { pluginManager },
+  )
   pluginManager.setRootModel(rootModel)
   pluginManager.configure()
   rootModel.setSession({ name: 'testSession' })
@@ -319,6 +325,31 @@ describe('a JBrowse 2 hub', () => {
       type: 'FeatureTrack',
       adapter: { type: 'BigBedAdapter' },
     })
+  })
+
+  it('leaves an open config track alone when its trackId is also a hub track', async () => {
+    files[JB2] = JSON.stringify({
+      assemblies: [assembly('asmA')],
+      tracks: [track('a', 'asmA'), track('b', 'asmA')],
+    })
+    const session = setup([{ ...track('a', 'asmA'), name: 'my track' }])
+    const conf = addJb2Hub(session)
+    session.makeConnection(conf)
+    await settled(session)
+    const view = session.addView(
+      'LinearGenomeView',
+      {},
+    ) as LinearGenomeViewModel
+    view.showTrack('a')
+    view.showTrack('b')
+    await when(() => view.tracks.length === 2)
+
+    expect(view.tracks.map(t => t.configuration.name)).toEqual([
+      'my track',
+      'b name',
+    ])
+    session.deleteConnection(conf)
+    expect(view.tracks.map(t => t.configuration.name)).toEqual(['my track'])
   })
 
   it('loads every track when one holds a value its slot refuses', async () => {

@@ -216,12 +216,8 @@ describe('JBrowseWebSessionModel', () => {
     })
 
     it.each([false, true])(
-      'persists an edit to an opened connection track (adminMode=%s)',
+      'persists an edit to an opened connection track as a delta (adminMode=%s)',
       adminMode => {
-        // an opened connection track lives in connectionTrackConfigs, not
-        // jbrowse.tracks or sessionTracks, so its edit must route to
-        // updateConnectionTrackConfig regardless of adminMode — jbrowse's
-        // updateTrackConf would silently no-op (the track isn't in the config)
         const session = createTestSession({
           adminMode,
           sessionSnapshot: {
@@ -229,15 +225,64 @@ describe('JBrowseWebSessionModel', () => {
             connectionTrackConfigs: {
               t1: {
                 connectionId: 'conn1',
-                config: { trackId: 't1', name: 'original' },
+                config: {
+                  trackId: 't1',
+                  type: 'FeatureTrack',
+                  name: 'original',
+                },
               },
             },
           },
         })
-        session.updateTrackConfiguration({ trackId: 't1', name: 'edited' })
-        expect(session.connectionTrackConfigs.t1!.config.name).toBe('edited')
+        session.updateTrackConfiguration({
+          trackId: 't1',
+          type: 'FeatureTrack',
+          name: 'edited',
+        })
+        expect(session.connectionTrackConfigs.t1!.config.name).toBe('original')
+        expect(session.trackConfigDeltas.t1!.name).toBe('edited')
+        expect(session.getTrackById('t1')!.name).toBe('edited')
       },
     )
+
+    it('deleting a connection drops its tracks edits and leaves a config track of the same id', () => {
+      const session = createTestSession({
+        adminMode: true,
+        sessionSnapshot: {
+          sessionConnections: [connSnap],
+          connectionTrackConfigs: {
+            t1: {
+              connectionId: 'conn1',
+              config: { trackId: 't1', type: 'FeatureTrack', name: 'hub t1' },
+            },
+            t2: {
+              connectionId: 'conn1',
+              config: { trackId: 't2', type: 'FeatureTrack', name: 'hub t2' },
+            },
+          },
+          sessionTracks: [
+            {
+              trackId: 't2',
+              type: 'FeatureTrack',
+              name: 'session t2',
+              assemblyNames: ['volMyt1'],
+              adapter: { type: 'FromConfigAdapter', features: [] },
+            },
+          ],
+        },
+      })
+      session.updateTrackConfiguration({
+        trackId: 't1',
+        type: 'FeatureTrack',
+        name: 'edited',
+      })
+      expect(session.getTrackById('t2')!.name).toBe('session t2')
+      const conn1 = session.connections.find(c => c.connectionId === 'conn1')!
+      session.deleteConnection(conn1)
+      expect(session.trackConfigDeltas.t1).toBeUndefined()
+      expect(session.getTrackById('t1')).toBeUndefined()
+      expect(session.getTrackById('t2')!.name).toBe('session t2')
+    })
   })
 
   // the same session-vs-config split as the two connection adders above, and

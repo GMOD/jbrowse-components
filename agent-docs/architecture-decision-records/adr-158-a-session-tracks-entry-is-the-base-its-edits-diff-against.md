@@ -78,9 +78,7 @@ deleted and added again under its id (the two-step `assertNotReaddedDifferently`
 names for a recomputed track), or `jb.setSession`, which is `applySnapshot`.
 Stamped with the delta, both kept the old copy on screen. Every write the mixin
 makes re-stamps the copy with what its track now resolves to, so the copy an
-edit is being typed into still stays. The connection-track branch of
-`updateTrackConfiguration` re-stamps and syncs as the delta branch does, since
-the new stamp would otherwise rebuild a connection track's copy on each save.
+edit is being typed into still stays.
 
 **A working copy is per track type as well as per id.** Each track type's
 config reference resolves through its own schema, and an id deleted and added

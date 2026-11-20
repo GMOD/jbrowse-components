@@ -303,8 +303,7 @@ export function SessionTracksManagerSessionMixin(pluginManager: PluginManager) {
           : undefined
       })
       const baseFor = perIdComputed(trackId => {
-        const base =
-          self.trackBasesById.get(trackId) ?? sequenceBaseFor(trackId)
+        const base = self.trackBaseById(trackId) ?? sequenceBaseFor(trackId)
         return base ? toPlainConfig(base) : undefined
       })
       const editableBySchema = new Map<
@@ -363,7 +362,8 @@ export function SessionTracksManagerSessionMixin(pluginManager: PluginManager) {
         /**
          * #method
          * The entry `trackId` edits over, hydrated: the one the session added
-         * it with, or its config.json entry. What a display's "is this
+         * it with, its config.json entry, or its hub's (`trackBaseById`), else
+         * the assembly sequence it names. What a display's "is this
          * arranged" and "reset" compare its live config against. Per-id
          * reactive, and resolving an alias, like `getTrackById`.
          */
@@ -709,13 +709,11 @@ export function SessionTracksManagerSessionMixin(pluginManager: PluginManager) {
         /**
          * #action
          * Persist an edited track config as a delta (trackConfigDeltas) against
-         * its base, the sessionTracks or config.json entry — only the changed
-         * slots — so the edits persist, are shared, undo and reset, while
-         * changes to untouched fields of the base still flow through. An
-         * admin's edit is a delta like anyone's: it reaches the config.json the
-         * server hands every visitor only through `promoteTrackConfigDeltas`.
-         * An opened connection track defers to the base mixin, which routes it
-         * to connectionTrackConfigs.
+         * its base (`baseTrackConfig`) — only the changed slots — so the edits
+         * persist, are shared, undo and reset, while changes to untouched
+         * fields of the base still flow through. An admin's edit is a delta
+         * like anyone's: it reaches the config.json the server hands every
+         * visitor only through `promoteTrackConfigDeltas`.
          */
         updateTrackConfiguration(trackConf: PlainTrackConfig) {
           const { trackId } = trackConf
@@ -744,7 +742,7 @@ export function SessionTracksManagerSessionMixin(pluginManager: PluginManager) {
               writeDelta(trackId, undefined)
             }
           } else {
-            // an opened connection track, or a homeless in-memory-only edit
+            // a homeless in-memory-only edit
             superUpdateTrackConfiguration(trackConf)
             syncEditableTrackConfig(trackId, trackConf)
             stampEditableTrackConfig(trackId)
