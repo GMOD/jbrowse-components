@@ -175,8 +175,10 @@ on every one; the row `field`, cluster `tree`, `color` and pinned `colors`,
 `annotations`, `filter`, `step` (row height, a pixel count or `"fit"`),
 `groups` and the sidebar `axis` where the display has them. MAF has no
 `field`, `filter`, `annotations` or `step`, since its rows carry no
-attributes; wiggle has no `step` or `groups`; the multi-way lanes take only
-`sort`, `labels` and `kept`
+attributes; wiggle has no `step` or `groups`; the multi-way lanes take
+`field` (`assembly`, or `refName` for a lane per copy of the window, ADR
+[278](../architecture-decision-records/adr-278-a-copy-of-the-window-draws-as-its-own-lane.md)),
+`sort`, `labels`, `colors` and `kept`
 (ADRs [157](../architecture-decision-records/adr-157-a-row-displays-arrangement-is-the-rows-config-object.md), [160](../architecture-decision-records/adr-160-a-rows-color-is-one-categorical-channel-on-the-row-axis.md), [257](../architecture-decision-records/adr-257-the-row-axis-owns-its-settings.md)). The schema is `rowsConfigSchema.ts` (display-kit).
 `annotations` is a list of `RowAnnotation` entries, each a categorical color
 column beside the labels with a key titled `legend.title`; one on the

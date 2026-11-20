@@ -264,6 +264,15 @@ describe('copy lanes', () => {
     expect(anchorRowOf(['{grape}chr9', 'Peach'], rows, 'peach', keyOf)).toBe(1)
     expect(anchorRowOf(['grape', 'peach'], rows, 'peach', keyOf)).toBe(2)
     expect(anchorRowOf(['gone', 'peach'], rows, 'peach', keyOf)).toBe(0)
+    // a lane placing nothing sits at the foot, below the anchor
+    expect(
+      anchorRowOf(
+        ['{grape}chr9', 'peach', '{grape}chr11'],
+        ['{grape}chr11', '{grape}chr9'],
+        'peach',
+        keyOf,
+      ),
+    ).toBe(0)
     expect(laneOrderOf(rows, 'peach', 1)).toEqual([
       '{grape}chr9',
       'peach',

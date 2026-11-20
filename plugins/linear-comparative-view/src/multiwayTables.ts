@@ -42,6 +42,10 @@ import { displayedRegionSpans } from './MultiWaySyntenyDisplay/anchorAxis.ts'
 import { configSchemaFactory } from './MultiWaySyntenyDisplay/configSchema.ts'
 import { geneNamesDraw } from './MultiWaySyntenyDisplay/configSlotViews.ts'
 import {
+  fileUnderCopies,
+  laneGenome,
+} from './MultiWaySyntenyDisplay/copyLane.ts'
+import {
   laneGroupsFetchSpecsOf,
   laneLinksFetchSpecsOf,
   lanePairsOf,
@@ -49,8 +53,10 @@ import {
 } from './MultiWaySyntenyDisplay/laneFetch.ts'
 import { pinsInForceOf } from './MultiWaySyntenyDisplay/lanePins.ts'
 import {
+  anchorRowOf,
   answeredLaneTest,
   laneLabelOf,
+  laneOrderOf,
   laneRowsOf,
   lanesInForce,
   unalignedChosenLanesOf,
@@ -229,6 +235,7 @@ function readDisplay(slots: MultiWayTablesArgs['display'] = {}) {
     names: setting.scale.names,
     title: setting.legend.title,
     descending: setting.legend.descending,
+    laneField: readConfObject(conf, ['rows', 'field']),
     rowsSort: readConfObject(conf, ['rows', 'sort']),
     kept: readConfObject(conf, ['rows', 'kept']),
     rowLabels: new Map(Object.entries(rowLabels)),
@@ -560,9 +567,11 @@ export async function multiwayTables(
     declaresLanes && selection ? [...selection] : undefined,
   )
   const features = dedupe(fetched.features, f => f.id())
-  const groups = groupFeatures(features)
+  const copies = settings.laneField === 'refName'
+  const grouped = groupFeatures(features)
+  const groups = copies ? fileUnderCopies(grouped) : grouped
   const openingsOf = laneOpeningsOf(groups)
-  const rowsVsAnchor = rowsReadAgainstAnchor(capabilities, starAnchor)
+  const rowsVsAnchor = copies || rowsReadAgainstAnchor(capabilities, starAnchor)
   const fetches = laneFetchesFor(features, rowsVsAnchor, starAnchor)
   const placeless = fetched.deletions.map(d => d.assemblyName)
   await refuseUnknownLanes(
@@ -606,9 +615,13 @@ export async function multiwayTables(
     axis.regions,
     fetched.ops,
   )
+  const anchorRow = anchorRowOf(settings.rowsSort, rows, anchor, keyOf)
+  const laneOrder = laneOrderOf(rows, anchor, anchorRow)
   const decisions = decideLanesOn(stage, {
     groups: fit,
     assemblyNames: rows,
+    anchorRow,
+    vsAnchor: rowsVsAnchor,
     previous: new Map(),
     pins: pinsInForceOf(pins, rows, anchor, keyOf),
     openingsOf,
@@ -629,7 +642,9 @@ export async function multiwayTables(
   for (const [name, frame] of rowFrames) {
     if (frame) {
       windows.set(name, {
-        regions: [{ assemblyName: name, ...laneFetchRegion(frame) }],
+        regions: [
+          { assemblyName: laneGenome(name), ...laneFetchRegion(frame) },
+        ],
       })
     }
   }
@@ -637,7 +652,7 @@ export async function multiwayTables(
   const laneLinks = new Map<string, LaneLinks>()
   if (fetches.lanePairs) {
     const specs = laneLinksFetchSpecsOf({
-      pairs: lanePairsOf([anchor, ...rows], anchor),
+      pairs: lanePairsOf(laneOrder, anchor),
       windows,
       rowFrames,
       anchor,
@@ -686,12 +701,15 @@ export async function multiwayTables(
     settings.inlineLaneNames,
   )
   const stack = laneStackOn(stage, {
-    assemblyNames: [anchor, ...rows],
+    assemblyNames: laneOrder,
+    anchorRow,
     groups: [...shown, ...anchorless],
     rowFrames,
     contigOf: (name, refName) =>
-      laneAssemblyOf(name)?.regions.find(r => r.refName === refName),
-    refNameAliasOf: name => laneAssemblyOf(name)?.canonical,
+      laneAssemblyOf(laneGenome(name))?.regions.find(
+        r => r.refName === refName,
+      ),
+    refNameAliasOf: name => laneAssemblyOf(laneGenome(name))?.canonical,
     geometry: laneGeom,
     labelOf: name =>
       laneLabelOf(name, {

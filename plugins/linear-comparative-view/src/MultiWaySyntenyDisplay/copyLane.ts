@@ -1,8 +1,9 @@
 import type { MatePlacement, MultiWayGroup } from './layoutMultiWay.ts'
 
-// well under the switch margin, so a copy a genome lane never picks is still
-// named, and a copy lane is still drawn
-export const ALSO_ON_SHARE = 0.2
+// An old duplication keeps few of its genes: on the grape-peach gamma window
+// (peach chrG7:17.9-19.1 Mb) the older grape copies hold a fifth and a sixth
+// of the ortholog's pairs, and the next contig a fourteenth.
+export const COPY_SHARE = 0.1
 
 /**
  * What one lane is, `rows.field`: a genome, or with `refName` one contig of a
@@ -37,13 +38,41 @@ export function laneGenome(lane: string) {
   return laneOf(lane).assemblyName
 }
 
+interface LaneAssemblies {
+  getCanonicalAssemblyName: (name: string) => string | undefined
+  has: (name: string) => boolean
+  get: (
+    name: string,
+  ) => { getCanonicalRefName2: (refName: string) => string } | undefined
+}
+
+/**
+ * The canonical name, so two spellings of one lane share a key: a copy lane's
+ * assembly and refName each canonical, where the session holds its genome
+ */
+export function laneKeyIn(assemblyManager: LaneAssemblies, lane: string) {
+  const { assemblyName, refName } = laneOf(lane)
+  const genome =
+    assemblyManager.getCanonicalAssemblyName(assemblyName) ?? assemblyName
+  return refName === undefined
+    ? genome
+    : copyLaneName(
+        genome,
+        (assemblyManager.has(genome) &&
+          assemblyManager.get(genome)?.getCanonicalRefName2(refName)) ||
+          refName,
+      )
+}
+
 /**
  * `groups` with each mate filed under its contig's copy lane. A contig holding
- * under `ALSO_ON_SHARE` of its genome's heaviest contig's evidence is a stray
- * paralog hit, not a copy: it draws no lane, as a genome lane's header leaves
- * it unnamed.
+ * under `COPY_SHARE` of its genome's heaviest contig's evidence is a stray
+ * paralog hit, not a copy, and draws no lane unless `chosen` names it.
  */
-export function fileUnderCopies(groups: readonly MultiWayGroup[]) {
+export function fileUnderCopies(
+  groups: readonly MultiWayGroup[],
+  chosen: (lane: string) => boolean = () => false,
+) {
   const evidence = new Map<string, Map<string, number>>()
   for (const group of groups) {
     for (const [assemblyName, placements] of group.mates) {
@@ -57,7 +86,7 @@ export function fileUnderCopies(groups: readonly MultiWayGroup[]) {
   const floor = new Map(
     [...evidence].map(([assemblyName, byContig]) => [
       assemblyName,
-      Math.max(...byContig.values()) * ALSO_ON_SHARE,
+      Math.max(...byContig.values()) * COPY_SHARE,
     ]),
   )
   return groups.map(group => {
@@ -66,8 +95,8 @@ export function fileUnderCopies(groups: readonly MultiWayGroup[]) {
       const byContig = evidence.get(assemblyName)!
       const min = floor.get(assemblyName)!
       for (const p of placements) {
-        if (byContig.get(p.refName)! >= min) {
-          const lane = copyLaneName(assemblyName, p.refName)
+        const lane = copyLaneName(assemblyName, p.refName)
+        if (byContig.get(p.refName)! >= min || chosen(lane)) {
           mates.set(lane, [...(mates.get(lane) ?? []), p])
         }
       }

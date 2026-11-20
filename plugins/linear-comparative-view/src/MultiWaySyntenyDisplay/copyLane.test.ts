@@ -73,19 +73,28 @@ describe('fileUnderCopies', () => {
     ])
   })
 
-  test('a contig under a fifth of its genome’s heaviest draws no lane', () => {
-    const genes = Array.from({ length: 10 }, (_, i) => `g${i}`)
-    const groups = fileUnderCopies(
-      groupFeatures([
-        ...genes.map((name, i) => anchorsRow(name, i * 100, 'chr11')),
-        ...genes
-          .slice(0, 2)
-          .map((name, i) => anchorsRow(name, i * 100, 'chr9')),
-        anchorsRow('g0', 0, 'chr2'),
-      ]),
-    )
-    const lanes = new Set(groups.flatMap(g => [...g.mates.keys()]))
-    expect([...lanes]).toEqual(['{grape}chr11', '{grape}chr9'])
+  // an old copy keeping few genes, and one stray paralog hit
+  const genes = Array.from({ length: 20 }, (_, i) => `g${i}`)
+  const sparse = groupFeatures([
+    ...genes.map((name, i) => anchorsRow(name, i * 100, 'chr11')),
+    ...genes.slice(0, 3).map((name, i) => anchorsRow(name, i * 100, 'chr9')),
+    anchorsRow('g0', 0, 'chr2'),
+  ])
+  const lanesOf = (groups: ReturnType<typeof fileUnderCopies>) => [
+    ...new Set(groups.flatMap(g => [...g.mates.keys()])),
+  ]
+
+  test('a contig under a tenth of its genome’s heaviest draws no lane', () => {
+    expect(lanesOf(fileUnderCopies(sparse))).toEqual([
+      '{grape}chr11',
+      '{grape}chr9',
+    ])
+  })
+
+  test('a contig the reader chose draws its lane however few its genes', () => {
+    expect(
+      lanesOf(fileUnderCopies(sparse, lane => lane === '{grape}chr2')),
+    ).toEqual(['{grape}chr11', '{grape}chr9', '{grape}chr2'])
   })
 })
 

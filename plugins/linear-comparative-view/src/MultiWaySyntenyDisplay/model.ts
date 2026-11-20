@@ -105,12 +105,7 @@ import {
   releaseHideUnlabelled,
   ribbonColorFieldOf,
 } from './configSlotViews.ts'
-import {
-  copyLaneName,
-  fileUnderCopies,
-  laneGenome,
-  laneOf,
-} from './copyLane.ts'
+import { fileUnderCopies, laneGenome, laneKeyIn } from './copyLane.ts'
 import { featureWidgetOf } from './featureWidget.ts'
 import { dealGeneColors, geneColorRampOf, geneColors } from './geneColor.ts'
 import { laneGeneTracksOf } from './laneAnnotation.ts'
@@ -733,7 +728,17 @@ export function stateModelFactory(
        */
       get groups() {
         const grouped = self.features ? groupFeatures(self.features) : []
-        return this.laneField === 'refName' ? fileUnderCopies(grouped) : grouped
+        const { assemblyManager } = getSession(self)
+        const kept = new Set(
+          getConf(self, ['rows', 'kept']).map(name =>
+            laneKeyIn(assemblyManager, name),
+          ),
+        )
+        return this.laneField === 'refName'
+          ? fileUnderCopies(grouped, lane =>
+              kept.has(laneKeyIn(assemblyManager, lane)),
+            )
+          : grouped
       },
       /**
        * #getter
@@ -958,18 +963,7 @@ export function stateModelFactory(
        * its genome
        */
       laneKey(lane: string) {
-        const { assemblyName, refName } = laneOf(lane)
-        const { assemblyManager } = getSession(self)
-        const genome =
-          assemblyManager.getCanonicalAssemblyName(assemblyName) ?? assemblyName
-        return refName === undefined
-          ? genome
-          : copyLaneName(
-              genome,
-              (assemblyManager.has(genome) &&
-                assemblyManager.get(genome)?.getCanonicalRefName2(refName)) ||
-                refName,
-            )
+        return laneKeyIn(getSession(self).assemblyManager, lane)
       },
       /**
        * #method
@@ -2271,7 +2265,9 @@ export function stateModelFactory(
           self.visibleBpSpan,
           self.anchorLocString,
           self.inlineLaneNames ? self.laneStack.glyphHeight : undefined,
-          self.rowsVsAnchor ? self.anchorAssemblyName : undefined,
+          self.rowsVsAnchor
+            ? self.laneLabel(self.anchorAssemblyName)
+            : undefined,
           self.laneChanges,
           assemblyName => self.placelessOf(assemblyName),
           assemblyName => self.laneColor(assemblyName),
@@ -2827,7 +2823,9 @@ export function stateModelFactory(
                 'descending',
               ]),
               paint: self.ribbonPaint,
-              against: self.rowsVsAnchor ? self.anchorAssemblyName : undefined,
+              against: self.rowsVsAnchor
+                ? self.laneLabel(self.anchorAssemblyName)
+                : undefined,
             },
           ),
         ]

@@ -181,8 +181,10 @@ export function laneRowsOf({
 }
 
 /**
- * How many of the mate lanes `rows` stack above the anchor: those `sort`
- * names before the anchor's assembly, where it names it, else none
+ * How many of the mate lanes `rows` stack above the anchor: the leading run
+ * that `sort` names before the anchor's assembly, where it names it, else
+ * none. A lane placing nothing stacks at the foot whatever `sort` says, so
+ * it never counts
  */
 export function anchorRowOf(
   sort: readonly string[],
@@ -191,10 +193,13 @@ export function anchorRowOf(
   keyOf: KeyOf,
 ) {
   const keys = sort.map(keyOf)
-  const at = keys.indexOf(keyOf(anchor))
-  const before = new Set(keys.slice(0, Math.max(at, 0)))
-  return rows.filter(row => answersTo(row, keyOf).some(key => before.has(key)))
-    .length
+  const before = new Set(
+    keys.slice(0, Math.max(keys.indexOf(keyOf(anchor)), 0)),
+  )
+  const first = rows.findIndex(
+    row => !answersTo(row, keyOf).some(key => before.has(key)),
+  )
+  return first === -1 ? rows.length : first
 }
 
 /** the mate lanes with the anchor at its row */

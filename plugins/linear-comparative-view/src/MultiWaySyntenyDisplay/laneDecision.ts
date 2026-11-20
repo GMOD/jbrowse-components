@@ -10,7 +10,6 @@ import {
   voteEvidence,
 } from '../syntenyHysteresis.ts'
 import { isNamedRecord } from '../syntenyMate.ts'
-import { ALSO_ON_SHARE } from './copyLane.ts'
 import { flipPinOf, placePinOf } from './lanePins.ts'
 import {
   frameOpenings,
@@ -102,6 +101,8 @@ const SHRINK_ROOM = 0.85
 const MIN_SHARED_FOR_ORIENTATION = 3
 // three reversed genes is a small inversion, not a lane reading backwards
 const MIN_SHARED_TO_SWITCH = 5
+// well under the switch margin, so a copy the lane never picks is still named
+const ALSO_ON_SHARE = 0.2
 // a polyploid's other copies are a couple; past three it is a scaffold dump
 const ALSO_ON_MAX = 3
 // relative, since a lane aligned on its median can overhang its frame
