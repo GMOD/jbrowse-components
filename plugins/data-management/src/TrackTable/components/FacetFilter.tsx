@@ -93,6 +93,12 @@ const useStyles = makeStyles()(theme => {
       fontSize: '0.9em',
       paddingRight: theme.spacing(1),
     },
+    none: {
+      display: 'flex',
+      alignItems: 'center',
+      height: ROW_HEIGHT,
+      color: theme.palette.text.secondary,
+    },
     more: {
       ...link,
       height: ROW_HEIGHT,
@@ -163,6 +169,9 @@ const FacetFilter = observer(function FacetFilter({
       {expanded ? (
         <>
           <ul className={classes.values}>
+            {sorted.length === 0 ? (
+              <li className={classes.none}>No matching values</li>
+            ) : null}
             {listed.map(([value, count]) => {
               const text = coarseStripHTML(value)
               return (

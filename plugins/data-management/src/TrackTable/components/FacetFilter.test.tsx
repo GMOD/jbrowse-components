@@ -80,6 +80,18 @@ test('each value shows its count, and clearing appears once one is checked', () 
   expect(table.filters.has('metadata.assay')).toBe(false)
 })
 
+test('a facet the search leaves no value in says so', () => {
+  const { table, getByText, queryByText, queryByLabelText } = renderFilter()
+  expect(queryByText('No matching values')).toBeNull()
+
+  act(() => {
+    table.setFilterText('nosuchtrack')
+  })
+
+  expect(queryByLabelText('DNA')).toBeNull()
+  expect(getByText('No matching values')).toBeTruthy()
+})
+
 function renderValues(count: number, defaultExpanded?: boolean) {
   const table = tableOf(
     Array.from({ length: count }, (_, i) =>

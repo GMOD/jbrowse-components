@@ -14,6 +14,7 @@ import { getShowAllState, setTracksShown } from '../tableSelection.ts'
 import { columnFloor, fitColumnWidths } from './fitColumnWidths.ts'
 import { getTableColumns } from './getTableColumns.tsx'
 import { useTableStyles } from './tableStyles.ts'
+import { noMatchingTracksMessage } from './util.ts'
 
 import type { HierarchicalTrackSelectorModel } from '../../HierarchicalTrackSelectorWidget/model.ts'
 import type { TrackTableModel, TrackRow } from '../trackTableModel.ts'
@@ -114,9 +115,7 @@ const TrackTableGrid = observer(function TrackTableGrid({
         )
       }
       emptyMessage={
-        table.allRows.length
-          ? 'No tracks match the current search and filters'
-          : emptyMessage
+        table.allRows.length ? noMatchingTracksMessage : emptyMessage
       }
     />
   )

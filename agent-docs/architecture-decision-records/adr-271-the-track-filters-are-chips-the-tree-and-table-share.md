@@ -45,6 +45,16 @@ The name is a label for its row's checkbox, so a click on it shows or hides the
 track; the two modes share the Ctrl/Cmd-click handler, the hover and selection
 tints, and one checkbox glyph, the header's mixed state included.
 
+Amended 2026-11-20, after a review of captures on the hosted hg38 hub: a tree
+the filter empties says "No tracks match the current search and filters" in the
+table's words, where it used to draw a blank panel, and an empty Favorites or
+Recent list says so where the rows go, as the table does, so the filter row no
+longer drops when the list changes. A group row still shows over an emptied
+list, since a dormant connection loads from it, so the line appears only when
+the tree would draw nothing. A filter chip whose facet has no value left opens
+on "No matching values". Every search box shows its clear button only while
+there is text, and keeps the button's room so the box does not change height.
+
 ## Context
 
 ADR-269 left the facet panel off in the drawer, reachable only through "Show

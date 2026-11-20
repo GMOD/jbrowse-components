@@ -3,6 +3,7 @@ import { createTestSession } from '@jbrowse/web/testUtils'
 import { ThemeProvider } from '@mui/material'
 import { act, fireEvent, render } from '@testing-library/react'
 
+import { noMatchingTracksMessage } from '../../TrackTable/components/util.ts'
 import HierarchicalTrackSelector from './HierarchicalTrackSelector.tsx'
 
 import type { HierarchicalTrackSelectorModel } from '../model.ts'
@@ -175,14 +176,19 @@ test('an empty favorites list says so once in table mode', async () => {
 
 test('the favorites list narrows the tree and the table to favorite tracks, and says when there are none', async () => {
   const { model } = setup()
-  const { getByTestId, findByText } = render(
+  const { getByTestId, getByLabelText, findByText } = render(
     <ThemeProvider theme={createJBrowseTheme()}>
       <HierarchicalTrackSelector model={model} />
     </ThemeProvider>,
   )
   fireEvent.click(getByTestId('list-favorites'))
+  const message = await findByText(
+    'No favorite tracks yet. Add one from a track’s menu.',
+  )
+  // where the rows go, so the filter row above it does not move
   expect(
-    await findByText('No favorite tracks yet. Add one from a track’s menu.'),
+    getByLabelText('Filter tracks').compareDocumentPosition(message) &
+      Node.DOCUMENT_POSITION_FOLLOWING,
   ).toBeTruthy()
 
   act(() => {
@@ -195,6 +201,30 @@ test('the favorites list narrows the tree and the table to favorite tracks, and 
       item.type === 'track' ? [item.trackId] : [],
     ),
   ).toEqual(['genes'])
+})
+
+test('a tree the filter empties says no tracks match, in the table’s words', () => {
+  const { model } = setup()
+  const { queryByText, getByLabelText } = render(
+    <ThemeProvider theme={createJBrowseTheme()}>
+      <HierarchicalTrackSelector model={model} />
+    </ThemeProvider>,
+  )
+  act(() => {
+    model.setFilterText('genes')
+  })
+  expect(queryByText(noMatchingTracksMessage)).toBeNull()
+
+  act(() => {
+    model.setFilterText('nosuchtrack')
+  })
+  expect(model.rows).toEqual([])
+  const message = queryByText(noMatchingTracksMessage)
+  expect(
+    message &&
+      getByLabelText('Filter tracks').compareDocumentPosition(message) &
+        Node.DOCUMENT_POSITION_FOLLOWING,
+  ).toBeTruthy()
 })
 
 test('the ☰ menu clears the favorites only while that list shows, and Undo puts them back', async () => {

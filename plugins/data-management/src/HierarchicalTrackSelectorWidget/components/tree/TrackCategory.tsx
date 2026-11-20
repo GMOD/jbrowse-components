@@ -85,6 +85,9 @@ const useStyles = makeStyles()(theme => ({
       color: 'inherit',
     },
   },
+  arrow: {
+    verticalAlign: 'middle',
+  },
   folderLabel: {
     display: 'flex',
     alignItems: 'center',
@@ -344,7 +347,11 @@ const NormalCategoryLabel = observer(function NormalCategoryLabel({
       }}
     >
       <Typography data-testid={`htsCategory-${name}`}>
-        {expanded ? <ArrowDropDownIcon /> : <ArrowRightIcon />}
+        {expanded ? (
+          <ArrowDropDownIcon className={classes.arrow} />
+        ) : (
+          <ArrowRightIcon className={classes.arrow} />
+        )}
         <SanitizedHTML html={name} />
         {item.loading ? (
           <CircularProgress size={12} className={classes.spinner} />

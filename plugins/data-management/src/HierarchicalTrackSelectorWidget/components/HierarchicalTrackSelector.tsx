@@ -3,6 +3,7 @@ import useMeasure from '@jbrowse/core/util/useMeasure'
 import { Typography } from '@mui/material'
 import { observer } from 'mobx-react'
 
+import { noMatchingTracksMessage } from '../../TrackTable/components/util.ts'
 import TrackSelectorToggles from './TrackSelectorToggles.tsx'
 import TrackTable from './TrackTable.tsx'
 import HierarchicalHeader from './tree/HierarchicalHeader.tsx'
@@ -31,16 +32,34 @@ const emptyListMessage = {
 
 const TrackTree = observer(function TrackTree({
   model,
+  emptyMessage,
 }: {
   model: HierarchicalTrackSelectorModel
+  emptyMessage?: string
 }) {
   const { classes } = useStyles()
   const [ref, { height }] = useMeasure('height')
+  const message =
+    model.rows.length > 0
+      ? undefined
+      : model.trackTable.allRows.length > 0
+        ? noMatchingTracksMessage
+        : emptyMessage
   return (
     <>
       <HierarchicalHeader model={model} />
       <div ref={ref} className={classes.treeContainer}>
-        {height ? <HierarchicalTree height={height} model={model} /> : null}
+        {message ? (
+          <Typography
+            variant="body2"
+            color="textSecondary"
+            className={classes.empty}
+          >
+            {message}
+          </Typography>
+        ) : height ? (
+          <HierarchicalTree height={height} model={model} />
+        ) : null}
       </div>
     </>
   )
@@ -64,19 +83,10 @@ const HierarchicalTrackSelector = observer(function HierarchicalTrackSelector({
       style={{ height: `calc(100% - ${toolbarHeight}px)` }}
     >
       <TrackSelectorToggles model={model} />
-      {emptyMessage && !model.showTable ? (
-        <Typography
-          variant="body2"
-          color="textSecondary"
-          className={classes.empty}
-        >
-          {emptyMessage}
-        </Typography>
-      ) : null}
       {model.showTable ? (
         <TrackTable model={model} emptyMessage={emptyMessage} />
       ) : (
-        <TrackTree model={model} />
+        <TrackTree model={model} emptyMessage={emptyMessage} />
       )}
     </div>
   )

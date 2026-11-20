@@ -48,3 +48,6 @@ export function facetLabel(facet: string, nonMetadataFieldSet: Set<string>) {
     ? `${bare} (from metadata)`
     : bare
 }
+
+export const noMatchingTracksMessage =
+  'No tracks match the current search and filters'
