@@ -171,29 +171,32 @@ We'll check the calls before analyzing them, with **Color by → Mendelian check
 in the track menu. At each site JBrowse asks whether the child's genotype can be
 made of one allele from each parent's, and colors the alt cells by the answer:
 
-- **Not in parents:** the child has an allele that neither parent was called
-  with.
-- **Inconsistent:** no way of taking one allele from each parent gives the
-  child's genotype, as for a hom-alt child of a hom-ref parent.
+- **De novo candidate:** the child has an allele that neither parent was called
+  with. This is the callset's pattern, not a confirmed mutation.
+- **Mendelian error:** no way of taking one allele from each parent gives the
+  child's genotype, as for a hom-alt child of a hom-ref parent. The de novo
+  pattern is not counted here, since it has its own color.
 - **Consistent:** one allele from each parent gives the child's genotype.
 
 A site where a no-call leaves the answer open keeps the default color. Near
 CFHR3 and CFHR1 the check flags both kinds of site:
 
-<Figure caption="Color by → Mendelian check across CFHR3 and CFHR1, rows HG02024 (daughter), HG02025 (mother) and HG02026 (father). The child's row has not-in-parents cells left of CFHR3, and the parents' rows have a run of inconsistent cells across CFHR1." src="/img/trio-mendelian.png"/>
+<Figure caption="Color by → Mendelian check across CFHR3 and CFHR1, rows HG02024 (daughter), HG02025 (mother) and HG02026 (father). The child's row has de novo candidate cells left of CFHR3, and the parents' rows have a run of Mendelian error cells across CFHR1." src="/img/trio-mendelian.png"/>
 
 This VCF is the 1000 Genomes low-coverage callset, statistically phased, and
 under one percent of its chr1 sites fail the check. Most failures are genotyping
-errors, not de novo mutations. The 1000 Genomes SV callset gives the father and
-the child a deletion across CFHR1 (`HGSV_9982`), and a sample with one copy of a
-sequence is called homozygous for that copy's allele, which accounts for the run
-of inconsistent sites there.
+errors, not de novo mutations: most de novo candidates on this trio are a
+parent's het that the low-coverage calls missed, as at the site checked below.
+The 1000 Genomes SV callset gives the father and the child a deletion across
+CFHR1 (`HGSV_9982`), and a sample with one copy of a sequence is called
+homozygous for that copy's allele, which accounts for the run of Mendelian
+errors there.
 
-- **Filter:** checking **Not in parents** and **Inconsistent** under **Filter by
-  → Mendelian check** keeps the failing sites alone. The menu writes the
-  display's `filter` entry
-  `{ "field": "mendelian", "oneOf": ["notInParents", "inconsistent"] }`, which a
-  config can hold too.
+- **Filter:** checking **De novo candidate** and **Mendelian error** under
+  **Filter by → Mendelian check** keeps the failing sites alone. The menu writes
+  the display's `filter` entry
+  `{ "field": "mendelian", "oneOf": ["deNovoCandidate", "mendelianError"] }`,
+  which a config can hold too.
 - **Hover and click:** hovering a cell names its site's check, and clicking it
   opens the feature details, whose Mendelian check table lists each trio's
   genotypes and call.
@@ -213,7 +216,7 @@ project's S3 bucket:
 ```
 
 At chr1:196,762,950-196,763,030 the callset has the child `0|1` and both parents
-`0|0` at 196,762,987, a not-in-parents site. The child's reads show the G allele
+`0|0` at 196,762,987, a de novo candidate. The child's reads show the G allele
 there, so the child's call stands. The mother's CRAM,
 `https://1000genomes.s3.amazonaws.com/1000G_2504_high_coverage/data/ERR3242042/HG02025.final.cram`,
 loaded the same way, also has reads with G, so the low-coverage calls missed the

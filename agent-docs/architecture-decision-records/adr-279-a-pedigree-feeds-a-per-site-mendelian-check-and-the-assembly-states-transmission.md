@@ -60,9 +60,11 @@ tetraploid, a haplodiploid male, a ZW female or a yeast mitochondrion.
 
 ### The check
 
-- **`mendelian` takes `notInParents`, `inconsistent` or `consistent`**, and a
-  site with nothing to say is `undefined`. With several trios the site takes
-  the most severe (`mostSevereTrioClass`).
+- **`mendelian` takes `deNovoCandidate`, `mendelianError` or `consistent`**,
+  and a site with nothing to say is `undefined`. A `mendelianError` here
+  excludes the de novo pattern, which `deNovoCandidate` holds with its own
+  color. With several trios the site takes the most severe
+  (`mostSevereTrioClass`).
 - **One pure classifier, `classifyTrio`** (`shared/classifyTrio.ts`), over
   genotype strings, the child's sex and the contig's rule. Phase is ignored.
   It chooses a mode, first match wins: a transmission entry; Union, when the
@@ -73,7 +75,7 @@ tetraploid, a haplodiploid male, a ZW female or a yeast mitochondrion.
   aneuploidy and unreduced gametes. That is the general gamete-partition rule:
   one procedure for every ploidy, with no table per case.
 - **Lenient over false errors.** A gamete is drawn from the parent's allele
-  set, so double reduction passes. `inconsistent` is never reported under
+  set, so double reduction passes. `mendelianError` is never reported under
   Union, Irregular or `from: either`. A duo the known parent cannot settle is
   `undefined`. A sex entry judges only haploid or homozygous calls, so a het
   falls through to the autosomal rule; with sex missing both readings run and a
@@ -119,7 +121,7 @@ tetraploid, a haplodiploid male, a ZW female or a yeast mitochondrion.
 ## Consequences
 
 - With no entry, a diploid-coded male X or a mitochondrial call can read
-  falsely `inconsistent`; the docs name the entry to write.
+  falsely `mendelianError`; the docs name the entry to write.
 - On the `feature.get('genotypes')` fallback, codes are interned after the
   site loop, so the field stays `undefined` there.
 - Reading genotypes with no rows drawn makes `samplePloidy` and
@@ -190,3 +192,18 @@ Rejected:
   columns with keys (ADR-260); text after the name is a different mark.
 - **Labels suppressing the subtitle.** A rule coupling two members the reader
   sets separately; the subtitle's `''` is the one off switch.
+
+## Amended 2026-11-20: the classes take the field's terms
+
+The classes were first `notInParents` and `inconsistent`, labelled "Not in
+parents" and "Inconsistent". Before any release they became `deNovoCandidate`
+("De novo candidate") and `mendelianError` ("Mendelian error"), the terms a
+geneticist searches for; `consistent` and the colors stay.
+
+- **"Candidate"**, because the class is the callset's pattern, not a confirmed
+  mutation: on GT alone most such sites are genotyping errors, as the trio
+  tutorial's read check shows on the KHV trio.
+- **`mendelianError` excludes the de novo pattern.** PLINK's `--mendel` and
+  Hail's `mendel_errors` count a het child of two hom-ref parents as a Mendel
+  error; here it has its own class and color, as Hail's `de_novo` and slivar's
+  `denovo` report it apart from other errors.

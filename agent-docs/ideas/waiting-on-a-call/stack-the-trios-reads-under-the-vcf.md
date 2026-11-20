@@ -5,7 +5,7 @@ description: Checking a Mendelian failure means loading the trio's three CRAMs b
 
 # Stack the trio's reads under the VCF in one gesture
 
-`analyze_trio.md` checks a not-in-parents site by loading the child's 30x CRAM,
+`analyze_trio.md` checks a de novo candidate by loading the child's 30x CRAM,
 then the mother's, each as an addtrack fence with its URL typed out. A reader
 reviewing many flagged sites repeats that for every trio.
 

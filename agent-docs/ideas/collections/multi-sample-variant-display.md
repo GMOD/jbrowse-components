@@ -33,7 +33,7 @@ past the independent MVP. Same plumbing then unlocks **VAF coloring from AD**
 **De novo and compound-het review on the pedigree.** `pedigreeLocation` and
 the per-site Mendelian check are built, as callset QC
 ([ADR-279](../../architecture-decision-records/adr-279-a-pedigree-feeds-a-per-site-mendelian-check-and-the-assembly-states-transmission.md)).
-Reviewing a `notInParents` site as a de novo candidate needs the
+Reviewing a `deNovoCandidate` site as a de novo mutation needs the
 genotype-quality masking above first, since on low-coverage calls most such
 sites are genotyping errors. Compound hets (two hets in one gene, one from each
 parent) need a per-gene pass over the trio's phased calls that nobody has

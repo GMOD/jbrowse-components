@@ -173,9 +173,9 @@ export const trioSpecs: ScreenshotSpec[] = [
     mode: 'url',
     name: 'trio-mendelian',
     viewportHeight: 495,
-    // Not-in-parents sites near 196.76 Mb, where the 30x CRAMs show the
+    // De novo candidates near 196.76 Mb, where the 30x CRAMs show the
     // child's alt allele in a parent the low-coverage calls made hom-ref, and
-    // a run of inconsistent sites across CFHR1, inside the deletion HGSV_9982
+    // a run of Mendelian errors across CFHR1, inside the deletion HGSV_9982
     // that the 1000 Genomes SV callset gives the father and child. The labels'
     // relationship subtitles name the rows' roles.
     url: lgvSession(DEMO_CONFIG, {
