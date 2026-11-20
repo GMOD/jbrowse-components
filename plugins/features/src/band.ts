@@ -24,6 +24,7 @@ export {
 } from './RenderFeatureDataRPC/featureNameField.ts'
 export {
   hiddenSectionFeatureIds,
+  knownSections,
   sectionHeadPxOn,
 } from './LinearBasicDisplay/facet.ts'
 export {

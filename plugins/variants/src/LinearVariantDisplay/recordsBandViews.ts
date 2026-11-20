@@ -34,6 +34,7 @@ import {
   hiddenSectionFeatureIds,
   hostFeatureBand,
   isPlacedRow,
+  knownSections,
   labelFontSize,
   labelVisibility,
   maxBottom,
@@ -364,17 +365,20 @@ export function recordsBandActions(self: RecordsActionsHost) {
      * brings it back.
      */
     hideRecordsGroup(key: string) {
-      setConf(
-        self,
-        ['records', 'facet', 'hidden'],
-        [...new Set([...self.recordsHiddenGroups, key])],
-      )
+      this.setRecordsHiddenGroups([...self.recordsHiddenGroups, key])
     },
     /**
      * #action
      */
     showAllRecordsGroups() {
-      setConf(self, ['records', 'facet', 'hidden'], [])
+      this.setRecordsHiddenGroups([])
+    },
+    /**
+     * #action
+     * The whole hidden set of record sections at once.
+     */
+    setRecordsHiddenGroups(keys: readonly string[]) {
+      setConf(self, ['records', 'facet', 'hidden'], [...new Set(keys)])
     },
   }
 }
@@ -984,6 +988,21 @@ export function recordsLayoutViews(self: RecordsLayoutHost) {
      */
     get recordsSectionChipsDrawn() {
       return this.recordsGroupSections.length > 0
+    },
+    /**
+     * #getter
+     * Every record section the Sections dialog lists, hidden or not; none
+     * while the records stack in one section.
+     */
+    get recordsKnownSections() {
+      const facet = self.recordsFacet
+      return facet
+        ? knownSections(
+            self.recordsRenderDataMap.values(),
+            facet,
+            self.recordsHiddenGroups,
+          )
+        : []
     },
     /**
      * #getter

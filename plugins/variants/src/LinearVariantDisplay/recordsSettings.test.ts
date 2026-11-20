@@ -177,6 +177,25 @@ describe('records.facet', () => {
     expect(keyLabels()).toContain('Insertion')
   })
 
+  test('Sections... lists every record section bare, a hidden one included', () => {
+    const ungrouped = recordsDisplayAt(SECTIONED, 10, {}, false).display
+    expect(labelsOf(ungrouped.trackMenuItems())).not.toContain('Sections...')
+    const { display } = recordsDisplayAt(
+      SECTIONED,
+      10,
+      { facet: 'INFO.CLNSIG' },
+      false,
+    )
+    display.hideRecordsGroup('Pathogenic')
+    expect(display.recordsKnownSections).toEqual([
+      { key: 'Benign', label: 'Benign' },
+      { key: 'Pathogenic', label: 'Pathogenic' },
+    ])
+    expect(labelsOf(display.trackMenuItems())).toContain('Sections...')
+    display.setRecordsHiddenGroups(['Benign'])
+    expect(display.recordsGroupSections.map(s => s.key)).toEqual(['Pathogenic'])
+  })
+
   test('is not the sample facet', () => {
     const { display } = recordsDisplayAt(SECTIONED, 10, {}, false)
     display.recordsFacetByField('INFO.CLNSIG')

@@ -20,27 +20,32 @@ export function fieldHeading(field = '') {
   return field && !isJexl(field) ? capitalizeFirst(field) : 'Section'
 }
 
-export function openSectionsDialog(display: SectionsHost) {
-  getDialogHost(display).queueDialog(handleClose => [
-    SectionsDialog,
-    { model: display, handleClose },
-  ])
-}
-
 /**
- * "Sections...", the checklist of a grouped track's sections, while the
- * track knows any.
+ * "Sections...", the checklist of `model`'s sections, while it knows any;
+ * `node` places the dialog. A band whose sections are not its display's
+ * own passes the display as `node` and the band as `model`.
  */
-export function sectionsMenuItems(display: SectionsHost): MenuItem[] {
-  return display.knownSections.length > 0
+export function sectionsMenuItemsFor(
+  node: IStateTreeNode,
+  model: SectionsDialogModel,
+): MenuItem[] {
+  return model.knownSections.length > 0
     ? [
         {
           label: 'Sections...',
           icon: ChecklistIcon,
           onClick: () => {
-            openSectionsDialog(display)
+            getDialogHost(node).queueDialog(handleClose => [
+              SectionsDialog,
+              { model, handleClose },
+            ])
           },
         },
       ]
     : []
+}
+
+/** "Sections...", for a display whose sections are its own. */
+export function sectionsMenuItems(display: SectionsHost): MenuItem[] {
+  return sectionsMenuItemsFor(display, display)
 }

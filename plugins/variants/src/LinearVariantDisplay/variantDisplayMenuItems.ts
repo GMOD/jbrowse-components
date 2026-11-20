@@ -21,6 +21,10 @@ import {
   hiddenGroupsItems,
   resetSectionOrderItems,
 } from '@jbrowse/display-kit/groupByMenu'
+import {
+  fieldHeading,
+  sectionsMenuItemsFor,
+} from '@jbrowse/display-kit/sectionsMenu'
 import { rampEncodingOf } from '@jbrowse/display-kit/valueRamp'
 import {
   featureHeightMenuItem,
@@ -198,6 +202,18 @@ function groupByMenuItems(self: LinearVariantDisplayModel): MenuItem[] {
               },
             },
           ],
+        }),
+        ...sectionsMenuItemsFor(self, {
+          get knownSections() {
+            return self.recordsKnownSections
+          },
+          get hiddenGroups() {
+            return self.recordsHiddenGroups
+          },
+          sectionsHeading: fieldHeading(recordsField),
+          setHiddenGroups: keys => {
+            self.setRecordsHiddenGroups(keys)
+          },
         }),
         ...resetSectionOrderItems(
           facet && {
