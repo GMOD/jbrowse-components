@@ -1788,6 +1788,16 @@
       ],
       "worker": "real"
     },
+    "@jbrowse/core/ui/DelegatedTooltip": {
+      "package": "@jbrowse/core",
+      "names": [
+        "default"
+      ],
+      "worker": "stub",
+      "uiVia": [
+        "@mui/material"
+      ]
+    },
     "@jbrowse/core/ui/DetailTable": {
       "package": "@jbrowse/core",
       "names": [
@@ -5408,6 +5418,21 @@
       "names": [
         "SECTION_FACET_WRITES",
         "sectionFacetConfigSchema"
+      ],
+      "worker": "real"
+    },
+    "@jbrowse/display-kit/sectionsHeading": {
+      "package": "@jbrowse/display-kit",
+      "names": [
+        "fieldHeading"
+      ],
+      "worker": "real"
+    },
+    "@jbrowse/display-kit/sectionsMenu": {
+      "package": "@jbrowse/display-kit",
+      "names": [
+        "sectionsMenuItems",
+        "sectionsMenuItemsFor"
       ],
       "worker": "real"
     },

@@ -216,6 +216,7 @@ const loaders: ReExportLoaders = {
   '@jbrowse/core/ui/ControlRow': () => import('../ui/ControlRow.tsx').then(ns => ns.default),
   '@jbrowse/core/ui/Crosshairs': () => import('../ui/Crosshairs.tsx').then(ns => ns.default),
   '@jbrowse/core/ui/DataGridFlexContainer': () => import('../ui/DataGridFlexContainer.tsx').then(ns => ns.default),
+  '@jbrowse/core/ui/DelegatedTooltip': () => import('../ui/DelegatedTooltip.tsx').then(ns => ns.default),
   '@jbrowse/core/ui/DetailTable': () => import('../ui/DetailTable/index.ts').then(ns => ns.default),
   '@jbrowse/core/ui/Dialog': () => import('../ui/Dialog.tsx').then(ns => ns.default),
   '@jbrowse/core/ui/DraggableDialog': () => import('../ui/DraggableDialog.tsx').then(ns => ns.default),

@@ -97,6 +97,8 @@ const loaders: ReExportLoaders = {
   '@jbrowse/display-kit/rowTreeConfigSchema': () => import('@jbrowse/display-kit/rowTreeConfigSchema'),
   '@jbrowse/display-kit/rpcArgs': () => import('@jbrowse/display-kit/rpcArgs'),
   '@jbrowse/display-kit/sectionFacetConfigSchema': () => import('@jbrowse/display-kit/sectionFacetConfigSchema'),
+  '@jbrowse/display-kit/sectionsHeading': () => import('@jbrowse/display-kit/sectionsHeading'),
+  '@jbrowse/display-kit/sectionsMenu': () => import('@jbrowse/display-kit/sectionsMenu'),
   '@jbrowse/display-kit/SkippedFeaturesIndicator': () => import('@jbrowse/display-kit/SkippedFeaturesIndicator').then(ns => ({ ...ns, __esModule: true })),
   '@jbrowse/display-kit/SolidColorDialog': () => import('@jbrowse/display-kit/SolidColorDialog').then(ns => ns.default),
   '@jbrowse/display-kit/stableIdentityComputed': () => import('@jbrowse/display-kit/stableIdentityComputed'),

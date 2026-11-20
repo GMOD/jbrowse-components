@@ -217,6 +217,7 @@ const loaders: ReExportLoaders = {
   '@jbrowse/core/ui/ControlRow': () => Promise.resolve(uiStub),
   '@jbrowse/core/ui/Crosshairs': () => import('../ui/Crosshairs.tsx').then(ns => ns.default),
   '@jbrowse/core/ui/DataGridFlexContainer': () => import('../ui/DataGridFlexContainer.tsx').then(ns => ns.default),
+  '@jbrowse/core/ui/DelegatedTooltip': () => Promise.resolve(uiStub),
   '@jbrowse/core/ui/DetailTable': () => Promise.resolve(uiStub),
   '@jbrowse/core/ui/Dialog': () => Promise.resolve(uiStub),
   '@jbrowse/core/ui/DraggableDialog': () => Promise.resolve(uiStub),

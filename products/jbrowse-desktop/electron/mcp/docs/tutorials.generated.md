@@ -587,7 +587,7 @@ Page: https://jbrowse.org/jb2/docs/tutorials/pangenome_fly/
 
 ## Pangenome (HPRC) part 1: the graph's alleles and the haplotypes that have them
 
-Open HPRC release 2's pangenome graph from genomes.jbrowse.org as a track of the linear view, trace an allele to the assembly it came from, list every haplotype with it from the release's phased VCF, and read the same alleles as aligned bases in the release's multiple alignment
+Open HPRC release 2's pangenome graph from genomes.jbrowse.org as a track of the linear view, trace an allele to the assembly it came from, list every haplotype with it from the release's phased VCF, read the same alleles as aligned bases in the release's multiple alignment, and follow single haplotypes through the graph as colored threads
 
 Page: https://jbrowse.org/jb2/docs/tutorials/pangenome_hprc/
 
