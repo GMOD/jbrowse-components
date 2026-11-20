@@ -31,7 +31,7 @@ const BaseConnectionConfig = ConfigurationSchema(
     assemblyNames: {
       type: 'stringArray',
       defaultValue: [],
-      description: 'optional list of names of assemblies in this connection',
+      description: 'optional list of the genomes to load from this connection',
     },
   },
   {

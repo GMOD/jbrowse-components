@@ -38,7 +38,7 @@ const steps = ['Select a Connection Type', 'Configure Connection']
 
 // A connect that fails reports itself and drops its live instance, which
 // would leave the config behind as a row that fails again on every expand
-async function forgetIfFirstConnectFails(
+async function deleteIfFirstConnectFails(
   session: SessionWithConnectionEditing,
   conf: BaseConnectionConfigModel,
 ) {
@@ -80,7 +80,7 @@ const AddConnectionWidget = observer(function AddConnectionWidget({
       if (isSessionModelWithConnectionEditing(session)) {
         const conf = session.addConnectionConf(configModel)
         session.makeConnection(conf)
-        void forgetIfFirstConnectFails(session, conf)
+        void deleteIfFirstConnectFails(session, conf)
       } else {
         session.notify('This session does not support connections')
       }

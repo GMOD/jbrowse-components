@@ -1953,6 +1953,21 @@ test('a group row collapses all, and a connection row deletes its connection', a
   })
 })
 
+test("a visitor deletes a connection they added, and not one the site's config defines", () => {
+  const session = createTestSession({ jbrowseConfig: withConnection })
+  const added = session.addConnectionConf({
+    connectionId: 'mine',
+    type: 'JBrowse1Connection',
+    name: 'Mine',
+    assemblyNames: ['volMyt1'],
+  })
+  const view = session.addView('LinearGenomeView', {})
+  const model = view.activateTrackSelector() as HierarchicalTrackSelectorModel
+
+  expect(model.removableConnection('connection-mine')).toBe(added)
+  expect(model.removableConnection('connection-conn1')).toBeUndefined()
+})
+
 // with no connection the config's own tracks are the only group, so the tree
 // draws no row for it and its collapse pair moves to the ☰ menu
 test('a lone group gets no row, and the ☰ menu collapses its categories', async () => {

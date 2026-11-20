@@ -8,8 +8,9 @@ guide_category: Core configuration
 
 A connection makes an external hub's tracks available in the track selector
 without configuring each track by hand. Admin-defined connections go in the
-top-level `connections` array; connections a user adds at runtime are stored in
-their session. The config format is below; the
+top-level `connections` array. A connection a visitor adds to a JBrowse website
+is stored in their session; JBrowse Desktop and the embedded components add it
+to the config they opened. The config format is below; the
 [Connections user guide](/docs/user_guides/connections) covers in-app behavior.
 
 ## Connection config format
@@ -39,8 +40,9 @@ Points at a hub's `hub.txt` ([](/docs/config/ucsctrackhubconnection)):
 
 Points at another JBrowse 2 `config.json`, whose `tracks` array becomes the
 connection's track list and whose `assemblies` are added where the session lacks
-them. A track whose type comes from a plugin this instance does not load is left
-out and named in a warning ([](/docs/config/jb2trackhubconnection)):
+them. `assemblyNames` lists genomes by name or alias. A track whose type comes
+from a plugin this JBrowse does not have is left out, and a warning names the
+type ([](/docs/config/jb2trackhubconnection)):
 
 ```json
 {

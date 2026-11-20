@@ -175,8 +175,8 @@ any launch type. Without it the name is generated with a timestamp, except for a
 
 `&hubURL=https://example.com/hub.txt&config=none`
 
-- Loads one or more UCSC track hubs (comma-separated) as a session, usually with
-  `?config=none` since the hub supplies the assemblies and tracks.
+- Loads one or more UCSC track hubs (comma-separated) as a session, with
+  `?config=none` for an assembly hub, which supplies the assemblies and tracks.
 - `&assembly=` and `&loc=` open the hub at a place; `&assembly=` is required,
   since it names the hub genome `&loc=` resolves against:
   `?config=none&hubURL=https://example.com/hub.txt&assembly=GCF_019202715.1&loc=chr1:1-100000`.

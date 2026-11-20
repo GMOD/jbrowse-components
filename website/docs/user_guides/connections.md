@@ -49,8 +49,23 @@ expand it again to browse the rest.
 ## Removing a connection
 
 **Delete connection...** in the menu on the connection's own row of the track
-selector removes it. An admin can remove any connection, anyone else only the
-ones they added.
+selector removes it. On a JBrowse website an admin can remove any connection and
+a visitor the ones they added. JBrowse Desktop and the embedded components keep
+connections in the one config they opened, so there anyone can remove any of
+them.
+
+## When a hub loads in part
+
+A hub that loads some of its tracks says what it left behind:
+
+- **Left out tracks this JBrowse cannot load, of type ...**: those tracks use a
+  track type from a plugin this JBrowse does not have. Install the plugin from
+  the [plugin store](/docs/user_guides/plugin_store) and reload.
+- **Could not read the tracks of these assemblies**: the hub's track list for
+  that genome (its `trackDb` file) did not download. The hub's other genomes
+  loaded.
+- **Skipped data from these assemblies**: a track hub names a genome this
+  JBrowse does not have. Add the assembly, then expand the connection again.
 
 ## UCSC track hub URL format
 

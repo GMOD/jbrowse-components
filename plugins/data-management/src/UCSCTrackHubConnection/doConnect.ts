@@ -27,6 +27,8 @@ import type PluginManager from '@jbrowse/core/PluginManager'
 
 type Self = ConnectionDoConnectArg<UCSCTrackHubConnectionConfigModel>
 
+type Session = ReturnType<typeof getSession>
+
 // fetch a single genome's trackDb (resolved against the genomes.txt location)
 // and convert it into jbrowse track configs
 async function loadGenomeTracks({
@@ -53,9 +55,6 @@ async function loadGenomeTracks({
   })
 }
 
-type Session = ReturnType<typeof getSession>
-
-// a track hub names a genome without supplying its sequence
 function canAttach(session: Session, genome: RaStanza, genomeName: string) {
   return (
     session.assemblyManager.has(genomeName) ||
@@ -63,20 +62,15 @@ function canAttach(session: Session, genome: RaStanza, genomeName: string) {
   )
 }
 
-function ensureAssembly(
+function attach(
   session: Session,
   genome: RaStanza,
   genomeName: string,
   baseUri: string,
 ) {
   const { twoBitPath } = genome.data
-  if (session.assemblyManager.has(genomeName)) {
-    return true
-  } else if (session.addSessionAssembly && twoBitPath) {
-    session.addSessionAssembly(generateAssembly(genome, twoBitPath, baseUri))
-    return true
-  } else {
-    return false
+  if (!session.assemblyManager.has(genomeName) && twoBitPath) {
+    session.addSessionAssembly?.(generateAssembly(genome, twoBitPath, baseUri))
   }
 }
 
@@ -89,9 +83,7 @@ async function connectSingleFileHub(
   const session = getSession(self)
   const { genome, tracks } = new SingleFileHub(hubFileText)
   const genomeName = genome.name!
-  if (
-    !ensureAssembly(session, genome, genomeName, hubBaseUrl(hubFileLocation))
-  ) {
+  if (!canAttach(session, genome, genomeName)) {
     // the hub's single genome isn't present and can't be added, so its tracks
     // would have nowhere to attach
     throw new Error(
@@ -102,6 +94,7 @@ async function connectSingleFileHub(
       }`,
     )
   }
+  attach(session, genome, genomeName, hubBaseUrl(hubFileLocation))
   self.addTrackConfs(
     generateTracks({
       trackDb: tracks,
@@ -161,12 +154,15 @@ async function connectMultiGenomeHub(
             pluginManager,
           })
           if (isAlive(self)) {
-            ensureAssembly(session, genome, genomeName, genomesBaseUri)
+            attach(session, genome, genomeName, genomesBaseUri)
             self.addTrackConfs(tracks)
             trackCounts[genomeName] = tracks.length
           }
         } catch (error) {
-          unreadAssemblies.push({ genomeName, error })
+          if (isAlive(self)) {
+            attach(session, genome, genomeName, genomesBaseUri)
+            unreadAssemblies.push({ genomeName, error })
+          }
         }
       } else {
         notLoadedAssemblies.push(genomeName)
@@ -175,25 +171,23 @@ async function connectMultiGenomeHub(
   }
 
   if (isAlive(self)) {
+    const loadedAny = Object.keys(trackCounts).length > 0
     const [firstUnread] = unreadAssemblies
-    if (firstUnread && Object.keys(trackCounts).length === 0) {
-      throw firstUnread.error
-    }
     if (firstUnread) {
+      if (!loadedAny) {
+        throw firstUnread.error
+      }
       for (const { error } of unreadAssemblies) {
         console.error(error)
       }
-      session.notify(
-        `${getConf(self, 'name')}: could not read the tracks of these assemblies: ${unreadAssemblies.map(u => u.genomeName).join(', ')}`,
-        'warning',
-      )
     }
-    const summary = formatHubLoadSummary(trackCounts, notLoadedAssemblies)
-    if (!self.silent && summary) {
-      session.notify(
-        summary,
-        Object.keys(trackCounts).length > 0 ? 'success' : 'warning',
-      )
+    const summary = formatHubLoadSummary(
+      trackCounts,
+      notLoadedAssemblies,
+      unreadAssemblies.map(unread => unread.genomeName),
+    )
+    if (summary && (firstUnread || !self.silent)) {
+      session.notify(summary, loadedAny && !firstUnread ? 'success' : 'warning')
     }
   }
 }

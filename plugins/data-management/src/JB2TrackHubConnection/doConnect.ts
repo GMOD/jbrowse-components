@@ -9,7 +9,10 @@ import { resolve } from './util.ts'
 import type { ConnectionDoConnectArg } from '../lazyConnect.ts'
 import type { JB2TrackHubConnectionConfigModel } from './configSchema.ts'
 
-type HubAssembly = Record<string, unknown> & { name: string }
+type HubAssembly = Record<string, unknown> & {
+  name: string
+  aliases?: string[]
+}
 
 type HubTrack = Record<string, unknown> & { assemblyNames?: string[] }
 
@@ -41,23 +44,28 @@ export async function doConnect(
       configJsonLocation.baseUri,
     )
     addRelativeUris(configJson, new URL(configUri))
-    const wanted = (name: string) =>
-      assemblyNames.length === 0 || assemblyNames.includes(name)
-    for (const assembly of configJson.assemblies ?? []) {
-      if (
-        wanted(assembly.name) &&
-        !session.assemblyManager.has(assembly.name)
-      ) {
+    const everyGenome = assemblyNames.length === 0
+    const listedAssemblies = (configJson.assemblies ?? []).filter(
+      ({ name, aliases = [] }) =>
+        everyGenome ||
+        [name, ...aliases].some(spelling => assemblyNames.includes(spelling)),
+    )
+    for (const assembly of listedAssemblies) {
+      if (!session.assemblyManager.has(assembly.name)) {
         session.addSessionAssembly?.(assembly)
       }
     }
 
-    const imported = ({ assemblyNames: names = [] }: HubTrack) =>
-      names.some(wanted) &&
-      names.every(name => wanted(name) || session.assemblyManager.has(name))
-    const tracks = configJson.tracks ?? []
+    const listedNames = new Set([
+      ...assemblyNames,
+      ...listedAssemblies.map(assembly => assembly.name),
+    ])
     self.addTrackConfs(
-      assemblyNames.length === 0 ? tracks : tracks.filter(imported),
+      (configJson.tracks ?? []).filter(
+        track =>
+          everyGenome ||
+          track.assemblyNames?.some(name => listedNames.has(name)),
+      ),
     )
     if (!self.silent) {
       session.notify('Successfully loaded', 'success')

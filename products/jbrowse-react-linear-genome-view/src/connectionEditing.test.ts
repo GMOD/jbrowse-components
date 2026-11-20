@@ -42,5 +42,4 @@ test('the track selector offers to delete a connection an embedded session added
     session.view.activateTrackSelector() as HierarchicalTrackSelectorModel
 
   expect(selector.removableConnection('connection-hub')).toBe(conf)
-  expect(selector.removableConnection('Tracks')).toBeUndefined()
 })

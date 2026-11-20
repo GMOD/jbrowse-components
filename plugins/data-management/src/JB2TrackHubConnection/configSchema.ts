@@ -46,7 +46,7 @@ const JB2TrackHubConnection = ConfigurationSchema(
       type: 'stringArray',
       defaultValue: [],
       description:
-        'optional list of genomes to import from this config.json, if empty all genomes will be imported',
+        'optional list of genomes to import from this config.json, by name or alias; if empty all genomes will be imported',
     },
   },
   {
@@ -65,6 +65,7 @@ const JB2TrackHubConnection = ConfigurationSchema(
      * {
      *   "type": "JB2TrackHubConnection",
      *   "connectionId": "jb2_hub_example",
+     *   "name": "Shared JBrowse 2 tracks",
      *   "uri": "https://mysite.com/path/to/config.json"
      * }
      * ```

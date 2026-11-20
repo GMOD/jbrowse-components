@@ -88,12 +88,13 @@ export function htmlLink(path: string, baseUri?: string) {
   return `<a href="${escapeHTML(resolve(path, baseUri))}">${escapeHTML(path)}</a>`
 }
 
-// build the connection's success notification: which assemblies had tracks
-// loaded (with counts) and which were skipped because no matching assembly was
-// present and none could be added
+// build the connection's load notification: which assemblies had tracks loaded
+// (with counts), which were skipped because no matching assembly was present
+// and none could be added, and which had a trackDb that could not be read
 export function formatHubLoadSummary(
   trackCounts: Record<string, number>,
   skippedAssemblies: string[],
+  unreadAssemblies: string[] = [],
 ) {
   const loaded = Object.entries(trackCounts)
   const loadedStr = loaded.length
@@ -104,5 +105,8 @@ export function formatHubLoadSummary(
   const skippedStr = skippedAssemblies.length
     ? `Skipped data from these assemblies: ${skippedAssemblies.join(', ')}`
     : ''
-  return [loadedStr, skippedStr].filter(f => !!f).join('. ')
+  const unreadStr = unreadAssemblies.length
+    ? `Could not read the tracks of these assemblies: ${unreadAssemblies.join(', ')}`
+    : ''
+  return [loadedStr, skippedStr, unreadStr].filter(f => !!f).join('. ')
 }

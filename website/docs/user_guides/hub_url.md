@@ -19,8 +19,10 @@ https://jbrowse.org/code/jb2/latest/?config=none&hubURL=https://example.com/hub.
 
 - `hubURL=` points directly at the hub's `hub.txt` file (the same URL you would
   paste into the connection form).
-- `config=none` skips loading a JBrowse config, because the hub supplies the
-  assemblies and tracks. See [`?config=`](/docs/urlparams#config).
+- `config=none` skips loading a JBrowse config, because an assembly hub supplies
+  the assemblies and tracks. A track hub names its genomes without their
+  sequence, so it goes [with a config](#combining-with-a-config) that defines
+  them. See [`?config=`](/docs/urlparams#config).
 
 JBrowse reads the hub's `shortLabel` and uses it as the session name.
 

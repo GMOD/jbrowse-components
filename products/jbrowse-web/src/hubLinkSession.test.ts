@@ -239,10 +239,25 @@ describe('a hub link with a view init', () => {
     return connection.tracks[0]!.trackId
   }
 
-  // a gene-name &loc= searches the index the hub brings with its tracks, and
-  // the hub's assembly arrives with them
-  it('launches the view once the hub has loaded, not while its trackDb is in flight', async () => {
+  // a gene-name &loc= searches the index the hub brings with its tracks, so
+  // the assembly being there, as it is on a site that already has the hub's
+  // genome, is not yet enough to launch against
+  it('launches the view once the hub has loaded, not when its assembly is present', async () => {
     const { pluginManager, rootModel } = setup()
+    rootModel.jbrowse.addAssemblyConf({
+      name: 'hubAsm',
+      sequence: {
+        type: 'ReferenceSequenceTrack',
+        trackId: 'hubAsm-ref',
+        adapter: {
+          type: 'TwoBitAdapter',
+          twoBitLocation: {
+            uri: 'https://example.com/hubAsm.2bit',
+            locationType: 'UriLocation',
+          },
+        },
+      },
+    })
     let releaseTrackDb = (_text: string) => {}
     serveHub(
       new Promise(resolve => {
@@ -263,14 +278,13 @@ describe('a hub link with a view init', () => {
       await flush()
     }
     await flush()
+    expect(session.assemblyManager.has('hubAsm')).toBe(true)
     expect(session.views).toHaveLength(0)
-    expect(session.assemblyManager.has('hubAsm')).toBe(false)
 
     releaseTrackDb(TRACKDB_TXT)
     await p
 
     expect(session.views).toHaveLength(1)
-    expect(session.assemblyManager.has('hubAsm')).toBe(true)
   })
 
   it('launches with a &tracks= id the hub brings already present', async () => {

@@ -12,17 +12,6 @@ import type { AnyConfigurationModel } from '../../configuration/index.ts'
 
 type TrackConf = AnyConfigurationModel | Record<string, unknown>
 
-const refusedNamesShown = 5
-
-function listRefused(refused: TrackConf[]) {
-  const shown = refused
-    .slice(0, refusedNamesShown)
-    .map(({ name, trackId, type }) => `${name ?? trackId} (${type})`)
-    .join(', ')
-  const rest = refused.length - refusedNamesShown
-  return rest > 0 ? `${shown} and ${rest} more` : shown
-}
-
 /**
  * #stateModel BaseConnectionModel
  * Holds the tracks a connection has loaded. Each connection type overrides
@@ -94,67 +83,79 @@ function stateModelFactory(pluginManager: PluginManager) {
         self.loading = loading
       },
     }))
-    .actions(self => ({
-      afterAttach() {
-        if (self.tracks.length === 0) {
-          self.setLoading(true)
-          // connect() is overridden to return the (lazy) fetch promise; clear
-          // the loading flag once it settles. On failure doConnect breaks the
-          // connection (destroying this node), so guard with isAlive.
-          void self.connect().finally(() => {
-            if (isAlive(self)) {
-              self.setLoading(false)
-            }
-          })
+    .actions(self => {
+      let refused: TrackConf[] = []
+      // Once per connect and after connect's own snackbar, which would cover it
+      function reportRefused() {
+        if (refused.length > 0) {
+          const types = [...new Set(refused.map(({ type }) => `${type}`))]
+          getNotificationSink(self).notify(
+            `${self.name}: left out ${refused.length} ${refused.length === 1 ? 'track' : 'tracks'} this JBrowse cannot load, of type ${types.join(', ')}`,
+            'warning',
+          )
+          refused = []
         }
-      },
-      /**
-       * #action
-       */
-      addTrackConf(trackConf: TrackConf) {
-        const length = self.tracks.push(trackConf)
-        return self.tracks[length - 1]
-      },
-      /**
-       * #action
-       */
-      addTrackConfs(trackConfs: TrackConf[]) {
-        // Append in chunks rather than one push per track: MST reconciles the
-        // array on every mutation, and on an 8k-track hub a push per track
-        // measured ~14.7s against ~10.8s for a single assignment, with chunks of
-        // 500 matching the single-assignment number. Chunked rather than one
-        // spread of the whole array so the argument count stays bounded no
-        // matter how large the hub is. What remains is per-config MST node
-        // creation, roughly 1ms per track.
-        const refused: TrackConf[] = []
-        for (let i = 0; i < trackConfs.length; i += 500) {
-          const chunk = trackConfs.slice(i, i + 500)
-          try {
-            self.tracks.push(...chunk)
-          } catch {
-            for (const trackConf of chunk) {
-              try {
-                self.tracks.push(trackConf)
-              } catch {
-                refused.push(trackConf)
+      }
+      return {
+        afterAttach() {
+          if (self.tracks.length === 0) {
+            self.setLoading(true)
+            // connect() is overridden to return the (lazy) fetch promise; clear
+            // the loading flag once it settles. On failure doConnect breaks the
+            // connection (destroying this node), so guard with isAlive.
+            void self.connect().finally(() => {
+              if (isAlive(self)) {
+                self.setLoading(false)
+                reportRefused()
+              }
+            })
+          }
+        },
+        /**
+         * #action
+         */
+        addTrackConf(trackConf: TrackConf) {
+          const length = self.tracks.push(trackConf)
+          return self.tracks[length - 1]
+        },
+        /**
+         * #action
+         * Appends the tracks this JBrowse can build. One it cannot, such as a
+         * track whose type comes from a plugin the hub's own site loads, is
+         * left out, and a warning names the types left out once `connect`
+         * settles.
+         */
+        addTrackConfs(trackConfs: TrackConf[]) {
+          // Append in chunks rather than one push per track: MST reconciles the
+          // array on every mutation, and on an 8k-track hub a push per track
+          // measured ~14.7s against ~10.8s for a single assignment, with chunks
+          // of 500 matching the single-assignment number. Chunked rather than
+          // one spread of the whole array so the argument count stays bounded
+          // no matter how large the hub is. What remains is per-config MST node
+          // creation, roughly 1ms per track.
+          for (let i = 0; i < trackConfs.length; i += 500) {
+            const chunk = trackConfs.slice(i, i + 500)
+            try {
+              self.tracks.push(...chunk)
+            } catch {
+              for (const trackConf of chunk) {
+                try {
+                  self.tracks.push(trackConf)
+                } catch {
+                  refused.push(trackConf)
+                }
               }
             }
           }
-        }
-        if (refused.length > 0) {
-          getNotificationSink(self).notify(
-            `${self.name}: left out ${refused.length} ${refused.length === 1 ? 'track' : 'tracks'} this site cannot load: ${listRefused(refused)}`,
-            'warning',
-          )
-        }
-      },
-      /**
-       * #action
-       */
-      setTrackConfs(trackConfs: TrackConf[]) {
-        self.tracks = cast(trackConfs)
-      },
-    }))
+        },
+        /**
+         * #action
+         */
+        setTrackConfs(trackConfs: TrackConf[]) {
+          self.tracks = cast(trackConfs)
+        },
+      }
+    })
 }
 
 export type BaseConnectionModel = ReturnType<typeof stateModelFactory>
