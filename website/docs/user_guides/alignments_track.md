@@ -193,6 +193,8 @@ Each section has a label chip that controls the section's height:
   coverage scale, the legend and the arcs, so the rest of the stack reads
   without the section that dominates it. **Show → Show N hidden groups** puts
   them back.<!-- menu-path-ok -->
+- **Pick:** **Sections...** in the track menu lists every section the track
+  knows, with a box each; untick the ones to hide, then **Apply**
 - **Resize:** dragging the boundary below a section resizes that section alone.
 
 These chip choices are not saved to a session or a shared link, and changing the
