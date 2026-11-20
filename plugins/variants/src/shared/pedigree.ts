@@ -190,18 +190,24 @@ function stringAttribute(source: object, key: string) {
  */
 export function withRelationships<T extends { name: string }>(sources: T[]) {
   const names = new Set(sources.map(source => source.name))
-  const parentOf = (source: T, column: 'father' | 'mother') => {
+  const namedParent = (source: T, column: 'father' | 'mother') => {
     const parent = stringAttribute(source, column)
     return parent !== undefined && parent !== source.name && names.has(parent)
       ? [parent]
       : []
   }
-  const fathers = new Set(sources.flatMap(source => parentOf(source, 'father')))
-  const mothers = new Set(sources.flatMap(source => parentOf(source, 'mother')))
+  const fathers = new Set(
+    sources.flatMap(source => namedParent(source, 'father')),
+  )
+  const mothers = new Set(
+    sources.flatMap(source => namedParent(source, 'mother')),
+  )
   return sources.map(source => {
     const sex = stringAttribute(source, 'sex')
     const asChild =
-      parentOf(source, 'father').length + parentOf(source, 'mother').length > 0
+      namedParent(source, 'father').length +
+        namedParent(source, 'mother').length >
+      0
         ? CHILD_TERMS[
             (sex === undefined ? undefined : pedigreeSexOf(sex)) ?? 'other'
           ]
