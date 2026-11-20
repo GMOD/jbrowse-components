@@ -172,16 +172,9 @@ function labelWidth(label: string, rowHeight: number, text?: ExportTextStyle) {
   )
 }
 
-/** Px from where a label's text starts to where its subtitle starts. */
-export function rowSubtitleOffset(
-  shownLabel: string,
-  rowHeight: number,
-  text?: ExportTextStyle,
-) {
-  return (
-    labelWidth(shownLabel, rowHeight, text) +
-    SUBTITLE_GAP_EMS * rowLabelFontSize(rowHeight, text)
-  )
+/** Px between a label's end and its subtitle's start. */
+export function rowSubtitleGap(rowHeight: number, text?: ExportTextStyle) {
+  return SUBTITLE_GAP_EMS * rowLabelFontSize(rowHeight, text)
 }
 
 function rowTextWidth(
@@ -192,7 +185,8 @@ function rowTextWidth(
 ) {
   const label = rowLabelFullText(row)
   return subtitle
-    ? rowSubtitleOffset(label, rowHeight, text) +
+    ? labelWidth(label, rowHeight, text) +
+        rowSubtitleGap(rowHeight, text) +
         measureText(
           rowSubtitleText(subtitle, rowHeight, text),
           rowSubtitleFontSize(rowHeight, text),

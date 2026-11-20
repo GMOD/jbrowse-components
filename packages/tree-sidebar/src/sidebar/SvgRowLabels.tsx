@@ -1,8 +1,7 @@
-import { Fragment } from 'react'
-
 import { usePalette } from '@jbrowse/core/ui/PaletteContext'
 import { alpha } from '@jbrowse/core/ui/palette'
 import { getFillProps } from '@jbrowse/core/util'
+import { TEXT_BASELINE_RATIO } from '@jbrowse/display-ui'
 
 import { rowRuns } from '../rows/rowRuns.ts'
 import {
@@ -15,7 +14,7 @@ import {
   rowLabelsBoxWidth,
   rowLabelsCarryText,
   rowSubtitleFontSize,
-  rowSubtitleOffset,
+  rowSubtitleGap,
   rowSubtitleText,
 } from './rowLabelsBoxWidth.ts'
 
@@ -115,6 +114,7 @@ export function SvgRowLabels({
     subtitles,
   )
   const textX = rowLabelTextX(rows, annotations)
+  const baselineY = rowHeight / 2 + fontSize * (TEXT_BASELINE_RATIO - 0.5)
   const visible = textFits
     ? rows
         .map((row, idx) => ({ row, idx, y: idx * rowHeight - scrollTop }))
@@ -180,31 +180,27 @@ export function SvgRowLabels({
         const shown = rowLabelText(row, rowHeight, text)
         const subtitle = subtitles?.get(row.name)
         return (
-          <Fragment key={row.name}>
-            <text
-              x={textX}
-              y={y + rowHeight / 2}
-              fontSize={fontSize}
-              dominantBaseline="central"
-              style={shown === full ? undefined : { pointerEvents: 'auto' }}
-              {...getFillProps(palette.text.primary)}
-            >
-              {shown === full ? null : <title>{full}</title>}
-              {shown}
-            </text>
+          <text
+            key={row.name}
+            x={textX}
+            y={y + baselineY}
+            fontSize={fontSize}
+            style={shown === full ? undefined : { pointerEvents: 'auto' }}
+            {...getFillProps(palette.text.primary)}
+          >
+            {shown === full ? null : <title>{full}</title>}
+            {shown}
             {subtitle ? (
-              <text
+              <tspan
                 data-testid="row-subtitle"
-                x={textX + rowSubtitleOffset(shown, rowHeight, text)}
-                y={y + rowHeight / 2}
+                dx={rowSubtitleGap(rowHeight, text)}
                 fontSize={rowSubtitleFontSize(rowHeight, text)}
-                dominantBaseline="central"
                 {...getFillProps(palette.text.secondary)}
               >
                 {rowSubtitleText(subtitle, rowHeight, text)}
-              </text>
+              </tspan>
             ) : null}
-          </Fragment>
+          </text>
         )
       })}
     </g>

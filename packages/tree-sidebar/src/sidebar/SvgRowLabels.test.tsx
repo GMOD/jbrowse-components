@@ -552,41 +552,49 @@ describe('row subtitles', () => {
     ).container
   }
 
-  function subtitleTexts(el: Element) {
+  function subtitleSpans(el: Element) {
     return [...el.querySelectorAll('[data-testid="row-subtitle"]')]
   }
 
-  function nameTexts(el: Element) {
-    return [...el.querySelectorAll('text:not([data-testid])')]
+  function labelTexts(el: Element) {
+    return [...el.querySelectorAll('text')]
+  }
+
+  function ownText(t: Element) {
+    return [...t.childNodes]
+      .filter(n => n.nodeType === Node.TEXT_NODE)
+      .map(n => n.textContent)
+      .join('')
   }
 
   it.each([
     ['on screen', onScreen],
     ['in the export', inExport],
   ])(
-    'draws each row its subtitle in parentheses after its name, smaller and muted, %s',
+    "draws each row's subtitle in parentheses as a tspan of its name's text, smaller and muted, %s",
     (_, at) => {
       const el = at(20)
-      const names = nameTexts(el)
-      const subs = subtitleTexts(el)
-      expect(names.map(t => t.textContent)).toEqual(trio.map(r => r.name))
+      const labels = labelTexts(el)
+      const subs = subtitleSpans(el)
+      expect(labels.map(ownText)).toEqual(trio.map(r => r.name))
       expect(subs.map(t => t.textContent)).toEqual([
         '(daughter)',
         '(mother)',
         '(father)',
       ])
-      const name = names[0]!
+      expect(subs.map(t => t.parentElement)).toEqual(labels.slice(0, 3))
+      const label = labels[0]!
       const sub = subs[0]!
-      expect(Number(sub.getAttribute('x'))).toBeGreaterThan(
-        Number(name.getAttribute('x')),
-      )
-      expect(sub.getAttribute('y')).toBe(name.getAttribute('y'))
+      expect(sub.tagName).toBe('tspan')
+      expect(sub.getAttribute('x')).toBeNull()
+      expect(sub.getAttribute('y')).toBeNull()
+      expect(Number(sub.getAttribute('dx'))).toBeGreaterThan(0)
       expect(Number(sub.getAttribute('font-size'))).toBeLessThan(
-        Number(name.getAttribute('font-size')),
+        Number(label.getAttribute('font-size')),
       )
       const opacity = (t: Element) =>
         Number(t.getAttribute('fill-opacity') ?? 1)
-      expect(opacity(sub)).toBeLessThan(opacity(name))
+      expect(opacity(sub)).toBeLessThan(opacity(label))
     },
   )
 
@@ -594,23 +602,44 @@ describe('row subtitles', () => {
     ['on screen', onScreen],
     ['in the export', inExport],
   ])('draws no subtitle below the text threshold %s', (_, at) => {
-    expect(subtitleTexts(at(2))).toHaveLength(0)
+    expect(subtitleSpans(at(2))).toHaveLength(0)
   })
 
-  it('draws a subtitle after a custom label, further right the longer the label', () => {
-    const subtitleX = (label: string) => {
+  it('puts the subtitle a fixed gap after a custom label of any length', () => {
+    const gap = (label: string) => {
       const c = draw({
         rows: [{ name: 'HG02024 HP1', label }],
         rowHeight: 20,
         labelOffset: 0,
         subtitles: new Map([['HG02024 HP1', 'daughter']]),
       })
-      const [name, sub] = [...c.querySelectorAll('text')]
-      expect(name!.textContent).toBe(label)
-      expect(sub!.textContent).toBe('(daughter)')
-      return Number(sub!.getAttribute('x'))
+      const [text] = labelTexts(c)
+      expect(ownText(text!)).toBe(label)
+      const sub = subtitleSpans(c)[0]!
+      expect(sub.textContent).toBe('(daughter)')
+      return sub.getAttribute('dx')
     }
-    expect(subtitleX('Child hap1')).toBeGreaterThan(subtitleX('C'))
+    expect(Number(gap('C'))).toBeGreaterThan(0)
+    expect(gap('Child hap1')).toBe(gap('C'))
+  })
+
+  it('cuts a long label before its subtitle, the whole label in its title', () => {
+    const long = 'protein_coding_primary_transcript_variant_1'
+    const c = draw({
+      rows: [{ name: long }],
+      rowHeight: 20,
+      labelOffset: 0,
+      subtitles: new Map([
+        [long, 'a subtitle long enough to need cutting too'],
+      ]),
+    })
+    const [text] = labelTexts(c)
+    const sub = subtitleSpans(c)[0]!
+    expect(text!.firstChild?.nodeName).toBe('title')
+    expect(text!.querySelector('title')?.textContent).toBe(long)
+    expect(ownText(text!)).toMatch(/^protein_coding.*…$/)
+    expect(text!.lastChild).toBe(sub)
+    expect(sub.textContent).toMatch(/^\(a subtitle.*…$/)
   })
 
   it('widens the label box and the export gutter to hold the subtitles', () => {
@@ -625,4 +654,22 @@ describe('row subtitles', () => {
       rowLabelsBoxWidth(trio, 2, exportText),
     )
   })
+})
+
+// A viewer that ignores `dominant-baseline` (ImageMagick's renderer among
+// them) draws on the alphabetic baseline, so the labels resolve their own.
+test("places each label's alphabetic baseline to centre its text in the row", () => {
+  const c = draw({
+    rows: [{ name: 'a' }, { name: 'b' }],
+    rowHeight: 20,
+    labelOffset: 0,
+    subtitles: new Map([['a', 'mother']]),
+  })
+  const texts = [...c.querySelectorAll('text')]
+  for (const t of c.querySelectorAll('text, tspan')) {
+    expect(t.getAttribute('dominant-baseline')).toBeNull()
+  }
+  expect(texts[0]!.getAttribute('font-size')).toBe('12')
+  expect(Number(texts[0]!.getAttribute('y'))).toBeCloseTo(10 + 12 * 0.34)
+  expect(Number(texts[1]!.getAttribute('y'))).toBeCloseTo(30 + 12 * 0.34)
 })
