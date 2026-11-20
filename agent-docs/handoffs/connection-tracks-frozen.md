@@ -86,6 +86,18 @@ Each step can land by itself, in this order.
   resets, such as a volatile map on the session keyed by `connectionId`, and
   must handle undoing "add connection", where the instance's config leaves
   with the snapshot.
+- **A hub track's edits are keyed by trackId alone**, so they can land on
+  another track that later takes the id. Edit hub track `t1`, then add a
+  config track `t1`: the config track resolves with the hub's edit, admin
+  "save to config" writes it into config.json (`promotableTrackIds`), and
+  deleting the hub leaves it. On a reload with the hub dormant, the alias
+  migration in `SessionTracks.ts` `afterAttach` can re-key the delta onto a
+  config track that lists `t1` in `aliases` (read from the code). Saving the
+  opened track as a session entry with its `connectionId` (the next step) is
+  the place to tie the delta to its hub.
+- **The track selector's hub rows list the live entries before any edit**
+  (`allTracks` in `HierarchicalTrackSelectorWidget/model.ts`), so an edited
+  hub track shows its old name in the tree while it carries the edited badge.
 - **A hub that never answers stalls a link or session-spec load.**
   `whenConnectionsSettle` (`packages/app-core/src/SessionSpec/loadSessionSpec.ts`)
   and `settleAssemblyResolution`

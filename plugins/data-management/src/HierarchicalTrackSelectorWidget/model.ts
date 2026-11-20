@@ -631,8 +631,8 @@ export default function stateTreeFactory(pluginManager: PluginManager) {
          * #getter
          * every track the view can display by trackId, in tree order; a
          * track in both the config and a connection resolves to the config's
-         * copy, and one in two connections to the later one's, as the
-         * session's getTrackById does
+         * copy, as the session's getTrackById does. A connection's tracks are
+         * its live entries, before any edit.
          */
         get allTrackConfigurationMap() {
           const byId = new Map(

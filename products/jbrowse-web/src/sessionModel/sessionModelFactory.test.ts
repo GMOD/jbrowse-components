@@ -283,6 +283,31 @@ describe('JBrowseWebSessionModel', () => {
       expect(session.getTrackById('t1')).toBeUndefined()
       expect(session.getTrackById('t2')!.name).toBe('session t2')
     })
+
+    it('an edited connection track closed before its connection is deleted leaves no edit behind', () => {
+      const session = createTestSession({
+        sessionSnapshot: {
+          sessionConnections: [connSnap],
+          connectionTrackConfigs: {
+            t1: {
+              connectionId: 'conn1',
+              config: { trackId: 't1', type: 'FeatureTrack', name: 'hub t1' },
+            },
+          },
+        },
+      })
+      session.updateTrackConfiguration({
+        trackId: 't1',
+        type: 'FeatureTrack',
+        name: 'edited',
+      })
+      session.pruneConnectionTrackConfig('t1')
+      expect(session.getTrackById('t1')!.name).toBe('edited')
+      const conn1 = session.connections.find(c => c.connectionId === 'conn1')!
+      session.deleteConnection(conn1)
+      expect(session.trackConfigDeltas.t1).toBeUndefined()
+      expect(session.connectionTrackConfigs.t1).toBeUndefined()
+    })
   })
 
   // the same session-vs-config split as the two connection adders above, and

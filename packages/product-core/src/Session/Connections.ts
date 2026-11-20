@@ -252,12 +252,17 @@ export function ConnectionManagementSessionMixin(pluginManager: PluginManager) {
         /**
          * #action
          * Drop a connection track's persisted config once no open view still
-         * references it, so the session doesn't accumulate closed tracks.
+         * references it, so the session doesn't accumulate closed tracks. An
+         * edited track keeps it: its edits are a delta over that copy, and
+         * `teardownConnection` finds them through it.
          */
         pruneConnectionTrackConfig(trackId: string) {
           if (
             trackId in self.connectionTrackConfigs &&
-            session.getReferring(trackId).length === 0
+            session.getReferring(trackId).length === 0 &&
+            !(
+              isSessionWithTrackEdits(self) && trackId in self.trackConfigDeltas
+            )
           ) {
             const { [trackId]: _removed, ...rest } = self.connectionTrackConfigs
             self.connectionTrackConfigs = rest
