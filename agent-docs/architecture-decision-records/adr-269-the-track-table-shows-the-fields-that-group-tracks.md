@@ -1,6 +1,6 @@
 ---
 status: Accepted
-summary: "The drawer's track table shows, beside the name, as many columns as fit: `hierarchical.table.columns` first, then category, then the other fields that group tracks. Rows list in the tree's order, and a name keeps up to two thirds of the width and is cut once, at its end"
+summary: "The drawer's track table shows, beside the name, as many columns as fit: `hierarchical.table.columns` first, then category, then the other fields that group tracks. Rows list in tree order; a name keeps two thirds of the width and is cut at its end"
 ---
 
 # ADR-269: The track table shows the fields that group tracks

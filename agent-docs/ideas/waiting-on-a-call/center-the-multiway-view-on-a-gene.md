@@ -1,6 +1,6 @@
 ---
 name: center-the-multiway-view-on-a-gene
-description: A reader of the multiway synteny display, E. coli for one, asked to set a gene as the focus. A "Center on <gene>" item on the gene right-click is cheap for an anchor gene, needs a mate-to-anchor inverse for a mate gene, and cannot work for a gene the anchor lacks. Read before building it.
+description: A reader of the multiway synteny display asked to set a gene as the focus. A "Center on <gene>" right-click item is cheap for an anchor gene, needs a mate-to-anchor inverse for a mate gene, and cannot work for a gene the anchor lacks.
 ---
 
 # Center the multiway view on a gene
