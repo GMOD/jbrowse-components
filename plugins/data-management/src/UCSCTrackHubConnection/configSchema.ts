@@ -62,6 +62,7 @@ const UCSCTrackHubConnection = ConfigurationSchema(
      * ```json
      * {
      *   "type": "UCSCTrackHubConnection",
+     *   "connectionId": "ucsc_hub_example",
      *   "uri": "https://mysite.com/path/to/hub.txt"
      * }
      * ```

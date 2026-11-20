@@ -15,9 +15,9 @@ their session. The config format is below; the
 ## Connection config format
 
 Every connection has the [](/docs/config/baseconnection) slots (`type`,
-`connectionId`, `name`, and an optional `assemblyNames` that matches hub tracks
-to your configured assemblies), plus one location slot per type.
-`jbrowse add-connection` writes one from the command line
+`connectionId`, `name`, and an optional `assemblyNames` that limits which of the
+hub's genomes load), plus one location slot per type. `jbrowse add-connection`
+writes one from the command line
 ([CLI reference](/docs/cli#jbrowse-add-connection)).
 
 ### UCSC track hub
@@ -38,7 +38,9 @@ Points at a hub's `hub.txt` ([](/docs/config/ucsctrackhubconnection)):
 ### JB2 track hub
 
 Points at another JBrowse 2 `config.json`, whose `tracks` array becomes the
-connection's track list ([](/docs/config/jb2trackhubconnection)):
+connection's track list and whose `assemblies` are added where the session lacks
+them. A track whose type comes from a plugin this instance does not load is left
+out and named in a warning ([](/docs/config/jb2trackhubconnection)):
 
 ```json
 {

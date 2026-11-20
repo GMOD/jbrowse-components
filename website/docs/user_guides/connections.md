@@ -34,8 +34,10 @@ Open the form from either route:
 - **File → Open connection...** in the menu bar
 - **Add connection...** in the track selector's ☰ menu
 
-Paste the hub URL ([format below](#ucsc-track-hub-url-format)), choose the
-connection type, and submit. A newly added connection loads right away.
+Choose the connection type, then replace the example location with the hub URL
+([format below](#ucsc-track-hub-url-format)) and give the connection a name. A
+newly added connection loads right away, and one whose hub cannot be read is not
+kept.
 
 ## Connections and saved sessions
 
@@ -62,9 +64,11 @@ Public hubs are listed in the
 [UCSC Public Hub directory](https://genome.ucsc.edu/cgi-bin/hgHubConnect); paste
 the URL from its "URL" column into the connection form.
 
-JBrowse matches hub tracks to assemblies by genome ID, so a track appears only
-when its assembly is configured in your JBrowse instance. The connection form
-can filter by assembly name.
+JBrowse matches hub tracks to assemblies by genome ID. An assembly hub supplies
+each genome's sequence (`twoBitPath`), so a genome your JBrowse instance lacks
+is added with the hub. A track hub names a genome without supplying it, so its
+tracks appear only when that assembly is already configured. `assemblyNames` in
+the connection form limits which of the hub's genomes load.
 
 A composite track's subgroups, such as cell line, antibody or view, become
 columns and filters in the track table, named as the hub titles them. The rest

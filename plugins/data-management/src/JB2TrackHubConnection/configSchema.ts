@@ -64,6 +64,7 @@ const JB2TrackHubConnection = ConfigurationSchema(
      * ```json
      * {
      *   "type": "JB2TrackHubConnection",
+     *   "connectionId": "jb2_hub_example",
      *   "uri": "https://mysite.com/path/to/config.json"
      * }
      * ```

@@ -62,6 +62,8 @@ const JBrowse1Connection = ConfigurationSchema(
      * ```json
      * {
      *   "type": "JBrowse1Connection",
+     *   "connectionId": "jbrowse1_example",
+     *   "assemblyNames": ["hg19"],
      *   "uri": "https://mysite.com/jbrowse/data/"
      * }
      * ```

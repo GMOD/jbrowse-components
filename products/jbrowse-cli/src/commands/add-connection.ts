@@ -63,7 +63,7 @@ export async function run(args?: string[]) {
       type: 'string',
       short: 'a',
       description:
-        'For UCSC: optional comma separated list of assembly names to filter. For JBrowse1: a single assembly name',
+        'For a UCSC or JBrowse 2 hub: optional comma separated list of the genomes to load. For JBrowse1: a single assembly name',
     },
     config: {
       type: 'string',
