@@ -1,0 +1,124 @@
+---
+import { getCollection } from 'astro:content'
+
+import BaseLayout from '../layouts/BaseLayout.astro'
+import { baseUrl } from '../lib/base-url.ts'
+import {
+  docHref,
+  figureSize,
+  findFigure,
+  galleryFigures,
+} from '../lib/showcase.ts'
+
+const docs = await getCollection('docs')
+
+const figures = galleryFigures.map(name => {
+  const { entry, caption, live } = findFigure(docs, name)
+  return {
+    src: `${baseUrl}/img/${name}.png`,
+    ...figureSize(name),
+    caption,
+    live,
+    tutorialTitle: entry.data.title,
+    tutorialHref: docHref(baseUrl, entry),
+  }
+})
+---
+
+<BaseLayout
+  title="Gallery"
+  description="A selection of JBrowse figures from the tutorials, each with a link to open it in JBrowse and a link to the tutorial with the steps to make it."
+>
+  <div class="gallery-page">
+    <h1>Gallery</h1>
+    <p class="lede">
+      These are some of the figures in the{' '}
+      <a href={`${baseUrl}/docs/tutorials/`}>tutorials</a>. Click one to enlarge
+      it, or use <strong>Open in JBrowse</strong> under it to open the same
+      view.
+    </p>
+    <div class="gallery">
+      {figures.map(figure => (
+        <figure>
+          <button
+            type="button"
+            class="lightbox-trigger"
+            data-label={figure.caption}
+            aria-label={`Enlarge: ${figure.caption}`}
+          >
+            <img
+              src={figure.src}
+              width={figure.width}
+              height={figure.height}
+              loading="lazy"
+              decoding="async"
+              alt={figure.caption}
+            />
+          </button>
+          <figcaption>
+            {figure.caption}{' '}
+            <span class="links">
+              <a href={figure.live}>Open in JBrowse ↗</a>
+              <span class="sep">·</span>
+              <a href={figure.tutorialHref}>{figure.tutorialTitle}</a>
+            </span>
+          </figcaption>
+        </figure>
+      ))}
+    </div>
+  </div>
+</BaseLayout>
+
+<style>
+  .gallery-page {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: clamp(1rem, 4vw, 2rem);
+    line-height: 1.6;
+  }
+  h1 {
+    margin: 0 0 0.25rem;
+  }
+  .lede {
+    margin: 0 0 1.5rem;
+    font-size: 1.05rem;
+    color: var(--color-text-muted);
+  }
+  .gallery {
+    columns: 2 420px;
+    column-gap: 1.25rem;
+  }
+  figure {
+    margin: 0 0 1.25rem;
+    break-inside: avoid;
+    border: 1px solid var(--color-border);
+    border-radius: var(--card-radius);
+    overflow: hidden;
+    background: var(--color-surface);
+  }
+  .lightbox-trigger {
+    display: block;
+    width: 100%;
+    padding: 0;
+    border: 0;
+    background: #fff;
+    cursor: zoom-in;
+  }
+  img {
+    width: 100%;
+    height: auto;
+    display: block;
+  }
+  figcaption {
+    padding: 0.6rem 0.8rem 0.75rem;
+    font-size: 0.9rem;
+    line-height: 1.45;
+  }
+  .links {
+    white-space: nowrap;
+  }
+  .sep {
+    color: var(--color-text-muted);
+    margin: 0 0.35rem;
+  }
+</style>

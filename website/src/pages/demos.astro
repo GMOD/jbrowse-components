@@ -1,0 +1,230 @@
+---
+import { getCollection } from 'astro:content'
+
+import BaseLayout from '../layouts/BaseLayout.astro'
+import { baseUrl } from '../lib/base-url.ts'
+import {
+  demoFigures,
+  docHref,
+  featuredDemo,
+  figureLiveHref,
+  findDoc,
+  findFigure,
+  referenceGenomes,
+  tutorialKey,
+} from '../lib/showcase.ts'
+import btn from '../styles/button.module.css'
+
+const docs = await getCollection('docs')
+
+const featuredTutorial = findDoc(docs, featuredDemo.tutorial)
+const featured = {
+  ...featuredDemo,
+  live: figureLiveHref(featuredDemo.figure),
+  tutorialTitle: featuredTutorial.data.title,
+  tutorialHref: docHref(baseUrl, featuredTutorial),
+}
+
+const demos = demoFigures.map(name => {
+  const { entry, live } = findFigure(docs, name)
+  return {
+    live,
+    title: entry.data.title,
+    href: docHref(baseUrl, entry),
+    thumb: `${baseUrl}/img/tutorial-thumbs/${tutorialKey(entry)}.webp`,
+  }
+})
+---
+
+<BaseLayout
+  title="Demos"
+  description="Try JBrowse in your browser with nothing to install. Start from a featured view, a human reference genome for your own files, or a view from a tutorial."
+>
+  <div class="demos">
+    <h1>Demos</h1>
+    <p class="lede">
+      Open any demo below in your browser, with nothing to install, and add your
+      own files to it.
+    </p>
+
+    <section class="featured">
+      <a href={featured.live} class="featured-shot">
+        <img
+          src={`${baseUrl}/img/${featured.figure}.png`}
+          width="1400"
+          height="900"
+          alt="TP53 on hg38: RefSeq genes, ENCODE candidate regulatory elements, H3K4me3 and H3K27ac with a row per cell line, and phyloP conservation"
+        />
+      </a>
+      <div class="featured-text">
+        <h2>{featured.title}</h2>
+        <p>{featured.blurb}</p>
+        <a class:list={[btn.btn, btn.btnAccent]} href={featured.live}>
+          Open demo
+        </a>
+        <p class="from">
+          From the tutorial{' '}
+          <a href={featured.tutorialHref}>{featured.tutorialTitle}</a>
+        </p>
+      </div>
+    </section>
+
+    <section>
+      <h2>Your own data on a reference genome</h2>
+      <p>
+        Open a genome, then choose <strong>File → Open track</strong> to add a
+        BAM, VCF, BED, GFF or bigWig from your computer or a URL. JBrowse reads
+        files from your computer in the browser, without uploading them.
+      </p>
+      <ul class="genomes">
+        {referenceGenomes.map(genome => (
+          <li>
+            <span class="genome-name">{genome.name}</span>
+            <a class="genome-open" href={genome.open}>
+              Open
+            </a>
+            <span class="sep">·</span>
+            <a class="genome-full" href={genome.full}>
+              full track set on genomes.jbrowse.org ↗
+            </a>
+          </li>
+        ))}
+        <li>
+          <span class="genome-name">Other organisms</span>
+          <a class="genome-full" href="https://genomes.jbrowse.org/">
+            genomes.jbrowse.org ↗
+          </a>
+        </li>
+      </ul>
+    </section>
+
+    <section>
+      <h2>Demos from the tutorials</h2>
+      <div class="doc-cards">
+        {demos.map(demo => (
+          <div class="doc-card">
+            <a href={demo.live}>
+              <img
+                class="doc-card-thumb"
+                src={demo.thumb}
+                loading="lazy"
+                decoding="async"
+                alt={`A view from ${demo.title}`}
+              />
+            </a>
+            <span class="doc-card-body">
+              <a class="doc-card-title" href={demo.live}>
+                {demo.title}
+              </a>
+              <a class="doc-card-desc" href={demo.href}>
+                Read the tutorial
+              </a>
+            </span>
+          </div>
+        ))}
+      </div>
+      <p>
+        Many figures in the <a href={`${baseUrl}/docs/tutorials/`}>tutorials</a>{' '}
+        have an <strong>Open or rebuild this view</strong> button that opens the
+        view in JBrowse. The <a href={`${baseUrl}/gallery/`}>gallery</a> has a
+        selection of them at full size.
+      </p>
+    </section>
+  </div>
+</BaseLayout>
+
+<style>
+  .demos {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: clamp(1rem, 4vw, 2rem);
+    line-height: 1.6;
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+  }
+  h1 {
+    margin: 0;
+  }
+  h2 {
+    font-size: 1.25rem;
+    margin: 0 0 0.5rem;
+  }
+  .lede {
+    margin: -1.25rem 0 0;
+    font-size: 1.05rem;
+    color: var(--color-text-muted);
+  }
+  section p {
+    margin: 0 0 0.75rem;
+    max-width: 70ch;
+  }
+  .featured {
+    display: grid;
+    grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr);
+    gap: 1.5rem;
+    align-items: center;
+  }
+  .featured-shot img {
+    width: 100%;
+    height: auto;
+    display: block;
+    border: 1px solid var(--color-border);
+    border-radius: var(--card-radius);
+  }
+  .featured-text {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.75rem;
+  }
+  .featured-text p {
+    margin: 0;
+  }
+  .from {
+    font-size: 0.9rem;
+    color: var(--color-text-muted);
+  }
+  .genomes {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+  }
+  .genome-name {
+    display: inline-block;
+    min-width: 10em;
+    font-weight: 500;
+  }
+  .genome-open {
+    font-weight: 600;
+  }
+  .genome-full {
+    font-size: 0.9rem;
+    color: var(--color-text-muted);
+  }
+  .sep {
+    color: var(--color-text-muted);
+    margin: 0 0.35rem;
+  }
+  .doc-card-title {
+    color: inherit;
+    text-decoration: none;
+  }
+  .doc-card-title:hover {
+    text-decoration: underline;
+  }
+  .doc-card-desc {
+    text-decoration: underline;
+  }
+  @media (max-width: 720px) {
+    .featured {
+      grid-template-columns: minmax(0, 1fr);
+    }
+    .genome-name {
+      display: block;
+    }
+  }
+</style>

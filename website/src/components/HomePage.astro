@@ -26,14 +26,22 @@ const demoHref = liveHref(demoRef)
         JBrowse is a genome browser that runs on the web, on your desktop, or
         embedded in your app.
       </p>
-      <div class="btn-row">
-        <a class:list={[btn.btn, btn.btnPrimary]} href={`${baseUrl}/download/`}>
-          <Icon name="mdi:tray-arrow-down" width="20" height="20" />
-          Download
-        </a>
-        <a class:list={[btn.btn, btn.btnAccent]} href={demoHref}>
-          <Icon name="mdi:play-circle-outline" width="20" height="20" />
-          Demo
+      <div class="cta">
+        <div class="btn-row">
+          <a
+            class:list={[btn.btn, btn.btnPrimary]}
+            href={`${baseUrl}/download/`}
+          >
+            <Icon name="mdi:tray-arrow-down" width="20" height="20" />
+            Download
+          </a>
+          <a class:list={[btn.btn, btn.btnAccent]} href={demoHref}>
+            <Icon name="mdi:play-circle-outline" width="20" height="20" />
+            Demo
+          </a>
+        </div>
+        <a class="more-link" href={`${baseUrl}/demos/`}>
+          More demos, or open your own data →
         </a>
       </div>
       {newsletterApiUrl && (
@@ -174,6 +182,18 @@ const demoHref = liveHref(demoRef)
 </div>
 
 <style>
+  .cta {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.75rem;
+  }
+  .cta .btn-row {
+    align-self: stretch;
+  }
+  .more-link {
+    font-size: 0.95rem;
+  }
   /* Vertical rhythm is `gap` only: every flex column below owns the spacing of
      its children, and no child carries a margin that would add to it. */
   .hero-title {
