@@ -242,7 +242,7 @@ We'll start with **Add → Linear synteny view** and pick peach and grape. Then:
 - Turn on the simple-anchors track in each panel's track selector, where it
   draws as a row of bars.
 
-<Figure caption="Peach and grape with both MCScan tracks: .anchors.simple blocks as wide ribbons, the per-gene .anchors pairs over them. Marks along each edge of the band are pairs whose other gene is on a chromosome not shown." src="/img/mcscan_anchors.png" />
+<Figure caption="Peach and grape with both MCScan tracks: .anchors.simple blocks as wide ribbons, the per-gene .anchors pairs over them." src="/img/mcscan_anchors.png" />
 
 The bars in each panel are the block track's `LGVSyntenyDisplay`, the display a
 synteny track opens as in a linear genome view, which draws synteny as features

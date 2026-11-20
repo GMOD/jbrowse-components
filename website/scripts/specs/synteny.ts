@@ -2357,6 +2357,7 @@ export const syntenySpecs: ScreenshotSpec[] = [
         {
           type: 'LinearSyntenyView',
           mark: { interpolate: 'bump' },
+          offscreen: { show: false },
           tracks: [['grape_peach_anchors', 'grape_peach_anchors_simple']],
           levelHeights: [236],
           views: [
