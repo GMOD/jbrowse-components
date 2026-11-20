@@ -109,8 +109,8 @@ const ErrorMessageStackTraceContents = observer(
           </Typography>
         ) : (
           <Typography variant="body2">
-            Send report mails this to the JBrowse team at {emailAddressLink}.
-            You can also email it yourself, or post it as an issue on{' '}
+            Reports are anonymous, so we can't reply unless you add your email.
+            You can also email {emailAddressLink} or post an issue on{' '}
             <ExternalLink href={githubLink}>GitHub</ExternalLink>.
           </Typography>
         )}

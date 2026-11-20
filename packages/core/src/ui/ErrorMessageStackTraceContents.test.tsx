@@ -41,6 +41,17 @@ test('Send report posts the shown text with the note and address', async () => {
   expect(getByText('Sent').closest('button')?.disabled).toBe(true)
 })
 
+test('the dialog says a report is anonymous unless an email is added', () => {
+  const { getByText } = render(
+    <ErrorMessageStackTraceContents text="TypeError: boom" />,
+  )
+  expect(
+    getByText(
+      /Reports are anonymous, so we can't reply unless you add your email/,
+    ),
+  ).toBeTruthy()
+})
+
 test('a failed send points at the email address', async () => {
   mockFetch(false)
   jest.spyOn(console, 'error').mockImplementation(() => {})
