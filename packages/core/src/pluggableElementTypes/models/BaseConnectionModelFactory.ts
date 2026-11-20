@@ -84,13 +84,16 @@ function stateModelFactory(pluginManager: PluginManager) {
       },
     }))
     .actions(self => {
+      const trackTypes = pluginManager.getElementTypeRecord('track')
+      const hasNoPlugin = ({ type }: TrackConf) =>
+        typeof type === 'string' && !trackTypes.has(type)
       let refused: TrackConf[] = []
       // Once per connect and after connect's own snackbar, which would cover it
       function reportRefused() {
         if (refused.length > 0) {
           const types = [...new Set(refused.map(({ type }) => `${type}`))]
           getNotificationSink(self).notify(
-            `${self.name}: left out ${refused.length} ${refused.length === 1 ? 'track' : 'tracks'} this JBrowse cannot load, of type ${types.join(', ')}`,
+            `${self.name}: left out ${refused.length} ${refused.length === 1 ? 'track' : 'tracks'} of a type this JBrowse has no plugin for: ${types.join(', ')}`,
             'warning',
           )
           refused = []
@@ -120,12 +123,16 @@ function stateModelFactory(pluginManager: PluginManager) {
         },
         /**
          * #action
-         * Appends the tracks this JBrowse can build. One it cannot, such as a
-         * track whose type comes from a plugin the hub's own site loads, is
-         * left out, and a warning names the types left out once `connect`
-         * settles.
+         * Appends the tracks. One whose type comes from a plugin this JBrowse
+         * does not have is left out, and a warning names those types once
+         * `connect` settles.
          */
         addTrackConfs(trackConfs: TrackConf[]) {
+          // Sorted out by name before any node is built: a push the track union
+          // refuses builds and then destroys every node ahead of the refused
+          // one, which on a 5,000-track hub ran a 4 GB heap out of memory.
+          refused.push(...trackConfs.filter(hasNoPlugin))
+          const buildable = trackConfs.filter(conf => !hasNoPlugin(conf))
           // Append in chunks rather than one push per track: MST reconciles the
           // array on every mutation, and on an 8k-track hub a push per track
           // measured ~14.7s against ~10.8s for a single assignment, with chunks
@@ -133,19 +140,8 @@ function stateModelFactory(pluginManager: PluginManager) {
           // one spread of the whole array so the argument count stays bounded
           // no matter how large the hub is. What remains is per-config MST node
           // creation, roughly 1ms per track.
-          for (let i = 0; i < trackConfs.length; i += 500) {
-            const chunk = trackConfs.slice(i, i + 500)
-            try {
-              self.tracks.push(...chunk)
-            } catch {
-              for (const trackConf of chunk) {
-                try {
-                  self.tracks.push(trackConf)
-                } catch {
-                  refused.push(trackConf)
-                }
-              }
-            }
+          for (let i = 0; i < buildable.length; i += 500) {
+            self.tracks.push(...buildable.slice(i, i + 500))
           }
         },
         /**

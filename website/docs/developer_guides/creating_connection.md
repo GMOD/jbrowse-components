@@ -180,13 +180,12 @@ export async function doConnect(
 
 `BaseConnectionModelFactory` provides `addTrackConf`, `addTrackConfs`, and
 `setTrackConfs` for adding tracks incrementally or all at once. `addTrackConfs`
-leaves out a track this JBrowse cannot build, such as one whose type comes from
-a plugin it does not have, and the connection names the types it left out in one
-warning when `connect` settles; `addTrackConf` and `setTrackConfs` throw on such
-a track. Note `silent`: it is set when a session is restored and the connection
-reconnects on load, and it suppresses the first-connect side effects (the
-success snackbar, launching a view) that would otherwise fire on every page
-load.
+leaves out a track whose type comes from a plugin this JBrowse does not have,
+and the connection names those types in one warning when `connect` settles;
+`addTrackConf` and `setTrackConfs` throw on such a track. Note `silent`: it is
+set when a session is restored and the connection reconnects on load, and it
+suppresses the first-connect side effects (the success snackbar, launching a
+view) that would otherwise fire on every page load.
 
 ## See also
 

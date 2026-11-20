@@ -58,9 +58,9 @@ them.
 
 A hub that loads some of its tracks says what it left behind:
 
-- **Left out tracks this JBrowse cannot load, of type ...**: those tracks use a
-  track type from a plugin this JBrowse does not have. Install the plugin from
-  the [plugin store](/docs/user_guides/plugin_store) and reload.
+- **Left out tracks of a type this JBrowse has no plugin for**: the message
+  names each track type. Install the plugin that provides it from the
+  [plugin store](/docs/user_guides/plugin_store) and reload.
 - **Could not read the tracks of these assemblies**: the hub's track list for
   that genome (its `trackDb` file) did not download. The hub's other genomes
   loaded.

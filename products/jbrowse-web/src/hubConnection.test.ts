@@ -165,7 +165,7 @@ describe('a JBrowse 2 hub', () => {
     expect(trackIds(session)).toEqual(['first', 'last'])
     expect(session.snackbarMessages.at(-1)).toMatchObject({
       message:
-        'Other site: left out 1 track this JBrowse cannot load, of type TrackTypeOfAMissingPlugin',
+        'Other site: left out 1 track of a type this JBrowse has no plugin for: TrackTypeOfAMissingPlugin',
       level: 'warning',
     })
   })
@@ -218,6 +218,19 @@ describe('a JBrowse 2 hub', () => {
 
     expect(sessionAssemblyNames(session)).toEqual(['GCF_1'])
     expect(trackIds(session)).toEqual(['rat'])
+  })
+
+  it('keeps a track that names a listed genome by its alias', async () => {
+    files[JB2] = JSON.stringify({
+      assemblies: [{ ...assembly('hg38'), aliases: ['GRCh38'] }],
+      tracks: [track('byName', 'hg38'), track('byAlias', 'GRCh38')],
+    })
+    const session = setup()
+
+    session.makeConnection(addJb2Hub(session, { assemblyNames: ['hg38'] }))
+    await settled(session)
+
+    expect(trackIds(session)).toEqual(['byName', 'byAlias'])
   })
 
   it('keeps the tracks of a listed genome the hub does not itself declare', async () => {
@@ -350,6 +363,29 @@ describe('a UCSC hub', () => {
     expect(sessionAssemblyNames(session)).toEqual([])
     expect(messages(session)).toContainEqual(
       expect.stringContaining('the hub supplies no sequence for it'),
+    )
+  })
+
+  it('fails when assemblyNames lists none of its genomes', async () => {
+    jest.spyOn(console, 'error').mockImplementation(() => {})
+    serveUcscHub('genome good\ntrackDb good/trackDb.txt\ntwoBitPath good.2bit')
+    files[`${HUB}good/trackDb.txt`] = trackDb('genes')
+    const session = setup()
+
+    session.makeConnection(
+      session.addConnectionConf({
+        type: 'UCSCTrackHubConnection',
+        connectionId: 'ucsc',
+        name: 'My Hub',
+        assemblyNames: ['hg38'],
+        hubTxtLocation: uri(`${HUB}hub.txt`),
+      }),
+    )
+    await when(() => session.connectionInstances.length === 0)
+
+    expect(sessionAssemblyNames(session)).toEqual([])
+    expect(messages(session)).toContainEqual(
+      expect.stringContaining("none of this hub's genomes is named hg38"),
     )
   })
 

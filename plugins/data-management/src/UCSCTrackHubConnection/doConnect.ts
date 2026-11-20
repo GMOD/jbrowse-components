@@ -140,11 +140,17 @@ async function connectMultiGenomeHub(
   const trackCounts: Record<string, number> = {}
   const notLoadedAssemblies: string[] = []
   const unreadAssemblies: { genomeName: string; error: unknown }[] = []
-  for (const [genomeName, genome] of Object.entries(genomesFile.data)) {
-    if (
-      isAlive(self) &&
-      (assemblyNames.length === 0 || assemblyNames.includes(genomeName))
-    ) {
+  const genomes = Object.entries(genomesFile.data).filter(
+    ([genomeName]) =>
+      assemblyNames.length === 0 || assemblyNames.includes(genomeName),
+  )
+  if (assemblyNames.length > 0 && genomes.length === 0) {
+    throw new Error(
+      `none of this hub's genomes is named ${assemblyNames.join(', ')}, as assemblyNames asks`,
+    )
+  }
+  for (const [genomeName, genome] of genomes) {
+    if (isAlive(self)) {
       if (canAttach(session, genome, genomeName)) {
         try {
           const tracks = await loadGenomeTracks({

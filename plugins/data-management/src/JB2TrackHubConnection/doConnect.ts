@@ -58,7 +58,10 @@ export async function doConnect(
 
     const listedNames = new Set([
       ...assemblyNames,
-      ...listedAssemblies.map(assembly => assembly.name),
+      ...listedAssemblies.flatMap(({ name, aliases = [] }) => [
+        name,
+        ...aliases,
+      ]),
     ])
     self.addTrackConfs(
       (configJson.tracks ?? []).filter(
