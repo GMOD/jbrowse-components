@@ -58,8 +58,8 @@ single download from its
 
 1000 Genomes Project phased low-coverage calls
 ([1000 Genomes Project Consortium 2015](https://doi.org/10.1038/nature15393)),
-the Kinh-Vietnamese trio HG02024 (child), HG02026 (father) and HG02025 (mother),
-chr1 only.
+the Kinh-Vietnamese trio HG02024 (daughter), HG02026 (father) and HG02025
+(mother), chr1 only.
 
 The tracks below read local files that the
 [build script](#reproduce-it-end-to-end) writes from these, so run it first, or
@@ -158,9 +158,10 @@ infers the adapter and the index but sets no pedigree.
 `pedigreeLocation` reads the 1000 Genomes pedigree, whose line
 `VN049 HG02024 HG02026 HG02025` names HG02026 as HG02024's father and HG02025 as
 the mother. It gives each sample `family`, `father`, `mother` and `sex`
-attributes. Where a sample and its father or mother are both in the VCF, the
-track menu offers the Mendelian check used in the next step. A PLINK `.fam`
-works the same way.
+attributes, and a `relationship` the row labels show after the name:
+`HG02024 (daughter)`, `HG02025 (mother)` and `HG02026 (father)`. Where a sample
+and its father or mother are both in the VCF, the track menu offers the
+Mendelian check used in the next step. A PLINK `.fam` works the same way.
 
 <Figure caption="The VCF on initial load: one row per sample, each genotype at its variant's position." src="/img/trio-basic.png"/>
 
@@ -179,7 +180,7 @@ made of one allele from each parent's, and colors the alt cells by the answer:
 A site where a no-call leaves the answer open keeps the default color. Near
 CFHR3 and CFHR1 the check flags both kinds of site:
 
-<Figure caption="Color by → Mendelian check across CFHR3 and CFHR1, rows HG02024 (child), HG02025 (mother) and HG02026 (father). The child's row has not-in-parents cells left of CFHR3, and the parents' rows have a run of inconsistent cells across CFHR1." src="/img/trio-mendelian.png"/>
+<Figure caption="Color by → Mendelian check across CFHR3 and CFHR1, rows HG02024 (daughter), HG02025 (mother) and HG02026 (father). The child's row has not-in-parents cells left of CFHR3, and the parents' rows have a run of inconsistent cells across CFHR1." src="/img/trio-mendelian.png"/>
 
 This VCF is the 1000 Genomes low-coverage callset, statistically phased, and
 under one percent of its chr1 sites fail the check. Most failures are genotyping
@@ -235,7 +236,7 @@ Choose **Rows → Per haplotype** from the track menu, which splits each sample
 into its two haplotypes. Per-haplotype rows need phased genotypes, written
 `0|1`; unphased calls (`0/1`) need a phasing program such as SHAPEIT first.
 
-<Figure caption="One row per haplotype: the two haplotypes (HP1, HP2) of child HG02024, mother HG02025 and father HG02026, top to bottom, under the RefSeq genes, with connector lines tying each matrix column back to the position it came from." src="/img/trio-matrix-phased-clean.png"/>
+<Figure caption="One row per haplotype: the two haplotypes (HP1, HP2) of daughter HG02024, mother HG02025 and father HG02026, top to bottom, under the RefSeq genes, with connector lines tying each matrix column back to the position it came from." src="/img/trio-matrix-phased-clean.png"/>
 
 <Video src="/media/variants/trio_phased_matrix.mp4" caption="Layout → Genotype matrix switched on, then Rows → Per haplotype splitting each trio member into its two haplotype rows." />
 
@@ -363,10 +364,12 @@ To line the painted blocks up with the genotypes underneath:
 - To name the VCF's rows after the painting's rows, set the variant display's
   `rows.labels` to
   `{ "HG02024 HP1": "Child hap1", "HG02024 HP2": "Child hap2", "HG02025 HP1": "Mother hap1", "HG02025 HP2": "Mother hap2", "HG02026 HP1": "Father hap1", "HG02026 HP2": "Father hap2" }`,
-  or rename the rows in **Edit colors/arrangement...** in its track menu.
+  or rename the rows in **Edit colors/arrangement...** in its track menu. These
+  labels name each row's relationship, so set `rows.subtitle` to `""` to drop
+  the `(daughter)`, `(mother)` and `(father)` drawn after them.
 
-**Advanced → Edit plot...** in the track menu shows both `rows` edits as text
-and applies them live.
+**Advanced → Edit plot...** in the track menu shows the `rows` edits as text and
+applies them live.
 
 Zoom to a few hundred kb around one boundary, where the block-step is obvious
 and the genotype columns resolve into individual variants. Start with the

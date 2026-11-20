@@ -54,8 +54,9 @@ tetraploid, a haplodiploid male, a ZW female or a yeast mitochondrion.
   display a declared default with no effective-field getter for the same
   reason. Family banding is
   `facet: 'family'` written by the config, and rows keep the file's order. No
-  `role` attribute: one value cannot hold a sample that is both child and
-  parent (NA12878 in family 1463).
+  single-valued `role` attribute: one value cannot hold a sample that is both
+  child and parent (NA12878 in family 1463); the joined `relationship` of the
+  amendment below holds both.
 
 ### The check
 
@@ -145,3 +146,47 @@ tetraploid, a haplodiploid male, a ZW female or a yeast mitochondrion.
   paternal by construction (KHV: 82,679 vs 1,030 informative sites), so it
   cannot show crossovers, and it needs a per-cell path; parked
   (`ideas/waiting-on-a-call/parent-of-origin-haplotype-coloring.md`).
+
+## Amended 2026-11-20: a `relationship` attribute and `rows.subtitle`
+
+Colin asked for the trio's row labels to say who each sample is, as
+`HG02024 (daughter)`.
+
+- **`relationship` is derived beside the pedigree merge** (`withRelationships`,
+  `shared/pedigree.ts`), over the sources' merged `father`, `mother` and `sex`,
+  the same values `triosOf` reads, so the label and the Mendelian check agree on
+  who is related, and a samples table's own `father` and `mother` columns get
+  one too. As a child of a parent among the sources it is `son`, `daughter` or
+  `child` by sex; as a parent of a child among them, `father` or `mother` by the
+  column naming it, or `parent` where both do (a selfed line); both are joined
+  child first, as `daughter, mother`. A sample related to none gets none, and a
+  samples table's own `relationship` column wins.
+- **`rows.subtitle` on `Rows`** names a row attribute the labels draw after the
+  name, in parentheses, smaller and in `text.secondary`: a map by row name
+  beside the rows (`rowSubtitles`), as the annotation columns are, so no row
+  field can collide with a samples-table column. It draws only where the label
+  text draws, the label box and export gutter count it, and a row lacking the
+  attribute draws none. `Rows` declares `''`; `VariantRows` declares
+  `relationship`, the ADR-265 subtype default, so `''` written there differs
+  from the default, stays in the snapshot and survives a reload. There is no
+  effective-field getter.
+- **It annotates the label in force**, a `rows.labels` entry included, and a
+  haplotype row carries its sample's attributes and so its subtitle. A
+  hand-written label that already names the relationship (the trio tutorial's
+  `Mother hap1`) writes `subtitle: ''` beside it, rather than labels silently
+  suppressing the subtitle.
+
+Rejected:
+
+- **`rows.subtitle: { field }` with a shorthand**, as `rows.color` and `facet`
+  take: nothing else would sit in the object, since the subtitle's look is fixed
+  and its values are text, not a scale with a key.
+- **`detail`**, Vega-Lite's channel for grouping with no visual encoding;
+  **`caption`**, ggplot's note under a plot; **`suffix`**, which says where it
+  sits rather than what it is; **`rows.axis.subtitle`**, filing data under how
+  the axis draws, as ADR-260 rejected `rows.axis.strips`; **`labels.field`**,
+  which would turn `rows.labels`'s name map into an object of two meanings.
+- **An annotation of a text kind.** `rows.annotations` entries are color
+  columns with keys (ADR-260); text after the name is a different mark.
+- **Labels suppressing the subtitle.** A rule coupling two members the reader
+  sets separately; the subtitle's `''` is the one off switch.

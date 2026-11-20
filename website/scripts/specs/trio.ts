@@ -16,7 +16,8 @@ export const TRIO_PAINT_TRACK = 'HG02024_VN049_KHVTrio.chr1.hapibd'
 export const TRIO_VCF_TRACK = 'HG02024_VN049_KHVTrio.chr1.vcf'
 
 // The six VCF haplotype rows, top to bottom, labelled with the hap-ibd
-// painting's own names.
+// painting's own names, which name each row's relationship, so the
+// relationship subtitle is off, as analyze_trio.md writes it.
 export const TRIO_HAPLOTYPES = [
   { sample: 'HG02024', hp: 1, label: 'Child hap1' },
   { sample: 'HG02024', hp: 2, label: 'Child hap2' },
@@ -30,6 +31,7 @@ export const trioVcfRows = {
   labels: Object.fromEntries(
     TRIO_HAPLOTYPES.map(h => [`${h.sample} HP${h.hp}`, h.label]),
   ),
+  subtitle: '',
 }
 export const TRIO_VCF_DISPLAY_H = 260
 
@@ -174,8 +176,8 @@ export const trioSpecs: ScreenshotSpec[] = [
     // Not-in-parents sites near 196.76 Mb, where the 30x CRAMs show the
     // child's alt allele in a parent the low-coverage calls made hom-ref, and
     // a run of inconsistent sites across CFHR1, inside the deletion HGSV_9982
-    // that the 1000 Genomes SV callset gives the father and child. The caption
-    // names the rows' roles: callouts beside the labels cover the cells.
+    // that the 1000 Genomes SV callset gives the father and child. The labels'
+    // relationship subtitles name the rows' roles.
     url: lgvSession(DEMO_CONFIG, {
       assembly: 'hg38',
       loc: 'chr1:196,745,000-196,850,000',

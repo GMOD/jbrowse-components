@@ -236,6 +236,12 @@ do.
   pedigree's, and the pedigree never removes a row: its lines naming no VCF
   sample are skipped.
 
+A sample related to another in the VCF also gains a `relationship`, such as
+`daughter`, `father` or `daughter, mother`, which the row label shows after the
+name in a muted color, as `HG02024 (daughter)`. The display's
+[`rows.subtitle`](/docs/config/variantrows/#slot-subtitle) names that attribute,
+and `"subtitle": ""` turns it off.
+
 The config below loads the 1000 Genomes KHV trio with its pedigree, bands the
 rows by `facet: "family"`, and colors the cells by the Mendelian check across
 CFHR3 and CFHR1 (chr1:196,745,000-196,850,000):
@@ -272,7 +278,7 @@ a sample in the VCF. Phase is ignored, and ploidy is read from each call.
 - **No value:** a no-call leaves the answer open, or in a duo the absent parent
   could have given the allele; the cell keeps the default alt color.
 
-<Figure caption="The KHV trio colored by the Mendelian check across CFHR3 and CFHR1, rows HG02024 (child), HG02025 (mother) and HG02026 (father)." src="/img/trio-mendelian.png" />
+<Figure caption="The KHV trio colored by the Mendelian check across CFHR3 and CFHR1, rows HG02024 (daughter), HG02025 (mother) and HG02026 (father)." src="/img/trio-mendelian.png" />
 
 With several trios, a site takes its most severe value, in the order above.
 JBrowse computes `mendelian` as the track loads, and the record holds no such
