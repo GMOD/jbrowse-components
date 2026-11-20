@@ -1,0 +1,25 @@
+---
+name: stack-the-trios-reads-under-the-vcf
+description: Checking a Mendelian failure means loading the child's and both parents' CRAMs by hand, one track each; a single gesture on a trio could stack all three under the VCF, but the CRAM URLs need a home in the sample metadata first. Read before adding a reads shortcut to the variant display.
+---
+
+# Stack the trio's reads under the VCF in one gesture
+
+`analyze_trio.md` checks a not-in-parents site by loading the child's 30x CRAM,
+then the mother's, each as an addtrack fence with its URL typed out. A reader
+reviewing many flagged sites repeats that for every trio.
+
+A gesture on a trio (the feature widget's Mendelian check table, or a row's
+menu) could open the child's and both parents' alignments under the VCF,
+stacked in pedigree order and centered on the site.
+
+The call is where the URLs come from:
+
+- a samples TSV column (`alignments`, say) naming each sample's BAM or CRAM,
+  which the pedigree attributes would join; or
+- a pattern on the track (`…/{sample}.final.cram`), which fits the 1000
+  Genomes layout poorly, since its related samples sit under a different
+  directory from the 2,504 unrelated ones.
+
+Once that is chosen, the gesture is a menu item that adds three alignments
+tracks.

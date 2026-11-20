@@ -1,6 +1,6 @@
 ---
 name: multi-sample-variant-display
-description: Genotype-quality masking, pedigree awareness, and haplotype-block coloring for the multi-sample variant displays.
+description: Genotype-quality masking, de novo and compound-het review, and haplotype-block coloring for the multi-sample variant displays.
 ---
 
 # Multi-sample variant display
@@ -30,17 +30,18 @@ shouldn't count toward AF) — couples to `minorAlleleFrequencyUtils.ts`, defer
 past the independent MVP. Same plumbing then unlocks **VAF coloring from AD**
 (color het cells by allelic fraction — a somatic/mosaic cohort view).
 
-**Pedigree / inheritance awareness (biggest biological ceiling).** There is no
-pedigree, affected-status, or trio model today — "grouping" is a flat `rows.color`
-on arbitrary `samplesTsv` columns, keyed in the legend by the display's row
-color scale (`LinearVariantDisplay/variantLegend.ts`).
-If the sample metadata carried `father`/`mother`/`affected`, the per-sample genotypes
-(already fetched) are enough to compute and highlight **de novo mutations**, **compound
-hets**, and **Mendelian-error sites**. Aligns with the existing trio-crossover work.
-Large but high-value; start by defining the pedigree metadata shape (columns in
-`samplesTsv`, or a dedicated pedigree file) and a per-site classification the
-worker ships as values and the main thread paints, as
-[ADR-202](../../architecture-decision-records/adr-202-every-mark-color-resolves-on-the-main-thread.md) has every color resolve, rather than a new render pass.
+**De novo and compound-het review on the pedigree.** `pedigreeLocation` and
+the per-site Mendelian check are built, as callset QC
+([ADR-279](../../architecture-decision-records/adr-279-a-pedigree-feeds-a-per-site-mendelian-check-and-the-assembly-states-transmission.md)).
+Reviewing a `notInParents` site as a de novo candidate needs the
+genotype-quality masking above first, since on low-coverage calls most such
+sites are genotyping errors. Compound hets (two hets in one gene, one from each
+parent) need a per-gene pass over the trio's phased calls that nobody has
+designed. The parked follow-ups are
+[per-child cell marking](../waiting-on-a-call/per-child-mendelian-cell-marking.md),
+[parent-of-origin coloring](../waiting-on-a-call/parent-of-origin-haplotype-coloring.md)
+and
+[stacking the trio's reads](../waiting-on-a-call/stack-the-trios-reads-under-the-vcf.md).
 
 **Filter & sort samples by metadata attribute.** Since 2026-08-25 a `colorBy`
 group's legend swatch focuses that group (`focusLegendEntry`, over `rows.kept`),
