@@ -171,12 +171,17 @@ gene-rich and active, and the B compartment, which is not. Against the decay of
 contact with distance, that signal is a faint texture in the counts.
 
 **Values → Observed/expected** divides each count by the file's expected count
-at its distance, the view Juicebox calls O/E. A block between two regions of one
-compartment draws red and a block between opposite compartments blue. The ratio
-runs from a quarter to fourfold around 1 on every track, so two tracks set to it
-share one scale; hovering a bin prints the ratio, the count and the expected
-count. Where the file has no expected values at the binsize on screen, the track
-draws the counts and the key says **Contacts**.
+at its distance, as Juicebox's Log[Observed/Expected] view does; between
+chromosomes the expected count is the map's average contact. A block between two
+regions of one compartment draws red and a block between opposite compartments
+blue. The ratio runs from a quarter to fourfold around 1 on every track, so two
+tracks set to it share one scale; hovering a bin prints the ratio, the count and
+the expected count. Where the file has no expected values at the binsize on
+screen, the track draws the counts and the key says **Contacts**.
+
+At a fine binsize far from the diagonal, a bin pair expects less than one
+contact, so most cells list none and draw as the page while the listed ones read
+high. A coarser [resolution](#adjusting-resolution) shows the compartments.
 
 <Figure src="/img/hic/observed_expected.png" caption="Observed/expected over hg19 chr8, red where two regions contact more than their distance predicts." links="Open this view=hic/observed_expected" />
 
@@ -190,6 +195,10 @@ matrix:
   around zero
 - **Subcompartments:** a BED splitting A and B further, colored from its
   `itemRgb` column with no configuration
+
+For a `.hic` of your own, Juicer tools' `eigenvector` command computes the
+vector one chromosome at a time, at a binsize of 250 kb or coarser; converted to
+a BigWig, it loads the same way.
 
 <Figure src="/img/hic/compartment_switch.png" caption="GM12878 and K562 eigenvector tracks over one window. At the EBF1 band they take opposite signs." links="Open this view=hic/compartment_switch" />
 
