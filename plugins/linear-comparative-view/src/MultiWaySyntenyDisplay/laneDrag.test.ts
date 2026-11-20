@@ -4,6 +4,7 @@ import {
   laneOrderAfterDrop,
   pastDragSlop,
   sameLaneOrder,
+  sortAfterDrop,
 } from './laneDrag.ts'
 
 import type { Lane } from './laneStack.ts'
@@ -22,17 +23,49 @@ test('a y lands on the band that holds it, and nowhere past the stack', () => {
   expect(dropRowAt(lanes, -1)).toBeUndefined()
 })
 
+const stack = ['anchor', 'a', 'b', 'c']
+const drop = (name: string, row: number | undefined, order = stack) =>
+  laneOrderAfterDrop(order, name, row, 'anchor')
+
 test('a drop that leaves the lanes where they are writes nothing', () => {
-  expect(laneOrderAfterDrop(['a', 'b', 'c'], 'b', 2)).toBeUndefined()
-  expect(laneOrderAfterDrop(['a', 'b', 'c'], 'a', 1)).toBeUndefined()
-  expect(laneOrderAfterDrop(['a', 'b', 'c'], 'a', 0)).toBeUndefined()
-  expect(laneOrderAfterDrop(['a', 'b', 'c'], 'b', undefined)).toBeUndefined()
-  expect(laneOrderAfterDrop(['a', 'b', 'c'], 'nobody', 2)).toBeUndefined()
+  expect(drop('b', 2)).toBeUndefined()
+  expect(drop('a', 1)).toBeUndefined()
+  expect(drop('b', undefined)).toBeUndefined()
+  expect(drop('nobody', 2)).toBeUndefined()
 })
 
 test('a drop on another row writes the moved order', () => {
-  expect(laneOrderAfterDrop(['a', 'b', 'c'], 'a', 3)).toEqual(['b', 'c', 'a'])
-  expect(laneOrderAfterDrop(['a', 'b', 'c'], 'c', 0)).toEqual(['c', 'a', 'b'])
+  expect(drop('a', 3)).toEqual(['anchor', 'b', 'c', 'a'])
+  expect(drop('c', 1)).toEqual(['anchor', 'c', 'a', 'b'])
+})
+
+test("a lane dropped on the anchor's band lands beside it on its own side", () => {
+  expect(drop('c', 0)).toEqual(['anchor', 'c', 'a', 'b'])
+  expect(drop('a', 0)).toBeUndefined()
+  const middle = ['a', 'b', 'anchor', 'c']
+  expect(drop('a', 2, middle)).toEqual(['b', 'a', 'anchor', 'c'])
+  expect(drop('c', 2, middle)).toBeUndefined()
+})
+
+test('a drag of the anchor moves it between the lanes', () => {
+  expect(drop('anchor', 1)).toEqual(['a', 'anchor', 'b', 'c'])
+  expect(drop('anchor', 2, ['a', 'anchor', 'b'])).toEqual(['a', 'b', 'anchor'])
+})
+
+test('the sort a drop writes names the anchor only where it moved down', () => {
+  const keyOf = (name: string) => name
+  expect(sortAfterDrop([], ['anchor', 'b', 'a'], 'anchor', keyOf)).toEqual([
+    'b',
+    'a',
+  ])
+  expect(sortAfterDrop([], ['b', 'anchor', 'a'], 'anchor', keyOf)).toEqual([
+    'b',
+    'anchor',
+    'a',
+  ])
+  expect(
+    sortAfterDrop(['b', 'anchor'], ['anchor', 'b'], 'anchor', keyOf),
+  ).toEqual(['anchor', 'b'])
 })
 
 test('two orders are the same only elementwise', () => {

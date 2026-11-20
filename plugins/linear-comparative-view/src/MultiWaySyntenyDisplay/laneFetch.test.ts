@@ -4,6 +4,7 @@ import {
   laneGenesFetchSpecsOf,
   laneGroupsFetchSpecsOf,
   laneLinksFetchSpecsOf,
+  lanePairsOf,
   regionKey,
   unheldLanePairsOf,
 } from './laneFetch.ts'
@@ -22,8 +23,8 @@ const windows = new Map([
   ['c', windowOn('c')],
 ])
 const pairs = [
-  { upper: 'a', lower: 'b', key: 'a|b' },
-  { upper: 'b', lower: 'c', key: 'b|c' },
+  { upper: 'a', lower: 'b', key: 'a|b', row: 1 },
+  { upper: 'b', lower: 'c', key: 'b|c', row: 2 },
 ]
 
 describe('laneLinksFetchSpecsOf', () => {
@@ -76,6 +77,20 @@ describe('laneLinksFetchSpecsOf', () => {
   })
 })
 
+describe('lanePairsOf', () => {
+  test('pairs each two adjacent mate lanes by the upper one’s stack row', () => {
+    expect(lanePairsOf(['anchor', 'a', 'b'], 'anchor')).toEqual([
+      { upper: 'a', lower: 'b', key: 'a|b', row: 1 },
+    ])
+  })
+
+  test('the gutters either side of an anchor in the middle pair nothing', () => {
+    expect(
+      lanePairsOf(['a', 'b', 'anchor', 'c'], 'anchor').map(p => [p.key, p.row]),
+    ).toEqual([['a|b', 0]])
+  })
+})
+
 describe('laneGroupsFetchSpecsOf', () => {
   test('each lane with a window reads it', () => {
     const specs = laneGroupsFetchSpecsOf(['a', 'x', 'c'], windows, 'coarse')
@@ -83,6 +98,16 @@ describe('laneGroupsFetchSpecsOf', () => {
       ['a', 'coarse'],
       ['c', 'coarse'],
     ])
+  })
+
+  test('a copy lane reads its genome', () => {
+    const copies = new Map([['{a}chr9', windowOn('a')]])
+    expect(
+      laneGroupsFetchSpecsOf(['{a}chr9'], copies, 'fine').map(s => [
+        s.lane,
+        s.assemblyName,
+      ]),
+    ).toEqual([['{a}chr9', 'a']])
   })
 })
 
@@ -149,8 +174,8 @@ describe('unheldLanePairsOf', () => {
         isMissing: missingB,
       }),
     ).toEqual([
-      { index: 0, missing: ['b'] },
-      { index: 1, missing: ['b'] },
+      { row: 1, missing: ['b'] },
+      { row: 2, missing: ['b'] },
     ])
   })
 
@@ -176,7 +201,7 @@ describe('unheldLanePairsOf', () => {
         onAnchor: false,
         isMissing: missingB,
       }),
-    ).toEqual([{ index: 0, missing: ['b'] }])
+    ).toEqual([{ row: 1, missing: ['b'] }])
   })
 })
 

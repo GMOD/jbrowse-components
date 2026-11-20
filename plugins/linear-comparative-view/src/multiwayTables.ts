@@ -637,7 +637,7 @@ export async function multiwayTables(
   const laneLinks = new Map<string, LaneLinks>()
   if (fetches.lanePairs) {
     const specs = laneLinksFetchSpecsOf({
-      pairs: lanePairsOf(rows),
+      pairs: lanePairsOf([anchor, ...rows], anchor),
       windows,
       rowFrames,
       anchor,

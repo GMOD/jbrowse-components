@@ -56,6 +56,7 @@ function decide(
     anchorReversed = false,
     panBp = 0,
     frozen,
+    vsAnchor,
   }: {
     assemblyNames?: string[]
     previous?: Map<string, LaneDecision | undefined>
@@ -63,6 +64,7 @@ function decide(
     anchorReversed?: boolean
     panBp?: number
     frozen?: Map<string, LaneDecision>
+    vsAnchor?: boolean
   } = {},
 ) {
   const pxOf = (bp: number) =>
@@ -85,6 +87,7 @@ function decide(
     previous,
     pins,
     frozen,
+    vsAnchor,
   })
 }
 
@@ -1028,6 +1031,28 @@ describe('a stack of two mate lanes', () => {
       const cacaoX = rowFrameX(cacao, 900_030 + anchors[i]!, WIDTH)
       expect(peachX).toBeCloseTo(px(start + 30) + 48)
       expect(cacaoX).toBeCloseTo(peachX)
+    }
+  })
+
+  test('lanes read against the anchor line up under it, not the lane above', () => {
+    const first = decide(bothCollinear, {
+      assemblyNames: lanes,
+      vsAnchor: true,
+    })
+    const drifted = stacked(
+      anchors.map(start => start + 60),
+      anchors,
+    )
+    const second = decide(drifted, {
+      assemblyNames: lanes,
+      previous: new Map([['peach', first.get('peach')]]),
+      vsAnchor: true,
+    })
+    const cacao = frameOf(second.get('cacao')!)
+    for (const start of anchors) {
+      expect(rowFrameX(cacao, 900_030 + start, WIDTH)).toBeCloseTo(
+        px(start + 30),
+      )
     }
   })
 

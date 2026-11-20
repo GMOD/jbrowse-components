@@ -181,7 +181,7 @@ export interface LaneStack {
 }
 
 export interface BuildLanesOpts {
-  /** the anchor assembly first, then the mate lanes in the order they draw */
+  /** every lane in the order it draws, the anchor at `anchorRow` */
   assemblyNames: string[]
   groups: readonly PlacedGroup[]
   /** px, off the view's own `bpToPx` */
@@ -202,6 +202,7 @@ export interface BuildLanesOpts {
   width: number
   /** `laneGeometry` over every lane, the anchor's included */
   geometry: LaneGeometry
+  anchorRow?: number
   pastHalfway?: ReadonlySet<string>
   labelOf?: (assemblyName: string) => string
 }
@@ -230,6 +231,7 @@ export function buildLanes({
   refNameAliasOf,
   width,
   geometry: { glyphHeight, bandHeight, strandRows, rows },
+  anchorRow = 0,
   pastHalfway = new Set(),
   labelOf = assemblyName => assemblyName,
 }: BuildLanesOpts): LaneStack {
@@ -238,7 +240,7 @@ export function buildLanes({
     glyphHeight,
     bandHeight,
     lanes: assemblyNames.map((assemblyName, row) => {
-      const isAnchor = row === 0
+      const isAnchor = row === anchorRow
       const frame = isAnchor ? undefined : rowFrames.get(assemblyName)
       const alias = refNameAliasOf(assemblyName)
       const canonical = new Map<string, string>()

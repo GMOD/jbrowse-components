@@ -2,6 +2,7 @@ import { doesIntersect2 } from '@jbrowse/core/util'
 
 import { canLaunchSyntenyForMate } from '../LaunchSyntenyView/canLaunchSyntenyForMate.ts'
 import { NO_OPS } from './alignmentOps.ts'
+import { laneGenome } from './copyLane.ts'
 import { placementMateInterval } from './layoutMultiWay.ts'
 
 import type { MateDiscoveryResult } from '../LaunchSyntenyView/pickMatesForRegion.ts'
@@ -39,8 +40,9 @@ export function lanePanelsForRegion({
   const launchable = trackAssemblyNames.map(laneKey)
   const mates: ResolvedPanel[] = []
   const unconfigured: string[] = []
-  for (const assemblyName of rowAssemblies) {
-    const decision = laneDecisions.get(assemblyName)
+  for (const lane of rowAssemblies) {
+    const assemblyName = laneGenome(lane)
+    const decision = laneDecisions.get(lane)
     if (decision !== undefined) {
       let anchorLo = Number.POSITIVE_INFINITY
       let anchorHi = Number.NEGATIVE_INFINITY
@@ -55,9 +57,7 @@ export function lanePanelsForRegion({
             group.anchor.start,
             group.anchor.end,
           )
-        for (const placement of placed
-          ? (group.mates.get(assemblyName) ?? [])
-          : []) {
+        for (const placement of placed ? (group.mates.get(lane) ?? []) : []) {
           if (
             placement.refName === decision.refName &&
             doesIntersect2(
@@ -95,7 +95,7 @@ export function lanePanelsForRegion({
             mateEnd: Math.ceil(mateHi),
             reversed: decision.flipped,
           })
-        } else {
+        } else if (!unconfigured.includes(assemblyName)) {
           unconfigured.push(assemblyName)
         }
       }

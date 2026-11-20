@@ -105,10 +105,15 @@ import {
   releaseHideUnlabelled,
   ribbonColorFieldOf,
 } from './configSlotViews.ts'
+import {
+  copyLaneName,
+  fileUnderCopies,
+  laneGenome,
+  laneOf,
+} from './copyLane.ts'
 import { featureWidgetOf } from './featureWidget.ts'
 import { dealGeneColors, geneColorRampOf, geneColors } from './geneColor.ts'
 import { laneGeneTracksOf } from './laneAnnotation.ts'
-import { copyLane, laneCopy, laneGenome } from './laneCopies.ts'
 import { nudgeDecision, sameDecisions } from './laneDecision.ts'
 import {
   failedLanesOf,
@@ -152,9 +157,11 @@ import {
 import { lanePanelsForRegion } from './lanePanels.ts'
 import { isFlipPin, pinnedRowOf, pinsInForceOf, withPin } from './lanePins.ts'
 import {
+  anchorRowOf,
   answeredLaneTest,
   laneColorOf,
   laneLabelOf,
+  laneOrderOf,
   laneRowsOf,
   laneUniverseOf,
   lanesInForce,
@@ -226,6 +233,7 @@ import type { SyntenyInstanceData } from '../LinearSyntenyRPC/buildSyntenyGeomet
 import type { WindowDeletion } from './MultiWayGetFeatures.ts'
 import type { AlignmentOpsById, LaneLinks } from './alignmentOps.ts'
 import type { MultiWaySyntenyDisplayConfigModel } from './configSchema.ts'
+import type { LaneRowsField } from './copyLane.ts'
 import type { GeneColors } from './geneColor.ts'
 import type { LaneGene } from './geneGlyph.ts'
 import type { FrozenLanes, LaneDecision } from './laneDecision.ts'
@@ -610,6 +618,14 @@ export function stateModelFactory(
           self.hiddenLaneNames = undefined
           persistTrackConfigNow(self)
         },
+        /**
+         * #action
+         * writes `rows.field`: a lane per genome, or per copy of the window
+         */
+        setLaneField(field: LaneRowsField) {
+          setConf(self, ['rows', 'field'], field)
+          persistTrackConfigNow(self)
+        },
         /** #action */
         setRibbonColorField(field: string | undefined) {
           const ribbonColor = self.configuration.ribbons.encoding.color
@@ -703,11 +719,21 @@ export function stateModelFactory(
         const blocks = self.staticBlockSignature
         return blocks === undefined ? undefined : `${blocks}|${self.lodTier}`
       },
-      /** #getter */
+      /**
+       * #getter
+       * `rows.field`: a lane per genome, or per copy of the window a genome
+       * holds
+       */
+      get laneField(): LaneRowsField {
+        return getConf(self, ['rows', 'field'])
+      },
+      /**
+       * #getter
+       * each mate filed under its genome's lane, or its copy lane
+       */
       get groups() {
-        return self.features
-          ? groupFeatures(self.features, getConf(self, ['rows', 'copies']))
-          : []
+        const grouped = self.features ? groupFeatures(self.features) : []
+        return this.laneField === 'refName' ? fileUnderCopies(grouped) : grouped
       },
       /**
        * #getter
@@ -927,19 +953,27 @@ export function stateModelFactory(
       },
       /**
        * #method
-       * the canonical name, so two spellings of one assembly share a key
+       * the canonical name, so two spellings of one lane share a key: a copy
+       * lane's assembly and refName each canonical, where the session holds
+       * its genome
        */
       laneKey(lane: string) {
-        const genome = laneGenome(lane)
-        const canonical =
-          getSession(self).assemblyManager.getCanonicalAssemblyName(genome) ??
-          genome
-        const copy = laneCopy(lane)
-        return copy === undefined ? canonical : copyLane(canonical, copy)
+        const { assemblyName, refName } = laneOf(lane)
+        const { assemblyManager } = getSession(self)
+        const genome =
+          assemblyManager.getCanonicalAssemblyName(assemblyName) ?? assemblyName
+        return refName === undefined
+          ? genome
+          : copyLaneName(
+              genome,
+              (assemblyManager.has(genome) &&
+                assemblyManager.get(genome)?.getCanonicalRefName2(refName)) ||
+                refName,
+            )
       },
       /**
        * #method
-       * `assemblyName` and every alias the session holds it under
+       * the lane's genome and every alias the session holds it under
        */
       laneSpellings(lane: string) {
         const assemblyName = laneGenome(lane)
@@ -987,11 +1021,15 @@ export function stateModelFactory(
       /**
        * #getter
        * a source that names an anchor and answers no lane pairs states each
-       * lane against the anchor alone, so each gutter draws its lower lane
-       * against the anchor
+       * lane against the anchor alone, so each gutter draws its far lane
+       * against the anchor; so are copy lanes, since two copies of one genome
+       * are paired only through the anchor gene they share
        */
       get rowsVsAnchor(): boolean {
-        return rowsReadAgainstAnchor(self.adapterCapabilities, self.starAnchor)
+        return (
+          self.laneField === 'refName' ||
+          rowsReadAgainstAnchor(self.adapterCapabilities, self.starAnchor)
+        )
       },
       /**
        * #getter
@@ -1098,7 +1136,7 @@ export function stateModelFactory(
       },
       /** #method */
       holdsTemporarily(assemblyName: string) {
-        const name = self.laneKey(assemblyName)
+        const name = self.laneKey(laneGenome(assemblyName))
         return (getSession(self).temporaryAssemblies ?? []).some(
           conf => isObject(conf) && conf.name === name,
         )
@@ -1130,19 +1168,23 @@ export function stateModelFactory(
         )
       },
       /** #method */
-      laneLabel(lane: string): string {
-        return (
-          this.rowLabels.get(self.laneKey(lane)) ??
-          laneLabelOf(laneGenome(lane), {
-            written: this.rowLabels,
-            heldName: name =>
-              this.holdsAssembly(name)
-                ? getSession(self).assemblyManager.getDisplayName(name)
-                : undefined,
-            declared: this.declaredLaneLabels,
-            keyOf: self.laneKey,
-          })
-        )
+      laneLabel(lane: string) {
+        const { assemblyManager } = getSession(self)
+        return laneLabelOf(lane, {
+          written: this.rowLabels,
+          heldName: name =>
+            this.holdsAssembly(name)
+              ? assemblyManager.getDisplayName(name)
+              : undefined,
+          declared: this.declaredLaneLabels,
+          keyOf: self.laneKey,
+          shownRefName: (assemblyName, refName) =>
+            (this.holdsAssembly(assemblyName) &&
+              assemblyManager
+                .get(assemblyName)
+                ?.getCanonicalRefName2(refName)) ||
+            refName,
+        })
       },
       /**
        * #getter
@@ -1270,6 +1312,32 @@ export function stateModelFactory(
     .views(self => ({
       /**
        * #getter
+       * the anchor's row in the stack: after the lanes `rows.sort` names
+       * before its assembly, or first
+       */
+      get anchorRow(): number {
+        return anchorRowOf(
+          self.domain,
+          self.rowAssemblies,
+          self.anchorAssemblyName,
+          self.laneKey,
+        )
+      },
+    }))
+    .views(self => ({
+      /**
+       * #getter
+       * every lane in the order it stacks, the anchor's included
+       */
+      get laneOrder(): string[] {
+        return laneOrderOf(
+          self.rowAssemblies,
+          self.anchorAssemblyName,
+          self.anchorRow,
+        )
+      },
+      /**
+       * #getter
        * the pins that hold under the anchor, each naming its lane as
        * `rowAssemblies` spells it
        */
@@ -1311,9 +1379,13 @@ export function stateModelFactory(
       get rowOfLane(): ReadonlyMap<string, string> {
         return new Map(self.rowAssemblies.map(r => [self.laneKey(r), r]))
       },
-      /** #getter */
+      /**
+       * #getter
+       * the genomes the lanes draw that the session lacks, each once however
+       * many copy lanes it draws
+       */
       get lanesToDescribe(): string[] {
-        return self.rowAssemblies.filter(
+        return [...new Set(self.rowAssemblies.map(laneGenome))].filter(
           name =>
             !self.describedLanes.has(name) &&
             (!self.holdsAssembly(name) || self.holdsTemporarily(name)),
@@ -1544,7 +1616,7 @@ export function stateModelFactory(
       get laneGeneTracks() {
         const entries = getConf(self, 'laneGeneTracks')
         return laneGeneTracksOf({
-          lanes: [self.anchorAssemblyName, ...self.rowAssemblies],
+          lanes: self.laneOrder,
           keyOf: lane => self.laneKey(laneGenome(lane)),
           tracks: self.sessionTracksById.values(),
           namedTracks: key => self.namedLaneTracks(entries, key),
@@ -1587,7 +1659,10 @@ export function stateModelFactory(
             toTrackConfigEntry(track).adapter as Record<string, unknown>,
           )
         }
-        for (const [lane, { geneAdapter }] of self.laneDescriptions) {
+        for (const lane of self.laneOrder) {
+          const geneAdapter = self.laneDescriptions.get(
+            laneGenome(lane),
+          )?.geneAdapter
           if (geneAdapter && !out.has(lane)) {
             out.set(lane, geneAdapter)
           }
@@ -1744,6 +1819,8 @@ export function stateModelFactory(
           {
             groups: self.fitGroups,
             assemblyNames: self.rowAssemblies,
+            anchorRow: self.anchorRow,
+            vsAnchor: self.rowsVsAnchor,
             previous,
             frozen,
             pins: self.pinsInForce,
@@ -2010,7 +2087,7 @@ export function stateModelFactory(
       },
       /** #getter */
       get lanePairs(): LanePair[] {
-        return lanePairsOf(self.rowAssemblies)
+        return lanePairsOf(self.laneOrder, self.anchorAssemblyName)
       },
       /** #getter */
       get anchorlessGroups(): PlacedGroup[] {
@@ -2090,11 +2167,11 @@ export function stateModelFactory(
       /** #getter */
       get laneLayerSources(): Map<string, LaneLayerSource>[] {
         return laneLayerSourcesOf({
-          lanes: [self.anchorAssemblyName, ...self.rowAssemblies],
+          lanes: self.laneOrder,
           trackFor: (layer, lane) =>
             self.namedLaneTracks(
               self.configuration.laneLayers[layer]!.tracks,
-              self.laneKey(lane),
+              self.laneKey(laneGenome(lane)),
             )[0],
           templates: self.laneLayerTemplates,
         })
@@ -2125,7 +2202,8 @@ export function stateModelFactory(
             ? assemblyManager.get(laneGenome(assemblyName))
             : undefined
         return laneStackOn(self.anchorStage, {
-          assemblyNames: [self.anchorAssemblyName, ...self.rowAssemblies],
+          assemblyNames: self.laneOrder,
+          anchorRow: self.anchorRow,
           groups: [...self.visibleGroups, ...self.anchorlessGroups],
           rowFrames: self.rowFrames,
           contigOf: (assemblyName, refName) => {
@@ -2237,19 +2315,19 @@ export function stateModelFactory(
             spec => spec.lane,
           ),
         )
-        return self.lanePairs.flatMap(({ key }, i) => {
-          const y = this.gutterY(i)
+        return self.lanePairs.flatMap(({ key, row }) => {
+          const y = this.gutterY(row)
           return pending.has(key) && y !== undefined ? [y] : []
         })
       },
       /**
        * #method
-       * the centre, in stack px, of the gutter under the `index`th lane pair
+       * the centre, in stack px, of the gutter under the lane at `row`
        */
-      gutterY(index: number) {
+      gutterY(row: number) {
         const { lanes, glyphHeight } = self.laneStack
-        const upper = lanes[index + 1]
-        const lower = lanes[index + 2]
+        const upper = lanes[row]
+        const lower = lanes[row + 1]
         return upper && lower
           ? (upper.glyphTop + glyphHeight + lower.layerTop) / 2
           : undefined
@@ -2262,11 +2340,12 @@ export function stateModelFactory(
         const failed = [
           ...failedLanesOf(self.laneGenes, self.laneGenesFetchSpecs),
           ...failedLanesOf(self.laneGroups, self.laneGroupsFetchSpecs),
-          ...failedLanesOf(self.laneLayerData, self.laneLayersFetchSpecs),
-        ]
-        return new Map(
-          failed.map(([spec, { error }]) => [spec.assemblyName, error]),
-        )
+        ].map(([spec, { error }]) => [spec.lane, error] as const)
+        const failedLayers = failedLanesOf(
+          self.laneLayerData,
+          self.laneLayersFetchSpecs,
+        ).map(([spec, { error }]) => [spec.assemblyName, error] as const)
+        return new Map([...failed, ...failedLayers])
       },
       /**
        * #getter
@@ -2279,9 +2358,9 @@ export function stateModelFactory(
             ([spec, held]) => [spec.lane, held],
           ),
         )
-        return self.lanePairs.flatMap(({ key }, i) => {
+        return self.lanePairs.flatMap(({ key, row }) => {
           const error = failed.get(key)?.error
-          const y = this.gutterY(i)
+          const y = this.gutterY(row)
           return error !== undefined && y !== undefined ? [{ y, error }] : []
         })
       },
@@ -2303,8 +2382,8 @@ export function stateModelFactory(
             !self.holdsAssembly(name) &&
             self.describedLanes.has(name) &&
             !self.lanesBeingDescribed.has(name),
-        }).flatMap(({ index, missing }) => {
-          const y = this.gutterY(index)
+        }).flatMap(({ row, missing }) => {
+          const y = this.gutterY(row)
           return y === undefined
             ? []
             : [{ y, labels: missing.map(name => self.laneLabel(name)) }]
@@ -2877,7 +2956,7 @@ export function stateModelFactory(
       },
       /** #getter */
       get laneLayerTitles() {
-        const anchor = self.laneStack.lanes[0]
+        const anchor = self.laneStack.lanes.find(lane => lane.isAnchor)
         const heights = self.laneLayerHeights
         const tops = anchor ? layerBandTops(anchor.layerTop, heights) : []
         const domains = self.laneLayerDomains
@@ -3273,17 +3352,18 @@ export function stateModelFactory(
         })
       },
       /** #action */
-      openInNewView(assemblyName: string, loc: string) {
+      openInNewView(lane: string, loc: string) {
         const session = getSession(self)
+        const assemblyName = laneGenome(lane)
         const described = self.laneAssemblyConfs.get(assemblyName)
         if (described) {
           self.releasedLanes = new Set([...self.releasedLanes, assemblyName])
           releaseLaneAssembly(self, String(described.name))
         }
-        const genes = self.laneGeneTracks.get(assemblyName)
+        const genes = self.laneGeneTracks.get(lane)
         openAssemblyInLinearView({
           session,
-          id: `${self.id}-mate-${assemblyName}`,
+          id: `${self.id}-mate-${lane}`,
           assemblyName,
           loc,
           tracks: [
@@ -3304,8 +3384,9 @@ export function stateModelFactory(
         })
       },
       /** #action */
-      reanchor(assemblyName: string, loc: string) {
+      reanchor(lane: string, loc: string) {
         const session = getSession(self)
+        const assemblyName = laneGenome(lane)
         const view = self.lgv
         const outgoing = self.anchorAssemblyName
         const restore = captureStackViewports([view])

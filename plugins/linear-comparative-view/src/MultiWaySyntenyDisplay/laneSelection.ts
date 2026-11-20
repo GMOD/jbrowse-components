@@ -1,3 +1,4 @@
+import { laneGenome, laneOf } from './copyLane.ts'
 import { rowAssembliesOf } from './layoutMultiWay.ts'
 
 import type { MultiWayGroup } from './layoutMultiWay.ts'
@@ -32,7 +33,15 @@ export function laneResetLabel(
 
 type KeyOf = (name: string) => string
 
-/** Whether a lane draws: chosen by the selection in force and not hidden. */
+/** a lane's own key, and its genome's where it is a copy lane */
+function answersTo(name: string, keyOf: KeyOf) {
+  return [keyOf(name), keyOf(laneGenome(name))]
+}
+
+/**
+ * Whether a lane draws: chosen by the selection in force and not hidden, a
+ * copy lane by its own name or its genome's
+ */
 function drawnLaneTest(
   selection: readonly string[] | undefined,
   hidden: readonly string[],
@@ -41,8 +50,11 @@ function drawnLaneTest(
   const chosen = selection && new Set(selection.map(keyOf))
   const hiddenKeys = new Set(hidden.map(keyOf))
   return (name: string) => {
-    const key = keyOf(name)
-    return (chosen === undefined || chosen.has(key)) && !hiddenKeys.has(key)
+    const keys = answersTo(name, keyOf)
+    return (
+      (chosen === undefined || keys.some(key => chosen.has(key))) &&
+      !keys.some(key => hiddenKeys.has(key))
+    )
   }
 }
 
@@ -71,14 +83,18 @@ export function unalignedChosenLanesOf(
   keyOf: KeyOf,
 ) {
   const placed = new Set(
-    groups.flatMap(group => [...group.mates.keys()].map(keyOf)),
+    groups.flatMap(group =>
+      [...group.mates.keys()].flatMap(name => answersTo(name, keyOf)),
+    ),
   )
   return choice.filter(name => answered(name) && !placed.has(keyOf(name)))
 }
 
 /**
  * A lane's label: its `rows.labels` entry, else the name the session holds
- * its genome under, else the label its source declares, else its name
+ * its genome under, else the label its source declares, else its name. A copy
+ * lane without an entry of its own takes its genome's label and its contig,
+ * as `shownRefName` spells it.
  */
 export function laneLabelOf(
   name: string,
@@ -87,20 +103,29 @@ export function laneLabelOf(
     heldName,
     declared,
     keyOf,
+    shownRefName = (_assemblyName, refName) => refName,
   }: {
     written: ReadonlyMap<string, string>
     heldName: (name: string) => string | undefined
     declared: ReadonlyMap<string, string>
     keyOf: KeyOf
+    shownRefName?: (assemblyName: string, refName: string) => string
   },
-) {
+): string {
+  const { assemblyName, refName } = laneOf(name)
   const key = keyOf(name)
-  return written.get(key) ?? heldName(name) ?? declared.get(key) ?? name
+  const own = written.get(key)
+  return own !== undefined
+    ? own
+    : refName === undefined
+      ? (heldName(name) ?? declared.get(key) ?? name)
+      : `${laneLabelOf(assemblyName, { written, heldName, declared, keyOf })} ${shownRefName(assemblyName, refName)}`
 }
 
 /**
  * A lane's color, the anchor's included: its `rows.colors` entry, else the
- * color its source declares, else none
+ * color its source declares, else none; a copy lane without either takes its
+ * genome's
  */
 export function laneColorOf(
   name: string,
@@ -113,15 +138,23 @@ export function laneColorOf(
     declared: ReadonlyMap<string, string>
     keyOf: KeyOf
   },
-) {
+): string | undefined {
   const key = keyOf(name)
-  return pinned.get(key) ?? declared.get(key)
+  const genome = laneGenome(name)
+  return (
+    pinned.get(key) ??
+    declared.get(key) ??
+    (genome === name
+      ? undefined
+      : laneColorOf(genome, { pinned, declared, keyOf }))
+  )
 }
 
 /**
  * The mate lanes the stack draws, in order: `preferred` first, then by their
  * heaviest contig's group weight, then each lane `placeless` names that no
- * group places
+ * group places. A copy lane on the anchor's own genome draws a paralogy hit,
+ * and is dropped as a lane on the anchor's assembly is
  */
 export function laneRowsOf({
   groups,
@@ -143,8 +176,34 @@ export function laneRowsOf({
   const anchorKey = keyOf(anchor)
   const drawn = drawnLaneTest(selection, hidden, keyOf)
   return rowAssembliesOf(groups, preferred, keyOf, placeless).filter(
-    name => keyOf(name) !== anchorKey && drawn(name),
+    name => keyOf(laneGenome(name)) !== anchorKey && drawn(name),
   )
+}
+
+/**
+ * How many of the mate lanes `rows` stack above the anchor: those `sort`
+ * names before the anchor's assembly, where it names it, else none
+ */
+export function anchorRowOf(
+  sort: readonly string[],
+  rows: readonly string[],
+  anchor: string,
+  keyOf: KeyOf,
+) {
+  const keys = sort.map(keyOf)
+  const at = keys.indexOf(keyOf(anchor))
+  const before = new Set(keys.slice(0, Math.max(at, 0)))
+  return rows.filter(row => answersTo(row, keyOf).some(key => before.has(key)))
+    .length
+}
+
+/** the mate lanes with the anchor at its row */
+export function laneOrderOf(
+  rows: readonly string[],
+  anchor: string,
+  anchorRow: number,
+) {
+  return [...rows.slice(0, anchorRow), anchor, ...rows.slice(anchorRow)]
 }
 
 export interface LaneUniverseInputs {

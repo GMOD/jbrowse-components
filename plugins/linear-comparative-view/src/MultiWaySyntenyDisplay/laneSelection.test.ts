@@ -1,11 +1,19 @@
+import { SimpleFeature } from '@jbrowse/core/util'
+
+import { fileUnderCopies } from './copyLane.ts'
 import {
+  anchorRowOf,
   laneColorOf,
+  laneLabelOf,
+  laneOrderOf,
+  laneRowsOf,
   laneUniverseOf,
   lanesInForce,
   pickedLanes,
   withLaneHidden,
   withLaneShown,
 } from './laneSelection.ts'
+import { groupFeatures } from './layoutMultiWay.ts'
 
 import type { LaneUniverseInputs } from './laneSelection.ts'
 
@@ -198,4 +206,101 @@ test("a lane's color is its pin, else its source's, else none, through any spell
   expect(colorOf('HG002#2')).toBe('green')
   expect(colorOf('CHM13')).toBe('black')
   expect(colorOf('HG003#1')).toBeUndefined()
+})
+
+describe('copy lanes', () => {
+  const groups = fileUnderCopies(
+    groupFeatures(
+      ['chr11', 'chr9', 'chr11', 'chrG3'].map(
+        (refName, i) =>
+          new SimpleFeature({
+            uniqueId: `r${i}`,
+            refName: 'chrG7',
+            start: i * 100,
+            end: i * 100 + 50,
+            name: `g${i}`,
+            mate: {
+              assemblyName: refName === 'chrG3' ? 'peach' : 'grape',
+              refName,
+              start: i * 100,
+              end: i * 100 + 50,
+            },
+          }),
+      ),
+    ),
+  )
+  const rowsOf = (opts: Partial<Parameters<typeof laneRowsOf>[0]>) =>
+    laneRowsOf({
+      groups,
+      placeless: [],
+      anchor: 'peach',
+      preferred: [],
+      selection: undefined,
+      hidden: [],
+      keyOf,
+      ...opts,
+    })
+
+  test('a copy on the anchor’s own genome draws no lane', () => {
+    expect(rowsOf({})).toEqual(['{grape}chr11', '{grape}chr9'])
+  })
+
+  test('a genome named in rows.kept, rows.sort or the hidden lanes reaches each copy', () => {
+    expect(rowsOf({ selection: ['Grape'] })).toEqual([
+      '{grape}chr11',
+      '{grape}chr9',
+    ])
+    expect(rowsOf({ hidden: ['grape'] })).toEqual([])
+    expect(rowsOf({ selection: ['{grape}chr9'] })).toEqual(['{grape}chr9'])
+    expect(rowsOf({ preferred: ['{GRAPE}chr9', 'grape'] })).toEqual([
+      '{grape}chr9',
+      '{grape}chr11',
+    ])
+  })
+
+  test('the anchor stacks after the lanes rows.sort names before it', () => {
+    const rows = ['{grape}chr9', '{grape}chr11', 'cacao']
+    expect(anchorRowOf([], rows, 'peach', keyOf)).toBe(0)
+    expect(anchorRowOf(['{grape}chr9', 'Peach'], rows, 'peach', keyOf)).toBe(1)
+    expect(anchorRowOf(['grape', 'peach'], rows, 'peach', keyOf)).toBe(2)
+    expect(anchorRowOf(['gone', 'peach'], rows, 'peach', keyOf)).toBe(0)
+    expect(laneOrderOf(rows, 'peach', 1)).toEqual([
+      '{grape}chr9',
+      'peach',
+      '{grape}chr11',
+      'cacao',
+    ])
+  })
+
+  test('a copy lane takes its own label, else its genome’s and its contig', () => {
+    const labelOf = (name: string) =>
+      laneLabelOf(name, {
+        written: new Map([
+          ['grape', 'Vitis'],
+          ['{grape}chr4', 'older copy'],
+        ]),
+        heldName: () => undefined,
+        declared: new Map(),
+        keyOf,
+        shownRefName: (_assemblyName, refName) => refName.toUpperCase(),
+      })
+    expect(labelOf('{grape}chr4')).toBe('older copy')
+    expect(labelOf('{Grape}chr9')).toBe('Vitis CHR9')
+    expect(labelOf('{cacao}tc1')).toBe('cacao TC1')
+  })
+
+  test('a copy lane takes its genome’s color where it has none of its own', () => {
+    const colorOf = (name: string) =>
+      laneColorOf(name, {
+        pinned: new Map([
+          ['grape', 'red'],
+          ['{grape}chr4', 'blue'],
+        ]),
+        declared: new Map(),
+        keyOf,
+      })
+    expect(colorOf('{grape}chr4')).toBe('blue')
+    expect(colorOf('{grape}chr9')).toBe('red')
+    expect(colorOf('{cacao}tc1')).toBeUndefined()
+  })
 })

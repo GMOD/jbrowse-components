@@ -1,6 +1,6 @@
 import { lanePairKey } from './alignmentOps.ts'
+import { laneGenome } from './copyLane.ts'
 import { laneGeneFilter, laneIsoformSettings } from './geneGlyph.ts'
-import { laneGenome } from './laneCopies.ts'
 
 import type { LaneLinks } from './alignmentOps.ts'
 import type { LaneGene } from './geneGlyph.ts'
@@ -21,13 +21,20 @@ export interface LanePair {
   upper: string
   lower: string
   key: string
+  /** the upper lane's row in the stack */
+  row: number
 }
 
-/** each adjacent pair of mate lanes, top down */
-export function lanePairsOf(rows: readonly string[]): LanePair[] {
-  return rows.slice(1).map((lower, i) => {
-    const upper = rows[i]!
-    return { upper, lower, key: lanePairKey(upper, lower) }
+/** each adjacent pair of mate lanes in `order`, the stack top down */
+export function lanePairsOf(
+  order: readonly string[],
+  anchor: string,
+): LanePair[] {
+  return order.slice(1).flatMap((lower, row) => {
+    const upper = order[row]!
+    return upper === anchor || lower === anchor
+      ? []
+      : [{ upper, lower, key: lanePairKey(upper, lower), row }]
   })
 }
 
@@ -291,8 +298,8 @@ export function laneLinksFetchSpecsOf({
     return upperWindow && windows.get(lower) ? upperWindow.regions : []
   }
   const specs: LaneLinksFetchSpec[] = []
-  for (const [i, { upper, lower, key }] of pairs.entries()) {
-    const regions = nearViewport(i + 1, i + 2) ? pairRegions(upper, lower) : []
+  for (const { upper, lower, key, row } of pairs) {
+    const regions = nearViewport(row, row + 1) ? pairRegions(upper, lower) : []
     if (regions.length > 0) {
       specs.push({
         lane: key,
@@ -309,7 +316,7 @@ export function laneLinksFetchSpecsOf({
 }
 
 /**
- * Each adjacent pair, by index, that `laneLinksFetchSpecsOf` never asks for
+ * Each adjacent pair, by its upper row, that `laneLinksFetchSpecsOf` never asks for
  * because a placed lane's genome is not in the session, with those genomes
  */
 export function unheldLanePairsOf({
@@ -325,10 +332,10 @@ export function unheldLanePairsOf({
 }) {
   return onAnchor
     ? []
-    : pairs.flatMap(({ upper, lower }, index) => {
+    : pairs.flatMap(({ upper, lower, row }) => {
         const missing = [upper, lower].filter(isMissing)
         return rowFrames.get(upper) && rowFrames.get(lower) && missing.length
-          ? [{ index, missing }]
+          ? [{ row, missing }]
           : []
       })
 }

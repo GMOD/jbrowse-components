@@ -584,9 +584,11 @@ export function doAfterAttach(self: MultiWaySyntenyDisplayModel) {
     fetchSpecs: () => self.laneLayersFetchSpecs,
     state: () => self.laneLayerData,
     fetchOne: async (spec, ctx): Promise<HeldLaneLayer> => {
-      const [region] = await laneRegions(getSession(self), spec.assemblyName, [
-        spec.region,
-      ])
+      const [region] = await laneRegions(
+        getSession(self),
+        spec.region.assemblyName,
+        [spec.region],
+      )
       const result = await ctx.callRpc('CoreGetEncodedLayers', {
         adapterConfig: spec.adapterConfig,
         region: region!,

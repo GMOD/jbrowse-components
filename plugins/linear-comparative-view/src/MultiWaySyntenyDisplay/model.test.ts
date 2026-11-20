@@ -2457,6 +2457,72 @@ test('rows.labels names a lane in place of its assembly, by any spelling', () =>
   ).toMatchObject({ volvox_random: 'Random strain', volvox_ins: unlabelled })
 })
 
+describe('one lane per copy', () => {
+  // each anchor gene pairs with one gene on each of two contigs of one genome
+  const setup = () => {
+    const { display } = createDisplayWithSession({
+      trackAssemblyNames: ['volvox', 'volvox_random'],
+      geneTracks: [],
+      assemblyAliases: { vr: 'volvox_random' },
+    })
+    display.setFeatures(
+      ['ctgB', 'ctgC'].flatMap(refName =>
+        [100, 400, 700].map(
+          start =>
+            new SimpleFeature({
+              uniqueId: `${refName}-${start}`,
+              name: `gene${start}`,
+              refName: 'ctgA',
+              start,
+              end: start + 100,
+              strand: 1,
+              mate: {
+                assemblyName: 'volvox_random',
+                refName,
+                start,
+                end: start + 100,
+              },
+            }),
+        ),
+      ),
+    )
+    display.setLaneField('refName')
+    return display
+  }
+
+  test('draws a lane per contig, each read against the anchor', () => {
+    const display = setup()
+    expect(display.rowAssemblies).toEqual([
+      '{volvox_random}ctgB',
+      '{volvox_random}ctgC',
+    ])
+    expect(display.rowsVsAnchor).toBe(true)
+    expect(display.laneFetchKinds.laneRows).toBe(false)
+    expect(display.laneLabel('{volvox_random}ctgC')).toBe('volvox_random ctgC')
+    expect(display.lanesToDescribe).toEqual([])
+  })
+
+  test('the anchor stacks where rows.sort names it, under any spelling', () => {
+    const display = setup()
+    display.setDomain(['{vr}ctgC', 'volvox', '{volvox_random}ctgB'])
+    expect(display.anchorRow).toBe(1)
+    expect(
+      display.laneStack.lanes.map(l => [l.assemblyName, l.isAnchor]),
+    ).toEqual([
+      ['{volvox_random}ctgC', false],
+      ['volvox', true],
+      ['{volvox_random}ctgB', false],
+    ])
+  })
+
+  test('switching back draws one lane for the genome', () => {
+    const display = setup()
+    display.setLaneField('assembly')
+    expect(display.rowAssemblies).toEqual(['volvox_random'])
+    expect(display.rowsVsAnchor).toBe(false)
+  })
+})
+
 test('Move up reorders a lane the order names by another spelling', () => {
   const { display } = createDisplayWithSession({
     trackAssemblyNames: ['volvox', 'volvox_random', 'volvox_ins'],

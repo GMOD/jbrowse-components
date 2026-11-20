@@ -16,7 +16,8 @@ export function rowsReadAgainstAnchor(
 /**
  * The fetches beyond the anchor's that its records call for: each adjacent
  * lane pair's alignments, or each mate lane's own rows of a gene table, which a
- * star indexes on its anchor alone
+ * star indexes on its anchor alone and lanes read against the anchor never
+ * draw
  */
 export function laneFetchesFor(
   features: readonly Feature[],
@@ -26,7 +27,7 @@ export function laneFetchesFor(
   const named = features.some(isNamedRecord)
   return {
     lanePairs: features.length > 0 && !named && !rowsVsAnchor,
-    laneRows: named && starAnchor === undefined,
+    laneRows: named && starAnchor === undefined && !rowsVsAnchor,
   }
 }
 

@@ -9364,8 +9364,21 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "type": "object",
       "x-closed": true,
       "properties": {
+        "field": {
+          "description": "what one lane is: 'assembly', a lane per genome, or 'refName', a lane per contig holding a copy of the window, named '{<assembly>}<refName>' and answering to its genome's name.",
+          "default": "assembly",
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "enum": [
+              "assembly",
+              "refName"
+            ]
+          }
+        },
         "sort": {
-          "description": "the lanes that stack first, by assembly name, in this order; the rest follow densest-first, or each beside the lane most alike where the source joins neighbouring lanes.",
+          "description": "the lanes that stack first, by name, in this order; the rest follow densest-first, or each beside the lane most alike where the source joins neighbouring lanes; the anchor's assembly named here stacks the anchor there.",
           "if": {
             "type": "null"
           },
@@ -9391,7 +9404,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           }
         },
         "labels": {
-          "description": "a label drawn for a lane in place of its assembly name, by assembly name; labels.lanes says where lane labels draw.",
+          "description": "a label drawn for a lane in place of its name, by lane name; labels.lanes says where lane labels draw.",
           "if": {
             "type": "null"
           },
@@ -9403,7 +9416,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           }
         },
         "colors": {
-          "description": "a color pinned on a lane, by assembly name, the anchor's included, over the color its source declares; drawn as a bar beside the lane's label.",
+          "description": "a color pinned on a lane, by lane name, the anchor's included, over the color its source declares; drawn as a bar beside the lane's label.",
           "if": {
             "type": "null"
           },
@@ -9415,7 +9428,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           }
         },
         "kept": {
-          "description": "the lanes drawn, by assembly name, selecting rather than narrowing: it replaces the track's lanes and can add one; empty draws the track's lanes, or every lane.",
+          "description": "the lanes drawn, by lane name, selecting rather than narrowing: it replaces the track's lanes and can add one; empty draws the track's lanes, or every lane.",
           "if": {
             "type": "null"
           },
@@ -9438,16 +9451,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
                 "type": "string"
               }
             ]
-          }
-        },
-        "copies": {
-          "description": "one lane per contig of a genome rather than one per genome, named <assembly>@<refName> in sort and labels.",
-          "default": false,
-          "if": {
-            "type": "null"
-          },
-          "else": {
-            "type": "boolean"
           }
         }
       },

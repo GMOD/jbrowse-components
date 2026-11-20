@@ -1,6 +1,7 @@
 import { assembleLocString, getBpDisplayStr } from '@jbrowse/core/util'
 import { measureText } from '@jbrowse/core/util/measureText'
 
+import { laneOf } from './copyLane.ts'
 import { frameOpenings, laneBpOfOpened } from './layoutMultiWay.ts'
 
 import type { Lane } from './laneStack.ts'
@@ -196,10 +197,16 @@ export function laneHeaderRows(
   const inline = inlineGlyphHeight !== undefined
   const anchor = lanes.find(lane => lane.isAnchor)?.label
   return lanes.map(lane => {
+    const region = laneRegion(lane)
+    const loc = region && assembleLocString(region)
+    // a copy lane's label names its contig already
+    const shownRegion =
+      region && laneOf(lane.assemblyName).refName !== undefined
+        ? loc?.slice(region.refName.length + 1)
+        : loc
     const where = lane.isAnchor
       ? anchorWhere
-      : lane.frame &&
-        `${assembleLocString(laneRegion(lane)!)}${lane.frame.flipped ? ' [rev]' : ''}`
+      : lane.frame && `${shownRegion}${lane.frame.flipped ? ' [rev]' : ''}`
     const more = lane.frame?.alsoOnMore
       ? ` and ${lane.frame.alsoOnMore} more`
       : ''

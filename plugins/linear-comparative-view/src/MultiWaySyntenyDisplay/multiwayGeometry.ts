@@ -106,7 +106,7 @@ function holesOn(lane: Lane, refName: string) {
  * in it are one breakpoint, each kept at its own lane's `at`.
  */
 function addAcrossHoles(
-  builder: RibbonBuilder,
+  builder: RibbonSink,
   upper: Lane,
   refName1: string,
   start1: number,
@@ -164,6 +164,18 @@ export function anchorRuleY(upper: Lane, bandHeight: number) {
   return upper.bandTop + bandHeight
 }
 
+/** Where the rule sits in the gutter over `lower`, above the anchor: flush over that lane */
+export function anchorRuleAboveY(lower: Lane) {
+  return lower.bandTop
+}
+
+export function anchorRowIn(lanes: readonly Lane[]) {
+  return Math.max(
+    lanes.findIndex(lane => lane.isAnchor),
+    0,
+  )
+}
+
 /**
  * Two placements of one group a source row states as a pair. A table folding
  * its rows by anchor gene puts both halves of a split gene in one group, and
@@ -195,11 +207,22 @@ function* lanePairs(lanes: Lane[], glyphHeight: number) {
   }
 }
 
+interface RibbonSink {
+  readonly count: number
+  add: (
+    s1: Span,
+    s2: Span,
+    kind: number,
+    featureIdx: number,
+    color: number,
+  ) => void
+}
+
 /**
  * `bp1`→`bp4` is one edge and `bp2`→`bp3` the other, so a reversed span draws
  * the crossed parallelogram of an inversion.
  */
-class RibbonBuilder {
+class RibbonBuilder implements RibbonSink {
   bp1: number[] = []
   bp2: number[] = []
   bp3: number[] = []
@@ -317,7 +340,7 @@ export function mismatchColor(field: string | undefined) {
 
 /** False where the record carries no alignment, so the caller draws the ribbon. */
 function addAlignmentDetail(
-  builder: RibbonBuilder,
+  builder: RibbonSink,
   feature: Feature,
   ops: Uint32Array | undefined,
   upper: Lane,
@@ -506,7 +529,8 @@ export function buildRibbonGeometry({
   const groupTarget = new Map<string, number>()
   const linkTarget = new Map<string, number>()
   const records = new Map<string, ReadonlyMap<number, Feature>>()
-  const anchor = lanes[0]
+  const anchorRow = anchorRowIn(lanes)
+  const anchor = lanes[anchorRow]
   const nextRows = nextPlacedRows(lanes)
   const targetOfGroup = (key: string, group: PlacedGroup) => {
     let idx = groupTarget.get(key)
@@ -533,18 +557,24 @@ export function buildRibbonGeometry({
     return idx
   }
   for (const pair of lanePairs(lanes, glyphHeight)) {
-    const { row, lower, y2 } = pair
-    const onAnchor = rowsVsAnchor && row > 0
-    const upper = onAnchor ? anchor! : pair.upper
-    const y1 = onAnchor ? anchorRuleY(pair.upper, stack.bandHeight) : pair.y1
+    const { row } = pair
+    // read against the anchor, a gutter away from it draws its far lane
+    // against the anchor's rule beside the near one
+    const belowAnchor = rowsVsAnchor && row > anchorRow
+    const aboveAnchor = rowsVsAnchor && row + 1 < anchorRow
+    const upper = belowAnchor ? anchor! : pair.upper
+    const lower = aboveAnchor ? anchor! : pair.lower
+    const lowerRow = aboveAnchor ? anchorRow : row + 1
+    const y1 = belowAnchor ? anchorRuleY(pair.upper, stack.bandHeight) : pair.y1
+    const y2 = aboveAnchor ? anchorRuleAboveY(pair.lower) : pair.y2
     const ribbons = new RibbonBuilder()
     const bridges = new Map<number, RibbonBuilder>()
     for (const [
       key,
-      { group, spans, orientations, intervals },
+      { group, spans, orientations, intervals, features },
     ] of upper.placements) {
       const toRow = lower.placements.has(key)
-        ? row + 1
+        ? lowerRow
         : !rowsVsAnchor && groupSpansLanes(group)
           ? nextRows[row]!.get(key)
           : undefined
@@ -554,20 +584,31 @@ export function buildRibbonGeometry({
         continue
       }
       const farLane = lanes[toRow]!
-      const bridged = toRow !== row + 1
+      const bridged = toRow !== lowerRow
       let builder = ribbons
       if (bridged) {
         builder = bridges.get(toRow) ?? new RibbonBuilder()
         bridges.set(toRow, builder)
       }
       const direct =
-        upper.isAnchor &&
+        (upper.isAnchor || farLane.isAnchor) &&
         !bridged &&
         spans.length === 1 &&
         far.spans.length === 1
+      // the record stating the pair is the mate lane's, either side
+      const detailSink: RibbonSink = farLane.isAnchor
+        ? {
+            get count() {
+              return builder.count
+            },
+            add: (s1, s2, ...rest) => {
+              builder.add(s2, s1, ...rest)
+            },
+          }
+        : builder
       spans.forEach((s1, i) => {
         far.spans.forEach((s2, j) => {
-          const record = far.features[j]!
+          const record = farLane.isAnchor ? features[i]! : far.features[j]!
           const painted = statedTogether(intervals[i], far.intervals[j])
             ? paintOf(record, orientations[i]! * far.orientations[j]!)
             : undefined
@@ -584,11 +625,11 @@ export function buildRibbonGeometry({
               direct &&
               fill >>> 24 !== 0 &&
               addAlignmentDetail(
-                builder,
+                detailSink,
                 record,
                 anchorOps.get(record.id()),
-                upper,
-                farLane,
+                farLane.isAnchor ? farLane : upper,
+                farLane.isAnchor ? upper : farLane,
                 target,
                 fill,
                 mismatch,
@@ -606,7 +647,7 @@ export function buildRibbonGeometry({
       })
     }
     const pairLinks =
-      row > 0 && !rowsVsAnchor
+      !pair.upper.isAnchor && !pair.lower.isAnchor && !rowsVsAnchor
         ? laneLinks?.get(lanePairKey(upper.assemblyName, lower.assemblyName))
         : undefined
     for (const link of pairLinks?.links ?? []) {
@@ -682,7 +723,7 @@ export function buildRibbonGeometry({
       yTop: y1,
       height: y2 - y1,
       curves: drawCurves,
-      rows: [onAnchor ? 0 : row, row + 1],
+      rows: [belowAnchor ? anchorRow : row, lowerRow],
     })
     for (const [toRow, builder] of bridges) {
       const bridgeKey = ribbonsKey(row, toRow)
@@ -987,8 +1028,9 @@ function geneRow(lane: Lane, glyphHeight: number, pxDir: number) {
 export const ANCHOR_RULE_KEY = 'anchorRule'
 
 /**
- * The anchor's axis under each lane whose gutter below reads it, on the
- * anchor's map, so a lane's nudge or flip leaves it where the anchor is.
+ * The anchor's axis beside each lane whose gutter away from the anchor reads
+ * it, on the anchor's map, so a lane's nudge or flip leaves it where the anchor
+ * is.
  */
 export function buildAnchorRule({
   stack,
@@ -1000,16 +1042,26 @@ export function buildAnchorRule({
   stroke: string
 }) {
   const { lanes, bandHeight } = stack
-  const spans = lanes[0]?.baseline ?? []
+  const anchorRow = anchorRowIn(lanes)
+  const spans = lanes[anchorRow]?.baseline ?? []
   const color = cssColorToABGR(stroke)
   const glyphs = new GlyphBuilder()
-  for (const lane of lanes.slice(1, -1)) {
-    const y = anchorRuleY(lane, bandHeight)
+  const rules = [
+    ...lanes.slice(1, anchorRow).map(lane => ({
+      y: anchorRuleAboveY(lane),
+      tickTop: anchorRuleAboveY(lane),
+    })),
+    ...lanes.slice(anchorRow + 1, -1).map(lane => {
+      const y = anchorRuleY(lane, bandHeight)
+      return { y, tickTop: y - ANCHOR_RULE_TICK_PX }
+    }),
+  ]
+  for (const { y, tickTop } of rules) {
     for (const [x1, x2] of spans) {
       glyphs.line(x1, x2, y, 0, 0, color)
     }
     for (const x of ticks) {
-      glyphs.rect(x, x + 1, y - ANCHOR_RULE_TICK_PX, ANCHOR_RULE_TICK_PX, color)
+      glyphs.rect(x, x + 1, tickTop, ANCHOR_RULE_TICK_PX, color)
     }
   }
   const cells = new Map<string, MultiWayCell>([
@@ -1019,7 +1071,7 @@ export function buildAnchorRule({
     kind: 'glyphs',
     key: ANCHOR_RULE_KEY,
     scrolled: true,
-    row: 0,
+    row: anchorRow,
   }
   return { cells, layer }
 }

@@ -4,13 +4,18 @@ import { ContextMenu } from '@jbrowse/core/ui'
 import { usePalette } from '@jbrowse/core/ui/PaletteContext'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { usePointerDrag } from '@jbrowse/core/util/usePointerDrag'
-import { mergeDomain } from '@jbrowse/display-kit/groupByMenu'
 import { textHalo } from '@jbrowse/display-ui'
 import { bandGroundColor, bandInk, bandPalette } from '@jbrowse/synteny-core'
 import AcUnitIcon from '@mui/icons-material/AcUnit'
 import { observer } from 'mobx-react'
 
-import { dropRowAt, laneOrderAfterDrop, pastDragSlop } from '../laneDrag.ts'
+import {
+  dropRowAt,
+  dropTargetRow,
+  laneOrderAfterDrop,
+  pastDragSlop,
+  sortAfterDrop,
+} from '../laneDrag.ts'
 import {
   BADGE_PAD_PX,
   HEADER_GAP_PX,
@@ -160,9 +165,15 @@ const LaneHeaders = observer(function LaneHeaders({
   // pointer ys are viewport-relative and the lanes are in stack px
   const { scrollTop } = model
   const dropRow =
-    dragY === undefined ? undefined : dropRowAt(lanes, dragY + scrollTop)
-  // a drop on the anchor's band lands the lane first below it
-  const dropIndex = dropRow === undefined ? -1 : Math.max(1, dropRow)
+    dragY === undefined || dragLane === undefined
+      ? undefined
+      : dropTargetRow(
+          model.laneOrder,
+          dragLane,
+          dropRowAt(lanes, dragY + scrollTop),
+          model.anchorAssemblyName,
+        )
+  const dropIndex = dropRow ?? -1
   const dropLane = lanes[dropIndex]
   const dragIndex = lanes.findIndex(lane => lane.assemblyName === dragLane)
 
@@ -198,16 +209,24 @@ const LaneHeaders = observer(function LaneHeaders({
       const order =
         press?.armed && event.type === 'pointerup'
           ? laneOrderAfterDrop(
-              model.rowAssemblies,
+              model.laneOrder,
               press.assemblyName,
               dropRowAt(
                 model.laneStack.lanes,
                 event.clientY - press.top + model.scrollTop,
               ),
+              model.anchorAssemblyName,
             )
           : undefined
       if (order) {
-        model.setDomain(mergeDomain([...model.domain], order))
+        model.setDomain(
+          sortAfterDrop(
+            model.domain,
+            order,
+            model.anchorAssemblyName,
+            model.laneKey,
+          ),
+        )
       }
     },
   })
@@ -344,25 +363,21 @@ const LaneHeaders = observer(function LaneHeaders({
             style={{
               color: bandInk().text,
               pointerEvents: 'all',
-              cursor: row.isAnchor ? undefined : dragLane ? 'grabbing' : 'grab',
+              cursor: dragLane ? 'grabbing' : 'grab',
               userSelect: 'none',
-              touchAction: row.isAnchor ? undefined : 'none',
+              touchAction: 'none',
               overflow: 'hidden',
               textOverflow: 'ellipsis',
               ...(row.inline ? inlineChip : {}),
               ...(row.color ? colorChip(row.color) : {}),
             }}
-            {...(row.isAnchor
-              ? {}
-              : {
-                  ...pointer,
-                  'data-lane-drag': row.assemblyName,
-                  'data-gesture-owner': 'true',
-                  onMouseDown: (event: React.MouseEvent) => {
-                    event.stopPropagation()
-                    event.preventDefault()
-                  },
-                })}
+            {...pointer}
+            data-lane-drag={row.assemblyName}
+            data-gesture-owner="true"
+            onMouseDown={event => {
+              event.stopPropagation()
+              event.preventDefault()
+            }}
             onContextMenu={event => {
               openMenu(row.assemblyName, event)
             }}

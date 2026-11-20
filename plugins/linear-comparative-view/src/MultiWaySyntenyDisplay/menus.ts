@@ -18,6 +18,7 @@ import { colorByMenuItems, opacityMenuItem } from '@jbrowse/synteny-core'
 import SwapVertIcon from '@mui/icons-material/SwapVert'
 
 import { CLUSTER_FIELD } from './geneColor.ts'
+import { sortAfterDrop } from './laneDrag.ts'
 import {
   blockLocString,
   changeLabel,
@@ -25,8 +26,9 @@ import {
   laneRegion,
 } from './laneHeader.ts'
 import { flipPinOf, placePinOf } from './lanePins.ts'
-import { laneResetLabel } from './laneSelection.ts'
+import { laneOrderOf, laneResetLabel } from './laneSelection.ts'
 
+import type { LaneRowsField } from './copyLane.ts'
 import type { LanePin, LanePlacePin } from './lanePins.ts'
 import type { LaneSelectionModel } from './laneSelection.ts'
 import type { Lane } from './laneStack.ts'
@@ -47,6 +49,9 @@ export type HeaderLane = Pick<
 
 export interface LaneHeaderModel {
   rowAssemblies: string[]
+  laneOrder: string[]
+  anchorRow: number
+  anchorAssemblyName: string
   domain: readonly string[]
   setDomain: (domain: string[]) => void
   hideLane: (assemblyName: string) => void
@@ -76,6 +81,8 @@ export interface LaneHeaderModel {
 export interface MultiWayMenuModel extends LaneHeaderModel, LaneSelectionModel {
   laneStack: { lanes: readonly HeaderLane[] }
   laneStructureOrder: readonly string[]
+  laneField: LaneRowsField
+  setLaneField: (field: LaneRowsField) => void
   hiddenLanes: readonly string[]
   showHiddenLanes: () => void
   openLaneSelection: () => void
@@ -114,8 +121,28 @@ export function laneHeaderMenuItems(
   lane: HeaderLane,
 ): MenuItem[] {
   const name = lane.assemblyName
+  const writeOrder = (order: readonly string[]) => {
+    model.setDomain(
+      sortAfterDrop(
+        model.domain,
+        order,
+        model.anchorAssemblyName,
+        model.laneKey,
+      ),
+    )
+  }
   if (lane.isAnchor) {
     return [
+      ...sectionMenuItems(
+        {
+          sections: model.laneOrder.map(key => ({ key, label: key })),
+          domain: [],
+          setDomain: writeOrder,
+          hideGroup: () => {},
+        },
+        name,
+        'lane',
+      ).slice(0, 2),
       {
         label: `Open ${lane.label} in a new view`,
         onClick: () => {
@@ -132,8 +159,12 @@ export function laneHeaderMenuItems(
     ...sectionMenuItems(
       {
         sections: model.rowAssemblies.map(key => ({ key, label: key })),
-        domain: model.domain,
-        setDomain: model.setDomain,
+        domain: [],
+        setDomain: rows => {
+          writeOrder(
+            laneOrderOf(rows, model.anchorAssemblyName, model.anchorRow),
+          )
+        },
         hideGroup: model.hideLane,
       },
       name,
@@ -459,6 +490,17 @@ export function lanesMenuItem(model: MultiWayMenuModel) {
         ]
       : []),
     resetOrderItem(model, 'lane'),
+    toggleItem(
+      'One lane per copy',
+      model.laneField === 'refName',
+      flag => {
+        model.setLaneField(flag ? 'refName' : 'assembly')
+      },
+      {
+        helpText:
+          "A lane for each contig holding a copy of the window, such as a polyploid's homoeologs, each read against the anchor.",
+      },
+    ),
     // Freeze lanes stays by Colin's call (2026-11-03): a menu review may tidy
     // this row but not cut it.
     toggleItem('Freeze lanes', model.lanesFrozen, model.setLanesFrozen, {

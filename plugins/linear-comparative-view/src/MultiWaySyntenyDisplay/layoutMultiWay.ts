@@ -4,7 +4,7 @@ import { cutAlignment } from '../mateBpAt.ts'
 import { voteEvidence } from '../syntenyHysteresis.ts'
 import { getMate, getMates, isNamedRecord } from '../syntenyMate.ts'
 import { NO_OPS } from './alignmentOps.ts'
-import { copyLane } from './laneCopies.ts'
+import { laneGenome } from './copyLane.ts'
 import { forEachLaneGap } from './laneGaps.ts'
 
 import type { SyntenyGroupedMate } from '../syntenyMate.ts'
@@ -62,7 +62,7 @@ export interface MultiWayPlacement {
  * `orientation` is the pair's strand, never the mate object's own `strand`;
  * -1 twists the ribbon.
  */
-interface MatePlacement extends MultiWayPlacement {
+export interface MatePlacement extends MultiWayPlacement {
   orientation: number
   /** the pair's own row, which can differ from the group's `feature` */
   feature: Feature
@@ -495,7 +495,7 @@ function groupKeyOf(feature: Feature) {
   return syntenyId === undefined ? feature.id() : String(syntenyId)
 }
 
-export function groupFeatures(features: Feature[], copies = false) {
+export function groupFeatures(features: Feature[]) {
   const byKey = new Map<string, MultiWayGroup>()
   const seen = new Map<string, number[]>()
   for (const feature of features) {
@@ -528,13 +528,10 @@ export function groupFeatures(features: Feature[], copies = false) {
       } else {
         const rows = mate.row === undefined ? [] : [mate.row]
         seen.set(seenKey, rows)
-        const lane = copies
-          ? copyLane(mate.assemblyName, mate.refName)
-          : mate.assemblyName
-        let placements = group.mates.get(lane)
+        let placements = group.mates.get(mate.assemblyName)
         if (!placements) {
           placements = []
-          group.mates.set(lane, placements)
+          group.mates.set(mate.assemblyName, placements)
         }
         placements.push({
           refName: mate.refName,
@@ -705,7 +702,8 @@ export function groupSpansLanes(group: PlacedGroup) {
 }
 
 /**
- * Lanes densest first, `preferred` ones leading in its order; `placeless`
+ * Lanes densest first, `preferred` ones leading in its order, a genome named
+ * there leading with each of its copy lanes; `placeless`
  * lanes, which the window shows none of, sit at the foot whatever `preferred`
  * says, since a frameless lane between two others leaves both gutters empty
  */
@@ -738,8 +736,10 @@ export function rowAssembliesOf(
     .map(lane => lane.assemblyName)
   const byKey = new Map<string, string[]>()
   for (const assemblyName of present) {
-    const key = keyOf(assemblyName)
-    byKey.set(key, [...(byKey.get(key) ?? []), assemblyName])
+    const genome = laneGenome(assemblyName)
+    for (const key of new Set([keyOf(assemblyName), keyOf(genome)])) {
+      byKey.set(key, [...(byKey.get(key) ?? []), assemblyName])
+    }
   }
   const pinned = new Set<string>()
   for (const name of preferred) {

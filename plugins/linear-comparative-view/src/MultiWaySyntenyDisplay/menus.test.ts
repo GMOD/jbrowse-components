@@ -79,6 +79,9 @@ function headerModel({
   const calls: string[] = []
   const model = {
     rowAssemblies: ['peach', 'cacao'],
+    laneOrder: ['grape', 'peach', 'cacao'],
+    anchorRow: 0,
+    anchorAssemblyName: 'grape',
     domain: [] as string[],
     setDomain: (domain: string[]) => {
       calls.push(`order ${domain.join(',')}`)
@@ -161,6 +164,8 @@ function trackModel({
     domain,
     laneStack: { lanes: [grape, peach] },
     laneStructureOrder: [],
+    laneField: 'assembly' as const,
+    setLaneField: () => {},
     laneUniverse: Array.from({ length: universe }, (_, i) => ({
       name: `lane${i}`,
       placed: true,
@@ -376,16 +381,17 @@ test('Lanes lists each lane under its own header menu', () => {
   expect(labelsOf(lanes)).toEqual([
     'Choose lanes...',
     'Reset lane order',
+    'One lane per copy',
     'Freeze lanes',
     'Lane menus',
     'grape',
     'peach',
   ])
   expect(disabledOf(lanes)[1]).toBe(true)
-  expect(labelsOf(subMenuOf(lanes[4]))).toEqual(
+  expect(labelsOf(subMenuOf(lanes[5]))).toEqual(
     labelsOf(laneHeaderMenuItems(model, grape)),
   )
-  expect(labelsOf(subMenuOf(lanes[5]))).toEqual(
+  expect(labelsOf(subMenuOf(lanes[6]))).toEqual(
     labelsOf(laneHeaderMenuItems(model, peach)),
   )
 })
@@ -617,9 +623,47 @@ test('a lane with no gene track says so once, as a dead menu line', () => {
 test('the anchor lane header opens the view region elsewhere and picks its color', () => {
   const { model, calls } = headerModel()
   const items = laneHeaderMenuItems(model, grape)
-  expect(labelsOf(items)).toEqual(['Open grape in a new view', 'Color...'])
-  click(items[0])
+  expect(labelsOf(items)).toEqual([
+    'Move up',
+    'Move down',
+    'Open grape in a new view',
+    'Color...',
+  ])
+  expect(disabledOf(items.slice(0, 2))).toEqual([true, false])
+  click(items[2])
   expect(calls).toEqual(['open grape chr1:1-1,000'])
+})
+
+test('the anchor moves between the lanes, and the sort then names it', () => {
+  const { model, calls } = headerModel()
+  click(laneHeaderMenuItems(model, grape)[1])
+  expect(calls).toEqual(['order peach,grape,cacao'])
+})
+
+test('a lane moved under an anchor in the middle leaves the anchor at its row', () => {
+  const { model, calls } = headerModel()
+  const middle = {
+    ...model,
+    laneOrder: ['peach', 'grape', 'cacao'],
+    anchorRow: 1,
+    domain: ['peach', 'grape'],
+  }
+  click(laneHeaderMenuItems(middle, peach)[1])
+  expect(calls).toEqual(['order cacao,grape,peach'])
+})
+
+test('One lane per copy writes the lane field', () => {
+  const { model, calls } = trackModel()
+  const written: string[] = []
+  const item = lanesMenuItem({
+    ...model,
+    setLaneField: field => {
+      written.push(field)
+    },
+  }).subMenu.find(i => 'label' in i && i.label === 'One lane per copy')
+  click(item)
+  expect(written).toEqual(['refName'])
+  expect(calls).toEqual([])
 })
 
 describe('a lane glyph menu', () => {

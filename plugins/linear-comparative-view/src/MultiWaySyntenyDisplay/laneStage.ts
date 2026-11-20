@@ -130,25 +130,40 @@ export function anchorCentresOn(
   return out
 }
 
-/** `decideLaneFrames` with the anchor's placements read off the stage */
+/**
+ * `decideLaneFrames` with the anchor's placements read off the stage, the
+ * mate lanes in draw order with `anchorRow` of them above the anchor: each
+ * side decides outward from it
+ */
 export function decideLanesOn(
   stage: AnchorStage,
-  opts: Pick<
+  {
+    assemblyNames,
+    anchorRow = 0,
+    ...opts
+  }: Pick<
     DecideLaneFramesOpts,
-    'assemblyNames' | 'previous' | 'frozen' | 'pins' | 'openingsOf'
-  > & { groups: MultiWayGroup[] },
+    'assemblyNames' | 'previous' | 'frozen' | 'pins' | 'openingsOf' | 'vsAnchor'
+  > & { groups: MultiWayGroup[]; anchorRow?: number },
 ) {
   const { layout, originPx, width, anchorReversed } = stage
   const centres = anchorCentresOn(stage, opts.groups)
-  return decideLaneFrames({
-    ...opts,
-    anchorX: new Map([...centres].map(([key, { x }]) => [key, x - originPx])),
-    anchorCoordOf: group => centres.get(group.key)!.coord,
-    pxOfAnchor: coord => stagePx(stage, coord),
-    unitBp: width * layout.bpPerPx,
-    width,
-    anchorReversed,
-  })
+  const decide = (outward: string[]) =>
+    decideLaneFrames({
+      ...opts,
+      assemblyNames: outward,
+      anchorX: new Map([...centres].map(([key, { x }]) => [key, x - originPx])),
+      anchorCoordOf: group => centres.get(group.key)!.coord,
+      pxOfAnchor: coord => stagePx(stage, coord),
+      unitBp: width * layout.bpPerPx,
+      width,
+      anchorReversed,
+    })
+  const decided = new Map([
+    ...decide(assemblyNames.slice(0, anchorRow).reverse()),
+    ...decide(assemblyNames.slice(anchorRow)),
+  ])
+  return new Map(assemblyNames.map(name => [name, decided.get(name)]))
 }
 
 /** undefined once the pivot is off the displayed regions */

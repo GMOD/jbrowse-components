@@ -10,6 +10,7 @@ import {
   voteEvidence,
 } from '../syntenyHysteresis.ts'
 import { isNamedRecord } from '../syntenyMate.ts'
+import { ALSO_ON_SHARE } from './copyLane.ts'
 import { flipPinOf, placePinOf } from './lanePins.ts'
 import {
   frameOpenings,
@@ -101,8 +102,6 @@ const SHRINK_ROOM = 0.85
 const MIN_SHARED_FOR_ORIENTATION = 3
 // three reversed genes is a small inversion, not a lane reading backwards
 const MIN_SHARED_TO_SWITCH = 5
-// well under the switch margin, so a copy the lane never picks is still named
-const ALSO_ON_SHARE = 0.2
 // a polyploid's other copies are a couple; past three it is a scaffold dump
 const ALSO_ON_MAX = 3
 // relative, since a lane aligned on its median can overhang its frame
@@ -531,6 +530,7 @@ export function frameFromDecision(
 
 export interface DecideLaneFramesOpts {
   groups: MultiWayGroup[]
+  /** outward from the anchor, each voting against the one before it */
   assemblyNames: string[]
   // px of each group's centre on the anchor lane
   anchorX: Map<string, number>
@@ -545,6 +545,8 @@ export interface DecideLaneFramesOpts {
   frozen?: ReadonlyMap<string, LaneDecision>
   /** read off every fetched group, so a hole does not wait on the viewport */
   openingsOf: OpeningsOf
+  /** each lane votes and aligns against the anchor alone, not the lane before it */
+  vsAnchor?: boolean
 }
 
 function sameDecision(a: LaneDecision, b: LaneDecision) {
@@ -588,6 +590,7 @@ export function decideLaneFrames({
   pins = [],
   frozen,
   openingsOf,
+  vsAnchor = false,
 }: DecideLaneFramesOpts) {
   const out = new Map<string, LaneDecision | undefined>()
   if (unitBp <= 0 || width <= 0) {
@@ -602,7 +605,7 @@ export function decideLaneFrames({
     const keptPx = kept && pxOfAnchor(kept.pivotAnchor)
     if (kept && keptPx !== undefined) {
       out.set(assemblyName, kept)
-      if (i + 1 < assemblyNames.length) {
+      if (!vsAnchor && i + 1 < assemblyNames.length) {
         const frame = frameFromDecision(
           kept,
           keptPx,
@@ -732,7 +735,7 @@ export function decideLaneFrames({
       }
     }
     out.set(assemblyName, decision)
-    if (i + 1 < assemblyNames.length) {
+    if (!vsAnchor && i + 1 < assemblyNames.length) {
       const frame =
         decision && decisionPx !== undefined
           ? frameFromDecision(

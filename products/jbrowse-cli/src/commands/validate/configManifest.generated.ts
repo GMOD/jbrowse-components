@@ -5878,6 +5878,10 @@ export const configManifest: ConfigManifest = {
           "type": "LaneRowsConfigurationSchema",
           "subSlots": [
             {
+              "name": "field",
+              "type": "LaneRowsField"
+            },
+            {
               "name": "sort",
               "type": "string[]",
               "liftsString": true,
@@ -5896,14 +5900,22 @@ export const configManifest: ConfigManifest = {
               "type": "string[]",
               "liftsString": true,
               "liftsNumbers": true
-            },
-            {
-              "name": "copies",
-              "type": "boolean"
             }
           ],
           "schema": "LaneRows",
-          "writes": "members"
+          "writes": {
+            "keyedBy": "field",
+            "keyed": [
+              "sort",
+              "labels",
+              "colors",
+              "kept"
+            ],
+            "refines": {
+              "refName": "assembly"
+            },
+            "unwritten": "assembly"
+          }
         },
         {
           "name": "ribbons",
