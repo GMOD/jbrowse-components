@@ -104,6 +104,8 @@ From [TrackHeightMixin](../trackheightmixin): <span id="volatile-scrolltop">[`sc
 | <span id="getter-shownames">**showNames**</span><br><code>boolean</code> | `labels.name.show`, the persisted intent before the density gate and collapsed mode have a say, so the menu's checkbox reflects the choice. |
 | <span id="getter-showdescriptions">**showDescriptions**</span><br><code>boolean</code> | `labels.description.show`, the persisted intent, as `showNames` is. |
 | <span id="getter-hiddengroupfeatureids">**hiddenGroupFeatureIds**</span><br><code>ReadonlySet&lt;string&gt; &#124; undefined</code> | The features of the sections the user hid, which sit unplaced by choice and so count as nothing the track failed to show. |
+| <span id="getter-knownsections">**knownSections**</span><br><code>GroupId[]</code> | Every section the Sections dialog lists, in stacking order: those in the fetched regions, hidden or not, and those the facet names. Empty while ungrouped. |
+| <span id="getter-sectionsheading">**sectionsHeading**</span><br><code>string</code> | The Sections dialog's column header: the facet's field. |
 | <span id="getter-layoutready">**layoutReady**</span><br><code>boolean</code> | Whether features can be laid out: data is fetched, in-bounds, the view is measured. |
 | <span id="getter-onscreenfeatureids">**onScreenFeatureIds**</span><br><code>ReadonlySet&lt;string&gt; &#124; undefined</code> | The features whose bp span touches the viewport, less any in a hidden section, as one Set for as long as the membership holds. |
 | <span id="getter-onscreenwidthpx">**onScreenWidthPx**</span><br><code>number</code> |  |
@@ -343,9 +345,9 @@ From [BaseDisplay](../basedisplay): <span id="method-renderingprops">[`rendering
 | <span id="action-opengroupbydialog">**openGroupByDialog**</span><br><code>() =&gt; void</code> |  |
 
 <details class="inherited-members" data-pagefind-ignore>
-<summary>57 inherited actions from 14 models</summary>
+<summary>58 inherited actions from 14 models</summary>
 
-From [HiddenGroupsMixin](../hiddengroupsmixin): <span id="action-hidegroup">[`hideGroup`](../hiddengroupsmixin#action-hidegroup)</span>, <span id="action-showallgroups">[`showAllGroups`](../hiddengroupsmixin#action-showallgroups)</span>
+From [HiddenGroupsMixin](../hiddengroupsmixin): <span id="action-sethiddengroups">[`setHiddenGroups`](../hiddengroupsmixin#action-sethiddengroups)</span>, <span id="action-hidegroup">[`hideGroup`](../hiddengroupsmixin#action-hidegroup)</span>, <span id="action-showallgroups">[`showAllGroups`](../hiddengroupsmixin#action-showallgroups)</span>
 
 From [ContextMenuMixin](../contextmenumixin): <span id="action-closecontextmenu">[`closeContextMenu`](../contextmenumixin#action-closecontextmenu)</span>
 

@@ -131,6 +131,8 @@ From [TrackHeightMixin](../trackheightmixin): <span id="volatile-scrolltop">[`sc
 | <span id="getter-discoveredrows">**discoveredRows**</span><br><code>Row[]</code> | `TreeSidebarMixin`'s hook: every row the adapter lists over the rows' field, in its order and with its label, color and attributes, so a source with nothing in the loaded regions keeps its row; then the other values the worker split the loaded regions on that have an instance on screen, in the order the field's sections stack. The fetch reaches past the screen on each side, and a row it met only there would stand empty. |
 | <span id="getter-rowkeyspace">**rowKeySpace**</span><br><code>RowKeySpace</code> | The key each row holds across every loaded region, assigned at its first arrival and never moved, and the name it is keyed by: under `rows` its section's value, under a facet that value and the row's depth in it. A new split field, or a switch between `rows` and a facet, is a new key space. |
 | <span id="getter-facetlayout">**facetLayout**</span><br><code>FacetLayout</code> | The sections drawn over every loaded region, in the domain's order and less the hidden ones, and where each key's rows start; under `rows`, one row per value in the rows' order, which no chip names. |
+| <span id="getter-knownsections">**knownSections**</span><br><code>{ key: string; label: string; }[]</code> | Every section the Sections dialog lists, hidden or not; none while ungrouped. |
+| <span id="getter-sectionsheading">**sectionsHeading**</span><br><code>string</code> | The Sections dialog's column header: the facet's field. |
 | <span id="getter-rpcdatamap">**rpcDataMap**</span><br><code>ReadonlyMap&lt;number, MarkRegionData&gt;</code> | The layers the display draws. Under a facet or `rows` every row is a key the row table places, so a chip and the band beside it agree whichever region a span came from, and a reorder, a focus, a hidden section or a deeper section moves no instance. A region is keyed again only when it or the key space moves, which is what the upload re-packs. |
 | <span id="getter-rowkeys">**rowKeys**</span><br><code>RowKeys</code> | `rowKeySpace`'s keys. |
 | <span id="getter-rowtable">**rowTable**</span><br><code>RowTable &#124; undefined</code> | The table every mark places a key through: under `rows` its slot in the rows' order, hidden where the focus leaves it out; under a facet its section's first row plus its depth, hidden with its section. Rebuilt on a reorder, a focus, a hidden or deeper section or a new row, which uploads one small texture and no instance bytes. Undefined while nothing splits the features. |
@@ -275,11 +277,11 @@ From [BaseDisplay](../basedisplay): <span id="method-renderingprops">[`rendering
 | <span id="action-rendersvg">**renderSvg**</span><br><code>(opts?: ExportSvgDisplayOptions) =&gt; Promise&lt;ReactNode&gt;</code> |  |
 
 <details class="inherited-members" data-pagefind-ignore>
-<summary>82 inherited actions from 14 models</summary>
+<summary>83 inherited actions from 14 models</summary>
 
 From [FacetWritesMixin](../facetwritesmixin): <span id="action-facetbyfield">[`facetByField`](../facetwritesmixin#action-facetbyfield)</span>, <span id="action-setfacetsort">[`setFacetSort`](../facetwritesmixin#action-setfacetsort)</span>
 
-From [HiddenGroupsMixin](../hiddengroupsmixin): <span id="action-hidegroup">[`hideGroup`](../hiddengroupsmixin#action-hidegroup)</span>, <span id="action-showallgroups">[`showAllGroups`](../hiddengroupsmixin#action-showallgroups)</span>, <span id="action-dropgroupstate">[`dropGroupState`](../hiddengroupsmixin#action-dropgroupstate)</span>
+From [HiddenGroupsMixin](../hiddengroupsmixin): <span id="action-sethiddengroups">[`setHiddenGroups`](../hiddengroupsmixin#action-sethiddengroups)</span>, <span id="action-hidegroup">[`hideGroup`](../hiddengroupsmixin#action-hidegroup)</span>, <span id="action-showallgroups">[`showAllGroups`](../hiddengroupsmixin#action-showallgroups)</span>, <span id="action-dropgroupstate">[`dropGroupState`](../hiddengroupsmixin#action-dropgroupstate)</span>
 
 From [StoredHoverMixin](../storedhovermixin): <span id="action-sethoveredfeature">[`setHoveredFeature`](../storedhovermixin#action-sethoveredfeature)</span>, <span id="action-clearhoveredfeature">[`clearHoveredFeature`](../storedhovermixin#action-clearhoveredfeature)</span>
 

@@ -224,6 +224,8 @@ From [TrackHeightMixin](../trackheightmixin): <span id="volatile-scrolltop">[`sc
 | <span id="getter-rowheight">**rowHeight**</span><br><code>number</code> | The per-row pitch: read body plus derived gap. Every "row N sits at N*pitch" computation reads it. |
 | <span id="getter-sortcolumn">**sortColumn**</span><br><code>SortColumn &#124; undefined</code> | The column sort `sort` names, or undefined under a whole-window order. Normalizes the refName, since a spec can write an alias (`chr1` for `1`) that `sortLayout`'s gate would never match. A column type missing `refName` or `pos` reads as no sort. |
 | <span id="getter-grouporder">**groupOrder**</span><br><code>GroupId[]</code> | The drawn sections in stacking order, hidden ones left out. |
+| <span id="getter-knownsections">**knownSections**</span><br><code>GroupId[]</code> | Every section the Sections dialog lists, hidden or not (`knownSections`). Empty while ungrouped. |
+| <span id="getter-sectionsheading">**sectionsHeading**</span><br><code>string</code> | The Sections dialog's column header: the facet's field. |
 | <span id="getter-rawdatabygroup">**rawDataByGroup**</span><br><code>Map&lt;string, Map&lt;number, WorkerPileupData&gt;&gt;</code> | Raw (un-laid-out) data regrouped as group key → (region idx → data), insertion-ordered so the first key is the primary group; ungrouped is the single key `''`. Hidden lanes are already gone, like `groupOrder`, so a walk of every entry is a walk of every DRAWN lane. See `buildRawDataByGroup`. |
 | <span id="getter-chainattachment">**chainAttachment**</span><br><code>ChainedByGroup &#124; undefined</code> | `rawDataByGroup` with chain identity joined across every region and lane (`attachChainFields`), in chain mode only. The worker has no chain information, so toggling the mode is this getter changing, not a fetch. |
 | <span id="getter-chainedbygroup">**chainedByGroup**</span><br><code>ReadonlyMap&lt;string, ReadonlyMap&lt;number, ChainedPileupData&gt;&gt;</code> | The layout's input: `chainAttachment` in chain mode, else the fetched data. `rawDataByGroup` stays chain-free, so the arcs, junctions, coverage and a split view overlaying this display do not recompute on the toggle. |
@@ -484,9 +486,9 @@ From [BaseDisplay](../basedisplay): <span id="method-renderingprops">[`rendering
 | <span id="action-clearhoveredfeature">**clearHoveredFeature**</span><br><code>() =&gt; void</code> | Fills `BaseDisplay`'s hover-clear hook, which the fetch foundation's reaction calls on every viewport change. A pan, zoom or internal scroll under a stationary cursor fires no mousemove or mouseleave, so the highlight and tooltip would keep naming the read that was there. |
 
 <details class="inherited-members" data-pagefind-ignore>
-<summary>63 inherited actions from 13 models</summary>
+<summary>64 inherited actions from 13 models</summary>
 
-From [HiddenGroupsMixin](../hiddengroupsmixin): <span id="action-hidegroup">[`hideGroup`](../hiddengroupsmixin#action-hidegroup)</span>, <span id="action-showallgroups">[`showAllGroups`](../hiddengroupsmixin#action-showallgroups)</span>
+From [HiddenGroupsMixin](../hiddengroupsmixin): <span id="action-sethiddengroups">[`setHiddenGroups`](../hiddengroupsmixin#action-sethiddengroups)</span>, <span id="action-hidegroup">[`hideGroup`](../hiddengroupsmixin#action-hidegroup)</span>, <span id="action-showallgroups">[`showAllGroups`](../hiddengroupsmixin#action-showallgroups)</span>
 
 From [FacetWritesMixin](../facetwritesmixin): <span id="action-facetbyfield">[`facetByField`](../facetwritesmixin#action-facetbyfield)</span>, <span id="action-setfacetsort">[`setFacetSort`](../facetwritesmixin#action-setfacetsort)</span>
 

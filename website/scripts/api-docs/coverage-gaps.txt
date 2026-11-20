@@ -48,7 +48,7 @@ Dotplot1DView
 LinearSyntenyViewHelper
 TimeTraveller
 
-# model members with no description (1226)
+# model members with no description (1225)
 # fix: write a sentence under the member’s #property/#volatile/#getter/#method/#action tag
 AddTrackModel.adapterHint
 AddTrackModel.altAssemblyName
@@ -863,7 +863,6 @@ LinearSyntenyView.assemblyNames
 LinearSyntenyView.autoScaleLevelHeights
 LinearSyntenyView.compactAllViews
 LinearSyntenyView.expandAllViews
-LinearSyntenyView.exportSvg
 LinearSyntenyView.hasSomethingToShow
 LinearSyntenyView.hiddenFeatureCount
 LinearSyntenyView.hideTrack

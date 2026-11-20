@@ -230,7 +230,7 @@ From [SyntenyFilterMixin](../syntenyfiltermixin): <span id="method-lowerbound">[
 | <span id="action-setoverdrawpx">**setOverdrawPx**</span><br><code>(arg: number) =&gt; void</code> |  |
 | <span id="action-showallregions">**showAllRegions**</span><br><code>() =&gt; void</code> | Every row back to its whole assembly, fit to the row's width, which also clears `coord.ratio`. |
 | <span id="action-setlaunch">**setLaunch**</span><br><code>(launch?: LaunchInput&lt;LinearSyntenyViewCommands&gt;) =&gt; void</code> |  |
-| <span id="action-exportsvg">**exportSvg**</span><br><code>(opts?: ExportSvgOptions) =&gt; Promise&lt;string&gt;</code> |  |
+| <span id="action-exportsvg">**exportSvg**</span><br><code>(opts?: ExportSvgOptions) =&gt; Promise&lt;string&gt;</code> | renders the view to SVG markup, which it returns; saves it through FileSaver unless `save: false`. A `pageWidth` lays every row out to fill a figure that wide, and puts the on-screen width back after. One export runs at a time. |
 | <span id="action-openincircularsyntenyview">**openInCircularSyntenyView**</span><br><code>() =&gt; void</code> | a circular view of this view's two genomes with its synteny tracks as ribbons, the second genome reordered to follow the first, and this view's color and length filter |
 
 <details class="inherited-members" data-pagefind-ignore>
