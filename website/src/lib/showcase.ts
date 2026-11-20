@@ -74,7 +74,7 @@ export const demoCaptions: Record<string, string> = {
   synteny_visualization:
     'Three Helicobacter pylori strains, 26695, CHC155 and J99, with genes and alignments.',
   mcscan_synteny_grape_peach:
-    'Peach chromosome G5 against grape chromosome 2 from an MCScan run.',
+    'Peach chromosome G7 against grape chromosome 11 from an MCScan run, in order apart from two short inversions.',
   multiway_synteny_grape_peach_cacao:
     'Peach, cacao and grape from one MCScan table of genes in conserved order.',
   selection_pressure:
