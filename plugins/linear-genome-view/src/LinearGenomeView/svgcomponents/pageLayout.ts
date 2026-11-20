@@ -76,7 +76,7 @@ export function exportMargins(
  * on its header, tracks and bottom margin. The legend lists what is loaded and
  * some tracks grow with their data, so a relayout can move both.
  */
-export function exportChrome(
+function exportChrome(
   view: PageLayoutView & IAnyStateTreeNode,
   opts: ExportSvgOptions,
 ) {

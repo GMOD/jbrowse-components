@@ -6,7 +6,7 @@ description: The export's `fontSize` option reaches the assembly name, scalebar 
 # Extra large text SVG mode for pub-ready figures
 
 The linear genome view's page-width export covers the publication case: a
-Width such as `183mm` with a text size in pt scales the whole document, so
+page width such as 183 mm with a text size in pt scales the whole document, so
 every label keeps its ratio to the track labels (`pageLayout.ts`,
 `figureSize.ts`). What is still open is the px `fontSize` option below, which
 jb2export and `exportSvg` callers can set and which reaches only part of the

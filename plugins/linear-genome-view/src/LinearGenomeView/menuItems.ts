@@ -150,16 +150,13 @@ export function buildMenuItems(self: LinearGenomeViewModel): MenuItem[] {
       label: 'Export image...',
       icon: PhotoCameraIcon,
       onClick: async () => {
-        const { exportChrome, pageLayout } =
-          await import('./svgcomponents/pageLayout.ts')
+        const { pageLayout } = await import('./svgcomponents/pageLayout.ts')
         session.queueDialog(handleClose => [
           ExportSvgDialog,
           {
             model: self,
             handleClose,
             figureLayout: {
-              chromePx: (opts: ExportSvgOptions) =>
-                exportChrome(self, opts).widthPx,
               pageLayout: (opts: ExportSvgOptions) => pageLayout(self, opts),
             },
             exportR: async (filename: string) => {

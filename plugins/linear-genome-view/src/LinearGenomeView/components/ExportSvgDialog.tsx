@@ -1,24 +1,17 @@
-import { useState } from 'react'
-
 import {
-  CSS_PX_PER_INCH,
   DEFAULT_FIGURE_TEXT_PT,
   parsePhysicalWidth,
   physicalWidthInches,
-  pxToPt,
 } from '@jbrowse/core/svg/figureSize'
 import {
   BaseExportSvgDialog,
   LabeledCheckbox,
   useExportSvgPreference,
 } from '@jbrowse/core/ui'
-import { AXIS_FONT_PX } from '@jbrowse/display-ui/yAxisConstants'
-import { MenuItem, TextField } from '@mui/material'
+import { InputAdornment, MenuItem, Select, TextField } from '@mui/material'
 import { observer } from 'mobx-react'
 
 import { MIN_PAGE_PLOT_PX } from '../svgcomponents/pageLayout.ts'
-import { lgvSvgLayoutOptions } from '../svgcomponents/util.ts'
-import { TICK_LABEL_FONT_SIZE } from '../util.ts'
 
 import type { pageLayout } from '../svgcomponents/pageLayout.ts'
 import type {
@@ -26,15 +19,11 @@ import type {
   TrackLabelMode,
   ViewTrackLabelMode,
 } from '../types.ts'
+import type { FigureUnit } from '@jbrowse/core/svg/figureSize'
 import type { BaseExportSvgOptions } from '@jbrowse/core/ui'
 
-const MIN_WIDTH = 100
-const MAX_WIDTH = 10000
 const MIN_TEXT_PT = 4
 const MAX_TEXT_PT = 72
-const COLUMN_MM = 183
-const COLUMN_PX =
-  physicalWidthInches({ value: COLUMN_MM, unit: 'mm' }) * CSS_PX_PER_INCH
 
 const TRACK_LABEL_MODES = [
   { mode: 'offset', label: 'Offset' },
@@ -43,35 +32,35 @@ const TRACK_LABEL_MODES = [
   { mode: 'hidden', label: 'Hidden' },
 ] as const satisfies readonly { mode: TrackLabelMode; label: string }[]
 
+const SIZE_MODES = [
+  { mode: 'screen', label: 'Same as screen' },
+  { mode: 'page', label: 'Page width' },
+] as const
+
+type SizeMode = (typeof SIZE_MODES)[number]['mode']
+
+const PAGE_UNITS = ['mm', 'in'] as const satisfies readonly FigureUnit[]
+
+type PageUnit = (typeof PAGE_UNITS)[number]
+
 /**
- * What the view answers about an export's layout before it runs, for the
- * dialog's size line. A view that passes one gets the width field.
+ * What the view answers about an export's layout before it runs. A view that
+ * passes one gets the Size field.
  */
 export interface ExportFigureLayout {
-  chromePx: (opts: ExportSvgOptions) => number
   pageLayout: (opts: ExportSvgOptions) => ReturnType<typeof pageLayout>
 }
 
-function pt(px: number) {
-  return +pxToPt(px).toFixed(1)
-}
-
-function pxWidthHelp(documentPx: number) {
-  const labelPx = lgvSvgLayoutOptions({}).fontSize
-  return `Lays the tracks out as a window this wide would; text keeps its size. In a ${COLUMN_MM} mm column its labels print at ${pt((labelPx * COLUMN_PX) / documentPx)} pt; type ${COLUMN_MM}mm to size the figure for a page.`
-}
-
-function pageWidthHelp({
-  page,
-  screenWidth,
-}: {
-  page: NonNullable<ReturnType<typeof pageLayout>>
-  screenWidth: number
-}) {
-  const { textPt, scale } = page
-  return page.plotPx < MIN_PAGE_PLOT_PX
-    ? `Too narrow at ${textPt} pt: the tracks would be ${Math.max(page.plotPx, 0)} px wide. Widen the figure or lower the text size.`
-    : `${page.pageWidth.value} x ${page.pageHeight} ${page.pageWidth.unit}. Labels ${textPt} pt, ruler ${pt(TICK_LABEL_FONT_SIZE * scale)} pt, axes ${pt(AXIS_FONT_PX * scale)} pt. Tracks drawn ${page.plotPx} px wide, ${+(screenWidth / page.plotPx).toFixed(1)}x the screen's bp per px.`
+function convertWidth(text: string, from: PageUnit, to: PageUnit) {
+  const value = Number(text)
+  return value > 0
+    ? String(
+        +(
+          physicalWidthInches({ value, unit: from }) /
+          physicalWidthInches({ value: 1, unit: to })
+        ).toFixed(to === 'mm' ? 0 : 1),
+      )
+    : text
 }
 
 const ExportSvgDialog = observer(function ExportSvgDialog({
@@ -81,13 +70,11 @@ const ExportSvgDialog = observer(function ExportSvgDialog({
   exportR,
 }: {
   model: {
-    width?: number
     effectiveTrackLabels?: ViewTrackLabelMode
     exportSvg(
       opts: BaseExportSvgOptions & {
         trackLabels: TrackLabelMode
         showGridlines: boolean
-        viewWidth?: number
         pageWidth?: string
         textSize?: number
       },
@@ -109,31 +96,41 @@ const ExportSvgDialog = observer(function ExportSvgDialog({
     'gridlines',
     false,
   )
-  // not a stored preference: a remembered width would drift from the screen's
-  const [widthText, setWidthText] = useState(() =>
-    String(Math.round(model.width ?? 0)),
+  const [sizeMode, setSizeMode] = useExportSvgPreference<SizeMode>(
+    'size',
+    'screen',
   )
-  const [textSizeText, setTextSizeText] = useState(
+  const [pageWidthText, setPageWidthText] = useExportSvgPreference(
+    'page-width',
+    '183',
+  )
+  const [pageUnit, setPageUnit] = useExportSvgPreference<PageUnit>(
+    'page-unit',
+    'mm',
+  )
+  const [textSizeText, setTextSizeText] = useExportSvgPreference(
+    'text-size',
     String(DEFAULT_FIGURE_TEXT_PT),
   )
-  const screenWidth = model.width ?? 0
-  const typedWidth = Number(widthText)
-  const pageWidth = figureLayout ? parsePhysicalWidth(widthText) : undefined
-  const pageWidthText = pageWidth ? widthText.trim() : undefined
+  const forPage = !!figureLayout && sizeMode === 'page'
+  const pageWidth = forPage
+    ? parsePhysicalWidth(`${pageWidthText}${pageUnit}`)
+    : undefined
+  const pageWidthOpt = pageWidth
+    ? `${pageWidth.value}${pageWidth.unit}`
+    : undefined
   const textSize = Number(textSizeText)
   const textSizeValid = textSize >= MIN_TEXT_PT && textSize <= MAX_TEXT_PT
-  const layoutOpts = { trackLabels, pageWidth: pageWidthText, textSize }
   const page =
-    figureLayout && pageWidth && textSizeValid
-      ? figureLayout.pageLayout(layoutOpts)
+    figureLayout && pageWidthOpt && textSizeValid
+      ? figureLayout.pageLayout({
+          trackLabels,
+          pageWidth: pageWidthOpt,
+          textSize,
+        })
       : undefined
-  const pxWidthValid =
-    Number.isInteger(typedWidth) &&
-    typedWidth >= MIN_WIDTH &&
-    typedWidth <= MAX_WIDTH
-  const widthValid = pageWidth
-    ? !page || page.plotPx >= MIN_PAGE_PLOT_PX
-    : pxWidthValid
+  const tooNarrow = !!page && page.plotPx < MIN_PAGE_PLOT_PX
+  const widthValid = !!pageWidth && !tooNarrow
   return (
     <BaseExportSvgDialog
       model={model}
@@ -143,16 +140,12 @@ const ExportSvgDialog = observer(function ExportSvgDialog({
           ...opts,
           trackLabels,
           showGridlines,
-          viewWidth:
-            figureLayout && !pageWidth && pxWidthValid ? typedWidth : undefined,
-          pageWidth: pageWidthText,
-          textSize: pageWidth ? textSize : undefined,
+          pageWidth: pageWidthOpt,
+          textSize: pageWidthOpt ? textSize : undefined,
         })
       }
       exportR={exportR}
-      submitDisabled={
-        !!figureLayout && !(widthValid && (!pageWidth || textSizeValid))
-      }
+      submitDisabled={forPage && !(widthValid && textSizeValid)}
       checkboxes={
         <LabeledCheckbox
           checked={showGridlines}
@@ -185,45 +178,106 @@ const ExportSvgDialog = observer(function ExportSvgDialog({
         ))}
       </TextField>
       {figureLayout ? (
-        <TextField
-          label="Width"
-          variant="outlined"
-          value={widthText}
-          error={!widthValid}
-          helperText={
-            pageWidth
-              ? page
-                ? pageWidthHelp({ page, screenWidth })
-                : ''
-              : pxWidthValid
-                ? pxWidthHelp(typedWidth + figureLayout.chromePx(layoutOpts))
-                : `A whole number of px from ${MIN_WIDTH} to ${MAX_WIDTH}, or a page width such as ${COLUMN_MM}mm or 7in`
-          }
-          onChange={event => {
-            setWidthText(event.target.value)
+        <div
+          style={{
+            display: 'flex',
+            flexWrap: 'wrap',
+            alignItems: 'flex-start',
+            gap: 12,
           }}
-        />
-      ) : null}
-      {pageWidth ? (
-        <TextField
-          label="Text size (pt)"
-          variant="outlined"
-          type="number"
-          style={{ minWidth: 200 }}
-          value={textSizeText}
-          error={!textSizeValid}
-          helperText={
-            textSizeValid
-              ? 'The size the track labels print at'
-              : `From ${MIN_TEXT_PT} to ${MAX_TEXT_PT}`
-          }
-          slotProps={{
-            htmlInput: { min: MIN_TEXT_PT, max: MAX_TEXT_PT, step: 0.5 },
-          }}
-          onChange={event => {
-            setTextSizeText(event.target.value)
-          }}
-        />
+        >
+          <TextField
+            select
+            label="Size"
+            variant="outlined"
+            style={{ minWidth: 200 }}
+            value={sizeMode}
+            onChange={event => {
+              const picked = SIZE_MODES.find(m => m.mode === event.target.value)
+              if (picked) {
+                setSizeMode(picked.mode)
+              }
+            }}
+          >
+            {SIZE_MODES.map(({ mode, label }) => (
+              <MenuItem key={mode} value={mode}>
+                {label}
+              </MenuItem>
+            ))}
+          </TextField>
+          {forPage ? (
+            <>
+              <TextField
+                label="Width"
+                variant="outlined"
+                style={{ width: 170 }}
+                value={pageWidthText}
+                error={!widthValid}
+                helperText={
+                  tooNarrow ? `Too narrow for ${textSize} pt` : undefined
+                }
+                onChange={event => {
+                  setPageWidthText(event.target.value)
+                }}
+                slotProps={{
+                  htmlInput: { inputMode: 'decimal' },
+                  input: {
+                    endAdornment: (
+                      <InputAdornment position="end">
+                        <Select
+                          variant="standard"
+                          disableUnderline
+                          value={pageUnit}
+                          inputProps={{ 'aria-label': 'Width unit' }}
+                          onChange={event => {
+                            const unit = PAGE_UNITS.find(
+                              u => u === event.target.value,
+                            )
+                            if (unit) {
+                              setPageWidthText(
+                                convertWidth(pageWidthText, pageUnit, unit),
+                              )
+                              setPageUnit(unit)
+                            }
+                          }}
+                        >
+                          {PAGE_UNITS.map(unit => (
+                            <MenuItem key={unit} value={unit}>
+                              {unit}
+                            </MenuItem>
+                          ))}
+                        </Select>
+                      </InputAdornment>
+                    ),
+                  },
+                }}
+              />
+              <TextField
+                label="Text size"
+                variant="outlined"
+                style={{ width: 130 }}
+                value={textSizeText}
+                error={!textSizeValid}
+                helperText={
+                  textSizeValid
+                    ? undefined
+                    : `${MIN_TEXT_PT} to ${MAX_TEXT_PT} pt`
+                }
+                onChange={event => {
+                  setTextSizeText(event.target.value)
+                }}
+                slotProps={{
+                  htmlInput: { inputMode: 'decimal' },
+                  input: {
+                    endAdornment: (
+                      <InputAdornment position="end">pt</InputAdornment>
+                    ),
+                  },
+                }}
+              />
+            </>
+          ) : null}
+        </div>
       ) : null}
     </BaseExportSvgDialog>
   )

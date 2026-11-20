@@ -46,9 +46,9 @@ local file never travels in a share link. See
 ### How do I make an image for a publication
 
 Every genome view has an "Export image..." option that writes what is on screen,
-ready for Illustrator or Inkscape. In the linear genome view, a Width such as
-`183mm` lays the tracks out for that page width, with labels at a point size you
-choose. To regenerate figures as the data changes,
+ready for Illustrator or Inkscape. In the linear genome view, setting Size to
+"Page width" lays the tracks out for a width such as 183 mm, with labels at a
+point size you choose. To regenerate figures as the data changes,
 [@jbrowse/img](/docs/jbrowse-img) renders from the command line, and
 [](/docs/agents_capture) drives the running app for a screenshot of a menu or an
 interaction.

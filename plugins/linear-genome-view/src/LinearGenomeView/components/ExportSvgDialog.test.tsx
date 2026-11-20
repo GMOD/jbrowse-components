@@ -2,13 +2,13 @@ import '@testing-library/jest-dom'
 
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
 import { types } from '@jbrowse/mobx-state-tree'
-import { fireEvent, render, waitFor } from '@testing-library/react'
+import { fireEvent, render, waitFor, within } from '@testing-library/react'
 
 import ExportSvgDialog from './ExportSvgDialog.tsx'
 
 import type { ViewTrackLabelMode } from '../types.ts'
 
-function stubView(effectiveTrackLabels: ViewTrackLabelMode, width = 1234) {
+function stubView(effectiveTrackLabels: ViewTrackLabelMode) {
   const exportSvg = jest.fn().mockResolvedValue(undefined)
   return types
     .model('Session', {
@@ -17,7 +17,7 @@ function stubView(effectiveTrackLabels: ViewTrackLabelMode, width = 1234) {
       view: types.optional(
         types
           .model('View', {})
-          .volatile(() => ({ effectiveTrackLabels, exportSvg, width })),
+          .volatile(() => ({ effectiveTrackLabels, exportSvg })),
         {},
       ),
     })
@@ -63,7 +63,6 @@ test('a placement picked in the dialog before still wins', async () => {
 
 function figureLayout(plotPx: number) {
   return {
-    chromePx: () => 100,
     pageLayout: (opts: { textSize?: number }) => {
       const textPt = opts.textSize ?? 7
       return {
@@ -79,8 +78,8 @@ function figureLayout(plotPx: number) {
   }
 }
 
-function renderWithLayout(plotPx: number, width = 1600) {
-  const model = stubView('offset', width)
+function renderWithLayout(plotPx = 800) {
+  const model = stubView('offset')
   const rendered = render(
     <ExportSvgDialog
       model={model}
@@ -91,90 +90,95 @@ function renderWithLayout(plotPx: number, width = 1600) {
   return { model, ...rendered }
 }
 
-async function exportedViewWidth(typed?: string) {
-  const { model, getByRole, getByLabelText, unmount } = renderWithLayout(
-    800,
-    1234,
-  )
-  if (typed !== undefined) {
-    fireEvent.change(getByLabelText('Width'), { target: { value: typed } })
-  }
+async function submitted(
+  model: ReturnType<typeof stubView>,
+  getByRole: ReturnType<typeof render>['getByRole'],
+) {
   fireEvent.click(getByRole('button', { name: 'Submit' }))
   await waitFor(() => {
     expect(model.exportSvg).toHaveBeenCalled()
   })
-  unmount()
-  return model.exportSvg.mock.calls[0][0].viewWidth
+  return model.exportSvg.mock.calls[0][0]
 }
 
-test('the width field starts at the view width and sends what is typed', async () => {
-  expect(await exportedViewWidth()).toBe(1234)
-  expect(await exportedViewWidth('800')).toBe(800)
-})
+function pick(
+  getByRole: ReturnType<typeof render>['getByRole'],
+  combobox: string,
+  option: string,
+) {
+  fireEvent.mouseDown(getByRole('combobox', { name: combobox }))
+  fireEvent.click(
+    within(getByRole('listbox')).getByRole('option', { name: option }),
+  )
+}
 
-test('a width out of range does not export', () => {
-  const { model, getByRole, getByLabelText } = renderWithLayout(800)
-  fireEvent.change(getByLabelText('Width'), { target: { value: '50' } })
-  fireEvent.click(getByRole('button', { name: 'Submit' }))
-  expect(getByLabelText('Width')).toBeInvalid()
-  expect(model.exportSvg).not.toHaveBeenCalled()
-})
-
-test('a view with no figure layout shows no width field and sends none', async () => {
-  const model = stubView('offset')
-  const { getByRole, queryByLabelText } = render(
-    <ExportSvgDialog model={model} handleClose={() => {}} />,
+test('the size starts as the screen, with no width field, and sends no page width', async () => {
+  const { model, getByRole, queryByLabelText } = renderWithLayout()
+  expect(getByRole('combobox', { name: 'Size' })).toHaveTextContent(
+    'Same as screen',
   )
   expect(queryByLabelText('Width')).toBeNull()
-  fireEvent.click(getByRole('button', { name: 'Submit' }))
-  await waitFor(() => {
-    expect(model.exportSvg).toHaveBeenCalled()
-  })
-  expect(model.exportSvg.mock.calls[0][0]).toMatchObject({
-    viewWidth: undefined,
+  expect(await submitted(model, getByRole)).toMatchObject({
     pageWidth: undefined,
+    textSize: undefined,
   })
 })
 
-test('a px width says what its labels print at in a journal column', () => {
-  const { getByText } = renderWithLayout(800)
-  expect(
-    getByText(/In a 183 mm column its labels print at 4 pt; type 183mm/),
-  ).toBeInTheDocument()
-})
-
-test('a width with a unit exports a page width at the text size', async () => {
-  const { model, getByLabelText, getByRole, getByText, queryByLabelText } =
-    renderWithLayout(800)
-  expect(queryByLabelText('Text size (pt)')).toBeNull()
-  fireEvent.change(getByLabelText('Width'), { target: { value: '183mm' } })
-  expect(
-    getByText(
-      "183 x 145 mm. Labels 7 pt, ruler 5.9 pt, axes 5.4 pt. Tracks drawn 800 px wide, 2x the screen's bp per px.",
-    ),
-  ).toBeInTheDocument()
-  fireEvent.change(getByLabelText('Text size (pt)'), {
-    target: { value: '8' },
-  })
-  fireEvent.click(getByRole('button', { name: 'Submit' }))
-  await waitFor(() => {
-    expect(model.exportSvg).toHaveBeenCalled()
-  })
-  expect(model.exportSvg.mock.calls[0][0]).toMatchObject({
+test('a page width exports at 183 mm and 7 pt until changed', async () => {
+  const { model, getByRole, getByLabelText } = renderWithLayout()
+  pick(getByRole, 'Size', 'Page width')
+  expect(getByLabelText('Width')).toHaveValue('183')
+  fireEvent.change(getByLabelText('Text size'), { target: { value: '8' } })
+  expect(await submitted(model, getByRole)).toMatchObject({
     pageWidth: '183mm',
     textSize: 8,
-    viewWidth: undefined,
+  })
+})
+
+test('the page width is remembered', async () => {
+  localStorage.setItem('svg-size', JSON.stringify('page'))
+  localStorage.setItem('svg-page-width', JSON.stringify('89'))
+  const { model, getByRole } = renderWithLayout()
+  expect(await submitted(model, getByRole)).toMatchObject({
+    pageWidth: '89mm',
+    textSize: 7,
+  })
+})
+
+test('switching the unit converts the width', async () => {
+  localStorage.setItem('svg-size', JSON.stringify('page'))
+  const { model, getByRole, getByLabelText } = renderWithLayout()
+  pick(getByRole, 'Width unit', 'in')
+  expect(getByLabelText('Width')).toHaveValue('7.2')
+  expect(await submitted(model, getByRole)).toMatchObject({
+    pageWidth: '7.2in',
   })
 })
 
 test('a page too narrow for its text says so and does not export', () => {
-  const { model, getByLabelText, getByRole, getByText } = renderWithLayout(110)
-  fireEvent.change(getByLabelText('Width'), { target: { value: '40mm' } })
-  expect(
-    getByText(
-      'Too narrow at 7 pt: the tracks would be 110 px wide. Widen the figure or lower the text size.',
-    ),
-  ).toBeInTheDocument()
+  localStorage.setItem('svg-size', JSON.stringify('page'))
+  const { model, getByRole, getByText } = renderWithLayout(110)
+  expect(getByText('Too narrow for 7 pt')).toBeInTheDocument()
   expect(getByRole('button', { name: 'Submit' })).toBeDisabled()
   expect(model.exportSvg).not.toHaveBeenCalled()
+})
+
+test('a text size out of range says so and does not export', () => {
+  localStorage.setItem('svg-size', JSON.stringify('page'))
+  const { getByRole, getByLabelText, getByText } = renderWithLayout()
+  fireEvent.change(getByLabelText('Text size'), { target: { value: '2' } })
+  expect(getByText('4 to 72 pt')).toBeInTheDocument()
+  expect(getByRole('button', { name: 'Submit' })).toBeDisabled()
+})
+
+test('a view with no figure layout shows no size field and sends no page width', async () => {
+  localStorage.setItem('svg-size', JSON.stringify('page'))
+  const model = stubView('offset')
+  const { getByRole, queryByRole } = render(
+    <ExportSvgDialog model={model} handleClose={() => {}} />,
+  )
+  expect(queryByRole('combobox', { name: 'Size' })).toBeNull()
+  expect(await submitted(model, getByRole)).toMatchObject({
+    pageWidth: undefined,
+  })
 })
