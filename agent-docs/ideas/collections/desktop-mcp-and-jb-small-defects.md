@@ -1,11 +1,11 @@
 ---
 name: desktop-mcp-and-jb-small-defects
-description: Four small defects the 2026-11-11 MCP server and `jb` audit left unclaimed, each rechecked against main on 2026-11-15 — a screenshot outliving the stdio timeout, a cached version-skew note, `jb.setSession` blaming the document in production, and a failed apply closing views first.
+description: Small Desktop MCP and `jb` defects — a screenshot outliving the stdio timeout, a cached version-skew note, `jb.setSession` blaming the document in production, a failed apply closing views first, and macOS Connect an AI agent... with no window showing no dialog.
 ---
 
 # Desktop MCP and `jb` small defects
 
-Each was found by the 2026-11-11 audit of `products/jbrowse-desktop/electron/mcp/`,
+The first four were found by the 2026-11-11 audit of `products/jbrowse-desktop/electron/mcp/`,
 `products/jbrowse-desktop/src/mcp/` and `packages/app-core/src/JbApi/`, and
 still stands on main as of 2026-11-15.
 
@@ -28,3 +28,10 @@ still stands on main as of 2026-11-15.
   first** (a lifecycle hook throwing, two nodes claiming one id):
   `takeOutViewsMissingFrom` runs before `applySnapshot`, and the typecheck
   catches type errors only.
+- **On macOS, Help → Connect an AI agent... with no window open opens a
+  window but no dialog.** `connectAgent` in `electron/electron.ts` only calls
+  `ensureWindow()` when `wm.current` is null, and pushing `connectAgentSetup`
+  right after the load would be discarded, because `ConnectAgentHost`
+  subscribes in an effect after the load finishes. A fix would have the main
+  process hold the request and the host ask for it when it mounts. Found
+  reading `electron.ts`, not by the audit above.
