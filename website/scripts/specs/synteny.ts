@@ -46,8 +46,8 @@ const HG38_VERTEBRATES_TREE_ORDER = [
 const GAMMA_COPY_BAR_COLORS = {
   field: 'mateRefName',
   scale: {
-    domain: ['NC_081815.1', 'NC_081813.1', 'NC_081808.1'],
-    range: ['#018592', '#89000b', '#004671'],
+    domain: ['NC_081815.1', 'NC_081813.1'],
+    range: ['#018592', '#89000b'],
   },
 }
 
@@ -2420,12 +2420,12 @@ export const syntenySpecs: ScreenshotSpec[] = [
           views: [
             {
               assembly: GRAPE,
-              loc: 'chr9:2,250,000-3,080,000 chr4:400,000-770,000[rev]',
+              loc: 'chr9:420,000-900,000',
               tracks: [gammaCopyGenes(GRAPE)],
             },
             {
               assembly: PEACH,
-              loc: 'chrG7:19,370,000-19,725,000',
+              loc: 'chrG7:18,290,000-18,660,000',
               tracks: [
                 gammaCopyGenes(PEACH),
                 {
@@ -2437,13 +2437,13 @@ export const syntenySpecs: ScreenshotSpec[] = [
             },
             {
               assembly: GRAPE,
-              loc: 'chr11:1,965,000-2,490,000',
+              loc: 'chr11:390,000-890,000',
               tracks: [gammaCopyGenes(GRAPE)],
             },
           ],
           tracks: ['grape_peach_anchors'],
           mark: { interpolate: 'bump' },
-          encoding: { color: 'reference', opacity: 0.5 },
+          encoding: { color: 'reference', opacity: 0.4 },
           offscreen: { show: false },
           levelHeights: [170, 170],
         },

@@ -272,11 +272,11 @@ turns orange where several genes share one ortholog. The count covers the whole
 Grape and peach share a genome triplication older than either species, so a
 stretch of peach often has one grape ortholog and two older copies. **Add row**
 in the synteny view's import form gives a third row: with grape above and below
-peach, both bands draw copies at once. The simple-anchors track in the peach row
-shows which block each copy belongs to, and gene tracks in every row show the
-genes a copy kept and lost.
+peach, the ortholog and an older copy draw at once. The simple-anchors track in
+the peach row shows which block each copy belongs to, and gene tracks in every
+row show the genes a copy kept and lost.
 
-<Figure caption="A 355 kb stretch of peach chrG7 with its grape ortholog on chr11 (teal, below) and two older copies on chr9 (red) and chr4 (blue, reversed) above. The bars under the peach genes are its .anchors.simple blocks in the same colors. The older copies share far fewer genes with the peach stretch." src="/img/mcscan_synteny/gamma_copies.png" />
+<Figure caption="A 370 kb stretch of peach chrG7 with its grape ortholog on chr11 (teal, below) and an older copy on chr9 (red, above). The bars under the peach genes are its .anchors.simple blocks in the same colors. The older copy shares far fewer genes with the peach stretch." src="/img/mcscan_synteny/gamma_copies.png" />
 
 ## Viewing the gene pairs as a dotplot
 
