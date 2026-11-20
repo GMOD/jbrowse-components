@@ -73,7 +73,10 @@ function serveUcscHub(genomes: string) {
   files[`${HUB}genomes.txt`] = genomes
 }
 
-function setup(tracks: ReturnType<typeof track>[] = []) {
+function setup(
+  tracks: ReturnType<typeof track>[] = [],
+  assemblies: Record<string, unknown>[] = [],
+) {
   const pluginManager = new PluginManager(corePlugins.map(P => new P()))
   pluginManager.createPluggableElements()
   const rootModel = rootModelFactory({
@@ -85,6 +88,7 @@ function setup(tracks: ReturnType<typeof track>[] = []) {
       jbrowse: {
         configuration: { rpc: { defaultDriver: 'MainThreadRpcDriver' } },
         tracks,
+        assemblies,
       },
     },
     { pluginManager },
@@ -251,6 +255,35 @@ describe('a JBrowse 2 hub', () => {
     expect(trackIds(session)).toEqual(['mine'])
   })
 
+  it('keeps the tracks of a genome assemblyNames lists by the name the site knows it by', async () => {
+    files[JB2] = JSON.stringify({
+      tracks: [track('mine', 'hg38'), track('other', 'mm39')],
+    })
+    const session = setup([], [{ ...assembly('GRCh38'), aliases: ['hg38'] }])
+
+    session.makeConnection(addJb2Hub(session, { assemblyNames: ['GRCh38'] }))
+    await settled(session)
+
+    expect(trackIds(session)).toEqual(['mine'])
+  })
+
+  it('fails when assemblyNames lists none of its genomes', async () => {
+    jest.spyOn(console, 'error').mockImplementation(() => {})
+    files[JB2] = JSON.stringify({
+      assemblies: [assembly('asmA')],
+      tracks: [track('a', 'asmA')],
+    })
+    const session = setup()
+
+    session.makeConnection(addJb2Hub(session, { assemblyNames: ['hg38'] }))
+    await when(() => session.connectionInstances.length === 0)
+
+    expect(sessionAssemblyNames(session)).toEqual([])
+    expect(messages(session)).toContainEqual(
+      expect.stringContaining("none of this hub's genomes is named hg38"),
+    )
+  })
+
   it('imports every genome when assemblyNames is empty', async () => {
     files[JB2] = JSON.stringify({
       assemblies: [assembly('asmA'), assembly('asmB')],
@@ -399,7 +432,7 @@ describe('a UCSC hub', () => {
     expect(session.snackbarMessages).toEqual([
       expect.objectContaining({
         message:
-          'Loaded data from these assemblies: good (1 tracks). Could not read the tracks of these assemblies: broken',
+          'Loaded data from these assemblies: good (1 track). Could not read the tracks of these assemblies: broken',
         level: 'warning',
       }),
     ])
@@ -444,6 +477,18 @@ describe('a UCSC hub', () => {
     )
   })
 
+  it('keeps the tracks of a genome assemblyNames lists by the name the site knows it by', async () => {
+    files[JB2] = JSON.stringify({
+      tracks: [track('mine', 'hg38'), track('other', 'mm39')],
+    })
+    const session = setup([], [{ ...assembly('GRCh38'), aliases: ['hg38'] }])
+
+    session.makeConnection(addJb2Hub(session, { assemblyNames: ['GRCh38'] }))
+    await settled(session)
+
+    expect(trackIds(session)).toEqual(['mine'])
+  })
+
   it('fails when assemblyNames lists none of its genomes', async () => {
     jest.spyOn(console, 'error').mockImplementation(() => {})
     serveUcscHub('genome good\ntrackDb good/trackDb.txt\ntwoBitPath good.2bit')
@@ -465,6 +510,26 @@ describe('a UCSC hub', () => {
     expect(messages(session)).toContainEqual(
       expect.stringContaining("none of this hub's genomes is named hg38"),
     )
+  })
+
+  it('imports a genome assemblyNames lists by the name the site knows it by', async () => {
+    serveUcscHub('genome hg38\ntrackDb hg38/trackDb.txt')
+    files[`${HUB}hg38/trackDb.txt`] = trackDb('genes')
+    const session = setup([], [{ ...assembly('GRCh38'), aliases: ['hg38'] }])
+
+    session.makeConnection(
+      session.addConnectionConf({
+        type: 'UCSCTrackHubConnection',
+        connectionId: 'ucsc',
+        name: 'My Hub',
+        assemblyNames: ['GRCh38'],
+        hubTxtLocation: uri(`${HUB}hub.txt`),
+      }),
+    )
+    await settled(session)
+
+    expect(trackIds(session)).toHaveLength(1)
+    expect(sessionAssemblyNames(session)).toEqual([])
   })
 
   it('fails as a whole when no trackDb can be read', async () => {

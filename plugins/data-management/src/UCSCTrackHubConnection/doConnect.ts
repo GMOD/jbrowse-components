@@ -7,6 +7,7 @@ import {
   isUriLocation,
 } from '@jbrowse/core/util'
 import { openLocation } from '@jbrowse/core/util/io'
+import { isSameAssemblyName } from '@jbrowse/core/util/tracks'
 import { isAlive } from '@jbrowse/mobx-state-tree'
 
 import { generateAssembly } from './generateAssembly.ts'
@@ -142,7 +143,10 @@ async function connectMultiGenomeHub(
   const unreadAssemblies: { genomeName: string; error: unknown }[] = []
   const genomes = Object.entries(genomesFile.data).filter(
     ([genomeName]) =>
-      assemblyNames.length === 0 || assemblyNames.includes(genomeName),
+      assemblyNames.length === 0 ||
+      assemblyNames.some(name =>
+        isSameAssemblyName(name, genomeName, session.assemblyManager),
+      ),
   )
   if (assemblyNames.length > 0 && genomes.length === 0) {
     throw new Error(

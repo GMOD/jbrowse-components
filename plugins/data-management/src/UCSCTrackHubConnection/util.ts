@@ -99,7 +99,10 @@ export function formatHubLoadSummary(
   const loaded = Object.entries(trackCounts)
   const loadedStr = loaded.length
     ? `Loaded data from these assemblies: ${loaded
-        .map(([name, count]) => `${name} (${count} tracks)`)
+        .map(
+          ([name, count]) =>
+            `${name} (${count} ${count === 1 ? 'track' : 'tracks'})`,
+        )
         .join(', ')}`
     : ''
   const skippedStr = skippedAssemblies.length

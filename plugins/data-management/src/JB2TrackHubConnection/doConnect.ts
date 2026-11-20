@@ -2,6 +2,7 @@ import { getConf } from '@jbrowse/core/configuration'
 import { getEnv, getSession, isUriLocation } from '@jbrowse/core/util'
 import { addRelativeUris } from '@jbrowse/core/util/addRelativeUris'
 import { openLocation } from '@jbrowse/core/util/io'
+import { isSameAssemblyName } from '@jbrowse/core/util/tracks'
 import { isAlive } from '@jbrowse/mobx-state-tree'
 
 import { resolve } from './util.ts'
@@ -45,10 +46,13 @@ export async function doConnect(
     )
     addRelativeUris(configJson, new URL(configUri))
     const everyGenome = assemblyNames.length === 0
+    const isListed = (name: string) =>
+      assemblyNames.some(listed =>
+        isSameAssemblyName(listed, name, session.assemblyManager),
+      )
     const listedAssemblies = (configJson.assemblies ?? []).filter(
       ({ name, aliases = [] }) =>
-        everyGenome ||
-        [name, ...aliases].some(spelling => assemblyNames.includes(spelling)),
+        everyGenome || [name, ...aliases].some(isListed),
     )
     for (const assembly of listedAssemblies) {
       if (!session.assemblyManager.has(assembly.name)) {
@@ -56,20 +60,22 @@ export async function doConnect(
       }
     }
 
-    const listedNames = new Set([
-      ...assemblyNames,
-      ...listedAssemblies.flatMap(({ name, aliases = [] }) => [
-        name,
-        ...aliases,
-      ]),
-    ])
-    self.addTrackConfs(
-      (configJson.tracks ?? []).filter(
-        track =>
-          everyGenome ||
-          track.assemblyNames?.some(name => listedNames.has(name)),
-      ),
+    const listedNames = new Set(
+      listedAssemblies.flatMap(({ name, aliases = [] }) => [name, ...aliases]),
     )
+    const tracks = (configJson.tracks ?? []).filter(
+      track =>
+        everyGenome ||
+        track.assemblyNames?.some(
+          name => listedNames.has(name) || isListed(name),
+        ),
+    )
+    if (listedAssemblies.length === 0 && tracks.length === 0 && !everyGenome) {
+      throw new Error(
+        `none of this hub's genomes is named ${assemblyNames.join(', ')}, as assemblyNames asks`,
+      )
+    }
+    self.addTrackConfs(tracks)
     if (!self.silent) {
       session.notify('Successfully loaded', 'success')
     }
