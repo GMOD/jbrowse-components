@@ -9439,6 +9439,16 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
               }
             ]
           }
+        },
+        "copies": {
+          "description": "one lane per contig of a genome rather than one per genome, named <assembly>@<refName> in sort and labels.",
+          "default": false,
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "boolean"
+          }
         }
       },
       "patternProperties": {

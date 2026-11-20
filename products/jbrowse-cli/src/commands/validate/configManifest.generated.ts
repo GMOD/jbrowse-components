@@ -5896,6 +5896,10 @@ export const configManifest: ConfigManifest = {
               "type": "string[]",
               "liftsString": true,
               "liftsNumbers": true
+            },
+            {
+              "name": "copies",
+              "type": "boolean"
             }
           ],
           "schema": "LaneRows",
