@@ -18,12 +18,12 @@ Why it was parked:
   sites and the mother at 1,030. A crossover changes which of a parent's two
   copies the child has, which this coloring cannot see, and which hap-ibd's
   painting in `analyze_trio.md` shows.
-- **It needs a per-cell value.** The Mendelian check ships one value per site,
-  and a cell's hue resolves per site on the main thread (ADR-203). Parent of
+- **It needs a per-cell value.** A cell's hue resolves per site on the main
+  thread (ADR-203). Parent of
   origin differs between a child's two haplotype cells at one site, so the
   worker would ship a per-cell code beside the genotype codes and the cell
   shader would read it.
 
 The call: whether a phasing check for read-backed phasing (WhatsHap output
-beside a pedigree) is a use worth the per-cell path. If it is, the same path
-serves [per-child cell marking](per-child-mendelian-cell-marking.md).
+beside a pedigree) is a use worth the per-cell path, now that JBrowse leaves
+trio analysis to outside tools (ADR-279, amended 2026-11-20).

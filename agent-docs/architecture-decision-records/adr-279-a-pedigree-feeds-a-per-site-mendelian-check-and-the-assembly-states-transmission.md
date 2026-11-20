@@ -1,6 +1,6 @@
 ---
 status: Accepted
-summary: "A VCF adapter's `pedigreeLocation` gives samples family, parent and sex attributes; the worker classifies each site's trios into a `mendelian` field by one gamete-partition rule, lenient where biology varies; the assembly's `transmission` slot, default `[]`, states sex chromosomes and organelles"
+summary: "A VCF adapter's `pedigreeLocation` gives samples family, parent, sex and relationship attributes, which label and band rows; the in-app Mendelian check and the assembly's `transmission` slot it read were removed before release, and bcftools `+mendelian2`'s `INFO/MERR` is colored and filtered as any INFO field"
 ---
 
 # ADR-279: A pedigree feeds a per-site Mendelian check, and the assembly states transmission
@@ -220,3 +220,39 @@ terms a geneticist searches for; `consistent` and the colors stay.
   Hail's `mendel_errors` count a het child of two hom-ref parents as a Mendel
   error; here it has its own class and color, as Hail's `de_novo` and slivar's
   `denovo` report it apart from other errors.
+
+## Amended 2026-11-20: the check moves to bcftools
+
+Colin, the same day: "i dont really want jbrowse to be an 'analysis program'...i
+just like it to be a visualizer", and "we can change to raw visualization of
+tags added by bcftools for example if it makes sense. i dont want to go beyond
+our capabilities". The check had shipped in no release (it landed after
+`5.0.0-beta.22`), so it left outright, with no shim or migration.
+
+- **Removed:** "The check" and "Transmission" above, with their consequences
+  and the class-name amendment: `classifyTrio`, the worker's trio and
+  transmission arguments, the `mendelian` field, its color preset, Filter by
+  submenu, tooltip row and the feature widget's trio table, and the assembly's
+  `transmission` slot with `transmissionEntriesFor` (a `@jbrowse/core`
+  re-export that no release carried). Code those commits generalised for the
+  check went back to its earlier form; `parentsOf` folded back into
+  `withRelationships`, its one caller.
+- **In its place:** `bcftools +mendelian2 -m a` writes `INFO/MERR`, the number
+  of trios with a Mendelian error at the site, with built-in GRCh37 and GRCh38
+  rules for chrX, chrY, the PARs and chrM. The display colors it with a
+  `threshold` scale cut at 1 and filters it with an ordinary `filter` entry
+  (`{ field: 'INFO.MERR', gte: 1 }`), through no MERR-specific code. On the KHV
+  trio over chr1:190-200 Mb it flags the same 173 sites the in-app check did.
+  MERR does not split de novo candidates from other errors; the genotypes and
+  the reads do. The demo track and `analyze_trio.md` read a hosted
+  MERR-annotated VCF, and `scripts/build_khv_trio_hapibd.sh` writes it.
+- **Still in force:** "The pedigree" and the `relationship` and `rows.subtitle`
+  amendment. The relationship no longer has a check to agree with.
+
+Rejected:
+
+- **Keeping the check beside MERR.** Two answers to one question, and the
+  genetics across taxa (ploidy, haplodiploidy, ZW, organelles, the PARs) is
+  analysis JBrowse would have to own and keep right.
+- **A MERR preset or menu item.** A threshold on an INFO field is existing
+  config; a named preset would put the check's vocabulary back in the app.

@@ -30,15 +30,14 @@ shouldn't count toward AF) — couples to `minorAlleleFrequencyUtils.ts`, defer
 past the independent MVP. Same plumbing then unlocks **VAF coloring from AD**
 (color het cells by allelic fraction — a somatic/mosaic cohort view).
 
-**De novo and compound-het review on the pedigree.** `pedigreeLocation` and
-the per-site Mendelian check are built, as callset QC
+**De novo and compound-het review on the pedigree.** `pedigreeLocation` is
+built; the per-site Mendelian check moved to bcftools `+mendelian2`, whose
+`INFO/MERR` the display colors and filters like any INFO field
 ([ADR-279](../../architecture-decision-records/adr-279-a-pedigree-feeds-a-per-site-mendelian-check-and-the-assembly-states-transmission.md)).
-Reviewing a `deNovoCandidate` site as a de novo mutation needs the
-genotype-quality masking above first, since on low-coverage calls most such
-sites are genotyping errors. Compound hets (two hets in one gene, one from each
-parent) need a per-gene pass over the trio's phased calls that nobody has
-designed. The parked follow-ups are
-[per-child cell marking](../waiting-on-a-call/per-child-mendelian-cell-marking.md),
+Reviewing a flagged site as a de novo mutation needs the genotype-quality
+masking above first, since on low-coverage calls most such sites are genotyping
+errors. Compound hets (two hets in one gene, one from each parent) are analysis
+for an outside tool whose output loads as a track. The parked follow-ups are
 [parent-of-origin coloring](../waiting-on-a-call/parent-of-origin-haplotype-coloring.md)
 and
 [stacking the trio's reads](../waiting-on-a-call/stack-the-trios-reads-under-the-vcf.md).

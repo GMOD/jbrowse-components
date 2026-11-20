@@ -1,6 +1,6 @@
 ---
 name: stack-the-trios-reads-under-the-vcf
-description: Checking a Mendelian failure means loading the trio's three CRAMs by hand; one gesture could stack them under the VCF, once the CRAM URLs have a home in the sample metadata. Read before adding a reads shortcut to the variant display.
+description: Checking a Mendelian error means loading the trio's three CRAMs by hand; one gesture could stack them under the VCF, once the CRAM URLs have a home in the sample metadata. Read before adding a reads shortcut to the variant display.
 ---
 
 # Stack the trio's reads under the VCF in one gesture
@@ -9,8 +9,8 @@ description: Checking a Mendelian failure means loading the trio's three CRAMs b
 then the mother's, each as an addtrack fence with its URL typed out. A reader
 reviewing many flagged sites repeats that for every trio.
 
-A gesture on a trio (the feature widget's Mendelian check table, or a row's
-menu) could open the child's and both parents' alignments under the VCF,
+A gesture on a trio (a row's menu, or the feature details of a site bcftools
+flagged in `INFO/MERR`) could open the child's and both parents' alignments under the VCF,
 stacked in pedigree order and centered on the site.
 
 The call is where the URLs come from:
