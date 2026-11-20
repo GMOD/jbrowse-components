@@ -312,19 +312,14 @@ test('a hidden section is written to the facet and costs no fetch', () => {
   expect(display.plot.facet).toEqual({ field: 'strand' })
 })
 
-test('Sections... is offered while grouped and opens the checklist', () => {
+test('Sections... is offered once a grouped track has sections, headed by its field', () => {
   const { createDisplay } = createTestEnvironment()
   const { display } = createDisplay()
+  display.setRpcData(0, strandedRegionData(), ctgA)
   expect(labelsOf(display.trackMenuItems())).not.toContain('Sections...')
   display.facetByField('biotype')
-  const row = display
-    .trackMenuItems()
-    .find(i => 'label' in i && i.label === 'Sections...')
-  const opened = jest.spyOn(display, 'openSectionsDialog')
-  if (row && 'onClick' in row) {
-    row.onClick()
-  }
-  expect(opened).toHaveBeenCalled()
+  expect(labelsOf(display.trackMenuItems())).toContain('Sections...')
+  expect(display.sectionsHeading).toBe('Biotype')
 })
 
 test('the known sections are the fetched ones, hidden or not, and the ones the facet names, in stacking order', () => {

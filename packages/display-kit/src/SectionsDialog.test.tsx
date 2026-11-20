@@ -12,11 +12,11 @@ const SECTIONS = [
   { key: '0', label: 'Unstranded' },
 ]
 
-function setup(hidden: string[] = [], sections = SECTIONS, field = 'strand') {
+function setup(hidden: string[] = [], sections = SECTIONS) {
   const setHiddenGroups = jest.fn()
   const handleClose = jest.fn()
   const model: SectionsDialogModel = {
-    facet: { field },
+    sectionsHeading: 'Strand',
     knownSections: sections,
     hiddenGroups: new Set(hidden),
     setHiddenGroups,
@@ -87,12 +87,7 @@ test('Apply waits for at least one ticked section', () => {
   expect(setHiddenGroups).not.toHaveBeenCalled()
 })
 
-test('the header names the field', () => {
+test('the column header is the heading the display gives', () => {
   setup()
   expect(screen.getByRole('columnheader', { name: /Strand/ })).toBeTruthy()
-})
-
-test('a jexl field heads its column Section', () => {
-  setup([], SECTIONS, 'jexl:get(feature,"type")')
-  expect(screen.getByRole('columnheader', { name: /Section/ })).toBeTruthy()
 })

@@ -7,15 +7,13 @@ import VirtualTable, {
   TABLE_BORDER_WIDTH,
   checkboxLeading,
 } from '@jbrowse/core/ui/VirtualTable'
-import { capitalizeFirst } from '@jbrowse/core/util'
-import { isJexl } from '@jbrowse/core/util/jexlStrings'
 import { observer } from 'mobx-react'
 
 import type { VirtualTableColumn } from '@jbrowse/core/ui/VirtualTable'
 import type { GroupId } from '@jbrowse/core/util/groupKeys'
 
 export interface SectionsDialogModel {
-  facet: { field: string } | undefined
+  sectionsHeading: string
   knownSections: readonly GroupId[]
   hiddenGroups: ReadonlySet<string>
   setHiddenGroups: (keys: readonly string[]) => void
@@ -26,14 +24,9 @@ interface SectionRow {
   label: string
 }
 
-function columnsFor(field = ''): VirtualTableColumn<SectionRow>[] {
+function columnsFor(heading: string): VirtualTableColumn<SectionRow>[] {
   return [
-    {
-      id: 'section',
-      header: field && !isJexl(field) ? capitalizeFirst(field) : 'Section',
-      cell: row => row.label,
-      fill: true,
-    },
+    { id: 'section', header: heading, cell: row => row.label, fill: true },
   ]
 }
 
@@ -84,7 +77,7 @@ const SectionsDialog = observer(function SectionsDialog({
       >
         <VirtualTable
           rows={rows}
-          columns={columnsFor(model.facet?.field)}
+          columns={columnsFor(model.sectionsHeading)}
           widths={available => ({ section: available })}
           onRowClick={row => {
             setHidden(

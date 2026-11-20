@@ -46,6 +46,7 @@ import {
 import { groupByPlotOf } from '@jbrowse/display-kit/groupByMenu'
 import { openPlotDialog as queuePlotDialog } from '@jbrowse/display-kit/plotMenu'
 import { rpcArgs } from '@jbrowse/display-kit/rpcArgs'
+import { fieldHeading } from '@jbrowse/display-kit/sectionsMenu'
 import { types } from '@jbrowse/mobx-state-tree'
 import { containingLgv } from '@jbrowse/plugin-linear-genome-view'
 import { installUpload } from '@jbrowse/render-core/installUpload'
@@ -212,7 +213,6 @@ const ColorByAttributeDialog = lazy(
   () => import('@jbrowse/display-kit/ColorByAttributeDialog'),
 )
 const GroupByDialog = lazy(() => import('./components/GroupByDialog.tsx'))
-const SectionsDialog = lazy(() => import('./components/SectionsDialog.tsx'))
 const SetColorDialog = lazy(() => import('./components/SetColorDialog.tsx'))
 const JexlFilterDialog = lazy(() => import('@jbrowse/core/ui/JexlFilterDialog'))
 
@@ -388,6 +388,13 @@ export default function baseStateModelFactory(
         return facet
           ? knownSections(self.rpcDataMap.values(), facet, self.hiddenGroups)
           : []
+      },
+      /**
+       * #getter
+       * The Sections dialog's column header: the facet's field.
+       */
+      get sectionsHeading() {
+        return fieldHeading(self.facet?.field)
       },
     }))
     .views(self => ({
@@ -1259,16 +1266,6 @@ export default function baseStateModelFactory(
          */
         clearHoveredFeature() {
           self.clearHover()
-        },
-
-        /**
-         * #action
-         */
-        openSectionsDialog() {
-          getDialogHost(self).queueDialog(handleClose => [
-            SectionsDialog,
-            { model: self, handleClose },
-          ])
         },
 
         /**

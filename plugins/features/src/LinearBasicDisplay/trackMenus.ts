@@ -20,7 +20,7 @@ import {
 } from '@jbrowse/display-kit/groupByMenu'
 import { heightModeMenuItems } from '@jbrowse/display-kit/heightModeMenu'
 import { editPlotMenuItems } from '@jbrowse/display-kit/plotMenu'
-import ChecklistIcon from '@mui/icons-material/Checklist'
+import { sectionsMenuItems } from '@jbrowse/display-kit/sectionsMenu'
 import HeightIcon from '@mui/icons-material/Height'
 
 import { DISPLAY_MODE_OPTIONS } from '../RenderFeatureDataRPC/displayModes.ts'
@@ -32,6 +32,7 @@ import type { Reversibles } from '@jbrowse/core/ui/filterMenuItems'
 import type { HiddenGroupsModel } from '@jbrowse/display-kit/groupByMenu'
 import type { HeightModeMenuModel } from '@jbrowse/display-kit/heightModeMenu'
 import type { PlotDisplay } from '@jbrowse/display-kit/plotMenu'
+import type { SectionsHost } from '@jbrowse/display-kit/sectionsMenu'
 
 // Rows come from core's `radioItems`, so every radio keeps the menu
 // open on click; a hand-rolled copy is how the Gene glyph submenu came to
@@ -84,13 +85,8 @@ interface GroupByMenuSelf {
   applyGroupBy: (field: string | undefined, colorByGroup: boolean) => void
 }
 
-interface SectionsMenuSelf {
-  facet: FeatureFacet | undefined
-  openSectionsDialog: () => void
-}
-
 interface TrackMenuSelf
-  extends GroupByMenuSelf, FacetSelf, SectionsMenuSelf, PlotDisplay {
+  extends GroupByMenuSelf, FacetSelf, SectionsHost, PlotDisplay {
   featureNarrowings: () => Reversibles
   featureMarks: () => Reversibles
   showSubmenuMenuItems: () => MenuItem[]
@@ -134,20 +130,6 @@ export function groupByMenuItems(self: GroupByMenuSelf): MenuItem[] {
       ],
     }),
   ]
-}
-
-export function sectionsMenuItems(self: SectionsMenuSelf): MenuItem[] {
-  return self.facet
-    ? [
-        {
-          label: 'Sections...',
-          icon: ChecklistIcon,
-          onClick: () => {
-            self.openSectionsDialog()
-          },
-        },
-      ]
-    : []
 }
 
 function featureSetRecoveryMenuItems(self: TrackMenuSelf): MenuItem[] {
