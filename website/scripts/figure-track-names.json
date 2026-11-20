@@ -35,6 +35,8 @@
     "hg38_ncbiRefSeq_ucsc": "NCBI RefSeq genes (hg38)"
   },
   "https://jbrowse.org/demos/circrna/config.json": {
+    "hek293_isocirc_reads": "HEK293 isoCirc nanopore reads (SRR10612055)",
+    "hela_control_reads": "HeLa ribominus RNA-seq, no RNase R (SRR1637089)",
     "hela_rnaser_backsplice": "HeLa RNase R+ back-splice junctions (STAR chimeric)",
     "hela_rnaser_reads": "HeLa RNase R+ RNA-seq (SRR1636985)",
     "ncbi_refseq_genes": "NCBI RefSeq genes"
@@ -185,7 +187,7 @@
     "hg38-cpgIslandExt": "CpG Islands",
     "hg38-epdNewPromoter": "EPDnew Promoters - EPDnew v6",
     "hg38-gnomad3MeanCoverage": "gnomAD v3 Genome Coverage - Mean Coverage",
-    "hg38-gnomadExomesVariantsV4_1": "gnomAD v4.1.1 - gnomAD v4.1.1 Exomes",
+    "hg38-gnomadExomesVariantsV4_1": "gnomAD v4.1.1 - Exomes",
     "hg38-multiz470way": "Multiz Alignments - 470-way Mammal Alignment (Hiller lab)",
     "hg38-ncbiRefSeq": "NCBI RefSeq - RefSeq All",
     "hg38-ncbiRefSeqCurated": "NCBI RefSeq - RefSeq Curated",
