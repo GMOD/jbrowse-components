@@ -44,12 +44,6 @@ function isHaploidOrHomozygous(child: Call) {
   )
 }
 
-function collapse(child: Call): Call {
-  return child.alleles.length === 1
-    ? child
-    : { alleles: [child.called[0]!], called: [child.called[0]!], wildcards: 0 }
-}
-
 function gameteSizes(parent: Call, regular: boolean) {
   const p = parent.alleles.length
   return p === 1
@@ -171,18 +165,15 @@ function assignable(child: Call, father: Call, mother: Call, mode: Mode) {
 }
 
 function classifyWithSex(
-  childCall: Call,
+  child: Call,
   father: Call | undefined,
   mother: Call | undefined,
   sex: PedigreeSex | undefined,
   rule: readonly TransmissionEntry[],
 ) {
   const entry = rule.find(
-    e =>
-      e.sex === undefined ||
-      (e.sex === sex && isHaploidOrHomozygous(childCall)),
+    e => e.sex === undefined || (e.sex === sex && isHaploidOrHomozygous(child)),
   )
-  const child = entry?.sex !== undefined ? collapse(childCall) : childCall
   const mode = chooseMode(child, father, mother, entry)
   const f = father ?? absentParent
   const m = mother ?? absentParent
@@ -192,7 +183,7 @@ function classifyWithSex(
   const contributors = singleParent
     ? [mode.from === 'father' ? father : mother]
     : [father, mother]
-  const setBased = mode.kind === 'union' || mode.kind === 'entry'
+  const setBased = mode.kind !== 'split'
   const unsettledDuo =
     isDuo &&
     (singleParent
@@ -223,7 +214,7 @@ export function classifyTrio(
     sex,
     rule,
   }: { sex: PedigreeSex | undefined; rule: readonly TransmissionEntry[] },
-): TrioClass | undefined {
+) {
   const childCall = parseCall(child)
   const fatherCall = father === undefined ? undefined : parseCall(father)
   const motherCall = mother === undefined ? undefined : parseCall(mother)
