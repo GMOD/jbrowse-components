@@ -32,12 +32,7 @@
           "type": "CytobandAdapter",
           "uri": "https://jbrowse.org/ucsc/hg19/cytoBandIdeo.bed.gz"
         }
-      },
-      "transmission": [
-        { "refName": "chrX", "sex": "male", "from": "mother" },
-        { "refName": "chrY", "sex": "male", "from": "father" },
-        { "refName": "chrM", "from": "either" }
-      ]
+      }
     },
     {
       "name": "hg38",
@@ -61,12 +56,7 @@
           "type": "CytobandAdapter",
           "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/GRCh38/cytoBand.txt"
         }
-      },
-      "transmission": [
-        { "refName": "chrX", "sex": "male", "from": "mother" },
-        { "refName": "chrY", "sex": "male", "from": "father" },
-        { "refName": "chrM", "from": "either" }
-      ]
+      }
     },
     {
       "name": "hs1",
@@ -5107,12 +5097,12 @@
       "adapter": {
         "type": "VcfTabixAdapter",
         "vcfGzLocation": {
-          "uri": "https://jbrowse.org/demos/kgp-trio/HG02024_VN049_KHVTrio.chr1.vcf.gz",
+          "uri": "https://jbrowse.org/demos/kgp-trio/HG02024_VN049_KHVTrio.chr1.merr.vcf.gz",
           "locationType": "UriLocation"
         },
         "index": {
           "location": {
-            "uri": "https://jbrowse.org/demos/kgp-trio/HG02024_VN049_KHVTrio.chr1.vcf.gz.tbi",
+            "uri": "https://jbrowse.org/demos/kgp-trio/HG02024_VN049_KHVTrio.chr1.merr.vcf.gz.tbi",
             "locationType": "UriLocation"
           },
           "indexType": "TBI"
