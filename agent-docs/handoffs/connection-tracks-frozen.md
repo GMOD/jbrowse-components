@@ -62,12 +62,6 @@ Each step can land by itself, in this order.
   - `teardownConnection` closes tracks by their `connectionId`, where it closes
     by trackId today;
   - a snapshot migration for saved sessions that hold `connectionTrackConfigs`.
-- **Decide where the live list is stored.** The frozen `tracks` property
-  still sits in the tree that undo resets (see the undo bug below). A volatile
-  map on the session, keyed by `connectionId`, would stay out of snapshots and
-  out of undo. Nobody has tried moving the instances out of the session tree,
-  so this is unverified.
-
 ## Reasons that could stop the move to frozen
 
 - **`jbrowse-plugin-hubs` sets `assemblyNames` on a JBrowse 2 hub.** The first
@@ -78,12 +72,16 @@ Each step can land by itself, in this order.
 
 ## Open bugs in the connection code
 
-- **Undo unloads every loaded hub.** `applySnapshot` resets
-  `connectionInstances` to its default, because the snapshot has none. Repro in
-  the `hubConnection.test.ts` harness: load a hub, `session.setName('x')`,
-  `history.flushPendingRecord()`, `history.undo()`, and the instance's tracks
-  are gone. A fix must also handle undoing "add connection", where the
-  instance's config leaves with the snapshot.
+- **Undo unloads every loaded hub**, low priority: Colin is "not super
+  worried about undo" (2026-11-20). `applySnapshot` resets
+  `connectionInstances` to its default, because the snapshot has none, so the
+  hub's row empties until it is expanded again; open hub tracks stay open from
+  `connectionTrackConfigs`. Repro in the `hubConnection.test.ts` harness: load
+  a hub, `session.setName('x')`, `history.flushPendingRecord()`,
+  `history.undo()`. A fix would move the live list out of the tree undo
+  resets, such as a volatile map on the session keyed by `connectionId`, and
+  must handle undoing "add connection", where the instance's config leaves
+  with the snapshot.
 - **A hub track replaces a config track with the same trackId**, in views
   already open (`exactTrackById`), and deleting the hub then closes it. The
   first step above fixes this by the order of sources.
