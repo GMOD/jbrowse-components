@@ -471,7 +471,11 @@ twoBitPath volvox/volvox.2bit
 `).data.volvox!
 
 test('generateAssembly resolves twoBit against a local genomes.txt', () => {
-  const asm = generateAssembly(genome, hubBaseUrl(local('/home/u/genomes.txt')))
+  const asm = generateAssembly(
+    genome,
+    genome.data.twoBitPath!,
+    hubBaseUrl(local('/home/u/genomes.txt')),
+  )
   expect(asm.sequence.adapter.twoBitLocation).toEqual({
     localPath: '/home/u/volvox/volvox.2bit',
     locationType: 'LocalPathLocation',

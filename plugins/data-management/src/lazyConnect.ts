@@ -38,11 +38,13 @@ export async function lazyConnect<
     try {
       await doConnect(self)
     } catch (e) {
-      console.error(e)
-      const session = getSession(self)
-      const conf: BaseConnectionConfigModel = self.configuration
-      session.notifyError(`${readConfObject(conf, 'name')}: "${e}"`, e)
-      session.breakConnection?.(self.configuration)
+      if (isAlive(self)) {
+        console.error(e)
+        const session = getSession(self)
+        const conf: BaseConnectionConfigModel = self.configuration
+        session.notifyError(`${readConfObject(conf, 'name')}: "${e}"`, e)
+        session.breakConnection?.(self.configuration)
+      }
     }
   }
 }

@@ -4,12 +4,24 @@ import {
   ConfigurationReference,
   readConfObject,
 } from '../../configuration/index.ts'
+import { getNotificationSink } from '../../util/sessionServices.ts'
 import configSchema from './baseConnectionConfig.ts'
 
 import type PluginManager from '../../PluginManager.ts'
 import type { AnyConfigurationModel } from '../../configuration/index.ts'
 
 type TrackConf = AnyConfigurationModel | Record<string, unknown>
+
+const refusedNamesShown = 5
+
+function listRefused(refused: TrackConf[]) {
+  const shown = refused
+    .slice(0, refusedNamesShown)
+    .map(({ name, trackId, type }) => `${name ?? trackId} (${type})`)
+    .join(', ')
+  const rest = refused.length - refusedNamesShown
+  return rest > 0 ? `${shown} and ${rest} more` : shown
+}
 
 /**
  * #stateModel BaseConnectionModel
@@ -114,8 +126,26 @@ function stateModelFactory(pluginManager: PluginManager) {
         // spread of the whole array so the argument count stays bounded no
         // matter how large the hub is. What remains is per-config MST node
         // creation, roughly 1ms per track.
+        const refused: TrackConf[] = []
         for (let i = 0; i < trackConfs.length; i += 500) {
-          self.tracks.push(...trackConfs.slice(i, i + 500))
+          const chunk = trackConfs.slice(i, i + 500)
+          try {
+            self.tracks.push(...chunk)
+          } catch {
+            for (const trackConf of chunk) {
+              try {
+                self.tracks.push(trackConf)
+              } catch {
+                refused.push(trackConf)
+              }
+            }
+          }
+        }
+        if (refused.length > 0) {
+          getNotificationSink(self).notify(
+            `${self.name}: left out ${refused.length} ${refused.length === 1 ? 'track' : 'tracks'} this site cannot load: ${listRefused(refused)}`,
+            'warning',
+          )
         }
       },
       /**

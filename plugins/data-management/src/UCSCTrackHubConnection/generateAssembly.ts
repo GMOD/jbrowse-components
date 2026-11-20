@@ -10,7 +10,11 @@ import type { RaStanza } from '@gmod/ucsc-hub'
 // against the base uri of the file the stanza came from (hub.txt for
 // single-file, genomes.txt for multi-genome). chromSizes is optional since the
 // TwoBitAdapter derives sizes from the .2bit when absent.
-export function generateAssembly(genome: RaStanza, baseUri: string) {
+export function generateAssembly(
+  genome: RaStanza,
+  twoBitPath: string,
+  baseUri: string,
+) {
   const { data, name } = genome
   return {
     name: name!,
@@ -26,7 +30,7 @@ export function generateAssembly(genome: RaStanza, baseUri: string) {
       trackId: `${name}-${createElementId()}`,
       adapter: {
         type: 'TwoBitAdapter',
-        twoBitLocation: makeLocFromUri(data.twoBitPath!, baseUri),
+        twoBitLocation: makeLocFromUri(twoBitPath, baseUri),
         ...(data.chromSizes
           ? { chromSizesLocation: makeLocFromUri(data.chromSizes, baseUri) }
           : {}),
