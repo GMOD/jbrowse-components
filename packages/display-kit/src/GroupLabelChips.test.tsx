@@ -10,6 +10,10 @@ const SECTIONS = [
   { key: 'c', label: 'C', top: 200, height: 100 },
 ]
 
+afterEach(() => {
+  jest.restoreAllMocks()
+})
+
 function setup(onHide?: () => void) {
   const onMove = jest.fn()
   const view = render(
@@ -69,6 +73,32 @@ test('a press that stays put still clicks the hide button, and a drag swallows i
   fireEvent.pointerUp(hide, { clientY: 250, pointerId: 1 })
   fireEvent.click(hide)
   expect(onHide).toHaveBeenCalledTimes(1)
+})
+
+// A browser sends a captured press's click to the capturing pill, never to the
+// button pressed, so only a press that becomes a drag may capture.
+test('a press on the hide button takes no pointer capture until it drags', () => {
+  const capture = jest.spyOn(Element.prototype, 'setPointerCapture')
+  const { getAllByTitle, pill } = setup(jest.fn())
+  const hide = getAllByTitle('Hide "A"')[0]!
+  fireEvent.pointerDown(hide, { clientY: 5, button: 0, pointerId: 1 })
+  fireEvent.pointerMove(hide, { clientY: 6, pointerId: 1 })
+  fireEvent.pointerUp(hide, { clientY: 6, pointerId: 1 })
+  expect(capture).not.toHaveBeenCalled()
+  drag(hide, 5, 250)
+  expect(capture).toHaveBeenCalledWith(1)
+  expect(capture.mock.contexts[0]).toBe(pill(0))
+})
+
+test('a press that leaves its pill before the threshold captures, so the drag keeps its pointer', () => {
+  const capture = jest.spyOn(Element.prototype, 'setPointerCapture')
+  const { pill, onMove } = setup()
+  fireEvent.pointerDown(pill(0), { clientY: 5, button: 0, pointerId: 1 })
+  fireEvent.pointerLeave(pill(0), { clientY: 7, pointerId: 1 })
+  expect(capture.mock.contexts[0]).toBe(pill(0))
+  fireEvent.pointerMove(pill(0), { clientY: 250, pointerId: 1 })
+  fireEvent.pointerUp(pill(0), { clientY: 250, pointerId: 1 })
+  expect(onMove).toHaveBeenCalledWith('a', 'c')
 })
 
 test('the leading chips ride the topmost chip on screen, ahead of its pill', () => {
