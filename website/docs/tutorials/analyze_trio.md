@@ -12,10 +12,14 @@ A child inherits one copy of each chromosome from each parent, and each copy is
 a patchwork of the parent's own two copies, switching at the crossovers of that
 meiosis. In a phased trio, hap-ibd finds the stretches where the child's
 haplotypes match a parent's, so the patchwork and its crossovers can be painted
-along a chromosome. On chr1 of a 1000 Genomes trio, we:
+along a chromosome. Before painting, a pedigree check marks the sites where the
+child's genotype cannot be made of one allele from each parent. On chr1 of a
+1000 Genomes trio, we:
 
-- load the trio's phased VCF as a variant track, then switch it to a genotype
-  matrix with one row per haplotype
+- load the trio's phased VCF as a variant track, with the 1000 Genomes pedigree
+- color the VCF by the Mendelian check, and open the child's high-coverage reads
+  under a flagged site
+- switch the VCF to a genotype matrix with one row per haplotype
 - load hap-ibd's segments, converted to BED, as a multi-row feature track with
   one colored row per parental haplotype
 - read the crossovers along chr1 off the painted rows
@@ -67,10 +71,23 @@ fetches everything itself.
 | The phased trio VCF                                                                                                                             | [HG02024_VN049_KHVTrio.chr1.vcf.gz](https://jbrowse.org/demos/kgp-trio/HG02024_VN049_KHVTrio.chr1.vcf.gz)  |
 | The GRCh38 PLINK genetic map hap-ibd needs, the `no_chr_in_chrom_field` variant, since the trio VCF calls its chromosome `1` rather than `chr1` | [plink.GRCh38.map.zip](https://bochet.gcc.biostat.washington.edu/beagle/genetic_maps/plink.GRCh38.map.zip) |
 
+<details>
+<summary>Read by URL (no download needed)</summary>
+
+| What it is                                                   | File                                                                                                                                          |
+| ------------------------------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------- |
+| The 1000 Genomes pedigree, which names each sample's parents | [20130606_g1k_3202_samples_ped_population.txt](https://jbrowse.org/demos/kgp-trio/20130606_g1k_3202_samples_ped_population.txt)               |
+| The child's (HG02024) high-coverage CRAM                     | [HG02024.final.cram](https://1000genomes.s3.amazonaws.com/1000G_2504_high_coverage/additional_698_related/data/ERR3988976/HG02024.final.cram) |
+| The mother's (HG02025) high-coverage CRAM                    | [HG02025.final.cram](https://1000genomes.s3.amazonaws.com/1000G_2504_high_coverage/data/ERR3242042/HG02025.final.cram)                        |
+
+</details>
+
 ## Loading the hg38 assembly
 
 The trio calls are on GRCh38, and the hap-ibd blocks below use its chr1
-coordinates, so we load that assembly first.
+coordinates, so we load that assembly first. Its `transmission` list names the
+sequences a child does not inherit as one copy from each parent, which the
+Mendelian check below reads:
 
 ```json addassembly
 {
@@ -79,9 +96,25 @@ coordinates, so we load that assembly first.
   "refNameAliases": {
     "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/GRCh38/hg38_aliases.txt"
   },
-  "cytobands": "https://jbrowse.org/genomes/GRCh38/cytoBand.txt"
+  "cytobands": "https://jbrowse.org/genomes/GRCh38/cytoBand.txt",
+  "transmission": [
+    { "refName": "chrX", "sex": "male", "from": "mother" },
+    { "refName": "chrY", "sex": "male", "from": "father" },
+    { "refName": "chrM", "from": "either" }
+  ]
 }
 ```
+
+- **`chrX` and `chrY`:** a son's X is his mother's and his Y his father's. An
+  entry naming a `sex` judges a haploid or homozygous call of a child of that
+  sex, so a son's het, as in a pseudoautosomal region, takes the autosomal rule.
+- **`chrM`:** `either` accepts a child's allele found in either parent.
+  `"from": "mother"` is the opt-in for maternal inheritance, which flags a
+  child's mitochondrial allele the mother lacks.
+
+The trio VCF covers chr1 alone, which takes the autosomal rule, so these entries
+matter for a whole-genome trio. The add-genome form has no input for
+`transmission`, so in the app it goes in the assembly's entry in `config.json`.
 
 The figures also show NCBI's RefSeq genes as a track:
 
@@ -102,8 +135,9 @@ allele to a haplotype.
 The VCF loads on `hg38` as an ordinary `VariantTrack`
 ([variant track guide](/docs/config_guides/variant_track)). For your own trio,
 swap `uri` for a bgzipped VCF with its `.tbi` beside it and the same chromosome
-naming as the assembly. In JBrowse Web you can instead paste the URL into **File
-→ Open track...**, which infers the adapter and the index.
+naming as the assembly, and `pedigreeLocation` for your pedigree file. In
+JBrowse Web you can instead paste the URL into **File → Open track...**, which
+infers the adapter and the index but sets no pedigree.
 
 ```json addtrack
 {
@@ -113,12 +147,75 @@ naming as the assembly. In JBrowse Web you can instead paste the URL into **File
   "assemblyNames": ["hg38"],
   "adapter": {
     "type": "VcfTabixAdapter",
-    "uri": "https://jbrowse.org/demos/kgp-trio/HG02024_VN049_KHVTrio.chr1.vcf.gz"
+    "uri": "https://jbrowse.org/demos/kgp-trio/HG02024_VN049_KHVTrio.chr1.vcf.gz",
+    "pedigreeLocation": {
+      "uri": "https://jbrowse.org/demos/kgp-trio/20130606_g1k_3202_samples_ped_population.txt"
+    }
   }
 }
 ```
 
+`pedigreeLocation` reads the 1000 Genomes pedigree, whose line
+`VN049 HG02024 HG02026 HG02025` names HG02026 as HG02024's father and HG02025 as
+the mother. It gives each sample `family`, `father`, `mother` and `sex`
+attributes, and with a child and a parent among the samples it enables the
+Mendelian check in the next step. A PLINK `.fam` works the same way.
+
 <Figure caption="The VCF on initial load: one row per sample, each genotype at its variant's position." src="/img/trio-basic.png"/>
+
+## Checking the trio's calls against the pedigree
+
+We'll check the calls before analyzing them, with **Color by → Mendelian check**
+in the track menu. At each site JBrowse asks whether the child's genotype can be
+made of one allele from each parent's, and colors the alt cells by the answer:
+
+- **Not in parents:** the child has an allele that neither parent was called
+  with.
+- **Inconsistent:** no way of taking one allele from each parent gives the
+  child's genotype, as for a hom-alt child of a hom-ref parent.
+- **Consistent:** one allele from each parent gives the child's genotype.
+
+A site where a no-call leaves the answer open keeps the default color. Near
+CFHR3 and CFHR1 the check flags both kinds of site:
+
+<Figure caption="Color by → Mendelian check across CFHR3 and CFHR1, rows HG02024 (child), HG02025 (mother) and HG02026 (father). Not-in-parents cells in the child left of CFHR3, and a run of inconsistent cells in the parents across CFHR1." src="/img/trio-mendelian.png"/>
+
+This VCF is the 1000 Genomes low-coverage callset, statistically phased, and
+under one percent of its chr1 sites fail the check. Most failures are genotyping
+errors, not de novo mutations. The run across CFHR1 has a second cause: the 1000
+Genomes SV callset gives the father and the child a deletion there
+(`HGSV_9982`), and a sample with one copy of a sequence is called homozygous for
+that copy's allele.
+
+- **Filter:** the display's `filter` entry
+  `{ "field": "mendelian", "oneOf": ["notInParents", "inconsistent"] }`, written
+  in **Advanced → Edit plot...**, keeps the failing sites alone.
+- **Hover and click:** hovering a cell names its site's check, and clicking it
+  opens the feature details, whose Mendelian check table lists each trio's call.
+
+The reads show which call at a flagged site is wrong. The child has a
+high-coverage CRAM from the 1000 Genomes 30x resequencing, streamed from the
+project's S3 bucket:
+
+```json addtrack loc=chr1:196,762,950-196,763,030
+{
+  "type": "AlignmentsTrack",
+  "trackId": "hg02024_cram",
+  "name": "HG02024 high coverage",
+  "assemblyNames": ["hg38"],
+  "uri": "https://1000genomes.s3.amazonaws.com/1000G_2504_high_coverage/additional_698_related/data/ERR3988976/HG02024.final.cram"
+}
+```
+
+At chr1:196,762,950-196,763,030 the callset has the child `0|1` and both parents
+`0|0` at 196,762,987, a not-in-parents site. The child's reads carry the G
+allele there, so the child's call stands. The mother's CRAM,
+`https://1000genomes.s3.amazonaws.com/1000G_2504_high_coverage/data/ERR3242042/HG02025.final.cram`,
+loaded the same way, has G reads too: the low-coverage calls missed the mother's
+het.
+
+**Color by → Genotype** returns the cells to the genotype colors the steps below
+use.
 
 ## Showing the trio VCF as a genotype matrix
 
@@ -166,9 +263,6 @@ them:
 | --------------- | ---------------- | -------------- |
 | HG02024:1       | HG02026 (father) | paternal       |
 | HG02024:2       | HG02025 (mother) | maternal       |
-
-The 1000 Genomes pedigree line `VN049 HG02024 HG02026 HG02025` gives the roles:
-father HG02026, mother HG02025.
 
 ## Converting hap-ibd data into painted inheritance blocks
 

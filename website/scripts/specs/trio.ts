@@ -170,7 +170,7 @@ export const trioSpecs: ScreenshotSpec[] = [
   {
     mode: 'url',
     name: 'trio-mendelian',
-    viewportHeight: 470,
+    viewportHeight: 495,
     // Not-in-parents sites near 196.76 Mb, where the 30x CRAMs show the
     // child's alt allele in a parent the low-coverage calls made hom-ref, and
     // a run of inconsistent sites across CFHR1, inside the deletion HGSV_9982
