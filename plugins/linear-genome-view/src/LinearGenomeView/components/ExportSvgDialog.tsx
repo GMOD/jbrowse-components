@@ -158,7 +158,7 @@ const ExportSvgDialog = observer(function ExportSvgDialog({
     >
       <TextField
         select
-        label="Track label positioning"
+        label="Track labels"
         variant="outlined"
         style={{ minWidth: 200 }}
         value={trackLabels}
@@ -190,7 +190,7 @@ const ExportSvgDialog = observer(function ExportSvgDialog({
             select
             label="Size"
             variant="outlined"
-            style={{ minWidth: 200 }}
+            style={{ flex: 1, minWidth: 200 }}
             value={sizeMode}
             onChange={event => {
               const picked = SIZE_MODES.find(m => m.mode === event.target.value)
@@ -210,7 +210,7 @@ const ExportSvgDialog = observer(function ExportSvgDialog({
               <TextField
                 label="Width"
                 variant="outlined"
-                style={{ width: 170 }}
+                style={{ width: 150 }}
                 value={pageWidthText}
                 error={!widthValid}
                 helperText={
@@ -255,7 +255,7 @@ const ExportSvgDialog = observer(function ExportSvgDialog({
               <TextField
                 label="Text size"
                 variant="outlined"
-                style={{ width: 130 }}
+                style={{ width: 120 }}
                 value={textSizeText}
                 error={!textSizeValid}
                 helperText={

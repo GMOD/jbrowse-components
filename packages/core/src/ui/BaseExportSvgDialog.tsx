@@ -152,10 +152,20 @@ export default observer(function BaseExportSvgDialog({
           message={`Creating ${format === 'r' ? 'R script' : format.toUpperCase()}`}
         />
       ) : null}
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+      <div
+        style={{
+          display: 'flex',
+          flexDirection: 'column',
+          gap: 12,
+          width: 500,
+          maxWidth: '100%',
+        }}
+      >
         <ControlRow>
           <TextField
             label="Filename"
+            variant="outlined"
+            style={{ flex: 1 }}
             value={filename}
             onChange={event => {
               setFilename(event.target.value)
@@ -246,12 +256,12 @@ export default observer(function BaseExportSvgDialog({
                   onChange={val => {
                     setRasterizePreference(val)
                   }}
-                  label="Rasterize canvas based tracks? File may be much larger if this is turned off"
+                  label="Rasterize canvas tracks (smaller file)"
                 />
               ) : (
-                <Typography>
-                  Note: rasterizing layers not yet supported in this browser, so
-                  SVG size may be large
+                <Typography variant="body2">
+                  This browser can't rasterize canvas tracks, so the SVG may be
+                  large
                 </Typography>
               )}
             </div>

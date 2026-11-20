@@ -16,7 +16,7 @@
 // fill, and the synteny ribbons are the only thing in the level's group.
 //
 // ONLY IF THE EXPORT IS VECTOR, and by default it is not — the dialog's
-// "Rasterize canvas based tracks?" defaults to on, and `renderSvg` then sends the
+// "Rasterize canvas tracks" defaults to on, and `renderSvg` then sends the
 // whole level through a 2x raster `PaintLayer` instead of `SvgCanvas`. The
 // default export of a whole-genome hs1/mm39 view is 2 paths and one 3.7MB
 // base64 PNG. So `--vector` unchecks it, and the counts below are the figure
@@ -25,7 +25,7 @@
 //   --loc=<a>,<b>   zoom the two rows (default: whole genomes)
 //   --dataset=hs1|grape
 //   --straight      drawCurves off (default on)
-//   --vector        uncheck "Rasterize canvas based tracks?", so the ribbons
+//   --vector        uncheck "Rasterize canvas tracks", so the ribbons
 //                   come out as paths and can be counted at all
 //   --out=<file>    also write the exported SVG
 import fs from 'node:fs'
@@ -122,7 +122,7 @@ try {
   if (args.includes('--vector')) {
     const unchecked = await page.evaluate(() => {
       const label = [...document.querySelectorAll('label')].find(l =>
-        l.textContent.startsWith('Rasterize canvas based tracks?'),
+        l.textContent.startsWith('Rasterize canvas tracks'),
       )
       const box = label?.querySelector<HTMLInputElement>('input[type=checkbox]')
       if (!box?.checked) {

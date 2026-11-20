@@ -63,11 +63,7 @@ async function triggerSvgExport(page: Page, { vector = false } = {}) {
   await exportSvg.click()
   await delay(500)
   if (vector) {
-    const rasterize = await findByText(
-      page,
-      'Rasterize canvas based tracks',
-      10000,
-    )
+    const rasterize = await findByText(page, 'Rasterize canvas tracks', 10000)
     await rasterize.click()
   }
   const submitBtn = await findByText(page, 'Submit', 10000)
