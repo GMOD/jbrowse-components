@@ -1,4 +1,4 @@
-import { createTestEnvironment } from './testEnv.ts'
+import { createTestEnvironment, makeSource } from './testEnv.ts'
 
 import type { WiggleHoveredFeature } from '../util.ts'
 
@@ -42,5 +42,33 @@ describe('LinearWiggleDisplay clears its hover when the content moves', () => {
     const { display } = createTestEnvironment().createDisplay()
     display.setHoveredFeature(hover)
     expect(display.hoveredFeature).toBeDefined()
+  })
+
+  // a hover names the row it was read from, so a clustering run or a sort
+  // landing under a still pointer would name a row no longer under it
+  it('clears on a row reorder, and keeps the hover on a relabel', () => {
+    const { display, view } = createTestEnvironment().createDisplay()
+    display.setRowLayout(true)
+    display.setRpcData(
+      0,
+      { sources: [makeSource('a'), makeSource('b')] },
+      view.displayedRegions[0],
+    )
+    const rowHover: WiggleHoveredFeature = {
+      ...hover,
+      rows: [{ source: 'a', score: 42 }],
+    }
+    display.setHoveredFeature(rowHover)
+
+    display.applyRowEdits(
+      display.arrangedRows.map((s, i) =>
+        i === 0 ? { ...s, label: 'Renamed' } : s,
+      ),
+    )
+    expect(display.hoveredFeature).toEqual(rowHover)
+
+    display.setRowOrder([{ name: 'b' }, { name: 'a' }])
+    expect(display.drawnRows.map(r => r.name)).toEqual(['b', 'a'])
+    expect(display.hoveredFeature).toBeUndefined()
   })
 })

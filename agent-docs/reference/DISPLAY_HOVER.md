@@ -34,6 +34,9 @@ hover state without a hover write re-firing it.
   Dotplot passes `plotTransform`, synteny's level `bandTransformKey`, and the
   breakpoint split view `overlayTransformKey`, which also carries each matched
   track's `scrollTop`, `height` and `regionTooLarge`.
+- **`TreeSidebarMixin` installs the same reaction over the drawn rows' names**,
+  for the row axis: a sort or a clustering run landing moves rows under a
+  still pointer with no viewport change, and a relabel moves none.
 
 ## Deriving is the other correct design
 

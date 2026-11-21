@@ -1,5 +1,6 @@
 import { setConf } from '@jbrowse/core/configuration'
 import { persistTrackConfigNow } from '@jbrowse/core/util'
+import { installClearHoverOnSurfaceMove } from '@jbrowse/core/util/installClearHoverOnSurfaceMove'
 import { ROW_ARRANGEMENT_MEMBERS } from '@jbrowse/display-kit/rowArrangementConfigSchema'
 import { types } from '@jbrowse/mobx-state-tree'
 import { compareStructural } from 'mobx'
@@ -55,14 +56,15 @@ export type { TreeSidebarConfigModel } from './rows/treeSidebarRowViews.ts'
 /**
  * The whole of what `TreeSidebarMixin` needs a composing display to be: the
  * `rows` object, its axis, colors and color channel, the resolved row
- * height, and the track's height and the scroll a focus resets
- * (`TrackHeightMixin`).
+ * height, the track's height and the scroll a focus resets
+ * (`TrackHeightMixin`), and the hover a row reorder drops (`BaseDisplay`).
  */
 export interface TreeSidebarHost {
   configuration: TreeSidebarConfigModel & { displayId: string }
   effectiveRowHeight: number
   height: number
   setScrollTop(top: number): void
+  clearHoveredFeature(): void
 }
 
 const host = <T extends object>(self: T) => self as T & TreeSidebarHost
@@ -160,6 +162,10 @@ export interface ClusterRun {
  * `rows.color` where it sets a row a color, to what the config.json declares,
  * or what a track the session owns was added with, and never touches
  * `rows.field`.
+ *
+ * A change in the drawn rows' order (a sort, a clustering run landing, a
+ * focus) clears the display's stored hover, which would otherwise name a row
+ * no longer under a still pointer; a relabel moves no row and keeps it.
  */
 export function TreeSidebarMixin<S extends Row = Row>() {
   const base = types
@@ -635,6 +641,15 @@ export function TreeSidebarMixin<S extends Row = Row>() {
             names,
           )
         }
+      },
+      afterAttach() {
+        installClearHoverOnSurfaceMove(self, {
+          transform: () => JSON.stringify(self.drawnRows.map(row => row.name)),
+          clear: () => {
+            host(self).clearHoveredFeature()
+          },
+          name: 'ClearHoverOnRowReorder',
+        })
       },
     }))
 }

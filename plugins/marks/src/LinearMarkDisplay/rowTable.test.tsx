@@ -169,32 +169,37 @@ test('a hidden row answers no hit and lights no ink', () => {
   expect(display.hoverInk).toEqual([])
 })
 
-test('the hover ring follows a reorder through the table', () => {
+test('the hover ring follows a reorder through the table, which drops the hover a still pointer held', () => {
   const display = loaded({ rows: 'source' })
   const layer = display.rpcDataMap.get(0)!.layers[0]!
   const dad = keyOf(display, 'dad')
   const instance = [...layer.row!].indexOf(dad)
-  display.setHoveredFeature({
-    markIndex: 0,
-    regionIndex: 0,
-    instance,
-    featureIndex: instance,
-    refName: 'ctgA',
-    start: 200,
-    end: 800,
-    bp: 300,
-    y: 9,
-    color: undefined,
-    colorValue: undefined,
-    glyph: undefined,
-    row: dad,
-    screenX: 0,
-    screenY: 0,
-  })
+  const hoverDad = () => {
+    display.setHoveredFeature({
+      markIndex: 0,
+      regionIndex: 0,
+      instance,
+      featureIndex: instance,
+      refName: 'ctgA',
+      start: 200,
+      end: 800,
+      bp: 300,
+      y: 9,
+      color: undefined,
+      colorValue: undefined,
+      glyph: undefined,
+      row: dad,
+      screenX: 0,
+      screenY: 0,
+    })
+  }
   const band = display.effectiveRowHeight
   const topAt = () => display.hoverInk[0]!.top - display.rowsTopOffset
+  hoverDad()
   expect(Math.floor(topAt() / band)).toBe(0)
   reorder(display, ['s10', 's2', 'mom', 'dad'])
+  expect(display.hoverInk).toEqual([])
+  hoverDad()
   expect(Math.floor(topAt() / band)).toBe(3)
 })
 
