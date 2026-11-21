@@ -34,6 +34,13 @@
 #
 set -euo pipefail
 
+for tool in python3 curl; do
+  command -v "$tool" >/dev/null 2>&1 || {
+    echo "error: '$tool' not found on PATH" >&2
+    exit 1
+  }
+done
+
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 HELPERS=(hosted_assembly.py)
 for h in "${HELPERS[@]}"; do

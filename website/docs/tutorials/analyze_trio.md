@@ -196,7 +196,8 @@ one color and a site with any error another, set as the variant display's
 ]
 ```
 
-Near CFHR3 and CFHR1 both kinds of error show:
+Type `chr1:196,745,000-196,850,000` in the location box to go to CFHR3 and
+CFHR1, where both kinds of error show:
 
 <Figure caption="The trio VCF colored by INFO.MERR across CFHR3 and CFHR1, rows HG02024 (daughter), HG02025 (mother) and HG02026 (father). Left of CFHR3 the child has alt cells at error sites where both parents are hom-ref, and across CFHR1 the parents' rows have a run of error sites." src="/img/trio-merr.png"/>
 
