@@ -12,6 +12,7 @@ import {
 import { VIEW_TRACK_LABEL_MODES } from '@jbrowse/display-kit/types'
 
 import type { LinearGenomeViewModel } from './model.ts'
+import type { ResettablePreference } from '@jbrowse/core/ui/preferencesPanels'
 import type { TrackConfigChange } from '@jbrowse/core/util'
 import type { ViewTrackLabelMode } from '@jbrowse/display-kit/types'
 
@@ -96,9 +97,10 @@ export function setToggle(
 }
 
 export function configTrackLabels(session: unknown): ViewTrackLabelMode {
-  return isSessionModel(session)
+  const configured: unknown = isSessionModel(session)
     ? getConf(session, ['LinearGenomeViewPlugin', 'trackLabels'])
-    : 'offset'
+    : undefined
+  return VIEW_TRACK_LABEL_MODES.find(mode => mode === configured) ?? 'offset'
 }
 
 export function setTrackLabels(
@@ -123,7 +125,7 @@ const PREFIX = 'Linear genome view: '
  * The rows "Reset to defaults" lists and reverts for this tab: each setting a
  * stored choice moves off its default.
  */
-export const LGV_RESETTABLE = [
+export const LGV_RESETTABLE: ResettablePreference[] = [
   ...LGV_TOGGLES.map(t => ({
     head: t.key,
     change: (): TrackConfigChange | undefined => {

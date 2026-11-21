@@ -16,12 +16,8 @@ import {
 
 import type { GeneralPreferencesSession } from './GeneralPreferencesTab.tsx'
 import type { ViewPreferencesSession } from './ViewPreferencesTab.tsx'
-import type {
-  ResettablePreference,
-  ResettablePreferencesSession,
-} from './preferencesReset.ts'
+import type { ResettablePreferencesSession } from './preferencesReset.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
-import type React from 'react'
 
 const useStyles = makeStyles()({
   container: {
@@ -36,29 +32,7 @@ export interface PreferencesDialogSession
     ViewPreferencesSession,
     ResettablePreferencesSession {}
 
-/**
- * Descriptor returned from the `Core-preferencesDialogPanels` extension point.
- * Each panel renders as its own tab in the dialog, labeled by `name`.
- */
-export interface PreferencesPanelDescriptor {
-  name: string
-  Component: React.ComponentType<{ session: PreferencesDialogSession }>
-  /**
-   * the panel's preferences kept outside the session's override map, so
-   * "Reset to defaults" lists and reverts them with the rest
-   */
-  resettable?: readonly ResettablePreference[]
-}
-
-declare module '@jbrowse/core/PluginManager' {
-  interface ExtensionPointRegistry {
-    'Core-preferencesDialogPanels': {
-      args: PreferencesPanelDescriptor[]
-      result: PreferencesPanelDescriptor[]
-      props: { session: PreferencesDialogSession }
-    }
-  }
-}
+export type { PreferencesPanelDescriptor } from '@jbrowse/core/ui/preferencesPanels'
 
 const PreferencesDialog = observer(function PreferencesDialog({
   handleClose,

@@ -59,6 +59,7 @@ import type {
 import type {} from './rpc/WebWorkerRpcDriver.ts'
 import type {} from './ui/buildExtraTrackMenuItems.ts'
 import type {} from './ui/multiTrackMenuItems.ts'
+import type {} from './ui/preferencesPanels.ts'
 import type {} from './util/addTrackComponent.ts'
 import type {
   AbstractRootModel,

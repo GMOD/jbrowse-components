@@ -1,5 +1,6 @@
 import { labelPreferenceChange } from './preferenceLabels.ts'
 
+import type { ResettablePreference } from '@jbrowse/core/ui/preferencesPanels'
 import type { TrackConfigChange } from '@jbrowse/core/util'
 
 export interface ResettablePreferencesSession {
@@ -14,52 +15,39 @@ export interface ResettablePreferencesSession {
   getPreferenceChanges: () => TrackConfigChange[]
 }
 
-/**
- * A preference held outside the session override map, with its own default
- * and reset; the map's row for the same key is dropped in favour of it, which
- * reports the resolved value. A preferences panel lists its own
- * (`PreferencesPanelDescriptor.resettable`).
- */
-export interface ResettablePreference {
-  head: string
-  change: (
-    session: ResettablePreferencesSession,
-  ) => TrackConfigChange | undefined
-  reset: (session: ResettablePreferencesSession) => void
-}
-
-const NON_MAP_PREFERENCES: ResettablePreference[] = [
-  {
-    head: 'theme',
-    change: s =>
-      s.themeName && s.themeName !== 'default'
-        ? { path: ['theme'], from: 'default', to: s.themeName }
-        : undefined,
-    reset: s => {
-      s.setThemeName('default')
+const NON_MAP_PREFERENCES: ResettablePreference<ResettablePreferencesSession>[] =
+  [
+    {
+      head: 'theme',
+      change: s =>
+        s.themeName && s.themeName !== 'default'
+          ? { path: ['theme'], from: 'default', to: s.themeName }
+          : undefined,
+      reset: s => {
+        s.setThemeName('default')
+      },
     },
-  },
-  {
-    head: 'themeMode',
-    change: s =>
-      s.themeMode === 'light'
-        ? undefined
-        : { path: ['themeMode'], from: 'light', to: s.themeMode },
-    reset: s => {
-      s.setThemeMode('light')
+    {
+      head: 'themeMode',
+      change: s =>
+        s.themeMode === 'light'
+          ? undefined
+          : { path: ['themeMode'], from: 'light', to: s.themeMode },
+      reset: s => {
+        s.setThemeMode('light')
+      },
     },
-  },
-  {
-    head: 'stickyViewHeaders',
-    change: s =>
-      s.stickyViewHeaders
-        ? undefined
-        : { path: ['stickyViewHeaders'], from: true, to: false },
-    reset: s => {
-      s.setStickyViewHeaders(true)
+    {
+      head: 'stickyViewHeaders',
+      change: s =>
+        s.stickyViewHeaders
+          ? undefined
+          : { path: ['stickyViewHeaders'], from: true, to: false },
+      reset: s => {
+        s.setStickyViewHeaders(true)
+      },
     },
-  },
-]
+  ]
 
 // Everything "Reset to defaults" reverts, as rows: the scalar overrides in the
 // preference map, and the preferences held outside it.
