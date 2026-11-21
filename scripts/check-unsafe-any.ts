@@ -32,12 +32,21 @@ const NOT_APP_SOURCE =
   /\.test\.|\/tests?\/|\/__tests__\/|testUtils?\.|test_util|\/browser-tests?(-utils)?\/|\/benches\/|\/scripts\/|\/examples-site\/|\/lambda\//
 
 const esmConfigPath = join(root, 'tsconfig.base.esm.json')
-const { config }: { config: { exclude: string[] } } =
-  ts.parseConfigFileTextToJson(
-    esmConfigPath,
-    readFileSync(esmConfigPath, 'utf8'),
-  )
-const OUT_OF_BUILD = config.exclude.map(glob =>
+const esmConfig: unknown = ts.parseConfigFileTextToJson(
+  esmConfigPath,
+  readFileSync(esmConfigPath, 'utf8'),
+).config
+
+function excludeGlobs(config: unknown): string[] {
+  return typeof config === 'object' &&
+    config !== null &&
+    'exclude' in config &&
+    Array.isArray(config.exclude)
+    ? config.exclude.filter((glob): glob is string => typeof glob === 'string')
+    : []
+}
+
+const OUT_OF_BUILD = excludeGlobs(esmConfig).map(glob =>
   glob.replace('${configDir}', '**'),
 )
 
