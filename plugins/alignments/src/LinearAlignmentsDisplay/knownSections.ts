@@ -28,27 +28,24 @@ export function knownSections(
   facet: Facet | undefined,
   hidden: ReadonlySet<string>,
 ): GroupId[] {
-  return facet ? knownFacetSections(rpcDataMap, facet, hidden) : []
-}
-
-export function knownFacetSections(
-  rpcDataMap: ReadonlyMap<number, GroupedAlignmentsResult>,
-  { field, sort = [] }: Facet,
-  hidden: ReadonlySet<string>,
-) {
-  const compare = sectionOrder(field, sort)
-  const fetched = new Map(
-    orderedGroups(rpcDataMap, undefined, compare)
-      .filter(({ key }) => key !== OVERFLOW_GROUP_KEY)
-      .map(({ key, label }) => [key, label]),
-  )
-  const label = isReadDimension(field)
-    ? (key: string) => fetched.get(key) ?? (key === '' ? NO_VALUE_LABEL : key)
-    : categoricalField(fieldTag(field) ?? field).label
-  return knownSectionsOf(fetched.keys(), { compare, label }, [
-    ...sort,
-    ...hidden,
-  ])
+  if (facet) {
+    const { field, sort = [] } = facet
+    const compare = sectionOrder(field, sort)
+    const fetched = new Map(
+      orderedGroups(rpcDataMap, undefined, compare)
+        .filter(({ key }) => key !== OVERFLOW_GROUP_KEY)
+        .map(({ key, label }) => [key, label]),
+    )
+    const label = isReadDimension(field)
+      ? (key: string) => fetched.get(key) ?? (key === '' ? NO_VALUE_LABEL : key)
+      : categoricalField(fieldTag(field) ?? field).label
+    return knownSectionsOf(fetched.keys(), { compare, label }, [
+      ...sort,
+      ...hidden,
+    ])
+  } else {
+    return []
+  }
 }
 
 /** The Sections dialog's column header for a facet on `field`. */
