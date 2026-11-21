@@ -62,8 +62,12 @@ import {
 import {
   anchorRowViews,
   fetchLaneSelectionViews,
+  filedGroupViews,
   laneDomainViews,
+  laneFetchViews,
+  laneGroupListViews,
   laneGroupViews,
+  laneIndelViews,
   laneOrderHoldActions,
   laneOrderViews,
   laneRowAssemblyViews,
@@ -396,7 +400,11 @@ const MultiWayTablesHost = types
   }))
   .views(configSlotViews)
   .views(laneGroupViews)
+  .views(filedGroupViews)
+  .views(laneGroupListViews)
+  .views(laneIndelViews)
   .views(laneSourceViews)
+  .views(laneFetchViews)
   .views(laneDomainViews)
   .views(laneSelectionViews)
   .views(fetchLaneSelectionViews)

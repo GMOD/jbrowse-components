@@ -35,23 +35,37 @@ export function connectorsBandViews(
         height: getConf(self, ['connectors', 'height']),
       })
     },
+  }
+}
+
+export function connectorsStackViews(
+  self: ReturnType<typeof connectorsBandViews>,
+) {
+  return {
     /**
      * #getter
      */
     get connectorsStack() {
-      return connectorsBandStack(this.connectorsBand)
+      return connectorsBandStack(self.connectorsBand)
     },
+  }
+}
+
+export function connectorsHeightViews(
+  self: ReturnType<typeof connectorsStackViews>,
+) {
+  return {
     /**
      * #getter
      */
     get connectorsHeight(): number {
-      return this.connectorsStack.reserved.connectors
+      return self.connectorsStack.reserved.connectors
     },
   }
 }
 
 export function connectorsBandActions(
-  self: ConnectorsBandHost & ReturnType<typeof connectorsBandViews>,
+  self: ConnectorsBandHost & ReturnType<typeof connectorsStackViews>,
   { trackHeight }: Pick<ConnectorsBandRules, 'trackHeight'>,
 ) {
   return {

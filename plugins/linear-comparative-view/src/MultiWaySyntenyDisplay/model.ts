@@ -157,14 +157,20 @@ import { isFlipPin, pinnedRowOf, withPin } from './lanePins.ts'
 import {
   anchorRowViews,
   fetchLaneSelectionViews,
+  filedGroupViews,
   laneDomainViews,
+  laneFetchViews,
+  laneGroupListViews,
   laneGroupViews,
+  laneIndelViews,
   laneOrderHoldActions,
   laneOrderViews,
   laneRowAssemblyViews,
   laneSelectionActions,
   laneSelectionViews,
   laneSourceViews,
+  laneStructureOrderViews,
+  placelessLaneViews,
   unalignedLaneViews,
 } from './laneRowViews.ts'
 import { laneUniverseOf } from './laneSelection.ts'
@@ -742,6 +748,9 @@ export function stateModelFactory(
       },
     }))
     .views(laneGroupViews)
+    .views(filedGroupViews)
+    .views(laneGroupListViews)
+    .views(laneIndelViews)
     .views(self => ({
       /** #getter */
       get ribbonColorAttributes(): string[] {
@@ -985,6 +994,7 @@ export function stateModelFactory(
       },
     }))
     .views(laneSourceViews)
+    .views(laneFetchViews)
     .views(laneDomainViews)
     .views(laneSelectionViews)
     .views(fetchLaneSelectionViews)
@@ -1038,9 +1048,11 @@ export function stateModelFactory(
       },
     }))
     .views(unalignedLaneViews)
+    .views(placelessLaneViews)
     .views(laneRowAssemblyViews)
     .views(anchorRowViews)
     .views(laneOrderViews)
+    .views(laneStructureOrderViews)
     .views(self => ({
       /**
        * #getter

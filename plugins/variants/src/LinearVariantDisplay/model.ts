@@ -63,6 +63,8 @@ import {
 import {
   connectorsBandActions,
   connectorsBandViews,
+  connectorsHeightViews,
+  connectorsStackViews,
 } from '../shared/connectorsBandViews.ts'
 import {
   HIDDEN_ROW,
@@ -101,7 +103,12 @@ import {
 import { keyedRecordViews, keyedVariantViews } from './keyedVariants.ts'
 import { loadedRegionIndexOverlapping } from './loadedRegionIndexOverlapping.ts'
 import { VARIANT_MATRIX_MARKS } from './matrix/variantMatrixMarks.ts'
-import { matrixLayoutViews } from './matrixLayoutViews.ts'
+import {
+  matrixColumnGeometryViews,
+  matrixColumnViews,
+  matrixConnectorLineViews,
+  matrixLayoutViews,
+} from './matrixLayoutViews.ts'
 import { mapPayloadRegions } from './payloadRegions.ts'
 import { placeVariantRows } from './placeVariantRows.ts'
 import {
@@ -760,6 +767,8 @@ export function stateModelFactory(
             !self.atGenomicPositions && getConf(self, ['connectors', 'show']),
         }),
       )
+      .views(self => connectorsStackViews(self))
+      .views(self => connectorsHeightViews(self))
       .actions(self =>
         connectorsBandActions(self, {
           trackHeight: () => self.fitTargetHeight,
@@ -1331,6 +1340,9 @@ export function stateModelFactory(
         },
       }))
       .views(self => matrixLayoutViews(self))
+      .views(self => matrixColumnGeometryViews(self))
+      .views(self => matrixColumnViews(self))
+      .views(self => matrixConnectorLineViews(self))
       .views(self => ({
         // Resolved geometry, never undefined. "The view isn't measured yet" is
         // the mixin-wide `canRender` gate, and "no payload" falls out of an

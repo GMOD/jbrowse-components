@@ -143,22 +143,32 @@ export function laneGroupViews(self: LaneGroupHost) {
         anchorInBlocks(self.lgv.settledDynamicBlocks, self.anchorCanon),
       )
     },
+  }
+}
+
+export function filedGroupViews(self: ReturnType<typeof laneGroupViews>) {
+  return {
     /**
      * #getter
      * the groups as `rows.field` files them, in one pass with the copy
      * lanes the floor drops
      */
     get filedGroups() {
-      return groupsOfField(this.laneField, this.groupedFeatures, () =>
-        this.copyFiling(),
+      return groupsOfField(self.laneField, self.groupedFeatures, () =>
+        self.copyFiling(),
       )
     },
+  }
+}
+
+export function laneGroupListViews(self: ReturnType<typeof filedGroupViews>) {
+  return {
     /**
      * #getter
      * each mate filed under its genome's lane, or its copy lane
      */
     get groups() {
-      return this.filedGroups.groups
+      return self.filedGroups.groups
     },
     /**
      * #getter
@@ -166,7 +176,7 @@ export function laneGroupViews(self: LaneGroupHost) {
      * lane dialog offers unticked
      */
     get copyLanesUnderFloor(): readonly string[] {
-      return this.filedGroups.underFloor
+      return self.filedGroups.underFloor
     },
     /**
      * #getter
@@ -175,14 +185,19 @@ export function laneGroupViews(self: LaneGroupHost) {
      * both its pieces arrive and not as the second scrolls in
      */
     get laneIndels() {
-      return laneIndelsOf(this.groups)
+      return laneIndelsOf(self.filedGroups.groups)
     },
+  }
+}
+
+export function laneIndelViews(self: ReturnType<typeof laneGroupListViews>) {
+  return {
     /**
      * #getter
      * each lane's holes, one per deletion `laneIndels` opens
      */
     get laneOpenings() {
-      return this.laneIndels.openings
+      return self.laneIndels.openings
     },
     /**
      * #getter
@@ -190,12 +205,13 @@ export function laneGroupViews(self: LaneGroupHost) {
      * them, for the header
      */
     get laneChanges() {
-      return this.laneIndels.changes
+      return self.laneIndels.changes
     },
   }
 }
 
-type LaneGroups = ReturnType<typeof laneGroupViews>
+type LaneGroups = ReturnType<typeof laneGroupViews> &
+  ReturnType<typeof laneGroupListViews>
 
 export type LaneSourceHost = Pick<
   LaneRowInputs,
@@ -217,12 +233,20 @@ export function laneSourceViews(self: LaneSourceHost) {
         self.laneField,
       )
     },
+  }
+}
+
+export function laneFetchViews(
+  self: Pick<LaneRowInputs, 'starAnchor' | 'features'> &
+    ReturnType<typeof laneSourceViews>,
+) {
+  return {
     /**
      * #getter
      * the fetches beyond the anchor's that its records call for
      */
     get laneFetchKinds() {
-      return laneFetchesFor(self.features, this.rowsVsAnchor, self.starAnchor)
+      return laneFetchesFor(self.features, self.rowsVsAnchor, self.starAnchor)
     },
   }
 }
@@ -353,6 +377,14 @@ export function unalignedLaneViews(self: UnalignedLaneHost) {
         self.laneField,
       )
     },
+  }
+}
+
+export function placelessLaneViews(
+  self: Pick<LaneRowInputs, 'laneKey' | 'windowDeletions'> &
+    ReturnType<typeof unalignedLaneViews>,
+) {
+  return {
     /**
      * #method
      * why a lane the window shows none of draws a row, or undefined where it
@@ -365,7 +397,7 @@ export function unalignedLaneViews(self: UnalignedLaneHost) {
       )
       return spanning.length
         ? { kind: 'deletion', bp: Math.max(...spanning.map(d => d.bp)) }
-        : this.unalignedChosenLanes.some(name => self.laneKey(name) === key)
+        : self.unalignedChosenLanes.some(name => self.laneKey(name) === key)
           ? { kind: 'unaligned' }
           : undefined
     },
@@ -487,22 +519,30 @@ export function laneOrderViews(self: LaneOrderHost) {
     },
     /**
      * #getter
-     * the drawn lanes in `structureLaneKeys` order, for "Order lanes by
-     * structure"; empty for a gene table
-     */
-    get laneStructureOrder(): string[] {
-      const row = this.rowOfLane
-      return self.anchorRecordsLoaded && !self.features.some(isNamedRecord)
-        ? this.structureLaneKeys.flatMap(lane => row.get(lane) ?? [])
-        : []
-    },
-    /**
-     * #getter
      * each drawn lane's row name by its canonical name, for data keyed by
      * the records' spelling of a lane
      */
     get rowOfLane(): ReadonlyMap<string, string> {
       return new Map(self.rowAssemblies.map(r => [self.laneKey(r), r]))
+    },
+  }
+}
+
+export function laneStructureOrderViews(
+  self: Pick<LaneRowInputs, 'anchorRecordsLoaded' | 'features'> &
+    ReturnType<typeof laneOrderViews>,
+) {
+  return {
+    /**
+     * #getter
+     * the drawn lanes in `structureLaneKeys` order, for "Order lanes by
+     * structure"; empty for a gene table
+     */
+    get laneStructureOrder(): string[] {
+      const row = self.rowOfLane
+      return self.anchorRecordsLoaded && !self.features.some(isNamedRecord)
+        ? self.structureLaneKeys.flatMap(lane => row.get(lane) ?? [])
+        : []
     },
   }
 }
@@ -516,7 +556,7 @@ export type LaneOrderHoldHost = Pick<
   | 'currentFetch'
   | 'heldLaneOrder'
 > &
-  Pick<ReturnType<typeof laneSourceViews>, 'laneFetchKinds'> &
+  Pick<ReturnType<typeof laneFetchViews>, 'laneFetchKinds'> &
   Pick<ReturnType<typeof laneOrderViews>, 'structureLaneKeys'>
 
 export function laneOrderHoldActions(self: LaneOrderHoldHost) {

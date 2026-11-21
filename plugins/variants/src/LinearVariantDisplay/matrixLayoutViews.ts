@@ -19,7 +19,8 @@ export interface MatrixLayoutHost extends IStateTreeNode {
 
 /**
  * The columns layout's geometry: one equal-width column per variant across
- * the content, and the connector tying each to its genomic position.
+ * the content, and the connector tying each to its genomic position, in
+ * four layers, each reading the ones before it.
  */
 export function matrixLayoutViews(self: MatrixLayoutHost) {
   return {
@@ -34,6 +35,13 @@ export function matrixLayoutViews(self: MatrixLayoutHost) {
     get matrixWidth() {
       return self.view.totalWidthPxWithoutBorders
     },
+  }
+}
+
+export function matrixColumnGeometryViews(
+  self: MatrixLayoutHost & ReturnType<typeof matrixLayoutViews>,
+) {
+  return {
     /**
      * #getter
      * Column pitch and origin in viewport pixels: `left` is where the
@@ -45,10 +53,19 @@ export function matrixLayoutViews(self: MatrixLayoutHost) {
       const n = self.cellData?.simplifiedFeatures.length ?? 0
       return {
         n,
-        columnWidth: n ? this.matrixWidth / n : 0,
+        columnWidth: n ? self.matrixWidth / n : 0,
         left: Math.max(0, -self.host.offsetPx),
       }
     },
+  }
+}
+
+export function matrixColumnViews(
+  self: MatrixLayoutHost &
+    ReturnType<typeof matrixLayoutViews> &
+    ReturnType<typeof matrixColumnGeometryViews>,
+) {
+  return {
     /**
      * #getter
      * The one block the column layout draws: the whole canvas, spanning
@@ -61,9 +78,9 @@ export function matrixLayoutViews(self: MatrixLayoutHost) {
         {
           displayedRegionIndex: 0,
           start: 0,
-          end: Math.max(this.columnGeometry.n, 1),
+          end: Math.max(self.columnGeometry.n, 1),
           screenStartPx: 0,
-          screenEndPx: this.matrixWidth,
+          screenEndPx: self.matrixWidth,
           reversed: false,
         },
       ]
@@ -81,7 +98,7 @@ export function matrixLayoutViews(self: MatrixLayoutHost) {
     get connectorCoordsByColumn(): (ConnectorCoord | undefined)[] {
       const features = self.cellData?.simplifiedFeatures ?? []
       const locusX = locusViewportXFor(self)
-      const { columnWidth, left } = this.columnGeometry
+      const { columnWidth, left } = self.columnGeometry
       return features.map(({ data }, i) => {
         const gx = locusX(String(data.refName), Number(data.start))
         return gx === undefined
@@ -93,12 +110,20 @@ export function matrixLayoutViews(self: MatrixLayoutHost) {
             }
       })
     },
+  }
+}
+
+export function matrixConnectorLineViews(
+  self: ReturnType<typeof matrixColumnGeometryViews> &
+    ReturnType<typeof matrixColumnViews>,
+) {
+  return {
     /**
      * #getter
      * The connector lines that draw: those with a genomic x.
      */
     get connectorLineCoords(): ConnectorCoord[] {
-      return this.connectorCoordsByColumn.filter(coord => coord !== undefined)
+      return self.connectorCoordsByColumn.filter(coord => coord !== undefined)
     },
     /**
      * #method
@@ -106,10 +131,10 @@ export function matrixLayoutViews(self: MatrixLayoutHost) {
      * undefined off the ends and over a column with no genomic x.
      */
     connectorLineAtScreenX(screenX: number): ConnectorCoord | undefined {
-      const { n, columnWidth, left } = this.columnGeometry
+      const { n, columnWidth, left } = self.columnGeometry
       const screenCol = Math.floor((screenX - left) / columnWidth)
       return screenCol >= 0 && screenCol < n
-        ? this.connectorCoordsByColumn[screenCol]
+        ? self.connectorCoordsByColumn[screenCol]
         : undefined
     },
   }

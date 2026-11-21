@@ -27,6 +27,8 @@ import { bandDepthFraction, bandPairIndex } from '../RenderLDDataRPC/ldBand.ts'
 import {
   connectorsBandActions,
   connectorsBandViews,
+  connectorsHeightViews,
+  connectorsStackViews,
 } from '../shared/connectorsBandViews.ts'
 import { locusViewportXFor } from '../shared/genomicViewportX.ts'
 import { ldMetricLabel } from './components/ldValueLabel.ts'
@@ -279,6 +281,8 @@ export default function stateModelFactory(configSchema: LDDisplayConfigSchema) {
           (!self.atGenomicPositions || self.showNames),
       }),
     )
+    .views(self => connectorsStackViews(self))
+    .views(self => connectorsHeightViews(self))
     .actions(self =>
       connectorsBandActions(self, { trackHeight: () => self.height }),
     )
