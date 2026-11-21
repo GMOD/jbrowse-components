@@ -79,7 +79,7 @@ export function mafCoverageViews(self: MafCoverageHost) {
       return mafValueScales({
         topBands: self.topBands,
         coverageDomain: self.coverageDepthDomain,
-        coverageTicks: self.coverageTicks,
+        coverageTicks: () => self.coverageTicks,
         scaleType: self.scaleType,
         symlogConstant: self.symlogConstant,
         guide: self.axisGuide,

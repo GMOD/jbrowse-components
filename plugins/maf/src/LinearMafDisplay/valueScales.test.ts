@@ -16,7 +16,7 @@ function inputs(
       { height: 220, floor: 20 },
     ),
     coverageDomain: [0, 30],
-    coverageTicks: { items: [], yTop: 0, yBottom: 60 },
+    coverageTicks: () => ({ items: [], yTop: 0, yBottom: 60 }),
     scaleType: 'linear',
     symlogConstant: 1,
     guide: { caption: 'Depth', grid: false, showAxis: true },
@@ -61,4 +61,12 @@ test('coverage waits for its depth domain', () => {
       ),
     ),
   ).toEqual([])
+})
+
+test('a band drawn at no height lays out no ticks', () => {
+  const coverageTicks = jest.fn(() => undefined)
+  mafValueScales(
+    inputs({ coverage: false, conservation: true }, { coverageTicks }),
+  )
+  expect(coverageTicks).not.toHaveBeenCalled()
 })
