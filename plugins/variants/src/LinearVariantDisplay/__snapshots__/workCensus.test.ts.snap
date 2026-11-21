@@ -5,24 +5,24 @@ exports[`what each row step recomputes, phased 1`] = `
 second region arrival     arrange 0  alias 0  shown 0  stacked 0  drawn 0  dealtValueColors 0  resolvedRowColors 0  -
 pan, no arrival           arrange 0  alias 0  shown 0  stacked 0  drawn 0  dealtValueColors 0  resolvedRowColors 0  ClearBlockingStateOnViewportChange 1
 drag reorder              arrange 1 (7 rows)  alias 7  shown 1  stacked 1  drawn 1  dealtValueColors 0  resolvedRowColors 1  -
-focus                     arrange 1 (7 rows)  alias 33  shown 2  stacked 2  drawn 2  dealtValueColors 0  resolvedRowColors 1  FetchVisibleRegions 2, SettingsInvalidate 1
+focus                     arrange 0  alias 13  shown 1  stacked 1  drawn 1  dealtValueColors 0  resolvedRowColors 0  FetchVisibleRegions 2, SettingsInvalidate 1
 relabel                   arrange 1 (7 rows)  alias 20  shown 1  stacked 1  drawn 1  dealtValueColors 0  resolvedRowColors 0  -
 recolor                   arrange 1 (7 rows)  alias 32  shown 1  stacked 1  drawn 1  dealtValueColors 1  resolvedRowColors 1  -
 cluster run lands a tree  arrange 1 (7 rows)  alias 42  shown 1  stacked 1  drawn 1  dealtValueColors 0  resolvedRowColors 1  -
-region arrival, arranged  arrange 1 (7 rows)  alias 42  shown 1  stacked 1  drawn 1  dealtValueColors 0  resolvedRowColors 1  -
-reset                     arrange 2 (11 rows)  alias 0  shown 2  stacked 2  drawn 2  dealtValueColors 1  resolvedRowColors 2  FetchVisibleRegions 2, SettingsInvalidate 1"
+region arrival, arranged  arrange 0  alias 0  shown 0  stacked 0  drawn 0  dealtValueColors 0  resolvedRowColors 0  -
+reset                     arrange 1 (7 rows)  alias 0  shown 1  stacked 1  drawn 1  dealtValueColors 1  resolvedRowColors 1  FetchVisibleRegions 2, SettingsInvalidate 1"
 `;
 
 exports[`what each row step recomputes, phased and banded by population 1`] = `
 "initial load           arrange 2 (11 rows)  alias 0  shown 2  stacked 2  drawn 2  dealtValueColors 0  resolvedRowColors 2  FetchVisibleRegions 2, GetVariantSources 1, SettingsInvalidate 1
 second region arrival  arrange 0  alias 0  shown 0  stacked 0  drawn 0  dealtValueColors 0  resolvedRowColors 0  -
 drag reorder           arrange 1 (7 rows)  alias 7  shown 1  stacked 1  drawn 1  dealtValueColors 0  resolvedRowColors 1  -
-focus                  arrange 1 (7 rows)  alias 33  shown 2  stacked 2  drawn 2  dealtValueColors 0  resolvedRowColors 1  FetchVisibleRegions 2, SettingsInvalidate 1"
+focus                  arrange 0  alias 13  shown 1  stacked 1  drawn 1  dealtValueColors 0  resolvedRowColors 0  FetchVisibleRegions 2, SettingsInvalidate 1"
 `;
 
 exports[`what each row step recomputes, phased and colored by population 1`] = `
 "initial load           arrange 2 (11 rows)  alias 0  shown 2  stacked 2  drawn 2  dealtValueColors 2  resolvedRowColors 2  FetchVisibleRegions 2, GetVariantSources 1, SettingsInvalidate 1
 second region arrival  arrange 0  alias 0  shown 0  stacked 0  drawn 0  dealtValueColors 0  resolvedRowColors 0  -
 drag reorder           arrange 1 (7 rows)  alias 7  shown 1  stacked 1  drawn 1  dealtValueColors 1  resolvedRowColors 1  -
-focus                  arrange 1 (7 rows)  alias 33  shown 2  stacked 2  drawn 2  dealtValueColors 1  resolvedRowColors 1  FetchVisibleRegions 2, SettingsInvalidate 1"
+focus                  arrange 0  alias 13  shown 1  stacked 1  drawn 1  dealtValueColors 0  resolvedRowColors 0  FetchVisibleRegions 2, SettingsInvalidate 1"
 `;
