@@ -39,20 +39,28 @@ locstring).
 - **GenBank export writes NCBI GFF3's `gb-synonym` on `source`.** A GFF3
   track's `gbkey=Src` region becomes the record's `source` (`sourceQualifiers`
   in `packages/core/src/pluggableElementTypes/models/saveTrackFileTypes/genbank.ts`);
-  `Dbxref`, `substr` and `genome` are respelled or dropped, but a qualifier INSDC
-  has no key for, such as `gb-synonym`, is written as is. No qualifier line is
-  wrapped at 80 columns; Biopython 1.86 reads the output either way.
-- **Feature details opened without `GetBasicFeatureDetails` wraps only by the
-  assembly.** The file's own `Is_circular` reaches details as a `circularLength`
-  that RPC stamps, so a details widget restored from a session snapshot reads a
-  feature past the origin of a FASTA assembly with no `circularRefNames` as
-  linear. Listing the sequence in `circularRefNames` covers it.
+  `Dbxref`, `substr` and the hyphenated ASN.1 names (`nat-host`,
+  `collection-date`, ...) are respelled, an organelle `genome` becomes
+  `/organelle` and any other `genome` is dropped, but a qualifier INSDC has no
+  key for, such as `gb-synonym`, `gb-acronym` or `old-name`, is written as is.
+  No qualifier line is wrapped at 80 columns; Biopython 1.86 reads the output
+  either way.
+- **A mark display opens an origin-crossing feature's details on one piece.**
+  `GetBasicFeatureDetails` reads a record whole across the origin of a sequence
+  its file declares circular and stamps the `circularLength` details wraps by
+  (a session snapshot keeps it). `LinearMarkDisplay` opens details through
+  `selectEncodedFeature` and `CoreGetEncodedFeature` instead, which read the
+  adapter without `wholeAcrossOrigin` and stamp nothing, so a click opens the
+  piece of the feature on the side of the origin it hit. Read from
+  `packages/core/src/rpc/methods/executeEncodedLayers.ts`, not run.
 - **A text-index hit across a circular origin navigates to its first piece
   only.** The GenBank indexer writes `join(92000..92721,1..500)` on a
   `LOCUS circular` record as `NC_002128:92000..93221`, where the adapter draws
   it, but `locStringsToRegions` clamps an end past the contig, so choosing the
-  hit shows 92000..92721. NCBI records only; Prokka writes every record linear.
-  Read from `packages/text-indexing-core/src/types/genbankAdapter.ts`, not run.
+  hit shows 92000..92721. Any circular record with a feature joined across its
+  origin hits it, whichever program wrote it; Prokka writes every record
+  linear, so its files do not. Read from
+  `packages/text-indexing-core/src/types/genbankAdapter.ts`, not run.
 
 ## Open questions, unverified
 
