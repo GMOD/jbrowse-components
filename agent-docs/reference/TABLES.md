@@ -771,16 +771,18 @@ them, which is what the downstream canary is for.
 A table runs the display's own decisions, not a copy of them, on a static host:
 a minimal MST model per display with no session, view or autoruns
 (`wiggleStaticHost.ts` and `featureStaticHost.ts` in each plugin's `shared/`,
-`VariantTablesHost`, `VariantRecordsTablesHost` and `AlignmentsTablesHost` in
-their `tables.ts`, and `MultiWayTablesHost` in linear-comparative-view's
-`multiwayTables.ts`).
+`VariantTablesHost` and `VariantRecordsTablesHost` in variants' `tables.ts`,
+`AlignmentsTablesHost` in alignments' `tablesHost.ts`, and
+`MultiWayTablesHost` in linear-comparative-view's `multiwayTables.ts`).
 
 - **The display's chain is views functions** over a duck-typed host, each
   returning an object of getters. The display model installs each with
   `.views(self => xViews(self))`, so every getter stays its own computed; the
-  host installs the same functions in the same order. Inside one, every member
-  is read through `self`, and a getter reading a sibling goes in a later
-  function.
+  host installs the same functions in the same order. Inside one, a getter
+  reads the host and earlier functions through `self` and its neighbours
+  through `this`; a getter reading a member a display overrides reads it
+  through `self` from a later function, as the tree sidebar's layers do
+  ([TREE_SIDEBAR](TREE_SIDEBAR.md)).
 - **The host is declared at module scope**: the display's config schema as a
   child, the frame and the fetched results as volatiles each set by one
   action, the config mixins the display composes (`TrackHeightMixin`,
@@ -798,8 +800,8 @@ their `tables.ts`, and `MultiWayTablesHost` in linear-comparative-view's
   `wiggleSidebarStages` (`LinearWiggleDisplay` and the wiggle host). Views that
   read `configuration`, a prop, are listed in both, since an installer would
   have to constrain the model's props. `MultiWayTablesHost` lists the lane row
-  views by hand: the display installs `laneNameViews` between them, which the
-  host leaves out.
+  and lane name views by hand: the display installs `placelessLaneViews` and
+  `laneStructureOrderViews` between them, which the host leaves out.
 - **Not a plain object.** A plain object with getters installed by hand needed
   a cast for the views' own hooks and lazy forwarding between host and views,
   and one spread-merged with a views object evaluated every getter eagerly, so

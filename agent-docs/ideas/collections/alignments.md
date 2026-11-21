@@ -210,7 +210,7 @@ Left over when a data-resolved `auto` unit was declined (the reasons sit at
 `ALIGNMENTS_UNITS`). Chain stays an opt-in, so none of these is a defaults
 question any more.
 
-**Chain-mode sort.** `sortReadsBlockedReason` (`LinearAlignmentsDisplay/model.ts`)
+**Chain-mode sort.** `sortReadsBlockedReason` (`LinearAlignmentsDisplay/fitViews.ts`)
 refuses every read sort in chain mode, and nothing declines it. Sorting chains
 by the member under the clicked base is a `computeChainLayout.ts` change (layout
 is main-thread, ADR-053); a tag sort also reopens ADR-188's "chain mode sends no
