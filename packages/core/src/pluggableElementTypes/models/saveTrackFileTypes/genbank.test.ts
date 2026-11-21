@@ -953,3 +953,56 @@ describe('GenBank CDS reading frame', () => {
     ).toContain('/codon_start=3')
   })
 })
+
+describe('GenBank CDS qualifiers', () => {
+  // the shape GenBank import gives a CDS under a gene: every piece carries the
+  // CDS's qualifiers, /gene and /codon_start among them
+  const qualifiers = {
+    name: 'lacZ',
+    gene: 'lacZ',
+    label: 'lacZ',
+    codon_start: '1',
+    product: 'beta-galactosidase',
+    protein_id: 'AAA24053.1',
+    transl_except: '(pos:1..3,aa:Met)',
+    translation: 'MTMITDSLAVVLQ',
+  }
+  const gene = createFeature({
+    id: 'gene-lacZ',
+    name: 'lacZ',
+    refName: 'chr1',
+    start: 0,
+    end: 3075,
+    strand: 1,
+    type: 'gene',
+    subfeatures: [
+      {
+        id: 'mrna-lacZ',
+        type: 'mRNA',
+        start: 0,
+        end: 3075,
+        subfeatures: [
+          { id: 'exon-lacZ', type: 'exon', start: 0, end: 3075 },
+          { ...qualifiers, id: 'cds-lacZ', type: 'CDS', start: 0, end: 3075 },
+        ],
+      },
+    ],
+  })
+
+  it('writes the qualifiers of a CDS under a gene, each once', () => {
+    const lines = formatFeatWithSubfeatures({ feature: gene, minPos: 0 })
+      .split('\n')
+      .map(line => line.trim())
+    const cds = lines.slice(lines.findIndex(line => line.startsWith('CDS')))
+    expect(cds).toEqual([
+      'CDS             1..3075',
+      '/gene="lacZ"',
+      '/label="lacZ"',
+      '/codon_start=1',
+      '/product="beta-galactosidase"',
+      '/protein_id="AAA24053.1"',
+      '/transl_except="(pos:1..3,aa:Met)"',
+      `/translation="${qualifiers.translation}"`,
+    ])
+  })
+})

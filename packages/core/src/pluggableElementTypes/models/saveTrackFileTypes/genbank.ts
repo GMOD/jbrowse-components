@@ -167,20 +167,30 @@ function formatTags({
   feature,
   gene,
   key,
+  label = feature.get('name') ?? feature.get('id'),
+  codonStart,
 }: {
   feature: Feature
   gene?: string
   key?: string
+  label?: string
+  codonStart?: number
 }) {
   const tags: string[] = []
+  const written = new Set<string>()
   // /gene ties gene/mRNA/CDS together; /label is what SnapGene/Geneious/ApE
   // display as the feature name on the map
   if (gene) {
     tags.push(qualifier('gene', gene))
+    written.add('gene')
   }
-  const label = feature.get('name') ?? feature.get('id')
   if (label) {
     tags.push(qualifier('label', label))
+    written.add('label')
+  }
+  if (codonStart !== undefined) {
+    tags.push(`${QUALIFIER_INDENT}/codon_start=${codonStart}`)
+    written.add('codon_start')
   }
   // a feature that had to become misc_feature still knows what it is, so the
   // term it came in as rides along rather than being dropped at the key column
@@ -189,7 +199,7 @@ function formatTags({
     tags.push(qualifier('note', type))
   }
   for (const key of Object.keys(feature.toJSON())) {
-    if (!coreFields.has(key)) {
+    if (!coreFields.has(key) && !written.has(key)) {
       const value = formatAttributeValue(feature.get(key))
       if (value) {
         tags.push(qualifier(key, value))
@@ -213,6 +223,9 @@ function codonStart(feats: Feature[], strand: number) {
   return (first.get('phase') ?? 0) + 1
 }
 
+// every piece of a CDS carries the whole CDS's qualifiers, so the first speaks
+// for all of them; a piece's id names a row, not the protein, so the gene
+// labels a CDS that has no name of its own
 function formatCDS({
   feats,
   gene,
@@ -224,10 +237,16 @@ function formatCDS({
   strand: number
   frame: RecordFrame
 }) {
+  const piece = feats[0]!
   return [
     featureLine('CDS', joinLoc(feats, strand, frame)),
-    ...(gene ? [qualifier('gene', gene), qualifier('label', gene)] : []),
-    `${QUALIFIER_INDENT}/codon_start=${codonStart(feats, strand)}`,
+    ...formatTags({
+      feature: piece,
+      gene,
+      key: 'CDS',
+      label: piece.get('name') ?? gene ?? piece.get('id'),
+      codonStart: codonStart(feats, strand),
+    }),
   ]
 }
 
