@@ -16,8 +16,9 @@ import {
  * The variant display's `records` band: the VCF's records, stacked as a
  * feature track stacks them, so a nested SV sits under the one holding it.
  *
- * Over genotype rows the band holds every record the filter admits, added
- * to the track above the rows. A record is colored by its SV type, keyed, or
+ * Over genotype rows the band holds every record the filter admits, above
+ * the rows; it and the chip strip come out of the track's `height`, and the
+ * rows take the rest. A record is colored by its SV type, keyed, or
  * by `encoding.color` when that is set, and lettered on one line with its ID,
  * description and the share of the samples shown as rows, no-calls included,
  * that have it. The band is `height` tall, which its seam drag writes; unset,
