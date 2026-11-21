@@ -133,16 +133,20 @@ export function sortOf(
 }
 
 /**
- * A column sort with no `pos`, which ranks nothing and leaves the reads in
- * position order.
+ * A column sort with no `pos` or no `refName`, which ranks nothing and leaves
+ * the reads in position order.
  */
 export function sortProblems(
   sort: Instance<typeof alignmentsSortConfigSchema>,
 ) {
   const field = readConfObject(sort, 'field')
-  return isColumnSortField(field) && readConfObject(sort, 'pos') === undefined
+  const missing = [
+    readConfObject(sort, 'pos') === undefined ? ['pos'] : [],
+    readConfObject(sort, 'refName') === undefined ? ['refName'] : [],
+  ].flat()
+  return isColumnSortField(field) && missing.length > 0
     ? [
-        `sort: ${field} ranks the reads over one column, and with no pos they keep position order`,
+        `sort: ${field} ranks the reads over one column, and with no ${missing.join(' or ')} they keep position order`,
       ]
     : []
 }

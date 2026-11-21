@@ -71,7 +71,12 @@ test.each([
   [
     'a column sort with no pos',
     { sort: 'mapq' },
-    /^sort: mapq ranks the reads over one column/,
+    /^sort: mapq ranks the reads over one column, and with no pos or refName/,
+  ],
+  [
+    'a column sort with no refName',
+    { sort: { field: 'base', pos: 1234 } },
+    /^sort: base ranks the reads over one column, and with no refName they keep position order$/,
   ],
 ])(
   "%s: a draft's problems are the notice it shows once applied",
