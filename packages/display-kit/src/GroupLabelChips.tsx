@@ -39,8 +39,6 @@ export interface GroupChipSection {
     text?: string
     onClick: () => void
   }
-  // Draws a hide × inside the chip; absent, the section cannot be hidden.
-  onHide?: () => void
 }
 
 /**
@@ -53,56 +51,47 @@ export interface GroupChipSection {
  * screen, that way back stands alone at the top. Sections shorter
  * than a chip label every nth (`groupChipTops`).
  *
- * A `host` wires the rest: its hidden count and "Show all", a drag that
+ * The `host` wires the rest: its hidden count and "Show all", a drag that
  * rewrites its facet's `sort`, and a hide × on each chip while more than one
  * section draws, the overflow section's aside, since it names no value.
  */
 export const GroupLabelChips = observer(function GroupLabelChips({
   sections,
   canvasHeight,
-  hiddenCount = 0,
-  onShowHidden,
-  onMove,
   leading,
   host,
 }: {
   sections: readonly GroupChipSection[]
   canvasHeight: number
-  hiddenCount?: number
-  onShowHidden?: () => void
-  onMove?: (key: string, ontoKey: string) => void
   leading?: React.ReactNode
-  host?: SectionHost
+  host: SectionHost
 }) {
   const { classes, cx } = useGroupLabelStyles()
-  const order = host && sectionSortOf(host)
+  const order = sectionSortOf(host)
   const move = order
     ? (key: string, ontoKey: string) => {
         moveSectionOnto({ sections, ...order }, key, ontoKey)
       }
-    : onMove
+    : undefined
   const hideOf = (key: string) =>
-    host && sections.length > 1 && key !== OVERFLOW_GROUP_KEY
+    sections.length > 1 && key !== OVERFLOW_GROUP_KEY
       ? () => {
           host.hideGroup(key)
         }
       : undefined
-  const hidden = host ? host.hiddenGroups.size : hiddenCount
-  const showHidden = host
-    ? () => {
-        host.showAllGroups()
-      }
-    : onShowHidden
+  const hidden = host.hiddenGroups.size
   const drag = useSectionDrag(sections, sections.length > 1 ? move : undefined)
   const chipTops = groupChipTops(sections, canvasHeight)
   const topmost = chipTops.findIndex(t => t !== undefined)
   const dropLine = drag.dropLineTop
   const restore =
-    hidden > 0 && showHidden ? (
+    hidden > 0 ? (
       <button
         type="button"
         className={classes.pillButton}
-        onClick={showHidden}
+        onClick={() => {
+          host.showAllGroups()
+        }}
         title={`Show ${hidden} hidden group${hidden > 1 ? 's' : ''}`}
       >
         Show {hidden} hidden
@@ -129,7 +118,7 @@ export const GroupLabelChips = observer(function GroupLabelChips({
       ) : null}
       {sections.map((section, i) => {
         const { top, toggle, action } = section
-        const onHide = section.onHide ?? hideOf(section.key)
+        const onHide = hideOf(section.key)
         const chipTop = chipTops[i]
         if (chipTop === undefined) {
           return null
