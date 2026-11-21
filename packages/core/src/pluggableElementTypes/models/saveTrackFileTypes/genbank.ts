@@ -444,7 +444,10 @@ function recordSpan({
 }) {
   const arcs = features.map(f => ({ start: f.get('start'), end: f.get('end') }))
   return circularLength !== undefined &&
-    arcs.some(arc => arc.end > circularLength)
+    (arcs.some(arc => arc.end > circularLength) ||
+      [...arcs, ...regions].some(
+        arc => arc.start <= 0 && arc.end >= circularLength,
+      ))
     ? spanAcrossOrigin([...arcs, ...regions], circularLength)
     : {
         start: min(arcs.map(arc => arc.start)),

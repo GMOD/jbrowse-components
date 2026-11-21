@@ -829,6 +829,48 @@ describe('GenBank export across a circular origin', () => {
     ).toEqual([[0, 16569]])
   })
 
+  it.each([
+    ['its source feature', [{ start: 0, end: 92721 }], []],
+    [
+      'the exported region alone',
+      [],
+      [{ assemblyName: 'b', refName: 'pO157', start: 0, end: 92721 }],
+    ],
+  ])(
+    'writes a whole circular plasmid no feature crosses the origin of as circular, spanned by %s',
+    async (_, wholeFeatures, regions) => {
+      const result = await stringifyGBK({
+        regions,
+        circularLengths: new Map([['pO157', 92721]]),
+        features: [
+          ...wholeFeatures.map(({ start, end }) =>
+            createFeature({
+              id: 'src',
+              refName: 'pO157',
+              start,
+              end,
+              type: 'region',
+            }),
+          ),
+          createFeature({
+            id: 'hlyA',
+            refName: 'pO157',
+            start: 20000,
+            end: 22997,
+            strand: 1,
+            type: 'gene',
+          }),
+        ],
+        assemblyName: 'b',
+        session: mockSession,
+      })
+      const locus = result.split('\n')[0]!
+      expect(locus.slice(29, 40).trim()).toBe('92721')
+      expect(locus.slice(55, 63).trimEnd()).toBe('circular')
+      expect(result).toContain('gene            20001..22997')
+    },
+  )
+
   it('writes a small window across the origin as a linear record over just that window', async () => {
     const length = 5_000_000
     const result = await stringifyGBK({
