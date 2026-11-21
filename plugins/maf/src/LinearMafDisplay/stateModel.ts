@@ -13,11 +13,7 @@ import {
   coverageLayerProblems,
 } from '@jbrowse/alignments-core/coverageBandConfigSchema'
 import { getCoverageMenuItems } from '@jbrowse/alignments-core/coverageMenuItems'
-import {
-  ConfigurationReference,
-  getConf,
-  setConf,
-} from '@jbrowse/core/configuration'
+import { ConfigurationReference, getConf } from '@jbrowse/core/configuration'
 import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes/models'
 import { withHint } from '@jbrowse/core/ui/menuItems'
 import {
@@ -27,8 +23,6 @@ import {
   getPaletteHost,
   getSession,
 } from '@jbrowse/core/util'
-import { MIN_BAND_HEIGHT } from '@jbrowse/core/util/bandHeight'
-import { dragBandHeight } from '@jbrowse/core/util/bandLayout'
 import { copyText } from '@jbrowse/core/util/copyText'
 import CoarseTierMixin from '@jbrowse/display-kit/CoarseTierMixin'
 import ColorWritesMixin from '@jbrowse/display-kit/ColorWritesMixin'
@@ -42,7 +36,6 @@ import { editPlotMenuItems } from '@jbrowse/display-kit/plotMenu'
 import { sameAsLast } from '@jbrowse/display-kit/stableIdentityComputed'
 import { types } from '@jbrowse/mobx-state-tree'
 import { containingLgv } from '@jbrowse/plugin-linear-genome-view'
-import { maxCanvasCssPx } from '@jbrowse/render-core/canvas2dUtils'
 import { createEncodeMemo } from '@jbrowse/render-core/encodeMemo'
 import { installUpload } from '@jbrowse/render-core/installUpload'
 import { namedAutorun } from '@jbrowse/render-core/namedReactions'
@@ -91,15 +84,9 @@ import {
 } from './encodeMafRows.ts'
 import { fetchMafAlignmentData, fetchMafSummaryData } from './fetchMafData.ts'
 import { mafLaunchMenuItems } from './launchMenuItems.ts'
+import { mafBandActions, mafBandViews } from './mafBandViews.ts'
 import { MAF_FIELD_PRESETS } from './mafColorConfigSchema.ts'
 import { mafDrawnRowViews, mafRowActions, mafRowViews } from './mafRowViews.ts'
-import {
-  dragRowsHiddenConservation,
-  drawnMafTopBands,
-  mafTopBands,
-  rowsHiddenBandsHeight,
-  rowsHiddenTrackHeight,
-} from './mafTopBands.ts'
 import { openInsertionWidget } from './openInsertionWidget.ts'
 import { orderMafRowsByBaseAt } from './orderMafRowsByBaseAt.ts'
 import { placeMafRegionData } from './placeMafRows.ts'
@@ -405,34 +392,6 @@ export default function stateModelFactory(
       .views(self => ({
         /**
          * #getter
-         * The coverage band is on and has data: `showCoverage` alone is not
-         * enough, since the summary tier has no `coverage.coverageDepths`.
-         *
-         * `topBands` reads this as the band's `active` half, and the data
-         * questions (autoscaling, the depth rules) read it directly; whatever
-         * places something in the band reads `topBands.rects`. Only the track
-         * menu reads `showCoverage`, so the tick keeps the user's choice
-         * across zoom. Same split as `rowPlan` vs the slots it resolves.
-         */
-        get coverageBandActive() {
-          return self.showCoverage && !self.coarseTierActive
-        },
-        /**
-         * #getter
-         * The conservation band is on and has data: twin of
-         * `coverageBandActive`, since the identity scores are computed from
-         * alignment blocks, which the summary tier lacks.
-         *
-         * `topBands` and the conservation encode read this; the menu tick
-         * reads `showConservation`.
-         */
-        get conservationBandActive() {
-          return self.showConservation && !self.coarseTierActive
-        },
-      }))
-      .views(self => ({
-        /**
-         * #getter
          * The detail tier's store: `MultiRegionDisplayMixin`'s per-region
          * payloads narrowed to the worker's columnar rows plus the CDS frames
          * from the same fetch. A reorder re-places from here without
@@ -505,218 +464,8 @@ export default function stateModelFactory(
           return frames
         },
       }))
-      .views(self => ({
-        /**
-         * #getter
-         * The plot the bands share with the rows: the track height less the
-         * sidebar's lines above the rows, keeping the rows a floor while
-         * they show.
-         */
-        get bandPlot() {
-          return {
-            height: self.allottedHeight - self.rowsLeadHeight,
-            floor: self.showAlignments ? MIN_BAND_HEIGHT : 0,
-          }
-        },
-      }))
-      .views(self => ({
-        /**
-         * #getter
-         * Each band's switch and stated height, coverage above conservation.
-         */
-        get statedBands() {
-          return {
-            coverage: {
-              active: self.coverageBandActive,
-              height: self.coverageHeight,
-            },
-            conservation: {
-              active: self.conservationBandActive,
-              height: self.conservationHeight,
-            },
-          }
-        },
-      }))
-      .views(self => ({
-        /**
-         * #getter
-         * The band stack as stated (`mafTopBands`): the stated heights bound
-         * against `bandPlot`. The band drags read it, so hiding the rows
-         * moves no stated height.
-         */
-        get statedTopBands() {
-          return mafTopBands(self.statedBands, self.bandPlot)
-        },
-        /**
-         * #getter
-         * The band stack as drawn, coverage above conservation: the stated
-         * stack while the rows show, and while they are hidden the bands
-         * filling the plot (`drawnMafTopBands`), under the canvas's
-         * backing-store limit: the conservation band at its stated height and
-         * the coverage taking the rest, or with coverage off, the
-         * conservation band alone. Every
-         * top, height and offset reads this; a band that reserves 0 px does
-         * not draw.
-         */
-        get topBands() {
-          return drawnMafTopBands({
-            bands: self.statedBands,
-            plot: self.bandPlot,
-            showRows: self.showAlignments,
-            allottedHeight: self.allottedHeight,
-            rowsLeadHeight: self.rowsLeadHeight,
-          })
-        },
-      }))
-      .views(self => ({
-        /**
-         * #getter
-         * `TreeSidebarMixin`'s hook: where the band stack ends. Every rows
-         * hit-test, draw and export offset reads the mixin's `rowsTopOffset`
-         * over it, so adding a band or the focus chip's line can't desync them.
-         */
-        get rowsHeaderHeight() {
-          return self.topBands.bottom
-        },
-      }))
-      .views(self => ({
-        /**
-         * #getter
-         * Number of displayed rows (at least 1, so dividing the rows' height
-         * by it is safe).
-         */
-        get nrow() {
-          return Math.max(1, self.drawnRows.length)
-        },
-        /**
-         * #getter
-         * Max CSS-px height the rows may take: one canvas holds the band
-         * stack and the rows, and it stops where its backing store (`× dpr`)
-         * hits the browser/GPU canvas limit, so the rows get what the bands
-         * leave of that.
-         */
-        get maxRowsHeight() {
-          return Math.max(0, maxCanvasCssPx() - self.rowsTopOffset)
-        },
-      }))
-      .views(self => ({
-        /**
-         * #getter
-         * Height of the per-sample rows area, which the rows fit: the
-         * track's `height` slot minus the stacked bands, never grown by the
-         * row count, so more species shrink the rows rather than grow the
-         * track. Zero when alignments are hidden. Capped at `maxRowsHeight`
-         * so the canvas, bands plus rows, stays under its backing-store limit.
-         */
-        get rowsHeight() {
-          return self.showAlignments
-            ? Math.min(
-                Math.max(0, self.allottedHeight - self.rowsTopOffset),
-                self.maxRowsHeight,
-              )
-            : 0
-        },
-      }))
-      .views(self => ({
-        /**
-         * #getter
-         * Per-row height: the rows area split evenly across the rows, so the
-         * rows always fit the track and never scroll. A taller track or a
-         * narrower row focus is how a reader gets taller rows.
-         *
-         * Sub-pixel is legitimate for more species than pixels; only a
-         * non-positive height, which every consumer divides by, is floored
-         * (agent-docs/reference/ROW_HEIGHT_AND_FIT.md).
-         */
-        get effectiveRowHeight() {
-          const fit = self.rowsHeight / self.nrow
-          return fit > 0 ? fit : 1
-        },
-        /**
-         * #getter
-         * The per-sample rows area has something to draw: the view can place
-         * it, the rows have px and the row set is known. The `visible*`
-         * getters share this gate instead of re-spelling it.
-         */
-        get rowsVisible() {
-          return (
-            self.view.initialized && self.rowsHeight > 0 && self.rowsReported
-          )
-        },
-        /**
-         * #getter
-         */
-        get scrollViewportHeight() {
-          return self.rowsHeight
-        },
-        /**
-         * #getter
-         * `TreeSidebarMixin`'s hook: off while the alignments are hidden, since
-         * the tree lays against rows that are not drawn.
-         */
-        get drawsTree() {
-          return self.showAlignments
-        },
-      }))
-      .views(self => ({
-        /**
-         * #getter
-         * Override BaseLinearDisplay.height so the track container matches the
-         * rendering canvases exactly (stacked bands + rows viewport). With the
-         * rows hidden the bands fill the track's own height, so a drag
-         * resizes from it.
-         */
-        get height() {
-          return self.showAlignments
-            ? self.rowsHeight + self.rowsTopOffset
-            : rowsHiddenTrackHeight(self.allottedHeight)
-        },
-      }))
-      .actions(self => ({
-        /**
-         * #action
-         * The coverage band's height, dragged as every band in a stack is
-         * (`dragBandHeight`) to the room the other band and the rows' floor
-         * leave.
-         */
-        setCoverageHeight(height: number) {
-          setConf(
-            self,
-            ['coverage', 'height'],
-            dragBandHeight(
-              self.statedTopBands,
-              'coverage',
-              self.bandPlot,
-              height,
-            ),
-          )
-        },
-        /**
-         * #action
-         * The conservation band's height, dragged as `setCoverageHeight` is
-         * while the rows show. While they are hidden the coverage takes what
-         * the conservation band leaves, so the drag stops where the coverage
-         * keeps its floor (`dragRowsHiddenConservation`).
-         */
-        setConservationHeight(height: number) {
-          setConf(
-            self,
-            ['conservation', 'height'],
-            self.showAlignments
-              ? dragBandHeight(
-                  self.statedTopBands,
-                  'conservation',
-                  self.bandPlot,
-                  height,
-                )
-              : dragRowsHiddenConservation(
-                  self.statedBands.conservation,
-                  rowsHiddenBandsHeight(self),
-                  height,
-                ),
-          )
-        },
-      }))
+      .views(mafBandViews)
+      .actions(mafBandActions)
       .actions(self => ({
         /**
          * #action
