@@ -14,6 +14,7 @@ import type { HeldNode } from '../pruneUnbuildableNodes.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type TextSearchManager from '@jbrowse/core/TextSearch/TextSearchManager'
 import type { BaseAssemblyConfigModel } from '@jbrowse/core/assemblyManager'
+import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type RpcManager from '@jbrowse/core/rpc/RpcManager'
 import type {
   AnimationMode,
@@ -221,7 +222,8 @@ export function BaseSessionModel(_pluginManager: PluginManager) {
        * any runtime override — i.e. what a reset falls back to
        */
       getPreferenceDefault(key: string): unknown {
-        return readConfObject(self.configuration, ['preferences', key])
+        const root: AnyConfigurationModel = self.configuration
+        return readConfObject(root, ['preferences', key])
       },
       /**
        * #method

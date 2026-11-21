@@ -1,4 +1,4 @@
-import { getConf } from '@jbrowse/core/configuration'
+import { getConf, readConfObject } from '@jbrowse/core/configuration'
 import { resolvePalette, resolveThemeSelection } from '@jbrowse/core/ui/palette'
 import { resolveStyleTheme } from '@jbrowse/core/ui/styleTheme'
 import {
@@ -18,6 +18,7 @@ import { autorun } from 'mobx'
 import { asSession } from '../siblingCast.ts'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
+import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { PaletteMode } from '@jbrowse/core/ui/palette'
 import type { SerializableThemeArgs, ThemeMap } from '@jbrowse/core/ui/theme'
 import type { Instance } from '@jbrowse/mobx-state-tree'
@@ -108,7 +109,8 @@ export function ThemeManagerSessionMixin(_pluginManager: PluginManager) {
          * #method
          */
         allThemes(): ThemeMap {
-          const extraThemes = getConf(self.jbrowse, 'extraThemes')
+          const root: AnyConfigurationModel = self.jbrowse.configuration
+          const extraThemes = readConfObject(root, 'extraThemes')
           return { ...defaultThemes, ...extraThemes }
         },
         /**
@@ -169,9 +171,10 @@ export function ThemeManagerSessionMixin(_pluginManager: PluginManager) {
         // functions and cannot be cloned). The worker rebuilds via
         // createJBrowseThemeFromArgs.
         get themeOptions(): SerializableThemeArgs {
+          const root: AnyConfigurationModel = self.jbrowse.configuration
           return {
             configTheme: getConf(self.jbrowse, 'theme'),
-            extraThemes: getConf(self.jbrowse, 'extraThemes'),
+            extraThemes: readConfObject(root, 'extraThemes'),
             themeName: this.themeName,
             mode: this.effectiveThemeMode,
           }

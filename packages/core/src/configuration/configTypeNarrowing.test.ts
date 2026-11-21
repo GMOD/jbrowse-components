@@ -11,7 +11,10 @@ import { ConfigurationSchemaUnion } from './configurationSchemaUnion.ts'
 import { getConf, readConfObject, setConf } from './index.ts'
 
 import type { FileLocation } from '../util/types/index.ts'
-import type { RootConfigModel } from '../util/types/jbrowseConfig.ts'
+import type {
+  AppRootConfigModel,
+  RootConfigModel,
+} from '../util/types/jbrowseConfig.ts'
 import type { IConfigurationReference } from './configurationSchema.ts'
 import type {
   AnyConfigurationModel,
@@ -699,8 +702,11 @@ describe('an undeclared member of a config node does not compile', () => {
 })
 
 describe('the root config a session reads', () => {
-  it("types core's slots and leaves a plugin's namespace unchecked", () => {
-    const check = (session: { configuration: RootConfigModel }) => {
+  it("types core's slots and refuses a misspelt one", () => {
+    const check = (
+      session: { configuration: RootConfigModel },
+      jbrowse: { configuration: AppRootConfigModel },
+    ) => {
       const trackNames = getConf(session, [
         'hierarchical',
         'sort',
@@ -718,8 +724,14 @@ describe('the root config a session reads', () => {
       assertType<
         Equal<typeof animationMode, 'system' | 'enabled' | 'disabled'>
       >()
-      const labels = getConf(session, ['LinearGenomeViewPlugin', 'trackLabels'])
-      assertType<Equal<typeof labels, any>>()
+      const shareURL = readConfObject(jbrowse.configuration, 'shareURL')
+      assertType<Equal<typeof shareURL, string>>()
+      // @ts-expect-error `shareURl` is not a root slot
+      readConfObject(jbrowse.configuration, 'shareURl')
+      // @ts-expect-error `sortt` is not a member of `hierarchical`
+      getConf(session, ['hierarchical', 'sortt', 'trackNames'])
+      // @ts-expect-error a plugin's namespace is not a root slot core declares
+      getConf(session, ['LinearGenomeViewPlugin', 'trackLabels'])
     }
     void check
     expect(true).toBe(true)

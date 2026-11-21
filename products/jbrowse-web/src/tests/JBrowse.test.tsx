@@ -22,6 +22,8 @@ import {
   volvoxConfigWithTracks,
 } from './util.tsx'
 
+import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
+
 jest.mock('../makeWorkerInstance', () => () => {})
 jest.mock('../components/buildShareUrl.ts', () => ({
   ...jest.requireActual('../components/buildShareUrl.ts'),
@@ -64,10 +66,9 @@ test('toplevel configuration', () => {
   pluginManager.setRootModel(rootModel)
   pluginManager.configure()
   const state = pluginManager.rootModel
-  const { jbrowse } = state!
-  const { configuration } = jbrowse
-  // test reading top level configurations added by Test Plugin
-  const test = getConf(jbrowse, ['TestPlugin', 'topLevelTest'])
+  // a plugin's namespace is not a root slot core types
+  const configuration: AnyConfigurationModel = state!.jbrowse.configuration
+  const test = getConf({ configuration }, ['TestPlugin', 'topLevelTest'])
   const test2 = readConfObject(configuration, ['TestPlugin', 'topLevelTest'])
   expect(test).toEqual('test works')
   expect(test2).toEqual('test works')

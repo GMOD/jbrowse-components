@@ -1,4 +1,4 @@
-import { getConf } from '@jbrowse/core/configuration'
+import { readConfObject } from '@jbrowse/core/configuration'
 import {
   isSessionModel,
   isSessionWithMultipleViews,
@@ -12,6 +12,7 @@ import {
 import { VIEW_TRACK_LABEL_MODES } from '@jbrowse/display-kit/types'
 
 import type { LinearGenomeViewModel } from './model.ts'
+import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { ResettablePreference } from '@jbrowse/core/ui/preferencesPanels'
 import type { TrackConfigChange } from '@jbrowse/core/util'
 import type { ViewTrackLabelMode } from '@jbrowse/display-kit/types'
@@ -96,11 +97,23 @@ export function setToggle(
   notifyLocalStorageKey(key)
 }
 
-export function configTrackLabels(session: unknown): ViewTrackLabelMode {
-  const configured: unknown = isSessionModel(session)
-    ? getConf(session, ['LinearGenomeViewPlugin', 'trackLabels'])
-    : undefined
+/**
+ * The root config's `LinearGenomeViewPlugin.trackLabels`, a namespace only
+ * products that load this plugin declare, so the root config's own type does
+ * not name it.
+ */
+export function sessionTrackLabels(session: {
+  configuration: AnyConfigurationModel
+}): ViewTrackLabelMode {
+  const configured: unknown = readConfObject(session.configuration, [
+    'LinearGenomeViewPlugin',
+    'trackLabels',
+  ])
   return VIEW_TRACK_LABEL_MODES.find(mode => mode === configured) ?? 'offset'
+}
+
+export function configTrackLabels(session: unknown) {
+  return isSessionModel(session) ? sessionTrackLabels(session) : 'offset'
 }
 
 export function setTrackLabels(

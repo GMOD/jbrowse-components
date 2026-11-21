@@ -1,5 +1,5 @@
 import { canonicalLocString } from '@jbrowse/core/TextSearch/places'
-import { getConf, readConfObject } from '@jbrowse/core/configuration'
+import { readConfObject } from '@jbrowse/core/configuration'
 import { BaseViewModel } from '@jbrowse/core/pluggableElementTypes/models'
 import { exportViewSvg } from '@jbrowse/core/svg/exportViewSvg'
 import { highlightListMenuItems } from '@jbrowse/core/ui/menuItems'
@@ -115,7 +115,11 @@ import {
   regionsOrientation,
   setDisplayedRegionsKeepingCenter,
 } from './util.ts'
-import { storedToggle, storedTrackLabels } from './viewPreferences.ts'
+import {
+  sessionTrackLabels,
+  storedToggle,
+  storedTrackLabels,
+} from './viewPreferences.ts'
 import { visibleRegionsOf } from './visibleRegions.ts'
 import { isZoomLinkable, visibleEdges, zoomMarker } from './zoomOf.ts'
 
@@ -793,11 +797,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
        * against the LinearGenomeViewPlugin config default
        */
       get effectiveTrackLabels(): ViewTrackLabelMode {
-        const sessionSetting = getConf(getSession(self), [
-          'LinearGenomeViewPlugin',
-          'trackLabels',
-        ])
-        return self.trackLabels || sessionSetting
+        return self.trackLabels || sessionTrackLabels(getSession(self))
       },
       /**
        * #getter

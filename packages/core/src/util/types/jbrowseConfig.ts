@@ -10,19 +10,13 @@ import type { BaseConnectionConfigModel } from '../../pluggableElementTypes/mode
 import type { BaseInternetAccountConfigModel } from '../../pluggableElementTypes/models/baseInternetAccountConfig.ts'
 import type { PluginDefinition } from '../../pluginDefinitions.ts'
 import type RpcManager from '../../rpc/RpcManager.ts'
-import type { IAnyType, IStateTreeNode } from '@jbrowse/mobx-state-tree'
-
-/**
- * A plugin's namespace (`LinearGenomeViewPlugin`) beside the root slots core
- * declares, which reads untyped: only some products' root schemas declare one.
- */
-type PluginRootConfigNamespaces = Record<string, IAnyType>
+import type { IStateTreeNode } from '@jbrowse/mobx-state-tree'
 
 /**
  * The root config every product declares, as `session.configuration` reads it.
  */
 export type RootConfigModel = ConfigModelForFields<
-  ReturnType<typeof rootConfigSchemaFields> & PluginRootConfigNamespaces
+  ReturnType<typeof rootConfigSchemaFields>
 >
 
 /**
@@ -72,9 +66,7 @@ export const appRootConfigSchemaFields = {
 } as const
 
 export type AppRootConfigModel = ConfigModelForFields<
-  ReturnType<typeof rootConfigSchemaFields> &
-    typeof appRootConfigSchemaFields &
-    PluginRootConfigNamespaces
+  ReturnType<typeof rootConfigSchemaFields> & typeof appRootConfigSchemaFields
 >
 
 /**
