@@ -319,7 +319,7 @@ shows several loci, so each fetches itself.
   the feature tables too (`byteGatedFetchRegions`).
 - `warnings` names each setting the layout drops without an error, such as a
   column sort with no `pos`, a sort across contigs or held by no region with reads,
-  a sort or `pileup.softClips` under `unit: 'chain'`, and a sort of sections
+  a sort or `pileup.softclips` under `unit: 'chain'`, and a sort of sections
   collapsed to one row.
 
 Beside the reads come the marks the display draws on them, each as the worker

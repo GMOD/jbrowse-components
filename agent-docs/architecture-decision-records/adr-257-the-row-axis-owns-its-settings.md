@@ -53,9 +53,9 @@ the mark family. The multi-way lanes' `rows` keeps the `sort` and `labels` it
 already reads and keeps `kept`, a selection there (it replaces the configured
 lanes and can add one) where on a row display it narrows; empty shows the
 configured lanes. It takes no `filter`, and neither does MAF, whose rows carry
-no attributes. Neither MAF's `rows` nor the lanes' takes a `field`, which
-would be a one-value enum there (the lanes' `assembly` went 2026-11-04,
-read by nothing).
+no attributes. MAF's `rows` takes no `field`. The lanes' `field`, gone
+2026-11-04 as a one-value enum, came back as `auto`, `assembly` or `refName`
+([ADR-278](adr-278-a-copy-of-the-window-draws-as-its-own-lane.md)).
 
 One naming rule makes each member predictable: a plural map is keyed by row
 name (`labels`, `colors`), a plural list is ordered entries (`groups`,

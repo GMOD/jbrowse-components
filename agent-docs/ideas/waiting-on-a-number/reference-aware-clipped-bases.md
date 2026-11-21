@@ -11,7 +11,7 @@ microhomology, a misaligned tail) draws as loudly as a real novel junction.
 
 ## The shape that survived review
 
-- Not a new layer or slot. The softClips layer takes the two things the mismatch
+- Not a new layer or slot. The softclips layer takes the two things the mismatch
   layer already has: a filter (base differs from reference) and quality opacity
   under `pileup.mismatches.encoding.opacity`, in line with
   [ADR-149](../../architecture-decision-records/adr-149-the-per-base-layer-is-its-own-color-object.md)'s

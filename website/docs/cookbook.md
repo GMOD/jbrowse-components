@@ -359,7 +359,7 @@ every `jexl:` expression, on variant tracks too:
   "displayDefaults": {
     "height": 400,
     "encoding": { "color": "mapq" },
-    "pileup": { "softClips": { "show": true } },
+    "pileup": { "softclips": { "show": true } },
     "facet": { "field": "tags.HP", "sort": ["2", "1"] },
     "filter": [{ "field": "tags.HP", "equal": "1" }]
   }

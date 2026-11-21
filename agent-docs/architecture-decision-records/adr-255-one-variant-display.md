@@ -17,8 +17,9 @@ Amends [ADR-168](adr-168-a-retired-display-is-declared-on-its-successor.md),
 [ADR-232](adr-232-a-predicate-lives-where-what-it-selects-lives.md) and
 ADR-254.
 Amended 2026-11-07: `variantLayout: genomic | columns` stays a house word
-until `ideas/waiting-on-a-call/a-site-index-x-axis-for-per-site-tracks.md`
-lands, columns being x on a band scale.
+and ships in v5; if
+`ideas/waiting-on-a-call/a-site-index-x-axis-for-per-site-tracks.md` lands,
+columns arrive as an ordinal x scale and lift it.
 
 ## Context
 

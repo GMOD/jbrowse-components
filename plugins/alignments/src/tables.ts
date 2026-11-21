@@ -1887,7 +1887,7 @@ function laidOutTables(
 }
 
 /**
- * What the layout drops of the display's `sort` and `pileup.softClips`
+ * What the layout drops of the display's `sort` and `pileup.softclips`
  * without saying so, in words a host can show: a column sort with no `pos`,
  * a sort the regions' contigs or reads leave nowhere to apply, under
  * `unit: 'chain'` any sort or soft clipping, as chains lay out by chain, and
@@ -1925,7 +1925,7 @@ function layoutWarnings({
     }
     if (softClippingAsked) {
       warnings.add(
-        `under unit 'chain' the reads lay out by chain, so pileup.softClips is dropped`,
+        `under unit 'chain' the reads lay out by chain, so pileup.softclips is dropped`,
       )
     }
   } else if (collapsed) {

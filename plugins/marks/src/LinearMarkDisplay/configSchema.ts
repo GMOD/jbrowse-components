@@ -473,13 +473,14 @@ export function configSchemaFactory() {
       encoding: markDisplayEncodingSchema,
       /**
        * #slot origin
-       * The value bars grow from. The axis widens to include it whenever a
-       * bar mark is drawn.
+       * The value bars grow from and a line drops to across a gap. The axis
+       * reaches it whenever a bar draws, unless a log scale cannot.
        */
       origin: {
         type: 'number',
         defaultValue: 0,
-        description: 'baseline value for bars',
+        description:
+          'The value bars grow from and a line drops to across a gap; the axis reaches it whenever a bar draws, unless a log scale cannot',
         plot: true,
       },
       /**

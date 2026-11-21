@@ -729,7 +729,7 @@ Settings written as slots, spelled as the display spells them:
 | `facet=strand`                                 | Group reads into in-track stacked sections: `strand`, `firstOfPairStrand`, `pairOrientation`, `pairing`, `split`, `spliced`, `svKind`, `mapq`, `tags.HP` |
 | `unit=chain`                                   | What one row stands for: a `read`, or its mate and split segments chained                                                                                |
 | `legend.show=true`                             | Draw the color key. Off by default in the app, where the reader can open the track menu instead                                                          |
-| `pileup.softClips.show=true`                   | Show soft-clipped bases                                                                                                                                  |
+| `pileup.softclips.show=true`                   | Show soft-clipped bases                                                                                                                                  |
 | `coverage.show=false`                          | Hide the coverage subtrack                                                                                                                               |
 | `pileup.show=false`                            | Hide the pileup; the bands above it fill the track height                                                                                                |
 | `coverage.height=200`                          | Height of the coverage subtrack, and of `arcs:overlay` arcs drawn over it                                                                                |

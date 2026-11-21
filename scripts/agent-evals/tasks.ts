@@ -1679,7 +1679,7 @@ TASKS.push(
       ].map(tumorPanel),
     )} }] }, 300000)
       for (const p of jb.session.views[0].views) {
-        await (async () => {${either("jb.trackModel('COLO829_tumor_ont', p.id)", { pileup: { showSoftClipping: true, readHeight: 2 } }, { pileup: { softClips: { show: true } } })}
+        await (async () => {${either("jb.trackModel('COLO829_tumor_ont', p.id)", { pileup: { showSoftClipping: true, readHeight: 2 } }, { pileup: { softclips: { show: true } } })}
         })()
       }
       return jb.waitReady(120000)`,
@@ -1709,7 +1709,7 @@ function der3Grade(panelGroups: string) {
           const tumor = p.tracks.filter(t => /COLO829_tumor|COLO829_tumor\\.ht\\.cram/.test(JSON.stringify(jb.mst.getSnapshot(t.configuration)))).map(t => {
             const c = t.activeDisplay.configuration
             const slot = path => { try { return jb.readConfObject(c, path) } catch { return undefined } }
-            return { drew: drew(t.activeDisplay), clips: slot(['pileup', 'showSoftClipping']) === true || slot(['pileup', 'softClips', 'show']) === true }
+            return { drew: drew(t.activeDisplay), clips: slot(['pileup', 'showSoftClipping']) === true || slot(['pileup', 'softclips', 'show']) === true }
           })
           panels.push({ rs: rs.map(r => r.refName + ':' + r.start + '-' + r.end), ok: tumor.some(t => t.drew && t.clips), rsRaw: rs })
         }

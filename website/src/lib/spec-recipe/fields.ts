@@ -1919,7 +1919,7 @@ export const trackFields: Record<string, FieldRecipe> = {
     JUNCTIONS_PLACEMENT,
   ),
   readConnections: fromTable('Read connections', READ_CONNECTIONS),
-  'pileup.softClips': layerCheckbox(
+  'pileup.softclips': layerCheckbox(
     'Show → Show soft clipping',
     'Reveals clipped bases — the signal that a read spans a breakpoint.',
   ),

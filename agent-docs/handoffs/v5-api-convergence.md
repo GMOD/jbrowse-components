@@ -44,7 +44,17 @@ once per display that embeds it, so read the trend, not the size.
 surface on one page, its first table each path whose members differ between
 displays or a display's parts, with the ruling on each.
 
-- The last shared-path change is the arc bands' `placement` values
+- The last shared-path change is the settled-spellings pass (2026-11-20,
+  +11 / −4 shared). `pileup.softClips` is `pileup.softclips` on
+  LinearAlignments and LGVSynteny, one word as the `softclip` sort field
+  spells it, beta-only with no lift (ADR-240). `encoding.color.scale.type`
+  takes `symlog` on LinearBasic, LinearVariant and MultiWaySynteny, whose
+  painters already drew it, and the multi-way `rows` takes the string
+  shorthand `rows: 'refName'` (`=assembly`, `=auto`, `=refName`), as `Rows`
+  does. The regeneration also carries `preferences.showBandChips`
+  (aa9181ec89). ggjbrowse owes an engine re-pin and the `softclips` respell
+  in `R/alignments.R`, its Rd and the cancer_sv tutorial.
+- Before it, the arc bands' `placement` values
   (2026-11-17, +9 / −6 shared, 9b1a3fe173): `sashimi.placement` and
   `readConnections.placement` take `overlay`, `above` and `below` where they
   took `up` and `down`, `above` being new (ADR-272). The old values were
@@ -153,8 +163,9 @@ displays or a display's parts, with the ruling on each.
    `placement`, compared with the display's own. Any other word under a part
    meets only the same full path on another display.
    `scripts/configSpellingRulings.ts` names the ADR or schema comment ruling
-   on each path, with its variant count, and `pnpm autogen` refuses a
-   differing path with no entry or a changed count. The 2026-10-30 taste
+   on each path, with the members of each variant it rules on (`shapes`),
+   and `pnpm autogen` refuses a differing path with no entry or a variant
+   whose members changed. The 2026-10-30 taste
    calls are among them (ChordColor's `scale`, HicColor's and LDColor's
    `scale`, WiggleColor's `legend`). The page's "Open differences" list holds
    the ones with no ruling.
@@ -162,12 +173,11 @@ displays or a display's parts, with the ruling on each.
 ## Release candidate gates
 
 - CONFIG_SPELLINGS.md's "Open differences" list is empty, each entry ruled
-  as kept or respelled, and the first table's rows are re-read against their
-  whys since the last read: `git diff <sha> --
-  agent-docs/reference/CONFIG_SPELLINGS.md` (read through a4e6dfeb4a,
-  2026-11-17; whoever re-reads moves the sha). The count pin passes a
-  display that moves between two existing variants and a variant whose
-  members change in place.
+  as kept or respelled. Each ruling pins its variants' members, so a changed
+  member stops `pnpm autogen` until its why is re-read; every why was re-read
+  when the pins were written (2026-11-20). A display that moves between two
+  existing variants passes the pin, so a why naming the displays it rules on
+  is re-read when the table's Who column moves.
 - The meter shows no shared-path change, respell, addition or removal, past
   the last one "Measuring churn" lists.
 - Every `retired` key, `retiredState` key and `retiredTypes` entry maps a

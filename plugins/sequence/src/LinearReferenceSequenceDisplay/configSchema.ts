@@ -55,7 +55,7 @@ export const configSchema = ConfigurationSchema(
         show: {
           type: 'boolean',
           defaultValue: true,
-          description: 'draw the rows',
+          description: 'draw the forward-strand base row',
         },
       },
       { closed: true },
@@ -73,7 +73,7 @@ export const configSchema = ConfigurationSchema(
         show: {
           type: 'boolean',
           defaultValue: true,
-          description: 'draw the rows',
+          description: 'draw the reverse-complement base row',
         },
       },
       { closed: true },
@@ -92,7 +92,7 @@ export const configSchema = ConfigurationSchema(
         show: {
           type: 'boolean',
           defaultValue: true,
-          description: 'draw the rows',
+          description: 'draw the three translation frame rows per drawn strand',
         },
       },
       { closed: true },

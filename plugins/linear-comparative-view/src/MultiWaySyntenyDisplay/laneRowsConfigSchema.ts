@@ -17,7 +17,8 @@ import { LANE_ROWS_SETTINGS } from './copyLane.ts'
  * lanes drawn, empty drawing the track's lanes or every lane. Haplotype lanes
  * read off a graph follow by structure instead, below any lanes `sort` pins,
  * so lanes whose deletions and insertions against the anchor match sit
- * together, in an order worked out once per window. Lanes take no tree.
+ * together, in an order worked out once per window. Lanes take no tree. A
+ * string is the field.
  *
  * #example
  * ```js
@@ -35,6 +36,9 @@ import { LANE_ROWS_SETTINGS } from './copyLane.ts'
  *   type: 'MultiWaySyntenyDisplay',
  *   rows: { field: 'refName', sort: ['{grape}chr9', 'peach', '{grape}chr11'] },
  * }
+ * ```
+ * ```js
+ * { type: 'MultiWaySyntenyDisplay', rows: 'refName' }
  * ```
  */
 export const laneRowsConfigSchema = ConfigurationSchema(
@@ -118,6 +122,8 @@ export const laneRowsConfigSchema = ConfigurationSchema(
     },
   },
   {
+    shorthand: 'field',
+    writes: 'members',
     closed: true,
     plot: true,
     preProcessSnapshot: snap => ({

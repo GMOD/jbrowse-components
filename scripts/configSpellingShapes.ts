@@ -103,7 +103,7 @@ export function divergentShapes(schema: JsonSchema) {
 }
 
 export interface Ruling {
-  variants: number
+  shapes: readonly string[]
   why: string
   open?: string
 }
@@ -111,12 +111,17 @@ export interface Ruling {
 const variantLines = (bySlot: Map<string, string[]>) =>
   [...bySlot].map(
     ([members, holders]) =>
-      `    [${members || 'leaf'}] <- ${holders.join(', ')}`,
+      `    ${JSON.stringify(members)} <- ${holders.join(', ')}`,
   )
+
+const shapesLiteral = (bySlot: Map<string, string[]>) =>
+  `shapes: [${[...bySlot.keys()].map(shape => JSON.stringify(shape)).join(', ')}]`
 
 /**
  * Where the rulings and the differing paths disagree: a path with no entry,
- * one whose variant count moved, and an entry whose path no longer differs.
+ * one whose variants' members or values changed, and an entry whose path no
+ * longer differs. A display moving between existing variants is none of
+ * these.
  */
 export function rulingProblems(
   schema: JsonSchema,
@@ -126,16 +131,27 @@ export function rulingProblems(
   return [
     ...[...divergent].flatMap(([slot, bySlot]) => {
       const ruling = rulings[slot]
-      return ruling?.variants === bySlot.size
-        ? []
-        : [
+      const pinned = new Set(ruling?.shapes)
+      const changed =
+        pinned.size !== bySlot.size ||
+        [...bySlot.keys()].some(shape => !pinned.has(shape))
+      return !ruling
+        ? [
             [
-              ruling
-                ? `${slot} has ${bySlot.size} shapes and its ruling says ${ruling.variants}; re-read its why against:`
-                : `${slot} differs with no ruling; add '${slot}': { variants: ${bySlot.size}, why: '...' } for:`,
+              `${slot} differs with no ruling; add '${slot}': { ${shapesLiteral(bySlot)}, why: '...' }, its why explaining each variant:`,
               ...variantLines(bySlot),
             ].join('\n'),
           ]
+        : changed
+          ? [
+              [
+                `${slot} changed shape since its why was written; say in the why what each change means, then set ${shapesLiteral(bySlot)}. Was:`,
+                ...[...pinned].map(shape => `    ${JSON.stringify(shape)}`),
+                'Now:',
+                ...variantLines(bySlot),
+              ].join('\n'),
+            ]
+          : []
     }),
     ...Object.keys(rulings)
       .filter(slot => !divergent.has(slot))

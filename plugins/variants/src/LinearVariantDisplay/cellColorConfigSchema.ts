@@ -33,8 +33,8 @@ import {
  * only under `rows: 'haplotype'`.
  * Any other field is read off the record — `INFO.CLNSIG`, `QUAL`, or a
  * `jexl:` expression — and a numeric one cut into intervals by a `threshold`
- * scale or run along a `linear` or `log` ramp. A string is the field.
- * `scale.type: "identity"` paints each variant the CSS color its `field`
+ * scale or run along a `linear`, `log` or `symlog` ramp. A string is the
+ * field. `scale.type: "identity"` paints each variant the CSS color its `field`
  * holds, or with no field the color a `value` callback returns, and the key
  * names the colors `scale.domain` lists, as on a feature track; a variant
  * with no color keeps the default alt color. The records paint what the
@@ -104,7 +104,7 @@ export const cellColorConfigSchema = ConfigurationSchema(
         ...colorScaleTypeSlot({
           scales: FEATURE_COLOR_SCALES,
           scaleName: 'VariantCellColorScaleType',
-          type: 'ordinal a range color per value of field; threshold a range color per interval between the cut points in domain; linear or log a color along a ramp from domainMin to domainMax; identity paints each variant the CSS color its field holds, else the color its value callback returns, and the key names the colors in domain; unset is linear for score and ordinal for any other field',
+          type: 'ordinal a range color per value of field; threshold a range color per interval between the cut points in domain; linear, log or symlog a color along a ramp from domainMin to domainMax; identity paints each variant the CSS color its field holds, else the color its value callback returns, and the key names the colors in domain; unset is linear for score and ordinal for any other field',
         }),
         ...colorDomainSlot({
           domain:
@@ -112,7 +112,7 @@ export const cellColorConfigSchema = ConfigurationSchema(
         }),
         ...colorRangeSlot({
           range:
-            "CSS colors the domain takes, in order, a value past the end of the list sampling the scheme where one is set, else continuing into the default palette; under threshold one per interval, one more than the cuts, an interval left out sampling the scheme, else the default ramp; under linear or log the ramp's stops, winning over scheme",
+            "CSS colors the domain takes, in order, a value past the end of the list sampling the scheme where one is set, else continuing into the default palette; under threshold one per interval, one more than the cuts, an interval left out sampling the scheme, else the default ramp; under linear, log or symlog the ramp's stops, winning over scheme",
         }),
         ...colorUnknownSlot,
         ...colorInvalidSlot,

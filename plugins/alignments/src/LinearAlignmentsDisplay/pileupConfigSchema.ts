@@ -15,7 +15,7 @@ import { pileupSoftClipsConfigSchema } from './pileupSoftClipsConfigSchema.ts'
  * ```js
  * {
  *   type: 'LinearAlignmentsDisplay',
- *   pileup: { mark: { height: 3 }, softClips: { show: true } },
+ *   pileup: { mark: { height: 3 }, softclips: { show: true } },
  * }
  * ```
  */
@@ -69,10 +69,10 @@ export const pileupConfigSchema = ConfigurationSchema(
      */
     mismatches: pileupMismatchesConfigSchema,
     /**
-     * #slot softClips
+     * #slot softclips
      * The soft-clipped ends of each read: `show`.
      */
-    softClips: pileupSoftClipsConfigSchema,
+    softclips: pileupSoftClipsConfigSchema,
     /**
      * #slot connectors
      * Lines over the pileup joining each read to its mate or split segment:

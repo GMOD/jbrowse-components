@@ -23,6 +23,8 @@ export const featureContainersConfigSchema = ConfigurationSchema(
     types: {
       type: 'stringArray',
       defaultValue: GENE_GLYPH_DEFAULTS.containerTypes,
+      description:
+        'the top-level types whose children each stack on a row of their own; each also counts as geneLike',
     },
   },
   { closed: true },

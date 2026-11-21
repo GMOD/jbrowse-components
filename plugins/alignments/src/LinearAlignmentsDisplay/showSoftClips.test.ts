@@ -54,13 +54,13 @@ describe('alignments showSoftClips', () => {
   it('is off unless the track config says otherwise', () => {
     expect(createDisplay().display.showSoftClips).toBe(false)
     expect(
-      createDisplay({ pileup: { softClips: { show: true } } }).display
+      createDisplay({ pileup: { softclips: { show: true } } }).display
         .showSoftClips,
     ).toBe(true)
   })
 
   it('setShowSoftClips writes the slot both ways', () => {
-    const { display } = createDisplay({ pileup: { softClips: { show: true } } })
+    const { display } = createDisplay({ pileup: { softclips: { show: true } } })
     display.setShowSoftClips(false)
     expect(display.showSoftClips).toBe(false)
     display.setShowSoftClips(true)

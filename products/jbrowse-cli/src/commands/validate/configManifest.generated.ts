@@ -4294,7 +4294,7 @@ export const configManifest: ConfigManifest = {
               "writes": "members"
             },
             {
-              "name": "softClips",
+              "name": "softclips",
               "type": "PileupSoftClipsConfigurationSchema",
               "subSlots": [
                 {
@@ -5509,7 +5509,7 @@ export const configManifest: ConfigManifest = {
               "writes": "members"
             },
             {
-              "name": "softClips",
+              "name": "softclips",
               "type": "PileupSoftClipsConfigurationSchema",
               "subSlots": [
                 {
@@ -5915,7 +5915,10 @@ export const configManifest: ConfigManifest = {
             }
           ],
           "schema": "LaneRows",
-          "writes": "members"
+          "writes": "members",
+          "shorthand": {
+            "string": "field"
+          }
         },
         {
           "name": "ribbons",

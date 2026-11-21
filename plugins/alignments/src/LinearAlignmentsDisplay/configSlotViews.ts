@@ -256,7 +256,7 @@ export function configSlotViews(
     },
     /** #getter */
     get showSoftClips(): boolean {
-      return getConf(self, ['pileup', 'softClips', 'show'])
+      return getConf(self, ['pileup', 'softclips', 'show'])
     },
     /** #getter */
     get showConnectors(): boolean {
@@ -633,7 +633,7 @@ export function configSlotActions(self: ConfigSlotSelf) {
      * #action
      */
     setShowSoftClips(value: boolean) {
-      setConf(self, ['pileup', 'softClips', 'show'], value)
+      setConf(self, ['pileup', 'softclips', 'show'], value)
     },
 
     /**

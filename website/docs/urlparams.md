@@ -526,7 +526,7 @@ restores natively:
 #### Live example: alignments display settings
 
 An alignments track colored by insert size and pair orientation, with
-soft-clipped bases shown and an enlarged height. Swapping `pileup.softClips` for
+soft-clipped bases shown and an enlarged height. Swapping `pileup.softclips` for
 `pileup.connectors` draws a connector between the mates of each aberrant pair
 and across split-read junctions:
 
@@ -542,7 +542,7 @@ and across split-read junctions:
           "trackId": "volvox_sv_cram",
           "displaySnapshot": {
             "height": 250,
-            "pileup": { "softClips": { "show": true } },
+            "pileup": { "softclips": { "show": true } },
             "encoding": { "color": "insertSizeAndOrientation" }
           }
         }

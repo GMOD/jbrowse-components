@@ -30,8 +30,9 @@ breaks "a gutter draws only what its source states"
 
 ## Decision
 
-- **`rows.field` says what one lane is**: `assembly` (the default) or
-  `refName`, a lane per contig, as the variant display's `rows.field` says
+- **`rows.field` says what one lane is**: `assembly` or `refName`, a lane
+  per contig, `auto`, the default, choosing between them by the track's
+  genomes (below), as the variant display's `rows.field` says
   `sample` or `haplotype` ([ADR-257](adr-257-the-row-axis-owns-its-settings.md)).
   The lanes' `rows` still writes member by member, and switching keeps
   `sort`, `labels`, `colors` and `kept`: a copy lane reads a genome's entry,

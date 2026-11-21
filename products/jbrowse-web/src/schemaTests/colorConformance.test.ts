@@ -167,6 +167,16 @@ const SPECS: readonly Spec[] = [
     },
     values: [1, 3, 5, 7, 9],
   },
+  {
+    name: 'symlog over the data',
+    color: { field: 'score', scale: { type: 'symlog' } },
+    values: [0, 1, 10, 100],
+  },
+  {
+    name: 'log over the data',
+    color: { field: 'score', scale: { type: 'log' } },
+    values: [1, 10, 100, 1000],
+  },
 ]
 
 const DISPLAYS = [
@@ -200,7 +210,22 @@ const WIGGLE_SCORE_ONLY =
 const MAF_FIELDS =
   'fills cells by identity or refNameRank alone, each with its one scale, so it declares no other field and no scale.type'
 
+const LINEAR_RAMP_ONLY =
+  'ramps only linearly (bakedColorScale.ts, rampNorm), so its schema refuses log and symlog'
+
 const EXCEPTIONS: readonly Exception[] = [
+  ...listed(
+    'alignments',
+    LINEAR_RAMP_ONLY,
+    'symlog over the data',
+    'log over the data',
+  ),
+  ...listed(
+    'synteny',
+    LINEAR_RAMP_ONLY,
+    'symlog over the data',
+    'log over the data',
+  ),
   ...listed(
     'wiggle',
     'an unset scale.type is the bicolor pair cut at the origin',
@@ -227,6 +252,8 @@ const EXCEPTIONS: readonly Exception[] = [
     'ordinal domain, range, unknown, invalid',
     'ordinal scheme over a domain',
     'linear, pinned ends, scheme, reverse',
+    'symlog over the data',
+    'log over the data',
   ),
   ...listed(
     'maf',
@@ -239,6 +266,8 @@ const EXCEPTIONS: readonly Exception[] = [
     'ordinal scheme over a domain',
     'linear over the data, scheme',
     'threshold cuts',
+    'symlog over the data',
+    'log over the data',
   ),
 ]
 

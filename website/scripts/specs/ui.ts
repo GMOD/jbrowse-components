@@ -510,7 +510,7 @@ export const uiSpecs: ScreenshotSpec[] = [
             {
               trackId: 'illumina_hg002',
               height: 320,
-              pileup: { softClips: { show: true } },
+              pileup: { softclips: { show: true } },
             },
           ],
         },

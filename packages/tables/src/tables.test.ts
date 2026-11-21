@@ -1249,11 +1249,11 @@ test('the glyph hands R the splice line’s fade at the read height, and the siz
   expect(fadeFloor).toBeLessThan(1)
 })
 
-test('the display’s pileup.softClips.show lays reads out by their clipped extent', async () => {
+test('the display’s pileup.softclips.show lays reads out by their clipped extent', async () => {
   const plain = await engine.alignments(PAIRED_INVERSION)
   const clipped = await engine.alignments({
     ...PAIRED_INVERSION,
-    display: { pileup: { softClips: { show: true } } },
+    display: { pileup: { softclips: { show: true } } },
   })
   expect(clipped.reads.start).toEqual(plain.reads.start)
   expect(clipped.reads.row).not.toEqual(plain.reads.row)

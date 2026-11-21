@@ -64,7 +64,7 @@ export const geneColorConfigSchema = ConfigurationSchema(
         ...colorScaleTypeSlot({
           scales: FIELD_COLOR_SCALES,
           scaleName: 'MultiWayGeneColorScaleType',
-          type: 'ordinal a range color per value of field; threshold a range color per interval between the cut points in domain; linear or log a color along a ramp from domainMin to domainMax; unset is linear for score and ordinal for any other field',
+          type: 'ordinal a range color per value of field; threshold a range color per interval between the cut points in domain; linear, log or symlog a color along a ramp from domainMin to domainMax; unset is linear for score and ordinal for any other field',
         }),
         ...colorDomainSlot({
           domain:
@@ -72,7 +72,7 @@ export const geneColorConfigSchema = ConfigurationSchema(
         }),
         ...colorRangeSlot({
           range:
-            "CSS colors the domain takes, in order, a value past the end of the list sampling the scheme where one is set, else continuing into the default palette; under threshold one per interval, one more than the cuts, an interval left out sampling the scheme, else the default ramp; under linear or log the ramp's stops, winning over scheme",
+            "CSS colors the domain takes, in order, a value past the end of the list sampling the scheme where one is set, else continuing into the default palette; under threshold one per interval, one more than the cuts, an interval left out sampling the scheme, else the default ramp; under linear, log or symlog the ramp's stops, winning over scheme",
         }),
         ...colorUnknownSlot,
         ...colorInvalidSlot,

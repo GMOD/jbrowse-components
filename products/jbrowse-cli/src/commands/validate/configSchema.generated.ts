@@ -5004,7 +5004,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "x-closed": true,
       "properties": {
         "type": {
-          "description": "ordinal a range color per value of field; threshold a range color per interval between the cut points in domain; linear or log a color along a ramp from domainMin to domainMax; identity paints the CSS color field holds, or with no field each feature's own color, as a channel with no field does, except that an itemRgb of 0,0,0 or 0 paints black and a comma-free one reads as a packed integer, and the key names the colors in domain; unset is linear for score and ordinal for any other field.",
+          "description": "ordinal a range color per value of field; threshold a range color per interval between the cut points in domain; linear, log or symlog a color along a ramp from domainMin to domainMax; identity paints the CSS color field holds, or with no field each feature's own color, as a channel with no field does, except that an itemRgb of 0,0,0 or 0 paints black and a comma-free one reads as a packed integer, and the key names the colors in domain; unset is linear for score and ordinal for any other field.",
           "if": {
             "type": "null"
           },
@@ -5014,6 +5014,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
               "threshold",
               "linear",
               "log",
+              "symlog",
               "identity"
             ]
           }
@@ -5042,7 +5043,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           }
         },
         "range": {
-          "description": "CSS colors the domain takes, in order, a value past the end of the list sampling the scheme where one is set, else continuing into the default palette; under threshold one per interval, one more than the cuts, an interval left out sampling the scheme, else the default ramp; under linear or log the ramp's stops, winning over scheme.",
+          "description": "CSS colors the domain takes, in order, a value past the end of the list sampling the scheme where one is set, else continuing into the default palette; under threshold one per interval, one more than the cuts, an interval left out sampling the scheme, else the default ramp; under linear, log or symlog the ramp's stops, winning over scheme.",
           "if": {
             "type": "null"
           },
@@ -5643,6 +5644,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "x-closed": true,
       "properties": {
         "types": {
+          "description": "types the geneLike filter field counts beside every gene, transcript and RNA type, and the fallback that recognizes a childless transcript as an isoform.",
           "default": [
             "mRNA",
             "transcript",
@@ -5663,6 +5665,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           }
         },
         "field": {
+          "description": "the attribute holding an isoform's curated tag, such as MANE Select.",
           "default": "tag",
           "if": {
             "type": "null"
@@ -5672,6 +5675,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           }
         },
         "sort": {
+          "description": "the values of field that rank an isoform first, in order; the rest follow by coding length.",
           "default": [
             "MANE Select",
             "MANE_Select",
@@ -5702,6 +5706,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "x-closed": true,
       "properties": {
         "types": {
+          "description": "the top-level types whose children each stack on a row of their own; each also counts as geneLike.",
           "default": [
             "proteoform_orf"
           ],
@@ -7199,7 +7204,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "$ref": "#/$defs/PileupMismatches"
           }
         },
-        "softClips": {
+        "softclips": {
           "if": {
             "type": "null"
           },
@@ -8746,7 +8751,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "$ref": "#/$defs/PileupMismatches"
           }
         },
-        "softClips": {
+        "softclips": {
           "if": {
             "type": "null"
           },
@@ -9092,7 +9097,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "x-closed": true,
       "properties": {
         "type": {
-          "description": "ordinal a range color per value of field; threshold a range color per interval between the cut points in domain; linear or log a color along a ramp from domainMin to domainMax; unset is linear for score and ordinal for any other field.",
+          "description": "ordinal a range color per value of field; threshold a range color per interval between the cut points in domain; linear, log or symlog a color along a ramp from domainMin to domainMax; unset is linear for score and ordinal for any other field.",
           "if": {
             "type": "null"
           },
@@ -9101,7 +9106,8 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
               "ordinal",
               "threshold",
               "linear",
-              "log"
+              "log",
+              "symlog"
             ]
           }
         },
@@ -9129,7 +9135,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           }
         },
         "range": {
-          "description": "CSS colors the domain takes, in order, a value past the end of the list sampling the scheme where one is set, else continuing into the default palette; under threshold one per interval, one more than the cuts, an interval left out sampling the scheme, else the default ramp; under linear or log the ramp's stops, winning over scheme.",
+          "description": "CSS colors the domain takes, in order, a value past the end of the list sampling the scheme where one is set, else continuing into the default palette; under threshold one per interval, one more than the cuts, an interval left out sampling the scheme, else the default ramp; under linear, log or symlog the ramp's stops, winning over scheme.",
           "if": {
             "type": "null"
           },
@@ -9388,104 +9394,119 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
     },
     "LaneRows": {
       "title": "LaneRows",
-      "type": "object",
-      "x-closed": true,
-      "properties": {
-        "field": {
-          "description": "what one lane is: 'assembly', a lane per genome, or 'refName', a lane per contig holding a copy of the window, named '{<assembly>}<refName>' and answering to its genome's name; 'auto' draws 'refName' where the track names at most one genome besides the anchor, else 'assembly'.",
+      "anyOf": [
+        {
+          "description": "Shorthand for \`{ \\"field\\": ... }\`.",
           "default": "auto",
-          "if": {
-            "type": "null"
-          },
-          "else": {
-            "enum": [
-              "auto",
-              "assembly",
-              "refName"
-            ]
-          }
+          "enum": [
+            "auto",
+            "assembly",
+            "refName"
+          ],
+          "type": "string"
         },
-        "sort": {
-          "description": "the lanes that stack first, by name, in this order; the rest follow densest-first, or each beside the lane most alike where the source joins neighbouring lanes; among copy lanes the anchor's assembly named here stacks the anchor there.",
-          "if": {
-            "type": "null"
-          },
-          "else": {
-            "anyOf": [
-              {
-                "type": "array",
-                "items": {
-                  "anyOf": [
-                    {
-                      "type": "string"
-                    },
-                    {
-                      "type": "number"
-                    }
-                  ]
-                }
+        {
+          "title": "LaneRows",
+          "type": "object",
+          "x-closed": true,
+          "properties": {
+            "field": {
+              "description": "what one lane is: 'assembly', a lane per genome, or 'refName', a lane per contig holding a copy of the window, named '{<assembly>}<refName>' and answering to its genome's name; 'auto' draws 'refName' where the track names at most one genome besides the anchor, else 'assembly'.",
+              "default": "auto",
+              "if": {
+                "type": "null"
               },
-              {
-                "type": "string"
+              "else": {
+                "enum": [
+                  "auto",
+                  "assembly",
+                  "refName"
+                ]
               }
-            ]
-          }
-        },
-        "labels": {
-          "description": "a label drawn for a lane in place of its name, by lane name; labels.lanes says where lane labels draw.",
-          "if": {
-            "type": "null"
-          },
-          "else": {
-            "type": "object",
-            "additionalProperties": {
-              "type": "string"
-            }
-          }
-        },
-        "colors": {
-          "description": "a color pinned on a lane, by lane name, the anchor's included, over the color its source declares; drawn as a bar beside the lane's label.",
-          "if": {
-            "type": "null"
-          },
-          "else": {
-            "type": "object",
-            "additionalProperties": {
-              "type": "string"
-            }
-          }
-        },
-        "kept": {
-          "description": "the lanes drawn, by lane name, selecting rather than narrowing: it replaces the track's lanes and can add one; empty draws the track's lanes, or every lane.",
-          "if": {
-            "type": "null"
-          },
-          "else": {
-            "anyOf": [
-              {
-                "type": "array",
-                "items": {
-                  "anyOf": [
-                    {
-                      "type": "string"
-                    },
-                    {
-                      "type": "number"
-                    }
-                  ]
-                }
+            },
+            "sort": {
+              "description": "the lanes that stack first, by name, in this order; the rest follow densest-first, or each beside the lane most alike where the source joins neighbouring lanes; among copy lanes the anchor's assembly named here stacks the anchor there.",
+              "if": {
+                "type": "null"
               },
-              {
-                "type": "string"
+              "else": {
+                "anyOf": [
+                  {
+                    "type": "array",
+                    "items": {
+                      "anyOf": [
+                        {
+                          "type": "string"
+                        },
+                        {
+                          "type": "number"
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "type": "string"
+                  }
+                ]
               }
-            ]
-          }
+            },
+            "labels": {
+              "description": "a label drawn for a lane in place of its name, by lane name; labels.lanes says where lane labels draw.",
+              "if": {
+                "type": "null"
+              },
+              "else": {
+                "type": "object",
+                "additionalProperties": {
+                  "type": "string"
+                }
+              }
+            },
+            "colors": {
+              "description": "a color pinned on a lane, by lane name, the anchor's included, over the color its source declares; drawn as a bar beside the lane's label.",
+              "if": {
+                "type": "null"
+              },
+              "else": {
+                "type": "object",
+                "additionalProperties": {
+                  "type": "string"
+                }
+              }
+            },
+            "kept": {
+              "description": "the lanes drawn, by lane name, selecting rather than narrowing: it replaces the track's lanes and can add one; empty draws the track's lanes, or every lane.",
+              "if": {
+                "type": "null"
+              },
+              "else": {
+                "anyOf": [
+                  {
+                    "type": "array",
+                    "items": {
+                      "anyOf": [
+                        {
+                          "type": "string"
+                        },
+                        {
+                          "type": "number"
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "type": "string"
+                  }
+                ]
+              }
+            }
+          },
+          "patternProperties": {
+            "^_+comment": {}
+          },
+          "additionalProperties": false
         }
-      },
-      "patternProperties": {
-        "^_+comment": {}
-      },
-      "additionalProperties": false
+      ]
     },
     "RibbonColorScale": {
       "title": "RibbonColorScale",
@@ -10227,7 +10248,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           }
         },
         "domain": {
-          "description": "for an ordinal scale, the values in legend order, walking the range from the first entry and continuing past its end into the scheme where one is set, else the default palette (a value left out takes a color no listed value or value met before it paints, the first time the track shows it, and keeps it); for a threshold scale, the cut points in ascending order, a value taking the range entry for the number of them it is at or past, so range has one entry more than this; a linear or log scale reads domainMin and domainMax instead.",
+          "description": "for an ordinal scale, the values in legend order, walking the range from the first entry and continuing past its end into the scheme where one is set, else the default palette (a value left out takes a color no listed value or value met before it paints, the first time the track shows it, and keeps it); for a threshold scale, the cut points in ascending order, a value taking the range entry for the number of them it is at or past, so range has one entry more than this; a linear, log or symlog scale reads domainMin and domainMax instead.",
           "if": {
             "type": "null"
           },
@@ -11849,7 +11870,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "x-closed": true,
       "properties": {
         "show": {
-          "description": "draw the rows.",
+          "description": "draw the forward-strand base row.",
           "default": true,
           "if": {
             "type": "null"
@@ -11870,7 +11891,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "x-closed": true,
       "properties": {
         "show": {
-          "description": "draw the rows.",
+          "description": "draw the reverse-complement base row.",
           "default": true,
           "if": {
             "type": "null"
@@ -11891,7 +11912,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "x-closed": true,
       "properties": {
         "show": {
-          "description": "draw the rows.",
+          "description": "draw the three translation frame rows per drawn strand.",
           "default": true,
           "if": {
             "type": "null"
@@ -12834,7 +12855,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "x-closed": true,
       "properties": {
         "type": {
-          "description": "ordinal a range color per value of field; threshold a range color per interval between the cut points in domain; linear or log a color along a ramp from domainMin to domainMax; identity paints each variant the CSS color its field holds, else the color its value callback returns, and the key names the colors in domain; unset is linear for score and ordinal for any other field.",
+          "description": "ordinal a range color per value of field; threshold a range color per interval between the cut points in domain; linear, log or symlog a color along a ramp from domainMin to domainMax; identity paints each variant the CSS color its field holds, else the color its value callback returns, and the key names the colors in domain; unset is linear for score and ordinal for any other field.",
           "if": {
             "type": "null"
           },
@@ -12844,6 +12865,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
               "threshold",
               "linear",
               "log",
+              "symlog",
               "identity"
             ]
           }
@@ -12872,7 +12894,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           }
         },
         "range": {
-          "description": "CSS colors the domain takes, in order, a value past the end of the list sampling the scheme where one is set, else continuing into the default palette; under threshold one per interval, one more than the cuts, an interval left out sampling the scheme, else the default ramp; under linear or log the ramp's stops, winning over scheme.",
+          "description": "CSS colors the domain takes, in order, a value past the end of the list sampling the scheme where one is set, else continuing into the default palette; under threshold one per interval, one more than the cuts, an interval left out sampling the scheme, else the default ramp; under linear, log or symlog the ramp's stops, winning over scheme.",
           "if": {
             "type": "null"
           },
@@ -14917,7 +14939,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           }
         },
         "origin": {
-          "description": "The value bars grow from, and the cut a threshold color scale with an empty domain uses. The same slot, with the same meaning, as the mark display's origin.",
+          "description": "The value bars grow from and a line drops to across a gap; a threshold color scale with no \`domain\` cut splits its two colors there.",
           "default": 0,
           "if": {
             "type": "null"
@@ -16855,7 +16877,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           }
         },
         "origin": {
-          "description": "baseline value for bars.",
+          "description": "The value bars grow from and a line drops to across a gap; the axis reaches it whenever a bar draws, unless a log scale cannot.",
           "default": 0,
           "if": {
             "type": "null"
@@ -17014,7 +17036,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           }
         },
         "origin": {
-          "description": "baseline value for bars.",
+          "description": "The value bars grow from and a line drops to across a gap; the axis reaches it whenever a bar draws, unless a log scale cannot.",
           "default": 0,
           "if": {
             "type": "null"
@@ -17420,7 +17442,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           }
         },
         "origin": {
-          "description": "baseline value for bars.",
+          "description": "The value bars grow from and a line drops to across a gap; the axis reaches it whenever a bar draws, unless a log scale cannot.",
           "default": 0,
           "if": {
             "type": "null"
@@ -30225,7 +30247,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "$ref": "#/$defs/SyntenyNavigation"
         },
         "coord": {
-          "description": "Launch key, resolved by the LinearSyntenyView launcher on open."
+          "$ref": "#/$defs/SyntenyCoord"
         },
         "diagonalizeAnchorRow": {
           "type": "number"
@@ -31271,6 +31293,15 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         },
         "scrollZoom": {
           "default": false,
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "boolean"
+          }
+        },
+        "showBandChips": {
+          "default": true,
           "if": {
             "type": "null"
           },

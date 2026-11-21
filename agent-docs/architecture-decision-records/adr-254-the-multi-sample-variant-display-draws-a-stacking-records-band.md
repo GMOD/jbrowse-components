@@ -457,7 +457,7 @@ stay.
 | Export the pipeline from plugin-features's barrel | Pulls layout and fit into every product's eager closure, the circular-view embed's included |
 | Extract the pipeline into a package now | The chain is already pure, so a package later is an import rename; this slice tests the height rule |
 | Draw records-only through `RenderFeatureData` and the GPU path | Paint was 8 ms of the band's 550 ms; the rest was labelling records the feature track's density rule leaves bare, and `LinearVariantDisplay` packs on the main thread too |
-| Keep `growMaxHeight` for the band and rename the top-level one | The top-level word is the grow ceiling on every feature and alignments display |
+| Keep `growMaxHeight` for the band and rename the top-level one | The top-level word is the grow ceiling on every display whose `heightMode` offers `grow`: LinearBasic, LinearAlignments, LGVSynteny and LinearVariant |
 | `records.displayMode` defaulting to one value, the other mode overriding it | A written `normal` over rows could not be told from the default; unset is the one state that resolves by mode |
 | `records.tooltip` as the whole `FeatureTooltip` (`show` and `field`) | Two toggles for one hover tooltip |
 | `records.encoding.color` beside the cells' | The records paint the cells' hue; two channels would color one record twice |

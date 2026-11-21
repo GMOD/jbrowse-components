@@ -204,7 +204,7 @@ export const alignmentsSpecs: ScreenshotSpec[] = [
       tracks: [
         {
           trackId: 'volvox-long-reads-sv-bam',
-          pileup: { softClips: { show: true } },
+          pileup: { softclips: { show: true } },
         },
       ],
     }),

@@ -406,11 +406,9 @@ predicate in the layer's own `filter`:
   painter compares each segment's fraction already, and the interbase rule
   already runs in the worker, so a compiled predicate replaces a compare with
   the same compare.
-- **Open: `pileup.fadeLowBaseQuality`** reads as
-  `mismatches.encoding.opacity: { field: 'qual' }`. GRAMMAR_OF_GRAPHICS.md
-  kept the fades as booleans because an opacity object would take one legal
-  value, and the channel object of this ADR may change that. The alignments
-  stage settles it.
+- **`pileup.fadeLowBaseQuality`**, which could have read as
+  `mismatches.encoding.opacity: { field: 'qual' }`, was settled by the
+  alignments stage ([ADR-240](adr-240-the-alignments-display-speaks-vega-lite.md)).
 
 ## Rejected
 
@@ -443,6 +441,8 @@ predicate in the layer's own `filter`:
 | The row sidebar's `axis` as Vega-Lite's `header`, since the multi-way lanes' `axis` is an x ruler (2026-11-01 cold read) | Both are guides on a positional channel, the band y's and the lanes' x; `header` labels facet panels, and these rows are positions on one scale |
 | `rows.labels` as a `scale.names` list | `names` runs parallel to a declared `domain`; rows have none, their order being `rows.sort` over whatever the source lists, so a label is keyed by row name |
 | `tooltip` as Vega-Lite's `encoding.tooltip` (2026-11-07) | The feature displays' part carries `show`, and a channel cannot turn off, `null` resetting it; the alignments part is field-only (ADR-240) and keeps the one spelling. Vega-Lite itself spells hover twice, `mark.tooltip` on or off and `encoding.tooltip` its fields. The part's `field` names the hover's first line |
+| Respelling a word the word table shows under two parents: `reverse`, `pos`, `unit` (2026-11-20 review) | `reverse` is the strand row beside `forward` and Vega-Lite's boolean under `scale`, and each closed shape rejects the other. `pos` beside `refName` is a locus, counted from 0 as a region's `start` is, where SAM's `POS` and v4's `sortedBy.pos` count from 1 and the lift subtracts 1; under `x2` both name the feature fields holding them; `position` is already a sort field. `unit` is what one mark stands for: a read or chain row (ADR-188), a base or codon bar (ADR-231) |
+| `height: { mode, max }` for `heightMode` and `growMaxHeight` (camelCase pass, 2026-11-20) | `height` is a v4 number every writer sets on six displays; ggjbrowse, jb2export and the R export write `heightMode`; a sibling `growMaxHeight` survives a mode switch, and `maxHeight` is v4's layout cap |
 
 ## Consequences
 

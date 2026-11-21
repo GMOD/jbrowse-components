@@ -66,6 +66,10 @@ ran on to 0 or 1 past the range, which `domainMin: 5, domainMax: 30, range:
 [0, 1]` draws for `domainMin: 10, domainMax: 30, range: [0.2, 1]` unclamped.
 The key was beta-only (betas 18 to 21) and nothing wrote it off.
 
+Amended 2026-11-20: `pileup.softClips` is `pileup.softclips`, one word as
+the `softclip` sort field on the same display spells it. The key was
+beta-only, so it goes with no lift.
+
 Five reviews shaped it: an Opus design pass from ADR-238 and the schemas, two
 Opus arbiters on its calls (one on Vega-Lite fidelity, one on authors, writers
 and speed), a Fable cold read of the resulting surface with no rationale in
@@ -131,7 +135,7 @@ hand, and Colin's rulings on the calls they split.
     "fadeLowFrequency": true,
     "mismatches": { "show": true, "encoding": { "opacity": {
       "field": "baseQuality", "scale": { "domainMin": 0, "domainMax": 50, "range": [0, 1] } } } },
-    "softClips": { "show": false },
+    "softclips": { "show": false },
     "connectors": { "show": false },
     "bases": {
       "show": false,
@@ -238,7 +242,7 @@ them in its own stage:
 | `scales.y.*` | `coverage.encoding.y.scale` and `.axis`, with wiggle's y step (`ScoreScaleMixin` hard-codes the path); `rules` follows wiggle's spelling |
 | `coverage.showInterbaseIndicators`, `minAlleleFraction` | `coverage.interbase.show`, `coverage.alleles.filter` |
 | `pileup.readHeight` | `pileup.mark.height` |
-| `pileup.showMismatches`, `showSoftClipping`, `showConnectors` | `pileup.mismatches.show`, `softClips.show`, `connectors.show` |
+| `pileup.showMismatches`, `showSoftClipping`, `showConnectors` | `pileup.mismatches.show`, `softclips.show`, `connectors.show` |
 | `pileup.showOutline` | cut |
 | `pileup.fadeLowBaseQuality` | `pileup.mismatches.encoding.opacity` over `baseQuality` |
 | `pileup.fadeLowFrequency`, `maxLayoutHeight` | unchanged |

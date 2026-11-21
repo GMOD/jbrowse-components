@@ -25,7 +25,7 @@ const ALLOWED: Record<string, string> = {
   domainMin: "Vega-Lite's scale ends (ADR-238)",
   domainMax: "Vega-Lite's scale ends (ADR-238)",
   growMaxHeight:
-    'the grow ceiling on every feature and alignments display (ADR-254)',
+    "the ceiling of heightMode: 'grow', which heightModeConfigSchemaFields declares beside it; a sibling, so setHeightMode keeps it, and maxHeight is v4's layout cap (ADR-254)",
   min: "the ends of alignments' normalInsertSize band (ADR-240)",
   max: "the ends of alignments' normalInsertSize band (ADR-240)",
 }

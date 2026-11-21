@@ -1686,7 +1686,10 @@ export function buildConfigJsonSchema(deps: Deps): JsonSchema {
     properties.type = typeMatch(view.name, view.aliases)
     const registration = view.launchKeys
     for (const [key, spec] of Object.entries(registration?.keys ?? {})) {
-      properties[key] = launchKeySchema(view, key, spec.kind)
+      properties[key] =
+        spec.kind === 'replay' && properties[key]
+          ? properties[key]
+          : launchKeySchema(view, key, spec.kind)
     }
     for (const key of registration?.passThrough ?? []) {
       properties[key] ??= {

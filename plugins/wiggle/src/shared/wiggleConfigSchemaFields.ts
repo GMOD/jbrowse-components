@@ -8,7 +8,7 @@ export const wiggleConfigSchemaFields = {
     type: 'number',
     defaultValue: 0,
     description:
-      "The value bars grow from, and the cut a threshold color scale with an empty domain uses. The same slot, with the same meaning, as the mark display's origin",
+      'The value bars grow from and a line drops to across a gap; a threshold color scale with no `domain` cut splits its two colors there',
     plot: true,
   },
 } as const

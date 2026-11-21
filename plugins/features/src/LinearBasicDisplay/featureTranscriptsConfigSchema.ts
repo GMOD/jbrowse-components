@@ -34,6 +34,8 @@ export const featureTranscriptsConfigSchema = ConfigurationSchema(
     types: {
       type: 'stringArray',
       defaultValue: GENE_GLYPH_DEFAULTS.transcriptTypes,
+      description:
+        'types the geneLike filter field counts beside every gene, transcript and RNA type, and the fallback that recognizes a childless transcript as an isoform',
     },
     /**
      * #slot
@@ -43,6 +45,8 @@ export const featureTranscriptsConfigSchema = ConfigurationSchema(
     field: {
       type: 'string',
       defaultValue: GENE_GLYPH_DEFAULTS.canonicalTranscriptField,
+      description:
+        "the attribute holding an isoform's curated tag, such as MANE Select",
     },
     /**
      * #slot
@@ -51,6 +55,8 @@ export const featureTranscriptsConfigSchema = ConfigurationSchema(
     sort: {
       type: 'stringArray',
       defaultValue: GENE_GLYPH_DEFAULTS.canonicalTranscriptTags,
+      description:
+        'the values of field that rank an isoform first, in order; the rest follow by coding length',
     },
   },
   { closed: true },

@@ -15,6 +15,7 @@ import {
   CATEGORICAL_FIELD_PRESETS,
   FEATURE_FIELD_PRESETS,
   IDENTITY_SCALE,
+  RAMP_SCALES,
   fieldScaleOf,
   paintedScale,
   withPreset,
@@ -70,8 +71,7 @@ export const DISCRETE_COLOR_SCALES = [
 /** The scales of a color object whose field paints a range color per value or per bin, or a color along a ramp. */
 export const FIELD_COLOR_SCALES = [
   ...DISCRETE_COLOR_SCALES,
-  'linear',
-  'log',
+  ...RAMP_SCALES,
 ] as const
 
 /** The scales FeatureColor paints: a field's, or each feature's own color. */
@@ -1116,7 +1116,7 @@ export const colorConfigSchema = ConfigurationSchema(
         ...colorScaleTypeSlot({
           scales: FEATURE_COLOR_SCALES,
           scaleName: 'FeatureColorScaleType',
-          type: "ordinal a range color per value of field; threshold a range color per interval between the cut points in domain; linear or log a color along a ramp from domainMin to domainMax; identity paints the CSS color field holds, or with no field each feature's own color, as a channel with no field does, except that an itemRgb of 0,0,0 or 0 paints black and a comma-free one reads as a packed integer, and the key names the colors in domain; unset is linear for score and ordinal for any other field",
+          type: "ordinal a range color per value of field; threshold a range color per interval between the cut points in domain; linear, log or symlog a color along a ramp from domainMin to domainMax; identity paints the CSS color field holds, or with no field each feature's own color, as a channel with no field does, except that an itemRgb of 0,0,0 or 0 paints black and a comma-free one reads as a packed integer, and the key names the colors in domain; unset is linear for score and ordinal for any other field",
         }),
         ...colorDomainSlot({
           domain:
@@ -1124,7 +1124,7 @@ export const colorConfigSchema = ConfigurationSchema(
         }),
         ...colorRangeSlot({
           range:
-            "CSS colors the domain takes, in order, a value past the end of the list sampling the scheme where one is set, else continuing into the default palette; under threshold one per interval, one more than the cuts, an interval left out sampling the scheme, else the default ramp; under linear or log the ramp's stops, winning over scheme",
+            "CSS colors the domain takes, in order, a value past the end of the list sampling the scheme where one is set, else continuing into the default palette; under threshold one per interval, one more than the cuts, an interval left out sampling the scheme, else the default ramp; under linear, log or symlog the ramp's stops, winning over scheme",
         }),
         ...colorUnknownSlot,
         ...colorInvalidSlot,
