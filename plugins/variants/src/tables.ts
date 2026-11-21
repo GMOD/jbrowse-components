@@ -16,8 +16,11 @@ import {
 } from '@jbrowse/display-kit/HeightModeMixin'
 import ParkedColorMixin from '@jbrowse/display-kit/ParkedColorMixin'
 import TrackHeightMixin from '@jbrowse/display-kit/TrackHeightMixin'
-import { touchesAny } from '@jbrowse/display-kit/keyWindows'
-import { byteGatedFetchRegions } from '@jbrowse/display-kit/regionHost'
+import { keyWindowsOf, touchesAny } from '@jbrowse/display-kit/keyWindows'
+import {
+  byteGatedFetchRegions,
+  regionBlocks,
+} from '@jbrowse/display-kit/regionHost'
 import { types } from '@jbrowse/mobx-state-tree'
 import {
   featureBandTables,
@@ -98,9 +101,9 @@ import type { ProcessedSource, Source } from './shared/types.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { TablesRegion } from '@jbrowse/core/data_adapters/tables'
-import type { RpcExecuteArgs } from '@jbrowse/core/rpc/RpcRegistry'
-import type { Feature } from '@jbrowse/core/util'
+import type { Feature, Region } from '@jbrowse/core/util'
 import type { KeyWindow } from '@jbrowse/display-kit/keyWindows'
+import type { Instance } from '@jbrowse/mobx-state-tree'
 import type { FeatureTablesArgs } from '@jbrowse/plugin-features/tables'
 
 const base = types
@@ -323,6 +326,76 @@ export interface VariantTablesArgs {
   byteLimit?: number
 }
 
+/** What a tables host learns of the samples before it fetches. */
+interface SampleListing {
+  sources: Source[]
+  warnings: string[]
+}
+
+const NO_SAMPLES: SampleListing = { sources: [], warnings: [] }
+
+/**
+ * The display's cell-data fetch, run for a tables host: the adapter, refused
+ * where `regions` and the view's margin around them (`fetchRegions`) need
+ * more than `byteLimit`, then the samples `listSamples` reads off it and the
+ * windows the regions show set on `host`, then the payload it fetches with
+ * the host's `rpcProps`, set on it too. `what` names what a refusal over
+ * `byteLimit` would have read.
+ */
+async function fetchCellPayload(
+  pluginManager: PluginManager,
+  host: Instance<typeof variantHostRows> &
+    ReturnType<typeof variantRpcPropsViews>,
+  {
+    adapterConfig,
+    sequenceAdapter,
+    regions,
+    displayedRegions,
+    byteLimit = DEFAULT_BYTE_LIMIT,
+  }: Omit<VariantTablesArgs, 'display'>,
+  {
+    what,
+    listSamples,
+  }: {
+    what: string
+    listSamples: (
+      adapter: BaseFeatureDataAdapter,
+      fetchRegions: Region[],
+    ) => Promise<SampleListing>
+  },
+) {
+  const adapter = await tablesFeatureAdapter(
+    pluginManager,
+    adapterConfig,
+    sequenceAdapter,
+  )
+  const { fetchRegions } = await byteGatedFetchRegions({
+    adapter,
+    regions,
+    displayedRegions,
+    byteLimit,
+    what,
+  })
+  const listing = await listSamples(adapter, fetchRegions)
+  host.setAdapterSamples(listing.sources)
+  host.setKeyWindows(keyWindowsOf(regionBlocks(regions)))
+  const result = ungatedResult(
+    await variantCellData({
+      pluginManager,
+      args: runInAction(() => ({
+        sessionId: 'tables',
+        adapterConfig,
+        regions: fetchRegions,
+        ...host.rpcProps(),
+        statusCallback: () => {},
+      })),
+    }),
+    'MultiSampleVariantGetCellData',
+  )
+  host.setCellData(result.value)
+  return { adapter, fetchRegions, listing, result }
+}
+
 /**
  * The variant display's host over what it fetched for `regions`: each
  * region's records its window shows in start order, then in the order they
@@ -331,14 +404,7 @@ export interface VariantTablesArgs {
  */
 async function fetchedVariantHost(
   pluginManager: PluginManager,
-  {
-    adapterConfig,
-    sequenceAdapter,
-    regions,
-    displayedRegions,
-    display = {},
-    byteLimit = DEFAULT_BYTE_LIMIT,
-  }: VariantTablesArgs,
+  { regions, display = {}, ...fetchArgs }: VariantTablesArgs,
 ) {
   const host = VariantTablesHost.create(
     {
@@ -351,40 +417,15 @@ async function fetchedVariantHost(
     },
     { pluginManager },
   )
-  const adapter = await tablesFeatureAdapter(
+  const { adapter, listing, result } = await fetchCellPayload(
     pluginManager,
-    adapterConfig,
-    sequenceAdapter,
-  )
-  const { fetchRegions } = await byteGatedFetchRegions({
-    adapter,
-    regions,
-    displayedRegions,
-    byteLimit,
-    what: 'variants',
-  })
-  const listing = await sourcesAndWarnings(adapter, fetchRegions, {})
-  host.setAdapterSamples(listing.sources)
-  host.setKeyWindows(
-    regions.map(({ refName, start, end }, i) => ({
-      regionIndex: i,
-      refName,
-      start,
-      end,
-    })),
-  )
-  const args: RpcExecuteArgs<'MultiSampleVariantGetCellData'> = runInAction(
-    () => ({
-      sessionId: 'tables',
-      adapterConfig,
-      regions: fetchRegions,
-      ...host.rpcProps(),
-      statusCallback: () => {},
-    }),
-  )
-  const result = ungatedResult(
-    await variantCellData({ pluginManager, args }),
-    'MultiSampleVariantGetCellData',
+    host,
+    { regions, ...fetchArgs },
+    {
+      what: 'variants',
+      listSamples: (adapter, fetchRegions) =>
+        sourcesAndWarnings(adapter, fetchRegions, {}),
+    },
   )
   const value = result.value
   const fetchOrder = new Map(result.records.map((r, i) => [r.id(), i]))
@@ -421,8 +462,6 @@ async function fetchedVariantHost(
   const records = perRegion.flatMap(({ data, shown }) =>
     shown.map(f => recordOf.get(data.featureInfo[f]!.featureId)!),
   )
-
-  host.setCellData(value)
   const fetched = new Set(value.rowNames)
   const drawn = runInAction(() =>
     host.drawnRows.filter(row => fetched.has(row.name)),
@@ -876,13 +915,10 @@ export const VCF_ADAPTER_TYPES = [
 export async function variantFeatureTables(
   pluginManager: PluginManager,
   {
-    adapterConfig,
-    sequenceAdapter,
     regions,
-    displayedRegions,
     display = {},
     bpPerPx,
-    byteLimit = DEFAULT_BYTE_LIMIT,
+    ...fetchArgs
   }: VariantTablesArgs & Pick<FeatureTablesArgs, 'bpPerPx'>,
 ) {
   const host = VariantRecordsTablesHost.create(
@@ -895,46 +931,17 @@ export async function variantFeatureTables(
     },
     { pluginManager },
   )
-  const adapter = await tablesFeatureAdapter(
+  const { fetchRegions } = await fetchCellPayload(
     pluginManager,
-    adapterConfig,
-    sequenceAdapter,
-  )
-  const { fetchRegions } = await byteGatedFetchRegions({
-    adapter,
-    regions,
-    displayedRegions,
-    byteLimit,
-    what: 'features',
-  })
-  host.setAdapterSamples([])
-  host.setKeyWindows(
-    regions.map(({ refName, start, end }, i) => ({
-      regionIndex: i,
-      refName,
-      start,
-      end,
-    })),
+    host,
+    { regions, ...fetchArgs },
+    { what: 'features', listSamples: () => Promise.resolve(NO_SAMPLES) },
   )
   host.setView({
     coarseBpPerPx: bpPerPx,
     displayedRegions: fetchRegions,
     settledDynamicBlocks: tablesBlocks(regions, bpPerPx),
   })
-  const result = ungatedResult(
-    await variantCellData({
-      pluginManager,
-      args: runInAction(() => ({
-        sessionId: 'tables',
-        adapterConfig,
-        regions: fetchRegions,
-        ...host.rpcProps(),
-        statusCallback: () => {},
-      })),
-    }),
-    'MultiSampleVariantGetCellData',
-  )
-  host.setCellData(result.value)
   const band = runInAction(() => ({
     rpcDataMap: host.recordsRenderDataMap,
     laid: host.recordsLaidOutDataMap,
