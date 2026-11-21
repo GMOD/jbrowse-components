@@ -48,7 +48,7 @@ Dotplot1DView
 LinearSyntenyViewHelper
 TimeTraveller
 
-# model members with no description (1224)
+# model members with no description (1225)
 # fix: write a sentence under the member’s #property/#volatile/#getter/#method/#action tag
 AddTrackModel.adapterHint
 AddTrackModel.altAssemblyName
@@ -1091,6 +1091,7 @@ MultiWaySyntenyDisplay.starAnchor
 MultiWaySyntenyDisplay.startRenderingBackend
 MultiWaySyntenyDisplay.tickGeometry
 MultiWaySyntenyDisplay.tickIntervalBp
+MultiWaySyntenyDisplay.trackAssemblyNames
 MultiWaySyntenyDisplay.trackMenuItems
 MultiWaySyntenyDisplay.unpinLaneFlip
 MultiWaySyntenyDisplay.viewSignature
@@ -1394,12 +1395,13 @@ plugins/wiggle/src/shared/wiggleRowHookViews.ts sharesPanel
 # config slots whose type prints as their source (0)
 # fix: write the slot as { type, ... }, or teach describeValue in slotSource.ts the MST type it holds
 
-# model members and #api exports whose type prints as MST internals or collapses to nothing (16)
+# model members and #api exports whose type prints as MST internals or collapses to nothing (17)
 # fix: tag the model it names #stateModel (#internal keeps it off the site), or write the type it should read as
 BaseDisplay.DisplayBlurb
 BaseDisplay.RenderingComponent
 BaseDisplay.renderingProps
 BaseInternetAccountModel.getPreAuthorizationInformation
+BaseTrackModel.compatibleDisplays
 BreakpointAlignmentsWidget.read1
 BreakpointAlignmentsWidget.read2
 EmbeddedRootModel.config

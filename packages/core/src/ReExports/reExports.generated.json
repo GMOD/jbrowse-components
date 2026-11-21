@@ -906,6 +906,8 @@
         "DEFAULT_FORMAT_DETAILS_DEPTH",
         "FormatAboutConfigSchemaFactory",
         "FormatDetailsConfigSchemaFactory",
+        "HierarchicalConfigSchemaFactory",
+        "PreferencesConfigSchemaFactory",
         "applyConfSettings",
         "applyRetiredSpellings",
         "arraySlotUnion",
@@ -984,6 +986,13 @@
         "ConfigurationReference",
         "ConfigurationSchema",
         "hydrateTrackConfig"
+      ],
+      "worker": "real"
+    },
+    "@jbrowse/core/configuration/rootConfigSchema": {
+      "package": "@jbrowse/core",
+      "names": [
+        "rootConfigSchemaFields"
       ],
       "worker": "real"
     },
@@ -4904,7 +4913,10 @@
       "package": "@jbrowse/display-kit",
       "names": [
         "default",
-        "facetForField"
+        "facetByFieldOn",
+        "facetForField",
+        "setFacetSortOn",
+        "writtenFacetOf"
       ],
       "worker": "real"
     },
@@ -5128,7 +5140,9 @@
       "names": [
         "NO_HIDDEN_GROUPS",
         "default",
-        "hiddenGroupsViews"
+        "hiddenGroupsOf",
+        "hiddenGroupsViews",
+        "setHiddenGroupsOn"
       ],
       "worker": "real"
     },
@@ -5436,6 +5450,14 @@
       "names": [
         "SECTION_FACET_WRITES",
         "sectionFacetConfigSchema"
+      ],
+      "worker": "real"
+    },
+    "@jbrowse/display-kit/sectionHost": {
+      "package": "@jbrowse/display-kit",
+      "names": [
+        "knownSectionsOf",
+        "sectionSortOf"
       ],
       "worker": "real"
     },

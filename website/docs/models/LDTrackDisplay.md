@@ -76,11 +76,11 @@ From [TrackHeightMixin](../trackheightmixin): <span id="volatile-scrolltop">[`sc
 | <span id="getter-indexsnpcolumn">**indexSnpColumn**</span><br><code>number</code> | Index of the index SNP in `snps`, or -1. |
 | <span id="getter-paintedcolorfield">**paintedColorField**</span><br><code>LDMetric</code> | The loaded metric, so a stale triangle during a metric switch keeps its hue. |
 | <span id="getter-colorextent">**colorExtent**</span><br><code>readonly [number, number]</code> | What an open end of the color domain follows: the statistic's own 0 to 1, not the loaded values, so one r² paints one color on every track. |
-| <span id="getter-colorscales">**colorScales**</span><br><code>ColorScale[]</code> | The ramp the cells paint through, titled by the loaded metric. An end pinned inside the statistic's 0 to 1 reads `≤` or `≥`. |
-| <span id="getter-renderstate">**renderState**</span><br><code>LDRenderState</code> |  |
-| <span id="getter-connectorsband">**connectorsBand**</span><br><code>Band</code> | The `connectors` band above the matrix: the connector lines in columns, the labels at genomic positions when they are on, else nothing; taken from the display's height so the triangle keeps its floor. |
+| <span id="getter-connectorsband">**connectorsBand**</span><br><code>Band</code> | The `connectors` band above the plot it ties to the genome, taken from the track height so the plot keeps its floor. |
 | <span id="getter-connectorsstack">**connectorsStack**</span><br><code>BandStack&lt;"connectors"&gt;</code> |  |
 | <span id="getter-connectorsheight">**connectorsHeight**</span><br><code>number</code> |  |
+| <span id="getter-colorscales">**colorScales**</span><br><code>ColorScale[]</code> | The ramp the cells paint through, titled by the loaded metric. An end pinned inside the statistic's 0 to 1 reads `≤` or `≥`. |
+| <span id="getter-renderstate">**renderState**</span><br><code>LDRenderState</code> |  |
 | <span id="getter-drawslabels">**drawsLabels**</span><br><code>boolean</code> | Whether the SNP labels draw: on, in a `connectors` band that reserves room for them, so they never paint over the triangle. |
 | <span id="getter-matrixtop">**matrixTop**</span><br><code>number</code> | Where the triangle begins, under the `connectors` band. |
 | <span id="getter-depthfraction">**depthFraction**</span><br><code>number</code> | A file listing only nearby pairs draws a strip of the triangle's depth, so fit mode stretches that strip over the display. |
@@ -127,7 +127,7 @@ From [BaseDisplay](../basedisplay): <span id="getter-parenttrack">[`parentTrack`
 | <span id="method-locusviewportx">**locusViewportX**</span><br><code>(refName: string, coord: number) =&gt; number &#124; undefined</code> | Viewport x of a locus, or undefined when it has none. |
 | <span id="method-viewrefname">**viewRefName**</span><br><code>(refName: string) =&gt; string</code> | A file's refName as the view names it: PLINK writes `1` where the assembly says `chr1`. |
 | <span id="method-hittest">**hitTest**</span><br><code>(mouseX: number, mouseY: number) =&gt; LDCellHit &#124; undefined</code> | The computed cell under a display-px point: a pair outside the band, or one no estimator filled, is not drawn and not hit. |
-| <span id="method-configproblemsof">**configProblemsOf**</span><br><code>(conf: AnyConfigurationModel) =&gt; string[]</code> | The schema's rules, then names asked for with no band to draw in. |
+| <span id="method-configproblemsof">**configProblemsOf**</span><br><code>(conf: LDDisplayConfig) =&gt; string[]</code> | The schema's rules, then names asked for with no band to draw in. |
 | <span id="method-trackmenuitems">**trackMenuItems**</span><br><code>() =&gt; MenuItem[]</code> |  |
 | <span id="method-contextmenuitems">**contextMenuItems**</span><br><code>() =&gt; MenuItem[]</code> | Either SNP of the right-clicked pair as the index. |
 | <span id="method-rendersvg">**renderSvg**</span><br><code>(opts: ExportSvgDisplayOptions) =&gt; Promise&lt;ReactNode&gt;</code> |  |

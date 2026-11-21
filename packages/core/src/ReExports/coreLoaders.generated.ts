@@ -147,6 +147,7 @@ const loaders: ReExportLoaders = {
   '@jbrowse/core/checkPlugins': () => import('../checkPlugins.ts'),
   '@jbrowse/core/configuration': () => import('../configuration/index.ts'),
   '@jbrowse/core/configuration/configurationSchema': () => import('../configuration/configurationSchema.ts'),
+  '@jbrowse/core/configuration/rootConfigSchema': () => import('../configuration/rootConfigSchema.ts'),
   '@jbrowse/core/data_adapters/adapterSessionRefcount': () => import('../data_adapters/adapterSessionRefcount.ts'),
   '@jbrowse/core/data_adapters/BaseAdapter': () => import('../data_adapters/BaseAdapter/index.ts'),
   '@jbrowse/core/data_adapters/BaseAdapter/getAdapterId': () => import('../data_adapters/BaseAdapter/getAdapterId.ts'),

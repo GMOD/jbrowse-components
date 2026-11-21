@@ -92,6 +92,8 @@ From [TrackHeightMixin](../trackheightmixin): <span id="volatile-scrolltop">[`sc
 | <span id="getter-anchorassemblyname">**anchorAssemblyName**</span><br><code>string</code> |  |
 | <span id="getter-anchorassembly">**anchorAssembly**</span><br><code><a href="../assembly">Assembly</a> &#124; undefined</code> |  |
 | <span id="getter-anchorcanon">**anchorCanon**</span><br><code>(refName: string) =&gt; string</code> | the anchor assembly's canonical spelling of a refName |
+| <span id="getter-laneassemblies">**laneAssemblies**</span><br><code>LaneAssemblies</code> | how the session spells a lane's genome and contigs |
+| <span id="getter-trackassemblynames">**trackAssemblyNames**</span><br><code>string[]</code> |  |
 | <span id="getter-currentfetch">**currentFetch**</span><br><code>AnchorFetch</code> | the held anchor fetch, empty while none is held or the view's anchor differs from the fetch's |
 | <span id="getter-anchorrecordsloaded">**anchorRecordsLoaded**</span><br><code>boolean</code> |  |
 | <span id="getter-features">**features**</span><br><code>Feature[]</code> |  |
@@ -167,8 +169,8 @@ From [TrackHeightMixin](../trackheightmixin): <span id="volatile-scrolltop">[`sc
 | <span id="getter-laneorder">**laneOrder**</span><br><code>string[]</code> | every lane in the order it stacks, the anchor's included |
 | <span id="getter-pinsinforce">**pinsInForce**</span><br><code>LanePin[]</code> | the pins that hold under the anchor, each naming its lane as `rowAssemblies` spells it |
 | <span id="getter-structurelanekeys">**structureLaneKeys**</span><br><code>string[]</code> | every fetched lane's key, chained by its deletions and insertions against the anchor |
-| <span id="getter-lanestructureorder">**laneStructureOrder**</span><br><code>string[]</code> | the drawn lanes in `structureLaneKeys` order, for "Order lanes by structure"; empty for a gene table |
 | <span id="getter-rowoflane">**rowOfLane**</span><br><code>ReadonlyMap&lt;string, string&gt;</code> | each drawn lane's row name by its canonical name, for data keyed by the records' spelling of a lane |
+| <span id="getter-lanestructureorder">**laneStructureOrder**</span><br><code>string[]</code> | the drawn lanes in `structureLaneKeys` order, for "Order lanes by structure"; empty for a gene table |
 | <span id="getter-lanestodescribe">**lanesToDescribe**</span><br><code>string[]</code> | the genomes the lanes draw that the session lacks, each once however many copy lanes it draws |
 | <span id="getter-laneassemblyconfs">**laneAssemblyConfs**</span><br><code>Map&lt;string, Record&lt;string, unknown&gt;&gt;</code> |  |
 | <span id="getter-canreanchor">**canReanchor**</span><br><code>boolean</code> |  |

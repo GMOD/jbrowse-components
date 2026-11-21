@@ -51,7 +51,7 @@ function alignmentConnectorCurves(opts: {
 }
 ```
 
-[Source code](https://github.com/GMOD/jbrowse-components/blob/main/plugins/alignments/src/tables.ts)
+[Source code](https://github.com/GMOD/jbrowse-components/blob/main/plugins/alignments/src/tablesGeometry.ts)
 
 ## alignmentMarkAlpha
 
@@ -104,7 +104,7 @@ function alignmentMarkAlpha(opts: {
 }
 ```
 
-[Source code](https://github.com/GMOD/jbrowse-components/blob/main/plugins/alignments/src/tables.ts)
+[Source code](https://github.com/GMOD/jbrowse-components/blob/main/plugins/alignments/src/tablesGeometry.ts)
 
 ## alignmentTables
 
