@@ -24,8 +24,7 @@ function makeFeature(
 }
 
 // A VcfFeature-alike taking the allocation-free path. `skip` names samples whose
-// callback is never fired, reproducing what @gmod/vcf does for a sample whose
-// colon-separated FORMAT fields stop before the GT column.
+// callback is never fired, as for a column the record's header lacks.
 function makeVcfFeature(
   id: string,
   sampleNames: string[],
@@ -154,7 +153,7 @@ describe('buildGenotypeMatrix by sample (processGenotypes fast path)', () => {
   })
 
   test('a skipped sample does not shift the samples after it', async () => {
-    // HG001's FORMAT stops before GT, so only HG002 fires. Keying off a running
+    // HG001 gets no callback, so only HG002 fires. Keying off a running
     // counter instead of the callback's sampleIdx would land HG002's genotype
     // in HG001's row.
     const rows = await build(

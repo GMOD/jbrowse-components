@@ -72,8 +72,8 @@ export async function phasedMatrixOf(
   for (let f = 0; f < numFeatures; f++) {
     const feature = features[f]!
     if (hasProcessGenotypes(feature) && samplesLen > 0) {
-      // @gmod/vcf skips the callback for a sample whose FORMAT fields stop
-      // before GT
+      // a column this record's header lacks gets no callback, nor does any
+      // column of a record whose FORMAT has no GT
       indicators.fill(MISSING)
       const remap = headerRemapOf(feature)
       feature.processGenotypes((str, start, end, sampleIdx) => {

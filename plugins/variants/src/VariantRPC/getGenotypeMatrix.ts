@@ -80,8 +80,9 @@ export async function dosageMatrixOf(
     const numAlts = altCounts[f]!
     const col = colOffsets[f]!
     if (hasProcessGenotypes(feature) && samplesLen > 0) {
-      // @gmod/vcf skips the callback for a sample whose FORMAT fields stop
-      // before GT, which would leave the previous feature's dosage in its slot
+      // a column this record's header lacks gets no callback, nor does any
+      // column of a record whose FORMAT has no GT, and either would keep the
+      // previous feature's dosage
       dosages.fill(MISSING, 0, samplesLen * numAlts)
       const remap = headerRemapOf(feature)
       feature.processGenotypes((str, start, end, sampleIdx) => {
