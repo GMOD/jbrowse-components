@@ -49,8 +49,8 @@ export function coverageStatsViews(
   return {
     /**
      * #getter
-     * The depth stats of the shown coverage in the settled blocks; a
-     * hidden section is excluded.
+     * The depth stats of what the display's `CoverageSource` shows in the
+     * settled blocks.
      */
     get statsInView() {
       return visibleStats({
