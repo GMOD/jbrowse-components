@@ -9,9 +9,6 @@
 1 no-unsafe-return packages/app-core/src/JBrowseModel/index.ts
 1 no-unsafe-assignment packages/app-core/src/WebSession/BaseWebSession.ts
 1 no-unsafe-argument packages/app-core/src/WorkspaceLayout/model.ts
-1 no-unsafe-assignment packages/browser-test-utils/src/blobStore.ts
-1 no-unsafe-assignment packages/browser-test-utils/src/examplesSiteCli.ts
-2 no-unsafe-return packages/browser-test-utils/src/examplesSiteCli.ts
 1 no-unsafe-argument packages/core/src/assemblyManager/assembly.ts
 1 no-unsafe-argument packages/core/src/assemblyManager/assemblyAdapters.ts
 1 no-unsafe-argument packages/core/src/assemblyManager/getSequenceAdapterConfig.ts
@@ -82,7 +79,6 @@
 1 no-unsafe-member-access packages/core/src/util/tss-react/tools/getDependencyArrayRef.ts
 3 no-unsafe-argument packages/core/src/util/withLaunchInput.ts
 1 no-unsafe-assignment packages/core/src/util/withLaunchInput.ts
-1 no-unsafe-assignment packages/display-kit/src/chromeModel.fixture.ts
 1 no-unsafe-return packages/display-kit/src/CoarseTierMixin.ts
 2 no-unsafe-assignment packages/display-kit/src/colorConfigSchema.ts
 5 no-unsafe-assignment packages/display-kit/src/conformance/displayTestEnvironment.ts
@@ -182,8 +178,6 @@
 1 no-unsafe-assignment plugins/gccontent/src/GCContentTrack/liftGCSettings.ts
 1 no-unsafe-assignment plugins/gwas/src/GWASAdapter/GWASAdapter.ts
 1 no-unsafe-return plugins/gwas/src/LinearManhattanDisplay/stateModelFactory.ts
-1 no-unsafe-call plugins/gwas/src/LinearManhattanDisplay/testEnv.ts
-1 no-unsafe-member-access plugins/gwas/src/LinearManhattanDisplay/testEnv.ts
 1 no-unsafe-assignment plugins/hic/src/HicAdapter/HicAdapter.ts
 1 no-unsafe-assignment plugins/legacy-jbrowse/src/JBrowse1Connection/jb1ConfigParse.ts
 1 no-unsafe-return plugins/legacy-jbrowse/src/JBrowse1Connection/jb1ConfigParse.ts
@@ -211,17 +205,12 @@
 2 no-unsafe-call plugins/linear-genome-view/src/LinearGenomeView/model.ts
 2 no-unsafe-member-access plugins/linear-genome-view/src/LinearGenomeView/model.ts
 4 no-unsafe-return plugins/linear-genome-view/src/LinearGenomeView/model.ts
-1 no-unsafe-return plugins/linear-genome-view/src/LinearGenomeView/rExport/rScript.fixture.ts
 1 no-unsafe-argument plugins/maf/src/LinearMafClusterIdentityRpc/buildIdentityMatrix.ts
 1 no-unsafe-argument plugins/maf/src/LinearMafDisplay/stateModel.ts
 1 no-unsafe-return plugins/maf/src/LinearMafDisplay/stateModel.ts
 2 no-unsafe-return plugins/maf/src/MafAddTrackWorkflow/buildAdapterConfig.ts
 1 no-unsafe-argument plugins/maf/src/util/getSamples.ts
 1 no-unsafe-assignment plugins/maf/src/util/MafAdapterBase.ts
-1 no-unsafe-call plugins/marks/src/LinearMarkDisplay/testEnv.ts
-1 no-unsafe-member-access plugins/marks/src/LinearMarkDisplay/testEnv.ts
-1 no-unsafe-call plugins/marks/src/LinearMultiRowFeatureDisplay/testEnv.ts
-1 no-unsafe-member-access plugins/marks/src/LinearMultiRowFeatureDisplay/testEnv.ts
 1 no-unsafe-assignment plugins/variants/src/LinearVariantDisplay/anchoredHaplotypeSort.ts
 1 no-unsafe-assignment plugins/variants/src/LinearVariantDisplay/configSchema.ts
 2 no-unsafe-assignment plugins/variants/src/LinearVariantDisplay/model.ts

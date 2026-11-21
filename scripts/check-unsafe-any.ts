@@ -9,10 +9,13 @@
 // `--write` lowers the baseline, which is the reason to give in the commit.
 //
 // App source only: tests, scripts, benches and example sites stay out, as they
-// read fixtures and fetched JSON as `any` on purpose.
+// read fixtures and fetched JSON as `any` on purpose. Test-only source inside a
+// package's `src/` is what `tsconfig.base.esm.json` leaves out of the build.
 import { spawnSync } from 'node:child_process'
 import { readFileSync, writeFileSync } from 'node:fs'
-import { join } from 'node:path'
+import { join, matchesGlob } from 'node:path'
+
+import ts from 'typescript'
 
 const root = join(import.meta.dirname, '..')
 const baselinePath = join(root, 'scripts', 'unsafeAnyBaseline.txt')
@@ -26,10 +29,24 @@ const RULES = [
 ]
 
 const NOT_APP_SOURCE =
-  /\.test\.|\/tests?\/|\/__tests__\/|testUtils?\.|test_util|\/browser-tests\/|\/benches\/|\/scripts\/|\/examples-site\/|\/lambda\//
+  /\.test\.|\/tests?\/|\/__tests__\/|testUtils?\.|test_util|\/browser-tests?(-utils)?\/|\/benches\/|\/scripts\/|\/examples-site\/|\/lambda\//
+
+const esmConfigPath = join(root, 'tsconfig.base.esm.json')
+const { config }: { config: { exclude: string[] } } =
+  ts.parseConfigFileTextToJson(
+    esmConfigPath,
+    readFileSync(esmConfigPath, 'utf8'),
+  )
+const OUT_OF_BUILD = config.exclude.map(glob =>
+  glob.replace('${configDir}', '**'),
+)
 
 function isAppSource(file: string) {
-  return /\.tsx?$/.test(file) && !NOT_APP_SOURCE.test(file)
+  return (
+    /\.tsx?$/.test(file) &&
+    !NOT_APP_SOURCE.test(file) &&
+    !OUT_OF_BUILD.some(glob => matchesGlob(file, glob))
+  )
 }
 
 const run = spawnSync(
