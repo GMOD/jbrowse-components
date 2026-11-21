@@ -186,6 +186,7 @@ How to drive JBrowse once it is running. New here? Start with the
 - [](/docs/tutorials/protein_domains)
 - [](/docs/tutorials/gene_density)
 - [](/docs/tutorials/organelle_map)
+- [](/docs/tutorials/prokka_genbank)
 
 ### Grammar of graphics
 

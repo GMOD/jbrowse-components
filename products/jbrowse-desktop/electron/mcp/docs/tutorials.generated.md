@@ -729,6 +729,15 @@ Page: https://jbrowse.org/jb2/docs/tutorials/primate_orthologs_synteny/
 - https://jbrowse.org/genomes/GRCh38/fasta/hg38.prefix.fa.gz
 - https://jbrowse.org/hubs/genark/GCF/028/858/775/GCF_028858775.2/config.json
 
+## A bacterial genome annotated by Prokka
+
+A bacterial assembly annotated by Prokka and opened from the one GenBank file Prokka writes, with its chromosome and plasmids as rings, its genes searchable by name and a plasmid saved back out as GenBank
+
+Page: https://jbrowse.org/jb2/docs/tutorials/prokka_genbank/
+
+- https://jbrowse.org/code/jb2/main/test_data/prokka_sakai/config.json
+- https://jbrowse.org/demos/prokka_sakai/GCF_000008865.2_ASM886v2_genomic.fna.gz
+
 ## Protein domains on gene models
 
 Call Pfam domains on a genome's proteins, place each domain on the exons that encode it, and draw each isoform with its domains in a separate row

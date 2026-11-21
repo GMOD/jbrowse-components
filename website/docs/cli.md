@@ -545,9 +545,9 @@ setting "metadata": { "skipTextIndex": true } on the track. Such tracks are
 skipped even when indexing all tracks or a whole assembly, so you do not have to
 pass --excludeTracks on every run.
 
-Only tracks with an indexable adapter type (Gff3Adapter, Gff3TabixAdapter,
-GtfAdapter, GtfTabixAdapter, VcfAdapter, VcfTabixAdapter) are indexed; tracks
-with other adapter types are skipped automatically.
+Only tracks with an indexable adapter type (GenbankAdapter, Gff3Adapter,
+Gff3TabixAdapter, GtfAdapter, GtfTabixAdapter, VcfAdapter, VcfTabixAdapter) are
+indexed; tracks with other adapter types are skipped automatically.
 
 GTF has no Name/ID attributes, so the default --attributes also match their GTF
 spellings (gene_name, transcript_name, gene_id, transcript_id). A GFF3 row with
@@ -804,7 +804,9 @@ $ jbrowse make-density genes.gff3.gz --assembly hg38.fa --bin 10000 --out genes.
 Sort a GFF or GTF for tabix — the two share a refname/start column layout. It is
 `sort -k1,1 -k4,4n` with LC_ALL=C and a tab separator, plus every line starting
 with # kept at the top rather than sorted into the data, and blank lines
-dropped, which tabix rejects. Takes a file, or the same data on stdin
+dropped, which tabix rejects. A `##FASTA` section, which Prokka and Bakta
+append, is dropped with its pragma: tabix cannot index sequence lines, so load
+the sequence as the assembly. Takes a file, or the same data on stdin
 
 Usage: jbrowse sort-gff [file] [options]
 
