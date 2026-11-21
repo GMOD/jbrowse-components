@@ -230,7 +230,6 @@ import { getOrCreate } from './shared/util.ts'
 
 import type { RefNamePosition } from './LinearAlignmentsDisplay/colorTagUtils.ts'
 import type { ReadColorCategory } from './LinearAlignmentsDisplay/colorUtils.ts'
-import type { LinearAlignmentsDisplayConfigModel as DisplayConf } from './LinearAlignmentsDisplay/configSchema.ts'
 import type { GroupSize } from './LinearAlignmentsDisplay/groupLayout.ts'
 import type { PileupMismatchesOpacitySnapshot } from './LinearAlignmentsDisplay/pileupMismatchesOpacityConfigSchema.ts'
 import type { RegionBounds } from './RenderAlignmentDataRPC/sortLayout.ts'
@@ -1709,7 +1708,6 @@ function laidOutTables(
     paintedRefNamePosition: RefNamePosition | undefined
   },
 ) {
-  const conf = host.configuration
   host.setInputs({
     rpcDataMap: fetched,
     fetchedRegions,
@@ -1804,7 +1802,7 @@ function laidOutTables(
       ),
     ]),
   )
-  const tables = drawnBands(conf, {
+  const tables = drawnBands(host, {
     ...denseKeys(joinTables(pileups, { read: 'reads' })),
     ...joinTables(
       regions.flatMap((_, i) =>
@@ -1882,7 +1880,7 @@ function laidOutTables(
     warnings: [
       ...facetUnitNotices(host.facet, unit),
       ...layoutWarnings({
-        sortField: readConfObject(conf.sort, 'field'),
+        sortField: readConfObject(host.configuration.sort, 'field'),
         sortColumn: host.sortColumn,
         layoutOrder: host.layoutOrder,
         chain,
@@ -2024,12 +2022,22 @@ function markLegends(
  * The tables each band's or layer's `show` turns off with it, as the display
  * then draws none of them.
  */
+type DrawnBandsHost = Pick<
+  AlignmentsTablesHostModel,
+  | 'showPileup'
+  | 'showMismatches'
+  | 'showCoverage'
+  | 'showInterbase'
+  | 'showCoverageAlleles'
+  | 'showJunctions'
+>
+
 const BAND_TABLES: readonly {
-  shown: (conf: DisplayConf) => boolean
+  shown: keyof DrawnBandsHost
   tables: readonly string[]
 }[] = [
   {
-    shown: conf => readConfObject(conf.pileup, 'show'),
+    shown: 'showPileup',
     tables: [
       'reads',
       'mismatches',
@@ -2043,11 +2051,11 @@ const BAND_TABLES: readonly {
     ],
   },
   {
-    shown: mismatchesShown,
+    shown: 'showMismatches',
     tables: ['mismatches', 'insertions'],
   },
   {
-    shown: conf => readConfObject(conf.coverage, 'show'),
+    shown: 'showCoverage',
     tables: [
       'coverage',
       'alleleCoverage',
@@ -2057,22 +2065,18 @@ const BAND_TABLES: readonly {
     ],
   },
   {
-    shown: conf => readConfObject(conf.coverage.interbase, 'show'),
+    shown: 'showInterbase',
     tables: ['interbaseCoverage', 'indicators'],
   },
   {
-    shown: conf => readConfObject(conf.coverage.alleles, 'show'),
+    shown: 'showCoverageAlleles',
     tables: ['alleleCoverage'],
   },
   {
-    shown: conf => readConfObject(conf.junctions, 'show'),
+    shown: 'showJunctions',
     tables: ['junctions'],
   },
 ]
-
-function mismatchesShown(conf: DisplayConf): boolean {
-  return readConfObject(conf.pileup.mismatches, 'show')
-}
 
 /**
  * The tables, each of a band the display does not draw left empty. Under
@@ -2083,9 +2087,9 @@ function drawnBands<
   T extends Record<string, Record<string, unknown[]>> & {
     gaps: { type: string[] }
   },
->(conf: DisplayConf, tables: T) {
+>(host: DrawnBandsHost, tables: T) {
   const hidden = new Set<string>(
-    BAND_TABLES.flatMap(({ shown, tables }) => (shown(conf) ? [] : tables)),
+    BAND_TABLES.flatMap(({ shown, tables }) => (host[shown] ? [] : tables)),
   )
   const drawn = Object.fromEntries(
     Object.entries(tables).map(([name, table]) => [
@@ -2095,7 +2099,7 @@ function drawnBands<
         : table,
     ]),
   ) as T
-  return mismatchesShown(conf)
+  return host.showMismatches
     ? drawn
     : {
         ...drawn,
