@@ -45,21 +45,22 @@ locstring).
   details has no declaration in hand. A candidate gate is
   `assembly.isCircularRefName`, which now also reads a GenBank `LOCUS circular`.
   Repro: the `pLinear` fixture in `plugins/gff3/src/originSpanning.test.ts`.
-- **Name `circularRefNames` for FASTA + GFF3 users.** The slot is documented
-  only in the generated config pages and `tutorials/organelle_map.md`. A
-  FASTA + GFF3 bacterium needs the slot by hand (the NCBI sequence report has no
-  topology column), so one sentence belongs in `config_guides/assemblies.md`.
 - **Check that the generated GenBank pages appear.**
   `website/docs/config/Genbank*.md` and the FILE_TYPES rows were not written:
   pre-push autogen stopped on two unrelated docs gates (the hand-written fence
   baseline, and an ideas description over 45 words). They regenerate on the
   first push whose autogen passes.
 
+- **GenBank export writes its own `source` feature.** The file's `/organism`,
+  `/strain` and `/db_xref` on `source` are replaced by `/organism="<assembly
+  name>"` (`formatHeader` in
+  `packages/core/src/pluggableElementTypes/models/saveTrackFileTypes/genbank.ts`),
+  and no qualifier line is wrapped at 80 columns; Biopython 1.86 reads the
+  output either way. Repro: `tutorials/prokka_genbank.md` § "Saving a plasmid
+  as GenBank".
+
 ## Open questions, unverified
 
 - **chrM heteroplasmy:** a variant display encoding allele fraction (`AF`/`AD`)
   was not checked; grep `plugins/variants/src` and `cellColorConfigSchema.ts`
   before proposing anything.
-- **Prokka's run-together `LOCUS` line** (`NODE_1_length_52345_cov_23.45152345 bp`)
-  is not parsed; the name becomes the refName in both GenBank adapters. Only a
-  circular record would miss its origin cut.

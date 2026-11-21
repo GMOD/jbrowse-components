@@ -106,6 +106,24 @@ file, key the map by the FASTA's own name. A sidecar TSV
 `refName<TAB>geneticCodeId`) supplies the same map; the inline entry wins if
 both are present.
 
+## Marking circular sequences
+
+A GenBank record whose `LOCUS` line says `circular` is read as circular. A FASTA
+has no such field, and Prokka writes every record `linear`, so for those the
+assembly's
+[`circularRefNames`](/docs/config/baseassembly/#slot-circularrefnames) lists the
+plasmids, organelles and bacterial chromosomes. The circular view closes each
+one into a ring, and **Save track data...** writes it as a circular GenBank
+record:
+
+```json addassembly
+{
+  "name": "sakai",
+  "uri": "sakai.gbk",
+  "circularRefNames": ["NC_002127.1", "NC_002128.1"]
+}
+```
+
 ## Sequence adapters
 
 [Sequence file types](/docs/config_guides/file_types#sequence--assembly) maps
