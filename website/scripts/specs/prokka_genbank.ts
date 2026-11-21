@@ -19,7 +19,7 @@ export const prokkaGenbankSpecs: ScreenshotSpec[] = [
     }),
     readyText: 'stxB_1',
     readyTimeout: 90000,
-    viewportHeight: 900,
+    viewportHeight: 770,
     actions: [
       { type: 'click', anchor: { trackId: 'sakai_prokka', feature: 'stxA_1' } },
       { type: 'click', text: 'Show feature sequence' },
