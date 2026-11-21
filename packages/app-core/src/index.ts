@@ -107,7 +107,11 @@ export {
   undoMenuItem,
 } from './AppWidgets/menuItems.ts'
 export { getOrCreateJobsListWidget } from './AppWidgets/JobsListWidget/getOrCreateJobsListWidget.ts'
-export type { JobsListModel } from './AppWidgets/JobsListWidget/model.ts'
+export type {
+  JobInput,
+  JobsListModel,
+} from './AppWidgets/JobsListWidget/model.ts'
+export type { JobState } from './AppWidgets/JobsListWidget/jobModel.ts'
 export {
   WebSessionConnectionsMixin,
   isWebSessionWithConnections,

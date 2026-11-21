@@ -14,7 +14,7 @@ export default function JobsListWidgetF(pluginManager: PluginManager) {
       name: 'JobsListWidget',
       heading: 'Jobs list',
       configSchema,
-      stateModel: stateModelFactory(pluginManager),
+      stateModel: stateModelFactory(),
       ReactComponent: lazyWithPreload(
         () => import('./components/JobsListWidget.tsx'),
       ),

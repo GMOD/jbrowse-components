@@ -5,7 +5,6 @@ import { observable } from 'mobx'
 import { Job } from './jobModel.ts'
 
 import type { JobFields, JobModel, JobState } from './jobModel.ts'
-import type PluginManager from '@jbrowse/core/PluginManager'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 
 export interface JobInput extends Partial<JobFields> {
@@ -18,7 +17,7 @@ export interface JobInput extends Partial<JobFields> {
  * #internal desktop text-indexing queue internals — kept out of the website docs
  * #category widget
  */
-export function stateModelFactory(_pluginManager: PluginManager) {
+export function stateModelFactory() {
   return types
     .model('JobsListModel', {
       /**

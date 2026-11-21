@@ -1,4 +1,4 @@
-import { makeStyles } from '@jbrowse/core/util/tss-react'
+import { Box, Typography } from '@mui/material'
 import { observer } from 'mobx-react'
 
 import JobsSection from './JobsSection.tsx'
@@ -6,32 +6,11 @@ import JobsSection from './JobsSection.tsx'
 import type { JobState } from '../jobModel.ts'
 import type { JobsListModel } from '../model.ts'
 
-const useStyles = makeStyles()(theme => ({
-  root: {
-    margin: theme.spacing(1),
-  },
-}))
-
-const sections: {
-  state: JobState
-  title: string
-  emptyText: string
-  clearable?: boolean
-}[] = [
-  { state: 'running', title: 'Running jobs', emptyText: 'No running jobs' },
-  { state: 'queued', title: 'Queued jobs', emptyText: 'No queued jobs' },
-  {
-    state: 'finished',
-    title: 'Completed jobs',
-    emptyText: 'No completed jobs',
-    clearable: true,
-  },
-  {
-    state: 'aborted',
-    title: 'Aborted jobs',
-    emptyText: 'No aborted jobs',
-    clearable: true,
-  },
+const sections: { state: JobState; title: string; clearable: boolean }[] = [
+  { state: 'running', title: 'Running', clearable: false },
+  { state: 'queued', title: 'Queued', clearable: false },
+  { state: 'finished', title: 'Completed', clearable: true },
+  { state: 'aborted', title: 'Aborted', clearable: true },
 ]
 
 const JobsListWidget = observer(function JobsListWidget({
@@ -39,25 +18,30 @@ const JobsListWidget = observer(function JobsListWidget({
 }: {
   model: JobsListModel
 }) {
-  const { classes } = useStyles()
   return (
-    <div className={classes.root}>
-      {sections.map(({ state, title, emptyText, clearable }) => (
-        <JobsSection
-          key={state}
-          title={title}
-          jobs={model.jobs.filter(j => j.state === state)}
-          emptyText={emptyText}
-          onClear={
-            clearable
-              ? () => {
-                  model.clearJobs(state)
-                }
-              : undefined
-          }
-        />
-      ))}
-    </div>
+    <Box sx={{ p: 1 }}>
+      {model.jobs.length === 0 ? (
+        <Typography color="text.secondary">No jobs</Typography>
+      ) : (
+        sections.map(({ state, title, clearable }) => {
+          const jobs = model.jobs.filter(j => j.state === state)
+          return jobs.length ? (
+            <JobsSection
+              key={state}
+              title={title}
+              jobs={jobs}
+              onClear={
+                clearable
+                  ? () => {
+                      model.clearJobs(state)
+                    }
+                  : undefined
+              }
+            />
+          ) : null
+        })
+      )}
+    </Box>
   )
 })
 

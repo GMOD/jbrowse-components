@@ -371,10 +371,11 @@ export async function waitForSession(
 // which is a race, and it lost about half the time: a passing run indexed in
 // ~15s, a failing one had not finished by the time the query went in.
 //
-// Reads the job queue rather than the track's config: `running` and `jobsQueue`
-// are what indexJobsModel actually drives, and they say "started" as well as
-// "finished". Call it immediately after the submit that queues the job —
-// `queueJob` runs synchronously there, so the queue is non-empty on the first
+// Reads the job queue rather than the track's config: `jobsQueue` is what
+// indexJobsModel actually drives, holding the running job at its head until it
+// finishes, so it says "started" as well as "finished". Call it immediately
+// after the submit that queues the job — `queueJob` runs synchronously there,
+// so the queue is non-empty on the first
 // poll. Called later it may find the queue already drained, which is
 // indistinguishable from "not queued yet", hence the grace period; a caller in
 // the right place never reaches it.
@@ -386,16 +387,14 @@ export async function waitForIndexingToFinish(
   let sawWork = false
   let readModel = false
   while (Date.now() - start < timeout) {
-    const state = await driver.executeScript<
-      { running: boolean; queued: number } | undefined
-    >(`
+    const state = await driver.executeScript<{ queued: number } | undefined>(`
       const jm = window.JBrowseRootModel?.jobsManager
-      return jm ? { running: jm.running, queued: jm.jobsQueue.length } : undefined
+      return jm ? { queued: jm.jobsQueue.length } : undefined
     `)
     if (state) {
       readModel = true
     }
-    if (state?.running || (state?.queued ?? 0) > 0) {
+    if ((state?.queued ?? 0) > 0) {
       sawWork = true
     } else if (sawWork) {
       console.log(`    DEBUG: indexing drained after ${Date.now() - start}ms`)

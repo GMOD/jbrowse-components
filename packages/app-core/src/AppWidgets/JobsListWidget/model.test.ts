@@ -2,9 +2,7 @@ import { getSnapshot } from '@jbrowse/mobx-state-tree'
 
 import { stateModelFactory } from './model.ts'
 
-import type PluginManager from '@jbrowse/core/PluginManager'
-
-const JobsList = stateModelFactory({} as PluginManager)
+const JobsList = stateModelFactory()
 
 function setup() {
   return JobsList.create({ id: 'JobsList', type: 'JobsListWidget' })

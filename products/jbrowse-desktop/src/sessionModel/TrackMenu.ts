@@ -68,18 +68,13 @@ export function DesktopSessionTrackMenuMixin(pluginManager: PluginManager) {
                     const rootModel = getParent<DesktopRootModel>(self)
                     const { trackId, name, assemblyNames, textSearching } = base
                     rootModel.jobsManager.queueJob({
-                      indexingParams: {
-                        attributes:
-                          textSearching?.indexingAttributes ??
-                          defaultAttributesToIndex,
-                        exclude: textSearching?.indexingFeatureTypesToExclude,
-                        assemblies: assemblyNames,
-                        tracks: [trackId],
-                      },
-                      // jobs are keyed by name; trackId is unique so two tracks
-                      // sharing a display name won't collide
-                      name: trackId,
+                      trackId,
                       label: name,
+                      attributes:
+                        textSearching?.indexingAttributes ??
+                        defaultAttributesToIndex,
+                      exclude: textSearching?.indexingFeatureTypesToExclude,
+                      assemblies: assemblyNames,
                     })
                   },
                   icon: Indexing,

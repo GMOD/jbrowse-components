@@ -17,37 +17,34 @@ import type { AddTrackModel, IndexingAttr } from '../model.ts'
 // written into a textSearchAdapter conf no search could ever match
 interface RootWithJobsManager {
   jobsManager: {
-    queueJob: (job: {
-      name: string
-      indexingParams: IndexingAttr & {
+    queueJob: (
+      job: IndexingAttr & {
+        trackId: string
+        label: string
         assemblies: string[]
-        tracks: string[]
-      }
-    }) => void
+      },
+    ) => void
   }
 }
 
 function doTextIndexTrack({
   trackId,
+  name,
   model,
   assembly,
   attr,
 }: {
   trackId: string
+  name: string
   model: AddTrackModel
   assembly: string
   attr: IndexingAttr
 }) {
-  const { jobsManager } = getRoot<RootWithJobsManager>(model)
-  jobsManager.queueJob({
-    indexingParams: {
-      ...attr,
-      assemblies: [assembly],
-      tracks: [trackId],
-    },
-    // jobs are keyed by name; trackId is unique so two tracks sharing a
-    // display name won't collide
-    name: trackId,
+  getRoot<RootWithJobsManager>(model).jobsManager.queueJob({
+    ...attr,
+    trackId,
+    label: name,
+    assemblies: [assembly],
   })
 }
 
@@ -81,6 +78,12 @@ export function doSubmit({ model }: { model: AddTrackModel }) {
     !namesTemporaryAssembly(session, trackConfig)
 
   if (addTrackFromWidget({ model, session, conf: trackConfig }) && wantsIndex) {
-    doTextIndexTrack({ model, trackId: trackConfig.trackId, assembly, attr })
+    doTextIndexTrack({
+      model,
+      trackId: trackConfig.trackId,
+      name: trackConfig.name,
+      assembly,
+      attr,
+    })
   }
 }

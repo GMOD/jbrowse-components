@@ -57,10 +57,10 @@ test('a phase that reports no fraction clears the bar rather than holding the la
   expect(queryByText(/%$/)).toBeNull()
 })
 
-test('a job with no message renders no message line', () => {
-  const { queryByText } = setup({ progressPct: 12 })
+test('a job with no message renders only its name', () => {
+  const { container } = setup({ state: 'finished' })
 
-  expect(queryByText('Message:')).toBeNull()
+  expect(container.textContent).toBe('volvox_gff3')
 })
 
 test('the card names the job by its label when it has one', () => {
@@ -91,7 +91,7 @@ test('a cancel stays visible through the status updates before the abort lands',
 })
 
 test('a retried job can be cancelled again', () => {
-  const { job, getByRole } = setup()
+  const { job, getByRole } = setup({ cancelCallback: jest.fn() })
   fireEvent.click(getByRole('button', { name: 'Cancel' }))
 
   act(() => {
@@ -105,9 +105,32 @@ test('a retried job can be cancelled again', () => {
   )
 })
 
-test('a job that is not running has no bar and no Cancel', () => {
-  const { queryByTestId, queryByRole } = setup({ state: 'queued' })
+test('a queued job has no bar, and Cancel only when its producer can cancel it', () => {
+  const { queryByTestId, queryByRole, job } = setup({ state: 'queued' })
 
   expect(queryByTestId('job-progress')).toBeNull()
+  expect(queryByRole('button')).toBeNull()
+
+  const cancelCallback = jest.fn()
+  act(() => {
+    job.update({ cancelCallback })
+  })
+  fireEvent.click(queryByRole('button', { name: 'Cancel' })!)
+  expect(cancelCallback).toHaveBeenCalledTimes(1)
+})
+
+// a Cancel that called a no-op told the user the job could be stopped
+test('a running job whose producer gave no cancelCallback offers no Cancel', () => {
+  const { queryByRole } = setup()
+
+  expect(queryByRole('button')).toBeNull()
+})
+
+test('a finished job offers no Cancel even with a cancelCallback', () => {
+  const { queryByRole } = setup({
+    state: 'finished',
+    cancelCallback: jest.fn(),
+  })
+
   expect(queryByRole('button')).toBeNull()
 })

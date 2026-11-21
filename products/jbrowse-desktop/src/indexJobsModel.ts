@@ -7,13 +7,8 @@ import {
   statusMessageText,
   statusReading,
 } from '@jbrowse/core/util'
-import {
-  addDisposer,
-  getParent,
-  isAlive,
-  types,
-} from '@jbrowse/mobx-state-tree'
-import { autorun, observable, toJS } from 'mobx'
+import { getParent, isAlive, types } from '@jbrowse/mobx-state-tree'
+import { observable, toJS } from 'mobx'
 
 import { NAME_INDICES_DIR } from '../electron/ipc/channelTypes.ts'
 import {
@@ -50,18 +45,13 @@ export type _JobsManagerParentCheck = AssertExtends<
   JobsManagerParent
 >
 
-interface TrackTextIndexing {
+// one track per job, so the trackId doubles as the job's name on its card
+export interface TextJobsEntry {
+  trackId: string
+  label?: string
   attributes: string[]
   exclude?: string[]
   assemblies: string[]
-  tracks: string[] // trackIds
-}
-
-export interface TextJobsEntry {
-  name: string
-  label?: string
-  statusMessage?: string
-  indexingParams: TrackTextIndexing
 }
 
 // A new conf rather than a mutation of the base: a displayed track's hydration
@@ -114,8 +104,8 @@ function statusText(status: RpcStatus) {
 /**
  * #stateModel JobsManager
  * #internal desktop text-indexing queue internals — kept out of the website docs
- * Desktop text-indexing job queue: tracks the running job with its progress and
- * status message, plus the list of queued indexing jobs.
+ * Desktop text-indexing job queue: indexes one track at a time and reports
+ * each job's progress to the Jobs list widget.
  */
 export default function jobsModelFactory() {
   return types
@@ -123,21 +113,12 @@ export default function jobsModelFactory() {
     .volatile(() => ({
       /**
        * #volatile
-       */
-      running: false,
-      /**
-       * #volatile
-       * aborted to cancel the currently running RPC indexing job
+       * the running job's; aborting it cancels the RPC
        */
       controller: undefined as AbortController | undefined,
       /**
        * #volatile
-       * set when the user cancels, so the catch block reports a cancellation
-       * rather than an error
-       */
-      aborted: false,
-      /**
-       * #volatile
+       * the head is the running job until it finishes
        */
       jobsQueue: observable.array<TextJobsEntry>([]),
     }))
@@ -187,58 +168,8 @@ export default function jobsModelFactory() {
       /**
        * #action
        */
-      setRunning(running: boolean) {
-        self.running = running
-      },
-      /**
-       * #action
-       */
       setController(controller?: AbortController) {
         self.controller = controller
-      },
-      /**
-       * #action
-       * cancel the currently running indexing job; the RPC throws 'aborted',
-       * handled in runIndexingJob's catch
-       */
-      abortJob() {
-        self.aborted = true
-        self.controller?.abort()
-      },
-      /**
-       * #action
-       */
-      reportStatus(jobName: string, status: RpcStatus) {
-        const fraction = statusFraction(status)
-        self
-          .getJobStatusWidget()
-          .updateJobStatus(
-            jobName,
-            statusText(status),
-            fraction === undefined ? undefined : fraction * 100,
-          )
-      },
-
-      /**
-       * #action
-       */
-      queueJob(props: TextJobsEntry) {
-        const jobStatusWidget = self.getJobStatusWidget()
-        self.session.showWidget(jobStatusWidget)
-        // the running entry stays at the head of the queue until it finishes,
-        // so this also refuses a job that is running; filing it again would
-        // move the running card to Queued, out of reach of its Cancel
-        if (self.jobsQueue.some(j => j.name === props.name)) {
-          return
-        }
-        jobStatusWidget.addJob({
-          name: props.name,
-          label: props.label,
-          state: 'queued',
-          statusMessage: props.statusMessage,
-          progressPct: undefined,
-        })
-        self.jobsQueue.push(props)
       },
       /**
        * #action
@@ -248,40 +179,53 @@ export default function jobsModelFactory() {
       },
       /**
        * #action
+       * Aborts the job if it is running, else takes it out of the queue.
        */
-      clear() {
-        this.setRunning(false)
-        self.controller = undefined
-        self.aborted = false
+      cancelJob(trackId: string) {
+        if (self.jobsQueue[0]?.trackId === trackId && self.controller) {
+          self.controller.abort()
+        } else {
+          self.jobsQueue.replace(
+            self.jobsQueue.filter(j => j.trackId !== trackId),
+          )
+          self.getJobStatusWidget().addJob({
+            name: trackId,
+            state: 'aborted',
+            statusMessage: 'Cancelled',
+          })
+        }
       },
       /**
        * #action
        */
+      reportStatus(trackId: string, status: RpcStatus) {
+        const fraction = statusFraction(status)
+        self
+          .getJobStatusWidget()
+          .updateJobStatus(
+            trackId,
+            statusText(status),
+            fraction === undefined ? undefined : fraction * 100,
+          )
+      },
+    }))
+    .actions(self => ({
+      /**
+       * #action
+       * Never rejects: every failure lands in its catch, which tells a tree
+       * torn down mid-run apart from an error.
+       */
       async runIndexingJob(entry: TextJobsEntry) {
-        const { session } = self
-        const {
-          tracks: trackIds,
-          exclude,
-          attributes,
-          assemblies,
-        } = toJS(entry.indexingParams)
-        const rpcManager = self.rpcManager
+        const { trackId, attributes, exclude, assemblies } = toJS(entry)
         const controller = new AbortController()
-        this.setController(controller)
-        // only clear() resets `aborted`, so a flag standing here is a cancel
-        // aimed at this entry
-        if (self.aborted) {
-          controller.abort()
-        }
+        self.setController(controller)
         try {
-          this.setRunning(true)
-          // resolve configs inside the try: a since-deleted track makes
-          // findTrackConfigsToIndex throw, and doing it here dequeues the job in
-          // the catch rather than looping the autorun on the stuck queue entry
-          const trackConfigs = findTrackConfigsToIndex(
-            self.tracks,
-            trackIds,
-          ).map(c => toJS(c))
+          self.getJobStatusWidget().addJob({ name: trackId, state: 'running' })
+          // inside the try: a since-deleted track makes findTrackConfigsToIndex
+          // throw, and the catch reports it
+          const trackConfigs = findTrackConfigsToIndex(self.tracks, [
+            trackId,
+          ]).map(c => toJS(c))
           const userData = await invokeIpc('userData')
           // A fresh folder per run, and the previous one kept: a copied track
           // or another saved session can still point at it, and nothing here
@@ -291,28 +235,28 @@ export default function jobsModelFactory() {
             NAME_INDICES_DIR,
             `trix-${Date.now()}`,
           )
-          await rpcManager.call('indexTracksSessionId', 'TextIndexRpcMethod', {
-            tracks: trackConfigs,
-            policy: { attributes, exclude },
-            outLocation,
-            signal: controller.signal,
-            statusCallback: status => {
-              this.reportStatus(entry.name, status)
+          await self.rpcManager.call(
+            'indexTracksSessionId',
+            'TextIndexRpcMethod',
+            {
+              tracks: trackConfigs,
+              policy: { attributes, exclude },
+              outLocation,
+              signal: controller.signal,
+              statusCallback: status => {
+                self.reportStatus(trackId, status)
+              },
             },
-          })
-          // iterate the configs that were actually indexed, not the raw
-          // requested trackIds: a track filtered out for an unsupported
-          // adapter (or since-deleted) must not get a "success" notice and a
-          // textSearchAdapter config pointing at an .ix that was never written
-          for (const { trackId } of trackConfigs) {
-            // re-found now, not the pre-RPC trackConfigs entry: indexing ran
-            // for minutes, and writing that stale copy back would revert any
-            // edit made to the track while it was indexing
-            const current = self.session.trackBasesById.get(trackId)
-            // and the notice goes with the write. A track deleted during the
-            // minutes the run took gets no textSearchAdapter, so reporting it
-            // as indexed named a track that is gone and an .ix nothing points
-            // at.
+          )
+          // the configs that were actually indexed: a track filtered out for an
+          // unsupported adapter must not get a success notice and a
+          // textSearchAdapter pointing at an .ix that was never written
+          for (const config of trackConfigs) {
+            // re-found now, not the pre-RPC config: indexing ran for minutes,
+            // and writing that stale copy back would revert any edit made to
+            // the track meanwhile. A track deleted meanwhile gets neither the
+            // write nor the notice.
+            const current = self.session.trackBasesById.get(config.trackId)
             if (current) {
               self.root.updateTrackBase(
                 indexedTrackConf(current, {
@@ -322,101 +266,94 @@ export default function jobsModelFactory() {
                   outLocation,
                 }),
               )
-              session.notify(
-                `Successfully indexed track with trackId: ${trackId}`,
+              self.session.notify(
+                `Indexed track ${entry.label ?? config.trackId}`,
                 'success',
               )
             }
           }
-
-          this.dequeue()
-          const jobStatusWidget = self.getJobStatusWidget()
-          session.showWidget(jobStatusWidget)
-          jobStatusWidget.addJob({
-            name: entry.name,
+          self.getJobStatusWidget().addJob({
+            name: trackId,
             state: 'finished',
             statusMessage: 'Done',
             progressPct: undefined,
           })
         } catch (e) {
           // The tree can go while the RPC runs — "Return to start screen", a
-          // session swap, quitting — and everything below reaches for it
+          // session swap, quitting — and everything here reaches for it
           // through `self.session`, a getParent hop that throws on a dead node
           // rather than warning. Both halves of the teardown arrive here: the
           // detach destroys the RPC workers, so a call in flight rejects into
-          // this catch, and one that had already resolved throws into it on the
-          // first read the success branch makes. Unguarded, it reached the
-          // renderer as an unhandled rejection, and the autorun's own catch
-          // reads `self.session` too, so reporting it threw again.
-          if (!isAlive(self)) {
-            return
-          }
-          if (self.aborted) {
-            session.notify(`Cancelled indexing job: ${entry.name}`, 'info')
-          } else {
-            console.error(e)
-            session.notifyError(
-              `An error occurred while indexing: ${e}`,
-              e,
-              undefined,
-              {
-                name: 'Retry',
-                onClick: () => {
-                  // a plain snapshot; the shift below drops `entry` from the
-                  // observable queue
-                  this.queueJob(toJS(entry))
+          // this catch, and one that had already resolved throws into it on
+          // the first read the success branch makes.
+          if (isAlive(self)) {
+            const cancelled = controller.signal.aborted
+            if (cancelled) {
+              self.session.notify(
+                `Cancelled indexing ${entry.label ?? trackId}`,
+                'info',
+              )
+            } else {
+              console.error(e)
+              self.session.notifyError(
+                `An error occurred while indexing: ${e}`,
+                e,
+                undefined,
+                {
+                  name: 'Retry',
+                  onClick: () => {
+                    // a plain snapshot; the dequeue below drops `entry` from
+                    // the observable queue
+                    this.queueJob(toJS(entry))
+                  },
                 },
-              },
-            )
+              )
+            }
+            self.getJobStatusWidget().addJob({
+              name: trackId,
+              state: 'aborted',
+              statusMessage: cancelled ? 'Cancelled' : `${e}`,
+              progressPct: undefined,
+            })
           }
-          this.dequeue()
-          self.getJobStatusWidget().addJob({
-            name: entry.name,
-            state: 'aborted',
-            statusMessage: self.aborted ? 'Cancelled' : `${e}`,
-            progressPct: undefined,
-          })
         }
-        // clear
-        this.clear()
+        if (isAlive(self)) {
+          self.dequeue()
+          self.setController(undefined)
+        }
       },
-
       /**
        * #action
        */
-      async runJob() {
-        if (self.jobsQueue.length) {
-          const firstIndexingJob = self.jobsQueue[0]!
-          const jobStatusWidget = self.getJobStatusWidget()
-          self.session.showWidget(jobStatusWidget)
-          jobStatusWidget.addJob({
-            name: firstIndexingJob.name,
-            state: 'running',
-            statusMessage: firstIndexingJob.statusMessage,
-            cancelCallback: () => {
-              this.abortJob()
-            },
-          })
-          await this.runIndexingJob(firstIndexingJob)
+      async runQueue() {
+        while (isAlive(self) && self.jobsQueue.length > 0) {
+          await this.runIndexingJob(self.jobsQueue[0]!)
         }
       },
-      afterCreate() {
-        addDisposer(
-          self,
-          autorun(
-            async () => {
-              try {
-                if (self.jobsQueue.length > 0 && !self.running) {
-                  await this.runJob()
-                }
-              } catch (e) {
-                console.error(e)
-                self.session.notifyError(`${e}`, e)
-              }
+      /**
+       * #action
+       * Opens the Jobs list and files the track as queued, starting the queue
+       * if it was idle. A track already queued or running is filed once.
+       */
+      queueJob(entry: TextJobsEntry) {
+        const widget = self.getJobStatusWidget()
+        self.session.showWidget(widget)
+        if (!self.jobsQueue.some(j => j.trackId === entry.trackId)) {
+          widget.addJob({
+            name: entry.trackId,
+            label: entry.label,
+            state: 'queued',
+            statusMessage: undefined,
+            progressPct: undefined,
+            cancelCallback: () => {
+              self.cancelJob(entry.trackId)
             },
-            { delay: 1000 },
-          ),
-        )
+          })
+          self.jobsQueue.push(entry)
+          if (self.jobsQueue.length === 1) {
+            void this.runQueue()
+          }
+        }
       },
     }))
 }

@@ -1,12 +1,11 @@
 import { checkAbortSignal } from '@jbrowse/core/util/aborting'
 import { destroy, types } from '@jbrowse/mobx-state-tree'
+import { when } from 'mobx'
 
 import jobsModelFactory from './indexJobsModel.ts'
 
-import type { JobState } from '../../../packages/app-core/src/AppWidgets/JobsListWidget/jobModel.ts'
-import type { JobInput } from '../../../packages/app-core/src/AppWidgets/JobsListWidget/model.ts'
 import type { TextJobsEntry } from './indexJobsModel.ts'
-import type { JobsListModel } from '@jbrowse/app-core'
+import type { JobInput, JobState, JobsListModel } from '@jbrowse/app-core'
 import type { Track } from '@jbrowse/text-indexing-core'
 
 interface RpcArgs {
@@ -22,8 +21,8 @@ jest.mock('./ipc.ts', () => ({
 const JobsManager = jobsModelFactory()
 
 // Every method of the widget this model drives. Naming them against the
-// plugin's published JobsListModel is what keeps the fake below honest: rename
-// one, drop one, or change what it takes, and this stops compiling rather than
+// published JobsListModel is what keeps the fake below honest: rename one,
+// drop one, or change what it takes, and this stops compiling rather than
 // passing against a fake that no longer resembles the widget. Only the returns
 // are loosened to void — the model discards all of them (the widget hands back
 // the Job it filed), so pinning them here would buy nothing and force the fake
@@ -34,12 +33,10 @@ type JobsListApi = {
   ) => void
 }
 
-type JobCard = JobInput
-
 // Records the cards a user would see, keyed by name the way the real widget
 // files them, without pulling its MST model into a desktop unit test.
 function makeJobsListFake() {
-  const jobs: JobCard[] = []
+  const jobs: JobInput[] = []
   const api: JobsListApi = {
     addJob: ({ name, ...fields }) => {
       const job = jobs.find(j => j.name === name)
@@ -57,7 +54,8 @@ function makeJobsListFake() {
     },
   }
   const inState = (state: JobState) => jobs.filter(j => j.state === state)
-  return { ...api, jobs, inState }
+  const card = (name: string) => jobs.find(j => j.name === name)!
+  return { ...api, jobs, inState, card }
 }
 
 // the error paths console.error on purpose; the spies that silence them are
@@ -77,13 +75,10 @@ function makeTrack(trackId: string, adapterType: string): Track {
 
 function makeEntry(overrides: Partial<TextJobsEntry> = {}): TextJobsEntry {
   return {
-    name: 'job1',
-    indexingParams: {
-      attributes: ['Name', 'ID'],
-      exclude: ['CDS', 'exon'],
-      assemblies: ['volvox'],
-      tracks: ['t1'],
-    },
+    trackId: 't1',
+    attributes: ['Name', 'ID'],
+    exclude: ['CDS', 'exon'],
+    assemblies: ['volvox'],
     ...overrides,
   }
 }
@@ -131,21 +126,45 @@ function setup({
     }))
 
   const root = Root.create({})
+  const { jobsManager } = root
   return {
     root,
-    jobsManager: root.jobsManager,
+    jobsManager,
     widget,
     session,
     call,
+    drained: () => when(() => jobsManager.jobsQueue.length === 0),
+  }
+}
+
+// lets a run reach the RPC call it parks on
+function flush() {
+  return new Promise(resolve => setTimeout(resolve, 0))
+}
+
+// an RPC that runs until the test lets it finish
+function heldCall() {
+  const finishers: (() => void)[] = []
+  const call = jest.fn(
+    () =>
+      new Promise<void>(resolve => {
+        finishers.push(resolve)
+      }),
+  )
+  return {
+    call,
+    finish: () => {
+      finishers.shift()?.()
+    },
   }
 }
 
 test('reportStatus turns the worker’s byte counts into a human status', () => {
   const { jobsManager, widget } = setup()
-  widget.addJob({ name: 'job1', state: 'running' })
-  const card = widget.jobs[0]!
+  widget.addJob({ name: 't1', state: 'running' })
+  const card = widget.card('t1')
 
-  jobsManager.reportStatus('job1', {
+  jobsManager.reportStatus('t1', {
     message: 'Indexing files',
     current: 5000,
     total: 20000,
@@ -155,7 +174,7 @@ test('reportStatus turns the worker’s byte counts into a human status', () => 
 
   // no total yet: report what has been read rather than a bogus denominator,
   // and leave the bar indeterminate
-  jobsManager.reportStatus('job1', {
+  jobsManager.reportStatus('t1', {
     message: 'Indexing files',
     current: 5000,
     total: 0,
@@ -164,13 +183,13 @@ test('reportStatus turns the worker’s byte counts into a human status', () => 
   expect(card.progressPct).toBeUndefined()
 
   // a plain string is already the message, and carries no fraction
-  jobsManager.reportStatus('job1', {
+  jobsManager.reportStatus('t1', {
     message: 'Indexing files',
     current: 20000,
     total: 20000,
   })
   expect(card.progressPct).toBe(100)
-  jobsManager.reportStatus('job1', 'Sorting and writing index')
+  jobsManager.reportStatus('t1', 'Sorting and writing index')
   expect(card.statusMessage).toBe('Sorting and writing index')
   expect(card.progressPct).toBeUndefined()
 })
@@ -181,9 +200,9 @@ test('re-indexing keeps the track’s own indexing policy', async () => {
     textSearching: { indexingFeatureTypesToInclude: ['gene', 'mRNA'] },
   }
   const tracks = [track]
-  const { jobsManager } = setup({ tracks })
+  const { jobsManager, drained } = setup({ tracks })
   jobsManager.queueJob(makeEntry())
-  await jobsManager.runJob()
+  await drained()
 
   expect(tracks[0]!.textSearching).toMatchObject({
     indexingFeatureTypesToInclude: ['gene', 'mRNA'],
@@ -193,69 +212,97 @@ test('re-indexing keeps the track’s own indexing policy', async () => {
   })
 })
 
-test('queueJob shows the widget and files the job as queued', () => {
-  const { jobsManager, widget, session } = setup()
-  jobsManager.queueJob(makeEntry())
+test('jobs run one at a time, in the order they were queued', async () => {
+  const { call, finish } = heldCall()
+  const { jobsManager, widget, drained } = setup({
+    tracks: [
+      makeTrack('t1', 'Gff3TabixAdapter'),
+      makeTrack('t2', 'Gff3TabixAdapter'),
+    ],
+    call,
+  })
+  jobsManager.queueJob(makeEntry({ label: 'Volvox genes' }))
+  jobsManager.queueJob(makeEntry({ trackId: 't2' }))
 
-  expect(session.showWidget).toHaveBeenCalledWith(widget)
-  expect(widget.inState('queued').map(j => j.name)).toEqual(['job1'])
-  expect(jobsManager.jobsQueue).toHaveLength(1)
+  expect(widget.card('t1')).toMatchObject({
+    state: 'running',
+    label: 'Volvox genes',
+  })
+  expect(widget.card('t2').state).toBe('queued')
+
+  await flush()
+  finish()
+  await flush()
+  expect(widget.card('t1').state).toBe('finished')
+  expect(widget.card('t2').state).toBe('running')
+
+  finish()
+  await drained()
+  expect(widget.inState('finished').map(j => j.name)).toEqual(['t1', 't2'])
 })
 
-test('queueing a track that is already running files it once and leaves it running', () => {
-  const { jobsManager, widget } = setup()
-  jobsManager.queueJob(makeEntry({ label: 'Volvox genes' }))
-  widget.addJob({ name: 'job1', state: 'running' })
+// the drawer is opened by the click that queued the job, and not again when it
+// starts or finishes: a queue of several tracks otherwise took the drawer back
+// from whatever the user had opened since, once per transition
+test('only queueing opens the Jobs list', async () => {
+  const { jobsManager, widget, session, drained } = setup()
+  jobsManager.queueJob(makeEntry())
+  await drained()
 
+  expect(session.showWidget).toHaveBeenCalledTimes(1)
+  expect(session.showWidget).toHaveBeenCalledWith(widget)
+})
+
+test('queueing a track that is already running files it once and leaves it running', async () => {
+  const { call, finish } = heldCall()
+  const { jobsManager, widget, drained } = setup({ call })
+  jobsManager.queueJob(makeEntry({ label: 'Volvox genes' }))
   jobsManager.queueJob(makeEntry({ label: 'Volvox genes' }))
 
   expect(jobsManager.jobsQueue).toHaveLength(1)
   expect(widget.jobs).toEqual([
     expect.objectContaining({ state: 'running', label: 'Volvox genes' }),
   ])
+
+  await flush()
+  finish()
+  await drained()
+  expect(call).toHaveBeenCalledTimes(1)
 })
 
-test('a successful perTrack run indexes only the supported adapters', async () => {
-  const tracks = [
-    makeTrack('t1', 'Gff3TabixAdapter'),
-    makeTrack('t2', 'BamAdapter'),
-  ]
+test('a successful run writes the index and says so', async () => {
+  const tracks = [makeTrack('t1', 'Gff3TabixAdapter')]
   const originalT1 = tracks[0]
-  const { jobsManager, widget, session, call } = setup({
-    tracks,
-  })
-  jobsManager.queueJob(
-    makeEntry({
-      indexingParams: {
-        ...makeEntry().indexingParams,
-        tracks: ['t1', 't2'],
-      },
-    }),
-  )
-  await jobsManager.runJob()
+  const { jobsManager, widget, session, drained } = setup({ tracks })
+  jobsManager.queueJob(makeEntry({ label: 'Volvox genes' }))
+  await drained()
 
   // one card throughout: queued -> running -> finished, never two of them
-  expect(widget.jobs).toHaveLength(1)
-  expect(widget.inState('queued')).toHaveLength(0)
-
-  // t2's adapter can't be indexed, so it is filtered out before the RPC — and
-  // must not get a success notice or a textSearchAdapter pointing at an .ix
-  // that was never written
-  expect(call.mock.calls[0]![2].tracks.map((t: Track) => t.trackId)).toEqual([
-    't1',
+  expect(widget.jobs).toEqual([
+    expect.objectContaining({ state: 'finished', statusMessage: 'Done' }),
   ])
-  expect(session.notify).toHaveBeenCalledTimes(1)
   expect(session.notify).toHaveBeenCalledWith(
-    expect.stringContaining('t1'),
+    'Indexed track Volvox genes',
     'success',
   )
   expect(tracks[0]!.textSearching).toBeDefined()
-  expect(tracks[1]!.textSearching).toBeUndefined()
   // replaced, not mutated (ADR-031's hydration cache keys on object identity)
   expect(tracks[0]).not.toBe(originalT1)
+  expect(jobsManager.controller).toBeUndefined()
+})
 
-  expect(widget.inState('finished').map(j => j.name)).toEqual(['job1'])
-  expect(jobsManager.running).toBe(false)
+// an unsupported adapter is filtered out before the RPC, and must not get a
+// success notice or a textSearchAdapter pointing at an .ix that was never
+// written
+test('a track whose adapter cannot be indexed gets no index and no notice', async () => {
+  const tracks = [makeTrack('t1', 'BamAdapter')]
+  const { jobsManager, session, call, drained } = setup({ tracks })
+  jobsManager.queueJob(makeEntry())
+  await drained()
+
+  expect(call.mock.calls[0]![2].tracks).toEqual([])
+  expect(session.notify).not.toHaveBeenCalled()
+  expect(tracks[0]!.textSearching).toBeUndefined()
 })
 
 // The run takes minutes, and the track it was indexing can be deleted inside
@@ -263,7 +310,7 @@ test('a successful perTrack run indexes only the supported adapters', async () =
 // was indexed named a track that is gone and an .ix nothing points at.
 test('a track deleted while the run was going gets no success notice', async () => {
   const tracks = [makeTrack('t1', 'Gff3TabixAdapter')]
-  const { jobsManager, session } = setup({
+  const { jobsManager, session, drained } = setup({
     tracks,
     call: jest.fn().mockImplementation(() => {
       tracks.length = 0
@@ -271,7 +318,7 @@ test('a track deleted while the run was going gets no success notice', async () 
     }),
   })
   jobsManager.queueJob(makeEntry())
-  await jobsManager.runJob()
+  await drained()
 
   expect(session.notify).not.toHaveBeenCalled()
   expect(session.notifyError).not.toHaveBeenCalled()
@@ -279,17 +326,14 @@ test('a track deleted while the run was going gets no success notice', async () 
 
 test('a job naming a since-deleted track is dequeued, not left stuck', async () => {
   jest.spyOn(console, 'error').mockImplementation(() => {})
-  const { jobsManager, widget, session, call } = setup({ tracks: [] })
+  const { jobsManager, widget, session, call, drained } = setup({ tracks: [] })
   jobsManager.queueJob(makeEntry())
+  await drained()
 
-  await jobsManager.runJob()
-
-  // findTrackConfigsToIndex throws before the RPC. The point of resolving the
-  // configs inside the try is that this dequeues rather than looping the
-  // autorun forever on a queue entry that can never succeed.
+  // findTrackConfigsToIndex throws before the RPC, inside the try, so the job
+  // is reported and dequeued rather than holding the head of the queue
   expect(call).not.toHaveBeenCalled()
-  expect(jobsManager.jobsQueue).toHaveLength(0)
-  expect(widget.inState('aborted').map(j => j.name)).toEqual(['job1'])
+  expect(widget.inState('aborted').map(j => j.name)).toEqual(['t1'])
   expect(session.notifyError).toHaveBeenCalled()
 })
 
@@ -325,12 +369,9 @@ test.each([
           }),
       ),
     })
-    jobsManager.queueJob(makeEntry())
-    const running = jobsManager.runJob()
+    const running = jobsManager.runIndexingJob(makeEntry())
     // let runIndexingJob reach the RPC call it is now parked on
-    await Promise.resolve()
-    await Promise.resolve()
-    await Promise.resolve()
+    await flush()
 
     destroy(root)
     settle!()
@@ -341,44 +382,79 @@ test.each([
   },
 )
 
-test('the error notification offers a Retry that re-queues the job', async () => {
+test('the error notification offers a Retry that runs the job again', async () => {
   jest.spyOn(console, 'error').mockImplementation(() => {})
-  const { jobsManager, session } = setup({ tracks: [] })
-  jobsManager.queueJob(makeEntry())
-  await jobsManager.runJob()
-  expect(jobsManager.jobsQueue).toHaveLength(0)
+  const tracks: Track[] = []
+  const { jobsManager, widget, session, call, drained } = setup({ tracks })
+  jobsManager.queueJob(makeEntry({ label: 'Volvox genes' }))
+  await drained()
+  expect(widget.card('t1').state).toBe('aborted')
 
   const action = session.notifyError.mock.calls[0]![3]
   expect(action.name).toBe('Retry')
 
+  tracks.push(makeTrack('t1', 'Gff3TabixAdapter'))
   action.onClick()
-  expect(jobsManager.jobsQueue.map(j => j.name)).toEqual(['job1'])
+  await drained()
+
+  expect(call).toHaveBeenCalledTimes(1)
+  expect(widget.card('t1')).toMatchObject({
+    state: 'finished',
+    label: 'Volvox genes',
+  })
 })
 
-test('a cancelled job reports as cancelled rather than as an error', async () => {
+test('Cancel on a running job aborts its RPC and reports a cancellation', async () => {
   // the real RPC method checks the signal before it does anything, so the fake
-  // has to as well or a cancel looks like a success here and nowhere else.
-  // Read inside the call, not after it: clear() aborts the signal on every path,
-  // so an assertion made afterwards passes whether the cancel landed or not
-  let stoppedAtCall: boolean | undefined
+  // has to as well or a cancel looks like a success here and nowhere else
+  let cancelCard = () => {}
   const call = jest.fn((_sessionId: string, _method: string, args: RpcArgs) => {
-    stoppedAtCall = args.signal.aborted
+    cancelCard()
     checkAbortSignal(args.signal)
     return Promise.resolve()
   })
-  const { jobsManager, widget, session } = setup({ call })
+  const { jobsManager, widget, session, drained } = setup({ call })
+  cancelCard = () => {
+    widget.card('t1').cancelCallback!()
+  }
 
   jobsManager.queueJob(makeEntry())
-  jobsManager.abortJob()
-  await jobsManager.runJob()
+  await drained()
 
-  expect(stoppedAtCall).toBe(true)
-  expect(session.notify).toHaveBeenCalledWith(
-    'Cancelled indexing job: job1',
-    'info',
-  )
+  expect(session.notify).toHaveBeenCalledWith('Cancelled indexing t1', 'info')
   expect(session.notifyError).not.toHaveBeenCalled()
-  expect(widget.inState('aborted')[0]!.statusMessage).toBe('Cancelled')
-  // clear() resets the flag, so the next job isn't reported as cancelled too
-  expect(jobsManager.aborted).toBe(false)
+  expect(widget.card('t1')).toMatchObject({
+    state: 'aborted',
+    statusMessage: 'Cancelled',
+  })
+  expect(jobsManager.controller).toBeUndefined()
+})
+
+test('Cancel on a queued job drops it and leaves the running one alone', async () => {
+  const { call, finish } = heldCall()
+  const { jobsManager, widget, drained } = setup({
+    tracks: [
+      makeTrack('t1', 'Gff3TabixAdapter'),
+      makeTrack('t2', 'Gff3TabixAdapter'),
+    ],
+    call,
+  })
+  jobsManager.queueJob(makeEntry())
+  jobsManager.queueJob(makeEntry({ trackId: 't2' }))
+  await flush()
+
+  widget.card('t2').cancelCallback!()
+
+  expect(jobsManager.jobsQueue.map(j => j.trackId)).toEqual(['t1'])
+  expect(widget.card('t2')).toMatchObject({
+    state: 'aborted',
+    statusMessage: 'Cancelled',
+  })
+  expect(widget.card('t1').state).toBe('running')
+  expect(jobsManager.controller?.signal.aborted).toBe(false)
+
+  finish()
+  await drained()
+  expect(call).toHaveBeenCalledTimes(1)
+  expect(widget.card('t1').state).toBe('finished')
 })

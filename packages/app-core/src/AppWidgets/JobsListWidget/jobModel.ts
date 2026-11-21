@@ -9,7 +9,7 @@ export interface JobFields {
   label?: string
   statusMessage?: string
   progressPct?: number
-  cancelCallback: () => void
+  cancelCallback?: () => void
 }
 
 /**
@@ -51,8 +51,10 @@ export const Job = types
     progressPct: undefined,
     /**
      * #volatile
+     * the card offers Cancel on a running or queued job only when its producer
+     * gave one
      */
-    cancelCallback: () => {},
+    cancelCallback: undefined,
     /**
      * #volatile
      * set by `cancel` and cleared when the job changes state; a flag of its
@@ -78,7 +80,7 @@ export const Job = types
      */
     cancel() {
       self.cancelling = true
-      self.cancelCallback()
+      self.cancelCallback?.()
     },
   }))
 

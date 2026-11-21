@@ -3,6 +3,7 @@ import path from 'node:path'
 
 import PluginManager from '@jbrowse/core/PluginManager'
 import { getSnapshot } from '@jbrowse/mobx-state-tree'
+import { when } from 'mobx'
 
 import corePlugins from '../corePlugins.ts'
 import { invokeIpc } from '../ipc.ts'
@@ -17,8 +18,8 @@ jest.mock('../ipc.ts', () => ({ invokeIpc: jest.fn() }))
 
 const mockInvokeIpc = jest.mocked(invokeIpc)
 
-// the job queue's autorun delay
-const QUEUE_DELAY_MS = 1000
+// past the 300ms of quiet after which the history records a change
+const HISTORY_QUIET_MS = 1000
 
 function gffTrack(trackId: string) {
   return {
@@ -87,15 +88,12 @@ async function runIndexJob(
   trackId: string,
 ) {
   root.jobsManager.queueJob({
-    name: trackId,
-    indexingParams: {
-      attributes: ['Name'],
-      exclude: [],
-      assemblies: ['volvox'],
-      tracks: [trackId],
-    },
+    trackId,
+    attributes: ['Name'],
+    exclude: [],
+    assemblies: ['volvox'],
   })
-  await jest.advanceTimersByTimeAsync(QUEUE_DELAY_MS)
+  await when(() => root.jobsManager.jobsQueue.length === 0)
 }
 
 let rpcCall: jest.SpyInstance
@@ -139,13 +137,12 @@ test('undo and redo step over a session track index', async () => {
   const root = createRoot()
   spyOnRpc(root)
   const history = root.history
-  await jest.advanceTimersByTimeAsync(QUEUE_DELAY_MS)
+  await jest.advanceTimersByTimeAsync(HISTORY_QUIET_MS)
   const entryIndex = () =>
     indexFileOf(getSnapshot(root.session!.sessionTracks[0]!))
 
   await runIndexJob(root, 'session_genes')
-  // the history records a change once the session has been quiet for 300ms
-  await jest.advanceTimersByTimeAsync(QUEUE_DELAY_MS)
+  await jest.advanceTimersByTimeAsync(HISTORY_QUIET_MS)
   expect(history.canUndo).toBe(true)
 
   history.undo()
