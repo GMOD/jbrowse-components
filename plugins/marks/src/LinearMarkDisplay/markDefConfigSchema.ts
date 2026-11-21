@@ -98,7 +98,7 @@ export const markDefSchema = ConfigurationSchema(
      * where the next value's middle lies further on than this. Unset, a
      * `window` step in front sets it to the bases its frame spans at the
      * median row, so a moving average breaks where no data reached, and with
-     * none the line runs unbroken. Read by a line alone.
+     * none the line runs unbroken. Read by a `linear` line alone.
      */
     gapBp: {
       type: 'maybeNumber',

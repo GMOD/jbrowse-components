@@ -1,6 +1,6 @@
 ---
 name: mark-display-audit
-description: "A read-only audit of LinearMarkDisplay (plugins/marks, the worker encoder, Edit plot, hover, legend, export) on 2026-11-21: checked defects in Edit plot and the default plot, one unmeasured interval-bin cost, hover and menu findings not yet rechecked, and the simplifications the readers named."
+description: "A read-only audit of LinearMarkDisplay (plugins/marks, the worker encoder, Edit plot, hover, legend, export) on 2026-11-21: one unmeasured interval-bin cost, hover and menu findings not yet rechecked, and the simplifications the readers named."
 ---
 
 # Mark display audit
@@ -15,13 +15,6 @@ no test was run. Three Opus readers took a slice each; the main session read
 Each item says how far it was checked. "Checked" means the main session read
 the cited code after the reader reported it. "Reader only" means one reader
 traced it and nobody reread it; reread before fixing.
-
-## Checked defects
-
-- **`mark.gapBp` on a step line is read by nothing and gets no rule.**
-  render-core's `lineMark.ts` reads `gapBp` in the linear variant only; the
-  slot's doc says "a `linear` line", but `MARK_SPECS.line.members` lists it for
-  both and `markProblems` stays silent.
 
 ## Needs a measurement before anything is built
 

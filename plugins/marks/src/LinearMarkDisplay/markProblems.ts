@@ -12,7 +12,7 @@ import {
   stepsOutput,
   universalPresetOf,
 } from './markRuleFacts.ts'
-import { MARK_SPECS, readsValue } from './markSpecs.ts'
+import { MARK_SPECS, interpolationOf, readsValue } from './markSpecs.ts'
 import {
   DEFAULT_AGGREGATE_OP,
   DEFAULT_BIN_AS,
@@ -57,7 +57,7 @@ export const MARK_RULES = {
   'unread-channel': 'warning',
   /** An `encoding.size` or `encoding.strokeWidth` on a mark that draws no point, rule or line and strokes no link. */
   'unread-size': 'warning',
-  /** A `mark` member its type does not read: an `interpolate` off a line or a link, a `height` off a rect, a `gapBp` off a line. */
+  /** A `mark` member its type does not read: an `interpolate` off a line or a link, a `height` off a rect, a `gapBp` off a `linear` line. */
   'unread-mark-member': 'warning',
   /** An `interpolate` the mark's type does not draw, such as `dome` on a line, which then draws its default. */
   'mark-interpolate': 'warning',
@@ -764,6 +764,20 @@ function ownProblems(
         ),
       )
     }
+  }
+  const interpolation = interpolationOf(type, def.interpolate)
+  if (
+    writes.gapBp &&
+    spec.members?.includes('gapBp') &&
+    interpolation !== 'linear'
+  ) {
+    problems.push(
+      found(
+        'unread-mark-member',
+        'mark.gapBp',
+        `a ${interpolation} ${type} reads no mark.gapBp, which only a linear one breaks across`,
+      ),
+    )
   }
   const drawn = spec.interpolations
   if (

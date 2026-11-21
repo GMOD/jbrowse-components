@@ -274,12 +274,20 @@ test("an interpolate the mark's type does not draw is named with what it draws i
   ])
 })
 
-test('a gapBp on a mark that draws no line waits unread', () => {
+test('a gapBp on a mark that draws no linear line waits unread', () => {
   expect(
     found([{ mark: { type: 'point', gapBp: 5000 }, encoding: { y: 'score' } }]),
   ).toEqual(['warning unread-mark-member mark 0 mark.gapBp'])
   expect(
     found([{ mark: { type: 'line', gapBp: 5000 }, encoding: { y: 'score' } }]),
+  ).toEqual(['warning unread-mark-member mark 0 mark.gapBp'])
+  expect(
+    found([
+      {
+        mark: { type: 'line', interpolate: 'linear', gapBp: 5000 },
+        encoding: { y: 'score' },
+      },
+    ]),
   ).toEqual([])
 })
 
