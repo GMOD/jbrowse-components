@@ -111,6 +111,31 @@ async function framed(
       }
 }
 
+/**
+ * The window's locus placed in the displayed regions a view lays end to end,
+ * in the one that holds it.
+ */
+function framedIn(
+  assemblyName: string,
+  [locus]: readonly TablesRegion[],
+  displayed: readonly TablesRegion[],
+) {
+  const at = displayed.findIndex(
+    d =>
+      d.refName === locus?.refName &&
+      d.start <= locus.start &&
+      d.end >= locus.end,
+  )
+  const holder = displayed[at]
+  if (!locus || !holder) {
+    throw new Error('no displayed region holds the window')
+  }
+  return {
+    displayedRegions: displayed.map(r => ({ ...r, assemblyName })),
+    windowStartBp: totalBp(displayed.slice(0, at)) + locus.start - holder.start,
+  }
+}
+
 // A web session holding both assemblies and one synteny track over the
 // adapter, its RPC on the main thread, so the display fetches with its own
 // args through the real adapters
@@ -322,8 +347,16 @@ export interface MultiwayViewSpec {
   adapterConfig: Record<string, unknown>
   /** every lane's genome, the anchor's first */
   assemblies: readonly AssemblyConfig[]
-  /** the regions the anchor lane shows end to end across `width` px */
-  anchor: { assemblyName: string; regions: TablesRegion[]; width: number }
+  /**
+   * the regions the anchor lane shows end to end across `width` px, in the
+   * `displayedRegions` the view lays out, else framed in their contig
+   */
+  anchor: {
+    assemblyName: string
+    regions: TablesRegion[]
+    displayedRegions?: TablesRegion[]
+    width: number
+  }
   /** the display's config slots, as the export's `display` argument */
   settings: Record<string, unknown>
   pins?: MultiWayTablesArgs['pins']
@@ -370,7 +403,9 @@ export async function standUpMultiway(spec: MultiwayViewSpec) {
   session.setPreferenceOverride('animationMode', 'disabled')
   const typeName: string = 'LinearGenomeView'
   const bpPerPx = totalBp(anchor.regions) / anchor.width
-  const frame = await framed(session, anchor.assemblyName, anchor.regions)
+  const frame = anchor.displayedRegions
+    ? framedIn(anchor.assemblyName, anchor.regions, anchor.displayedRegions)
+    : await framed(session, anchor.assemblyName, anchor.regions)
   const offsetPx = frame.windowStartBp / bpPerPx
   const view = await session.launchView(typeName, {
     ...frame,

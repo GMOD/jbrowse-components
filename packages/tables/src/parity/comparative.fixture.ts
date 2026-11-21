@@ -150,7 +150,12 @@ export const OFFSCREEN_WINDOW: ComparativeFixture = {
 export interface MultiwayFixture {
   adapterConfig: Record<string, unknown>
   assemblies: AssemblyConfig[]
-  anchor: { assemblyName: string; regions: TablesRegion[]; width: number }
+  anchor: {
+    assemblyName: string
+    regions: TablesRegion[]
+    displayedRegions?: TablesRegion[]
+    width: number
+  }
 }
 
 const VOLVOX_LANES = [
@@ -220,6 +225,21 @@ export const ALL_VS_ALL_MISMATCHES: MultiwayFixture = {
 export const ALL_VS_ALL_UNALIGNED: MultiwayFixture = {
   ...ALL_VS_ALL_LANES,
   anchor: { assemblyName: 'volvox', regions: [CTGB], width: 800 },
+}
+
+/**
+ * volvox ctgB's first 4 kb, with ctgA displayed before it, so the static
+ * blocks fetched left of the window reach ctgA's end, which every lane aligns
+ * to.
+ */
+export const TWO_CONTIGS_DISPLAYED: MultiwayFixture = {
+  ...ALL_VS_ALL_LANES,
+  anchor: {
+    assemblyName: 'volvox',
+    regions: [{ refName: 'ctgB', start: 0, end: 4000 }],
+    displayedRegions: [CTGA, CTGB],
+    width: 800,
+  },
 }
 
 /** Two pairwise PAFs, each lane stated against volvox alone. */

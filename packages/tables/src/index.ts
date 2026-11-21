@@ -141,13 +141,10 @@ export type DotplotTablesArgs = Omit<DotplotReadArgs, 'x' | 'y'> & {
  * A multi-way read as a host sends it: `assemblies`, assembly configs as the
  * region reads take them, each the genome of the lane its `name` or one of
  * its `aliases` names, whose contigs stop that lane's line at their ends, as
- * the display's do, and which frame an anchor locus in its contig.
+ * the display's do, and which frame an anchor locus in its contig when the
+ * anchor names no `displayedRegions` of its own.
  */
-export type MultiWayTablesArgs = Omit<
-  MultiWayReadArgs,
-  'laneAssemblyOf' | 'anchor'
-> & {
-  anchor: Omit<MultiWayReadArgs['anchor'], 'displayedRegions'>
+export type MultiWayTablesArgs = Omit<MultiWayReadArgs, 'laneAssemblyOf'> & {
   assemblies?: AssemblyConfig[]
 }
 
@@ -770,12 +767,14 @@ export function createTablesEngine() {
           ...args,
           anchor: {
             ...anchor,
-            displayedRegions: await displayedAxisRegions(
-              anchor,
-              args.adapterConfig,
-              0,
-              anchorName === undefined ? undefined : lanes.get(anchorName),
-            ),
+            displayedRegions:
+              anchor.displayedRegions ??
+              (await displayedAxisRegions(
+                anchor,
+                args.adapterConfig,
+                0,
+                anchorName === undefined ? undefined : lanes.get(anchorName),
+              )),
           },
           laneAssemblyOf: name => lanes.get(name),
         })

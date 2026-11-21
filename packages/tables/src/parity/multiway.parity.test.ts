@@ -21,6 +21,7 @@ import {
   GENE_BLOCK_LANES,
   STAR_LANES,
   SYRI_LANES,
+  TWO_CONTIGS_DISPLAYED,
 } from './comparative.fixture.ts'
 import { standUpMultiway } from './comparative/testEnv.ts'
 import { parityCases } from './testUtils.ts'
@@ -676,6 +677,16 @@ describe('a lane per copy, one copy holding genes only past the window', () => {
   parityCases(multiwayParity(COPIES_IN_THE_MARGIN), [
     {
       name: 'rows.field refName',
+      config: { display: { rows: { field: 'refName' } } },
+    },
+  ])
+})
+
+describe('volvox ctgB in the window, ctgA displayed before it', () => {
+  parityCases(multiwayParity(TWO_CONTIGS_DISPLAYED), [
+    { name: 'defaults', config: {} },
+    {
+      name: 'a lane per copy',
       config: { display: { rows: { field: 'refName' } } },
     },
   ])
