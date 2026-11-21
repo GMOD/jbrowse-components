@@ -37,7 +37,6 @@ import { containingLgv } from '@jbrowse/plugin-linear-genome-view'
 import { createEncodeMemo } from '@jbrowse/render-core/encodeMemo'
 import { installUpload } from '@jbrowse/render-core/installUpload'
 import { namedAutorun } from '@jbrowse/render-core/namedReactions'
-import { drawnRowHeightPx } from '@jbrowse/render-core/shaders/rowRect'
 import {
   TreeSidebarMixin,
   resetRowOrderMenuItems,
@@ -49,15 +48,9 @@ import { ScoreScaleMixin } from '@jbrowse/wiggle-core'
 import ContentCopyIcon from '@mui/icons-material/ContentCopy'
 import MenuOpenIcon from '@mui/icons-material/MenuOpen'
 
-import { identityOver } from '../LinearMafRenderer/identity.ts'
 import { getMafColorPalette } from '../LinearMafRenderer/util.ts'
-import { findCodonAt } from './codons.ts'
 import { mafColorScales } from './colorScales.ts'
-import { findFrameAt } from './components/computeVisibleFrames.ts'
-import { conservationBarAt } from './components/conservationBand.ts'
-import { findRowHoverAtBp } from './components/findRowHover.ts'
 import { perRowRefNameRanks } from './components/refNameRanks.ts'
-import { summaryAt } from './components/summarySpans.ts'
 import {
   basesFieldOf,
   configSlotActions,
@@ -77,6 +70,7 @@ import {
   mafCoverageSource,
   mafCoverageViews,
 } from './mafCoverageViews.ts'
+import { mafHoverViews } from './mafHoverViews.ts'
 import { mafCodonGlyphViews, mafOverlayViews } from './mafOverlayViews.ts'
 import { mafDrawnRowViews, mafRowActions, mafRowViews } from './mafRowViews.ts'
 import { openInsertionWidget } from './openInsertionWidget.ts'
@@ -104,7 +98,6 @@ import type {
   MafRow,
   MafSummaryRecord,
 } from '../types.ts'
-import type { HoverBp } from './components/findRowHover.ts'
 import type { MafRowGeometryParams } from './components/visibleRegionGeometry.ts'
 import type { LinearMafDisplayConfigModel } from './configSchema.ts'
 import type { MafRowsEncodeProps, MafRowsSource } from './encodeMafRows.ts'
@@ -618,31 +611,6 @@ export default function stateModelFactory(
             endRow,
           })
         },
-        /**
-         * #method
-         * The CDS frame record covering absolute genomic `bp` (uint32) on
-         * display `rowIndex`, or undefined. Gated on `framesInUse`, so the gene
-         * name reads on hover in codon view with the strip off.
-         *
-         * `bp` is a base index (`MafPointer.baseBp`), not a floored `gposFrac`,
-         * matching the row hover and coverage tooltip on a reversed region.
-         */
-        frameHoverInfo(
-          displayedRegionIndex: number,
-          bp: number,
-          rowIndex: number,
-        ) {
-          if (!self.framesInUse) {
-            return undefined
-          }
-          const hit = findFrameAt(
-            self.framesDataMap.get(displayedRegionIndex),
-            bp,
-            rowIndex,
-            self.rowIndexBySrc,
-          )
-          return hit ? { name: hit.name } : undefined
-        },
       }))
       .views(self => ({
         /**
@@ -724,67 +692,6 @@ export default function stateModelFactory(
             cellsFill: self.rowPlan.color === undefined,
             palette: self.colorPalette,
           }
-        },
-      }))
-      .views(self => ({
-        /**
-         * #method
-         * The hover on `rowIndex` at the cursor's genomic position: an aligned
-         * base, an insertion, a deletion or a bridged region, tagged with the
-         * sample label. `bp` holds both readings of the cursor (`HoverBp`),
-         * which differ on a reversed region.
-         */
-        rowHoverInfo(
-          displayedRegionIndex: number,
-          bp: HoverBp,
-          rowIndex: number,
-          bpPerPx: number,
-        ) {
-          const { drawnRows } = self
-          const region =
-            rowIndex >= 0 && rowIndex < drawnRows.length
-              ? self.detailOnScreen.get(displayedRegionIndex)
-              : undefined
-          const hit = region
-            ? findRowHoverAtBp(
-                region,
-                bp,
-                rowIndex,
-                bpPerPx,
-                self.rowPlan.perBase ? self.encodeBinBp : undefined,
-                drawnRowHeightPx(self.effectiveRowHeight, self.rowProportion),
-              )
-            : undefined
-          if (!hit) {
-            return undefined
-          }
-          const row = drawnRows[rowIndex]!
-          return {
-            ...hit,
-            sampleLabel: row.label,
-          }
-        },
-        /**
-         * #method
-         * The mean identity of the window a heatmap cell or X-Y bar paints at
-         * base `bp` on `rowIndex`, and how many bases it averages, while
-         * identity draws.
-         */
-        identityHoverInfo(
-          displayedRegionIndex: number,
-          bp: number,
-          rowIndex: number,
-        ) {
-          const { color, mark } = self.rowPlan
-          const region =
-            color === 'identity' || mark === 'bar'
-              ? self.detailOnScreen.get(displayedRegionIndex)
-              : undefined
-          const binBp = self.encodeBinBp
-          const start = Math.floor(bp / binBp) * binBp
-          return region
-            ? identityOver(region.blocks, rowIndex, start, start + binBp)
-            : undefined
         },
       }))
       .views(mafOverlayViews)
@@ -884,29 +791,6 @@ export default function stateModelFactory(
           )
         },
       }))
-      // #region superMethod
-      .views(self => {
-        const { trackMenuItems: superTrackMenuItems } = self
-        return {
-          /**
-           * #method
-           */
-          trackMenuItems() {
-            return [
-              ...superTrackMenuItems(),
-              ...buildMafTrackMenuItems(self),
-              ...editPlotMenuItems(self, getCoverageMenuItems(self)),
-              ...mafLaunchMenuItems({
-                session: getSession(self),
-                model: self,
-                view: self.view,
-                pluginManager: getEnv(self).pluginManager,
-              }),
-            ]
-          },
-        }
-      })
-      // #endregion
       .views(self => ({
         /**
          * #method
@@ -991,53 +875,30 @@ export default function stateModelFactory(
         }
       })
       .views(mafCodonGlyphViews)
-      .views(self => ({
-        /**
-         * #method
-         * The codon under the cursor on `rowIndex` at base `bp`, while the
-         * codon view draws, from the codons its cells were encoded from.
-         */
-        codonHoverInfo(
-          displayedRegionIndex: number,
-          bp: number,
-          rowIndex: number,
-        ) {
-          return self.rowPlan.bases === 'codon'
-            ? findCodonAt(
-                self.encodedUpload.get(displayedRegionIndex)?.codons,
-                bp,
-                rowIndex,
-              )
-            : undefined
-        },
-        /**
-         * #method
-         * The conservation bar painted over base `bp`, read from the bars the
-         * band draws, so a binned window or a codon answers as it paints.
-         */
-        conservationHoverInfo(displayedRegionIndex: number, bp: number) {
-          const bars =
-            self.encodedUpload.get(displayedRegionIndex)?.conservation
-          const bar = bars ? conservationBarAt(bars, bp) : undefined
-          return bar
-            ? { ...bar, codons: self.codonConservationActive }
-            : undefined
-        },
-        /**
-         * #method
-         * The summary record whose bar is drawn at canvas x `x` on display row
-         * `rowIndex`, or undefined: the hover on the summary tier.
-         */
-        summaryHoverInfo(rowIndex: number, x: number) {
-          return summaryAt(
-            self.encodedUpload,
-            self.renderBlocks,
-            self.renderState,
-            rowIndex,
-            x,
-          )
-        },
-      }))
+      .views(mafHoverViews)
+      // #region superMethod
+      .views(self => {
+        const { trackMenuItems: superTrackMenuItems } = self
+        return {
+          /**
+           * #method
+           */
+          trackMenuItems() {
+            return [
+              ...superTrackMenuItems(),
+              ...buildMafTrackMenuItems(self),
+              ...editPlotMenuItems(self, getCoverageMenuItems(self)),
+              ...mafLaunchMenuItems({
+                session: getSession(self),
+                model: self,
+                view: self.view,
+                pluginManager: getEnv(self).pluginManager,
+              }),
+            ]
+          },
+        }
+      })
+      // #endregion
       .actions(self => ({
         /**
          * #action
