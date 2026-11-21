@@ -1,4 +1,5 @@
 import { OVERFLOW_GROUP_KEY } from '@jbrowse/core/util/groupKeys'
+import { bandChipsShown } from '@jbrowse/display-kit/BandChips'
 import { GroupLabelChips } from '@jbrowse/display-kit/GroupLabelChips'
 import { moveSectionOnto } from '@jbrowse/display-kit/groupByMenu'
 import UnfoldLessIcon from '@mui/icons-material/UnfoldLess'
@@ -79,7 +80,11 @@ const GroupLabelsOverlay = observer(function GroupLabelsOverlay({
   return (
     <GroupLabelChips
       canvasHeight={scroll.canvasHeight}
-      leading={leading ? <BandRowChips model={model} row={leading} /> : null}
+      leading={
+        leading && bandChipsShown(model) ? (
+          <BandRowChips model={model} row={leading} />
+        ) : null
+      }
       hiddenCount={model.hiddenGroups.size}
       onShowHidden={() => {
         model.showAllGroups()

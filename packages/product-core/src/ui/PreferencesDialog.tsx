@@ -16,7 +16,10 @@ import {
 
 import type { GeneralPreferencesSession } from './GeneralPreferencesTab.tsx'
 import type { ViewPreferencesSession } from './ViewPreferencesTab.tsx'
-import type { ResettablePreferencesSession } from './preferencesReset.ts'
+import type {
+  ResettablePreference,
+  ResettablePreferencesSession,
+} from './preferencesReset.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type React from 'react'
 
@@ -40,6 +43,11 @@ export interface PreferencesDialogSession
 export interface PreferencesPanelDescriptor {
   name: string
   Component: React.ComponentType<{ session: PreferencesDialogSession }>
+  /**
+   * the panel's preferences kept outside the session's override map, so
+   * "Reset to defaults" lists and reverts them with the rest
+   */
+  resettable?: readonly ResettablePreference[]
 }
 
 declare module '@jbrowse/core/PluginManager' {
@@ -71,6 +79,7 @@ const PreferencesDialog = observer(function PreferencesDialog({
     [],
     { session },
   )
+  const panelPreferences = pluginPanels.flatMap(p => p.resettable ?? [])
   const tabs = [
     {
       value: 'general',
@@ -130,12 +139,12 @@ const PreferencesDialog = observer(function PreferencesDialog({
       </DialogActions>
       {resetDialogOpen ? (
         <PreferencesResetDialog
-          changes={collectPreferenceChanges(session)}
+          changes={collectPreferenceChanges(session, panelPreferences)}
           onReset={() => {
-            resetAllPreferences(session)
+            resetAllPreferences(session, panelPreferences)
           }}
           onResetRow={change => {
-            resetPreferenceChange(session, change)
+            resetPreferenceChange(session, change, panelPreferences)
           }}
           onClose={() => {
             setResetDialogOpen(false)

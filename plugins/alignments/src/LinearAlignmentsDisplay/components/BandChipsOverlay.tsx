@@ -1,4 +1,8 @@
-import { BandChip, BandChipRow } from '@jbrowse/display-kit/BandChips'
+import {
+  BandChip,
+  BandChipRow,
+  bandChipsShown,
+} from '@jbrowse/display-kit/BandChips'
 import {
   GROUP_LABEL_HEIGHT,
   GROUP_LABEL_INSET_X,
@@ -55,7 +59,8 @@ const BandChipsOverlay = observer(function BandChipsOverlay({
   const { bandChips, scrollModel: scroll, showsGroupLabels } = model
   const left = leftAxisGutterWidth(model.axes) + GROUP_LABEL_INSET_X
   const minTop = showsGroupLabels ? GROUP_LABEL_HEIGHT + 1 : 0
-  return bandChips.rows.map(row => {
+  const rows = bandChipsShown(model) ? bandChips.rows : []
+  return rows.map(row => {
     const top = bandScreenTop(row.top, scroll) + 1
     return top < minTop ||
       top + GROUP_LABEL_HEIGHT > scroll.canvasHeight ? null : (

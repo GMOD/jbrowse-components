@@ -1,10 +1,20 @@
+import { getSession } from '@jbrowse/core/util/mstUtils'
 import { observer } from 'mobx-react'
 
 import HideGlyph from './HideGlyph.tsx'
 import { useGroupLabelStyles } from './groupLabelChipStyles.ts'
 import { GROUP_LABEL_INSET_X } from './groupLabelStyle.ts'
 
+import type { IAnyStateTreeNode } from '@jbrowse/mobx-state-tree'
 import type React from 'react'
+
+/**
+ * Whether the viewer wants band chips drawn on screen, the `showBandChips`
+ * preference. An SVG export titles its bands either way.
+ */
+export function bandChipsShown(node: IAnyStateTreeNode) {
+  return getSession(node).getPreference('showBandChips') !== false
+}
 
 /**
  * A row of chips laid over the top-left of the band they name, in the

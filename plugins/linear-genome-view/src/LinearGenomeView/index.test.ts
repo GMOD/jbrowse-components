@@ -36,6 +36,7 @@ import {
   withRegionReversed,
   withRegionsKept,
 } from './util.ts'
+import { LGV_RESETTABLE, setToggle, setTrackLabels } from './viewPreferences.ts'
 import volvoxDisplayedRegions from './volvoxDisplayedRegions.json' with { type: 'json' }
 
 import type { LinearGenomeViewModel } from './index.ts'
@@ -3562,6 +3563,44 @@ describe('declarative launch: highlight, nav, unknown keys', () => {
     expect(b.trackLabels).toBe('offset')
     expect(b.showCenterLine).toBe(true)
     expect(b.showCytobands).toBe(true)
+  })
+
+  test('the Preferences tab sets every open view and the next one', () => {
+    localStorage.clear()
+    const { Session, LinearGenomeModel } = initialize()
+    const open = Session.create({ configuration: {} }).setView(
+      LinearGenomeModel.create({ type: 'LinearGenomeView' }),
+    )
+    setToggle([open], 'lgv-showAminoAcids', false)
+    setTrackLabels([open], 'hidden', 'offset')
+    expect(open.showAminoAcids).toBe(false)
+    expect(open.trackLabels).toBe('hidden')
+    const next = LinearGenomeModel.create({ type: 'LinearGenomeView' })
+    expect(next.showAminoAcids).toBe(false)
+    expect(next.trackLabels).toBe('hidden')
+
+    setTrackLabels([open], '', 'offset')
+    expect(open.trackLabels).toBe('offset')
+    expect(storedEntries()['lgv-trackLabels']).toBeUndefined()
+    localStorage.clear()
+  })
+
+  test('Reset lists and clears a stored view choice off its default', () => {
+    localStorage.clear()
+    localStorage.setItem('lgv-showCenterLine', 'true')
+    localStorage.setItem('lgv-showCytobands', 'true')
+    const changes = LGV_RESETTABLE.map(p => p.change({})).filter(
+      c => c !== undefined,
+    )
+    expect(changes.map(c => c.path)).toEqual([['lgv-showCenterLine']])
+    for (const p of LGV_RESETTABLE) {
+      p.reset({})
+    }
+    const { LinearGenomeModel } = initialize()
+    expect(
+      LinearGenomeModel.create({ type: 'LinearGenomeView' }).showCenterLine,
+    ).toBe(false)
+    expect(storedEntries()).toEqual({})
   })
 
   test('trackLabels takes only a label mode', () => {

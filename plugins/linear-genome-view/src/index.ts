@@ -1,3 +1,5 @@
+import { lazy } from 'react'
+
 import Plugin from '@jbrowse/core/Plugin'
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
 import { isAbstractMenuManager } from '@jbrowse/core/util'
@@ -8,8 +10,13 @@ import LineStyleIcon from '@mui/icons-material/LineStyle'
 import LaunchLinearGenomeViewF from './LaunchLinearGenomeView/index.ts'
 import SequenceFeatureHoverHighlightExtensionF from './LinearGenomeView/components/SequenceFeatureHoverHighlightExtension.tsx'
 import LinearGenomeViewF from './LinearGenomeView/index.ts'
+import { LGV_RESETTABLE } from './LinearGenomeView/viewPreferences.ts'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
+
+const ViewPreferencesPanel = lazy(
+  () => import('./LinearGenomeView/components/ViewPreferencesPanel.tsx'),
+)
 import type { AbstractViewContainer } from '@jbrowse/core/util'
 
 export default class LinearGenomeViewPlugin extends Plugin {
@@ -42,6 +49,16 @@ export default class LinearGenomeViewPlugin extends Plugin {
     LinearGenomeViewF(pluginManager)
     LaunchLinearGenomeViewF(pluginManager)
     SequenceFeatureHoverHighlightExtensionF(pluginManager)
+    pluginManager.contributeToExtensionPoint(
+      'Core-preferencesDialogPanels',
+      () => [
+        {
+          name: 'Linear genome view',
+          Component: ViewPreferencesPanel,
+          resettable: LGV_RESETTABLE,
+        },
+      ],
+    )
   }
 
   configure(pluginManager: PluginManager) {

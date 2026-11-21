@@ -1,6 +1,10 @@
 import { usePalette } from '@jbrowse/core/ui/PaletteContext'
 import { getFillProps } from '@jbrowse/core/util'
-import { BandChip, BandChipRow } from '@jbrowse/display-kit/BandChips'
+import {
+  BandChip,
+  BandChipRow,
+  bandChipsShown,
+} from '@jbrowse/display-kit/BandChips'
 import { GROUP_LABEL_INSET_X } from '@jbrowse/display-kit/groupLabelStyle'
 import { leftAxisGutterWidth } from '@jbrowse/display-ui'
 import { AXIS_GUTTER_WIDTH_PX } from '@jbrowse/wiggle-core'
@@ -53,7 +57,8 @@ const MafBandLabels = observer(function MafBandLabels({
   model: LinearMafDisplayModel
 }) {
   const left = leftAxisGutterWidth(model.axes) + GROUP_LABEL_INSET_X
-  return model.bandLabels.map(({ band, text, top }) => (
+  const labels = bandChipsShown(model) ? model.bandLabels : []
+  return labels.map(({ band, text, top }) => (
     <BandChipRow
       key={band}
       top={top + 1}

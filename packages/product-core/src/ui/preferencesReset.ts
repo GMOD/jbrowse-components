@@ -12,10 +12,13 @@ export interface ResettablePreferencesSession {
   getPreferenceChanges: () => TrackConfigChange[]
 }
 
-// preferences held outside the session override map, each with its own default
-// and reset; the map's row for the same key is dropped in favour of these,
-// which report the resolved value
-interface NonMapPreference {
+/**
+ * A preference held outside the session override map, with its own default
+ * and reset; the map's row for the same key is dropped in favour of it, which
+ * reports the resolved value. A preferences panel lists its own
+ * (`PreferencesPanelDescriptor.resettable`).
+ */
+export interface ResettablePreference {
   head: string
   change: (
     session: ResettablePreferencesSession,
@@ -23,7 +26,7 @@ interface NonMapPreference {
   reset: (session: ResettablePreferencesSession) => void
 }
 
-const NON_MAP_PREFERENCES: NonMapPreference[] = [
+const NON_MAP_PREFERENCES: ResettablePreference[] = [
   {
     head: 'theme',
     change: s =>
@@ -56,26 +59,26 @@ const NON_MAP_PREFERENCES: NonMapPreference[] = [
   },
 ]
 
-const NON_MAP_HEADS = new Set(NON_MAP_PREFERENCES.map(p => p.head))
-
 // Everything "Reset to defaults" reverts, as rows: the scalar overrides in the
 // preference map, and the preferences held outside it.
 export function collectPreferenceChanges(
   session: ResettablePreferencesSession,
+  panelPreferences: readonly ResettablePreference[] = [],
 ) {
+  const nonMap = [...NON_MAP_PREFERENCES, ...panelPreferences]
+  const heads = new Set(nonMap.map(p => p.head))
   return [
-    ...session
-      .getPreferenceChanges()
-      .filter(c => !NON_MAP_HEADS.has(c.path[0]!)),
-    ...NON_MAP_PREFERENCES.map(p => p.change(session)).filter(
-      c => c !== undefined,
-    ),
+    ...session.getPreferenceChanges().filter(c => !heads.has(c.path[0]!)),
+    ...nonMap.map(p => p.change(session)).filter(c => c !== undefined),
   ]
 }
 
-export function resetAllPreferences(session: ResettablePreferencesSession) {
+export function resetAllPreferences(
+  session: ResettablePreferencesSession,
+  panelPreferences: readonly ResettablePreference[] = [],
+) {
   session.clearPreferenceOverrides()
-  for (const p of NON_MAP_PREFERENCES) {
+  for (const p of [...NON_MAP_PREFERENCES, ...panelPreferences]) {
     p.reset(session)
   }
 }
@@ -83,9 +86,12 @@ export function resetAllPreferences(session: ResettablePreferencesSession) {
 export function resetPreferenceChange(
   session: ResettablePreferencesSession,
   change: TrackConfigChange,
+  panelPreferences: readonly ResettablePreference[] = [],
 ) {
   const [head] = change.path
-  const pref = NON_MAP_PREFERENCES.find(p => p.head === head)
+  const pref = [...NON_MAP_PREFERENCES, ...panelPreferences].find(
+    p => p.head === head,
+  )
   if (pref) {
     pref.reset(session)
   } else if (head) {

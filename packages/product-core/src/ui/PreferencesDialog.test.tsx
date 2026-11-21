@@ -27,6 +27,7 @@ function stubSession(
     numberGrouping: true,
     scrollZoom: false,
     setScrollZoom: jest.fn(),
+    getPreference: () => undefined,
     setPreferenceOverride: jest.fn(),
     clearPreferenceOverrides: jest.fn(),
     getPreferenceChanges: (): TrackConfigChange[] => [],

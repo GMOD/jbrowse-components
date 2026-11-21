@@ -36,6 +36,18 @@ export function PreferencesConfigSchemaFactory() {
       defaultValue: false,
     },
     /**
+     * #slot configuration.preferences.showBandChips
+     * when true (the default), a track drawing several bands (an alignments
+     * track's coverage, junctions and reads, a MAF track's conservation)
+     * names each band with a chip over its top-left corner, whose × hides the
+     * band. Turn it off to draw the bands without chips; the track menu still
+     * shows and hides them. An SVG export titles its bands either way.
+     */
+    showBandChips: {
+      type: 'boolean',
+      defaultValue: true,
+    },
+    /**
      * #slot configuration.preferences.numberGrouping
      * when true (the default), numbers are displayed with thousand separators
      * (`chr1:1,234,567`). Turn it off to display them without separators, for

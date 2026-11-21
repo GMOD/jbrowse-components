@@ -13,6 +13,7 @@ import { resolveSubMenu } from '@jbrowse/core/ui/menuItems'
 import { resolvePalette } from '@jbrowse/core/ui/palette'
 import { types } from '@jbrowse/mobx-state-tree'
 import { linearGenomeViewStateModelFactory as LinearGenomeViewModelFactory } from '@jbrowse/plugin-linear-genome-view'
+import { observable } from 'mobx'
 
 import { baseWorkerPileupData } from '../RenderAlignmentDataRPC/pileupData.fixture.ts'
 import { arcStrokeScale } from '../features/arcs/arcLineWidth.ts'
@@ -287,15 +288,25 @@ export function bootAlignmentsDisplay({
       view: types.maybe(LinearGenomeModel),
       configuration: types.map(types.frozen()),
     })
-    .views(() => ({
+    .volatile(() => ({
+      // the user's preference overrides; unset reads as the stock default
+      preferencesOverrides: observable.map<string, unknown>(),
+    }))
+    .views(self => ({
       getTrackById(id: string) {
         return id === 'test_track' ? trackConfig : undefined
+      },
+      getPreference(key: string) {
+        return self.preferencesOverrides.get(key)
       },
     }))
     .actions(self => ({
       setView(view: Instance<typeof LinearGenomeModel>) {
         self.view = view
         return view
+      },
+      setPreferenceOverride(key: string, value: unknown) {
+        self.preferencesOverrides.set(key, value)
       },
     }))
 

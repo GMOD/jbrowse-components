@@ -11,8 +11,6 @@ import {
   getNotificationSink,
   getSession,
   isSessionModelWithWidgets,
-  localStorageGetBoolean,
-  localStorageGetItem,
   localStorageSetBoolean,
   localStorageSetItem,
   springAnimate,
@@ -117,6 +115,7 @@ import {
   regionsOrientation,
   setDisplayedRegionsKeepingCenter,
 } from './util.ts'
+import { storedToggle, storedTrackLabels } from './viewPreferences.ts'
 import { visibleRegionsOf } from './visibleRegions.ts'
 import { isZoomLinkable, visibleEdges, zoomMarker } from './zoomOf.ts'
 
@@ -273,11 +272,6 @@ function canonicalHighlight(self: IAnyStateTreeNode, region: HighlightRegion) {
 
 // bpPerPx deltas smaller than this are treated as no zoom change, avoiding
 // pointless offset re-anchoring on micro-steps
-// a stored mode this build does not know reads as unset, the plugin default
-function storedTrackLabels() {
-  const stored = localStorageGetItem('lgv-trackLabels')
-  return VIEW_TRACK_LABEL_MODES.find(mode => mode === stored) ?? ''
-}
 
 const BP_PER_PX_EPSILON = 0.000001
 
@@ -558,7 +552,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
          * their setters record.
          */
         showCenterLine: types.optional(types.boolean, () =>
-          localStorageGetBoolean('lgv-showCenterLine', false),
+          storedToggle('lgv-showCenterLine'),
         ),
 
         /**
@@ -568,7 +562,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
          * getter)
          */
         showCytobands: types.optional(types.boolean, () =>
-          localStorageGetBoolean('lgv-showCytobands', true),
+          storedToggle('lgv-showCytobands'),
         ),
 
         /**
@@ -597,7 +591,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
          * color CDS segments by reading frame
          */
         colorByFrame: types.optional(types.boolean, () =>
-          localStorageGetBoolean('lgv-colorByFrame', false),
+          storedToggle('lgv-colorByFrame'),
         ),
 
         /**
@@ -608,7 +602,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
          * recolors the segments by frame.
          */
         showAminoAcids: types.optional(types.boolean, () =>
-          localStorageGetBoolean('lgv-showAminoAcids', true),
+          storedToggle('lgv-showAminoAcids'),
         ),
 
         /**
@@ -616,7 +610,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
          * show the track outlines
          */
         showTrackOutlines: types.optional(types.boolean, () =>
-          localStorageGetBoolean('lgv-showTrackOutlines', true),
+          storedToggle('lgv-showTrackOutlines'),
         ),
 
         /**

@@ -1,5 +1,6 @@
 import {
   collectPreferenceChanges,
+  resetAllPreferences,
   resetPreferenceChange,
 } from './preferencesReset.ts'
 
@@ -50,4 +51,34 @@ test('a scalar row resets by its own key', () => {
   })
 
   expect(scalars.size).toBe(0)
+})
+
+test("a panel's own preferences list and reset with the rest", () => {
+  const { session } = stubSession()
+  let stored = true
+  const panel = [
+    {
+      head: 'lgv-showCenterLine',
+      change: () =>
+        stored
+          ? { path: ['lgv-showCenterLine'], from: false, to: true }
+          : undefined,
+      reset: () => {
+        stored = false
+      },
+    },
+  ]
+
+  expect(collectPreferenceChanges(session, panel).map(c => c.path)).toEqual([
+    ['lgv-showCenterLine'],
+  ])
+  resetPreferenceChange(
+    session,
+    { path: ['lgv-showCenterLine'], from: false, to: true },
+    panel,
+  )
+  expect(stored).toBe(false)
+  stored = true
+  resetAllPreferences(session, panel)
+  expect(stored).toBe(false)
 })

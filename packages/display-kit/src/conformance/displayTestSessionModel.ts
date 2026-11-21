@@ -1,6 +1,7 @@
 import { resolvePalette } from '@jbrowse/core/ui/palette'
 import { createJBrowseTheme } from '@jbrowse/core/ui/theme'
 import { types } from '@jbrowse/mobx-state-tree'
+import { observable } from 'mobx'
 
 import type { AnimationMode, SnackAction } from '@jbrowse/core/util'
 import type { IAnyModelType, Instance } from '@jbrowse/mobx-state-tree'
@@ -93,10 +94,15 @@ export function displayTestSessionModel<VIEW extends IAnyModelType>({
       // reason `notifications` is: a real widget tree would answer these
       // questions through a second model's rendering.
       openedWidgets: [] as Record<string, unknown>[],
+      // the user's preference overrides; unset reads as the stock default
+      preferencesOverrides: observable.map<string, unknown>(),
     }))
-    .views(() => ({
+    .views(self => ({
       getTrackById,
       baseTrackConfig,
+      getPreference(key: string) {
+        return self.preferencesOverrides.get(key)
+      },
     }))
     .actions(self => ({
       setView(view: Instance<VIEW>) {
@@ -138,6 +144,9 @@ export function displayTestSessionModel<VIEW extends IAnyModelType>({
         return widget
       },
       showWidget(_widget: unknown) {},
+      setPreferenceOverride(key: string, value: unknown) {
+        self.preferencesOverrides.set(key, value)
+      },
     }))
     .actions(self => ({
       openWidget(

@@ -1,3 +1,4 @@
+import { getSession } from '@jbrowse/core/util'
 import { AXIS_GUTTER_WIDTH_PX } from '@jbrowse/wiggle-core'
 import { fireEvent, render, screen } from '@testing-library/react'
 
@@ -97,6 +98,15 @@ describe('band chips on screen', () => {
   it('draws nothing with only one band up', () => {
     screenChips(() => {})
     expect(screen.queryByTestId('band_chips_coverage')).toBeNull()
+  })
+
+  it('draws no chips once the viewer turns band chips off', () => {
+    screenChips(d => {
+      d.setShowConservation(true)
+      getSession(d).setPreferenceOverride('showBandChips', false)
+    })
+    expect(screen.queryByTestId('band_chips_coverage')).toBeNull()
+    expect(screen.queryByTestId('band_chips_conservation')).toBeNull()
   })
 
   it('hides the coverage from its chip', () => {

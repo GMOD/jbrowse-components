@@ -1,5 +1,6 @@
 import { namesToBlock } from '@jbrowse/alignments-core'
 import { createJBrowseTheme } from '@jbrowse/core/ui'
+import { getSession } from '@jbrowse/core/util'
 import { GROUP_LABEL_HEIGHT } from '@jbrowse/display-kit/groupLabelStyle'
 import { ThemeProvider } from '@mui/material'
 import {
@@ -179,6 +180,15 @@ test('under a facet the coverage chip leads the topmost group chip', () => {
   const [firstGroupChip] = screen.getAllByTestId('group-label-chip')
   expect(within(firstGroupChip!).getByTitle('Hide coverage')).toBeTruthy()
   expect(screen.queryByTestId('band_chips_coverage')).toBeNull()
+})
+
+test('with band chips turned off, no band or group chip carries one', () => {
+  const display = facetedWithArcs()
+  getSession(display).setPreferenceOverride('showBandChips', false)
+  renderOverlays(display)
+  const [firstGroupChip] = screen.getAllByTestId('group-label-chip')
+  expect(within(firstGroupChip!).queryByTitle('Hide coverage')).toBeNull()
+  expect(screen.queryByTestId(/^band_chips_/)).toBeNull()
 })
 
 test('under a facet with coverage hidden, the strip heading the first lane leads the topmost group chip', () => {
