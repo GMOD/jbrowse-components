@@ -108,7 +108,7 @@ jb2export batch --sites COLO829.somatic-sv.vcf.gz \
 <Figure caption="Rows of the two batch directories, tumor on the left and normal on the right, each labelled with its file name." src="/img/jbrowse-img/sv_callset_sheet.png" />
 
 The caller filed `009_chr1_168055349-chr19_23850381` as somatic, but the normal
-has the same joining reads, so the junction is germline.
+has split reads joining the same two ends, so the junction is germline.
 
 ## Sorting the calls with the manifest
 
@@ -124,8 +124,8 @@ Each `manifest.tsv` row describes one image:
   opens the same windows in JBrowse.
 - **`line`** is the record's line in the VCF, to join a row back to the callset.
 
-A dense fan in a region of ragged coverage is usually a repeat, since a read
-mismapped there draws an arc like any other.
+A dense fan in a region of ragged coverage is usually a repeat, since the view
+draws an arc for a read mismapped there as for any other.
 
 ## Reviewing the calls as a queue
 

@@ -1653,9 +1653,9 @@ Usage: jb2export batch --sites <file> [options]
 Renders one image per record, a linear view of its windows side by side:
 the two ends of a deletion, a duplication, an inversion or a junction
 between contigs, or one window where --flank reaches from one end to the
-other. A contig's windows sit together, in genome order. An event of many
-loci shares the one row among its windows, so a wider --width gives each
-more room.
+other. Windows on one contig are adjacent, in genome order. An event of
+many loci puts all its windows in the one row, so pass a wider --width to
+give each window more room.
 
 The reads joining an image's windows are drawn between them as arcs, and
 the manifest counts them. Each alignments track lays out its SV evidence
