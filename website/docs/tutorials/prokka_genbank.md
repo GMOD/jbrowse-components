@@ -106,6 +106,7 @@ names in your FASTA and in any reads mapped to it.
 
 ## Loading the genome and the genes
 
+We'll run the JBrowse commands from the `annotation` folder, beside `sakai.gbk`.
 The GenBank file is the genome, and `circularRefNames` lists the contigs that
 are rings, since Prokka writes every record as linear. On your own assembly,
 Flye's `assembly_info.txt` marks each circular contig `Y`. The add-genome form
