@@ -63,8 +63,8 @@ test('a preference held outside the map is reported once', () => {
   })
   const { getAllByText, getByText } = openResetDialog(session)
 
-  expect(getAllByText('stickyViewHeaders')).toHaveLength(1)
-  expect(getByText('scrollZoom')).toBeTruthy()
+  expect(getAllByText('Keep view header visible')).toHaveLength(1)
+  expect(getByText('Zoom on scroll')).toBeTruthy()
 })
 
 test('nothing to reset when every preference is at its default', () => {

@@ -342,7 +342,8 @@ an `onClick` gets nothing, `closeContextMenu` ran first.
   pileup), rides ahead of the topmost section chip (`leading`), as the
   variant display's records chips do. A strip drawing arcs that also draw
   over the histogram (`auto` junctions) is named on the strip alone. The
-  export draws none: they are controls.
+  export draws none: they are controls. The `showBandChips` preference
+  (`bandChipsShown`) hides them on screen, as it does MAF's.
 - **A display-wide render state carries no section offsets.** The model builds a
   `DisplayRenderState`; `sectionRenderState` adds a section's `pileupTopOffset`
   and `coverageTopOffset`, and marks draw and hit-test by that `RenderState`

@@ -1,11 +1,9 @@
-import {
-  SCROLL_ZOOM_HELP,
-  SCROLL_ZOOM_LABEL,
-} from '@jbrowse/core/ui/scrollZoomLabels'
+import { SCROLL_ZOOM_HELP } from '@jbrowse/core/ui/scrollZoomLabels'
 import { FormGroup } from '@mui/material'
 import { observer } from 'mobx-react'
 
 import PreferenceCheckbox from './PreferenceCheckbox.tsx'
+import { PREFERENCE_LABELS } from './preferenceLabels.ts'
 
 export interface ViewPreferencesSession {
   scrollZoom: boolean
@@ -27,7 +25,7 @@ const ViewPreferencesTab = observer(function ViewPreferencesTab({
     <FormGroup>
       <PreferenceCheckbox
         checked={session.scrollZoom}
-        label={SCROLL_ZOOM_LABEL}
+        label={PREFERENCE_LABELS.scrollZoom}
         help={SCROLL_ZOOM_HELP}
         onChange={checked => {
           session.setScrollZoom(checked)
@@ -35,7 +33,7 @@ const ViewPreferencesTab = observer(function ViewPreferencesTab({
       />
       <PreferenceCheckbox
         checked={session.stickyViewHeaders}
-        label="Keep view header visible"
+        label={PREFERENCE_LABELS.stickyViewHeaders}
         help="The view header stays at the top of the page while its tracks scroll under it."
         onChange={checked => {
           session.setStickyViewHeaders(checked)
@@ -43,7 +41,7 @@ const ViewPreferencesTab = observer(function ViewPreferencesTab({
       />
       <PreferenceCheckbox
         checked={session.getPreference('showBandChips') !== false}
-        label="Name the bands inside a track"
+        label={PREFERENCE_LABELS.showBandChips}
         help="Chips such as Coverage × and Pileup × over the top-left of each band of an alignments or MAF track. The track menu shows and hides bands either way."
         onChange={checked => {
           session.setPreferenceOverride('showBandChips', checked)

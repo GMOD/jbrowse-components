@@ -82,3 +82,14 @@ test("a panel's own preferences list and reset with the rest", () => {
   resetAllPreferences(session, panel)
   expect(stored).toBe(false)
 })
+
+test('the reset rows read as the preferences dialog names them', () => {
+  const { session, scalars } = stubSession()
+  scalars.set('scrollZoom', { path: ['scrollZoom'], from: false, to: true })
+  scalars.set('fromAPlugin', { path: ['fromAPlugin'], from: 1, to: 2 })
+  session.stickyViewHeaders = false
+
+  expect(
+    collectPreferenceChanges(session).map(c => c.label ?? c.path.join('.')),
+  ).toEqual(['Zoom on scroll', 'fromAPlugin', 'Keep view header visible'])
+})

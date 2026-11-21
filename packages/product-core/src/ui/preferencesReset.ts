@@ -1,3 +1,5 @@
+import { labelPreferenceChange } from './preferenceLabels.ts'
+
 import type { TrackConfigChange } from '@jbrowse/core/util'
 
 export interface ResettablePreferencesSession {
@@ -70,7 +72,7 @@ export function collectPreferenceChanges(
   return [
     ...session.getPreferenceChanges().filter(c => !heads.has(c.path[0]!)),
     ...nonMap.map(p => p.change(session)).filter(c => c !== undefined),
-  ]
+  ].map(labelPreferenceChange)
 }
 
 export function resetAllPreferences(

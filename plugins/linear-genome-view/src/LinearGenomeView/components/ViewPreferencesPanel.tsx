@@ -4,7 +4,7 @@ import { LabeledCheckbox } from '@jbrowse/core/ui'
 import { subscribeToLocalStorageKey } from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { VIEW_TRACK_LABEL_MODES } from '@jbrowse/display-kit/types'
-import { FormGroup, MenuItem, TextField, Typography } from '@mui/material'
+import { FormGroup, MenuItem, TextField } from '@mui/material'
 import { observer } from 'mobx-react'
 
 import {
@@ -22,7 +22,7 @@ import type { LgvToggle } from '../viewPreferences.ts'
 
 const useStyles = makeStyles()({
   field: {
-    marginTop: 16,
+    marginTop: 8,
     marginBottom: 8,
     display: 'block',
   },
@@ -64,10 +64,6 @@ const ViewPreferencesPanel = observer(function ViewPreferencesPanel({
   const trackLabels = useStored(TRACK_LABELS_KEY, storedTrackLabels)
   return (
     <>
-      <Typography variant="body2" color="text.secondary">
-        Applies to every open linear genome view and the ones you open next.
-        Each view&apos;s own menu changes these too.
-      </Typography>
       <TextField
         select
         variant="outlined"

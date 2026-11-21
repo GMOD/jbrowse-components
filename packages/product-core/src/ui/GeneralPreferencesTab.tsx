@@ -3,6 +3,7 @@ import { FormGroup, MenuItem, TextField } from '@mui/material'
 import { observer } from 'mobx-react'
 
 import PreferenceCheckbox from './PreferenceCheckbox.tsx'
+import { PREFERENCE_LABELS } from './preferenceLabels.ts'
 
 import type { ThemeModeSelection } from '../Session/Themes.ts'
 import type { ThemeMap } from '@jbrowse/core/ui'
@@ -51,7 +52,7 @@ const GeneralPreferencesTab = observer(function GeneralPreferencesTab({
         select
         variant="outlined"
         className={classes.field}
-        label="Theme"
+        label={PREFERENCE_LABELS.theme}
         value={session.themeName}
         onChange={event => {
           session.setThemeName(event.target.value)
@@ -67,7 +68,7 @@ const GeneralPreferencesTab = observer(function GeneralPreferencesTab({
         select
         variant="outlined"
         className={classes.field}
-        label="Light/dark"
+        label={PREFERENCE_LABELS.themeMode}
         value={session.themeMode}
         helperText={
           session.darkReaderDark
@@ -91,7 +92,7 @@ const GeneralPreferencesTab = observer(function GeneralPreferencesTab({
         select
         variant="outlined"
         className={classes.field}
-        label="Animations"
+        label={PREFERENCE_LABELS.animationMode}
         value={session.animationMode}
         onChange={event => {
           session.setPreferenceOverride('animationMode', event.target.value)
@@ -106,7 +107,7 @@ const GeneralPreferencesTab = observer(function GeneralPreferencesTab({
       <FormGroup>
         <PreferenceCheckbox
           checked={session.numberGrouping}
-          label="Thousand separators in numbers"
+          label={PREFERENCE_LABELS.numberGrouping}
           help="Shows chr1:1,234,567 rather than chr1:1234567. Takes effect after reloading the page."
           onChange={checked => {
             session.setPreferenceOverride('numberGrouping', checked)

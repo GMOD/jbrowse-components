@@ -13,11 +13,11 @@ import LinearGenomeViewF from './LinearGenomeView/index.ts'
 import { LGV_RESETTABLE } from './LinearGenomeView/viewPreferences.ts'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
+import type { AbstractViewContainer } from '@jbrowse/core/util'
 
 const ViewPreferencesPanel = lazy(
   () => import('./LinearGenomeView/components/ViewPreferencesPanel.tsx'),
 )
-import type { AbstractViewContainer } from '@jbrowse/core/util'
 
 export default class LinearGenomeViewPlugin extends Plugin {
   name = 'LinearGenomeViewPlugin'
