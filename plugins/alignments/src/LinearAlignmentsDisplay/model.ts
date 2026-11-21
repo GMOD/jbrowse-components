@@ -204,9 +204,6 @@ const AlignmentsTooltip = lazy(
 
 export type { AlignmentLane }
 
-// One identity, so `groupSizesInEffect` hands the layout no fresh map per
-// read.
-
 // One frozen empty array, so the common no-arcs frame invalidates no observer.
 // Frozen so no caller's in-place `.sort()` corrupts the singleton.
 const NO_JUNCTION_LABELS = Object.freeze([]) as readonly JunctionLabel[]
@@ -2012,15 +2009,6 @@ function stateModelFactory(
       }))
   )
 }
-
-// Re-exported so LGVSyntenyDisplay's emitted .d.ts can name every type the
-// inferred model mentions; without it the ESM build reports TS2883.
-export type { ArcCategory } from '../shaders/palettes.ts'
-export type { ThemedSources } from './themedViews.ts'
-export type { InsertSizeBand } from '../shared/insertSizeStats.ts'
-export type { OverlapLegendRow } from '../shared/legendUtils.ts'
-export type { DeclaredFilters } from './dialogs/layerFilters.ts'
-export type { GroupLayoutContext, GroupSize } from './groupLayout.ts'
 
 type ModelParts<M> =
   M extends IModelType<infer P, infer O, infer C, infer S>
