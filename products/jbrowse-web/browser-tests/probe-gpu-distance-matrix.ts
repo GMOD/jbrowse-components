@@ -78,7 +78,7 @@ function readMatrix(file: string) {
 const MAC_CHROME =
   '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome'
 
-// 0/1/2 dosages at a per-site allele frequency, the shape getGenotypeMatrix
+// 0/1/2 dosages at a per-site allele frequency, the shape dosageMatrixOf
 // emits for a diploid panel with no missing calls. Same generator on both
 // sides so the CPU and GPU runs see one matrix.
 function genotypes(n: number, v: number, seed: number, fractional: boolean) {

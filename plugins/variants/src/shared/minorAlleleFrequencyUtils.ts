@@ -8,7 +8,7 @@ import {
 import { hasProcessGenotypes } from './hasProcessGenotypes.ts'
 
 import type SerializableFilterChain from '@jbrowse/core/pluggableElementTypes/renderers/util/serializableFilterChain'
-import type { Feature, ProgressReporter } from '@jbrowse/core/util'
+import type { Feature } from '@jbrowse/core/util'
 import type { FieldPredicate } from '@jbrowse/core/util/fieldPredicate'
 
 export interface AlleleSummary {
@@ -178,28 +178,4 @@ export function filterVariant(
   return passesSite(summary)
     ? { feature, mostFrequentAlt: summary.mostFrequentAlt }
     : undefined
-}
-
-/** `filterVariant` over a fetch, for the cell, matrix and cluster paths. */
-export function getFilteredVariants({
-  features,
-  filterChain,
-  report,
-  siteFilter,
-}: {
-  features: Iterable<Feature>
-  siteFilter?: readonly FieldPredicate[]
-  filterChain?: SerializableFilterChain
-  report?: ProgressReporter
-}) {
-  const passesSite = compileSiteFilter(siteFilter)
-  const results: FilteredVariant[] = []
-  for (const feature of features) {
-    const kept = filterVariant(feature, passesSite, filterChain)
-    if (kept) {
-      results.push(kept)
-    }
-    report?.()
-  }
-  return results
 }

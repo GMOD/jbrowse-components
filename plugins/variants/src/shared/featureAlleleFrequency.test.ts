@@ -17,7 +17,8 @@ import {
 import {
   calculateMinorAlleleFrequency,
   calculateMissingnessFrequency,
-  getFilteredVariants,
+  compileSiteFilter,
+  filterVariant,
   summarizeAlleleCounts,
 } from './minorAlleleFrequencyUtils.ts'
 
@@ -249,18 +250,14 @@ describe('hand-written genotypes', () => {
 // A genotypes Record is keyed by sample name, so a header repeating one keeps
 // only its last column. The scan counts every column, as the display's own MAF
 // filter always has; VCF 4.3 disallows duplicate sample IDs.
-test('a duplicated sample ID counts every column, as getFilteredVariants does', () => {
+test('a duplicated sample ID counts every column, as filterVariant does', () => {
   const parser = makeParser(['a', 'a', 'b'])
   const feature = vcfFeature(
     parser,
     'chr1\t100\t.\tA\tC\t50\tPASS\t.\tGT\t1/1\t0/0\t0/1',
     'dup',
   )
-  const [variant] = getFilteredVariants({
-    features: [feature],
-    siteFilter: [],
-  })
-  expect(variant).toBeDefined()
+  expect(filterVariant(feature, compileSiteFilter([]))).toBeDefined()
   const display = summarizeAlleleCounts(calculateAlleleCountsFast(feature))
   const context = buildJexlContext({ feature })
   expect(mafExpr.eval(context)).toBe(display.minorAlleleFrequency)

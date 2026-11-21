@@ -1,4 +1,4 @@
-import { getGenotypeMatrix } from './getGenotypeMatrix.ts'
+import { buildGenotypeMatrix } from './buildGenotypeMatrix.ts'
 
 import type { Feature } from '@jbrowse/core/util'
 
@@ -53,7 +53,7 @@ function makeVcfFeature(
 
 async function build(features: Feature[], sources: { name: string }[]) {
   mockGetFeatures.mockResolvedValue(features)
-  return getGenotypeMatrix({
+  return buildGenotypeMatrix({
     // the mocked getFeatureAdapterOrThrow ignores it
     pluginManager: undefined as never,
     args: {
@@ -68,7 +68,7 @@ async function build(features: Feature[], sources: { name: string }[]) {
 
 const sources = [{ name: 'HG001' }, { name: 'HG002' }]
 
-describe('getGenotypeMatrix (genotypes-Record path)', () => {
+describe('buildGenotypeMatrix by sample (genotypes-Record path)', () => {
   test('encodes dosage, with a no-call as NaN rather than a value', async () => {
     const rows = await build(
       [
@@ -133,7 +133,7 @@ describe('getGenotypeMatrix (genotypes-Record path)', () => {
   })
 })
 
-describe('getGenotypeMatrix (processGenotypes fast path)', () => {
+describe('buildGenotypeMatrix by sample (processGenotypes fast path)', () => {
   const sampleNames = ['HG001', 'HG002']
 
   test('agrees with the genotypes-Record path', async () => {
@@ -208,7 +208,7 @@ describe('getGenotypeMatrix (processGenotypes fast path)', () => {
 // against a neighbouring sample. Every write stays in bounds, so nothing errors
 // — the dendrogram simply groups samples by someone else's calls, and the row
 // order it writes outlives the run.
-describe('getGenotypeMatrix across two VCF headers', () => {
+describe('buildGenotypeMatrix by sample across two VCF headers', () => {
   // identity-stable per file, as one parser's features are
   const chr1Header = ['FEMALE', 'MALE1', 'MALE2']
   const chrYHeader = ['MALE1', 'MALE2']

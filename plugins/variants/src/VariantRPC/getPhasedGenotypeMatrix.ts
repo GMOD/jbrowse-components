@@ -4,25 +4,9 @@ import {
   MISSING,
   readPhasedAlleleIndicators,
 } from './genotypeMatrixEncoding.ts'
-import { prepareMatrixWalk } from './matrixWalk.ts'
 
 import type { Source } from '../shared/types.ts'
-import type { MatrixWalk, MatrixWalkArgs } from './matrixWalk.ts'
-import type PluginManager from '@jbrowse/core/PluginManager'
-
-export async function getPhasedGenotypeMatrix({
-  pluginManager,
-  args,
-}: {
-  pluginManager: PluginManager
-  args: MatrixWalkArgs & { samplePloidy: Record<string, number> }
-}) {
-  return phasedMatrixOf(
-    await prepareMatrixWalk({ pluginManager, args }),
-    args.sources,
-    args.samplePloidy,
-  )
-}
+import type { MatrixWalk } from './matrixWalk.ts'
 
 /**
  * A row per haplotype of `sources` of whether it carries an ALT at each of
@@ -55,7 +39,7 @@ export async function phasedMatrixOf(
   // insertions and deletions the merged column could no longer tell apart.
   // Collapsing alleles that are one event belongs in the data build.
   const numFeatures = features.length
-  // Map, keyed in `rowSpecs` order — see getGenotypeMatrix.
+  // Map, keyed in `rowSpecs` order — see dosageMatrixOf.
   const rows = new Map<string, Float32Array>()
   const rowArrays = rowSpecs.map(spec => {
     const arr = new Float32Array(numFeatures)
@@ -111,7 +95,7 @@ export async function phasedMatrixOf(
           idx === -1 ? MISSING : indicators[idx * maxPloidy + rowHp[k]!]!
       }
     } else {
-      // `?? {}` for the sites-only case — see getGenotypeMatrix.
+      // `?? {}` for the sites-only case — see dosageMatrixOf.
       const genotypes =
         (feature.get('genotypes') as Record<string, string> | undefined) ?? {}
       // a sample's genotype is scanned once for each run of its adjacent rows

@@ -1,4 +1,4 @@
-import { getPhasedGenotypeMatrix } from './getPhasedGenotypeMatrix.ts'
+import { buildGenotypeMatrix } from './buildGenotypeMatrix.ts'
 
 import type { Feature } from '@jbrowse/core/util'
 
@@ -59,7 +59,7 @@ async function build({
   samplePloidy: Record<string, number>
 }) {
   mockGetFeatures.mockResolvedValue(features)
-  return getPhasedGenotypeMatrix({
+  return buildGenotypeMatrix({
     // the mocked getFeatureAdapterOrThrow ignores it
     pluginManager: undefined as never,
     args: {
@@ -68,6 +68,7 @@ async function build({
       regions: [{ refName: 'chr1', start: 0, end: 100, assemblyName: 'test' }],
       sources,
       siteFilter: [],
+      rowsField: 'haplotype',
       samplePloidy,
     },
   })
@@ -75,7 +76,7 @@ async function build({
 
 const diploid = 2
 
-describe('getPhasedGenotypeMatrix', () => {
+describe('buildGenotypeMatrix by haplotype', () => {
   test('emits one row per haplotype, in sample then HP order', async () => {
     const rows = await build({
       features: [makeFeature('v1', { HG001: '0|1', HG002: '1|1' })],
@@ -210,7 +211,7 @@ describe('getPhasedGenotypeMatrix', () => {
 // which is exactly how the three consumers of a haploid genotype were free to
 // disagree. 1000G chrX non-PAR is the canonical instance: haploid males beside
 // phased diploid females.
-describe('getPhasedGenotypeMatrix mixed ploidy', () => {
+describe('buildGenotypeMatrix by haplotype, mixed ploidy', () => {
   const haploid = 1
 
   test('a haploid call fills its one haplotype row and no other', async () => {
@@ -258,7 +259,7 @@ describe('getPhasedGenotypeMatrix mixed ploidy', () => {
 // Mixed ploidy on purpose: chrY males are haploid while everyone is diploid on
 // chr1, so `samplePloidy` carries the max and the haploid call has to land on HP1
 // and leave HP2 with nothing to say.
-describe('getPhasedGenotypeMatrix across two VCF headers', () => {
+describe('buildGenotypeMatrix by haplotype, across two VCF headers', () => {
   // identity-stable per file, as one parser's features are
   const chr1Header = ['FEMALE', 'MALE1', 'MALE2']
   const chrYHeader = ['MALE1', 'MALE2']

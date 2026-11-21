@@ -5,11 +5,26 @@ import { calculateAlleleCounts } from './alleleCounts.ts'
 import {
   calculateMinorAlleleFrequency,
   calculateMissingnessFrequency,
-  getFilteredVariants,
+  compileSiteFilter,
+  filterVariant,
   summarizeAlleleCounts,
 } from './minorAlleleFrequencyUtils.ts'
 
 import type { Feature } from '@jbrowse/core/util'
+import type { FieldPredicate } from '@jbrowse/core/util/fieldPredicate'
+
+function keptVariants({
+  features,
+  siteFilter,
+  filterChain,
+}: {
+  features: Feature[]
+  siteFilter: FieldPredicate[]
+  filterChain?: SerializableFilterChain
+}) {
+  const passesSite = compileSiteFilter(siteFilter)
+  return features.flatMap(f => filterVariant(f, passesSite, filterChain) ?? [])
+}
 
 // Mock feature for testing
 function createMockFeature(
@@ -284,7 +299,7 @@ describe('calculateMinorAlleleFrequency edge cases', () => {
   })
 })
 
-describe('getFilteredVariants', () => {
+describe('filterVariant with compileSiteFilter', () => {
   it('filters out variants below MAF threshold', () => {
     const features = [
       // MAF = 0.1 (should be filtered with threshold 0.2)
@@ -305,7 +320,7 @@ describe('getFilteredVariants', () => {
       }),
     ]
 
-    const result = getFilteredVariants({
+    const result = keptVariants({
       features,
       siteFilter: [{ field: 'minorAlleleFrequency', gte: 0.2 }],
     })
@@ -322,7 +337,7 @@ describe('getFilteredVariants', () => {
       createMockFeature('indel1', 200, 250, { s1: '0/1', s2: '0/1' }),
     ]
 
-    const result = getFilteredVariants({
+    const result = keptVariants({
       features,
       siteFilter: [],
       filterChain: new SerializableFilterChain({
@@ -346,7 +361,7 @@ describe('getFilteredVariants', () => {
       }),
     ]
 
-    const result = getFilteredVariants({
+    const result = keptVariants({
       features,
       siteFilter: [],
     })
@@ -366,7 +381,7 @@ describe('getFilteredVariants', () => {
       }),
     ]
 
-    const result = getFilteredVariants({
+    const result = keptVariants({
       features,
       siteFilter: [],
     })
@@ -387,7 +402,7 @@ describe('getFilteredVariants', () => {
       }),
     ]
 
-    const result = getFilteredVariants({
+    const result = keptVariants({
       features,
       siteFilter: [{ field: 'minorAlleleFrequency', gte: 0.01 }],
     })
@@ -403,7 +418,7 @@ describe('getFilteredVariants', () => {
       createMockFeature('allAlt', 200, 201, { s1: '1/1', s2: '1/1' }),
     ]
 
-    const result = getFilteredVariants({
+    const result = keptVariants({
       features,
       siteFilter: [],
     })
@@ -421,7 +436,7 @@ describe('getFilteredVariants', () => {
       createMockFeature('sitesOnly', 200, 201, {}),
     ]
 
-    expect(getFilteredVariants({ features, siteFilter: [] })).toHaveLength(0)
+    expect(keptVariants({ features, siteFilter: [] })).toHaveLength(0)
   })
 
   it('keeps variant at exact MAF threshold', () => {
@@ -437,7 +452,7 @@ describe('getFilteredVariants', () => {
       }),
     ]
 
-    const result = getFilteredVariants({
+    const result = keptVariants({
       features: features2,
       siteFilter: [{ field: 'minorAlleleFrequency', gte: 0.2 }],
     })
@@ -446,7 +461,7 @@ describe('getFilteredVariants', () => {
   })
 
   it('handles empty feature list', () => {
-    const result = getFilteredVariants({
+    const result = keptVariants({
       features: [],
       siteFilter: [{ field: 'minorAlleleFrequency', gte: 0.01 }],
     })
@@ -474,7 +489,7 @@ describe('getFilteredVariants', () => {
       }),
     ]
 
-    const result = getFilteredVariants({
+    const result = keptVariants({
       features,
       siteFilter: [{ field: 'missingness', lte: 0.5 }],
     })
@@ -495,14 +510,14 @@ describe('getFilteredVariants', () => {
     ]
 
     expect(
-      getFilteredVariants({
+      keptVariants({
         features,
         siteFilter: [],
       }),
     ).toHaveLength(1)
     // undefined behaves the same as the no-filter ceiling
     expect(
-      getFilteredVariants({
+      keptVariants({
         features,
         siteFilter: [],
       }),
@@ -522,7 +537,7 @@ describe('getFilteredVariants', () => {
     ]
 
     expect(
-      getFilteredVariants({
+      keptVariants({
         features,
         siteFilter: [{ field: 'missingness', lte: 0.4 }],
       }),

@@ -13,7 +13,7 @@ declare module '@jbrowse/core/rpc/RpcRegistry' {
       return: Map<string, Float32Array>
       // One row per sample, each a full-width Float32Array — a cohort-sized
       // matrix, structure-cloned per call until the walk could see into a Map.
-      // `getGenotypeMatrix` and `getPhasedGenotypeMatrix` each allocate the Map
+      // `dosageMatrixOf` and `phasedMatrixOf` each allocate the Map
       // and every row inside the call, so there is nothing held across calls
       // for the transfer to detach.
       transferables: true

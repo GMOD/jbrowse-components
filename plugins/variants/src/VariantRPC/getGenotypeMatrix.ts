@@ -1,25 +1,10 @@
 import { resolveSampleName } from '../shared/getSources.ts'
 import { hasProcessGenotypes } from '../shared/hasProcessGenotypes.ts'
 import { MISSING, readAltDosages } from './genotypeMatrixEncoding.ts'
-import { prepareMatrixWalk } from './matrixWalk.ts'
 
 import type { Source } from '../shared/types.ts'
-import type { MatrixWalk, MatrixWalkArgs } from './matrixWalk.ts'
-import type PluginManager from '@jbrowse/core/PluginManager'
+import type { MatrixWalk } from './matrixWalk.ts'
 import type { Feature } from '@jbrowse/core/util'
-
-export async function getGenotypeMatrix({
-  pluginManager,
-  args,
-}: {
-  pluginManager: PluginManager
-  args: MatrixWalkArgs
-}) {
-  return dosageMatrixOf(
-    await prepareMatrixWalk({ pluginManager, args }),
-    args.sources,
-  )
-}
 
 /**
  * The columns a record takes in the dosage matrix, one per ALT allele, and at

@@ -4,7 +4,7 @@
 // loops, arms interleaved, min over rounds:
 //
 // - the site test alone, over every record's precomputed allele summary
-// - the whole per-record path (`getFilteredVariants`): allele counts, then
+// - the whole per-record path (`filterVariant`): allele counts, then
 //   the test, which is what a fetch pays
 //
 //   node plugins/variants/benches/siteFilter.bench.ts
@@ -22,7 +22,7 @@ import VcfFeature from '../src/VcfFeature/index.ts'
 import { calculateAlleleCountsFast } from '../src/shared/alleleCounts.ts'
 import {
   compileSiteFilter,
-  getFilteredVariants,
+  filterVariant,
   summarizeAlleleCounts,
 } from '../src/shared/minorAlleleFrequencyUtils.ts'
 
@@ -110,7 +110,13 @@ function handPath() {
 }
 
 function compiledPath() {
-  return getFilteredVariants({ features, siteFilter: SITE_FILTER }).length
+  let kept = 0
+  for (const f of features) {
+    if (filterVariant(f, compiledTest)) {
+      kept++
+    }
+  }
+  return kept
 }
 
 const arms = {
