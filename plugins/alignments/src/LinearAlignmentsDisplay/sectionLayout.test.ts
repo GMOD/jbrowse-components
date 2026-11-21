@@ -48,11 +48,10 @@ function stack(lanes: TestLane[], o: StackOpts) {
       showCoverage: o.showCoverage ?? true,
       coverageHeight: o.coverageHeight,
       drawnReadConnections: o.drawnReadConnections ?? 'off',
-      readConnectionsDown: o.readConnectionsDown ?? false,
-      readConnectionsAbove: o.readConnectionsAbove ?? false,
+      readConnectionsPlacement: o.readConnectionsPlacement ?? 'overlay',
       readConnectionsHeight: o.readConnectionsHeight ?? 0,
       showJunctions: o.showJunctions ?? false,
-      junctionsAbove: o.junctionsAbove ?? false,
+      junctionsPlacement: o.junctionsPlacement ?? 'below',
       junctionsHeight: o.junctionsHeight ?? 0,
     },
     {
@@ -87,11 +86,10 @@ const baseBands: BandsInput = {
   showCoverage: true,
   coverageHeight: 45,
   drawnReadConnections: 'off',
-  readConnectionsDown: false,
-  readConnectionsAbove: false,
+  readConnectionsPlacement: 'overlay',
   readConnectionsHeight: 40,
   showJunctions: false,
-  junctionsAbove: false,
+  junctionsPlacement: 'below',
   junctionsHeight: 40,
   hasArcs: true,
   hasJunctionsStripArcs: false,
@@ -111,7 +109,7 @@ test('laneBands: below-mode arcs reserve their own band', () => {
   const r = bandsOf({
     ...baseBands,
     drawnReadConnections: 'link',
-    readConnectionsDown: true,
+    readConnectionsPlacement: 'below',
   })
   expect(r.stack.reserved.readConnections).toBe(40)
   expect(r.stack.bottom).toBe(45 + 40)
@@ -127,7 +125,7 @@ test('laneBands: no arcs anywhere reserves no arc band', () => {
   const r = bandsOf({
     ...baseBands,
     drawnReadConnections: 'link',
-    readConnectionsDown: true,
+    readConnectionsPlacement: 'below',
     hasArcs: false,
   })
   expect(r.stack.reserved.readConnections).toBe(0)
@@ -141,7 +139,7 @@ test.each([true, false])(
   hasArcs => {
     const settings = {
       drawnReadConnections: 'link',
-      readConnectionsDown: true,
+      readConnectionsPlacement: 'below',
       showCoverage: true,
       coverageHeight: 45,
       readConnectionsHeight: 40,
@@ -164,7 +162,7 @@ test('laneBands: overlay-mode arcs overlay coverage (no reserved band)', () => {
   const r = bandsOf({
     ...baseBands,
     drawnReadConnections: 'link',
-    readConnectionsDown: false,
+    readConnectionsPlacement: 'overlay',
   })
   expect(r.stack.reserved.readConnections).toBe(0)
   expect(r.stack.bottom).toBe(45)
@@ -235,15 +233,21 @@ describe('where the arcs draw', () => {
 
   test('below mode sits below coverage', () => {
     expect(
-      bandsOf({ ...arcs, readConnectionsDown: true, coverageHeight: 80 })
-        .arcBand,
+      bandsOf({
+        ...arcs,
+        readConnectionsPlacement: 'below',
+        coverageHeight: 80,
+      }).arcBand,
     ).toEqual({ top: 80, height: 60, down: true })
   })
 
   test('below mode heads the stack with coverage hidden', () => {
     expect(
-      bandsOf({ ...arcs, readConnectionsDown: true, showCoverage: false })
-        .arcBand,
+      bandsOf({
+        ...arcs,
+        readConnectionsPlacement: 'below',
+        showCoverage: false,
+      }).arcBand,
     ).toEqual({ top: 0, height: 60, down: true })
   })
 })
@@ -293,7 +297,7 @@ test('arc band then junctions band stack below coverage', () => {
     bandsOf({
       ...baseBands,
       drawnReadConnections: 'link',
-      readConnectionsDown: true,
+      readConnectionsPlacement: 'below',
       readConnectionsHeight: 200,
       showJunctions: true,
       junctionsHeight: 100,
@@ -316,7 +320,7 @@ test('below-mode arcs reserve a band per section, pushing pileups down', () => {
       coverageHeight: 40,
       rowHeight: 10,
       drawnReadConnections: 'link',
-      readConnectionsDown: true,
+      readConnectionsPlacement: 'below',
       readConnectionsHeight: 100,
     },
   )
@@ -341,7 +345,7 @@ test('an arc-less lane reserves no arc band, so the ones with arcs shift up', ()
       coverageHeight: 40,
       rowHeight: 10,
       drawnReadConnections: 'link',
-      readConnectionsDown: true,
+      readConnectionsPlacement: 'below',
       readConnectionsHeight: 100,
     },
   )
@@ -362,7 +366,7 @@ test('an arc-less lane drops its overlay-mode draw band too', () => {
       coverageHeight: 40,
       rowHeight: 10,
       drawnReadConnections: 'link',
-      readConnectionsDown: false,
+      readConnectionsPlacement: 'overlay',
       readConnectionsHeight: 100,
     },
   )
@@ -399,7 +403,7 @@ test('both strips stack for a lane that has arcs and junctions', () => {
       coverageHeight: 40,
       rowHeight: 10,
       drawnReadConnections: 'link',
-      readConnectionsDown: true,
+      readConnectionsPlacement: 'below',
       readConnectionsHeight: 100,
       showJunctions: true,
       junctionsHeight: 30,
@@ -440,7 +444,7 @@ describe('the junctions strip above coverage', () => {
     rowHeight: 10,
     showJunctions: true,
     junctionsHeight: 30,
-    junctionsAbove: true,
+    junctionsPlacement: 'above' as const,
   }
 
   test('heads the stack, and the coverage band starts under it', () => {
@@ -509,7 +513,7 @@ describe('the junctions strip above coverage', () => {
           hasJunctionsStripArcs: true,
         }),
       ],
-      { ...above, junctionsAbove: false },
+      { ...above, junctionsPlacement: 'below' },
     )
     expect(below.sections[0]).toMatchObject({
       bands: {
@@ -621,7 +625,7 @@ describe('the read connections strip above coverage', () => {
     rowHeight: 10,
     drawnReadConnections: 'link' as const,
     readConnectionsHeight: 50,
-    readConnectionsAbove: true,
+    readConnectionsPlacement: 'above' as const,
   }
 
   test('heads the stack with its arcs rising, and overlays nothing', () => {
@@ -673,7 +677,7 @@ describe('the read connections strip above coverage', () => {
         ...above,
         showJunctions: true,
         junctionsHeight: 30,
-        junctionsAbove: true,
+        junctionsPlacement: 'above',
       },
     )
     expect(layout.sections[0]).toMatchObject({
@@ -700,7 +704,7 @@ test('overlay-mode arcs overlay coverage: no reserved band, draw band at coverag
       coverageHeight: 40,
       rowHeight: 10,
       drawnReadConnections: 'link',
-      readConnectionsDown: false,
+      readConnectionsPlacement: 'overlay',
       readConnectionsHeight: 100,
     },
   )
@@ -740,7 +744,7 @@ test("stackedBandGain counts a handle's own band plus the ones above it", () => 
       coverageHeight: 40,
       rowHeight: 10,
       drawnReadConnections: 'link',
-      readConnectionsDown: true,
+      readConnectionsPlacement: 'below',
       readConnectionsHeight: 30,
     },
   )
@@ -826,7 +830,7 @@ test('the below-mode arc draw band is the strip the section reserves', () => {
     coverageHeight: 45,
     rowHeight: 10,
     drawnReadConnections: 'link',
-    readConnectionsDown: true,
+    readConnectionsPlacement: 'below',
     readConnectionsHeight: 35,
   })
   const s = sections[0]!
@@ -936,7 +940,7 @@ const ungroupedArcs: SectionsLayout = stack([lane({ key: '', maxY: 4 })], {
   coverageHeight: 40,
   rowHeight: 10,
   drawnReadConnections: 'link',
-  readConnectionsDown: true,
+  readConnectionsPlacement: 'below',
   readConnectionsHeight: 100,
 })
 
@@ -946,7 +950,7 @@ const groupedArcs: SectionsLayout = stack(
     coverageHeight: 40,
     rowHeight: 10,
     drawnReadConnections: 'link',
-    readConnectionsDown: true,
+    readConnectionsPlacement: 'below',
     readConnectionsHeight: 100,
   },
 )

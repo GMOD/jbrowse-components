@@ -7,11 +7,10 @@ const SETTINGS: LaneBandsSettings = {
   showCoverage: true,
   coverageHeight: 45,
   drawnReadConnections: 'link',
-  readConnectionsDown: true,
-  readConnectionsAbove: false,
+  readConnectionsPlacement: 'below',
   readConnectionsHeight: 35,
   showJunctions: true,
-  junctionsAbove: false,
+  junctionsPlacement: 'below',
   junctionsHeight: 30,
 }
 
@@ -64,7 +63,9 @@ test('junctions over the coverage are named beside it, arcs in their strip', () 
 })
 
 test('arcs drawn up over the coverage are named in the coverage row', () => {
-  expect(chipsOf([{ hasArcs: true }], { readConnectionsDown: false })).toEqual([
+  expect(
+    chipsOf([{ hasArcs: true }], { readConnectionsPlacement: 'overlay' }),
+  ).toEqual([
     ['coverage', ['coverage', 'readConnections']],
     ['pileup', ['pileup']],
   ])
@@ -106,7 +107,7 @@ test('with coverage hidden, up arcs take a strip and are named there', () => {
   expect(
     chipsOf([{ hasArcs: true }], {
       showCoverage: false,
-      readConnectionsDown: false,
+      readConnectionsPlacement: 'overlay',
     }),
   ).toEqual([
     ['readConnections', ['readConnections']],
@@ -141,7 +142,7 @@ test('each row sits at the top of the band it names', () => {
 
 test('a strip above the coverage is named at its own top, the coverage below it', () => {
   const { sections } = lanesOf([{ hasJunctionsStripArcs: true }], {
-    junctionsAbove: true,
+    junctionsPlacement: 'above',
   })
   expect(
     bandChips(sections, true, false).rows.map(row => [row.band, row.top]),
@@ -176,7 +177,9 @@ test('under section chips, whichever row heads the first lane leads them', () =>
     ['readConnections'],
   ])
   expect(
-    leadingOf([{ hasJunctionsStripArcs: true }, {}], { junctionsAbove: true }),
+    leadingOf([{ hasJunctionsStripArcs: true }, {}], {
+      junctionsPlacement: 'above',
+    }),
   ).toEqual(['junctions', ['coverage', 'pileup']])
   expect(leadingOf(bothArcs, {}, false)).toEqual([
     undefined,

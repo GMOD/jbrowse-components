@@ -11,7 +11,11 @@ import { YSCALEBAR_LABEL_OFFSET } from '@jbrowse/wiggle-core/constants'
 import { bandScreenTop, contentScreenY } from './components/sectionScreen.ts'
 
 import type { ScrollModel } from './components/sectionScreen.ts'
-import type { ReadConnectionsMode } from './constants.ts'
+import type {
+  JunctionsPlacement,
+  ReadConnectionsMode,
+  ReadConnectionsPlacement,
+} from './constants.ts'
 import type { ArcBand, SectionRender } from './renderers/rendererTypes.ts'
 import type { Band, BandPlot, BandStack } from '@jbrowse/core/util/bandLayout'
 
@@ -45,15 +49,15 @@ const BOTH_ABOVE_BAND_ORDER: readonly LaneBandKey[] = [
  * coverage band; with both there the read connections lead, as they do below
  * it, which leaves the junctions' feet on the coverage they explain.
  */
-export function laneBandOrder(s: {
-  readConnectionsAbove: boolean
-  junctionsAbove: boolean
-}) {
-  return s.readConnectionsAbove
-    ? s.junctionsAbove
+export function laneBandOrder(
+  s: Pick<LaneBandsSettings, 'readConnectionsPlacement' | 'junctionsPlacement'>,
+) {
+  const junctionsAbove = s.junctionsPlacement === 'above'
+  return s.readConnectionsPlacement === 'above'
+    ? junctionsAbove
       ? BOTH_ABOVE_BAND_ORDER
       : READ_CONNECTIONS_ABOVE_BAND_ORDER
-    : s.junctionsAbove
+    : junctionsAbove
       ? JUNCTIONS_ABOVE_BAND_ORDER
       : LANE_BAND_ORDER
 }
@@ -191,14 +195,13 @@ export interface LaneBandsSettings {
   showCoverage: boolean
   coverageHeight: number
   drawnReadConnections: ReadConnectionsMode
-  // The arcs hang from their strip's top (`placement: 'below'`).
-  readConnectionsDown: boolean
-  // The strip stacks above the coverage band, its arcs rising from its floor
-  // (`placement: 'above'`).
-  readConnectionsAbove: boolean
+  // `below` hangs the arcs from their strip's top; `above` stacks the strip
+  // above the coverage band, its arcs rising from its floor.
+  readConnectionsPlacement: ReadConnectionsPlacement
   readConnectionsHeight: number
   showJunctions: boolean
-  junctionsAbove: boolean
+  // The effective placement (`effectiveJunctionsPlacement`).
+  junctionsPlacement: JunctionsPlacement
   junctionsHeight: number
 }
 
@@ -243,9 +246,7 @@ function coverageOverlayBand(stack: BandStack<LaneBandKey>) {
 // and take a strip of their own otherwise. Either strip is active only for a
 // lane with something to put in it.
 export function arcsOverlayCoverage(s: LaneBandsSettings) {
-  return (
-    !s.readConnectionsDown && !s.readConnectionsAbove && coverageReserves(s)
-  )
+  return s.readConnectionsPlacement === 'overlay' && coverageReserves(s)
 }
 
 function coverageReserves(s: LaneBandsSettings) {
@@ -294,7 +295,7 @@ export function laneBands(
       ? {
           top: stack.top.readConnections,
           height: stack.reserved.readConnections,
-          down: s.readConnectionsDown,
+          down: s.readConnectionsPlacement === 'below',
         }
       : arcsDrawn(s, lane)
         ? coverageOverlayBand(stack)

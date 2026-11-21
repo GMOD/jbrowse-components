@@ -177,7 +177,7 @@ function state(): RenderState {
     readConnectionsStrokeScale: arcStrokeScale(1),
     linkRegions: [{ anchorPx: 0, anchorBp: REGION_START, signedPxPerBp: 2 }],
     drawnReadConnections: 'off',
-    readConnectionsDown: false,
+    readConnectionsPlacement: 'overlay',
     readConnectionsHeight: 0,
     pileupTopOffset: 50,
     coverageTopOffset: 0,

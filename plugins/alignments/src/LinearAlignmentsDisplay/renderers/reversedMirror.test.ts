@@ -265,7 +265,7 @@ function state(overrides: Partial<RenderState> = {}): RenderState {
     drawsConnectors: false,
     readConnectionsStrokeScale: arcStrokeScale(1),
     drawnReadConnections: 'off',
-    readConnectionsDown: false,
+    readConnectionsPlacement: 'overlay',
     readConnectionsHeight: 0,
     pileupTopOffset: 0,
     coverageTopOffset: 0,

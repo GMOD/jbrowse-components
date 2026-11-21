@@ -9,7 +9,11 @@ import {
   pileupHiddenHeight,
 } from './sectionLayout.ts'
 
-import type { ReadConnectionsMode } from './constants.ts'
+import type {
+  JunctionsPlacement,
+  ReadConnectionsMode,
+  ReadConnectionsPlacement,
+} from './constants.ts'
 import type { LaneBandsSettings } from './sectionLayout.ts'
 import type { HeightMode } from '@jbrowse/display-kit/heightMode'
 
@@ -29,18 +33,17 @@ const HEIGHTS = [
 ]
 const CONNECTIONS: {
   mode: ReadConnectionsMode
-  down: boolean
-  above: boolean
+  placement: ReadConnectionsPlacement
 }[] = [
-  { mode: 'off', down: false, above: false },
-  { mode: 'link', down: true, above: false },
-  { mode: 'link', down: false, above: false },
-  { mode: 'link', down: false, above: true },
+  { mode: 'off', placement: 'overlay' },
+  { mode: 'link', placement: 'below' },
+  { mode: 'link', placement: 'overlay' },
+  { mode: 'link', placement: 'above' },
 ]
-const JUNCTIONS: { show: boolean; above: boolean }[] = [
-  { show: false, above: false },
-  { show: true, above: false },
-  { show: true, above: true },
+const JUNCTIONS: { show: boolean; placement: JunctionsPlacement }[] = [
+  { show: false, placement: 'below' },
+  { show: true, placement: 'below' },
+  { show: true, placement: 'above' },
 ]
 
 // Every band subset: coverage on or off, the connections off, down, up or
@@ -48,18 +51,17 @@ const JUNCTIONS: { show: boolean; above: boolean }[] = [
 // `STATED`.
 function* settingsCases(random: () => number) {
   for (const showCoverage of [true, false]) {
-    for (const { mode, down, above } of CONNECTIONS) {
+    for (const { mode, placement } of CONNECTIONS) {
       for (const junctions of JUNCTIONS) {
         const pick = () => STATED[Math.floor(random() * STATED.length)]!
         yield {
           showCoverage,
           coverageHeight: pick(),
           drawnReadConnections: mode,
-          readConnectionsDown: down,
-          readConnectionsAbove: above,
+          readConnectionsPlacement: placement,
           readConnectionsHeight: pick(),
           showJunctions: junctions.show,
-          junctionsAbove: junctions.above,
+          junctionsPlacement: junctions.placement,
           junctionsHeight: pick(),
         } satisfies LaneBandsSettings
       }
@@ -121,7 +123,7 @@ function remainderSplit(
   const room = Math.max(0, slot - MIN_BAND_HEIGHT)
   const arcsStrip =
     stated.drawnReadConnections !== 'off' &&
-    (stated.readConnectionsDown || stated.readConnectionsAbove) &&
+    stated.readConnectionsPlacement !== 'overlay' &&
     stated.hasArcs
   const readConnections = arcsStrip
     ? Math.min(stated.readConnectionsHeight, room)
@@ -192,11 +194,10 @@ describe('each lane gets a whole-px slot, its coverage taking what the strips le
     showCoverage: true,
     coverageHeight: 45,
     drawnReadConnections: 'link',
-    readConnectionsDown: true,
-    readConnectionsAbove: false,
+    readConnectionsPlacement: 'below',
     readConnectionsHeight: 35,
     showJunctions: false,
-    junctionsAbove: false,
+    junctionsPlacement: 'below',
     junctionsHeight: 40,
   }
 
@@ -278,7 +279,7 @@ describe('each lane gets a whole-px slot, its coverage taking what the strips le
 
   it('overlays up arcs on the stretched coverage, reserving no strip', () => {
     const { layout } = hiddenPileupLayout(
-      { ...settings, readConnectionsDown: false },
+      { ...settings, readConnectionsPlacement: 'overlay' },
       [{ hasArcs: true, hasJunctionsStripArcs: false }],
       250,
       'fixed',
