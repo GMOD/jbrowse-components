@@ -1,0 +1,13 @@
+##gff-version 3
+##sequence-region contig_2 1 120
+##sequence-region contig_1 1 120
+contig_2	Prodigal:v2.6	CDS	61	99	.	+	0	ID=PRK_00003;Name=repB;gene=repB;locus_tag=PRK_00003;product=replication protein
+contig_1	Prodigal:v2.6	CDS	40	99	.	-	0	ID=PRK_00002;locus_tag=PRK_00002;product=hypothetical protein
+contig_1	Prodigal:v2.6	CDS	4	36	.	+	0	ID=PRK_00001;Name=dnaA;gene=dnaA;locus_tag=PRK_00001;product=chromosomal replication initiator protein DnaA
+##FASTA
+>contig_2
+GGCATTTACCAGCCGAGCCAGCTTCGCGTTGGCAGAATTTCGCAAGCTGACCATTCATCC
+AACCGGCTATAAGTGAATCATTAGTAACTGGCGTCCGGTCTCTTAACCTGGCAATCAGCG
+>contig_1
+ATGAGCCTTTCGTTGTGGCAGCAGTGCCTTGCCCGATTGCAGGATGAGTTACCAGCCACA
+GAGTGGTATATCAGCGTCGCCACCCCCACGTCAGTTGTTGGCTCAATTCCCCAACTCATA
