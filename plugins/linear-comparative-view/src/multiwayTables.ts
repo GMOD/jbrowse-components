@@ -402,13 +402,13 @@ const MultiWayTablesHost = types
   .views(laneDomainViews)
   .views(laneSelectionViews)
   .views(fetchLaneSelectionViews)
+  .views(laneNameKeyViews)
+  .views(laneNameViews)
+  .views(againstAnchorViews)
   .views(unalignedLaneViews)
   .views(laneRowAssemblyViews)
   .views(anchorRowViews)
   .views(laneOrderViews)
-  .views(laneNameKeyViews)
-  .views(laneNameViews)
-  .views(againstAnchorViews)
   .actions(laneOrderHoldActions)
 
 /**
