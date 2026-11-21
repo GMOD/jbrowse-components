@@ -67,7 +67,14 @@ const POPULATIONS: { label: string; slots: string[] }[] = [
   },
   {
     label: 'root config',
-    slots: ['shareURL', 'logoPath', 'disableAnalytics'],
+    slots: [
+      'shareURL',
+      'logoPath',
+      'disableAnalytics',
+      'hierarchical',
+      'formatAbout',
+      'LinearGenomeViewPlugin',
+    ],
   },
   {
     label: 'frozen slot, `any` by design',
@@ -119,9 +126,9 @@ function createProgram() {
 // The four config accessors. `readConfObject` takes a config node directly
 // rather than a model with `.configuration`; it is otherwise held to the same
 // standard and its source-bucket gaps DO count toward the gate. It used to have a
-// model-shaped loose overload that laundered any typo into `any`, which is gone —
-// the remaining loose path is an ARRAY slot path, and those never reach this list
-// because only string-literal slot args are recorded (see `isLiteralSlot`).
+// model-shaped loose overload that laundered any typo into `any`, which is gone.
+// A literal array path is recorded like a literal name, and counted by its head
+// segment in POPULATIONS (see `literalSlot`).
 const READERS = new Set(['getConf', 'readConfObject'])
 const WRITERS = new Set(['setConf'])
 
@@ -159,6 +166,27 @@ function accessorCall(node: ts.CallExpression) {
       : undefined
 }
 
+// A slot argument the audit can name, as the baseline spells it: a string
+// literal, or an array literal of them. A dynamic one is the config editor's
+// slot facade, which reads whatever slot it was handed.
+function literalSlot(slotArg: ts.Expression | undefined) {
+  const segments =
+    slotArg && ts.isArrayLiteralExpression(slotArg)
+      ? slotArg.elements.filter(ts.isStringLiteral).map(e => e.text)
+      : []
+  return slotArg === undefined
+    ? undefined
+    : ts.isStringLiteral(slotArg)
+      ? { text: `'${slotArg.text}'`, head: slotArg.text }
+      : ts.isArrayLiteralExpression(slotArg) &&
+          segments.length === slotArg.elements.length
+        ? {
+            text: `[${segments.map(e => `'${e}'`).join(', ')}]`,
+            head: segments[0] ?? '',
+          }
+        : undefined
+}
+
 type Bucket = 'source' | 'test'
 
 interface Gap {
@@ -166,6 +194,7 @@ interface Gap {
   line: number
   callee: string
   slot: string
+  head: string
   bucket: Bucket
 }
 
@@ -213,7 +242,7 @@ function writeMeasurements(gaps: Gap[], calls: Record<Bucket, number>) {
     measured,
     published: false,
     source: source(
-      "Every getConf/readConfObject call, and every `x.getConf(slot)` method read (an adapter or model's own accessor), in the root tsconfig program whose return type is `any`, which is exactly the widened-schema case. setConf carries no signal (it returns void) and is counted as a call, not as a gap. The gate compares the source row alone.",
+      "Every getConf/readConfObject call with a literal slot name or array path, and every `x.getConf(slot)` method read (an adapter or model's own accessor), in the root tsconfig program whose return type is `any`, which is exactly the widened-schema case. setConf carries no signal (it returns void) and is counted as a call, not as a gap. The gate compares the source row alone.",
     ),
     columns: [
       { key: 'scope', label: 'scope' },
@@ -266,7 +295,7 @@ function writeMeasurements(gaps: Gap[], calls: Record<Bucket, number>) {
 
   const sourceGaps = gaps.filter(g => g.bucket === 'source')
   const claimed = new Set(POPULATIONS.flatMap(p => p.slots))
-  const tail = sourceGaps.filter(g => !claimed.has(g.slot))
+  const tail = sourceGaps.filter(g => !claimed.has(g.head))
   const populations = {
     id: 'config-read-gap-populations',
     measured,
@@ -284,13 +313,13 @@ function writeMeasurements(gaps: Gap[], calls: Record<Bucket, number>) {
         values: {
           population: p.label,
           slots: p.slots.map(s => `\`${s}\``).join(', '),
-          reads: sourceGaps.filter(g => p.slots.includes(g.slot)).length,
+          reads: sourceGaps.filter(g => p.slots.includes(g.head)).length,
         },
       })),
       {
         values: {
           population: 'everything else',
-          slots: `${new Set(tail.map(g => g.slot)).size} other names`,
+          slots: `${new Set(tail.map(g => g.head)).size} other names`,
           reads: tail.length,
         },
       },
@@ -326,10 +355,7 @@ function main() {
         if (accessor) {
           const { name: callee, isRead, slotArg } = accessor
           total++
-          // a dynamic or array-path slot is out of scope: the loose overload
-          // is deliberate there (config editor slot facade, nested paths)
-          const isLiteralSlot = slotArg && ts.isStringLiteral(slotArg)
-          const slot = isLiteralSlot ? slotArg.text : '<dynamic>'
+          const slot = literalSlot(slotArg)
           const { line } = sf.getLineAndCharacterOfPosition(node.getStart())
           const file = path.relative(process.cwd(), sf.fileName)
           // Per bucket as well as in total: a checked SHARE is only honest
@@ -342,13 +368,14 @@ function main() {
           // constraint is the same `ConfigurationSlotName`), so a holder whose
           // reads are unchecked has unchecked writes too, and the reads are
           // what this counts.
-          if (isLiteralSlot && isRead) {
+          if (slot !== undefined && isRead) {
             if (!readIsChecked(checker.getTypeAtLocation(node))) {
               gaps.push({
                 file,
                 line: line + 1,
                 callee,
-                slot,
+                slot: slot.text,
+                head: slot.head,
                 bucket: bucketFor(file),
               })
             }
@@ -388,7 +415,7 @@ function main() {
       '# throws on an undeclared name and MST type-checks the value — and the read',
       '# path cannot take the same guard (see adr-052).',
       '#',
-      '# Five populations, and they want different things:',
+      '# Six populations, and they want different things:',
       '#',
       '#   - a MIXIN casting its own `self` to a widened config holder. **No longer',
       '#     accepted, and no longer here**: a mixin names its own field table',
@@ -411,6 +438,9 @@ function main() {
       '#   - a helper several adapters share that takes the bare `BaseFeatureDataAdapter`',
       '#     (`PifFile`, `getSamplesFromAdapter`): its `adapter.getConf` has no schema.',
       '#     Narrowing it means passing the slot values in, not typing the base.',
+      "#   - an array path the path types stop checking: one segment (`['adapter']`)",
+      "#     or a tail through a pluggable union (`['adapter', 'fetchSizeLimit']`).",
+      '#     A head that is a track or root slot files it with that population.',
       '#',
       `# ${sourceGaps.length} unchecked in source, ${gaps.length - sourceGaps.length} in tests,`,
       `# of ${total} total config accessor calls. The gate counts source only.`,
@@ -419,7 +449,7 @@ function main() {
       '',
       ...[...byFile].flatMap(([file, list]) => [
         `${file}  (${list.length})${list[0]!.bucket === 'test' ? '  [test]' : ''}`,
-        ...list.map(g => `  ${g.line}\t${g.callee}('${g.slot}')`),
+        ...list.map(g => `  ${g.line}\t${g.callee}(${g.slot})`),
       ]),
     ]
     const body = `${lines.join('\n')}\n`

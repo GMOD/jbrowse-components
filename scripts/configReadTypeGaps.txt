@@ -11,7 +11,7 @@
 # throws on an undeclared name and MST type-checks the value — and the read
 # path cannot take the same guard (see adr-052).
 #
-# Five populations, and they want different things:
+# Six populations, and they want different things:
 #
 #   - a MIXIN casting its own `self` to a widened config holder. **No longer
 #     accepted, and no longer here**: a mixin names its own field table
@@ -34,33 +34,51 @@
 #   - a helper several adapters share that takes the bare `BaseFeatureDataAdapter`
 #     (`PifFile`, `getSamplesFromAdapter`): its `adapter.getConf` has no schema.
 #     Narrowing it means passing the slot values in, not typing the base.
+#   - an array path the path types stop checking: one segment (`['adapter']`)
+#     or a tail through a pluggable union (`['adapter', 'fetchSizeLimit']`).
+#     A head that is a track or root slot files it with that population.
 #
-# 25 unchecked in source, 146 in tests,
-# of 1665 total config accessor calls. The gate counts source only.
+# 48 unchecked in source, 223 in tests,
+# of 1746 total config accessor calls. The gate counts source only.
 # A read spelled `this.getConf` / `self.getConf` / `….getConf` is an
 # adapter's or model's own accessor method, whose slot is its first argument.
 
+packages/app-core/src/JbApi/jbApi.ts  (1)
+  1439	readConfObject(['adapter', 'fetchSizeLimit'])
 packages/core/src/assemblyManager/assembly.ts  (1)
-  640	self.getConf('geneticCodes')
+  649	self.getConf('geneticCodes')
 packages/core/src/BaseFeatureWidget/formatDetails.ts  (1)
   56	readConfObject('trackId')
-packages/core/src/configuration/configTypeNarrowing.test.ts  (8)  [test]
+packages/core/src/configuration/configTypeNarrowing.test.ts  (16)  [test]
   161	readConfObject('frozen')
   162	readConfObject('maybeFrozen')
   213	getConf('colorBy')
   244	getConf('notASlot')
   268	readConfObject('sub')
+  270	readConfObject(['sub', 'deeper'])
   272	getConf('sub')
+  337	getConf(['facet', 'fields'])
+  339	readConfObject(['facets', 'field'])
+  341	getConf(['facet', 'inner', 'sizes'])
+  345	getConf(['blob', 'present'])
+  360	getConf(['facet', 'fields'])
+  362	getConf(['facet', 'fields'])
+  366	getConf(['facet', 'inner', 'size'])
   473	readConfObject('raw')
   527	readConfObject('own')
-packages/core/src/configuration/configurationSchema.test.ts  (7)  [test]
+packages/core/src/configuration/configurationSchema.test.ts  (12)  [test]
   331	readConfObject('inherited')
+  398	readConfObject(['mySubConfiguration', 'dropped'])
   568	getConf('frozenSlot')
   788	readConfObject('sidecar')
+  1487	readConfObject([])
+  1513	readConfObject(['missing', 'deeper'])
   1534	readConfObject('sub')
   1536	readConfObject('limit')
   1554	readConfObject('assemblyNames')
   1555	readConfObject('trackId')
+  1563	readConfObject(['blob', 'present'])
+  1564	readConfObject(['blob', 'absent'])
 packages/core/src/configuration/configurationSlot.test.ts  (23)  [test]
   24	readConfObject('slot')
   63	readConfObject('slot')
@@ -91,6 +109,8 @@ packages/core/src/configuration/getConf.test.ts  (3)  [test]
   49	getConf('resolution')
 packages/core/src/configuration/hydrateTrackConfigIdentityCache.test.ts  (1)  [test]
   55	readConfObject('textSearchAdapter')
+packages/core/src/configuration/setConfPath.test.ts  (1)  [test]
+  112	readConfObject(['searchIndex', 'uri'])
 packages/core/src/data_adapters/freeAdapterSession.integration.test.ts  (1)  [test]
   28	this.getConf('path')
 packages/core/src/data_adapters/keepAdapters.test.ts  (2)  [test]
@@ -98,6 +118,10 @@ packages/core/src/data_adapters/keepAdapters.test.ts  (2)  [test]
   54	adapter.getConf('path')
 packages/core/src/pluggableElementTypes/models/baseTrackConfigAliasDedup.test.ts  (1)  [test]
   106	readConfObject('displayId')
+packages/core/src/pluggableElementTypes/models/BaseTrackModel.ts  (1)
+  541	readConfObject(['adapter', 'fetchSizeLimit'])
+packages/core/src/pluggableElementTypes/models/components/fetchTrackData.ts  (1)
+  205	getConf(['adapter'])
 packages/core/src/pluggableElementTypes/models/expandTrackConfigShorthandE2e.test.ts  (14)  [test]
   80	readConfObject('type')
   93	readConfObject('color')
@@ -114,12 +138,22 @@ packages/core/src/pluggableElementTypes/models/expandTrackConfigShorthandE2e.tes
   207	readConfObject('baseColor')
   219	readConfObject('type')
 packages/core/src/TextSearch/TextSearchManager.ts  (1)
-  152	readConfObject('assemblyNames')
+  153	readConfObject('assemblyNames')
 packages/core/src/util/tracks.ts  (2)
-  209	readConfObject('assemblyNames')
-  773	readConfObject('name')
+  217	readConfObject('assemblyNames')
+  861	readConfObject('name')
 packages/display-kit/src/ColorWritesMixin.ts  (1)
-  41	readConfObject('field')
+  43	readConfObject('field')
+packages/display-kit/src/MatrixRampMixin.ts  (2)
+  145	getConf(['encoding', 'color', 'field'])
+  343	getConf(['encoding', 'color', 'legend'])
+packages/display-kit/src/rowAnnotationConfigSchema.test.ts  (4)  [test]
+  27	readConfObject('field')
+  28	readConfObject(['scale', 'domain'])
+  29	readConfObject(['scale', 'range'])
+  30	readConfObject(['legend', 'title'])
+packages/display-kit/src/rowArrangementConfigSchema.test.ts  (1)  [test]
+  56	readConfObject(['rows', 'tree', 'provenance'])
 packages/product-core/src/embedded/EmbeddedSessionThemeMixin.ts  (1)
   36	getConf('theme')
 packages/product-core/src/Session/Themes.ts  (4)
@@ -129,28 +163,49 @@ packages/product-core/src/Session/Themes.ts  (4)
   252	getConf('theme')
 packages/product-core/src/ui/DescriptionPanel.tsx  (1)
   130	readConfObject('metadata')
+packages/product-core/src/ui/util.ts  (4)
+  42	getConf(['formatAbout', 'config'])
+  43	readConfObject(['formatAbout', 'config'])
+  56	getConf(['formatAbout', 'hideUris'])
+  57	readConfObject(['formatAbout', 'hideUris'])
+packages/synteny-core/src/lodTier.ts  (1)
+  193	getConf(['adapter', 'coarseBpPerPxThreshold'])
+packages/synteny-core/src/SyntenyColorsMixin.ts  (1)
+  118	getConf(['adapter', 'attributeColumns'])
 packages/tree-sidebar/src/rowHeight/RowHeightMixin.test.ts  (1)  [test]
   168	getConf('rowHieght')
-packages/tree-sidebar/src/TreeSidebarMixin.test.ts  (1)  [test]
-  32	getConf('showTree')
-packages/wiggle-core/src/WiggleScoreConfigMixin.test.ts  (2)  [test]
+packages/tree-sidebar/src/rows/treeSidebarRowViews.ts  (1)
+  116	getConf(['rows', 'tree', 'provenance'])
+packages/tree-sidebar/src/TreeSidebarMixin.test.ts  (4)  [test]
+  35	getConf('showTree')
+  39	getConf(['rows', 'axis', 'trea'])
+  43	getConf(['rows', 'order'])
+  51	getConf(['rows', 'colour', 'field'])
+packages/wiggle-core/src/WiggleScoreConfigMixin.test.ts  (3)  [test]
   20	getConf('displayCrossHatche')
   22	getConf('scoreFields')
+  41	getConf(['encoding', 'y', 'field'])
 plugins/alignments/src/LinearAlignmentsDisplay/filterWrites.test.ts  (1)  [test]
   25	getConf('filter')
 plugins/alignments/src/LinearAlignmentsDisplay/menus/presets.test.ts  (2)  [test]
   85	getConf('filter')
   101	getConf('filter')
+plugins/alignments/src/LinearAlignmentsDisplay/readTooltipConfig.test.ts  (1)  [test]
+  28	readConfObject(['tooltip', 'field'])
+plugins/alignments/src/LinearAlignmentsDisplay/showSoftClips.test.ts  (1)  [test]
+  782	readConfObject(['coverage', 'alleles', 'filter'])
+plugins/breakpoint-split-view/src/BreakpointSplitView/util.ts  (1)
+  348	getConf(['adapter'])
 plugins/comparative-adapters/src/MCScanBlocksAdapter/configSchema.test.ts  (2)  [test]
   24	readConfObject('bedLocations')
   36	readConfObject('bedLocations')
 plugins/comparative-adapters/src/MCScanBlocksAdapter/MCScanBlocksAdapter.ts  (1)
   223	this.getConf('bedLocations')
 plugins/comparative-adapters/src/MultiPairwiseSyntenyAdapter/MultiPairwiseSyntenyAdapter.ts  (2)
-  201	this.getConf('adapters')
-  237	this.getConf('lanes')
+  198	this.getConf('adapters')
+  234	this.getConf('lanes')
 plugins/comparative-adapters/src/util.ts  (1)
-  46	readConfObject('assemblyNameToPanSN')
+  45	readConfObject('assemblyNameToPanSN')
 plugins/config/src/ConfigurationEditorWidget/components/ConfigurationEditor.test.tsx  (1)  [test]
   314	readConfObject('height')
 plugins/config/src/ConfigurationEditorWidget/components/ConfigurationEditor.tsx  (1)
@@ -164,23 +219,46 @@ plugins/data-management/src/BulkAddTracksWorkflow/BulkAddTracksWorkflow.test.tsx
   148	readConfObject('assemblyNames')
   150	readConfObject('adapter')
   203	readConfObject('name')
-  318	readConfObject('trackId')
-  333	readConfObject('name')
+  354	readConfObject('trackId')
+  369	readConfObject('name')
+plugins/data-management/src/HierarchicalTrackSelectorWidget/model.ts  (3)
+  556	getConf(['hierarchical', 'sort', 'trackNames'])
+  557	getConf(['hierarchical', 'sort', 'categories'])
+  974	getConf(['hierarchical', 'defaultFolderCategories'])
+plugins/data-management/src/TrackTable/trackTableModel.ts  (1)
+  330	getConf(['hierarchical', 'table', 'columns'])
+plugins/features/src/LinearBasicDisplay/retiredSpellings.test.ts  (1)  [test]
+  44	readConfObject(['encoding', 'color', 'value'])
 plugins/features/src/shared/FeatureGateMixin.test.ts  (1)  [test]
   17	getConf('maxFeatureScreenDensty')
 plugins/gccontent/src/GCContentAdapter/GCContentAdapter.ts  (1)
   41	this.getConf('sequenceAdapter')
+plugins/gccontent/src/GCContentTrack/gcTrack.test.ts  (5)  [test]
+  214	readConfObject(['adapter', 'type'])
+  215	readConfObject(['adapter', 'window'])
+  216	readConfObject(['adapter', 'step'])
+  217	readConfObject(['adapter', 'sequenceAdapter'])
+  222	readConfObject(['encoding', 'y', 'field'])
 plugins/gwas/src/GWASAdapter/GWASAdapter.ts  (1)
-  57	readConfObject('ldAdapter')
+  30	readConfObject('ldAdapter')
+plugins/gwas/src/LinearManhattanDisplay/stateModelFactory.ts  (1)
+  83	getConf(['adapter', 'ldAdapter'])
 plugins/hic/src/HicAdapter/HicAdapter.ts  (1)
-  183	this.getConf('controlAdapter')
+  160	this.getConf('controlAdapter')
 plugins/linear-comparative-view/src/LinearSyntenyView/initTracks.integration.test.ts  (2)  [test]
-  108	readConfObject('trackId')
-  115	readConfObject('trackId')
+  109	readConfObject('trackId')
+  116	readConfObject('trackId')
 plugins/linear-comparative-view/src/MultiWaySyntenyDisplay/testEnv.ts  (1)  [test]
-  160	this.getConf('rows')
-plugins/linear-genome-view/src/LinearGenomeView/svgcomponents/useViewSvgFigure.test.tsx  (1)  [test]
+  179	this.getConf('rows')
+plugins/linear-genome-view/src/LinearGenomeView/model.ts  (1)
+  796	getConf(['LinearGenomeViewPlugin', 'trackLabels'])
+plugins/linear-genome-view/src/LinearGenomeView/svgcomponents/useViewSvgFigure.test.tsx  (2)  [test]
+  72	getConf(['facet', 'field'])
   100	getConf('color')
+plugins/linear-genome-view/src/LinearGenomeView/viewPreferences.ts  (1)
+  101	getConf(['LinearGenomeViewPlugin', 'trackLabels'])
+plugins/linear-genome-view/src/TrackModifiers/writeMembers.test.ts  (1)  [test]
+  123	readConfObject(['rows', 'tree', 'provenance'])
 plugins/maf/src/BgzipTaffyAdapter/configSchema.test.ts  (1)  [test]
   51	readConfObject('nhLocation')
 plugins/maf/src/BigMafAdapter/configSchema.test.ts  (4)  [test]
@@ -188,39 +266,87 @@ plugins/maf/src/BigMafAdapter/configSchema.test.ts  (4)  [test]
   17	readConfObject('summaryAdapter')
   22	readConfObject('framesAdapter')
   34	readConfObject('framesAdapter')
+plugins/maf/src/LinearMafDisplay/configSlotViews.ts  (2)
+  30	readConfObject(['alignments', 'bases', 'show'])
+  31	readConfObject(['alignments', 'bases', 'encoding', 'color', 'field'])
+plugins/maf/src/LinearMafDisplay/stateModel.ts  (1)
+  282	getConf(['adapter', 'framesAdapter'])
 plugins/maf/src/MafTabixAdapter/summaryAdapter.test.ts  (5)  [test]
-  240	readConfObject('summaryAdapter')
-  250	readConfObject('summaryAdapter')
-  259	readConfObject('summaryAdapter')
-  276	readConfObject('summaryAdapter')
-  286	readConfObject('summaryAdapter')
+  239	readConfObject('summaryAdapter')
+  249	readConfObject('summaryAdapter')
+  258	readConfObject('summaryAdapter')
+  275	readConfObject('summaryAdapter')
+  285	readConfObject('summaryAdapter')
 plugins/maf/src/util/getSamples.ts  (1)
-  210	readConfObject('samples')
+  212	readConfObject('samples')
 plugins/maf/src/util/MafAdapterBase.ts  (1)
-  170	self.getConf('summaryAdapter')
-plugins/marks/src/LinearMarkDisplay/quantitativeTrackRows.test.ts  (1)  [test]
+  171	self.getConf('summaryAdapter')
+plugins/marks/src/LinearMarkDisplay/markRowsConfigSchema.test.ts  (3)  [test]
+  32	readConfObject(['rows', 'groups'])
+  39	readConfObject(['rows', 'groups'])
+  47	readConfObject(['rows', 'groups'])
+plugins/marks/src/LinearMarkDisplay/quantitativeTrackRows.test.ts  (2)  [test]
   52	readConfObject('type')
+  53	readConfObject(['rows', 'field'])
 plugins/sequence/src/index.test.ts  (1)  [test]
   38	readConfObject('motifs')
+plugins/variants/src/LinearVariantDisplay/configSchema.test.ts  (9)  [test]
+  86	readConfObject(['genotypes', 'reference', 'show'])
+  210	readConfObject(['rows', 'field'])
+  247	readConfObject(['rows', 'sort'])
+  253	readConfObject(['rows', 'labels'])
+  256	readConfObject(['rows', 'kept'])
+  257	readConfObject(['rows', 'tree', 'newick'])
+  288	readConfObject(['genotypes', 'reference', 'show'])
+  291	readConfObject(['rows', 'step'])
+  292	readConfObject(['rows', 'axis', 'tree'])
 plugins/wiggle/src/MultiWiggleAdapter/MultiWiggleAdapter.ts  (1)
-  159	this.getConf('subadapters')
-plugins/wiggle/src/rowsShorthand.test.ts  (1)  [test]
+  174	this.getConf('subadapters')
+plugins/wiggle/src/rowsShorthand.test.ts  (4)  [test]
+  123	readConfObject(['rows', 'field'])
   124	readConfObject('height')
+  125	readConfObject(['mark', 'extent'])
+  170	readConfObject(['rows', 'field'])
 plugins/wiggle/src/shared/wiggleMixinHosts.test.ts  (2)  [test]
   17	getConf('posColor')
   36	getConf('origin')
-products/jbrowse-react-app/src/rootModel/legacySessions.test.ts  (5)  [test]
-  474	getConf('height')
-  561	getConf('marks')
-  573	getConf('marks')
-  624	getConf('marks')
-  638	getConf('marks')
-products/jbrowse-react-app/src/sessionTrackEdits.test.ts  (1)  [test]
+products/jbrowse-react-app/src/createApp.test.ts  (1)  [test]
+  357	readConfObject(['adapter', 'bedGzLocation'])
+products/jbrowse-react-app/src/rootModel/legacySessions.test.ts  (23)  [test]
+  205	getConf(['encoding', 'color', 'field'])
+  206	getConf(['coverage', 'show'])
+  218	getConf(['encoding', 'color', 'field'])
+  219	getConf(['coverage', 'show'])
+  233	getConf(['encoding', 'color', 'field'])
+  234	getConf(['pileup', 'mismatches', 'show'])
+  235	getConf('filter')
+  245	getConf(['readConnections', 'show'])
+  246	getConf(['pileup', 'show'])
+  247	getConf(['coverage', 'show'])
+  496	getConf(['rows', 'field'])
+  497	getConf('height')
+  498	getConf(['mark', 'extent'])
+  584	getConf('marks')
+  596	getConf('marks')
+  647	getConf('marks')
+  661	getConf('marks')
+  700	getConf(['forward', 'show'])
+  701	getConf(['reverse', 'show'])
+  702	getConf(['translation', 'show'])
+  709	getConf(['forward', 'show'])
+  710	getConf(['reverse', 'show'])
+  711	getConf(['translation', 'show'])
+products/jbrowse-react-app/src/sessionTrackEdits.test.ts  (2)  [test]
   103	getConf('name')
+  131	getConf(['rows', 'field'])
+products/jbrowse-react-linear-genome-view/src/createLinearGenomeView.test.tsx  (1)  [test]
+  234	readConfObject(['adapter', 'bedGzLocation'])
 products/jbrowse-react-linear-genome-view/src/createViewState.test.ts  (1)  [test]
   519	readConfObject('ixFilePath')
 products/jbrowse-react-linear-genome-view/src/jbrowseHub.test.ts  (1)  [test]
   67	readConfObject('ixFilePath')
+products/jbrowse-react-linear-genome-view/src/legacySessions.test.ts  (1)  [test]
+  100	getConf(['rows', 'colors'])
 products/jbrowse-react-linear-genome-view/src/trackWorkCensus.test.ts  (1)  [test]
   84	readConfObject('name')
 products/jbrowse-react-linear-genome-view/src/UpdateTrackConfiguration.test.ts  (11)  [test]
@@ -240,6 +366,8 @@ products/jbrowse-web/src/schemaTests/LegacyConfigKeysLoadSilently.test.ts  (2)  
   364	readConfObject('useNameOverride')
 products/jbrowse-web/src/schemaTests/RowAxisSpellings.test.ts  (1)  [test]
   34	readConfObject('type')
+products/jbrowse-web/src/schemaTests/RowStepSpellings.test.ts  (1)  [test]
+  19	readConfObject(['rows', 'step'])
 products/jbrowse-web/src/schemaTests/TrackConfigShorthand.test.ts  (1)  [test]
   36	readConfObject('type')
 products/jbrowse-web/src/tests/ConfigEditorWorkingCopy.test.ts  (3)  [test]
@@ -247,19 +375,24 @@ products/jbrowse-web/src/tests/ConfigEditorWorkingCopy.test.ts  (3)  [test]
   97	readConfObject('name')
   98	readConfObject('name')
 products/jbrowse-web/src/tests/CopyAndDelete.test.tsx  (1)  [test]
-  76	readConfObject('sequence')
+  74	readConfObject('sequence')
 products/jbrowse-web/src/tests/GCContentTrack.test.ts  (2)  [test]
   148	readConfObject('type')
   155	readConfObject('type')
+products/jbrowse-web/src/tests/JBrowse.test.tsx  (2)  [test]
+  70	getConf(['TestPlugin', 'topLevelTest'])
+  71	readConfObject(['TestPlugin', 'topLevelTest'])
 products/jbrowse-web/src/tests/jbSetSession.test.tsx  (2)  [test]
   49	getConf('height')
   59	getConf('height')
 products/jbrowse-web/src/tests/LooseTrackConfig.test.tsx  (1)  [test]
   194	readConfObject('ixFilePath')
-products/jbrowse-web/src/tests/MultiSampleVariantDemoConfig.test.ts  (3)  [test]
-  62	readConfObject('samplesTsvLocation')
-  67	readConfObject('type')
-  74	readConfObject('height')
+products/jbrowse-web/src/tests/MultiSampleVariantDemoConfig.test.ts  (5)  [test]
+  64	readConfObject('samplesTsvLocation')
+  69	readConfObject('type')
+  75	readConfObject(['rows', 'color', 'field'])
+  76	readConfObject('height')
+  77	readConfObject(['genotypes', 'reference', 'show'])
 products/jbrowse-web/src/tests/UpdateTrackConfiguration.test.ts  (11)  [test]
   410	readConfObject('name')
   415	readConfObject('name')
@@ -272,7 +405,8 @@ products/jbrowse-web/src/tests/UpdateTrackConfiguration.test.ts  (11)  [test]
   687	readConfObject('name')
   688	readConfObject('description')
   732	readConfObject('name')
-products/jbrowse-web/src/tests/viewTeardown.test.tsx  (3)  [test]
+products/jbrowse-web/src/tests/viewTeardown.test.tsx  (4)  [test]
   301	readConfObject('name')
-  447	readConfObject('name')
-  448	readConfObject('assemblyNames')
+  462	readConfObject('name')
+  463	readConfObject('assemblyNames')
+  464	readConfObject(['adapter', 'features'])

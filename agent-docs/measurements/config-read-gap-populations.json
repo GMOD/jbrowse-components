@@ -1,6 +1,6 @@
 {
   "id": "config-read-gap-populations",
-  "measured": "2026-11-05",
+  "measured": "2026-11-21",
   "published": false,
   "source": {
     "kind": "bench",
@@ -28,14 +28,14 @@
       "values": {
         "population": "track or assembly schema",
         "slots": "`name`, `assemblyNames`, `trackId`, `adapter`",
-        "reads": 5
+        "reads": 13
       }
     },
     {
       "values": {
         "population": "root config",
-        "slots": "`shareURL`, `logoPath`, `disableAnalytics`",
-        "reads": 0
+        "slots": "`shareURL`, `logoPath`, `disableAnalytics`, `hierarchical`, `formatAbout`, `LinearGenomeViewPlugin`",
+        "reads": 10
       }
     },
     {
@@ -55,8 +55,8 @@
     {
       "values": {
         "population": "everything else",
-        "slots": "1 other names",
-        "reads": 1
+        "slots": "4 other names",
+        "reads": 6
       }
     }
   ]
