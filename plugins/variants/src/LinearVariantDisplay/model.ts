@@ -374,6 +374,20 @@ export function stateModelFactory(
         cellData: undefined as CellDataResult | undefined,
         /**
          * #volatile
+         * The phasing the last payload reported, held across the clear a
+         * settings change makes, so the haplotype rows and the choices they
+         * gate stay put until the refetch lands.
+         */
+        phasing: undefined as
+          | AdapterRead<
+              Pick<
+                CellDataResult,
+                'samplePloidy' | 'hasPhasedOrHaploid' | 'hasPhaseSet'
+              >
+            >
+          | undefined,
+        /**
+         * #volatile
          * The displayed regions the current `cellData` was fetched for. The
          * payload does not list them: a region with no variants gets no
          * `perRegionCellData` entry, and the columns payload is one entry
@@ -494,6 +508,16 @@ export function stateModelFactory(
           bpPerPx?: number,
         ) {
           self.cellData = data
+          if (data) {
+            self.phasing = {
+              adapterConfig: self.adapterConfig,
+              value: {
+                samplePloidy: data.samplePloidy,
+                hasPhasedOrHaploid: data.hasPhasedOrHaploid,
+                hasPhaseSet: data.hasPhaseSet,
+              },
+            }
+          }
           self.cellDataRegionIndices = new Set(displayedRegionIndices)
           self.cellDataBpPerPx = bpPerPx
           self.clearHoveredFeature()
@@ -602,7 +626,7 @@ export function stateModelFactory(
          * with no `|` anywhere.
          */
         get hasPhasedOrHaploid() {
-          return self.cellData?.hasPhasedOrHaploid ?? false
+          return readFor(self, self.phasing)?.hasPhasedOrHaploid ?? false
         },
         /**
          * #getter
@@ -626,17 +650,20 @@ export function stateModelFactory(
          * gating the "Color by→Phase set" menu option.
          */
         get hasPhaseSet() {
-          return self.cellData?.hasPhaseSet ?? false
+          return readFor(self, self.phasing)?.hasPhaseSet ?? false
         },
       }))
       .views(self => {
-        const ploidy = stableIdentityComputed(() => self.cellData?.samplePloidy)
+        const ploidy = stableIdentityComputed(
+          () => readFor(self, self.phasing)?.samplePloidy,
+        )
         return {
           /**
            * #getter
-           * Each sample's ploidy as the latest fetch reports it, the same
-           * object while a region arrival reports the same ploidies, so the
-           * phased rows are expanded again only when one changes.
+           * Each sample's ploidy as the latest fetch of this adapter
+           * reported it, the same object while a region arrival reports the
+           * same ploidies, so the phased rows are expanded again only when
+           * one changes.
            */
           get samplePloidy(): Readonly<Record<string, number>> | undefined {
             return ploidy.get()
