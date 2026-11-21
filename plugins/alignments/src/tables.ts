@@ -99,6 +99,7 @@ import {
 } from './LinearAlignmentsDisplay/colorUtils.ts'
 import { linearAlignmentsDisplayConfigSchema } from './LinearAlignmentsDisplay/configSchema.ts'
 import { configSlotViews } from './LinearAlignmentsDisplay/configSlotViews.ts'
+import { connectionKeyViews } from './LinearAlignmentsDisplay/connectionKeyViews.ts'
 import {
   bandPlotViews,
   coverageStatsViews,
@@ -109,11 +110,7 @@ import {
   ceilingCap,
   groupClipSource,
 } from './LinearAlignmentsDisplay/groupLayout.ts'
-import {
-  arcSlotsInWindows,
-  connectorKeyInWindows,
-  junctionInWindows,
-} from './LinearAlignmentsDisplay/keyWindows.ts'
+import { junctionInWindows } from './LinearAlignmentsDisplay/keyWindows.ts'
 import {
   drawnLaneViews,
   laneViews,
@@ -181,7 +178,6 @@ import {
   passesJunctionFilter,
 } from './features/junctions/junctions.ts'
 import { spliceMotifLabel } from './features/junctions/motif.ts'
-import { connectorCategories } from './features/linkedReads/computeOverlay.ts'
 import {
   connectorArrowPx,
   connectorInWindows,
@@ -216,13 +212,10 @@ import {
 import { countedEventsOf } from './shared/drawnReads.ts'
 import { facetUnitNotices } from './shared/groupFeatures.ts'
 import {
-  arcLegendTitle,
-  getArcLegendItems,
   oneRowPerSplitTwin,
   junctionLegendItems,
   JUNCTION_LEGEND_TITLE,
   junctionLegend,
-  throughHiddenLegendItems,
   titledReadColorKey,
 } from './shared/legendUtils.ts'
 import { getModificationName } from './shared/modificationData.ts'
@@ -667,6 +660,7 @@ const AlignmentsTablesHost = types
   .views(self => coverageTicksViews(self))
   .views(self => rowlessLaneViews(self))
   .views(self => alignmentsColorViews(self))
+  .views(self => connectionKeyViews(self))
   .views(self => readPaletteViews(self))
   .views(self => linkedReadLinesViews(self))
   .views(self => laneViews(self))
@@ -721,7 +715,6 @@ function colorReads(host: AlignmentsTablesHostModel) {
   return {
     sections,
     palette,
-    keyLabels: host.keyReadLabels,
     legend: {
       label: legend.map(item => item.label),
       color: legend.map(item => cssColorToHex(item.color!)),
@@ -1130,7 +1123,6 @@ function readConnectionTables(
   host: AlignmentsTablesHostModel,
   colors: ReturnType<typeof colorReads>,
   slotColor: string[],
-  connectorKey: ReturnType<typeof connectorKeyInWindows>,
 ) {
   const { arcsResult: result, regionInfos } = host
   const stroke = host.readConnectionsStrokeScale
@@ -1172,18 +1164,7 @@ function readConnectionTables(
     ]),
   )
   const legend = oneRowPerSplitTwin(
-    getArcLegendItems(
-      new Set([
-        ...[...arcSlotsInWindows(result, keyWindowsOf(regionInfos))].map(slot =>
-          arcSlotCategory(slot),
-        ),
-        ...connectorCategories(connectorKey.colorTypes),
-      ]),
-      colors.palette,
-      colors.keyLabels.categories,
-    ).concat(
-      throughHiddenLegendItems(connectorKey.throughHidden, colors.palette),
-    ),
+    host.connectionLegendItems(colors.palette),
   ).filter(item => item.color !== undefined)
   return {
     bySection,
@@ -1191,7 +1172,7 @@ function readConnectionTables(
       label: legend.map(item => item.label),
       color: legend.map(item => cssColorToHex(item.color!)),
     },
-    arcLegendTitle: arcLegendTitle(host.drawnReadConnections),
+    arcLegendTitle: host.arcLegendTitle,
     arcSpanMax: result.maxFlatArcSpanBp,
     arcScale: arcScaleOf(host, result.maxFlatArcSpanBp),
   }
@@ -1764,7 +1745,6 @@ function laidOutTables(
     host,
     colors,
     slotRgb.map(normalizedRgbToHex),
-    connectorKeyInWindows(host.connectorsByGroup, host.frames, host.keyWindows),
   )
   const keyOf = numberByFirstAppearance<WorkerPileupData['readKeys'][number]>()
   const plainRead = normalizedRgbToHex(colors.palette.readCategoryColors.plain)

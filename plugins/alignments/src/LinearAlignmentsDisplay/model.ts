@@ -66,10 +66,8 @@ import { buildJunctionsBandFeeds } from '../features/junctions/bandFeed.ts'
 import { visibleRegionJunctions } from '../features/junctions/computeOverlay.ts'
 import { mergeJunctions } from '../features/junctions/junctions.ts'
 import { junctionSupportingReadSlots } from '../features/junctions/supportingReads.ts'
-import { connectorCategories } from '../features/linkedReads/computeOverlay.ts'
 import { buildConnectorFeeds } from '../features/linkedReads/connectorFeed.ts'
 import { connectorStyler } from '../features/linkedReads/connectorStyle.ts'
-import { arcSlotCategory } from '../shaders/palettes.ts'
 import { withBasesFields } from '../shared/basesFilter.ts'
 import { paintsEveryBase } from '../shared/colorFieldDefs.ts'
 import {
@@ -81,12 +79,9 @@ import {
   LEGEND_MAX_WIDTH,
   getAlignmentsColorScales,
   arcColorCategoryLabel,
-  arcLegendTitle,
-  getArcLegendItems,
   readCategoryLabelOverrides,
   readColorCategoryLabel,
   junctionLegend,
-  throughHiddenLegendItems,
 } from '../shared/legendUtils.ts'
 import {
   alignmentsColorViews,
@@ -120,6 +115,7 @@ import {
   configSlotViews,
   requireReadsConf,
 } from './configSlotViews.ts'
+import { connectionKeyViews } from './connectionKeyViews.ts'
 import {
   bandPlotViews,
   coverageStatsViews,
@@ -142,11 +138,7 @@ import {
 } from './groupedDataMaps.ts'
 import { NO_CONNECTOR_READ_IDS, nextHover } from './hoverState.ts'
 import { computeInsertSizeTicks } from './insertSizeTicks.ts'
-import {
-  arcSlotsInWindows,
-  connectorKeyInWindows,
-  junctionInWindows,
-} from './keyWindows.ts'
+import { junctionInWindows } from './keyWindows.ts'
 import {
   drawnLaneViews,
   laneViews,
@@ -788,37 +780,6 @@ export default function stateModelFactory(
 
           /**
            * #getter
-           * The arc color slots plotted, mapped to legend buckets, for curved
-           * arcs and the read cloud alike. Empty unless an overlay is on with
-           * the legend shown.
-           */
-          get arcLegendCategories(): Set<ArcCategory> {
-            const present = new Set<ArcCategory>()
-            if (self.showLegend && self.drawnReadConnections !== 'off') {
-              // Both halves arcs resolve into, `byGroup` and
-              // `crossRegionByGroup`; see `ArcsByGroupResult`.
-              for (const slot of arcSlotsInWindows(
-                self.arcsResult,
-                self.keyWindows,
-              )) {
-                present.add(arcSlotCategory(slot))
-              }
-            }
-            return present
-          },
-
-          /**
-           * #getter
-           * Heading for the connection colors, named after what the reader is
-           * looking at: flat read-cloud lines are not arcs, and with the band
-           * off the colors are the pileup connectors'.
-           */
-          get arcLegendTitle() {
-            return arcLegendTitle(self.drawnReadConnections)
-          },
-
-          /**
-           * #getter
            * Each lane's band stack in px, in stacking order, as
            * `computeStackedSections` reserves it. Fetch-tier inputs only, so
            * the layout reads it without a cycle.
@@ -1032,6 +993,7 @@ export default function stateModelFactory(
       .views(self => coverageTicksViews(self))
       .views(self => rowlessLaneViews(self))
       .views(self => alignmentsColorViews(self))
+      .views(self => connectionKeyViews(self))
       .views(self => linkedReadLinesViews(self))
       .views(self => ({
         /**
@@ -1105,56 +1067,6 @@ export default function stateModelFactory(
                 ]
               : []
           })
-        },
-
-        /**
-         * #getter
-         * What the connectors drawn in view key, by the overlay's curves and
-         * by the straight-line pass beside them, so the key lists every
-         * connector color on screen: the class color types, and whether a
-         * junction through a region not shown is drawn in its own color.
-         * Empty while the legend is hidden so the scan is skipped.
-         */
-        get connectorKey() {
-          return self.showLegend
-            ? connectorKeyInWindows(
-                self.connectorsByGroup,
-                self.view.displayedRegions,
-                self.keyWindows,
-              )
-            : { colorTypes: new Set<number>(), throughHidden: false }
-        },
-
-        /**
-         * #getter
-         * The color types (arc palette slots) the connectors drawn in view
-         * paint in their class color.
-         */
-        get connectionColorTypes(): Set<number> {
-          return this.connectorKey.colorTypes
-        },
-
-        /**
-         * #method
-         * Key for the connection colors drawn: the band's and the pileup
-         * connectors', which paint one field through one palette, and the
-         * row for a junction through a region not shown.
-         */
-        connectionLegendItems(palette: ColorPalette) {
-          return [
-            ...getArcLegendItems(
-              new Set([
-                ...self.arcLegendCategories,
-                ...connectorCategories(this.connectionColorTypes),
-              ]),
-              palette,
-              self.keyReadLabels.categories,
-            ),
-            ...throughHiddenLegendItems(
-              this.connectorKey.throughHidden,
-              palette,
-            ),
-          ]
         },
 
         /**
