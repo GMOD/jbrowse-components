@@ -239,13 +239,18 @@ function formatCDS({
   strand: number
   frame: RecordFrame
 }) {
+  const ownLabel = whole.get('label')
   return [
     featureLine('CDS', joinLoc(feats, strand, frame)),
     ...formatTags({
       feature: whole,
       gene,
       key: 'CDS',
-      label: whole.get('label') ?? gene ?? whole.get('name') ?? whole.get('id'),
+      label:
+        (typeof ownLabel === 'string' ? ownLabel : undefined) ??
+        gene ??
+        whole.get('name') ??
+        whole.get('id'),
       codonStart: codonStart(feats, strand),
     }),
   ]
