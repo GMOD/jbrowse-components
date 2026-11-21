@@ -136,9 +136,8 @@ test('a different file of the same name is not overwritten without --force', asy
 test('a same-size file of the same name with other bytes is not overwritten without --force', async () => {
   await runInTmpDir(async ctx => {
     await initctx(ctx)
-    const bytes = await fs.promises.readFile(simpleBed)
-    bytes[bytes.length - 1] ^= 1
-    await writeFile(path.join(ctx.dir, 'volvox.bed'), bytes)
+    const { size } = await fs.promises.stat(simpleBed)
+    await writeFile(path.join(ctx.dir, 'volvox.bed'), 'x'.repeat(size))
     const { error } = await runCommand([
       'add-track',
       simpleBed,

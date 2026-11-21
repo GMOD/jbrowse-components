@@ -9,6 +9,7 @@ export interface TestAssembly {
   getCanonicalRefName: (refName: string) => string
   getCanonicalRefName2: (refName: string) => string
   getRegionForRefName: (refName: string) => Region | undefined
+  isCircularRefName: (refName: string) => boolean
   getGeneticCodeId: () => number | undefined
   configuration: { sequence: undefined }
 }
@@ -40,6 +41,7 @@ export function testAssembly({
   aliases = { chra: 'ctgA' },
   displayName = '',
   allAliases = [],
+  circularRefNames = [],
 }: {
   regions?: Region[]
   /** keys are compared lower-cased */
@@ -51,6 +53,7 @@ export function testAssembly({
   displayName?: string
   /** the real getter leads with the name, which this stub cannot know */
   allAliases?: string[]
+  circularRefNames?: string[]
 } = {}): TestAssembly {
   const canonical = (refName: string) =>
     aliases[refName.toLowerCase()] ?? refName
@@ -69,6 +72,8 @@ export function testAssembly({
       const idx = refNameToIndex.get(refName)
       return idx === undefined ? undefined : regions[idx]
     },
+    isCircularRefName: (refName: string) =>
+      circularRefNames.includes(canonical(refName)),
     getGeneticCodeId: () => undefined,
     configuration: { sequence: undefined },
   }
