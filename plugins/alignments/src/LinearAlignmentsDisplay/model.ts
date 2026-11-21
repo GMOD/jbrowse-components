@@ -1892,9 +1892,8 @@ export default function stateModelFactory(
           )
           const band = banded[0]
           if (arcsYDomainBp !== undefined && band) {
-            const down = self.readConnectionsPlacement === 'below'
             const ticks = computeInsertSizeTicks({
-              band: { top: 0, height: band.height, down },
+              band: { ...band, top: 0 },
               arcsYDomainBp,
             })
             if (ticks) {
