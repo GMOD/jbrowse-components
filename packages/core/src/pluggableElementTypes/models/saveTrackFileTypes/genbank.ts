@@ -185,9 +185,18 @@ const FLAG_QUALIFIERS = new Set([
   'transgenic',
 ])
 
-// a qualifier the file repeated, two /inference lines say, is repeated here
-// rather than joined into one value with a comma that is not in either
-function qualifierLines(key: string, value: unknown) {
+// The qualifiers INSDC spells with capitals, which GenBank import reads back
+// lowercased like every attribute
+const QUALIFIER_CASE: Record<string, string> = {
+  ec_number: 'EC_number',
+  pcr_conditions: 'PCR_conditions',
+  pcr_primers: 'PCR_primers',
+}
+
+// a qualifier the file repeated, as Prokka repeats /inference, is written once
+// per value rather than joined into one value with a comma that is in neither
+function qualifierLines(attribute: string, value: unknown) {
+  const key = QUALIFIER_CASE[attribute] ?? attribute
   return [value]
     .flat()
     .flatMap(v => formatAttributeValue(v) || [])

@@ -233,7 +233,7 @@ FEATURES             Location/Qualifiers
                      /label="stcE"
                      /gene="stcE"
                      /locus_tag="SAKAI_05419"
-                     /ec_number="3.4.24.-"
+                     /EC_number="3.4.24.-"
                      /inference="ab initio prediction:Prodigal:v2.6"
                      /inference="similar to AA sequence:UniProtKB:O82882"
                      /codon_start=1
