@@ -65,10 +65,11 @@ function useConnectorFieldPaint(
   coords: ConnectorCoord[],
   connectorsHeight: number,
   strokeWidth: number,
+  width: number,
 ) {
   const color = alpha(
     usePalette().text.primary,
-    connectorFieldAlpha(coords, strokeWidth),
+    connectorFieldAlpha(coords, strokeWidth, width),
   )
   return (ctx: Ctx2D) => {
     drawConnectorField(ctx, coords, connectorsHeight, strokeWidth, color)
@@ -99,6 +100,7 @@ const ConnectorLineField = observer(function ConnectorLineField({
     lineCoords,
     connectorsHeight,
     strokeWidth,
+    width,
   )
   return connectorsHeight <= 0 ? null : (
     <OverlayCanvas width={width} height={connectorsHeight} draw={paint} />
@@ -123,7 +125,12 @@ export function SvgConnectorField({
   strokeWidth: number
   opts?: PaintLayerOpts
 }) {
-  const paint = useConnectorFieldPaint(coords, connectorsHeight, strokeWidth)
+  const paint = useConnectorFieldPaint(
+    coords,
+    connectorsHeight,
+    strokeWidth,
+    width,
+  )
   return coords.length === 0 || connectorsHeight <= 0 ? null : (
     <PaintLayer
       width={width}

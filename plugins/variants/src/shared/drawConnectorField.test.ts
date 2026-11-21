@@ -43,12 +43,29 @@ test('the alpha is measured over the coords own extent, not the viewport', () =>
   const n = 100
   const narrow = Array.from({ length: n }, (_, i) => ({ mx: i / 10, gx: 10 }))
   const wide = Array.from({ length: n }, (_, i) => ({ mx: i * 10, gx: 1000 }))
-  expect(connectorFieldAlpha(narrow, 0.5)).toBeLessThan(
-    connectorFieldAlpha(wide, 0.5),
+  expect(connectorFieldAlpha(narrow, 0.5, 2000)).toBeLessThan(
+    connectorFieldAlpha(wide, 0.5, 2000),
   )
 })
 
+test.each([
+  ['left', 0, -100_000],
+  ['right', 1500, 101_500],
+])(
+  'a line ending far off the %s edge draws the field as if it ended at the edge',
+  (_side, edgeX, farX) => {
+    const width = 1500
+    const field = Array.from({ length: 13_000 }, (_, i) => ({
+      mx: (i + 0.5) * (width / 13_000),
+      gx: 750,
+    }))
+    expect(
+      connectorFieldAlpha([...field, { mx: 700, gx: farX }], 0.5, width),
+    ).toBe(connectorFieldAlpha([...field, { mx: 700, gx: edgeX }], 0.5, width))
+  },
+)
+
 test('an empty field asks for no strokes and a usable alpha', () => {
   expect(paths([])).toHaveLength(0)
-  expect(connectorFieldAlpha([], 0.5)).toBe(0.4)
+  expect(connectorFieldAlpha([], 0.5, 2000)).toBe(0.4)
 })
