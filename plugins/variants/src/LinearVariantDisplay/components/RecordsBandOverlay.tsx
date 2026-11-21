@@ -5,7 +5,6 @@ import { usePalette } from '@jbrowse/core/ui/PaletteContext'
 import { usePanelVirtualScroll } from '@jbrowse/core/util/usePanelVirtualScroll'
 import { BandSeamHandle } from '@jbrowse/display-kit/BandSeamHandle'
 import { GroupLabelChips } from '@jbrowse/display-kit/GroupLabelChips'
-import { moveSectionOnto } from '@jbrowse/display-kit/groupByMenu'
 import { performMultiRegionHitDetection } from '@jbrowse/plugin-features/band'
 import { containingLgv } from '@jbrowse/plugin-linear-genome-view'
 import OverlayCanvas from '@jbrowse/render-core/OverlayCanvas'
@@ -15,6 +14,7 @@ import {
   recordsBandPainter,
   recordsSectionsInBand,
 } from '../recordsBandPaint.ts'
+import { recordsSectionHost } from '../recordsBandViews.ts'
 import { RecordsChips } from './BandChips.tsx'
 import { buildRecordHit } from './buildVariantHit.ts'
 import { enrichFeatureFromClick } from './enrichFeatureFromClick.ts'
@@ -150,41 +150,16 @@ const RecordsSectionChips = observer(function RecordsSectionChips({
 }: {
   model: LinearVariantDisplayModel
 }) {
-  const { recordsGroupSections, recordsFacet } = model
-  const canHide = recordsGroupSections.length > 1
-  return recordsFacet && model.recordsSectionChipsDrawn ? (
+  return model.recordsSectionChipsDrawn ? (
     <GroupLabelChips
+      host={recordsSectionHost(model)}
       canvasHeight={model.topBands.reserved.records}
       leading={
         model.recordsChipsHeadBand ? (
           <RecordsChips model={model} hideable />
         ) : null
       }
-      hiddenCount={model.recordsHiddenGroups.size}
-      onShowHidden={() => {
-        model.showAllRecordsGroups()
-      }}
-      onMove={(key, ontoKey) => {
-        moveSectionOnto(
-          {
-            sections: recordsGroupSections,
-            domain: recordsFacet.sort,
-            setDomain: domain => {
-              model.setRecordsFacetSort(domain)
-            },
-          },
-          key,
-          ontoKey,
-        )
-      }}
-      sections={recordsSectionsInBand(model).map(section => ({
-        ...section,
-        onHide: canHide
-          ? () => {
-              model.hideRecordsGroup(section.key)
-            }
-          : undefined,
-      }))}
+      sections={recordsSectionsInBand(model)}
     />
   ) : null
 })

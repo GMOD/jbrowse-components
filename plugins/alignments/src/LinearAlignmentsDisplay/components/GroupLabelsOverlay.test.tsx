@@ -57,6 +57,7 @@ function renderOverlay(overrides: Partial<LinearAlignmentsDisplayModel> = {}) {
     toggleGroupCollapsed: jest.fn(),
     toggleGroupExpanded: jest.fn(),
     hiddenGroups: new Set(),
+    writtenFacet: {},
     groupChipLabel: (label: string) => label,
     bandChips: { leading: undefined, rows: [] },
     ...overrides,

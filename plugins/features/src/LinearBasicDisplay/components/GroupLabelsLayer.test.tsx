@@ -14,10 +14,13 @@ function layerModel(
   return {
     height: 200,
     hiddenGroups: new Set(),
-    facet: { field: 'strand', sort: [] },
+    writtenFacet: { field: 'strand' },
     setFacetSort: jest.fn(),
     hideGroup: jest.fn(),
     showAllGroups: jest.fn(),
+    knownSections: [],
+    sectionsHeading: 'Strand',
+    setHiddenGroups: jest.fn(),
     ...model,
   }
 }

@@ -17,6 +17,7 @@ import { reservedPx } from '@jbrowse/core/util/bandLayout'
 import {
   facetByFieldOn,
   setFacetSortOn,
+  writtenFacetOf,
 } from '@jbrowse/display-kit/FacetWritesMixin'
 import {
   hiddenGroupsOf,
@@ -25,6 +26,7 @@ import {
 import { autorunOnReadyView } from '@jbrowse/display-kit/displayAutoruns'
 import { facetSettingOf } from '@jbrowse/display-kit/facetConfigSchema'
 import { GROUP_LABEL_HEIGHT } from '@jbrowse/display-kit/groupLabelStyle'
+import { fieldHeading } from '@jbrowse/display-kit/sectionsHeading'
 import {
   sameAsLast,
   stableIdentityComputed,
@@ -83,6 +85,8 @@ import type { RecordCarrierCounter } from './recordCarriers.ts'
 import type { RecordsLabels } from './recordsRenderData.ts'
 import type { ColorScale } from '@jbrowse/core/ui/colorScale'
 import type { Band } from '@jbrowse/core/util/bandLayout'
+import type { GroupId } from '@jbrowse/core/util/groupKeys'
+import type { SectionHost } from '@jbrowse/display-kit/sectionHost'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 import type {
   DisplayMode,
@@ -391,6 +395,51 @@ export function recordsBandActions(self: RecordsActionsHost) {
      */
     setRecordsHiddenGroups(keys: readonly string[]) {
       setHiddenGroupsOn(self.configuration.records, keys)
+    },
+  }
+}
+
+/** What {@link recordsSectionHost} reads and writes. */
+export interface RecordsSectionsModel {
+  configuration: RecordsSettingsHost['configuration']
+  recordsFacet: FeatureFacet | undefined
+  recordsHiddenGroups: ReadonlySet<string>
+  recordsKnownSections: readonly GroupId[]
+  setRecordsFacetSort: (sort: readonly string[]) => void
+  hideRecordsGroup: (key: string) => void
+  showAllRecordsGroups: () => void
+  setRecordsHiddenGroups: (keys: readonly string[]) => void
+}
+
+/**
+ * The record sections as the section chips, the Sections dialog and the
+ * menus take a display's own: `records.facet` in place of `facet`.
+ */
+export function recordsSectionHost(model: RecordsSectionsModel): SectionHost {
+  return {
+    get sectionsHeading() {
+      return fieldHeading(model.recordsFacet?.field)
+    },
+    get knownSections() {
+      return model.recordsKnownSections
+    },
+    get hiddenGroups() {
+      return model.recordsHiddenGroups
+    },
+    get writtenFacet() {
+      return writtenFacetOf(model.configuration.records)
+    },
+    setFacetSort: sort => {
+      model.setRecordsFacetSort(sort)
+    },
+    hideGroup: key => {
+      model.hideRecordsGroup(key)
+    },
+    showAllGroups: () => {
+      model.showAllRecordsGroups()
+    },
+    setHiddenGroups: keys => {
+      model.setRecordsHiddenGroups(keys)
     },
   }
 }

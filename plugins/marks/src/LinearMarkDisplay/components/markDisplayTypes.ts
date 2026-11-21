@@ -11,6 +11,7 @@ import type {
 import type { MarkRenderingBackend } from '../model.ts'
 import type { ContextMenuAnchor, MenuItem } from '@jbrowse/core/ui'
 import type { SkippedFeatures } from '@jbrowse/display-kit/SkippedFeaturesIndicator'
+import type { SectionHost } from '@jbrowse/display-kit/sectionHost'
 import type { SidebarBounds } from '@jbrowse/display-ui'
 import type { RenderBlock } from '@jbrowse/render-core/renderBlock'
 import type {
@@ -31,7 +32,8 @@ export type MarkDisplayContextMenuInfo = ContextMenuAnchor & {
 export interface MarkDisplayModel
   extends
     WiggleGpuDisplayModel<MarkRenderingBackend, MarkRegionData>,
-    TreeSidebarModel {
+    TreeSidebarModel,
+    SectionHost {
   configuration: { displayId: string }
   renderBlocks: RenderBlock[]
   markList: DisplayMark[]
@@ -60,11 +62,6 @@ export interface MarkDisplayModel
   showRowLabels: boolean
   showRowSeparators: boolean
   rowTreeProvenance?: ClusterProvenance
-  hiddenGroups: { size: number }
-  facet: { sort: readonly string[] } | undefined
-  setFacetSort: (domain: string[]) => void
-  hideGroup: (key: string) => void
-  showAllGroups: () => void
   showLegend: boolean
   setHoveredFeature: (hit: MarkHitInfo | undefined) => void
   clearHoveredFeature: () => void

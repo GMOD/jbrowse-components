@@ -1,5 +1,4 @@
 import { GroupLabelChips } from '@jbrowse/display-kit/GroupLabelChips'
-import { moveSectionOnto } from '@jbrowse/display-kit/groupByMenu'
 import { observer } from 'mobx-react'
 
 import type { MarkDisplayModel } from './markDisplayTypes.ts'
@@ -8,8 +7,7 @@ import type { MarkDisplayModel } from './markDisplayTypes.ts'
  * The facet's section chips over the plot, in a layer starting where the
  * plot's canvas does. A section's band is its rows at the height the plot gave
  * them, and the plot never scrolls — the rows shrink to fit instead — so a
- * chip's top is its first row's. The last visible section keeps no hide
- * button: hiding it would leave no chip to come back from.
+ * chip's top is its first row's.
  */
 const MarkFacetChips = observer(function MarkFacetChips({
   model,
@@ -17,13 +15,10 @@ const MarkFacetChips = observer(function MarkFacetChips({
   model: MarkDisplayModel
 }) {
   const { sections, rows } = model.facetLayout
-  if (rows || (sections.length === 0 && model.hiddenGroups.size === 0)) {
-    return null
-  }
   const { yTop, plotHeight } = model.plotBox
   const rowHeight = model.effectiveRowHeight
-  const canHide = sections.length > 1
-  return (
+  return rows ||
+    (sections.length === 0 && model.hiddenGroups.size === 0) ? null : (
     <div
       data-testid="mark-facet-chips"
       style={{
@@ -36,34 +31,13 @@ const MarkFacetChips = observer(function MarkFacetChips({
       }}
     >
       <GroupLabelChips
+        host={model}
         canvasHeight={plotHeight}
-        hiddenCount={model.hiddenGroups.size}
-        onShowHidden={() => {
-          model.showAllGroups()
-        }}
-        onMove={(key, ontoKey) => {
-          moveSectionOnto(
-            {
-              sections,
-              domain: model.facet?.sort ?? [],
-              setDomain: domain => {
-                model.setFacetSort(domain)
-              },
-            },
-            key,
-            ontoKey,
-          )
-        }}
         sections={sections.map(section => ({
           key: section.key,
           label: section.label,
           top: section.firstRow * rowHeight,
           height: section.rowCount * rowHeight,
-          onHide: canHide
-            ? () => {
-                model.hideGroup(section.key)
-              }
-            : undefined,
         }))}
       />
     </div>

@@ -1,70 +1,35 @@
 import { GroupLabelChips } from '@jbrowse/display-kit/GroupLabelChips'
-import { moveSectionOnto } from '@jbrowse/display-kit/groupByMenu'
 import { observer } from 'mobx-react'
 
-import type { FeatureFacet, FeatureGroupSection } from '../facet.ts'
+import type { FeatureGroupSection } from '../facet.ts'
+import type { SectionHost } from '@jbrowse/display-kit/sectionHost'
 
-export interface GroupLabelsModel {
+export interface GroupLabelsModel extends SectionHost {
   showsGroupLabels: boolean
   groupSections: FeatureGroupSection[]
   scrollTop: number
   height: number
-  hiddenGroups: { size: number }
-  facet: FeatureFacet | undefined
-  setFacetSort: (domain: readonly string[]) => void
-  hideGroup: (key: string) => void
-  showAllGroups: () => void
 }
 
 // The whole stack scrolls as one, so a section's screen top is its content
-// top less the scroll. The chip's × spares the last section left; with every
-// section hidden another way, the restore button still draws.
+// top less the scroll. With every section hidden another way, the restore
+// button still draws.
 const GroupLabelsLayer = observer(function GroupLabelsLayer({
   model,
 }: {
   model: GroupLabelsModel
 }) {
-  const { facet } = model
-  if (!model.showsGroupLabels && model.hiddenGroups.size === 0) {
-    return null
-  }
   const { scrollTop, height, groupSections } = model
-  const canHide = groupSections.length > 1
-  return (
+  return model.showsGroupLabels || model.hiddenGroups.size > 0 ? (
     <GroupLabelChips
+      host={model}
       canvasHeight={height}
-      hiddenCount={model.hiddenGroups.size}
-      onShowHidden={() => {
-        model.showAllGroups()
-      }}
-      onMove={
-        facet
-          ? (key, ontoKey) => {
-              moveSectionOnto(
-                {
-                  sections: groupSections,
-                  domain: facet.sort,
-                  setDomain: domain => {
-                    model.setFacetSort(domain)
-                  },
-                },
-                key,
-                ontoKey,
-              )
-            }
-          : undefined
-      }
       sections={groupSections.map(section => ({
         ...section,
         top: section.top - scrollTop,
-        onHide: canHide
-          ? () => {
-              model.hideGroup(section.key)
-            }
-          : undefined,
       }))}
     />
-  )
+  ) : null
 })
 
 export default GroupLabelsLayer

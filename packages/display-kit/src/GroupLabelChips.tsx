@@ -1,18 +1,22 @@
 import { Fragment } from 'react'
 
+import { OVERFLOW_GROUP_KEY } from '@jbrowse/core/util/groupKeys'
 import ChevronRightIcon from '@mui/icons-material/ChevronRight'
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore'
 import { observer } from 'mobx-react'
 
 import HideGlyph from './HideGlyph.tsx'
+import { moveSectionOnto } from './groupByMenu.ts'
 import { useGroupLabelStyles } from './groupLabelChipStyles.ts'
 import {
   groupChipTops,
   groupSectionLabel,
   sectionKey,
 } from './groupLabelStyle.ts'
+import { sectionSortOf } from './sectionHost.ts'
 import { useSectionDrag } from './useSectionDrag.ts'
 
+import type { SectionHost } from './sectionHost.ts'
 import type React from 'react'
 
 /**
@@ -48,6 +52,10 @@ export interface GroupChipSection {
  * caller's `leading` chips: whatever heads the whole stack. With no chip on
  * screen, that way back stands alone at the top. Sections shorter
  * than a chip label every nth (`groupChipTops`).
+ *
+ * A `host` wires the rest: its hidden count and "Show all", a drag that
+ * rewrites its facet's `sort`, and a hide × on each chip while more than one
+ * section draws, the overflow section's aside, since it names no value.
  */
 export const GroupLabelChips = observer(function GroupLabelChips({
   sections,
@@ -56,6 +64,7 @@ export const GroupLabelChips = observer(function GroupLabelChips({
   onShowHidden,
   onMove,
   leading,
+  host,
 }: {
   sections: readonly GroupChipSection[]
   canvasHeight: number
@@ -63,24 +72,40 @@ export const GroupLabelChips = observer(function GroupLabelChips({
   onShowHidden?: () => void
   onMove?: (key: string, ontoKey: string) => void
   leading?: React.ReactNode
+  host?: SectionHost
 }) {
   const { classes, cx } = useGroupLabelStyles()
-  const drag = useSectionDrag(
-    sections,
-    sections.length > 1 ? onMove : undefined,
-  )
+  const order = host && sectionSortOf(host)
+  const move = order
+    ? (key: string, ontoKey: string) => {
+        moveSectionOnto({ sections, ...order }, key, ontoKey)
+      }
+    : onMove
+  const hideOf = (key: string) =>
+    host && sections.length > 1 && key !== OVERFLOW_GROUP_KEY
+      ? () => {
+          host.hideGroup(key)
+        }
+      : undefined
+  const hidden = host ? host.hiddenGroups.size : hiddenCount
+  const showHidden = host
+    ? () => {
+        host.showAllGroups()
+      }
+    : onShowHidden
+  const drag = useSectionDrag(sections, sections.length > 1 ? move : undefined)
   const chipTops = groupChipTops(sections, canvasHeight)
   const topmost = chipTops.findIndex(t => t !== undefined)
   const dropLine = drag.dropLineTop
   const restore =
-    hiddenCount > 0 && onShowHidden ? (
+    hidden > 0 && showHidden ? (
       <button
         type="button"
         className={classes.pillButton}
-        onClick={onShowHidden}
-        title={`Show ${hiddenCount} hidden group${hiddenCount > 1 ? 's' : ''}`}
+        onClick={showHidden}
+        title={`Show ${hidden} hidden group${hidden > 1 ? 's' : ''}`}
       >
-        Show {hiddenCount} hidden
+        Show {hidden} hidden
       </button>
     ) : null
   return (
@@ -103,7 +128,8 @@ export const GroupLabelChips = observer(function GroupLabelChips({
         />
       ) : null}
       {sections.map((section, i) => {
-        const { top, toggle, action, onHide } = section
+        const { top, toggle, action } = section
+        const onHide = section.onHide ?? hideOf(section.key)
         const chipTop = chipTops[i]
         if (chipTop === undefined) {
           return null

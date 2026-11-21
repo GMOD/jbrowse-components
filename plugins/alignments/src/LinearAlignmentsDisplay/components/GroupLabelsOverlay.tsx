@@ -1,13 +1,10 @@
-import { OVERFLOW_GROUP_KEY } from '@jbrowse/core/util/groupKeys'
 import { bandChipsShown } from '@jbrowse/display-kit/BandChips'
 import { GroupLabelChips } from '@jbrowse/display-kit/GroupLabelChips'
-import { moveSectionOnto } from '@jbrowse/display-kit/groupByMenu'
 import UnfoldLessIcon from '@mui/icons-material/UnfoldLess'
 import UnfoldMoreIcon from '@mui/icons-material/UnfoldMore'
 import { observer } from 'mobx-react'
 
 import { laneDrawsReads, laneExpandable } from '../lanes.ts'
-import { sectionOrderOf } from '../menus/groupByMenu.ts'
 import { BandRowChips } from './BandChipsOverlay.tsx'
 import { bandScreenTop } from './sectionScreen.ts'
 
@@ -73,28 +70,15 @@ const GroupLabelsOverlay = observer(function GroupLabelsOverlay({
     canSizeGroupHeights,
     renderSections,
   } = model
-  // Hiding the last drawn lane leaves no chip to carry the restore button.
-  const canHideLane = renderSections.length > 1
-  const order = sectionOrderOf(model)
   const { leading } = model.bandChips
   return (
     <GroupLabelChips
+      host={model}
       canvasHeight={scroll.canvasHeight}
       leading={
         leading && bandChipsShown(model) ? (
           <BandRowChips model={model} row={leading} />
         ) : null
-      }
-      hiddenCount={model.hiddenGroups.size}
-      onShowHidden={() => {
-        model.showAllGroups()
-      }}
-      onMove={
-        order
-          ? (key, ontoKey) => {
-              moveSectionOnto(order, key, ontoKey)
-            }
-          : undefined
       }
       sections={(model.showsGroupLabels ? renderSections : []).map(section => {
         // Off the section, not looked back up by its key: a `renderSections`
@@ -136,12 +120,6 @@ const GroupLabelsOverlay = observer(function GroupLabelsOverlay({
                   onClick: () => {
                     model.toggleGroupExpanded(groupKey)
                   },
-                }
-              : undefined,
-          onHide:
-            canHideLane && groupKey !== OVERFLOW_GROUP_KEY
-              ? () => {
-                  model.hideGroup(groupKey)
                 }
               : undefined,
         }

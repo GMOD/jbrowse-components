@@ -1,4 +1,5 @@
 import { createJBrowseTheme } from '@jbrowse/core/ui'
+import { OVERFLOW_GROUP_KEY } from '@jbrowse/core/util/groupKeys'
 import { ThemeProvider } from '@mui/material'
 import { fireEvent, render } from '@testing-library/react'
 
@@ -131,4 +132,61 @@ test('with every section hidden, the way back stands alone at the top', () => {
   )
   fireEvent.click(getByRole('button', { name: 'Show 2 hidden' }))
   expect(onShowHidden).toHaveBeenCalled()
+})
+
+function hostOf(writtenFacet = {}) {
+  return {
+    writtenFacet,
+    hiddenGroups: new Set(['z']),
+    knownSections: [],
+    sectionsHeading: 'Section',
+    setFacetSort: jest.fn(),
+    hideGroup: jest.fn(),
+    showAllGroups: jest.fn(),
+    setHiddenGroups: jest.fn(),
+  }
+}
+
+function renderWithHost(
+  host: ReturnType<typeof hostOf>,
+  sections: { key: string; label: string; top: number; height: number }[],
+) {
+  return render(
+    <ThemeProvider theme={createJBrowseTheme()}>
+      <GroupLabelChips canvasHeight={300} host={host} sections={sections} />
+    </ThemeProvider>,
+  )
+}
+
+test("a host's chips hide their sections but the overflow, restore, and reorder its facet's sort", () => {
+  const host = hostOf({ field: 'f', sort: ['c'] })
+  const view = renderWithHost(host, [
+    ...SECTIONS,
+    { key: OVERFLOW_GROUP_KEY, label: 'Other', top: 300, height: 0 },
+  ])
+  expect(
+    view
+      .getAllByRole('button')
+      .map(b => b.getAttribute('title'))
+      .filter(t => t?.startsWith('Hide')),
+  ).toEqual(['Hide "A"', 'Hide "B"', 'Hide "C"'])
+  fireEvent.click(view.getByTitle('Hide "B"'))
+  expect(host.hideGroup).toHaveBeenCalledWith('b')
+  fireEvent.click(view.getByRole('button', { name: 'Show 1 hidden' }))
+  expect(host.showAllGroups).toHaveBeenCalled()
+  const pill = view.getAllByTestId('group-label-text')[0]!.parentElement!
+  drag(pill, 5, 250)
+  fireEvent.pointerUp(pill, { clientY: 250, pointerId: 1 })
+  expect(host.setFacetSort).toHaveBeenCalledWith(['b', 'c', 'a'])
+})
+
+test("a host's lone section offers no hide, and with no field no reorder", () => {
+  const host = hostOf()
+  const lone = renderWithHost(host, SECTIONS.slice(0, 1))
+  expect(lone.queryByTitle('Hide "A"')).toBeNull()
+  lone.unmount()
+  const view = renderWithHost(host, SECTIONS)
+  const pill = view.getAllByTestId('group-label-text')[0]!.parentElement!
+  drag(pill, 5, 250)
+  expect(view.queryByTestId('group-drop-line')).toBeNull()
 })

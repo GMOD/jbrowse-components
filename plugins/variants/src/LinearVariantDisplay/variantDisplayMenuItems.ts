@@ -21,7 +21,7 @@ import {
   hiddenGroupsItems,
   resetSectionOrderItems,
 } from '@jbrowse/display-kit/groupByMenu'
-import { fieldHeading } from '@jbrowse/display-kit/sectionsHeading'
+import { sectionSortOf } from '@jbrowse/display-kit/sectionHost'
 import { sectionsMenuItemsFor } from '@jbrowse/display-kit/sectionsMenu'
 import {
   featureHeightMenuItem,
@@ -58,6 +58,7 @@ import { isSiteField } from '../shared/minorAlleleFrequencyUtils.ts'
 import { IMPACT_FIELD } from '../shared/variantConsequence.ts'
 import { VARIANT_FILTER_EXAMPLES } from '../shared/variantFilterExamples.ts'
 import { variantFilterFields } from '../shared/variantFilterFields.ts'
+import { recordsSectionHost } from './recordsBandViews.ts'
 import { sortReadsMenuItems } from './sortReadsMenu.ts'
 
 import type { LinearVariantDisplayModel } from './model.ts'
@@ -130,12 +131,7 @@ function genotypeRowShowItems(self: LinearVariantDisplayModel): MenuItem[] {
 function recordsShowItems(self: LinearVariantDisplayModel): MenuItem[] {
   const { lettered } = self.recordsLabelPlan
   return [
-    ...hiddenGroupsItems({
-      hiddenGroups: self.recordsHiddenGroups,
-      showAllGroups: () => {
-        self.showAllRecordsGroups()
-      },
-    }),
+    ...hiddenGroupsItems(recordsSectionHost(self)),
     ...labelCheckboxItems({
       showNames: self.recordsLabels.name !== '',
       showDescriptions: self.recordsLabels.description !== '',
@@ -175,12 +171,11 @@ const RECORD_FIELD = 'field' as const
 // With no rows the records group into sections by a record field, as on a
 // feature track; over rows the sample attributes band the rows.
 function groupByMenuItems(self: LinearVariantDisplayModel): MenuItem[] {
-  const facet = self.recordsFacet
-  const recordsField = facet?.field
+  const sections = recordsSectionHost(self)
   return !self.drawsGenotypeRows
     ? [
         groupByRadioMenuItem<never, typeof RECORD_FIELD>({
-          current: recordsField ? RECORD_FIELD : undefined,
+          current: self.recordsFacet ? RECORD_FIELD : undefined,
           options: [],
           onSelect: () => {},
           onNone: () => {
@@ -199,26 +194,8 @@ function groupByMenuItems(self: LinearVariantDisplayModel): MenuItem[] {
             },
           ],
         }),
-        ...sectionsMenuItemsFor(self, {
-          get knownSections() {
-            return self.recordsKnownSections
-          },
-          get hiddenGroups() {
-            return self.recordsHiddenGroups
-          },
-          sectionsHeading: fieldHeading(recordsField),
-          setHiddenGroups: keys => {
-            self.setRecordsHiddenGroups(keys)
-          },
-        }),
-        ...resetSectionOrderItems(
-          facet && {
-            domain: facet.sort,
-            setDomain: domain => {
-              self.setRecordsFacetSort(domain)
-            },
-          },
-        ),
+        ...sectionsMenuItemsFor(self, sections),
+        ...resetSectionOrderItems(sectionSortOf(sections)),
       ]
     : groupByRowAttributeMenuItems(self, self.rowColorFields)
 }
