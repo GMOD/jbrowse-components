@@ -113,6 +113,7 @@ import {
   groupsOfField,
   laneGenome,
   laneKeyIn,
+  touchesWindow,
 } from './copyLane.ts'
 import { featureWidgetOf } from './featureWidget.ts'
 import { dealGeneColors, geneColorRampOf, geneColors } from './geneColor.ts'
@@ -1505,11 +1506,8 @@ export function stateModelFactory(
           ...new Set((self.currentFetch.lanes ?? []).map(self.laneKey)),
         ].sort()
         const held = self.heldLaneOrder
-        const onWindow = regions.some(r =>
-          held?.window.some(
-            w => w.refName === r.refName && w.start < r.end && r.start < w.end,
-          ),
-        )
+        const onWindow =
+          held !== undefined && regions.some(r => touchesWindow(held.window, r))
         if (
           held?.anchor === anchor &&
           held.drawn.join('\t') === drawn.join('\t') &&
@@ -1844,12 +1842,7 @@ export function stateModelFactory(
           self.laneKey(frozen.anchor) ===
             self.laneKey(self.anchorAssemblyName) &&
           self.lgv.dynamicBlocks.contentBlocks.some(block =>
-            frozen.window.some(
-              r =>
-                r.refName === block.refName &&
-                r.start < block.end &&
-                block.start < r.end,
-            ),
+            touchesWindow(frozen.window, block),
           )
         )
       },
