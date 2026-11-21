@@ -1,4 +1,12 @@
-import { Box, Button, Typography } from '@mui/material'
+import ExpandMoreIcon from '@mui/icons-material/ExpandMore'
+import {
+  Accordion,
+  AccordionDetails,
+  AccordionSummary,
+  Box,
+  Button,
+  Typography,
+} from '@mui/material'
 import { observer } from 'mobx-react'
 
 import JobCard from './JobCard.tsx'
@@ -15,28 +23,27 @@ const JobsSection = observer(function JobsSection({
   onClear?: () => void
 }) {
   return (
-    <Box component="section" sx={{ mb: 2 }}>
-      <Box sx={{ display: 'flex', alignItems: 'center', minHeight: 30 }}>
-        <Typography
-          variant="subtitle2"
-          color="text.secondary"
-          component="h2"
-          sx={{ flexGrow: 1 }}
-        >
+    <Accordion defaultExpanded>
+      <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+        <Typography variant="h5" component="span">
           {title}
         </Typography>
+      </AccordionSummary>
+      <AccordionDetails
+        sx={{ display: 'flex', flexDirection: 'column', gap: 1, p: 1 }}
+      >
         {onClear ? (
-          <Button size="small" onClick={onClear}>
-            Clear
-          </Button>
+          <Box sx={{ display: 'flex', justifyContent: 'flex-end' }}>
+            <Button size="small" onClick={onClear}>
+              Clear
+            </Button>
+          </Box>
         ) : null}
-      </Box>
-      <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
         {jobs.map(job => (
           <JobCard key={job.name} job={job} />
         ))}
-      </Box>
-    </Box>
+      </AccordionDetails>
+    </Accordion>
   )
 })
 

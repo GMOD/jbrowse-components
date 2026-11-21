@@ -7,10 +7,10 @@ import type { JobState } from '../jobModel.ts'
 import type { JobsListModel } from '../model.ts'
 
 const sections: { state: JobState; title: string; clearable: boolean }[] = [
-  { state: 'running', title: 'Running', clearable: false },
-  { state: 'queued', title: 'Queued', clearable: false },
-  { state: 'finished', title: 'Completed', clearable: true },
-  { state: 'aborted', title: 'Aborted', clearable: true },
+  { state: 'running', title: 'Running jobs', clearable: false },
+  { state: 'queued', title: 'Queued jobs', clearable: false },
+  { state: 'finished', title: 'Completed jobs', clearable: true },
+  { state: 'aborted', title: 'Aborted jobs', clearable: true },
 ]
 
 const JobsListWidget = observer(function JobsListWidget({
