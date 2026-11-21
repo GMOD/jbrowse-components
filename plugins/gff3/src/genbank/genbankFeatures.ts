@@ -1,9 +1,10 @@
-import { parseFeatureTable } from './parseGenbank.ts'
+import { parseFeatureTable } from '@jbrowse/add-track-core'
+
 import { parseLocation, placeSpans } from './parseLocation.ts'
 
-import type { FeatureEntry } from './parseGenbank.ts'
 import type { Span } from './parseLocation.ts'
 import type { LazyGffFeature } from '@gmod/gff-nostream'
+import type { FeatureEntry } from '@jbrowse/add-track-core'
 
 const TRANSCRIPT_KEYS = new Set([
   'mRNA',

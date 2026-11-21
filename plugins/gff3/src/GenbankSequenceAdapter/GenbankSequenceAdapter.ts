@@ -1,3 +1,4 @@
+import { parseRecords, recordSequence } from '@jbrowse/add-track-core'
 import {
   BaseSequenceAdapter,
   cachedSetup,
@@ -5,8 +6,6 @@ import {
 import { SimpleFeature, fetchAndMaybeUnzipText } from '@jbrowse/core/util'
 import { openLocation } from '@jbrowse/core/util/io'
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
-
-import { parseRecords, recordSequence } from '../genbank/parseGenbank.ts'
 
 import type { GenbankSequenceAdapterConfig } from './configSchema.ts'
 import type {

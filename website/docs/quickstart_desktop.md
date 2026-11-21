@@ -125,7 +125,7 @@ Open the track's menu (the **⋮** button on the track, or its entry in the trac
 selector) and choose **Index track**. Indexing runs as a background job, after
 which names from that track can be typed into the location box. It is the in-app
 equivalent of `jbrowse text-index`, and appears only on a track it can index:
-GFF3, GTF and VCF, plain or tabix-indexed.
+GFF3, GTF and VCF, plain or tabix-indexed, and GenBank.
 
 ## Saving and reopening sessions
 

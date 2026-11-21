@@ -9,6 +9,13 @@ export {
   trackTypeForAdapter,
 } from './formats.ts'
 export {
+  type FeatureEntry,
+  type GenbankRecord,
+  parseFeatureTable,
+  parseRecords,
+  recordSequence,
+} from './genbank.ts'
+export {
   indexCandidateNames,
   indexSpellings,
   pairIndexFiles,

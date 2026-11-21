@@ -182,10 +182,10 @@ data that cannot be public needs
 jbrowse text-index
 ```
 
-Indexes the GFF3, GTF and VCF tracks in the config so names can be typed into
-the location box. Every other track is skipped with no message; name one with
-`--tracks` and it explains why. [](/docs/config_guides/text_searching) covers
-which attributes are indexed and how to narrow the set.
+Indexes the GFF3, GTF, VCF and GenBank tracks in the config so names can be
+typed into the location box. Every other track is skipped with no message; name
+one with `--tracks` and it explains why. [](/docs/config_guides/text_searching)
+covers which attributes are indexed and how to narrow the set.
 
 ## Tips
 

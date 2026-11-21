@@ -55,15 +55,18 @@ are the per-track form of `--attributes` and `--exclude`.
 
 ## Indexable formats
 
-`text-index` reads GFF3, GTF and VCF tracks and skips every other adapter type;
-[the CLI page](/docs/cli#jbrowse-text-index) lists the adapters. Two formats
-differ from GFF3:
+`text-index` reads GFF3, GTF, VCF and GenBank tracks and skips every other
+adapter type; [the CLI page](/docs/cli#jbrowse-text-index) lists the adapters.
+The others differ from GFF3:
 
 - **VCF** indexes the variant IDs plus any INFO fields named in `--attributes`.
 - **GTF** has no gene or transcript rows, only exon/CDS/UTR rows repeating a
   `gene_id`, so `text-index` groups rows by `gene_id` and `transcript_id` and
   indexes each gene or transcript once. `indexingFeatureTypesToExclude` does not
   apply to GTF, since dropping rows would only truncate those spans.
+- **GenBank** indexes `/gene`, `/locus_tag` and `/label` (for `Name`), once per
+  `/locus_tag`, so a gene and the CDS under it are one hit.
+  `indexingFeatureTypesToExclude` does not apply.
 
 ## TrixTextSearchAdapter config
 

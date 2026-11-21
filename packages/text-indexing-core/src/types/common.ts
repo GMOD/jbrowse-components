@@ -6,6 +6,8 @@ import { Readable } from 'node:stream'
 import { fileURLToPath } from 'node:url'
 import { createGunzip } from 'node:zlib'
 
+import { genbankExtension } from '@jbrowse/add-track-core'
+
 import { indexableAdapters } from '../util.ts'
 
 import type { LocalPathLocation, Track, UriLocation } from '../util.ts'
@@ -197,6 +199,7 @@ const adapterGuesses = [
   { regex: /\.gtf(\.b?gz)?$/i, type: 'GtfAdapter' },
   { regex: /\.vcf$/i, type: 'VcfAdapter' },
   { regex: /\.gff3?$/i, type: 'Gff3Adapter' },
+  { regex: genbankExtension, type: 'GenbankAdapter' },
 ]
 
 export function guessAdapterFromFileName(filePath: string): Track {

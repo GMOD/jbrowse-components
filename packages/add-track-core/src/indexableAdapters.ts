@@ -1,4 +1,4 @@
-export type IndexableFormat = 'gff3' | 'gtf' | 'vcf'
+export type IndexableFormat = 'gff3' | 'gtf' | 'vcf' | 'genbank'
 
 // single source of truth for what `jbrowse text-index` can index: which adapter
 // types, where each keeps its file location, and which line parser to use.
@@ -14,6 +14,7 @@ export const indexableAdapters: Record<
   GtfTabixAdapter: { locationKey: 'gtfGzLocation', format: 'gtf' },
   VcfAdapter: { locationKey: 'vcfLocation', format: 'vcf' },
   VcfTabixAdapter: { locationKey: 'vcfGzLocation', format: 'vcf' },
+  GenbankAdapter: { locationKey: 'genbankLocation', format: 'genbank' },
 }
 
 export function isSupportedIndexingAdapter(type = '') {

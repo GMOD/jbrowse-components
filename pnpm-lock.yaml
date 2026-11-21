@@ -1386,6 +1386,9 @@ importers:
       '@gmod/tabix':
         specifier: ^3.13.1
         version: 3.13.1
+      '@jbrowse/add-track-core':
+        specifier: workspace:^
+        version: link:../../packages/add-track-core
       '@jbrowse/core':
         specifier: workspace:^
         version: link:../../packages/core

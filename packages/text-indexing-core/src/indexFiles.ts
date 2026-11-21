@@ -1,3 +1,4 @@
+import { indexGenbank } from './types/genbankAdapter.ts'
 import { indexGff3 } from './types/gff3Adapter.ts'
 import { indexGtf } from './types/gtfAdapter.ts'
 import { indexVcf } from './types/vcfAdapter.ts'
@@ -77,6 +78,8 @@ export async function* indexFiles({
         })
       } else if (indexable.format === 'gtf') {
         yield* indexGtf(common)
+      } else if (indexable.format === 'genbank') {
+        yield* indexGenbank(common)
       } else {
         yield* indexVcf(common)
       }

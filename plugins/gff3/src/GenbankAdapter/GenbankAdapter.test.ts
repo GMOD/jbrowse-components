@@ -1,9 +1,9 @@
 import { readFileSync } from 'node:fs'
 
+import { parseFeatureTable, parseRecords } from '@jbrowse/add-track-core'
 import { codonTable, revcom } from '@jbrowse/core/util'
 import { originTailId } from '@jbrowse/core/util/originCut'
 
-import { parseFeatureTable, parseRecords } from '../genbank/parseGenbank.ts'
 import { adapters, fetch, protein, shape } from './genbank.fixture.ts'
 
 import type { Feature } from '@jbrowse/core/util'

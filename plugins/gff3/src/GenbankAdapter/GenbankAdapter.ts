@@ -1,3 +1,4 @@
+import { parseRecords } from '@jbrowse/add-track-core'
 import {
   BaseFeatureDataAdapter,
   cachedSetup,
@@ -12,7 +13,6 @@ import { ObservableCreate } from '@jbrowse/core/util/rxjs'
 
 import { Gff3Feature } from '../Gff3Feature.ts'
 import { genbankFeatures } from '../genbank/genbankFeatures.ts'
-import { parseRecords } from '../genbank/parseGenbank.ts'
 import { searchAcrossOrigin } from '../originSpanning.ts'
 
 import type { GenbankAdapterConfig } from './configSchema.ts'

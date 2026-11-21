@@ -81,7 +81,7 @@ export function prepareFileTrackConfigs(
     // "successfully created index" with no output
     if (!supported(config.adapter?.type)) {
       throw new Error(
-        `Cannot text-index ${file}: adapter type ${config.adapter?.type} is not indexable (only GFF3, GTF and VCF are supported)`,
+        `Cannot text-index ${file}: adapter type ${config.adapter?.type} is not indexable (only GFF3, GTF, VCF and GenBank are supported)`,
       )
     }
     return config

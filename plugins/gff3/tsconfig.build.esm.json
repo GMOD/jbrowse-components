@@ -1,4 +1,7 @@
 {
   "extends": "../../tsconfig.base.esm.json",
-  "references": [{ "path": "../../packages/core/tsconfig.build.esm.json" }]
+  "references": [
+    { "path": "../../packages/add-track-core/tsconfig.build.esm.json" },
+    { "path": "../../packages/core/tsconfig.build.esm.json" }
+  ]
 }
