@@ -1,9 +1,15 @@
+import { liftPlot } from '@jbrowse/core/configuration'
 import { runTransforms } from '@jbrowse/core/util/featureTransforms'
 import createJexlInstance from '@jbrowse/core/util/jexl'
 import SimpleFeature from '@jbrowse/core/util/simpleFeature'
 
+import { configSchemaFactory } from './configSchema.ts'
+import { markPlotSettingsOf } from './markPlot.ts'
+import { markProblems } from './markProblems.ts'
 import { KEEP_MAPPED_PASSING_UNIQUE_READS, defaultPlot } from './plotDefault.ts'
 import { scanPlotFields } from './scanPlotFields.ts'
+
+import type { PlotFields } from './scanPlotFields.ts'
 
 const readDepth = {
   mark: 'bar',
@@ -233,7 +239,7 @@ test('alignments to other genomes draw their identity, a row per genome', () => 
   expect(fields.genomes).toEqual(['CFT073', 'Sakai'])
   expect(fields.rows).toBe('mate.assemblyName')
   expect(defaultPlot(fields)).toEqual({
-    marks: [{ mark: 'rule', encoding: { y: 'identity', size: 2 } }],
+    marks: [{ mark: 'rule', encoding: { y: 'identity' } }],
     zero: false,
     rows: 'mate.assemblyName',
   })
@@ -248,4 +254,28 @@ test('a pairwise alignment is one row, and one with no identity draws its spans'
     listedSources: 0,
   })
   expect(defaultPlot(blocks)?.marks).toEqual([{ mark: 'rect' }])
+})
+
+test('every default plot is one the rule list finds nothing wrong with', () => {
+  const conf = configSchemaFactory().create({
+    type: 'LinearMarkDisplay',
+    displayId: 'defaults',
+  })
+  const fieldsList: PlotFields[] = [
+    { numeric: [], categorical: [], reads: true },
+    {
+      numeric: ['identity'],
+      categorical: [],
+      genomes: ['CFT073', 'Sakai'],
+      rows: 'mate.assemblyName',
+    },
+    { numeric: [], categorical: [], genomes: ['J99'] },
+    { numeric: [], categorical: [], mated: 'mate' },
+    { numeric: ['score'], categorical: [] },
+  ]
+  for (const fields of fieldsList) {
+    const { marks, rows } = defaultPlot(fields)!
+    const lifted = liftPlot(conf, rows ? { marks, rows } : { marks })
+    expect(markProblems(markPlotSettingsOf(lifted))).toEqual([])
+  }
 })

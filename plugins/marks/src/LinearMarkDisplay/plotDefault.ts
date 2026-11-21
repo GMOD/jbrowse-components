@@ -61,7 +61,7 @@ function marksOf(fields: PlotFields): DefaultPlot | undefined {
   if (fields.genomes) {
     return fields.numeric.includes(IDENTITY_FIELD)
       ? {
-          marks: [{ mark: 'rule', encoding: { y: IDENTITY_FIELD, size: 2 } }],
+          marks: [{ mark: 'rule', encoding: { y: IDENTITY_FIELD } }],
           zero: false,
         }
       : { marks: [{ mark: 'rect' }] }

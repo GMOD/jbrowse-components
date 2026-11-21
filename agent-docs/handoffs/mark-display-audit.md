@@ -18,11 +18,6 @@ traced it and nobody reread it; reread before fixing.
 
 ## Checked defects
 
-- **The genome-alignments default plot writes `size: 2` on a rule.**
-  `plotDefault.ts` `marksOf`; a rule's px channel is `strokeWidth`
-  (`markSpecs.ts`), so the rule draws at its default width and the display
-  reports its own default as an unread channel. `plotDefault.test.ts:236` pins
-  the wrong spelling.
 - **Editing an aggregate or window op in the form drops its `weight`.**
   `plotEdit.ts` `withAggregateOp` rebuilds the first op as `{ op, field, as }`.
   A `mean` weighted by `n_valid_cov`, the `MarkTransform.md` example, becomes
