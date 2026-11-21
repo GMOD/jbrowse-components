@@ -67,7 +67,7 @@ import { svClassColors, svClassScale } from './recordsSvColors.ts'
 import {
   DEFAULT_RECORDS_HEIGHT,
   RECORDS_BAND_BOUNDS,
-  boundHeldRecordsBand,
+  boundRecordsBand,
   dragRecordsHeight,
   recordsBandHeightOverRows,
   recordsBandStack,
@@ -832,13 +832,10 @@ export function recordsLayoutViews(self: RecordsLayoutHost) {
     }),
   )
   const overRows = computed(() =>
-    boundHeldRecordsBand({
-      active: self.showRecords,
+    boundRecordsBand({
+      band: { active: self.showRecords, height: heldHeight.get() },
       written: self.recordsHeightWritten,
       trackHeight: self.fitTargetHeight,
-      recordsHeight: self.recordsHeight,
-      recordsHeightHeld: self.recordsHeightHeld,
-      recordsContentHeight: fullStackHeight.get(),
     }),
   )
   // with the rows hidden the display's `height` reads this band, so only the
