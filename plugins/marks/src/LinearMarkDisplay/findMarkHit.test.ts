@@ -617,6 +617,19 @@ test('a link to another sequence keeps its two feet under a flatten root', () =>
   expect(hitLocString(hit!)).toBe('ctgA:101 → ctgB:51')
 })
 
+test("a link's hit carries the raw value its strokeWidth reads", () => {
+  const layer = linkLayer(['ctgA'], {
+    x2Region: Uint32Array.of(0),
+    size: Float32Array.of(3.5),
+  })
+  const hit = linkHit(
+    { layers: [layer] },
+    [{ ...BLOCK, screenEndPx: 400 }],
+    [{ refName: 'ctgA' }],
+  )
+  expect(hit?.size).toBe(3.5)
+})
+
 test("a far foot on no displayed region prints the assembly's refName, not the file's", () => {
   const data = withMateRegions(
     { layers: [linkLayer(['chrB'])] },

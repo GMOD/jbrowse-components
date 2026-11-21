@@ -68,6 +68,11 @@ export interface MarkHitInfo {
   /** The point painter's code for the instance's shape, if its mark reads one. */
   glyph: number | undefined
   /**
+   * The raw value a link's `strokeWidth` field reads, NaN where it holds no
+   * number; undefined where the mark reads none.
+   */
+  size?: number
+  /**
    * The line naming the instance's feature, `tooltip.field` read off it in
    * the worker; absent where the field is empty or read nothing.
    */
@@ -282,6 +287,7 @@ export function findMarkHit(
       rampValueBits(layer.colorValue)[hit.index] === RAMP_NO_VALUE_BITS,
     heldColor: layer.heldColor,
     glyph: layer.glyph?.[hit.index],
+    size: layer.size?.[hit.index],
     ...(tooltip ? { tooltip } : {}),
     row: layer.row?.[hit.index],
     screenX: hit.x,

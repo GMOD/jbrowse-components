@@ -238,3 +238,29 @@ test('tooltip.show off opens no box', async () => {
     screen.findByRole('tooltip', {}, { timeout: 200 }),
   ).rejects.toThrow()
 })
+
+const STROKE_BY_COUNT = [{ size: { field: 'count', scale: 'log' as const } }]
+
+test("a link's strokeWidth field prints its value", async () => {
+  const box = await tooltip({
+    hoveredFeature: { ...HIT, size: 12.5 },
+    encodings: STROKE_BY_COUNT,
+  })
+  expect(box.textContent).toContain('count: 12.5')
+})
+
+test("a link's strokeWidth field holding no number prints no value", async () => {
+  const box = await tooltip({
+    hoveredFeature: { ...HIT, size: Number.NaN },
+    encodings: STROKE_BY_COUNT,
+  })
+  expect(box.textContent).toContain('count: (no value)')
+})
+
+test('a constant strokeWidth prints no row', async () => {
+  const box = await tooltip({
+    hoveredFeature: { ...HIT, size: Number.NaN },
+    encodings: [{ size: 3 }],
+  })
+  expect(box.textContent).not.toContain('no value')
+})

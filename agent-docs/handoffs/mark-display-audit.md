@@ -34,11 +34,6 @@ traced it and nobody reread it; reread before fixing.
 
 ## Reader only: hover, legend and menus
 
-- **A link's `strokeWidth` field shows in neither the tooltip nor a key.**
-  `findMarkHit.ts` `MarkHitInfo` carries no size, `MarkTooltip.tsx`
-  `markTooltipRows` lists y, color, shape and row. Trigger: the BEDPE loops
-  config in `website/docs/user_guides/hic_track.md`. A tooltip row is small; a
-  width key is a feature, not a defect.
 - **A point or rect sharing the flatten root with a cross-sequence link
   still hovers a span mixing the two sequences.** `featureInstances.ts`
   `featureSpan` takes min and max over every instance of the root, the

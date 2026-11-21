@@ -3,6 +3,7 @@ import { LegendSwatchGlyph } from '@jbrowse/core/ui/LegendSwatchGlyph'
 import SanitizedHTML from '@jbrowse/core/ui/SanitizedHTML'
 import { abgrToCssRgba } from '@jbrowse/core/util/colorBits'
 import { isJexl } from '@jbrowse/core/util/jexlStrings'
+import { NO_VALUE_LABEL } from '@jbrowse/core/util/markEncoding'
 import { SHAPE_CODES, SHAPE_NAMES } from '@jbrowse/core/util/shapeNames'
 import { keySlot } from '@jbrowse/render-core/marks'
 import { toP } from '@jbrowse/wiggle-core'
@@ -123,6 +124,27 @@ function shapeRow(
     : undefined
 }
 
+function strokeWidthRow(
+  hit: MarkHitInfo,
+  encoding: MarkEncoding | undefined,
+): ChannelRow | undefined {
+  const { size } = hit
+  const declared = encoding?.size
+  const field =
+    typeof declared === 'object'
+      ? declared.field
+      : typeof declared === 'string'
+        ? declared
+        : undefined
+  return size === undefined || field === undefined
+    ? undefined
+    : {
+        channel: 'strokeWidth',
+        field: channelName(field),
+        value: Number.isNaN(size) ? NO_VALUE_LABEL : toP(size, 4),
+      }
+}
+
 function rowRow(
   hit: MarkHitInfo,
   encoding: MarkEncoding | undefined,
@@ -151,8 +173,9 @@ function rowRow(
 
 /**
  * Every channel the hovered mark encodes, each off the hovered instance: the
- * value channel, then color, shape and the band, so a reader sees the fields
- * the plot was drawn from rather than the two it happens to print.
+ * value channel, then color, shape, stroke width and the band, so a reader
+ * sees the fields the plot was drawn from rather than the two it happens to
+ * print.
  */
 function markTooltipRows(
   hit: MarkHitInfo,
@@ -173,6 +196,7 @@ function markTooltipRows(
       : undefined,
     colorRow(hit, encoding, sections),
     shapeRow(hit, encoding, sections),
+    strokeWidthRow(hit, encoding),
     rowRow(hit, encoding, facetLayout, rows, rowTable),
   ].filter(row => row !== undefined)
 }
