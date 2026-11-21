@@ -87,17 +87,8 @@ import {
 } from './bandStackViews.ts'
 import { buildReadIdsByChainName } from './chainFields.ts'
 import { rgb255 } from './colorUtils.ts'
-import { firstSectionHighlight } from './components/arcHitTest.ts'
 import { computeVisibleLabels } from './components/computeVisibleLabels.ts'
-import { selectedConnectorHighlight } from './components/connectorHitTest.ts'
-import { JUNCTION_FEATURE_ID_PREFIX } from './components/junctionArcs.ts'
-import { selectedJunctionHighlight } from './components/junctionHitTest.ts'
 import { nonReferenceAt } from './components/positionStats.ts'
-import {
-  readHighlightInk,
-  readsToLight,
-  slotsOfIds,
-} from './components/readHighlightInk.ts'
 import { bandScreenTop } from './components/sectionScreen.ts'
 import {
   alignmentsConfigProblems,
@@ -117,7 +108,8 @@ import {
   orderedGroups,
   splitOverflowKeys,
 } from './groupedDataMaps.ts'
-import { NO_CONNECTOR_READ_IDS, nextHover } from './hoverState.ts'
+import { highlightViews } from './highlightViews.ts'
+import { nextHover } from './hoverState.ts'
 import { computeInsertSizeTicks } from './insertSizeTicks.ts'
 import { junctionViews } from './junctionViews.ts'
 import {
@@ -154,13 +146,9 @@ import {
   groupLayoutViews,
   pileupLayoutViews,
 } from './pileupLayoutViews.ts'
-import { chainReadIdsAt, findRead, readInfo } from './readLookup.ts'
+import { findRead, readInfo } from './readLookup.ts'
 import { readCloudDomainBp } from './renderers/arcMarks.ts'
-import { connectorBandState } from './renderers/connectorMarks.ts'
-import {
-  junctionsBandState,
-  junctionLabels,
-} from './renderers/junctionMarks.ts'
+import { junctionLabels } from './renderers/junctionMarks.ts'
 import { fetchFeatureDetails, fetchFeaturesForRegion } from './rpcCalls.ts'
 import { rpcPropsViews, sortTagViews } from './rpcPropsViews.ts'
 import {
@@ -177,7 +165,6 @@ import type {
   WorkerPileupData,
 } from '../RenderAlignmentDataRPC/types'
 import type { ArcCategory } from '../shaders/palettes.ts'
-import type { ReadSlot } from '../shared/readSlot.ts'
 import type {
   BasesPatch,
   ColumnSortField,
@@ -189,7 +176,6 @@ import type {
   BaseLinearAlignmentsDisplayConfigSchema,
 } from './baseConfigSchema.ts'
 import type { ReadColorCategory } from './colorUtils.ts'
-import type { ArcHighlight } from './components/arcHitTest.ts'
 import type { ContextMenuHit } from './components/hitTestPipeline.ts'
 import type { ScrollModel } from './components/sectionScreen.ts'
 import type { AlignmentsUnit } from './constants.ts'
@@ -205,7 +191,6 @@ import type { ExportedFeaturesRequest } from '@jbrowse/core/pluggableElementType
 import type { ContextMenuAnchor, MenuItem } from '@jbrowse/core/ui'
 import type { AdapterRefName, Feature, Region } from '@jbrowse/core/util'
 import type { HeightMode } from '@jbrowse/display-kit/heightMode'
-import type { HighlightRect } from '@jbrowse/display-kit/highlightHost'
 import type { IndexedRegion } from '@jbrowse/display-kit/planRegionFetch'
 import type { ExportSvgDisplayOptions } from '@jbrowse/display-kit/types'
 import type { IModelType, Instance } from '@jbrowse/mobx-state-tree'
@@ -377,61 +362,6 @@ function stateModelFactory(
          * write that cannot miss a field. `setHoverState` writes it whole.
          */
         hoverState: undefined,
-      }))
-      .views(self => ({
-        /**
-         * #getter
-         */
-        get featureIdUnderMouse() {
-          return self.hoverState?.featureIdUnderMouse
-        },
-        /**
-         * #getter
-         */
-        get mouseoverExtraInformation() {
-          return self.hoverState?.mouseoverExtraInformation
-        },
-        /**
-         * #getter
-         * The two read ids at the ends of the connector under the cursor.
-         */
-        get hoveredConnectorReadIds() {
-          return (
-            self.hoverState?.hoveredConnectorReadIds ?? NO_CONNECTOR_READ_IDS
-          )
-        },
-        /**
-         * #getter
-         * The junction or split-read arc under the cursor, whose
-         * supporting reads the hover lights.
-         */
-        get hoveredJunction() {
-          return self.hoverState?.hoveredJunction
-        },
-        /**
-         * #getter
-         */
-        get overCigarItem() {
-          return self.hoverState?.overCigarItem ?? false
-        },
-        /**
-         * #getter
-         * Screen-px coverage band of the section under a coverage/indicator
-         * hover; the tooltip draws its vertical hover bar on it. `undefined`
-         * when not hovering.
-         */
-        get hoverCoverageBand() {
-          return self.hoverState?.hoverCoverageBand
-        },
-        /**
-         * #getter
-         * The read-connection arc under the cursor, as the ink
-         * `ArcHoverOverlay` draws. A snapshot from the mousemove that found
-         * the arc, like its tooltip.
-         */
-        get hoveredArcHighlight() {
-          return self.hoverState?.hoveredArcHighlight
-        },
       }))
       .views(self => ({
         /**
@@ -985,44 +915,6 @@ function stateModelFactory(
 
         /**
          * #method
-         * Read ids sharing a chain with the named read, its own included. Empty
-         * outside chain mode, for a read in no chain, and for an id no fetched
-         * region holds. The hover, the right-click pin and the selection all
-         * light a chain through it.
-         */
-        readIdsSharingChainWith(featureId: string) {
-          const hit =
-            self.unit === 'chain'
-              ? self.findFeatureInRpcData(featureId)
-              : undefined
-          return hit
-            ? chainReadIdsAt(hit.rpcData, hit.idx, self.readIdsByChainName)
-            : []
-        },
-
-        /**
-         * #getter
-         * Read ids of the selected read's chain, empty outside chain mode.
-         */
-        get selectedChainReadIds() {
-          const id = self.selectedFeatureId
-          return id === undefined ? [] : this.readIdsSharingChainWith(id)
-        },
-
-        /**
-         * #getter
-         * Read ids the hover lights as one: the chain of the read or connector
-         * under the cursor, else a connector's two ends.
-         */
-        get hoverChainReadIds() {
-          const ends = self.hoveredConnectorReadIds
-          const id = self.featureIdUnderMouse ?? ends[0]
-          const chain = id === undefined ? [] : this.readIdsSharingChainWith(id)
-          return chain.length > 0 ? chain : ends
-        },
-
-        /**
-         * #method
          */
         getFeatureInfoById(featureId: string) {
           const hit = self.findFeatureInRpcData(featureId)
@@ -1195,132 +1087,6 @@ function stateModelFactory(
 
         /**
          * #getter
-         * The selected splice junction's ink, for the overlay that outlines
-         * it. Reads the pan, and only while a junction is selected.
-         */
-        get selectedJunctionHighlight(): ArcHighlight | undefined {
-          const id = self.selectedFeatureId
-          return id?.startsWith(JUNCTION_FEATURE_ID_PREFIX)
-            ? firstSectionHighlight(
-                this.renderState,
-                self.renderSections,
-                self.themed.junctionFeedsByGroup,
-                (feeds, groupKey, sec, state) =>
-                  selectedJunctionHighlight(
-                    id,
-                    groupKey,
-                    feeds,
-                    junctionsBandState(state, sec),
-                  ),
-              )
-            : undefined
-        },
-
-        /**
-         * #getter
-         * The connectors of the selected read or chain, for the overlay that
-         * outlines them. Reads the pan, and only while one is selected.
-         */
-        get selectedConnectorHighlight(): ArcHighlight | undefined {
-          const id = self.selectedFeatureId
-          let highlight: ArcHighlight | undefined
-          if (id !== undefined && self.connectorPairSections.length > 0) {
-            const selected = new Set([id, ...self.selectedChainReadIds])
-            highlight = firstSectionHighlight(
-              this.renderState,
-              self.renderSections,
-              self.themed.connectorFeedsByGroup,
-              (feeds, _groupKey, sec, state) =>
-                selectedConnectorHighlight(
-                  selected,
-                  feeds,
-                  sec,
-                  connectorBandState(state, sec),
-                ),
-            )
-          }
-          return highlight
-        },
-
-        /**
-         * #getter
-         * The boxes of the hovered read or chain, for the chrome's highlight.
-         * Not in `renderState`: the hovered id changes on nearly every
-         * mousemove, and routing it through the canvas would repaint the whole
-         * pileup.
-         */
-        get hoverInk(): HighlightRect[] {
-          const junction = self.hoveredJunction
-          if (junction) {
-            return this.slotInk(
-              self.junctionSupportingReadSlots(junction),
-              false,
-            )
-          }
-          const { ids, strong } = this.hoverReads
-          return this.readInk(ids, strong)
-        },
-
-        /**
-         * #getter
-         * The reads `hoverInk` boxes, and whether it boxes them as one chain.
-         */
-        get hoverReads() {
-          return readsToLight({
-            unit: self.unit,
-            chainReadIds: self.hoverChainReadIds,
-            readId: self.featureIdUnderMouse,
-          })
-        },
-
-        /**
-         * #getter
-         * The boxes of the selected read, or of every read in the selected
-         * chain — the same walk as `hoverInk`, so a click repaints the guide's
-         * divs, not the canvas. Not in the SVG export, as no display's
-         * selection is.
-         */
-        get selectionInk(): HighlightRect[] {
-          const { ids, strong } = readsToLight({
-            unit: self.unit,
-            chainReadIds: self.selectedChainReadIds,
-            readId: self.selectedFeatureId,
-          })
-          return this.readInk(ids, strong)
-        },
-
-        /**
-         * #method
-         * The boxes the named reads painted, every region's copy, clipped to
-         * their sections. Reading `readIdIndex` builds over the whole fetched
-         * dataset, so it waits until something is hovered or selected.
-         */
-        readInk(ids: readonly string[], strong: boolean): HighlightRect[] {
-          return ids.length > 0
-            ? this.slotInk(slotsOfIds(ids, self.readIdIndex), strong)
-            : []
-        },
-
-        /**
-         * #method
-         * The boxes the reads in these slots painted, clipped to their
-         * sections.
-         */
-        slotInk(slots: readonly ReadSlot[], strong: boolean): HighlightRect[] {
-          return self.host.initialized && slots.length > 0
-            ? readHighlightInk({
-                blocks: self.renderBlocks,
-                sections: self.renderSections,
-                slots,
-                state: this.renderState,
-                scroll: self.scrollModel,
-                strong,
-              })
-            : []
-        },
-
-        /**
-         * #getter
          * Floored at 1000bp, so an all-concordant set never divides by near
          * zero.
          */
@@ -1406,6 +1172,7 @@ function stateModelFactory(
           return scales
         },
       }))
+      .views(self => highlightViews(self))
       .views(self => sortTagViews(self))
       .views(self => rpcPropsViews(self))
       .views(self => ({
