@@ -38,7 +38,9 @@ export function withAdapterId<T extends Record<string, unknown>>(conf: T) {
  * two instances, each reading the reference of its genome, and an instance
  * never changes reference for its life. Every other adapter keys on its config
  * alone: a synteny adapter is fetched from each of its assemblies and reads no
- * reference.
+ * reference. A sub-adapter is built with the reference its parent was built
+ * with, so a wrapper whose members can be any type (`MultiWiggleAdapter`)
+ * declares this too, or a reference-reading member gets none.
  */
 export const READS_REFERENCE = 'readsReference'
 

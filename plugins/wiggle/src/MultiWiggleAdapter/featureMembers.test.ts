@@ -3,6 +3,7 @@ import path from 'node:path'
 import PluginManager from '@jbrowse/core/PluginManager'
 import { getAdapter } from '@jbrowse/core/data_adapters/dataAdapterCache'
 import BedPlugin from '@jbrowse/plugin-bed'
+import SequencePlugin from '@jbrowse/plugin-sequence'
 
 import WigglePlugin from '../index.ts'
 
@@ -17,14 +18,23 @@ function local(localPath: string) {
 
 const region = { refName: 'ctgA', start: 0, end: 50_000, assemblyName: 'v' }
 
-async function stackOf(subadapters: Record<string, unknown>[]) {
-  const pm = new PluginManager([new BedPlugin(), new WigglePlugin()])
+async function stackOf(
+  subadapters: Record<string, unknown>[],
+  sequenceAdapter?: Record<string, unknown>,
+) {
+  const pm = new PluginManager([
+    new BedPlugin(),
+    new SequencePlugin(),
+    new WigglePlugin(),
+  ])
   pm.createPluggableElements()
   pm.configure()
-  const { dataAdapter } = await getAdapter(pm, 'test', {
-    type: 'MultiWiggleAdapter',
-    subadapters,
-  })
+  const { dataAdapter } = await getAdapter(
+    pm,
+    'test',
+    { type: 'MultiWiggleAdapter', subadapters },
+    sequenceAdapter,
+  )
   return dataAdapter as MultiWiggleAdapter
 }
 
@@ -96,4 +106,21 @@ test('gives no estimate when no member estimates', async () => {
     },
   ])
   expect(await adapter.getRegionByteSize([region])).toBeUndefined()
+})
+
+test('reads the request reference through a sequence search member', async () => {
+  const adapter = await stackOf(
+    [{ type: 'SequenceSearchAdapter', search: 'AATAAA', source: 'polyA' }],
+    {
+      type: 'IndexedFastaAdapter',
+      fastaLocation: local(`${volvox}/volvox.fa`),
+      faiLocation: local(`${volvox}/volvox.fa.fai`),
+    },
+  )
+  expect(await adapter.getRefNames()).toEqual(['ctgA', 'ctgB'])
+  const features = await adapter.getFeaturesArray(region)
+  expect(features.length).toBeGreaterThan(0)
+  expect(new Set(features.map(f => f.get('source')))).toEqual(
+    new Set(['polyA']),
+  )
 })

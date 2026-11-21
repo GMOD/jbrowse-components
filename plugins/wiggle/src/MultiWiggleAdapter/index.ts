@@ -1,3 +1,4 @@
+import { READS_REFERENCE } from '@jbrowse/core/data_adapters/dataAdapterCache'
 import AdapterType from '@jbrowse/core/pluggableElementTypes/AdapterType'
 
 import configSchema from './configSchema.ts'
@@ -11,7 +12,7 @@ export default function MultiWiggleAdapterF(pluginManager: PluginManager) {
         name: 'MultiWiggleAdapter',
         displayName: 'Multi-wiggle adapter',
         configSchema,
-        adapterCapabilities: ['hasResolution'],
+        adapterCapabilities: ['hasResolution', READS_REFERENCE],
         adapterMetadata: {
           hiddenFromGUI: true,
         },

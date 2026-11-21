@@ -2103,6 +2103,9 @@ importers:
       '@jbrowse/plugin-bed':
         specifier: workspace:^
         version: link:../bed
+      '@jbrowse/plugin-sequence':
+        specifier: workspace:^
+        version: link:../sequence
 
   products/jbrowse-build-your-own/examples-site:
     dependencies:

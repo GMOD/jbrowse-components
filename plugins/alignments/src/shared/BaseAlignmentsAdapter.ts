@@ -19,15 +19,16 @@ export abstract class BaseAlignmentsAdapter<
    * sequence — a ChromSizesAdapter is a legitimate assembly adapter with no
    * getSequence, and reading through it would throw rather than degrade to "no
    * reference available". Built with none, the read throws: the request that
-   * created the instance named no assembly, and a mismatch drawn against a
-   * guessed reference says nothing.
+   * created the instance named no assembly or its wrapper's type did not
+   * declare READS_REFERENCE, and a mismatch drawn against a guessed reference
+   * says nothing.
    */
   getSequenceAdapter = cachedSetup({
     setup: async () => {
       const config = this.sequenceAdapterConfig
       if (!config || !this.getSubAdapter) {
         throw new Error(
-          `${this.config.type} was built with no reference: the request that created it named no assembly`,
+          `${this.config.type} was built with no reference: the request that created it named no assembly, or it is a member of a wrapper whose adapter type does not declare READS_REFERENCE`,
         )
       }
       const { dataAdapter } = await this.getSubAdapter(config)

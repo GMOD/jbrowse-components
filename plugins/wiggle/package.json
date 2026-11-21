@@ -67,6 +67,7 @@
   "sideEffects": false,
   "devDependencies": {
     "@jbrowse/display-test-utils": "workspace:^",
-    "@jbrowse/plugin-bed": "workspace:^"
+    "@jbrowse/plugin-bed": "workspace:^",
+    "@jbrowse/plugin-sequence": "workspace:^"
   }
 }

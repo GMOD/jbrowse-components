@@ -26,7 +26,7 @@ export async function getSequenceSubAdapter(
   const config = configured ?? adapter.sequenceAdapterConfig
   if (!config) {
     throw new Error(
-      `${adapter.config.type} was built with no reference: the request that created it named no assembly, and no \`sequenceAdapter\` slot is set`,
+      `${adapter.config.type} was built with no reference: the request that created it named no assembly, or it is a member of a wrapper whose adapter type does not declare READS_REFERENCE, and no \`sequenceAdapter\` slot is set`,
     )
   }
   const result = await adapter.getSubAdapter?.(config)
