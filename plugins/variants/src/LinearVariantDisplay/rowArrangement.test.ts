@@ -2,7 +2,6 @@ import { setConf } from '@jbrowse/core/configuration'
 import { getLeafNames } from '@jbrowse/tree-sidebar'
 
 import { runGenotypeClustering } from '../shared/runGenotypeClustering.ts'
-import { tooltipPlainText } from './components/getTooltipRows.ts'
 import { RECORDS_BAND_OFF, createTestEnvironment } from './testEnv.ts'
 
 // Sample metadata as samplesTsv supplies it: `population` is what "Color by…"
@@ -711,7 +710,10 @@ describe('the tooltip over a haplotype row', () => {
       samplePloidy: { S0: 2, S1: 2, S2: 2 },
     } as unknown as Parameters<typeof display.setCellData>[0])
     const headings = display.drawnRows.map(
-      source => tooltipPlainText(source).split('\n')[0],
+      source =>
+        display
+          .tooltipTextOf({ name: source.name, genotype: '' })
+          ?.split('\n')[0],
     )
     expect(headings).toEqual([
       'S0 HP1',

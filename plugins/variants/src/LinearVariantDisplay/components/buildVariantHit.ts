@@ -135,8 +135,8 @@ export function cellHit({
  * The same fields for a hover naming a RECORD rather than a (record, sample)
  * cell: the records band, which has no row to read a genotype off. The sample
  * fields are `''`, so one hover slot serves both bands: `getTooltipRows` drops
- * an empty value, and `hoveredTooltipSource` reads the empty `name` as no row
- * to merge.
+ * an empty value, and `hoveredTooltipSource` reads the empty `name` as no
+ * row's sample.
  * `line` is the record's line, what `records.tooltip.field` reads, the
  * record's name by default.
  */

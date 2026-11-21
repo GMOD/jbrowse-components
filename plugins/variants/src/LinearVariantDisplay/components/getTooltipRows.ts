@@ -5,9 +5,11 @@ import {
   capitalizeFirst,
 } from '../../shared/constants.ts'
 
+import type { Source } from '../../shared/types.ts'
+
 // Friendly labels + display order for the variant fields that buildVariantHit
-// produces (VariantTooltipFields). Metadata attributes carried by the source
-// (from samplesTsv) render after these, capitalized to match the "Color samples
+// produces (VariantTooltipFields). The hovered row's sample metadata (from
+// samplesTsv) renders after these, capitalized to match the "Color samples
 // by" menu and legend labels.
 const VARIANT_FIELD_LABELS: Record<string, string> = {
   featureName: 'Name',
@@ -20,25 +22,31 @@ const VARIANT_FIELD_LABELS: Record<string, string> = {
   pile: 'Drawn here',
 }
 
-// VariantTooltipFields entries that exist only to carry hit-test/click identity
-// (raw feature id, hover-dedup region) — never user-facing.
-const INTERNAL_VARIANT_KEYS = ['featureId', 'displayedRegionIndex']
-
 interface TooltipRow {
   key: string
   label: string
   value: string
 }
 
-// Turn a hovered {...source, ...hoveredFeature} record into ordered,
-// human-labeled rows: variant identity first (fixed order), then sample
-// metadata attributes (capitalized). Skips internal plumbing keys and
-// empty/undefined values so the table stays free of blank rows.
-export function getTooltipRows(source: Record<string, unknown>): TooltipRow[] {
+export interface TooltipSource {
+  name?: string
+  sample?: Source
+  [key: string]: unknown
+}
+
+// The friendly display override, matching the sidebar legend; `name` is the
+// stable hit-test identity.
+export function tooltipHeading(source: TooltipSource) {
+  return source.sample?.label ?? source.name
+}
+
+// Turn a hovered record into ordered, human-labeled rows: variant identity
+// first (fixed order), then the hovered row's sample metadata (capitalized),
+// a column named like a variant field included. Skips internal plumbing keys
+// and empty/undefined values so the table stays free of blank rows.
+export function getTooltipRows(source: TooltipSource): TooltipRow[] {
   const rows: TooltipRow[] = []
-  const shown = new Set<string>(INTERNAL_VARIANT_KEYS)
   for (const key in VARIANT_FIELD_LABELS) {
-    shown.add(key)
     const value = source[key]
     if (value !== undefined && value !== '') {
       rows.push({
@@ -48,11 +56,20 @@ export function getTooltipRows(source: Record<string, unknown>): TooltipRow[] {
       })
     }
   }
-  for (const key in source) {
-    if (!shown.has(key) && !INTERNAL_SOURCE_KEYS.has(key)) {
-      const value = source[key]
-      if (value !== undefined && value !== '') {
-        rows.push({ key, label: capitalizeFirst(key), value: String(value) })
+  const { sample } = source
+  if (sample) {
+    for (const key in sample) {
+      const value = sample[key]
+      if (
+        !INTERNAL_SOURCE_KEYS.has(key) &&
+        value !== undefined &&
+        value !== ''
+      ) {
+        rows.push({
+          key: `sample.${key}`,
+          label: capitalizeFirst(key),
+          value: String(value),
+        })
       }
     }
   }
@@ -60,12 +77,8 @@ export function getTooltipRows(source: Record<string, unknown>): TooltipRow[] {
 }
 
 // The tooltip as plain text, heading first, for "Copy tooltip text"
-export function tooltipPlainText(source: {
-  name?: string
-  label?: string
-  [key: string]: unknown
-}) {
-  const heading = source.label ?? source.name
+export function tooltipPlainText(source: TooltipSource) {
+  const heading = tooltipHeading(source)
   return [
     ...(heading ? [heading] : []),
     ...getTooltipRows(source).map(

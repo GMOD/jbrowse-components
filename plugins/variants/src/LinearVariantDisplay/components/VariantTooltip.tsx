@@ -3,7 +3,9 @@ import SanitizedHTML from '@jbrowse/core/ui/SanitizedHTML'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { observer } from 'mobx-react'
 
-import { getTooltipRows } from './getTooltipRows.ts'
+import { getTooltipRows, tooltipHeading } from './getTooltipRows.ts'
+
+import type { TooltipSource } from './getTooltipRows.ts'
 
 const useStyles = makeStyles()({
   table: {
@@ -39,19 +41,12 @@ const VariantTooltip = observer(function VariantTooltip({
   x,
   y,
 }: {
-  source: {
-    rowColor?: string
-    name?: string
-    label?: string
-    [key: string]: unknown
-  }
+  source: TooltipSource
   x: number
   y: number
 }) {
   const { classes } = useStyles()
-  // Prefer the friendly display override, matching the sidebar legend
-  // (label ?? name); `name` is the stable hit-test identity.
-  const heading = source.label ?? source.name
+  const heading = tooltipHeading(source)
   const rows = getTooltipRows(source)
 
   // a record whose band labels say everything has nothing left to show, as a
@@ -60,10 +55,10 @@ const VariantTooltip = observer(function VariantTooltip({
     <BaseTooltip clientPoint={{ x, y }}>
       {heading ? (
         <div className={classes.header}>
-          {source.rowColor ? (
+          {source.sample?.rowColor ? (
             <div
               className={classes.colorBox}
-              style={{ backgroundColor: source.rowColor }}
+              style={{ backgroundColor: source.sample.rowColor }}
             />
           ) : null}
           <b>{heading}</b>

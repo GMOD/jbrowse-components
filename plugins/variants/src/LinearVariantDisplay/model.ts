@@ -1228,12 +1228,11 @@ export function stateModelFactory(
           },
           /**
            * #method
-           * A hit as the tooltip table reads it: the record's fields over the
-           * hit row's sample metadata.
+           * A hit as the tooltip table reads it: the record's fields, and the
+           * hit row's sample metadata beside them.
            */
           tooltipSourceOf(hit: VariantHoverFields) {
-            const source = self.sourceMap.get(hit.name)
-            return source ? { ...source, ...hit } : hit
+            return { ...hit, sample: self.sourceMap.get(hit.name) }
           },
           /**
            * #method
