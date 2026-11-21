@@ -1,6 +1,6 @@
 ---
 status: Accepted
-summary: "A hub is a saved pointer plus a refetched track list; the session saves only the hub tracks a user opened or edited, keeps that copy over the hub's current entry, and names a hub track by trackId alone, which collides and is the known cost"
+summary: "A hub is a saved pointer plus a refetched track list; the session saves only the hub tracks a user opened or edited, keeps that copy over the hub's current entry, and names a hub track by trackId alone, which can collide"
 ---
 
 # ADR-280: A hub is a pointer plus the tracks a user touched
