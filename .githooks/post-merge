@@ -16,6 +16,9 @@
 #   pnpm check-config-read-types
 #                           ~10s on CI, 110s and 2GB here under load: its own
 #                           whole-repo program, too slow for pre-push
+#   pnpm build:esm           ~1.7s incremental, a minute or more cold
+#   pnpm check-declaration-leaks
+#                           a walk over the emitted .d.ts
 #
 # Typecheck warm is 2s (scripts/typecheck.ts measures it: 1.8s default, 2.3s at
 # --checkers 1, against 45-60s cold), so the gate that caught the worst of that
@@ -26,6 +29,13 @@
 # ONE commit: a rule that fires on a file the commit did not touch -- a type
 # argument that became redundant when someone changed the type elsewhere -- is
 # invisible to it and lands. That is exactly what `mst-reflection.ts` did.
+#
+# build:esm is here because typecheck is `--noEmit` and cannot see declaration
+# emit. A factory that composes another package's model fails the build with
+# TS2883 when the base package's exports map cannot name a type its members
+# mention, or, in a package without a map, emits a `.d.ts` naming a `/src/` path
+# that only check-declaration-leaks catches. Without it here, each one
+# surfaced at whoever pushed next.
 #
 # WHY THIS EXISTS WHEN pre-push ALREADY CHECKS. It checks on push, and nothing
 # here pushes: agents land with `git -C <primary-checkout> merge --ff-only`, so
@@ -64,10 +74,12 @@
 # READ-ONLY, because the primary checkout is shared. `--check`, `--noEmit` and a
 # bare `lint:eslint` all report and write nothing, so this can never rewrite
 # another agent's uncommitted work -- the hazard pre-push's header spends two
-# paragraphs on, and the reason this does not just run the fixers. The one
-# exception is tsc's `tsconfig.tsbuildinfo`, which is what makes the warm
-# typecheck 2s rather than 45s: gitignored build state, not anyone's work, and
-# the lock below keeps two of these from writing it at once. An agent running
+# paragraphs on, and the reason this does not just run the fixers. The
+# exceptions are gitignored build state, not anyone's work: tsc's
+# `tsconfig.tsbuildinfo`, which is what makes the warm typecheck 2s rather than
+# 45s, and build:esm's `esm/` output and its tsbuildinfo. The lock below keeps
+# two of these from writing them at once; a pre-push in this checkout runs
+# build:esm too and can still overlap one. An agent running
 # `pnpm typecheck` by hand IN THE PRIMARY CHECKOUT could still race it; agents
 # work in worktrees, which have their own.
 #
@@ -125,12 +137,26 @@ mkdir "$lock" 2>/dev/null || exit 0
   # 2s warm, and the only gate here that sees a type error in `products/`.
   tsc=$(pnpm typecheck 2>&1) && tsc_status=0 || tsc_status=$?
   cfg=$(pnpm check-config-read-types 2>&1) && cfg_status=0 || cfg_status=$?
+  # A dependency edit leaves each package's tsbuildinfo describing the old
+  # declarations, and the incremental build then fails on them falsely, as
+  # pre-push's copy of this step says.
+  if printf '%s\n' "$range" | grep -Eq '(^|/)package\.json$|^pnpm-lock\.yaml$'; then
+    find packages plugins products example-plugins -name tsconfig.build.esm.tsbuildinfo \
+      -not -path '*/node_modules/*' -delete 2>/dev/null || true
+  fi
+  esm=$(pnpm build:esm 2>&1) && esm_status=0 || esm_status=$?
+  # Only over a fresh build: after a failed one, esm/ is the last good build's.
+  leak_status=0
+  if [ "$esm_status" = 0 ]; then
+    leak=$(pnpm check-declaration-leaks 2>&1) && leak_status=0 || leak_status=$?
+  fi
   # No --fix, unlike pre-push's copy: that one runs on your own push, this one
   # against a checkout other agents have open.
   esl=$(pnpm lint:eslint 2>&1) && esl_status=0 || esl_status=$?
   oxl=$(pnpm lint 2>&1) && oxl_status=0 || oxl_status=$?
 
   if [ "$tsc_status" = 0 ] && [ "$cfg_status" = 0 ] &&
+    [ "$esm_status" = 0 ] && [ "$leak_status" = 0 ] &&
     [ "$esl_status" = 0 ] && [ "$oxl_status" = 0 ]; then
     rm -f "$marker" "$since"
   else
@@ -162,6 +188,12 @@ mkdir "$lock" 2>/dev/null || exit 0
     fi
     if [ "$cfg_status" != 0 ]; then
       failed="${failed:+$failed, }check-config-read-types"
+    fi
+    if [ "$esm_status" != 0 ]; then
+      failed="${failed:+$failed, }build:esm"
+    fi
+    if [ "$leak_status" != 0 ]; then
+      failed="${failed:+$failed, }check-declaration-leaks"
     fi
     if [ "$esl_status" != 0 ]; then
       failed="${failed:+$failed, }eslint"
@@ -202,6 +234,18 @@ mkdir "$lock" 2>/dev/null || exit 0
 
       if [ "$cfg_status" != 0 ]; then
         printf '%s\n' "$cfg" | tail -8
+        echo
+      fi
+
+      if [ "$esm_status" != 0 ]; then
+        echo "build:esm. typecheck is --noEmit, so it cannot see a type the"
+        echo "declaration emit fails to name."
+        printf '%s\n' "$esm" | grep -E 'error TS' | head -20 || true
+        echo
+      fi
+
+      if [ "$leak_status" != 0 ]; then
+        printf '%s\n' "$leak" | head -20
         echo
       fi
 
