@@ -42,6 +42,7 @@ import {
   lociOf,
   numberByFirstAppearance,
 } from '@jbrowse/core/data_adapters/tables'
+import { ungatedResult } from '@jbrowse/core/rpc/byteBudget'
 import { resolvePalette } from '@jbrowse/core/ui/palette'
 import { rampKeyOf } from '@jbrowse/core/ui/rampKey'
 import { adapterRefNameText } from '@jbrowse/core/util'
@@ -1656,16 +1657,14 @@ export async function alignmentTables(
   const run = (facet: typeof args.facet) =>
     Promise.all(
       fetchRegions.map(async r => {
-        const result = await executeRenderAlignmentData({
-          pluginManager,
-          args: { ...args, regions: [r], facet },
-        })
-        if ('regionTooLarge' in result) {
-          throw new Error(
-            'RenderAlignmentData refused a region it was given no budget for',
-          )
-        }
-        return result.value
+        const { value } = ungatedResult(
+          await executeRenderAlignmentData({
+            pluginManager,
+            args: { ...args, regions: [r], facet },
+          }),
+          'RenderAlignmentData',
+        )
+        return value
       }),
     )
   const faceted = await run(args.facet)
