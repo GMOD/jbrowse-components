@@ -10,7 +10,8 @@
 //
 // App source only: tests, scripts, benches and example sites stay out, as they
 // read fixtures and fetched JSON as `any` on purpose. Test-only source inside a
-// package's `src/` is what `tsconfig.base.esm.json` leaves out of the build.
+// package's `src/` is what `tsconfig.base.esm.json` leaves out of the build,
+// less `*.node.ts`, which it leaves out as node-only app source.
 import { spawnSync } from 'node:child_process'
 import { readFileSync, writeFileSync } from 'node:fs'
 import { join, matchesGlob } from 'node:path'
@@ -46,9 +47,9 @@ function excludeGlobs(config: unknown): string[] {
     : []
 }
 
-const OUT_OF_BUILD = excludeGlobs(esmConfig).map(glob =>
-  glob.replace('${configDir}', '**'),
-)
+const OUT_OF_BUILD = excludeGlobs(esmConfig)
+  .filter(glob => !glob.endsWith('*.node.ts'))
+  .map(glob => glob.replace('${configDir}', '**'))
 
 function isAppSource(file: string) {
   return (
