@@ -278,9 +278,11 @@ export const GENE_BLOCK_LANES: MultiwayFixture = {
 /**
  * Grape's four genes, each on one of two peach contigs: g2 and g3 on Pp1,
  * under the window, and g1 and g4 on Pp2, in the static blocks fetched past
- * either side of it.
+ * either side of it. `aliased`, the peach bed spells the contigs `1` and `2`,
+ * which peach's alias file maps onto Pp1 and Pp2, and peach's display name is
+ * Peach.
  */
-function copiesInTheMargin() {
+function copiesInTheMargin({ aliased = false } = {}) {
   const dir = mkdtempSync(path.join(tmpdir(), 'parity-copies-'))
   const write = (name: string, lines: string[]) => {
     const file = path.join(dir, name)
@@ -297,14 +299,17 @@ function copiesInTheMargin() {
     'grape.blocks',
     genes.map(([n]) => `g${n}\tp${n}`),
   )
+  const bedName = (refName: string) =>
+    aliased ? refName.replace('Pp', '') : refName
   const peachBed = write(
     'peach.bed',
     genes.map(
       ([n, refName, start]) =>
-        `${refName}\t${start}\t${start + 100}\tp${n}\t0\t+`,
+        `${bedName(refName)}\t${start}\t${start + 100}\tp${n}\t0\t+`,
     ),
   )
   const peachSizes = write('peach.chrom.sizes', ['Pp1\t1000', 'Pp2\t1000'])
+  const peach = chromSizesAssembly('peach', peachSizes)
   return {
     adapterConfig: {
       type: 'MCScanBlocksAdapter',
@@ -321,7 +326,20 @@ function copiesInTheMargin() {
         'grape',
         'test_data/multiway_blocks/grape.chrom.sizes',
       ),
-      chromSizesAssembly('peach', peachSizes),
+      aliased
+        ? {
+            ...peach,
+            displayName: 'Peach',
+            refNameAliases: {
+              adapter: {
+                type: 'RefNameAliasAdapter',
+                location: fileUri(
+                  write('peach.aliases.txt', ['Pp1\t1', 'Pp2\t2']),
+                ),
+              },
+            },
+          }
+        : peach,
     ],
   }
 }
@@ -334,4 +352,10 @@ export const COPIES_IN_THE_MARGIN: MultiwayFixture = {
     regions: [{ refName: 'chr1', start: 250, end: 650 }],
     width: 800,
   },
+}
+
+/** As COPIES_IN_THE_MARGIN, its peach contigs spelled by alias in the bed. */
+export const ALIASED_COPIES: MultiwayFixture = {
+  ...copiesInTheMargin({ aliased: true }),
+  anchor: COPIES_IN_THE_MARGIN.anchor,
 }

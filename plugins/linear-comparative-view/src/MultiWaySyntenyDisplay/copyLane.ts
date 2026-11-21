@@ -73,6 +73,7 @@ export interface LaneAssemblies {
   get: (
     name: string,
   ) => { getCanonicalRefName2: (refName: string) => string } | undefined
+  getDisplayName: (name: string) => string
 }
 
 type KeyOf = (lane: string) => string

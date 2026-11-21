@@ -47,11 +47,13 @@ export type FastaAssembly = ReturnType<typeof fastaAssembly>
 /** An assembly config: its name and the sequence adapter it reads. */
 export type AssemblyConfig = Readonly<{
   name: string
+  displayName?: string
   sequence: {
     type: string
     trackId: string
     adapter: Record<string, unknown>
   }
+  refNameAliases?: { adapter: Record<string, unknown> }
 }>
 
 /** One axis: its assembly, the regions it shows end to end, and its px. */

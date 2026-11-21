@@ -11,22 +11,18 @@ import calculateStaticBlocks, {
   MINIMUM_BLOCK_WIDTH,
 } from '@jbrowse/core/util/calculateStaticBlocks'
 import { cssColorToHex } from '@jbrowse/core/util/colorBits'
-import { predicatesOf } from '@jbrowse/core/util/fieldPredicate'
 import { adapterAssemblyNames } from '@jbrowse/core/util/tracks'
 import { colorSnapshotOf } from '@jbrowse/display-kit/colorConfigSchema'
 import { types } from '@jbrowse/mobx-state-tree'
 import {
   PRESET_ATTRIBUTES,
-  colorPaintOf,
   comparativeFrame,
   declaredAttributes,
   declaredLanesOf,
   featureAttributeRanges,
-  hidesUnlabelled,
   isAttributeLabels,
   isInstanceInvisible,
   locateCum,
-  opacitySnapshotOf,
   orderAttributeLabels,
   readChannelValue,
   unpack,
@@ -43,10 +39,7 @@ import {
 import { NO_OPS } from './MultiWaySyntenyDisplay/alignmentOps.ts'
 import { displayedRegionSpans } from './MultiWaySyntenyDisplay/anchorAxis.ts'
 import { configSchemaFactory } from './MultiWaySyntenyDisplay/configSchema.ts'
-import {
-  configSlotViews,
-  geneNamesDraw,
-} from './MultiWaySyntenyDisplay/configSlotViews.ts'
+import { configSlotViews } from './MultiWaySyntenyDisplay/configSlotViews.ts'
 import {
   copyLaneName,
   laneGenome,
@@ -59,6 +52,11 @@ import {
   lanePairsOf,
   starAnchorOf,
 } from './MultiWaySyntenyDisplay/laneFetch.ts'
+import {
+  againstAnchorViews,
+  laneNameKeyViews,
+  laneNameViews,
+} from './MultiWaySyntenyDisplay/laneNameViews.ts'
 import {
   anchorRowViews,
   fetchLaneSelectionViews,
@@ -75,11 +73,7 @@ import {
   laneSourceViews,
   unalignedLaneViews,
 } from './MultiWaySyntenyDisplay/laneRowViews.ts'
-import { laneLabelOf } from './MultiWaySyntenyDisplay/laneSelection.ts'
-import {
-  geneLabelRowPx,
-  laneGeometry,
-} from './MultiWaySyntenyDisplay/laneStack.ts'
+import { laneGeometry } from './MultiWaySyntenyDisplay/laneStack.ts'
 import {
   decideLanesOn,
   laneFrameOn,
@@ -100,8 +94,6 @@ import {
 import { ribbonColorScales } from './MultiWaySyntenyDisplay/legend.ts'
 import { buildRibbonGeometry } from './MultiWaySyntenyDisplay/multiwayGeometry.ts'
 import { MULTIWAY_FADE_THIN } from './MultiWaySyntenyDisplay/multiwayRenderTypes.ts'
-import { paintedRibbonColor } from './MultiWaySyntenyDisplay/ribbonColorConfigSchema.ts'
-import { againstAnchorName } from './MultiWaySyntenyDisplay/sourceShape.ts'
 import { getMate, getRecordName } from './syntenyMate.ts'
 
 import type { WindowDeletion } from './MultiWaySyntenyDisplay/MultiWayGetFeatures.ts'
@@ -190,9 +182,10 @@ export interface MultiWayTablesArgs {
   }
   /**
    * A lane's assembly, by the lane's assembly name, as the session holds it
-   * for the display: its contigs, each name its canonical spelling, and the
-   * canonical spelling of any name. A lane's line stops at its contig's
-   * ends; a lane with none runs to the view's edge.
+   * for the display: its contigs, each name its canonical spelling, the
+   * canonical spelling of any name, and the name its label shows. A lane's
+   * line stops at its contig's ends; a lane with none runs to the view's
+   * edge.
    */
   laneAssemblyOf?: (assemblyName: string) => LaneAssembly | undefined
 }
@@ -200,6 +193,7 @@ export interface MultiWayTablesArgs {
 export interface LaneAssembly {
   regions: { refName: string; start: number; end: number }[]
   canonical: (refName: string) => string
+  displayName?: string
 }
 
 const SESSION = 'tables'
@@ -250,26 +244,18 @@ async function refuseUnknownLanes(
 
 const displayConfigSchema = configSchemaFactory()
 
-/** The display's settings as its own config reads them, defaults included. */
+/**
+ * The display's settings its config views have no getter for, as its own
+ * config reads them, defaults included
+ */
 function readDisplay(conf: ConfigSlotSelf['configuration']) {
-  const color = conf.ribbons.encoding.color
-  const setting = colorSnapshotOf(color)
-  const rowLabels = readConfObject(conf, ['rows', 'labels'])
+  const setting = colorSnapshotOf(conf.ribbons.encoding.color)
   return {
-    ...paintedRibbonColor(setting),
-    paint: colorPaintOf(color),
     domain: setting.scale.domain,
     range: setting.scale.range,
     names: setting.scale.names,
     title: setting.legend.title,
     descending: setting.legend.descending,
-    rowLabels: new Map(Object.entries(rowLabels)),
-    opacity: opacitySnapshotOf(conf.ribbons.encoding.opacity),
-    filter: predicatesOf(conf.ribbons.filter),
-    curves: readConfObject(conf, ['ribbons', 'mark', 'interpolate']) === 'bump',
-    showGeneLabels: geneNamesDraw(conf),
-    inlineLaneNames:
-      readConfObject(conf, ['labels', 'lanes', 'placement']) === 'overlay',
     height: readConfObject(conf, 'height'),
     config: fullConfSnapshot(conf),
   }
@@ -314,11 +300,12 @@ const NO_TABLES_FETCH: TablesFetch = {
 
 /**
  * The multi-way display reduced to its config, the reader's hidden lanes and
- * pins, the frame and the anchor fetch, under the lane row views the display
- * installs, in the display's order: which lanes draw, how copy lanes file,
- * their order, the anchor's row and the pins in force. No session and no
- * view: a lane's spellings are its assembly's as the call gives it, and the
- * anchor's refNames are the call's.
+ * pins, the frame and the anchor fetch, under the lane row and lane name
+ * views the display installs, in the display's order: which lanes draw, how
+ * copy lanes file, their order, the anchor's row, the pins in force and each
+ * lane's label. No session and no view: a lane's spellings and display name
+ * are its assembly's as the call gives it, and the anchor's refNames are the
+ * call's.
  */
 const MultiWayTablesHost = types
   .model('MultiWayTablesHost', {
@@ -360,6 +347,7 @@ const MultiWayTablesHost = types
           const assembly = laneAssemblyOf(name)
           return assembly && { getCanonicalRefName2: assembly.canonical }
         },
+        getDisplayName: name => laneAssemblyOf(name)?.displayName || name,
       }
     },
     get trackAssemblyNames() {
@@ -370,6 +358,12 @@ const MultiWayTablesHost = types
     },
     get adapterDeclaresLanes() {
       return self.frame.adapterCapabilities.includes('headerLanes')
+    },
+    get adapterHeader() {
+      return self.frame.header
+    },
+    get declaredLanes() {
+      return declaredLanesOf(self.frame.header)
     },
     get starAnchor() {
       return starAnchorOf(self.frame.header)
@@ -412,6 +406,9 @@ const MultiWayTablesHost = types
   .views(laneRowAssemblyViews)
   .views(anchorRowViews)
   .views(laneOrderViews)
+  .views(laneNameKeyViews)
+  .views(laneNameViews)
+  .views(againstAnchorViews)
   .actions(laneOrderHoldActions)
 
 /**
@@ -701,7 +698,6 @@ export async function multiwayTables(
     declaresLanes && dataAdapter instanceof BaseFeatureDataAdapter
       ? await dataAdapter.getHeader()
       : undefined
-  const declared = header === undefined ? [] : declaredLanesOf(header)
   host.setFrame({
     lgv: {
       displayedRegions: anchorFrame.regions,
@@ -767,6 +763,9 @@ export async function multiwayTables(
     anchorRow,
     laneOrder,
     pinsInForce,
+    declared,
+    against,
+    ribbon,
   } = runInAction(() => ({
     field: host.laneField,
     groups: host.groups,
@@ -779,6 +778,19 @@ export async function multiwayTables(
     anchorRow: host.anchorRow,
     laneOrder: host.laneOrder,
     pinsInForce: host.pinsInForce,
+    declared: host.declaredLanes,
+    against: host.againstAnchor,
+    ribbon: {
+      value: host.ribbonColor,
+      field: host.ribbonColorField,
+      paint: host.ribbonPaint,
+      opacity: host.ribbonOpacity,
+      filter: host.ribbonFilter,
+      hideUnlabelled: host.hideUnlabelled,
+      curves: host.interpolate === 'bump',
+      geneLabelPx: host.geneLabelPx,
+      inlineLaneNames: host.inlineLaneNames,
+    },
   }))
   const keyOf = host.laneKey
   await refuseUnknownLanes(
@@ -874,39 +886,29 @@ export async function multiwayTables(
       )
     : []
 
-  const declaredLabels = new Map(
-    declared.flatMap(({ name, label }) =>
-      label === undefined ? [] : [[name, label] as const],
-    ),
-  )
   const laneGeom = laneGeometry(
     settings.height,
     1 + rows.length,
     true,
-    geneLabelRowPx(settings.showGeneLabels),
+    ribbon.geneLabelPx,
     0,
-    settings.inlineLaneNames,
+    ribbon.inlineLaneNames,
   )
-  const labelOf = (name: string) =>
-    laneLabelOf(name, {
-      written: settings.rowLabels,
-      heldName: () => undefined,
-      declared: declaredLabels,
-      keyOf,
-    })
-  const stack = laneStackOn(stage, {
-    assemblyNames: laneOrder,
-    anchorRow,
-    groups: [...shown, ...anchorless],
-    rowFrames,
-    contigOf: (name, refName) =>
-      laneAssemblyOf(laneGenome(name))?.regions.find(
-        r => r.refName === refName,
-      ),
-    refNameAliasOf: name => laneAssemblyOf(laneGenome(name))?.canonical,
-    geometry: laneGeom,
-    labelOf,
-  })
+  const stack = runInAction(() =>
+    laneStackOn(stage, {
+      assemblyNames: laneOrder,
+      anchorRow,
+      groups: [...shown, ...anchorless],
+      rowFrames,
+      contigOf: (name, refName) =>
+        laneAssemblyOf(laneGenome(name))?.regions.find(
+          r => r.refName === refName,
+        ),
+      refNameAliasOf: name => laneAssemblyOf(laneGenome(name))?.canonical,
+      geometry: laneGeom,
+      labelOf: name => host.laneLabel(name),
+    }),
+  )
 
   const channelNames = [
     ...PRESET_ATTRIBUTES,
@@ -921,13 +923,13 @@ export async function multiwayTables(
     stack,
     anchorOps: fetched.ops,
     laneLinks,
-    ribbonColor: settings.value,
-    ribbonColorField: settings.field,
+    ribbonColor: ribbon.value,
+    ribbonColorField: ribbon.field,
     attributeRanges,
-    opacity: settings.opacity,
-    filter: settings.filter,
-    paint: settings.paint,
-    drawCurves: settings.curves,
+    opacity: ribbon.opacity,
+    filter: ribbon.filter,
+    paint: ribbon.paint,
+    drawCurves: ribbon.curves,
     rowsVsAnchor,
   })
 
@@ -1059,15 +1061,15 @@ export async function multiwayTables(
       attributeRanges,
     ),
     ...ribbonKey(
-      ribbonColorScales(settings.field, attributeRanges, {
+      ribbonColorScales(ribbon.field, attributeRanges, {
         domain: settings.domain,
-        hideUnlabelled: hidesUnlabelled(settings.filter, settings.field),
-        slotColor: settings.value,
+        hideUnlabelled: ribbon.hideUnlabelled,
+        slotColor: ribbon.value,
         names: settings.names,
         title: settings.title,
         descending: settings.descending,
-        paint: settings.paint,
-        against: againstAnchorName(rowsVsAnchor, field, anchor, labelOf),
+        paint: ribbon.paint,
+        against,
       }),
     ),
     height: laneGeom.contentHeight,

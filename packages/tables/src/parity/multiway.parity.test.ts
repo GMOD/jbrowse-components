@@ -12,6 +12,7 @@ import { KIND_BASE_TILE } from '../../../../plugins/linear-comparative-view/src/
 import { MULTIWAY_FADE_THIN } from '../../../../plugins/linear-comparative-view/src/MultiWaySyntenyDisplay/multiwayRenderTypes.ts'
 import { createTablesEngine } from '../index.ts'
 import {
+  ALIASED_COPIES,
   ALL_VS_ALL_LANES,
   ALL_VS_ALL_MISMATCHES,
   ALL_VS_ALL_PAST_DELETION,
@@ -678,6 +679,23 @@ describe('a lane per copy, one copy holding genes only past the window', () => {
     {
       name: 'rows.field refName',
       config: { display: { rows: { field: 'refName' } } },
+    },
+  ])
+})
+
+describe("a lane per copy, the copies' contigs spelled by alias", () => {
+  parityCases(multiwayParity(ALIASED_COPIES), [
+    {
+      name: 'rows.field refName',
+      config: { display: { rows: { field: 'refName' } } },
+    },
+    {
+      name: 'a rows.labels key in alias spelling',
+      config: {
+        display: {
+          rows: { field: 'refName', labels: { '{peach}1': 'peach one' } },
+        },
+      },
     },
   ])
 })

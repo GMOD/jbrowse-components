@@ -107,6 +107,7 @@ import { laneGenome, laneKeyIn, touchesWindow } from './copyLane.ts'
 import { featureWidgetOf } from './featureWidget.ts'
 import { dealGeneColors, geneColorRampOf, geneColors } from './geneColor.ts'
 import { laneGeneTracksOf } from './laneAnnotation.ts'
+import { laneColorActions, laneColorDialogActions } from './laneColorActions.ts'
 import { nudgeDecision, sameDecisions } from './laneDecision.ts'
 import {
   failedLanesOf,
@@ -148,8 +149,8 @@ import {
   shownFrame,
 } from './laneMotion.ts'
 import {
-  laneColorActions,
-  laneColorDialogActions,
+  againstAnchorViews,
+  laneNameKeyViews,
   laneNameViews,
 } from './laneNameViews.ts'
 import { lanePanelsForRegion } from './lanePanels.ts'
@@ -1022,7 +1023,9 @@ export function stateModelFactory(
         )
       },
     }))
+    .views(laneNameKeyViews)
     .views(laneNameViews)
+    .views(againstAnchorViews)
     .views(self => ({
       /**
        * #getter

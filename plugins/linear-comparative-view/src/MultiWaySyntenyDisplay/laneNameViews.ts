@@ -1,31 +1,25 @@
-import { getConf, setConf } from '@jbrowse/core/configuration'
-import { getSession, persistTrackConfigNow } from '@jbrowse/core/util'
-import SolidColorDialog from '@jbrowse/display-kit/SolidColorDialog'
-import { bandInk, declaredAnchorColorOf } from '@jbrowse/synteny-core'
+import { getConf } from '@jbrowse/core/configuration'
+import { declaredAnchorColorOf } from '@jbrowse/synteny-core'
 
 import { laneColorOf, laneLabelOf } from './laneSelection.ts'
 import { againstAnchorName } from './sourceShape.ts'
 
 import type { ConfigSlotSelf } from './configSlotViews.ts'
-import type { LaneRowsField } from './copyLane.ts'
+import type { LaneAssemblies, LaneRowsField } from './copyLane.ts'
 import type { DeclaredLane } from '@jbrowse/synteny-core'
 
 /**
- * What the lane names and colors read off their host: the source's declared
- * lanes and header, the `rows` config, how the session spells and holds a
- * lane, and whether the lanes read against the anchor
+ * What the lane names and colors are keyed off: the source's declared lanes
+ * and header, the `rows` config, and how a lane keys
  */
-export interface LaneNameHost extends ConfigSlotSelf {
+export interface LaneNameKeyHost extends ConfigSlotSelf {
   declaredLanes: DeclaredLane[]
   adapterHeader: unknown
   anchorAssemblyName: string
   laneKey: (lane: string) => string
-  holdsAssembly: (lane: string) => boolean
-  rowsVsAnchor: boolean
-  laneField: LaneRowsField
 }
 
-export function laneNameViews(self: LaneNameHost) {
+export function laneNameKeyViews(self: LaneNameKeyHost) {
   return {
     /**
      * #getter
@@ -51,37 +45,6 @@ export function laneNameViews(self: LaneNameHost) {
           self.laneKey(name),
           label,
         ]),
-      )
-    },
-    /** #method */
-    laneLabel(lane: string) {
-      const { assemblyManager } = getSession(self)
-      return laneLabelOf(lane, {
-        written: this.rowLabels,
-        heldName: name =>
-          self.holdsAssembly(name)
-            ? assemblyManager.getDisplayName(name)
-            : undefined,
-        declared: this.declaredLaneLabels,
-        keyOf: self.laneKey,
-        shownRefName: (assemblyName, refName) =>
-          (self.holdsAssembly(assemblyName) &&
-            assemblyManager.get(assemblyName)?.getCanonicalRefName2(refName)) ||
-          refName,
-      })
-    },
-    /**
-     * #getter
-     * the anchor's name in a lane's `vs` badge and the legend where the
-     * lanes read against it: its label beside copy lanes, which name their
-     * genome's label, else its assembly name
-     */
-    get againstAnchor(): string | undefined {
-      return againstAnchorName(
-        self.rowsVsAnchor,
-        self.laneField,
-        self.anchorAssemblyName,
-        lane => this.laneLabel(lane),
       )
     },
     /**
@@ -115,72 +78,74 @@ export function laneNameViews(self: LaneNameHost) {
         ]),
       )
     },
+  }
+}
+
+type LaneNameKeys = ReturnType<typeof laneNameKeyViews>
+
+/**
+ * What a lane's name and color read: the keyed names and colors, and how the
+ * session spells and names the lane's genome
+ */
+export interface LaneNameHost extends LaneNameKeyHost, LaneNameKeys {
+  laneAssemblies: LaneAssemblies
+}
+
+export function laneNameViews(self: LaneNameHost) {
+  return {
+    /** #method */
+    laneLabel(lane: string) {
+      const assemblies = self.laneAssemblies
+      return laneLabelOf(lane, {
+        written: self.rowLabels,
+        heldName: name =>
+          assemblies.has(name) ? assemblies.getDisplayName(name) : undefined,
+        declared: self.declaredLaneLabels,
+        keyOf: self.laneKey,
+        shownRefName: (assemblyName, refName) =>
+          (assemblies.has(assemblyName) &&
+            assemblies.get(assemblyName)?.getCanonicalRefName2(refName)) ||
+          refName,
+      })
+    },
     /**
      * #method
      * the color a lane's label bar draws, undefined for none
      */
     laneColor(assemblyName: string) {
       return laneColorOf(assemblyName, {
-        pinned: this.rowColors,
-        declared: this.declaredLaneColors,
+        pinned: self.rowColors,
+        declared: self.declaredLaneColors,
         keyOf: self.laneKey,
       })
     },
   }
 }
 
-export type LaneColorHost = ConfigSlotSelf & Pick<LaneNameHost, 'laneKey'>
+type LaneNames = ReturnType<typeof laneNameViews>
 
-export function laneColorActions(self: LaneColorHost) {
-  return {
-    /**
-     * #action
-     * pins `rows.colors` for the lane, replacing an entry under any other
-     * spelling of it; undefined drops the pin, so the source's color shows
-     */
-    setLaneColor(assemblyName: string, color: string | undefined) {
-      const key = self.laneKey(assemblyName)
-      const kept = Object.entries(getConf(self, ['rows', 'colors'])).filter(
-        ([name]) => self.laneKey(name) !== key,
-      )
-      setConf(
-        self,
-        ['rows', 'colors'],
-        Object.fromEntries(
-          color === undefined ? kept : [...kept, [assemblyName, color]],
-        ),
-      )
-      persistTrackConfigNow(self)
-    },
-  }
+/** What the anchor's name beside the lanes reads */
+export interface AgainstAnchorHost extends Pick<LaneNames, 'laneLabel'> {
+  anchorAssemblyName: string
+  rowsVsAnchor: boolean
+  laneField: LaneRowsField
 }
 
-export type LaneColorDialogHost = LaneColorHost &
-  Pick<
-    ReturnType<typeof laneNameViews>,
-    'laneLabel' | 'laneColor' | 'rowColors'
-  > &
-  ReturnType<typeof laneColorActions>
-
-export function laneColorDialogActions(self: LaneColorDialogHost) {
+export function againstAnchorViews(self: AgainstAnchorHost) {
   return {
-    /** #action */
-    openLaneColorDialog(assemblyName: string) {
-      getSession(self).queueDialog(handleClose => [
-        SolidColorDialog,
-        {
-          label: `${self.laneLabel(assemblyName)} lane color`,
-          color: self.laneColor(assemblyName) ?? bandInk().text,
-          written: self.rowColors.get(self.laneKey(assemblyName)),
-          onChange: (color: string) => {
-            self.setLaneColor(assemblyName, color)
-          },
-          onReset: () => {
-            self.setLaneColor(assemblyName, undefined)
-          },
-          handleClose,
-        },
-      ])
+    /**
+     * #getter
+     * the anchor's name in a lane's `vs` badge and the legend where the
+     * lanes read against it: its label beside copy lanes, which name their
+     * genome's label, else its assembly name
+     */
+    get againstAnchor(): string | undefined {
+      return againstAnchorName(
+        self.rowsVsAnchor,
+        self.laneField,
+        self.anchorAssemblyName,
+        lane => self.laneLabel(lane),
+      )
     },
   }
 }

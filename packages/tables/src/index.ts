@@ -140,9 +140,10 @@ export type DotplotTablesArgs = Omit<DotplotReadArgs, 'x' | 'y'> & {
 /**
  * A multi-way read as a host sends it: `assemblies`, assembly configs as the
  * region reads take them, each the genome of the lane its `name` or one of
- * its `aliases` names, whose contigs stop that lane's line at their ends, as
- * the display's do, and which frame an anchor locus in its contig when the
- * anchor names no `displayedRegions` of its own.
+ * its `aliases` names, whose contigs stop that lane's line at their ends and
+ * whose `displayName` labels it, as the display's do, and which frame an
+ * anchor locus in its contig when the anchor names no `displayedRegions` of
+ * its own.
  */
 export type MultiWayTablesArgs = Omit<MultiWayReadArgs, 'laneAssemblyOf'> & {
   assemblies?: AssemblyConfig[]
@@ -754,8 +755,14 @@ export function createTablesEngine() {
             await Promise.all(
               assemblies.map(async config => {
                 const names = assemblyNamesOf(config)
-                const resolved = await assemblyOf(config)
-                return names.map(name => [name, resolved] as const)
+                const lane = {
+                  ...(await assemblyOf(config)),
+                  displayName:
+                    typeof config.displayName === 'string'
+                      ? config.displayName
+                      : undefined,
+                }
+                return names.map(name => [name, lane] as const)
               }),
             )
           ).flat(),
