@@ -18,13 +18,11 @@ export {
   collapseSectionsItems,
   groupByRadioMenuItem,
   hiddenGroupsItems,
-  sectionOrderOf,
   sectionOrderResetItems,
 } from './groupByMenu.ts'
 export type {
   CollapseSectionsModel,
   HiddenGroupsModel,
-  SectionOrderMenuModel,
 } from './groupByMenu.ts'
 export {
   getReadConnectionsBandItems,

@@ -7,7 +7,7 @@ import { sectionSortOf } from '@jbrowse/display-kit/sectionHost'
 
 import { isChainFacetable } from '../../shared/groupFeatures.ts'
 
-import type { Facet, ReadDimension } from '../../shared/types.ts'
+import type { ReadDimension } from '../../shared/types.ts'
 import type { AlignmentsUnit } from '../constants.ts'
 import type { MenuItem } from '@jbrowse/core/ui'
 import type { SectionHost } from '@jbrowse/display-kit/sectionHost'
@@ -56,27 +56,6 @@ export function collapseSectionsItems(model: CollapseSectionsModel) {
         ]
       : []
   ) satisfies MenuItem[]
-}
-
-export interface SectionOrderMenuModel {
-  effectiveFacet: Facet | undefined
-  groupOrder: readonly { key: string; label: string }[]
-  setFacetSort: (domain: readonly string[]) => void
-}
-
-// The worker is sent no domain, so a reorder refetches nothing. Undefined
-// while chain mode degrades the facet to one section.
-export function sectionOrderOf(model: SectionOrderMenuModel) {
-  const facet = model.effectiveFacet
-  return (
-    facet && {
-      sections: model.groupOrder,
-      domain: facet.sort ?? [],
-      setDomain: (domain: string[]) => {
-        model.setFacetSort(domain)
-      },
-    }
-  )
 }
 
 export function sectionOrderResetItems(model: SectionHost) {

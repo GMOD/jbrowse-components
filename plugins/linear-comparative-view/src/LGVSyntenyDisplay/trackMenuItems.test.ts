@@ -1,6 +1,6 @@
 import { resolveSubMenu } from '@jbrowse/core/ui/menuItems'
 import { moveSectionOnto } from '@jbrowse/display-kit/groupByMenu'
-import { sectionOrderOf } from '@jbrowse/plugin-alignments'
+import { sectionSortOf } from '@jbrowse/display-kit/sectionHost'
 
 import { makeEmptyPileupData } from '../../../alignments/src/LinearAlignmentsDisplay/testUtils.ts'
 import { createDisplay } from './testEnv.ts'
@@ -107,7 +107,11 @@ test('a lane drop writes the drawn order as the domain, and the track menu offer
   expect(labelsOf(items())).not.toContain('Sections')
   expect(labelsOf(items())).not.toContain('Reset section order')
 
-  moveSectionOnto(sectionOrderOf(display)!, 'volvox_random', 'volvox_two')
+  moveSectionOnto(
+    { sections: display.groupOrder, ...sectionSortOf(display)! },
+    'volvox_random',
+    'volvox_two',
+  )
   expect(display.facet).toEqual({
     field: 'mateAssembly',
     sort: ['volvox_two', 'volvox_random'],
