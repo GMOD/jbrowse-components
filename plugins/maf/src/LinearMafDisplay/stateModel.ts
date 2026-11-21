@@ -329,6 +329,8 @@ export default function stateModelFactory(
       .views(self => ({
         /**
          * #getter
+         * The linear genome view the track is in, which the mixins' `host`
+         * also names: everything here reads the view through this one.
          */
         get view() {
           return containingLgv(self)
@@ -925,7 +927,7 @@ export default function stateModelFactory(
          */
         get rowsVisible() {
           return (
-            self.host.initialized && self.rowsHeight > 0 && self.rowsReported
+            self.view.initialized && self.rowsHeight > 0 && self.rowsReported
           )
         },
         /**
@@ -1351,7 +1353,7 @@ export default function stateModelFactory(
       }))
       .views(self => {
         const overlayParams = () => ({
-          view: self.host,
+          view: self.view,
           rpcDataMap: self.detailOnScreen,
           ...self.rowGeometry(),
         })
@@ -1531,7 +1533,7 @@ export default function stateModelFactory(
         get visibleLabels() {
           return self.rowsVisible && !self.resizing && self.rowPlan.perBase
             ? computeVisibleLabels({
-                view: self.host,
+                view: self.view,
                 rpcDataMap: self.detailOnScreen,
                 ...self.rowGeometry(),
                 paints: basePaintsOf(self.rowPlan),
@@ -1546,7 +1548,7 @@ export default function stateModelFactory(
         get visibleDeletions() {
           return self.rowsVisible && self.rowPlan.perBase
             ? computeVisibleDeletions({
-                view: self.host,
+                view: self.view,
                 rpcDataMap: self.detailOnScreen,
                 ...self.rowGeometry(),
               })
@@ -1582,7 +1584,7 @@ export default function stateModelFactory(
         get visibleFrames(): FrameMarker[] {
           return self.rowsVisible && self.framesActive
             ? computeVisibleFrames({
-                view: self.host,
+                view: self.view,
                 framesDataMap: self.framesDataMap,
                 rowIndexBySrc: self.rowIndexBySrc,
                 ...self.rowGeometry(),
@@ -1617,7 +1619,7 @@ export default function stateModelFactory(
          */
         get codonConservationActive() {
           return (
-            self.host.initialized &&
+            self.view.initialized &&
             self.conservationBandActive &&
             self.conservationUnit === 'codon' &&
             !!self.framesAdapterConfig &&
@@ -1686,7 +1688,7 @@ export default function stateModelFactory(
          * CDS-frame swatches follow it.
          */
         colorScalesIn(palette: JBrowsePalette): ColorScale[] {
-          return self.host.initialized
+          return self.view.initialized
             ? mafColorScales({
                 palette,
                 plan: self.rowPlan,
@@ -1736,7 +1738,7 @@ export default function stateModelFactory(
               ...mafLaunchMenuItems({
                 session: getSession(self),
                 model: self,
-                view: containingLgv(self),
+                view: self.view,
                 pluginManager: getEnv(self).pluginManager,
               }),
             ]
@@ -1853,7 +1855,7 @@ export default function stateModelFactory(
         get visibleCodonGlyphs(): CodonGlyph[] {
           return self.codonCellsActive
             ? computeVisibleCodonGlyphs(
-                self.host,
+                self.view,
                 {
                   get: (i: number) => self.encodedUpload.get(i)?.codons,
                 },
