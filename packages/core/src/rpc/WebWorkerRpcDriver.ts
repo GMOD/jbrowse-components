@@ -289,7 +289,9 @@ export default class WebWorkerRpcDriver extends BaseRpcDriver {
     const workerNumber = this.workerAssignments.get(sessionId)
     this.workerAssignments.delete(sessionId)
     if (workerNumber !== undefined) {
-      await this.workerPool?.[workerNumber]?.freeSession(sessionId)
+      await this.workerPool?.[workerNumber]?.freeSession(
+        this.claimFor(sessionId),
+      )
     }
   }
 

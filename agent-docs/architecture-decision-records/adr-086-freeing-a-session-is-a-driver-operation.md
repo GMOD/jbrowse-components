@@ -137,6 +137,36 @@ it stopped being true.
   something `WorkerHandle` declares, so the plugin stops depending on a private
   field surviving into the emitted JS.
 
+## Amended 2026-11-21: each driver claims under its own namespace, and the main-thread driver frees what it ran
+
+Every main-thread driver on a page fills the page's one adapter cache, and a
+session id is a hash of the adapter config, so two embedded engines showing one
+track claimed the same id: one engine closing the track evicted the adapter the
+other was drawing. And "destroy frees strictly more than a later free would" was
+true only of a worker driver. Teardown destroys the manager before the tree's
+disposers run, so on the main thread every free was skipped and every adapter an
+embedded engine built stayed cached for the life of the page, along with the
+sessions nothing counts (`fetchSeq`'s `'getSequence'`).
+
+- `BaseRpcDriver.call` rewrites the args' `sessionId` to a per-driver
+  `rpc<N>:<id>` after serialization, and `freeSession` frees that claim. After,
+  not in `RpcManager.call`: `loadRefNameMap` calls `CoreGetContigs` under
+  `args.sessionId` while serializing, which would be namespaced twice and escape
+  the manager's in-flight wait. Both drivers rewrite, so an RPC method sees the
+  same id shape under either.
+- `MainThreadRpcDriver` records every session its `transport` runs. `destroy`
+  refuses later transports and frees every recorded session at once, and each
+  call still running frees its own session again when it settles, since an
+  `execute` can claim after an await. Waiting for all running calls before any
+  free was the first version: one call that never settles (a stalled fetch, an
+  auth prompt in a detached engine) then held every session the engine ran.
+  Freeing under a running call costs that call its chunk caches, which only
+  refetches.
+
+This answers the rejected "free eagerly in `detach()`" below for the
+main-thread driver: the driver does not need the refcount, because every claim
+under its namespace is going away with it.
+
 ## Rejected alternatives
 
 **Keep the free as a `call` and teach the pool not to boot for that one method.**

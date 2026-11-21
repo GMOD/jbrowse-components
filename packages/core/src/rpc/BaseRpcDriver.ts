@@ -11,8 +11,12 @@ import type { RpcConfigModel } from './configSchema.ts'
  */
 export const CORE_FREE_RESOURCES = 'CoreFreeResources'
 
+let drivers = 0
+
 export default abstract class BaseRpcDriver {
   abstract name: string
+
+  private namespace = `rpc${++drivers}:`
 
   // Held, not threaded. `call`, `transport` and `freeSession` each took one as
   // their first parameter and `RpcManager` passed the same object to all of
@@ -39,7 +43,15 @@ export default abstract class BaseRpcDriver {
   async freeSession(sessionId: string) {
     await this.pluginManager
       .getRpcMethodType(CORE_FREE_RESOURCES)
-      .invoke({ sessionId })
+      .invoke({ sessionId: this.claimFor(sessionId) })
+  }
+
+  /**
+   * The id a session claims adapters under: per driver, since main-thread
+   * drivers share one cache. Applied after serialization. ADR-086.
+   */
+  protected claimFor(sessionId: string) {
+    return `${this.namespace}${sessionId}`
   }
 
   destroy() {}
@@ -88,10 +100,12 @@ export default abstract class BaseRpcDriver {
     const { statusCallback: _outOfBand, ...serializedArgs } =
       await withAbortCheck(signal, () => rpcMethod.serializeArguments(rest))
 
-    const result = await this.transport(sessionId, rpcMethod, serializedArgs, {
-      statusCallback: rest.statusCallback,
-      signal,
-    })
+    const result = await this.transport(
+      sessionId,
+      rpcMethod,
+      { ...serializedArgs, sessionId: this.claimFor(sessionId) },
+      { statusCallback: rest.statusCallback, signal },
+    )
 
     return rpcMethod.deserializeReturn(result, args)
   }

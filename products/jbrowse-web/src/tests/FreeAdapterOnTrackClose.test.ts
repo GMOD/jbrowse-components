@@ -1,9 +1,10 @@
-import { getAdapter } from '@jbrowse/core/data_adapters/dataAdapterCache'
+import { keepAdapters } from '@jbrowse/core/data_adapters/dataAdapterCache'
 import { getSnapshot } from '@jbrowse/mobx-state-tree'
 
 import { doBeforeEach, getPluginManager } from './util.tsx'
 
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
+import type { AnyDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
 
 const TRACK_ID = 'volvox_filtered_vcf'
 
@@ -28,51 +29,66 @@ function settle() {
   })
 }
 
+async function cachedAdapters() {
+  const cached: AnyDataAdapter[] = []
+  await keepAdapters(adapter => {
+    cached.push(adapter)
+    return true
+  })
+  return cached
+}
+
 async function setup() {
-  const { pluginManager, rootModel } = await getPluginManager()
+  const { rootModel } = await getPluginManager()
   const { session } = rootModel
   const view1 = session!.views[0] as unknown as TestView
   const view2 = session!.addView('LinearGenomeView', {}) as unknown as TestView
-  return { pluginManager, rootModel, view1, view2 }
+  return { rootModel, view1, view2 }
+}
+
+// builds the track's adapter the way its fetches do, under its session
+async function buildTrackAdapter(
+  rootModel: Awaited<ReturnType<typeof setup>>['rootModel'],
+  view: TestView,
+) {
+  const track = view.tracks.find(t => t.configuration.trackId === TRACK_ID)!
+  const before = new Set(await cachedAdapters())
+  await rootModel.rpcManager.call(track.rpcSessionId, 'CoreGetRefNames', {
+    adapterConfig: getSnapshot<Record<string, unknown>>(
+      track.configuration.adapter,
+    ),
+  })
+  const built = (await cachedAdapters()).filter(a => !before.has(a))
+  expect(built).toHaveLength(1)
+  return built[0]
 }
 
 test('a track in two views frees its adapter only when the last view closes it', async () => {
-  const { pluginManager, view1, view2 } = await setup()
+  const { rootModel, view1, view2 } = await setup()
   await view1.launchTrack(TRACK_ID)
   await view2.launchTrack(TRACK_ID)
-
-  const track = view1.tracks.find(t => t.configuration.trackId === TRACK_ID)!
-  const sessionId = track.rpcSessionId
-  const conf = getSnapshot<Record<string, unknown>>(track.configuration.adapter)
-  const load = () => getAdapter(pluginManager, sessionId, conf)
-
-  const first = await load()
   // both views hold the same rpcSessionId, since it is derived from the
   // adapter config rather than from the track model
-  expect(view2.tracks[0]!.rpcSessionId).toBe(sessionId)
+  expect(view2.tracks[0]!.rpcSessionId).toBe(view1.tracks[0]!.rpcSessionId)
+  const adapter = await buildTrackAdapter(rootModel, view1)
 
   view1.hideTrack(TRACK_ID)
   await settle()
-  expect((await load()).dataAdapter).toBe(first.dataAdapter)
+  expect(await cachedAdapters()).toContain(adapter)
 
   view2.hideTrack(TRACK_ID)
   await settle()
-  expect((await load()).dataAdapter).not.toBe(first.dataAdapter)
+  expect(await cachedAdapters()).not.toContain(adapter)
 })
 
 test('closing the only view holding a track frees its adapter', async () => {
-  const { pluginManager, view1 } = await setup()
+  const { rootModel, view1 } = await setup()
   await view1.launchTrack(TRACK_ID)
+  const adapter = await buildTrackAdapter(rootModel, view1)
 
-  const track = view1.tracks.find(t => t.configuration.trackId === TRACK_ID)!
-  const sessionId = track.rpcSessionId
-  const conf = getSnapshot<Record<string, unknown>>(track.configuration.adapter)
-  const load = () => getAdapter(pluginManager, sessionId, conf)
-
-  const first = await load()
   view1.hideTrack(TRACK_ID)
   await settle()
-  expect((await load()).dataAdapter).not.toBe(first.dataAdapter)
+  expect(await cachedAdapters()).not.toContain(adapter)
 })
 
 // destroying a session instantiates any never-observed node on the way down and

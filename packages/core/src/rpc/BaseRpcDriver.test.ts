@@ -57,7 +57,7 @@ describe('BaseRpcDriver.call envelope', () => {
     const cb = handles.statusCallback
     // statusCallback travels out-of-band, the rest is run through serialize
     expect(serializedArgs).toEqual({
-      sessionId: 'sid',
+      sessionId: expect.stringMatching(/^rpc\d+:sid$/),
       data: 1,
       serialized: true,
     })
@@ -70,7 +70,12 @@ describe('BaseRpcDriver.call envelope', () => {
       sessionId: 'sid',
     })
     expect(result).toEqual({
-      deserialized: { raw: { sessionId: 'sid', serialized: true } },
+      deserialized: {
+        raw: {
+          sessionId: expect.stringMatching(/^rpc\d+:sid$/),
+          serialized: true,
+        },
+      },
     })
   })
 
@@ -168,7 +173,9 @@ describe('BaseRpcDriver.call envelope', () => {
     await new CapturingDriver({
       getRpcMethodType: () => freeMethod,
     } as unknown as PluginManager).freeSession('sid')
-    expect(invoked).toEqual([{ sessionId: 'sid' }])
+    expect(invoked).toEqual([
+      { sessionId: expect.stringMatching(/^rpc\d+:sid$/) },
+    ])
     expect(driver.transportCalls).toEqual([])
   })
 })

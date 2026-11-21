@@ -50,7 +50,7 @@ describe('MainThreadRpcDriver', () => {
 
     // execute sees the serialized payload with statusCallback wired back in
     expect(executeArgs[0]).toEqual({
-      sessionId: 'sid',
+      sessionId: expect.stringMatching(/^rpc\d+:sid$/),
       data: 1,
       serialized: true,
       statusCallback,

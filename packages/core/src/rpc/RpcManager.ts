@@ -195,7 +195,8 @@ export default class RpcManager {
    * nor outlives {@link destroy}; see {@link BaseRpcDriver.freeSession}.
    *
    * Silent on a destroyed manager, because the destroy already freed strictly
-   * more than this would: it terminated the workers the cache lived in.
+   * more than this would: a worker driver terminated the workers the cache
+   * lived in, and the main-thread driver freed every session it ran.
    *
    * Waits for the session's calls in flight, auth retries included: one still
    * serializing would otherwise reach the worker after the free and rebuild

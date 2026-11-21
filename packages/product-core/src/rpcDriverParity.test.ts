@@ -117,9 +117,11 @@ function makeMethod(arm: Arm) {
     name = METHOD
 
     async execute(args: any) {
-      const { statusCallback, ...rest } = args
+      const { statusCallback, sessionId, ...rest } = args
       arm.executeArgs = {
         ...rest,
+        // each driver claims under its own namespace, so compare the shape
+        sessionId: String(sessionId).replace(/^rpc\d+:/, 'rpc:'),
         // the key's PRESENCE is half of what drifted, so record it rather than
         // letting a spread of `undefined` compare equal to an absent key
         declaresStatusCallback: 'statusCallback' in args,

@@ -13,6 +13,7 @@
 import PluginManager from '../PluginManager.ts'
 import { ConfigurationSchema } from '../configuration/configurationSchema.ts'
 import AdapterType from '../pluggableElementTypes/AdapterType.ts'
+import RpcMethodType from '../pluggableElementTypes/RpcMethodType.ts'
 import RpcManager from '../rpc/RpcManager.ts'
 import { BaseAdapter } from './BaseAdapter/index.ts'
 import {
@@ -43,6 +44,17 @@ function setup() {
         getAdapterClass: () => Promise.resolve(TestAdapter),
       }),
   )
+  class FetchAdapter extends RpcMethodType {
+    name = 'FetchAdapter'
+    async execute(args: Record<string, unknown>) {
+      return getAdapter(
+        pluginManager,
+        args.sessionId as string,
+        args.adapterConfig as Record<string, unknown>,
+      )
+    }
+  }
+  pluginManager.addRpcMethod(() => new FetchAdapter(pluginManager))
   pluginManager.createPluggableElements()
   pluginManager.configure()
 
@@ -53,19 +65,31 @@ function setup() {
   return { pluginManager, rpcManager }
 }
 
+// through the driver, which claims under its own namespace
+function fetchAdapter(
+  rpcManager: RpcManager,
+  sessionId: string,
+  adapterConfig: Record<string, unknown>,
+) {
+  const method: string = 'FetchAdapter'
+  return rpcManager.call(sessionId, method, {
+    adapterConfig,
+  }) as ReturnType<typeof getAdapter>
+}
+
 beforeEach(() => {
   clearAdapterCache()
   freed = []
 })
 
 test('an evicted adapter is told to free what it holds, once, and not before', async () => {
-  const { pluginManager, rpcManager } = setup()
+  const { rpcManager } = setup()
   const conf = { type: 'TestAdapter', adapterId: 'adapterA', path: 'a.bam' }
 
   retainAdapterSession(rpcManager, 'one')
   retainAdapterSession(rpcManager, 'two')
-  await getAdapter(pluginManager, 'one', conf)
-  await getAdapter(pluginManager, 'two', conf)
+  await fetchAdapter(rpcManager, 'one', conf)
+  await fetchAdapter(rpcManager, 'two', conf)
 
   // another session still reads it
   await releaseAdapterSession(rpcManager, 'one')
@@ -80,13 +104,13 @@ test('an evicted adapter is told to free what it holds, once, and not before', a
 })
 
 test('the last track closing evicts the adapter for real', async () => {
-  const { pluginManager, rpcManager } = setup()
+  const { rpcManager } = setup()
   const conf = { type: 'TestAdapter', adapterId: 'adapterA', path: 'a.bam' }
 
   retainAdapterSession(rpcManager, 'adapterA')
-  const first = await getAdapter(pluginManager, 'adapterA', conf)
+  const first = await fetchAdapter(rpcManager, 'adapterA', conf)
   // same config while the track is open: the cache hands back one instance
-  expect((await getAdapter(pluginManager, 'adapterA', conf)).dataAdapter).toBe(
+  expect((await fetchAdapter(rpcManager, 'adapterA', conf)).dataAdapter).toBe(
     first.dataAdapter,
   )
 
@@ -94,69 +118,69 @@ test('the last track closing evicts the adapter for real', async () => {
 
   // evicted: a fresh instance, which is only possible if the cache key is gone
   expect(
-    (await getAdapter(pluginManager, 'adapterA', conf)).dataAdapter,
+    (await fetchAdapter(rpcManager, 'adapterA', conf)).dataAdapter,
   ).not.toBe(first.dataAdapter)
 })
 
 test('the same track in two views survives one of them closing', async () => {
-  const { pluginManager, rpcManager } = setup()
+  const { rpcManager } = setup()
   const conf = { type: 'TestAdapter', adapterId: 'adapterA', path: 'a.bam' }
 
   retainAdapterSession(rpcManager, 'adapterA')
   retainAdapterSession(rpcManager, 'adapterA')
-  const first = await getAdapter(pluginManager, 'adapterA', conf)
+  const first = await fetchAdapter(rpcManager, 'adapterA', conf)
 
   await releaseAdapterSession(rpcManager, 'adapterA')
-  expect((await getAdapter(pluginManager, 'adapterA', conf)).dataAdapter).toBe(
+  expect((await fetchAdapter(rpcManager, 'adapterA', conf)).dataAdapter).toBe(
     first.dataAdapter,
   )
 
   await releaseAdapterSession(rpcManager, 'adapterA')
   expect(
-    (await getAdapter(pluginManager, 'adapterA', conf)).dataAdapter,
+    (await fetchAdapter(rpcManager, 'adapterA', conf)).dataAdapter,
   ).not.toBe(first.dataAdapter)
 })
 
 test('closing one track does not evict an unrelated one', async () => {
-  const { pluginManager, rpcManager } = setup()
+  const { rpcManager } = setup()
   const confA = { type: 'TestAdapter', adapterId: 'adapterA', path: 'a.bam' }
   const confB = { type: 'TestAdapter', adapterId: 'adapterB', path: 'b.bam' }
 
   retainAdapterSession(rpcManager, 'adapterA')
   retainAdapterSession(rpcManager, 'adapterB')
-  const a = await getAdapter(pluginManager, 'adapterA', confA)
-  const b = await getAdapter(pluginManager, 'adapterB', confB)
+  const a = await fetchAdapter(rpcManager, 'adapterA', confA)
+  const b = await fetchAdapter(rpcManager, 'adapterB', confB)
 
   await releaseAdapterSession(rpcManager, 'adapterA')
 
-  expect((await getAdapter(pluginManager, 'adapterB', confB)).dataAdapter).toBe(
+  expect((await fetchAdapter(rpcManager, 'adapterB', confB)).dataAdapter).toBe(
     b.dataAdapter,
   )
   expect(
-    (await getAdapter(pluginManager, 'adapterA', confA)).dataAdapter,
+    (await fetchAdapter(rpcManager, 'adapterA', confA)).dataAdapter,
   ).not.toBe(a.dataAdapter)
 })
 
 // a sub-adapter carries its parent's sessionId, so two tracks sharing a
 // sequence adapter must both close before it goes
 test('a sub-adapter shared by two tracks outlives the first close', async () => {
-  const { pluginManager, rpcManager } = setup()
+  const { rpcManager } = setup()
   const shared = { type: 'TestAdapter', adapterId: 'sharedSeq', path: 's.fa' }
 
   retainAdapterSession(rpcManager, 'trackA')
   retainAdapterSession(rpcManager, 'trackB')
   // both parents pull the same sub-adapter, each under its own sessionId
-  const sub = await getAdapter(pluginManager, 'trackA', shared)
-  await getAdapter(pluginManager, 'trackB', shared)
+  const sub = await fetchAdapter(rpcManager, 'trackA', shared)
+  await fetchAdapter(rpcManager, 'trackB', shared)
 
   await releaseAdapterSession(rpcManager, 'trackA')
-  expect((await getAdapter(pluginManager, 'trackB', shared)).dataAdapter).toBe(
+  expect((await fetchAdapter(rpcManager, 'trackB', shared)).dataAdapter).toBe(
     sub.dataAdapter,
   )
 
   await releaseAdapterSession(rpcManager, 'trackB')
   expect(
-    (await getAdapter(pluginManager, 'trackB', shared)).dataAdapter,
+    (await fetchAdapter(rpcManager, 'trackB', shared)).dataAdapter,
   ).not.toBe(sub.dataAdapter)
 })
 

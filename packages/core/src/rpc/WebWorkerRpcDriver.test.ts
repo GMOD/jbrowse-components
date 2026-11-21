@@ -88,7 +88,10 @@ describe('WebWorkerRpcDriver pool dispatch', () => {
     await driver.call('sid', 'SomeMethod', callArgs)
     const { args, opts } = driver.workers[0]!.calls[0]!
     // statusCallback never reaches the serialized payload...
-    expect(args).toEqual({ sessionId: 'sid', data: 1 })
+    expect(args).toEqual({
+      sessionId: expect.stringMatching(/^rpc\d+:sid$/),
+      data: 1,
+    })
     expect((args as Record<string, unknown>).statusCallback).toBeUndefined()
     // ...it travels out-of-band via the worker call options instead
     expect((opts as { statusCallback: unknown }).statusCallback).toBe(
@@ -140,7 +143,11 @@ describe('WebWorkerRpcDriver pool freeSession', () => {
     await driver.freeSession('s1')
 
     expect(driver.workers[0]!.calls).toEqual([
-      { fn: 'CoreFreeResources', args: { sessionId: 's1' }, opts: undefined },
+      {
+        fn: 'CoreFreeResources',
+        args: { sessionId: expect.stringMatching(/^rpc\d+:s1$/) },
+        opts: undefined,
+      },
     ])
     expect(driver.workers[1]!.calls).toEqual([])
   })
