@@ -454,17 +454,15 @@ const stateModelFactory = (configSchema: OAuthInternetAccountConfigModel) => {
       ) {
         try {
           const refreshToken = self.retrieveRefreshToken()
-          let token: string | undefined
-          if (refreshToken) {
-            try {
-              token = await self.exchangeRefreshForAccessToken(refreshToken)
-            } catch (e) {
-              console.error(e)
-            }
-          }
-          resolve(
-            token !== undefined ? token : await self.getTokenViaAuthFlow(),
-          )
+          const refreshed = refreshToken
+            ? await self
+                .exchangeRefreshForAccessToken(refreshToken)
+                .catch((error: unknown) => {
+                  console.error(error)
+                  return undefined
+                })
+            : undefined
+          resolve(refreshed ?? (await self.getTokenViaAuthFlow()))
         } catch (e) {
           reject(e instanceof Error ? e : new Error(String(e)))
         }
