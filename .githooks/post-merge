@@ -106,7 +106,7 @@ if [ -n "$range" ]; then
   # The sources these gates read. A land that is purely CI config matches
   # nothing and skips.
   printf '%s' "$range" | grep -Eq \
-    '^(website/|products/|plugins/|packages/|agent-docs/|scripts/|figures\.lock|package\.json|pnpm-lock\.yaml|tsconfig[^/]*\.json)' ||
+    '^(website/|products/|plugins/|packages/|example-plugins/|embedded_demos/|config/|types/|test_data/|agent-docs/|scripts/|global\.d\.ts|eslint\.config\.mjs|\.oxlintrc\.json|figures\.lock|package\.json|pnpm-lock\.yaml|tsconfig[^/]*\.json)' ||
     exit 0
 fi
 
@@ -117,12 +117,20 @@ marker=$common/main-red
 # landed most recently. Cleared with the marker.
 since=$common/main-red-since
 lock=$common/post-merge-check.lock
+# The lands no run has started checking yet, one changed path per line.
+rerun=$common/post-merge-rerun
 
 # One check at a time. Several agents landing in the same minute would otherwise
-# each start a run, and they would all reach the same answer. mkdir is the
-# atomic test-and-set. The run touches the lock before each step that can wait
-# behind heavy-run-slot, so a lock untouched for 30 minutes is a crashed run,
-# not a live one.
+# each start a run. They would not all reach the same answer, though: a run
+# already past typecheck when another land arrives would clear main-red over a
+# tree it never typechecked. So every land queues its range in `rerun` FIRST
+# and only then tries the lock, and whoever holds the lock keeps checking HEAD
+# until the queue is empty, re-reading it after letting go of the lock. Either
+# the holder sees a land's entry, or the land finds the lock free and runs
+# itself. mkdir is the atomic test-and-set. The run touches the lock before
+# each step that can wait behind heavy-run-slot, so a lock untouched for 30
+# minutes is a crashed run, not a live one.
+printf '%s\n' "$range" >>"$rerun" 2>/dev/null || true
 if [ -d "$lock" ]; then
   if [ -z "$(find "$lock" -maxdepth 0 -mmin +30 2>/dev/null)" ]; then
     exit 0
@@ -131,10 +139,8 @@ if [ -d "$lock" ]; then
 fi
 mkdir "$lock" 2>/dev/null || exit 0
 
-# Detached, so the merge returns now and this outlives the shell that ran it.
-(
-  trap 'rm -rf "$lock"' EXIT
-
+check_head() {
+  touch -c "$lock" 2>/dev/null || true
   # 2s warm, and the only gate here that sees a type error in `products/`.
   tsc=$(pnpm typecheck 2>&1) && tsc_status=0 || tsc_status=$?
   cfg=$(pnpm check-config-read-types 2>&1) && cfg_status=0 || cfg_status=$?
@@ -156,6 +162,7 @@ mkdir "$lock" 2>/dev/null || exit 0
   # against a checkout other agents have open.
   touch -c "$lock" 2>/dev/null || true
   esl=$(pnpm lint:eslint 2>&1) && esl_status=0 || esl_status=$?
+  touch -c "$lock" 2>/dev/null || true
   oxl=$(pnpm lint 2>&1) && oxl_status=0 || oxl_status=$?
 
   if [ "$tsc_status" = 0 ] && [ "$cfg_status" = 0 ] &&
@@ -267,6 +274,24 @@ mkdir "$lock" 2>/dev/null || exit 0
       fi
     } >"$marker" 2>/dev/null || true
   fi
+}
+
+# Detached, so the merge returns now and this outlives the shell that ran it.
+(
+  taken=$rerun.taken
+  while :; do
+    trap 'rm -rf "$lock"' EXIT
+    while mv "$rerun" "$taken" 2>/dev/null; do
+      range=$(cat "$taken" 2>/dev/null || true)
+      rm -f "$taken"
+      check_head
+    done
+    trap - EXIT
+    rm -rf "$lock"
+    if [ ! -f "$rerun" ] || ! mkdir "$lock" 2>/dev/null; then
+      break
+    fi
+  done
 ) </dev/null >/dev/null 2>&1 &
 
 exit 0
