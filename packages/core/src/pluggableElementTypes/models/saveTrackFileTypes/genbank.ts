@@ -417,35 +417,59 @@ function formatLocus(refName: string, length: number, circular: boolean) {
   ].join('')
 }
 
+// what GenBank import and NCBI's GFF3 mark a source feature with, which the
+// record says in its LOCUS line or does not need said
+const SOURCE_MARKERS = new Set(['gbkey', 'is_circular'])
+
+// INSDC requires /organism and /mol_type on every source; a track with no
+// source feature of its own, or one that leaves either out, gets the assembly
+// name and genomic DNA
+function sourceQualifiers(source: Feature | undefined, organism: string) {
+  const keys = source
+    ? Object.keys(source.toJSON()).filter(
+        key => !coreFields.has(key) && !SOURCE_MARKERS.has(key),
+      )
+    : []
+  return [
+    ...(keys.includes('organism') ? [] : [qualifier('organism', organism)]),
+    ...(keys.includes('mol_type')
+      ? []
+      : [qualifier('mol_type', 'genomic DNA')]),
+    ...keys.flatMap(key => qualifierLines(key, source?.get(key))),
+  ]
+}
+
 // Metadata header plus the whole-sequence `source` feature that every GenBank
-// record carries.
+// record carries: the data's own where it has one, so a plasmid keeps its
+// /plasmid and the organism its /strain and /db_xref
 function formatHeader({
   refName,
   region,
   assemblyName,
+  source,
   length,
   circular,
 }: {
   refName: string
   region: string
   assemblyName: string
+  source?: Feature
   length: number
   circular: boolean
 }) {
+  const organism = formatAttributeValue(source?.get('organism')) ?? assemblyName
   return [
     formatLocus(refName, length, circular),
     `DEFINITION  ${region} from ${assemblyName}.`,
     `ACCESSION   ${refName}`,
     `VERSION     ${refName}`,
     'KEYWORDS    .',
-    `SOURCE      ${assemblyName}`,
-    `  ORGANISM  ${assemblyName}`,
+    `SOURCE      ${organism}`,
+    `  ORGANISM  ${organism}`,
     '            .',
     'FEATURES             Location/Qualifiers',
     featureLine('source', `1..${length}`),
-    qualifier('organism', assemblyName),
-    `${QUALIFIER_INDENT}/mol_type="genomic DNA"`,
-    qualifier('chromosome', refName),
+    ...sourceQualifiers(source, organism),
   ]
 }
 
@@ -508,6 +532,7 @@ async function formatRecord({
   regions,
   circularLength,
   assemblyName,
+  source,
   session,
   signal,
   statusCallback,
@@ -517,6 +542,7 @@ async function formatRecord({
   regions: Arc[]
   circularLength?: number
   assemblyName: string
+  source?: Feature
   session: AbstractSessionModel
   signal?: AbortSignal
   statusCallback?: StatusCallback
@@ -549,6 +575,7 @@ async function formatRecord({
     refName,
     region,
     assemblyName,
+    source,
     length: span.end - span.start,
     circular: span.circular,
   })
@@ -568,6 +595,7 @@ async function formatRecord({
 export async function stringifyGBK({
   features,
   circularLengths,
+  sourceRecords,
   regions,
   assemblyName,
   session,
@@ -578,6 +606,7 @@ export async function stringifyGBK({
   session: AbstractSessionModel
   features: Feature[]
   circularLengths: Map<string, number>
+  sourceRecords: Map<string, Feature>
   regions: Region[]
   signal?: AbortSignal
   statusCallback?: StatusCallback
@@ -605,6 +634,7 @@ export async function stringifyGBK({
         ),
         circularLength: circularLengths.get(refName),
         assemblyName,
+        source: sourceRecords.get(refName),
         session,
         signal,
         statusCallback: slot(),

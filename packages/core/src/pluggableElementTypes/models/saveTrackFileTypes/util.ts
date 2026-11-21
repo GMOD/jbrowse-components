@@ -36,6 +36,25 @@ export function declaredCircularLengths(features: Feature[]) {
 }
 
 /**
+ * A record's `source` feature, as GenBank import and NCBI's GFF3 both mark it.
+ * A feature track never draws one, so a writer that needs it is handed these
+ * from the fetch rather than finding them among the features.
+ */
+export function isSourceRecord(feature: Feature) {
+  return feature.get('gbkey') === 'Src'
+}
+
+export function sourceRecords(features: Feature[]) {
+  const sources = new Map<string, Feature>()
+  for (const f of features) {
+    if (isSourceRecord(f) && !sources.has(f.get('refName'))) {
+      sources.set(f.get('refName'), f)
+    }
+  }
+  return sources
+}
+
+/**
  * The feature fields these writers spend on a column of their own — position,
  * identity, a link to a parent — and therefore do not repeat as an
  * attribute/qualifier. GenBank adds `name`, which GFF3 keeps so it can retitle

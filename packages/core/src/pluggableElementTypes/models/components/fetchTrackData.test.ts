@@ -270,6 +270,30 @@ test('a circular declaration the display filters out still reaches the writer', 
   })
 })
 
+test('a source record the display filters out still reaches the writer', async () => {
+  const source = new SimpleFeature({
+    uniqueId: 'source',
+    refName: 'ctgA',
+    start: 0,
+    end: 1000,
+    type: 'region',
+    gbkey: 'Src',
+    plasmid: 'pA',
+  })
+  setup({
+    exportedFeatures: features =>
+      features.filter(f => f.get('gbkey') !== 'Src'),
+  })
+  respond({ CoreGetFeatures: [source, feature('gene1')] })
+
+  const { str } = await fetchTrackData({ model, regions, type: 'bed', options })
+
+  expect(str).toBe('gene1\n')
+  expect(writer.mock.calls[0]![0]).toMatchObject({
+    sourceRecords: new Map([['ctgA', source]]),
+  })
+})
+
 test("a sequence the assembly's circularRefNames lists reaches the writer as circular, by the file's name for it", async () => {
   setup()
   respond({

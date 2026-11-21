@@ -45,11 +45,14 @@ export interface FileTypeExporter {
    * left a whole-gene read running with nothing waiting on it. `regions` are
    * what was exported, in the assembly's names, for a writer whose rows are
    * positions rather than features (a coverage depth). `circularLengths`
-   * are the sequences the fetched data declares circular.
+   * are the sequences the fetched data declares circular, and
+   * `sourceRecords` each sequence's `source` feature where the data has one,
+   * which the display leaves out of `features`.
    */
   callback: (arg: {
     features: Feature[]
     circularLengths: Map<string, number>
+    sourceRecords: Map<string, Feature>
     session: AbstractSessionModel
     assemblyName: string
     regions: Region[]

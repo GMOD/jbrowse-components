@@ -5,6 +5,7 @@ import { getRpcSessionId } from '../../../util/tracks.ts'
 import {
   byPosition,
   declaredCircularLengths,
+  sourceRecords,
 } from '../saveTrackFileTypes/util.ts'
 
 import type { Region } from '../../../util/index.ts'
@@ -202,6 +203,7 @@ async function fetchedThenFiltered({
     features,
     filteredOut: fetched.length - features.length,
     circularLengths: circularLengths(model, regions[0]?.assemblyName, fetched),
+    sourceRecords: sourceRecords(fetched),
   }
 }
 
@@ -278,7 +280,7 @@ export async function fetchTrackData({
 
   const exporter = options[type]!
   const display = model.activeDisplay
-  const { features, filteredOut, circularLengths } =
+  const { features, filteredOut, circularLengths, sourceRecords } =
     display.fetchExportedFeatures
       ? {
           ...(await display.fetchExportedFeatures({
@@ -287,6 +289,7 @@ export async function fetchTrackData({
             ...opts,
           })),
           circularLengths: new Map<string, number>(),
+          sourceRecords: new Map<string, Feature>(),
         }
       : await fetchedThenFiltered({
           model,
@@ -301,6 +304,7 @@ export async function fetchTrackData({
     ? await exporter.callback({
         features: byPosition(features),
         circularLengths,
+        sourceRecords,
         session,
         assemblyName: regions[0]!.assemblyName,
         regions,

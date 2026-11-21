@@ -6,7 +6,7 @@ import {
   stringifyGBK,
 } from './genbank.ts'
 
-import type { AbstractSessionModel } from '../../../util/index.ts'
+import type { AbstractSessionModel, Feature } from '../../../util/index.ts'
 
 jest.mock('../../../util/fetchSeq.ts', () => ({
   fetchSeq: jest.fn(async ({ start, end }: { start: number; end: number }) =>
@@ -35,7 +35,13 @@ function sessionWithAliases(aliases: Record<string, string>) {
 
 const mockSession = sessionWithAliases({})
 
-const noCircular = { regions: [], circularLengths: new Map<string, number>() }
+const noSources = new Map<string, Feature>()
+
+const noCircular = {
+  regions: [],
+  circularLengths: new Map<string, number>(),
+  sourceRecords: noSources,
+}
 
 describe('GenBank export', () => {
   beforeEach(() => {
@@ -806,6 +812,7 @@ describe('GenBank export across a circular origin', () => {
   const wholeChrM = {
     regions: [{ assemblyName: 'hg38', refName: 'chrM', start: 0, end: 16569 }],
     circularLengths: new Map([['chrM', 16569]]),
+    sourceRecords: noSources,
   }
 
   it('writes a whole circular sequence as one circular record, joining each span across the origin', async () => {
@@ -842,6 +849,7 @@ describe('GenBank export across a circular origin', () => {
       const result = await stringifyGBK({
         regions,
         circularLengths: new Map([['pO157', 92721]]),
+        sourceRecords: noSources,
         features: [
           ...wholeFeatures.map(({ start, end }) =>
             createFeature({
@@ -884,6 +892,7 @@ describe('GenBank export across a circular origin', () => {
         { assemblyName: 'b', refName: 'chr', start: 0, end: 1000 },
       ],
       circularLengths: new Map([['chr', length]]),
+      sourceRecords: noSources,
       features: [
         createFeature({
           id: 'head',
@@ -930,6 +939,7 @@ describe('GenBank export across a circular origin', () => {
         { assemblyName: 'b', refName: 'chr', start: 0, end: 1000 },
       ],
       circularLengths: new Map([['NC_000001.1', length]]),
+      sourceRecords: noSources,
       features: [
         createFeature({
           id: 'head',

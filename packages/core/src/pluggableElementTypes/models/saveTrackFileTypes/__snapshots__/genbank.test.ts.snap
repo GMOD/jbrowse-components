@@ -13,7 +13,6 @@ FEATURES             Location/Qualifiers
      source          1..1000
                      /organism="testAssembly"
                      /mol_type="genomic DNA"
-                     /chromosome="chr1"
      gene            1..1000
                      /gene="gene2"
                      /label="gene2"
@@ -58,7 +57,6 @@ FEATURES             Location/Qualifiers
      source          1..100
                      /organism="testAssembly"
                      /mol_type="genomic DNA"
-                     /chromosome="chr1"
      gene            1..100
                      /label="gene_name"
                      /note="some note"
@@ -81,7 +79,6 @@ FEATURES             Location/Qualifiers
      source          1..150
                      /organism="testAssembly"
                      /mol_type="genomic DNA"
-                     /chromosome="chr1"
      gene            1..150
                      /label="gene7"
 ORIGIN
@@ -104,7 +101,6 @@ FEATURES             Location/Qualifiers
      source          1..100
                      /organism="testAssembly"
                      /mol_type="genomic DNA"
-                     /chromosome="chr1"
      misc_feature    1..100
                      /label="gene9"
                      /note="very_long_feature_type_name"
@@ -127,7 +123,6 @@ FEATURES             Location/Qualifiers
      source          1..100
                      /organism="testAssembly"
                      /mol_type="genomic DNA"
-                     /chromosome="chr1"
      gene            1..100
                      /label="gene6"
                      /custom_tag="custom_value"
@@ -153,7 +148,6 @@ FEATURES             Location/Qualifiers
      source          1..100
                      /organism="testAssembly"
                      /mol_type="genomic DNA"
-                     /chromosome="chr1"
      gene            complement(1..100)
                      /gene="gene5"
                      /label="gene5"
@@ -183,7 +177,6 @@ FEATURES             Location/Qualifiers
      source          1..500
                      /organism="testAssembly"
                      /mol_type="genomic DNA"
-                     /chromosome="chr1"
      gene            1..500
                      /gene="gene11"
                      /label="gene11"
@@ -216,7 +209,6 @@ FEATURES             Location/Qualifiers
      source          1..300
                      /organism="testAssembly"
                      /mol_type="genomic DNA"
-                     /chromosome="chr1"
      gene            1..100
                      /label="gene3"
      gene            201..300
@@ -243,7 +235,6 @@ FEATURES             Location/Qualifiers
      source          1..200
                      /organism="testAssembly"
                      /mol_type="genomic DNA"
-                     /chromosome="chr1"
      gene            1..200
                      /gene="gene8"
                      /label="gene8"
