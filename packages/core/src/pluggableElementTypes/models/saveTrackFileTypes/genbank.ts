@@ -268,8 +268,12 @@ export function formatFeatWithSubfeatures({
   const exons = subfeatures.filter(f => f.get('type') === 'exon')
 
   // A gene-group feature with children establishes the symbol, which is threaded
-  // down so every part of the gene shares one /gene qualifier.
-  const ownName = feature.get('name') ?? feature.get('id')
+  // down so every part of the gene shares one /gene qualifier. GenBank import
+  // names a feature by its /label first, so its own /gene comes first here.
+  const ownName =
+    formatAttributeValue(feature.get('gene')) ??
+    feature.get('name') ??
+    feature.get('id')
   const gene =
     geneName ??
     (GENE_GROUP_KEYS.has(key) && subfeatures.length > 0 && ownName

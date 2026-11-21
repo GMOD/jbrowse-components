@@ -701,6 +701,24 @@ describe('INSDC feature keys', () => {
     const result = formatFeatWithSubfeatures({ feature: gene, minPos: 0 })
     expect(result.match(/\/gene="TP53"/g)).toHaveLength(2)
   })
+
+  it('takes the symbol from /gene over a /label that names the feature', () => {
+    const gene = createFeature({
+      id: 'g1',
+      refName: 'chr1',
+      start: 0,
+      end: 100,
+      type: 'gene',
+      name: 'AmpR',
+      gene: 'bla',
+      label: 'AmpR',
+      subfeatures: [{ id: 'm1', type: 'mRNA', start: 0, end: 100 }],
+    })
+    const result = formatFeatWithSubfeatures({ feature: gene, minPos: 0 })
+    expect(result.match(/\/gene="bla"/g)).toHaveLength(2)
+    expect(result).not.toContain('/gene="AmpR"')
+    expect(result).toContain('/label="AmpR"')
+  })
 })
 
 // The LOCUS line is read positionally, so a field that moves one column makes a
