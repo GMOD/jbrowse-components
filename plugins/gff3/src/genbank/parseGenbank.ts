@@ -6,15 +6,61 @@ export interface GenbankRecord {
   sequenceLines: string[]
 }
 
-function readLocus(line: string): GenbankRecord {
+interface ParsedRecord extends GenbankRecord {
+  /** the LOCUS name token when it ran into the length, else undefined */
+  runTogether?: string
+}
+
+function readLocus(line: string): ParsedRecord {
   const tokens = line.trim().split(/\s+/)
   const unit = tokens.findIndex(t => /^(bp|aa)$/i.test(t))
+  const name = tokens[1] ?? ''
   return {
-    refName: tokens[1] ?? '',
-    length: unit > 0 ? Number(tokens[unit - 1]) : 0,
+    refName: name,
+    length: unit > 2 ? Number(tokens[unit - 1]) : 0,
     circular: tokens.some(t => t.toLowerCase() === 'circular'),
     featureLines: [],
     sequenceLines: [],
+    runTogether: unit === 2 ? name : undefined,
+  }
+}
+
+function sourceLength(featureLines: string[]) {
+  const source = featureLines
+    .map(line => /^ {5}source\s+1\.\.(\d+)\s*$/.exec(line)?.[1])
+    .find(Boolean)
+  return source ? Number(source) : 0
+}
+
+function sequenceLength(sequenceLines: string[]) {
+  return sequenceLines.reduce(
+    (sum, line) => sum + line.replaceAll(/[^A-Za-z]/g, '').length,
+    0,
+  )
+}
+
+/**
+ * Prokka writes a contig name too long for the LOCUS name column straight into
+ * the length, `NODE_3_length_3306_cov_210.9876543306 bp`, so the record's own
+ * bases, else its `source` span, say which trailing digits are the length.
+ */
+function splitRunTogether({ runTogether, ...record }: ParsedRecord) {
+  const length =
+    runTogether === undefined
+      ? record.length
+      : sequenceLength(record.sequenceLines) ||
+        sourceLength(record.featureLines)
+  const digits = String(length)
+  return {
+    ...record,
+    length,
+    refName:
+      runTogether === record.refName &&
+      length > 0 &&
+      runTogether.length > digits.length &&
+      runTogether.endsWith(digits)
+        ? runTogether.slice(0, -digits.length)
+        : record.refName,
   }
 }
 
@@ -36,8 +82,8 @@ function uniquelyNamed(records: GenbankRecord[]) {
  * `LOCUS` name; a repeated name takes `_2`, `_3` in file order.
  */
 export function parseRecords(text: string) {
-  const records: GenbankRecord[] = []
-  let record: GenbankRecord | undefined
+  const records: ParsedRecord[] = []
+  let record: ParsedRecord | undefined
   let section: 'header' | 'features' | 'origin' = 'header'
   for (const line of text.split(/\r?\n/).filter(l => l.trim() !== '')) {
     if (line.startsWith('LOCUS')) {
@@ -65,7 +111,7 @@ export function parseRecords(text: string) {
       }
     }
   }
-  return uniquelyNamed(records)
+  return uniquelyNamed(records.map(splitRunTogether))
 }
 
 export function recordSequence(record: GenbankRecord) {

@@ -429,3 +429,29 @@ describe('phage phiX174 NC_001422.1', () => {
     ])
   })
 })
+
+describe('Prokka on a SPAdes contig, its name run into the LOCUS length', () => {
+  const { features, sequence } = adapters('prokka_spades_contig.gbk')
+  const refName = 'NODE_3_length_3306_cov_210.987654'
+
+  test('the refName is the contig name, the same in both adapters', async () => {
+    expect(await features.getRefNames()).toEqual([refName])
+    expect(await sequence.getRegions()).toEqual([
+      { refName, start: 0, end: 3306 },
+    ])
+  })
+
+  test('with no ORIGIN, the source span says which digits are the length', () => {
+    const text = readFileSync(
+      require.resolve('../test_data/prokka_spades_contig.gbk'),
+      'utf8',
+    )
+    const [record] = parseRecords(text.replace(/^ORIGIN[\s\S]*(?=^\/\/)/m, ''))
+    expect([record?.refName, record?.length]).toEqual([refName, 3306])
+  })
+
+  test('its CDS are found under that name', async () => {
+    const found = await fetch(features, refName, 970, 1351)
+    expect(found.map(f => f.get('gene'))).toContain('lsoB')
+  })
+})
