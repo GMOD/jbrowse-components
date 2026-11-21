@@ -45,7 +45,6 @@ import type {
   LDDisplayConfig,
   LDDisplayConfigSchema,
 } from './configSchemaLDTrack.ts'
-import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { ContextMenuAnchor, MenuItem } from '@jbrowse/core/ui'
 import type { ColorScale } from '@jbrowse/core/ui/colorScale'
 import type { ExportSvgDisplayOptions } from '@jbrowse/display-kit/types'
@@ -471,11 +470,10 @@ export default function stateModelFactory(configSchema: LDDisplayConfigSchema) {
          * #method
          * The schema's rules, then names asked for with no band to draw in.
          */
-        configProblemsOf(conf: AnyConfigurationModel): string[] {
-          const ld = conf as LDDisplayConfig
-          const namesWithoutBand =
-            readConfObject(ld, ['labels', 'name', 'show']) &&
-            !readConfObject(ld, ['connectors', 'show'])
+        configProblemsOf(conf: LDDisplayConfig): string[] {
+          const namesShow = readConfObject(conf, ['labels', 'name', 'show'])
+          const bandShow = readConfObject(conf, ['connectors', 'show'])
+          const namesWithoutBand = !!namesShow && !bandShow
           return [
             ...superConfigProblemsOf(conf),
             ...(namesWithoutBand
