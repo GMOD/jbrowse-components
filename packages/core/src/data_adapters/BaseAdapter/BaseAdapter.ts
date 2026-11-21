@@ -29,8 +29,9 @@ export class BaseAdapter<
    * assembly the request that built it named. Part of the instance's identity:
    * dataAdapterCache keys a {@link READS_REFERENCE} adapter on its config AND
    * this, so one BAM shown on two genomes is two instances, each reading its
-   * own. Undefined when the building request named no genome, and a reference
-   * read then throws rather than guessing. Instance state rather than a
+   * own. Undefined when the building request named no genome, or when this is a
+   * member of a wrapper whose type does not declare READS_REFERENCE, and a
+   * reference read then throws rather than guessing. Instance state rather than a
    * per-call argument because `CramAdapter` binds its reference fetch into the
    * `IndexedCramFile` at construction, inside @gmod/cram's slice cache.
    */
