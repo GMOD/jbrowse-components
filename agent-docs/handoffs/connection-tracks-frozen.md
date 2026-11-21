@@ -1,6 +1,6 @@
 ---
 name: connection-tracks-frozen
-description: "A connection's fetched tracks are frozen plain configs and bases their edits diff against. Parked: saving an opened hub track as a session track. Open: the undo, trackId-keyed delta and stalled-hub bugs, and three UI decisions for Colin."
+description: "A connection's fetched tracks are frozen plain configs and bases their edits diff against; ADR-280 records what a hub saves and how its tracks are named. Open: the undo, trackId-keyed delta and stalled-hub bugs, and three UI decisions for Colin."
 ---
 
 # Connection tracks go frozen
@@ -54,27 +54,11 @@ ran; their findings are either fixed in those commits or listed under
 
 ## Next
 
-Nothing is queued. Hubs are rarely used, and the step below costs more
-surface than it removes: a `connectionId` on the track config, a track
-selector change and a snapshot migration, against deleting
-`connectionTrackConfigs` and fixing the obscure trackId-keyed delta bug below.
-Take it up when hub use grows or that bug is reported.
-
-- **Save an opened hub track as a session track with its `connectionId`.**
-  A `sessionTracks` entry is already a base (ADR-158), and the deltas over the
-  kept copy carry over unchanged. This step deletes `connectionTrackConfigs`,
-  `connectionBasesById`'s second source, the three actions that maintain it
-  (`captureConnectionTrack`, `setConnectionTrackConfig`,
-  `pruneConnectionTrackConfig`), their calls in
-  `packages/core/src/util/tracks.ts` and `SessionTracks.ts`, and
-  `DeletedTrack.connectionEntry`. The step needs three things:
-  - the track selector lists such an entry under its hub's row
-    (`allTracks` in `plugins/data-management/src/HierarchicalTrackSelectorWidget/model.ts`);
-  - `teardownConnection` closes the session entries that carry its
-    `connectionId`, beside the live hub's own entries;
-  - a snapshot migration for saved sessions that hold `connectionTrackConfigs`.
-    An old session's entry is the edited config itself, with no delta, so it
-    becomes the base and Reset returns to it, not to the hub's original.
+Nothing is queued.
+[ADR-280](../architecture-decision-records/adr-280-a-hub-is-a-pointer-plus-the-tracks-a-user-touched.md)
+records what a hub saves, which copy wins and how a hub track is named, and
+why saving an opened hub track as a session track, and holding the fetched
+lists outside the tree, were both declined for now.
 
 ## Reasons that could stop the move to frozen
 
@@ -92,19 +76,16 @@ Take it up when hub use grows or that bug is reported.
   hub's row empties until it is expanded again; open hub tracks stay open from
   `connectionTrackConfigs`. Repro in the `hubConnection.test.ts` harness: load
   a hub, `session.setName('x')`, `history.flushPendingRecord()`,
-  `history.undo()`. A fix would move the live list out of the tree undo
-  resets, such as a volatile map on the session keyed by `connectionId`, and
-  must handle undoing "add connection", where the instance's config leaves
-  with the snapshot.
+  `history.undo()`. ADR-280's rejected row on a volatile map lists what a fix
+  that moves the live list out of the tree must handle.
 - **A hub track's edits are keyed by trackId alone**, so they can land on
   another track that later takes the id. Edit hub track `t1`, then add a
   config track `t1`: the config track resolves with the hub's edit, admin
   "save to config" writes it into config.json (`promotableTrackIds`), and
   deleting the hub leaves it. On a reload with the hub dormant, the alias
   migration in `SessionTracks.ts` `afterAttach` can re-key the delta onto a
-  config track that lists `t1` in `aliases` (read from the code). Saving the
-  opened track as a session entry with its `connectionId` (the next step) is
-  the place to tie the delta to its hub.
+  config track that lists `t1` in `aliases` (read from the code). A fix keys
+  a hub track by (`connectionId`, `trackId`) (ADR-280).
 - **The track selector's hub rows list the live entries before any edit**
   (`allTracks` in `HierarchicalTrackSelectorWidget/model.ts`), so an edited
   hub track shows its old name in the tree while it carries the edited badge.
