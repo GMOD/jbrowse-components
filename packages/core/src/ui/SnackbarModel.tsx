@@ -9,6 +9,12 @@ export interface SnackbarMessage {
   actions?: SnackAction[]
 }
 
+// an actionable toast (Undo) stacks, so each repeat keeps its own action; an
+// error's Report action and a plain toast show the latest one instead
+function replacesRepeat({ level, actions }: Omit<SnackbarMessage, 'message'>) {
+  return level === 'error' || !actions?.length
+}
+
 export interface ErrorDialogState {
   error: unknown
   extra?: unknown
@@ -69,7 +75,7 @@ export default function SnackbarModel() {
               ? action
               : [action]
             : undefined
-          this.pushSnackbarMessage(message, level, actions)
+          const entry = this.pushSnackbarMessage(message, level, actions)
           // A plain info/success toast auto-hides; an actionable one persists
           // until acted on or dismissed (5s is too short to read and click the
           // action, and warning/error already persist).
@@ -79,7 +85,7 @@ export default function SnackbarModel() {
               message,
               setTimeout(() => {
                 dismissTimers.delete(message)
-                this.removeSnackbarMessage(message)
+                this.removeSnackbarEntry(entry)
               }, 5000),
             )
           }
@@ -117,16 +123,19 @@ export default function SnackbarModel() {
           level?: NotificationLevel,
           actions?: SnackAction[],
         ) {
-          // an actionable toast (Undo) stacks, so each repeat keeps its own
-          // action; an error's Report action shows the latest error instead
-          if (level === 'error' || !actions?.length) {
-            this.removeSnackbarMessage(message)
+          if (replacesRepeat({ level, actions })) {
+            for (const old of self.snackbarMessages.filter(
+              m => m.message === message && replacesRepeat(m),
+            )) {
+              self.snackbarMessages.remove(old)
+            }
           }
           self.snackbarMessages.push({
             message,
             level,
             actions,
           })
+          return self.snackbarMessages.at(-1)
         },
         /**
          * #action
@@ -141,6 +150,15 @@ export default function SnackbarModel() {
           const element = self.snackbarMessageSet.get(message)
           if (element !== undefined) {
             self.snackbarMessages.remove(element)
+          }
+        },
+        /**
+         * #action
+         * removes this toast, not whichever toast last had its text
+         */
+        removeSnackbarEntry(entry: SnackbarMessage | undefined) {
+          if (entry !== undefined) {
+            self.snackbarMessages.remove(entry)
           }
         },
       }

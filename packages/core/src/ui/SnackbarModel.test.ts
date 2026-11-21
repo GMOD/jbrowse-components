@@ -78,3 +78,19 @@ test('a repeated message moves to the top of the stack', () => {
   model.notify('one', 'warning')
   expect(model.snackbarMessages.map(m => m.message)).toEqual(['two', 'one'])
 })
+
+test('a plain toast neither replaces nor dismisses a same-text Undo toast', () => {
+  jest.useFakeTimers()
+  try {
+    const model = SnackbarModel().create()
+    const undo = { name: 'Undo', onClick: () => {} }
+    model.notify('Track removed', 'info', undo)
+    model.notify('Track removed', 'info')
+    model.notify('Track removed', 'info', undo)
+    expect(model.snackbarMessages).toHaveLength(3)
+    jest.advanceTimersByTime(5000)
+    expect(model.snackbarMessages.map(m => m.actions?.length)).toEqual([1, 1])
+  } finally {
+    jest.useRealTimers()
+  }
+})
