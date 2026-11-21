@@ -213,4 +213,13 @@ describe('genotypeMatrix', () => {
     })
     expectClose(m.values, expected)
   })
+
+  it('gives a haplotype display a column per record with its rows hidden', async () => {
+    const display = { rows: 'haplotype', genotypes: { show: false } }
+    const t = await engine.variants({ ...DOG_VCF, display })
+    const m = await engine.genotypeMatrix({ ...DOG_VCF, display })
+    expect(m.rows).toEqual([])
+    const keys = [...new Set(t.variants.key)]
+    expect(m.columns.name).toEqual(keys.map(key => String(key + 1)))
+  })
 })

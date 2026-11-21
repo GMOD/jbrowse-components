@@ -430,7 +430,6 @@ async function fetchedVariantHost(
     host,
     adapter,
     listing,
-    args,
     value,
     perRegion,
     recordOf,
@@ -484,7 +483,7 @@ export async function variantTables(
   pluginManager: PluginManager,
   variantArgs: VariantTablesArgs,
 ) {
-  const { host, adapter, listing, args, value, perRegion, records, drawn } =
+  const { host, adapter, listing, value, perRegion, records, drawn } =
     await fetchedVariantHost(pluginManager, variantArgs)
   const sampleIndex = buildSampleIndex(value.sampleNames)
   const {
@@ -551,6 +550,7 @@ export async function variantTables(
     region: [] as number[],
   }
   const keyOf = numberByFirstAppearance<string>()
+  const phased = host.rowsField === 'haplotype'
   for (const { region: regionIndex, data, shown } of perRegion) {
     const offset = variants.start.length
     const featureColors = recordColors.get(regionIndex)!
@@ -591,7 +591,7 @@ export async function variantTables(
         cellDosage(
           cells.genotype[cells.genotype.length - 1]!,
           data.featureInfo[f]!.alt.length,
-          args.rowsField === 'haplotype' ? rows.haplotype[row]! - 1 : undefined,
+          phased ? rows.haplotype[row]! - 1 : undefined,
           rows.ploidy[row]!,
         ),
       )
@@ -1111,7 +1111,7 @@ export async function variantGenotypeMatrix(
   pluginManager: PluginManager,
   variantArgs: VariantTablesArgs,
 ) {
-  const { args, value, perRegion, recordOf, drawn } = await fetchedVariantHost(
+  const { host, value, perRegion, recordOf, drawn } = await fetchedVariantHost(
     pluginManager,
     variantArgs,
   )
@@ -1122,10 +1122,11 @@ export async function variantGenotypeMatrix(
       ),
     ),
   ].map(id => recordOf.get(id)!)
-  const phased = args.rowsField === 'haplotype'
+  const { rowsField } = host
+  const phased = rowsField === 'haplotype'
   const matrix = await genotypeMatrixOf(matrixWalkOf(records, {}), {
     sources: drawn,
-    rowsField: args.rowsField,
+    rowsField,
     samplePloidy: value.samplePloidy,
   })
   const columns = {
