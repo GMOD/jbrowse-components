@@ -988,10 +988,15 @@ export function recordsLayoutViews(self: RecordsLayoutHost) {
     /**
      * #getter
      * Whether the band's top holds its sections' chips (`records.facet`),
-     * which then carry the records' chips ahead of the topmost.
+     * or with none on screen the way back from hidden sections, which then
+     * carry the records' chips ahead of them.
      */
     get recordsSectionChipsDrawn() {
-      return this.recordsGroupSections.length > 0
+      return (
+        self.recordsFacet !== undefined &&
+        (this.recordsGroupSections.length > 0 ||
+          self.recordsHiddenGroups.size > 0)
+      )
     },
     /**
      * #getter

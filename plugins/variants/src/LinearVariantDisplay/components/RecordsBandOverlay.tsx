@@ -152,12 +152,11 @@ const RecordsSectionChips = observer(function RecordsSectionChips({
 }) {
   const { recordsGroupSections, recordsFacet } = model
   const canHide = recordsGroupSections.length > 1
-  return recordsFacet &&
-    (model.recordsSectionChipsDrawn || model.recordsHiddenGroups.size > 0) ? (
+  return recordsFacet && model.recordsSectionChipsDrawn ? (
     <GroupLabelChips
       canvasHeight={model.topBands.reserved.records}
       leading={
-        model.recordsChipsHeadBand && model.recordsSectionChipsDrawn ? (
+        model.recordsChipsHeadBand ? (
           <RecordsChips model={model} hideable />
         ) : null
       }

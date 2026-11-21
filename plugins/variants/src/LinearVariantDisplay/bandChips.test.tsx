@@ -99,7 +99,7 @@ test('sectioned records carry their chip ahead of the topmost section chip', () 
   ).toBeTruthy()
 })
 
-test('with every record section hidden over rows, one records chip heads the band beside the restore pill', () => {
+test('with no record section on screen over rows, the records chip and the restore pill share one row', () => {
   const { display } = recordsDisplayAt(
     [
       ['a', 1000, 5000, 'DEL', 'DEL', { groupKey: 'Benign' }],
@@ -115,8 +115,11 @@ test('with every record section hidden over rows, one records chip heads the ban
       <BandChips model={display} />
     </>,
   )
+  const row = screen.getByTestId('group-label-chip')
+  expect(within(row).getByTitle('Hide records')).toBeTruthy()
+  expect(within(row).getByText('Show 2 hidden')).toBeTruthy()
   expect(screen.getAllByTitle('Hide records')).toHaveLength(1)
-  expect(screen.getByText('Show 2 hidden')).toBeTruthy()
+  expect(screen.queryByTestId('records_band_chips')).toBeNull()
 })
 
 test('a band shorter than a chip keeps the records chip in the strip', () => {
