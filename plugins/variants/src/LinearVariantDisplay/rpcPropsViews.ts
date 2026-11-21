@@ -14,6 +14,15 @@ export interface VariantRpcPropsHost extends Pick<
   showReference: boolean
 }
 
+const NO_GENOTYPE_READS: Pick<
+  GetCellDataArgs,
+  'siteFilter' | 'rowsField' | 'showReference'
+> = {
+  siteFilter: [],
+  rowsField: 'sample',
+  showReference: false,
+}
+
 /**
  * The settings a `MultiSampleVariantGetCellData` fetch sends, which the
  * display and the tables' hosts all install, so a table fetches what the
@@ -25,18 +34,23 @@ export function variantRpcPropsViews(self: VariantRpcPropsHost) {
      * #method
      * Only what the worker reads, and nothing fetch-derived; a change
      * refetches. `showReference` is one at genomic positions only: columns
-     * draw every reference cell.
+     * draw every reference cell. With no sample asked for the worker reads
+     * no genotype, so the genotype settings are sent as constants.
      */
     rpcProps() {
       return {
         layout: self.variantLayout,
         sampleFilter: self.sampleFilter,
-        siteFilter: self.siteFilter,
         filters: self.filters,
-        rowsField: self.rowsField,
         color: self.cellHueRead,
         recordFields: self.recordFieldReads,
-        showReference: !self.atGenomicPositions || self.showReference,
+        ...(self.sampleFilter?.length === 0
+          ? NO_GENOTYPE_READS
+          : {
+              siteFilter: self.siteFilter,
+              rowsField: self.rowsField,
+              showReference: !self.atGenomicPositions || self.showReference,
+            }),
       }
     },
   }
