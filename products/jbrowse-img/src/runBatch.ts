@@ -119,7 +119,7 @@ function readJunctions({ sites, passOnly }: BatchOpts) {
         'Warning: --passOnly reads a VCF FILTER column; a BEDPE has none',
       )
     }
-    // a BEDPE row carries no EVENT, so no panel order is ever asked for
+    // a BEDPE row carries no EVENT, so no event's windows are ever ordered
     return { ...parseBedpe(readMaybeGzip(sites)), refNames: [] }
   } else {
     return parseVcfJunctions(readMaybeGzip(sites), { passOnly })

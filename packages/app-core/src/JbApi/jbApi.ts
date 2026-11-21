@@ -539,7 +539,7 @@ interface SnackbarEntry {
 // on its own — so "the last five messages" repeated one stale error in every
 // settle result for the rest of a run and named no level for the rest. Each
 // toast is delivered to the caller once, by identity: the mobx array keeps the
-// object it was pushed as, and removeSnackbarMessage relies on that too.
+// object it was pushed as, and removeSnackbarEntry relies on that too.
 const deliveredNotifications = new WeakMap<object, WeakSet<object>>()
 
 export function undeliveredNotifications(session: AbstractSessionModel) {
