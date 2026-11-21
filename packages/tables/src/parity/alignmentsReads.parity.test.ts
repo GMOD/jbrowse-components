@@ -43,7 +43,7 @@ const keyed = (display: Record<string, unknown>) => ({
  * The alignments display's read colors beside `engine.alignments` over one
  * fixture, read with no reference on either side: the read rows of its key
  * apart from the arcs', as the tables keep them, the key's title, its color
- * bars, and each read's painted color by its id.
+ * bars, and the painted color by id of each read a lane draws rows for.
  */
 function readsParity(
   fixture: ReadsFixture,
@@ -86,31 +86,33 @@ function readsParity(
         legendTitle: key.legendTitle,
         ramps: key.ramps,
         readColors: Object.fromEntries(
-          [...m.laidOutByGroupColored.values()].flatMap(byRegion =>
-            [...byRegion.values()].flatMap(data =>
-              Array.from(data.readColorCategories, (category, i) =>
-                fixture.regions.some(
-                  w =>
-                    data.readPositions[i * 2]! < w.end &&
-                    data.readPositions[i * 2 + 1]! > w.start,
-                )
-                  ? [
-                      [
-                        `${data.readKeys[i]}`,
-                        cssColorToHex(
-                          readColorFromCategoryIndex(
-                            category,
-                            i,
-                            data,
-                            palette,
+          [...m.laidOutByGroupColored]
+            .filter(([key]) => !m.rowlessLaneKeys.has(key))
+            .flatMap(([, byRegion]) =>
+              [...byRegion.values()].flatMap(data =>
+                Array.from(data.readColorCategories, (category, i) =>
+                  fixture.regions.some(
+                    w =>
+                      data.readPositions[i * 2]! < w.end &&
+                      data.readPositions[i * 2 + 1]! > w.start,
+                  )
+                    ? [
+                        [
+                          `${data.readKeys[i]}`,
+                          cssColorToHex(
+                            readColorFromCategoryIndex(
+                              category,
+                              i,
+                              data,
+                              palette,
+                            ),
                           ),
-                        ),
-                      ],
-                    ]
-                  : [],
-              ).flat(),
+                        ],
+                      ]
+                    : [],
+                ).flat(),
+              ),
             ),
-          ),
         ),
       }
     },
@@ -154,6 +156,10 @@ describe('volvox reads', () => {
   parityCases(volvoxReads, [
     { name: 'defaults', config: {} },
     { name: 'strand', config: { encoding: { color: 'strand' } } },
+    {
+      name: 'strand with the pileup hidden',
+      config: { pileup: { show: false }, encoding: { color: 'strand' } },
+    },
     {
       name: 'strand, a written range and legend title',
       config: {

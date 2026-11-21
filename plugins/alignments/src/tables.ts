@@ -118,6 +118,7 @@ import {
   drawnLaneViews,
   laneViews,
   linkedReadLinesViews,
+  rowlessLaneViews,
   sectionViews,
 } from './LinearAlignmentsDisplay/laneViews.ts'
 import { featureSpacingForHeight } from './LinearAlignmentsDisplay/menus/compactnessPresets.ts'
@@ -625,9 +626,6 @@ const AlignmentsTablesHost = types
     get collapsedGroups() {
       return NO_KEYS
     },
-    get rowlessLaneKeys() {
-      return NO_KEYS
-    },
     get groupSizesInEffect() {
       return NO_GROUP_SIZES
     },
@@ -667,6 +665,7 @@ const AlignmentsTablesHost = types
   .views(self => coverageAutoscaleViews(self))
   .views(self => coverageDomainViews(self))
   .views(self => coverageTicksViews(self))
+  .views(self => rowlessLaneViews(self))
   .views(self => alignmentsColorViews(self))
   .views(self => readPaletteViews(self))
   .views(self => linkedReadLinesViews(self))

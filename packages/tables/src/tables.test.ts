@@ -215,6 +215,18 @@ test('reads paint as the display\u2019s color object paints them, with its key',
   expect(mapq.ramps).toEqual([])
 })
 
+test('with the pileup hidden the read key keys nothing, as the display keys nothing', async () => {
+  const t = await engine.alignments({
+    ...BAM,
+    display: {
+      pileup: { show: false },
+      encoding: { color: { field: 'strand' } },
+    },
+  })
+  expect(t.reads.start).toHaveLength(0)
+  expect(t.legend).toEqual({ label: [], color: [] })
+})
+
 test('a read’s level is its value as the color’s scale.domain names it', async () => {
   const plain = await engine.alignments(BAM)
   expect(new Set(plain.reads.level)).toEqual(new Set(['']))

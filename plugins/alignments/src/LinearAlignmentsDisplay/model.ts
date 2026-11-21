@@ -151,9 +151,9 @@ import {
   drawnLaneViews,
   laneViews,
   linkedReadLinesViews,
+  rowlessLaneViews,
   sectionViews,
 } from './laneViews.ts'
-import { drawsPileupRows } from './lanes.ts'
 import {
   featureSpacingForHeight,
   featureSpacingForPitch,
@@ -1030,26 +1030,7 @@ export default function stateModelFactory(
       .views(self => pileupLayoutViews(self))
       .views(self => connectorViews(self))
       .views(self => coverageTicksViews(self))
-      .views(self => ({
-        /**
-         * #getter
-         * The drawn lanes that lay out no read rows: every one with "Show
-         * pileup" off, else those collapsed to their coverage.
-         */
-        get rowlessLaneKeys(): ReadonlySet<string> {
-          return new Set(
-            self.groupOrder
-              .map(g => g.key)
-              .filter(
-                key =>
-                  !drawsPileupRows(
-                    self.showPileup,
-                    self.collapsedGroups.has(key),
-                  ),
-              ),
-          )
-        },
-      }))
+      .views(self => rowlessLaneViews(self))
       .views(self => alignmentsColorViews(self))
       .views(self => linkedReadLinesViews(self))
       .views(self => ({

@@ -2,7 +2,7 @@ import { GROUP_LABEL_HEIGHT } from '@jbrowse/display-kit/groupLabelStyle'
 
 import { attachLinkedReadLinesByGroup } from './groupLayout.ts'
 import { hasNamedGroups } from './groupedDataMaps.ts'
-import { buildLanes, drawnLanesOf } from './lanes.ts'
+import { buildLanes, drawnLanesOf, drawsPileupRows } from './lanes.ts'
 import { computeStackedSections } from './sectionLayout.ts'
 
 import type { GroupConnectors } from '../features/linkedReads/computeOverlay.ts'
@@ -29,6 +29,34 @@ export function linkedReadLinesViews(self: LinkedReadLinesHost) {
       return attachLinkedReadLinesByGroup(
         self.laidOutByGroupColored,
         self.connectorsByGroup,
+      )
+    },
+  }
+}
+
+/** What {@link rowlessLaneViews} reads. */
+export interface RowlessLaneHost {
+  groupOrder: BuildLanesInput['order']
+  collapsedGroups: BuildLanesInput['collapsedKeys']
+  showPileup: boolean
+}
+
+/** The lanes that lay out no read rows. */
+export function rowlessLaneViews(self: RowlessLaneHost) {
+  return {
+    /**
+     * #getter
+     * The drawn lanes that lay out no read rows: every one with "Show
+     * pileup" off, else those collapsed to their coverage.
+     */
+    get rowlessLaneKeys(): ReadonlySet<string> {
+      return new Set(
+        self.groupOrder
+          .map(g => g.key)
+          .filter(
+            key =>
+              !drawsPileupRows(self.showPileup, self.collapsedGroups.has(key)),
+          ),
       )
     },
   }
