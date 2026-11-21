@@ -38,7 +38,7 @@ async function idleDisplay() {
       return orthologs
     },
   })
-  await when(() => display.features !== undefined, { timeout: 5000 })
+  await when(() => display.anchorRecordsLoaded, { timeout: 5000 })
   await wait(ANCHOR_DEBOUNCE_MS + 100)
   return { display, asked }
 }

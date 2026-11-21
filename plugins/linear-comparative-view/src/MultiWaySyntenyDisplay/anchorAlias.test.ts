@@ -81,12 +81,11 @@ test('a track naming the view genome by an alias draws its lanes, the adapter an
       return []
     },
   })
-  await when(
-    () => display.features !== undefined || display.error !== undefined,
-    { timeout: 10_000 },
-  )
+  await when(() => display.anchorRecordsLoaded || display.error !== undefined, {
+    timeout: 10_000,
+  })
   expect(display.error).toBeUndefined()
-  expect(display.features?.length).toBeGreaterThan(0)
+  expect(display.features.length).toBeGreaterThan(0)
   expect(asked.map(r => r.assemblyName)).toEqual(['vvx'])
   expect(display.anchorAssemblyName).toBe('volvox')
   expect(display.rowAssemblies).toEqual(['volvox_ins'])
@@ -139,7 +138,7 @@ describe('the lane-pair fetches of a track naming the view genome by an alias', 
         return name === 'CoreGetInfo' ? { hasCoarseTier: false, lanes: [] } : []
       },
     })
-    await when(() => display.features !== undefined, { timeout: 5000 })
+    await when(() => display.anchorRecordsLoaded, { timeout: 5000 })
     display.setFeatures([
       mateRecord('r1', 'volvox_random', 'ctgB'),
       mateRecord('r2', 'volvox_ins', 'ctgC'),

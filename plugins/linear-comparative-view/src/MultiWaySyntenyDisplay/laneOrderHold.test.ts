@@ -60,7 +60,7 @@ async function displayFor(
   const star = type !== 'MCScanBlocksAdapter'
   await when(
     () =>
-      display.features !== undefined &&
+      display.anchorRecordsLoaded &&
       (!star || display.starAnchor !== undefined),
     { timeout: 5000 },
   )

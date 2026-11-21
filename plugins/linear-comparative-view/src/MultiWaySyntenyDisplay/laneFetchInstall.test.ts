@@ -43,7 +43,7 @@ async function templateDisplay(rpc: RpcCall) {
     rpc,
   })
   setConf(display, 'laneLayers', [gcLayer('GC')])
-  await when(() => display.features !== undefined, { timeout: 5000 })
+  await when(() => display.anchorRecordsLoaded, { timeout: 5000 })
   display.setFeatures(orthologs)
   await when(() => display.rowFrames.get(MATE) !== undefined, {
     timeout: 5000,

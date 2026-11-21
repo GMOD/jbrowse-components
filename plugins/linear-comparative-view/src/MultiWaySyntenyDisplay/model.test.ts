@@ -1231,12 +1231,12 @@ test('a selection lights the chrome and leaves the lane glyph cells alone', () =
   // keep the computed hot: outside a reaction each read re-evaluates it
   const stop = autorun(() => display.laneGlyphCells)
   const before = display.laneGlyphCells
-  session.setSelection(display.features![0]!, 'some-other-track')
+  session.setSelection(display.features[0]!, 'some-other-track')
   expect(display.selectionInk).toEqual([])
   expect(display.laneGlyphCells).toBe(before)
 
   session.setSelection(
-    display.features![0]!,
+    display.features[0]!,
     display.parentTrack.configuration.trackId,
   )
   expect(display.selectionInk).not.toEqual([])
@@ -1519,7 +1519,7 @@ describe('the level-of-detail tier', () => {
     expect(calls.filter(c => c.name === 'CoreGetInfo')).toHaveLength(1)
 
     // the per-pair link fetch, once the anchor fetch has framed two lanes
-    await when(() => display.features !== undefined, { timeout: 5000 })
+    await when(() => display.anchorRecordsLoaded, { timeout: 5000 })
     display.setFeatures([
       mateRecord('r1', 'volvox_random'),
       mateRecord('r2', 'volvox_ins'),
@@ -1587,7 +1587,7 @@ test('one lane’s window change refetches that lane alone', async () => {
   const laneOf = (args: Record<string, unknown>) =>
     (args.regions as { assemblyName: string }[])[0]!.assemblyName
 
-  await when(() => display.features !== undefined, { timeout: 5000 })
+  await when(() => display.anchorRecordsLoaded, { timeout: 5000 })
   display.setFeatures([mateRecord('f1', 'volvox_random', 'gene1')])
   display.setLaneFrames(
     0,
@@ -1963,7 +1963,7 @@ describe('the gutter between two mate lanes', () => {
       },
     })
     await when(
-      () => display.starAnchor !== undefined && display.features !== undefined,
+      () => display.starAnchor !== undefined && display.anchorRecordsLoaded,
       { timeout: 5000 },
     )
     display.setFeatures(starRecords())
@@ -2061,7 +2061,7 @@ describe('lane pairs on a graph source', () => {
       },
     })
     await when(
-      () => display.starAnchor !== undefined && display.features !== undefined,
+      () => display.starAnchor !== undefined && display.anchorRecordsLoaded,
       { timeout: 5000 },
     )
     display.setFeatures(
@@ -2267,7 +2267,7 @@ test('an adapter declaring its lanes has its header read once, and the universe 
   ])
   expect(display.rowAssemblies).toEqual([])
 
-  await when(() => display.features !== undefined, { timeout: 5000 })
+  await when(() => display.anchorRecordsLoaded, { timeout: 5000 })
   display.setFeatures(
     [mateRecord('r1', 'HG1#2'), mateRecord('r2', 'sample#1#undeclared')],
     'volvox',
@@ -2294,7 +2294,7 @@ test('an adapter that neither tiers nor declares lanes is never asked for a head
       return []
     },
   })
-  await when(() => display.features !== undefined, { timeout: 5000 })
+  await when(() => display.anchorRecordsLoaded, { timeout: 5000 })
   expect(calls).not.toContain('CoreGetInfo')
   expect(display.declaredLanes).toEqual([])
   expect(display.laneUniverse).toEqual([
@@ -3397,7 +3397,7 @@ test("a gene-table row the anchor lacks is read on each lane's own window and jo
         : []
     },
   })
-  await when(() => display.features !== undefined, { timeout: 5000 })
+  await when(() => display.anchorRecordsLoaded, { timeout: 5000 })
   display.setFeatures([
     mateRecord('r1', 'volvox_random', 'g1'),
     mateRecord('r2', 'volvox_ins', 'g2'),
@@ -3468,7 +3468,7 @@ describe('a chosen lane the window places nothing in', () => {
   test('draws no row before the fetch lands, nor while the landed fetch did not ask for it', () => {
     const display = createDisplay()
     display.setSelectedLanes(['volvox_random', 'volvox_ins'])
-    expect(display.features).toBeUndefined()
+    expect(display.anchorRecordsLoaded).toBe(false)
     expect(display.rowAssemblies).toEqual([])
     display.setFeatures([mateRecord('r1', 'volvox_random')], undefined, [
       'volvox_random',

@@ -18,7 +18,7 @@ async function settledDisplay(bpPerPx: number, offsetPx: number) {
   const view = display.lgv
   view.setNewView(bpPerPx, offsetPx)
   view.settleCoarseBlocks()
-  await when(() => display.features !== undefined, { timeout: 5000 })
+  await when(() => display.anchorRecordsLoaded, { timeout: 5000 })
   display.setFeatures(
     Array.from(
       { length: 24 },

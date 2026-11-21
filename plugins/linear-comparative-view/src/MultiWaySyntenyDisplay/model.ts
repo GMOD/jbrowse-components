@@ -319,16 +319,23 @@ export interface MultiWayContextMenu extends ContextMenuAnchor {
   target: HoverTarget
 }
 
+interface AnchorFetch {
+  anchor: string
+  features: Feature[]
+  ops: AlignmentOpsById
+  lanes?: string[]
+  deletions: readonly WindowDeletion[]
+}
+
+const NO_FETCH: AnchorFetch = {
+  anchor: '',
+  features: [],
+  ops: NO_OPS,
+  deletions: [],
+}
+
 interface MultiWayVolatiles {
-  fetchedFeatures:
-    | {
-        anchor: string
-        features: Feature[]
-        ops: AlignmentOpsById
-        lanes?: string[]
-        deletions: readonly WindowDeletion[]
-      }
-    | undefined
+  fetchedFeatures: AnchorFetch | undefined
   seenAttributeRanges: Record<string, AttributeRange>
   laneGenes: LaneFetchState<HeldLaneGenes>
   laneDescriptions: Map<string, AssemblyDescription>
@@ -685,30 +692,39 @@ export function stateModelFactory(
       },
       /**
        * #getter
-       * undefined while the view's anchor differs from the fetch's
+       * the held anchor fetch, empty while none is held or the view's anchor
+       * differs from the fetch's
        */
-      get features() {
+      get currentFetch() {
         const held = self.fetchedFeatures
         return held &&
           isSameAssemblyName(
             held.anchor,
-            this.lgv.assemblyNames[0],
+            this.anchorAssemblyName,
             getSession(self).assemblyManager,
           )
-          ? held.features
-          : undefined
+          ? held
+          : NO_FETCH
       },
       /** #getter */
-      get featureOps(): AlignmentOpsById {
-        return (this.features && self.fetchedFeatures?.ops) ?? NO_OPS
+      get anchorRecordsLoaded() {
+        return this.currentFetch !== NO_FETCH
+      },
+      /** #getter */
+      get features() {
+        return this.currentFetch.features
+      },
+      /** #getter */
+      get featureOps() {
+        return this.currentFetch.ops
       },
       /**
        * #getter
        * the deletions a record states across the whole fetched window, for a
        * lane the window shows none of
        */
-      get windowDeletions(): readonly WindowDeletion[] {
-        return (this.features && self.fetchedFeatures?.deletions) ?? []
+      get windowDeletions() {
+        return this.currentFetch.deletions
       },
       /** #getter */
       get hoveredGroupKey() {
@@ -755,7 +771,7 @@ export function stateModelFactory(
       },
       /** #getter */
       get groupedFeatures() {
-        return self.features ? groupFeatures(self.features) : []
+        return groupFeatures(self.features)
       },
       /**
        * #method
@@ -897,7 +913,7 @@ export function stateModelFactory(
        */
       get geneColorFeatures(): Feature[] {
         return [
-          ...(self.features ?? []),
+          ...self.features,
           ...[...self.laneGenes.held.values()].flatMap(({ genes }) =>
             genes.map(gene => gene.feature),
           ),
@@ -1082,11 +1098,7 @@ export function stateModelFactory(
        * the fetches beyond the anchor's that its records call for
        */
       get laneFetchKinds() {
-        return laneFetchesFor(
-          self.features ?? [],
-          this.rowsVsAnchor,
-          self.starAnchor,
-        )
+        return laneFetchesFor(self.features, this.rowsVsAnchor, self.starAnchor)
       },
     }))
     .views(self => ({
@@ -1293,8 +1305,8 @@ export function stateModelFactory(
           labelOf: name => this.laneLabel(name),
           selection: self.laneSelection,
           hidden: self.hiddenLanes,
-          featuresLoaded: self.features !== undefined,
-          landedLanes: self.features && self.fetchedFeatures?.lanes,
+          featuresLoaded: self.anchorRecordsLoaded,
+          landedLanes: self.currentFetch.lanes,
           underFloor: self.copyLanesUnderFloor,
         })
       },
@@ -1308,8 +1320,8 @@ export function stateModelFactory(
           self.laneChoice,
           self.groups,
           answeredLaneTest(
-            self.features !== undefined,
-            self.features && self.fetchedFeatures?.lanes,
+            self.anchorRecordsLoaded,
+            self.currentFetch.lanes,
             self.laneKey,
           ),
           self.laneKey,
@@ -1406,10 +1418,9 @@ export function stateModelFactory(
        * against the anchor
        */
       get structureLaneKeys(): string[] {
-        const { features, featureOps } = self
-        return features
-          ? structureOrder(laneProfiles(features, featureOps)).map(self.laneKey)
-          : []
+        return structureOrder(laneProfiles(self.features, self.featureOps)).map(
+          self.laneKey,
+        )
       },
       /**
        * #getter
@@ -1418,7 +1429,7 @@ export function stateModelFactory(
        */
       get laneStructureOrder(): string[] {
         const row = this.rowOfLane
-        return self.features?.some(isNamedRecord) === false
+        return self.anchorRecordsLoaded && !self.features.some(isNamedRecord)
           ? this.structureLaneKeys.flatMap(lane => row.get(lane) ?? [])
           : []
       },
@@ -1483,7 +1494,7 @@ export function stateModelFactory(
        */
       holdLaneOrder(regions: FetchRegion[]) {
         if (
-          !self.features ||
+          !self.anchorRecordsLoaded ||
           !stacksByStructure(self.adapterCapabilities, self.laneFetchKinds)
         ) {
           self.heldLaneOrder = undefined
@@ -1491,7 +1502,7 @@ export function stateModelFactory(
         }
         const anchor = self.laneKey(self.anchorAssemblyName)
         const drawn = [
-          ...new Set((self.fetchedFeatures?.lanes ?? []).map(self.laneKey)),
+          ...new Set((self.currentFetch.lanes ?? []).map(self.laneKey)),
         ].sort()
         const held = self.heldLaneOrder
         const onWindow = regions.some(r =>
@@ -3474,7 +3485,7 @@ export function stateModelFactory(
               self.renderCells,
               self.renderState,
             )
-            return self.features !== undefined
+            return self.anchorRecordsLoaded
           },
         })
       },

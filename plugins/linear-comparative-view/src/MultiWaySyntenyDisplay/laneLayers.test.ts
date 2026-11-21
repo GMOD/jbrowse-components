@@ -358,7 +358,7 @@ describe('a template layer', () => {
         marks: [{ mark: 'bar', encoding: { y: 'score' } }],
       },
     ])
-    await when(() => display.features !== undefined, { timeout: 5000 })
+    await when(() => display.anchorRecordsLoaded, { timeout: 5000 })
     display.setFeatures(
       [0, 1, 2, 3].map(
         i =>

@@ -13,7 +13,7 @@ import { createDisplay } from './testEnv.ts'
 
 test('the SVG export carries no hover and no selection; the chrome ink does', async () => {
   const display = createDisplay()
-  await when(() => display.features !== undefined, { timeout: 5000 })
+  await when(() => display.anchorRecordsLoaded, { timeout: 5000 })
   display.setFeatures(
     ['g1', 'g2'].map(
       (name, i) =>
@@ -74,7 +74,7 @@ test('the export prints gene names where the panned glyphs are', async () => {
   const view = display.lgv
   view.setNewView(0.5, 100)
   view.settleCoarseBlocks()
-  await when(() => display.features !== undefined, { timeout: 5000 })
+  await when(() => display.anchorRecordsLoaded, { timeout: 5000 })
   display.setShowLegend(false)
   display.setFeatures([
     new SimpleFeature({
@@ -119,7 +119,7 @@ test('the view export carries the color key beside the lanes', async () => {
   setConf(display, ['encoding', 'color'], {
     value: "jexl:randomColor(get(feature,'name'))",
   })
-  await when(() => display.features !== undefined, { timeout: 5000 })
+  await when(() => display.anchorRecordsLoaded, { timeout: 5000 })
   display.setFeatures(
     ['galF', 'wzzB'].map(
       (name, i) =>
@@ -171,7 +171,7 @@ test('the view export carries the color key beside the lanes', async () => {
 
 test('the export prints the lane names, and none with names off', async () => {
   const display = createDisplay()
-  await when(() => display.features !== undefined, { timeout: 5000 })
+  await when(() => display.anchorRecordsLoaded, { timeout: 5000 })
   display.setFeatures([
     new SimpleFeature({
       uniqueId: 'r1',
@@ -203,7 +203,7 @@ test('the export prints the lane names, and none with names off', async () => {
 
 test('the export backs a name on the gene row, as the screen does', async () => {
   const display = createDisplay()
-  await when(() => display.features !== undefined, { timeout: 5000 })
+  await when(() => display.anchorRecordsLoaded, { timeout: 5000 })
   await when(() => display.svgReady, { timeout: 5000 })
   const chips = async () =>
     renderToString(<svg>{await display.renderSvg()}</svg>).split(
@@ -216,7 +216,7 @@ test('the export backs a name on the gene row, as the screen does', async () => 
 
 test('the export badges each lane a source reads against its anchor', async () => {
   const display = createDisplay()
-  await when(() => display.features !== undefined, { timeout: 5000 })
+  await when(() => display.anchorRecordsLoaded, { timeout: 5000 })
   display.setFeatures([
     new SimpleFeature({
       uniqueId: 'r1',
@@ -246,7 +246,7 @@ test('the export badges each lane a source reads against its anchor', async () =
 
 test('the export draws lane headers and names in band ink over a band-ground halo, in a dark theme too, inheriting the export font', async () => {
   const display = createDisplay()
-  await when(() => display.features !== undefined, { timeout: 5000 })
+  await when(() => display.anchorRecordsLoaded, { timeout: 5000 })
   display.setFeatures([
     new SimpleFeature({
       uniqueId: 'r1',
@@ -290,7 +290,7 @@ test('the export draws lane headers and names in band ink over a band-ground hal
 
 test('the export draws each lane color as a bar before its label, in both placements', async () => {
   const display = createDisplay()
-  await when(() => display.features !== undefined, { timeout: 5000 })
+  await when(() => display.anchorRecordsLoaded, { timeout: 5000 })
   display.setFeatures([
     new SimpleFeature({
       uniqueId: 'g1',

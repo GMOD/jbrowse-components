@@ -77,7 +77,7 @@ test('MultiWaySyntenyDisplay fetches and groups a multi-genome blocks track in a
   expect(display.features).toHaveLength(4)
   expect(
     Object.fromEntries(
-      display.features!.map(f => [f.get('name'), getMates(f)?.length]),
+      display.features.map(f => [f.get('name'), getMates(f)?.length]),
     ),
   ).toEqual({ g1: 2, g2: 1, g3: 1, g4: 2 })
 

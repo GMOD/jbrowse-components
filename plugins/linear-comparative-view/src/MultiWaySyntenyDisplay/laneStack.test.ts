@@ -242,7 +242,7 @@ describe('the baseline', () => {
       display: ReturnType<typeof createDisplay>,
       mate: string,
     ) {
-      await when(() => display.features !== undefined, { timeout: 5000 })
+      await when(() => display.anchorRecordsLoaded, { timeout: 5000 })
       display.setFeatures(
         [0, 1, 2, 3].map(
           i =>
@@ -443,7 +443,7 @@ describe('the baseline', () => {
         },
       })
       session.addTemporaryAssembly(HG002)
-      await when(() => display.features !== undefined, { timeout: 5000 })
+      await when(() => display.anchorRecordsLoaded, { timeout: 5000 })
       display.setFeatures([
         new SimpleFeature({
           uniqueId: 'g0',

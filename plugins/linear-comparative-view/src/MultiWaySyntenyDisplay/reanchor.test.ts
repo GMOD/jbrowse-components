@@ -209,6 +209,6 @@ test('a fetch landing after the navigation commits nothing', async () => {
   )
   await new Promise(r => setTimeout(r, 50))
   expect(display.fetchedFeatures).toBeUndefined()
-  expect(display.features).toBeUndefined()
+  expect(display.anchorRecordsLoaded).toBe(false)
   expect(display.laneDecisions.size).toBe(0)
 })

@@ -41,7 +41,7 @@ function link(uniqueId: string, start: number, end: number) {
 async function stackedDisplay(links: Feature[]) {
   const display = createDisplay()
   // the harness's empty fetch would wipe features set before it lands
-  await when(() => display.features !== undefined, { timeout: 5000 })
+  await when(() => display.anchorRecordsLoaded, { timeout: 5000 })
   display.setFeatures([
     ...orthologFeatures('g1', 100, 200),
     ...orthologFeatures('g2', 400, 500),
