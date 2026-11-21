@@ -57,8 +57,24 @@ const CDNASequence = observer(function CDNASequence({
   // else; otherwise every stretch keeps the reference genome's own casing
   const caseCoding = (s: string) => (upperCaseCDS ? s.toUpperCase() : s)
   const caseNoncoding = (s: string) => (upperCaseCDS ? s.toLowerCase() : s)
-  const intronDisplay = (intron: string) =>
-    caseNoncoding(getIntronDisplayStr(intron, intronBp, collapseIntron))
+  // a collapsed intron's tail is its own segment, so the rows after it are
+  // labelled with the bases the ellipsis skipped
+  const intronSegments = (key: string, intron: string): SeqSegment[] => {
+    const shown = caseNoncoding(
+      getIntronDisplayStr(intron, intronBp, collapseIntron),
+    )
+    const tailStart = shown.length - intronBp
+    return shown.length === intron.length
+      ? [{ key, str: shown }]
+      : [
+          {
+            key: `${key}-head`,
+            str: shown.slice(0, tailStart),
+            bases: intron.length - intronBp,
+          },
+          { key: `${key}-tail`, str: shown.slice(tailStart) },
+        ]
+  }
 
   const { mult, coordStart } = computeCoordProps({
     feature,
@@ -92,10 +108,9 @@ const CDNASequence = observer(function CDNASequence({
     if (includeIntrons && next) {
       const intron = sequence.slice(region.end, next.start)
       if (intron) {
-        middle.push({
-          key: `${region.start}-${region.end}-intron`,
-          str: intronDisplay(intron),
-        })
+        middle.push(
+          ...intronSegments(`${region.start}-${region.end}-intron`, intron),
+        )
       }
     }
   }
@@ -106,14 +121,7 @@ const CDNASequence = observer(function CDNASequence({
   // them exonic, and shown only by the intron modes, which run the length of
   // the feature and label coordinates from its start.
   const outside = (key: string, str: string): SeqSegment[] =>
-    includeIntrons && str
-      ? [
-          {
-            key,
-            str: intronDisplay(str),
-          },
-        ]
-      : []
+    includeIntrons && str ? intronSegments(key, str) : []
   const first = regions[0]
   const last = regions.at(-1)
 

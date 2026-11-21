@@ -7,6 +7,8 @@ export interface SeqSegment {
   key: string
   str: string
   color?: string
+  // the bases the segment stands for, when it shows fewer (a collapsed intron)
+  bases?: number
 }
 
 // An up/downstream flank contributes a segment only when its sequence was
@@ -46,14 +48,14 @@ export function renderSequenceSegments({
   // one has to pad its labels to the whole panel's width, not its own
   const labelWidth = coordLabelWidth({
     firstCoord: coordStart,
-    totalLength: segments.reduce((a, b) => a + b.str.length, 0),
+    totalLength: segments.reduce((a, b) => a + (b.bases ?? b.str.length), 0),
     charactersPerRow,
     strand: mult,
   })
   let currCoord = coordStart
   let currRemainder = 0
   const nodes: React.ReactNode[] = []
-  for (const { key, str, color } of segments) {
+  for (const { key, str, color, bases = str.length } of segments) {
     const { segments: chunks, remainder } = splitString({
       str,
       charactersPerRow,
@@ -75,7 +77,7 @@ export function renderSequenceSegments({
         />,
       )
       currRemainder = remainder
-      currCoord += str.length * mult
+      currCoord += bases * mult
     }
   }
   return nodes

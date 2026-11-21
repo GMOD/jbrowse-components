@@ -391,6 +391,36 @@ test.each(['genomic_sequence_updownstream', 'gene_updownstream'] as const)(
   },
 )
 
+test.each([
+  [123, [0, 1100]],
+  [113, [0, 1090]],
+] as const)(
+  'relative coordinates past a collapsed intron count the bases it skipped (%i per row)',
+  (charactersPerRow, rowStarts) => {
+    const model = SequenceFeatureDetailsF().create()
+    model.setShowCoordinates('relative')
+    model.setIntronBp(10)
+    model.setCharactersPerRow(charactersPerRow)
+    const { getByTestId } = render(
+      <SequencePanel
+        model={model}
+        mode="gene_collapsed_intron"
+        sequence={{ seq: 'ACGT'.repeat(300) }}
+        feature={{
+          ...f,
+          start: 1000,
+          end: 2200,
+          subfeatures: [
+            { refName: 'chr1', start: 1000, end: 1100, type: 'exon' },
+            { refName: 'chr1', start: 2100, end: 2200, type: 'exon' },
+          ],
+        }}
+      />,
+    )
+    expect(renderedRowStarts(getByTestId('sequence_panel'))).toEqual(rowStarts)
+  },
+)
+
 test('single exon cDNA should not have duplicate sequences', () => {
   const seq = readFasta('./test_data/volvox.fa')
   const model = SequenceFeatureDetailsF().create()
