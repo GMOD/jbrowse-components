@@ -51,19 +51,9 @@ import MenuOpenIcon from '@mui/icons-material/MenuOpen'
 
 import { identityOver } from '../LinearMafRenderer/identity.ts'
 import { getMafColorPalette } from '../LinearMafRenderer/util.ts'
-import { computeVisibleCodonGlyphs, findCodonAt } from './codons.ts'
+import { findCodonAt } from './codons.ts'
 import { mafColorScales } from './colorScales.ts'
-import { computeVisibleDeletions } from './components/computeVisibleDeletions.ts'
-import { computeVisibleEmptyLines } from './components/computeVisibleEmptyLines.ts'
-import {
-  computeVisibleFrames,
-  findFrameAt,
-} from './components/computeVisibleFrames.ts'
-import {
-  computeVisibleInversions,
-  consensusStrandByRowRefName,
-} from './components/computeVisibleInversions.ts'
-import { computeVisibleLabels } from './components/computeVisibleLabels.ts'
+import { findFrameAt } from './components/computeVisibleFrames.ts'
 import { conservationBarAt } from './components/conservationBand.ts'
 import { findRowHoverAtBp } from './components/findRowHover.ts'
 import { perRowRefNameRanks } from './components/refNameRanks.ts'
@@ -87,12 +77,13 @@ import {
   mafCoverageSource,
   mafCoverageViews,
 } from './mafCoverageViews.ts'
+import { mafCodonGlyphViews, mafOverlayViews } from './mafOverlayViews.ts'
 import { mafDrawnRowViews, mafRowActions, mafRowViews } from './mafRowViews.ts'
 import { openInsertionWidget } from './openInsertionWidget.ts'
 import { orderMafRowsByBaseAt } from './orderMafRowsByBaseAt.ts'
 import { placeMafRegionData } from './placeMafRows.ts'
 import { rowNavigationTargetsOf } from './rowNavigationTargets.ts'
-import { basePaintsOf, resolveRowPlan } from './rowPlan.ts'
+import { resolveRowPlan } from './rowPlan.ts'
 import {
   ZOOM_IN_FOR_BAND,
   buildMafTrackMenuItems,
@@ -113,9 +104,6 @@ import type {
   MafRow,
   MafSummaryRecord,
 } from '../types.ts'
-import type { CodonGlyph } from './codons.ts'
-import type { FrameMarker } from './components/computeVisibleFrames.ts'
-import type { StrandConsensus } from './components/computeVisibleInversions.ts'
 import type { HoverBp } from './components/findRowHover.ts'
 import type { MafRowGeometryParams } from './components/visibleRegionGeometry.ts'
 import type { LinearMafDisplayConfigModel } from './configSchema.ts'
@@ -659,51 +647,6 @@ export default function stateModelFactory(
       .views(self => ({
         /**
          * #getter
-         * The orientation each (row, source chromosome) is measured against for
-         * the inversion indicator (`consensusStrandByRowRefName`). Memoized because
-         * it walks every block and row of every loaded region while its
-         * consumer runs on every pan and zoom. Empty when the indicator is off.
-         */
-        get inversionConsensus(): StrandConsensus {
-          return self.showInversions
-            ? consensusStrandByRowRefName(self.rpcDataMap)
-            : new Map<number, Map<string, number>>()
-        },
-      }))
-      .views(self => {
-        const overlayParams = () => ({
-          view: self.view,
-          rpcDataMap: self.detailOnScreen,
-          ...self.rowGeometry(),
-        })
-        return {
-          /**
-           * #getter
-           * Positioned bridge-line segments for `e`-line (empty/bridged) rows.
-           */
-          get visibleEmptyLines() {
-            return self.rowsVisible
-              ? computeVisibleEmptyLines(overlayParams())
-              : []
-          },
-          /**
-           * #getter
-           * Positioned strand-flip (inversion) markers for the visible aligned rows.
-           * Empty unless the indicator is toggled on.
-           */
-          get visibleInversions() {
-            return self.rowsVisible && self.showInversions
-              ? computeVisibleInversions({
-                  ...overlayParams(),
-                  consensus: self.inversionConsensus,
-                })
-              : []
-          },
-        }
-      })
-      .views(self => ({
-        /**
-         * #getter
          * At base level each reference base spans at least a pixel (UCSC's
          * `zoomedToBaseLevel`). Reads the throttled `coarseBpPerPx` so the
          * rendering swap does not thrash mid-zoom. False until the view is
@@ -844,108 +787,7 @@ export default function stateModelFactory(
             : undefined
         },
       }))
-      .views(self => ({
-        /**
-         * #getter
-         * Positioned per-base letters, over the bases only.
-         */
-        get visibleLabels() {
-          return self.rowsVisible && !self.resizing && self.rowPlan.perBase
-            ? computeVisibleLabels({
-                view: self.view,
-                rpcDataMap: self.detailOnScreen,
-                ...self.rowGeometry(),
-                paints: basePaintsOf(self.rowPlan),
-              })
-            : []
-        },
-        /**
-         * #getter
-         * Positioned deletion runs, labelled with their length where it fits.
-         * Only the bases paint the gap cells the count is colored against.
-         */
-        get visibleDeletions() {
-          return self.rowsVisible && self.rowPlan.perBase
-            ? computeVisibleDeletions({
-                view: self.view,
-                rpcDataMap: self.detailOnScreen,
-                ...self.rowGeometry(),
-              })
-            : []
-        },
-        /**
-         * #getter
-         * The summary records each region's rows draw as per-species presence
-         * bars, keyed by displayedRegionIndex.
-         *
-         * Drawn on the summary tier and as the stand-in for a region whose
-         * detail tier has not landed, so zooming in past the floor does not
-         * blank the track. Suppressed per region, since tiers arrive per
-         * region; `coarseTierActive` short-circuits it because both maps hold a
-         * region side by side.
-         */
-        get summaryDataMap(): ReadonlyMap<number, MafSummaryRecord[]> {
-          const shown = new Map<number, MafSummaryRecord[]>()
-          if (self.rowsVisible) {
-            for (const [i, entry] of self.coarseTier) {
-              if (self.coarseTierActive || !self.rpcDataMap.has(i)) {
-                shown.set(i, entry.data)
-              }
-            }
-          }
-          return shown
-        },
-        /**
-         * #getter
-         * Positioned per-species CDS frame boxes for the frames strip. Empty
-         * unless a frames adapter is configured and the strip is on. Reuses the `src`-to-row mapping of the summary bars.
-         */
-        get visibleFrames(): FrameMarker[] {
-          return self.rowsVisible && self.framesActive
-            ? computeVisibleFrames({
-                view: self.view,
-                framesDataMap: self.framesDataMap,
-                rowIndexBySrc: self.rowIndexBySrc,
-                ...self.rowGeometry(),
-              })
-            : []
-        },
-        /**
-         * #getter
-         * Some CDS frame box is on screen: what the legend asks of
-         * `visibleFrames`, whose boxes move every pan frame, so a pan along
-         * the strip rebuilds no key.
-         */
-        get framesOnScreen() {
-          return this.visibleFrames.length > 0
-        },
-        /**
-         * #getter
-         * The rows area paints the codon overlay.
-         */
-        get codonCellsActive() {
-          return (
-            self.rowsVisible &&
-            self.rowPlan.bases === 'codon' &&
-            !!self.defaultCodonSpecies
-          )
-        },
-        /**
-         * #getter
-         * The conservation band is in per-codon (amino-acid identity) mode, with
-         * frames to define codons and per-base blocks to translate — the cheap
-         * summary path ships neither.
-         */
-        get codonConservationActive() {
-          return (
-            self.view.initialized &&
-            self.conservationBandActive &&
-            self.conservationUnit === 'codon' &&
-            !!self.framesAdapterConfig &&
-            !!self.defaultCodonSpecies
-          )
-        },
-      }))
+      .views(mafOverlayViews)
       .views(self => {
         const keepRanks = sameAsLast<ReturnType<typeof perRowRefNameRanks>>()
         return {
@@ -1148,6 +990,7 @@ export default function stateModelFactory(
           },
         }
       })
+      .views(mafCodonGlyphViews)
       .views(self => ({
         /**
          * #method
@@ -1166,21 +1009,6 @@ export default function stateModelFactory(
                 rowIndex,
               )
             : undefined
-        },
-        /**
-         * #getter
-         * The amino-acid letters over the codon view's cells.
-         */
-        get visibleCodonGlyphs(): CodonGlyph[] {
-          return self.codonCellsActive
-            ? computeVisibleCodonGlyphs(
-                self.view,
-                {
-                  get: (i: number) => self.encodedUpload.get(i)?.codons,
-                },
-                self.rowGeometry(),
-              )
-            : []
         },
         /**
          * #method
