@@ -222,8 +222,10 @@ We'll write pO157 and its genes back out as a GenBank file, for a plasmid map
 program or a collaborator. Type `NC_002128.1` into a linear view's location box
 to show the whole plasmid, then choose **Save track data...** in the gene
 track's menu and pick **GenBank**. The file holds one record over the plasmid,
-written circular because the assembly lists it in `circularRefNames`, with each
-CDS's qualifiers as Prokka wrote them. The file begins:
+written circular because the assembly lists it in `circularRefNames`, with the
+`source` feature and each CDS's qualifiers as Prokka wrote them. `Genus species`
+and `strain` are Prokka's placeholders; its `--genus`, `--species` and
+`--strain` options fill them in. The file begins:
 
 ```text
 LOCUS       NC_002128.1            92721 bp    DNA     circular UNK 10-JAN-1970
@@ -231,14 +233,14 @@ DEFINITION  NC_002128.1:1..92721 from sakai.
 ACCESSION   NC_002128.1
 VERSION     NC_002128.1
 KEYWORDS    .
-SOURCE      sakai
-  ORGANISM  sakai
+SOURCE      Genus species
+  ORGANISM  Genus species
             .
 FEATURES             Location/Qualifiers
      source          1..92721
-                     /organism="sakai"
+                     /organism="Genus species"
                      /mol_type="genomic DNA"
-                     /chromosome="NC_002128.1"
+                     /strain="strain"
      CDS             88..2502
                      /label="stcE"
                      /gene="stcE"

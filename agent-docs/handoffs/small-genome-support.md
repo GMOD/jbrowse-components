@@ -50,15 +50,13 @@ locstring).
   pre-push autogen stopped on two unrelated docs gates (the hand-written fence
   baseline, and an ideas description over 45 words). They regenerate on the
   first push whose autogen passes.
-- **GenBank export writes its own `source` feature.** The file's `/organism`,
-  `/strain` and `/db_xref` on `source` are replaced by `/organism="<assembly
-  name>"` (`formatHeader` in
+- **GenBank export writes NCBI GFF3 spellings on `source`.** A GFF3 track's
+  `gbkey=Src` region becomes the record's `source` (`sourceQualifiers` in
   `packages/core/src/pluggableElementTypes/models/saveTrackFileTypes/genbank.ts`),
-  and every record gets `/chromosome="<refName>"`, a plasmid included
-  (`/chromosome="NC_002128.1"` for pO157, where INSDC would write
-  `/plasmid="pO157"`). No qualifier line is wrapped at 80 columns; Biopython
-  1.86 reads the output either way. Repro: `tutorials/prokka_genbank.md` §
-  "Saving a plasmid as GenBank".
+  its attributes written under their GFF3 names: `Dbxref` as `/dbxref` where
+  INSDC writes `/db_xref`, and NCBI's `genome` and `gb-synonym` as qualifiers
+  INSDC has no key for (`test_data/sars-cov2/ncbi_original.gff3`). No qualifier
+  line is wrapped at 80 columns; Biopython 1.86 reads the output either way.
 
 ## Open questions, unverified
 
