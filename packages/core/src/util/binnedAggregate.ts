@@ -16,7 +16,7 @@ import {
 } from './stepTables.ts'
 
 import type { AggregateStep, BinStep } from './markEncodingTypes.ts'
-import type { Bounds, Staged } from './stepTables.ts'
+import type { BinClip, Bounds, Staged } from './stepTables.ts'
 
 /**
  * The bin's edges and `overlap` a piece carries, where an `aggregate` reads a
@@ -86,16 +86,18 @@ const SPARSE_BINS_SLACK = 65536
  * the way `binRawRegion` bins a BigWig's raw section. The groups come out in
  * the order the pieces would have met them and each sum adds its pieces in
  * the pieces' order, so the answer is the two steps' to the bit. Undefined
- * where the bins spread too thinly over the region for a dense index.
+ * where the bins spread too thinly over the region for a dense index. A
+ * `clip` keeps only the fetched region's bins (`intervalsOf`).
  */
 export function binnedAggregate(
   { table, bounds }: Staged,
   bin: BinStep,
   agg: AggregateStep,
+  clip?: BinClip,
 ): Staged | undefined {
   const size = binSize(bin)
   const as = bin.as ?? DEFAULT_BIN_AS
-  const iv = intervalsOf(table, bin.fields!, size, bounds)
+  const iv = intervalsOf(table, bin.fields!, size, bounds, clip)
   const { lowBin, highBin } = iv
   const sections = bounds.length - 1
   // Each section's bins from its lowest, at `offset[s]` in one index.

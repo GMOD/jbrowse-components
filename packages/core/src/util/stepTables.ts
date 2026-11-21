@@ -207,20 +207,41 @@ export function binSize({ step }: BinStep) {
 }
 
 /**
+ * The fetched region an interval bin fused with its aggregate cuts its rows
+ * to: a row on its `refName`, binned by its own `start` and `end`, makes no
+ * piece outside the bins the region overlaps.
+ */
+export interface BinClip {
+  refName: string
+  start: number
+  end: number
+}
+
+/**
  * Each row's interval and the bins it overlaps, `first` to `last`, with each
  * section's lowest and highest bin: `first` NaN where the ends are not
- * numbers or run backwards, so the row is no piece. A zero-length interval
- * is its position's bin alone.
+ * numbers or run backwards, or where `clip` leaves the row no bin, so the row
+ * is no piece. A zero-length interval is its position's bin alone.
  */
 export function intervalsOf(
   table: FeatureTable,
   [startField, endField]: [string, string],
   size: number,
   bounds: Bounds,
+  clip?: BinClip,
 ) {
   const n = table.length
   const readStart = stepNumberReader(table, startField, 'a bin')
   const readEnd = stepNumberReader(table, endField, 'a bin')
+  const clipTo =
+    clip && startField === 'start' && endField === 'end'
+      ? {
+          refName: clip.refName,
+          readRefName: readerOf(table.column('refName')),
+          low: Math.floor(clip.start / size),
+          high: Math.ceil(clip.end / size) - 1,
+        }
+      : undefined
   const start = new Float64Array(n)
   const end = new Float64Array(n)
   const firstBin = new Float64Array(n)
@@ -237,25 +258,35 @@ export function intervalsOf(
       const rowE = readEnd(i)
       start[i] = rowS
       end[i] = rowE
-      if (!(Number.isFinite(rowS) && Number.isFinite(rowE) && rowE >= rowS)) {
+      const clipped =
+        clipTo !== undefined && clipTo.readRefName(i) === clipTo.refName
+      const own = Math.floor(rowS / size)
+      const first = clipped ? Math.max(own, clipTo.low) : own
+      const upTo = clipped ? clipTo.high : Infinity
+      if (
+        Number.isFinite(rowS) &&
+        Number.isFinite(rowE) &&
+        rowE >= rowS &&
+        first <= upTo &&
+        (first === own || first * size < rowE)
+      ) {
+        // The last bin starting before the end, found by the product the
+        // pieces are cut at.
+        let last = first
+        while (last < upTo && (last + 1) * size < rowE) {
+          last++
+        }
+        firstBin[i] = first
+        lastBin[i] = last
+        pieces += last - first + 1
+        if (first < low) {
+          low = first
+        }
+        if (last > high) {
+          high = last
+        }
+      } else {
         firstBin[i] = Number.NaN
-        continue
-      }
-      const first = Math.floor(rowS / size)
-      // The last bin starting before the end, found by the product the
-      // pieces are cut at.
-      let last = first
-      while ((last + 1) * size < rowE) {
-        last++
-      }
-      firstBin[i] = first
-      lastBin[i] = last
-      pieces += last - first + 1
-      if (first < low) {
-        low = first
-      }
-      if (last > high) {
-        high = last
       }
     }
     lowBin[s] = low

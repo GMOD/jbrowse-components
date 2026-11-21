@@ -244,6 +244,39 @@ test('an interval bin fused with its aggregate answers what the two steps answer
     expect(fused.length).toBeGreaterThan(5)
     expect(answers(fused, FIELDS)).toEqual(answers(apart, FIELDS))
   }
+
+  // A clip drops only the fetched region's partial bins: every bin it keeps
+  // answers what the steps apart answer for it.
+  const spans = input.flatMap(f => {
+    const from = f.get('from')
+    const to = f.get('to')
+    return typeof from === 'number' && typeof to === 'number' && to >= from
+      ? [new SimpleFeature({ ...f.toJSON(), start: from, end: to })]
+      : []
+  })
+  const clip = { refName: 'ctgA', start: 100, end: 300 }
+  const unnumbered = (table: FeatureTable) =>
+    answers(table, FIELDS).map(({ json: { uniqueId, ...json }, values }) => ({
+      json,
+      values,
+    }))
+  for (const [binStep, agg] of declarations()) {
+    const own: BinStep = { ...binStep, fields: ['start', 'end'] }
+    const [lo, hi] = own.as ?? ['start', 'end']
+    kernelRuns.mockClear()
+    const fused = layerTables(spans, {
+      layers: [{ transform: [own, agg] }],
+      clip,
+    }).layers[0]!.table
+    expect(kernelRuns.mock.results[0]!.value).toBeDefined()
+    const apart = runTransforms(runTransforms(spans, [own]), [agg])
+    const inRegion = unnumbered(apart).filter(
+      ({ json }) =>
+        Number(json[lo]) < clip.end && Number(json[hi]) > clip.start,
+    )
+    expect(inRegion.length).toBeLessThan(apart.length)
+    expect(unnumbered(fused)).toEqual(inRegion)
+  }
   kernelRuns.mockRestore()
 })
 
@@ -339,4 +372,80 @@ test('the kernel fuses only a groupby of the bin’s two edges over plain fields
       agg(['start', 'end'], [{ op: 'mean', field: 'INFO.DP' }]),
     ),
   ).toBe(false)
+})
+
+const COUNT: AggregateStep = {
+  type: 'aggregate',
+  groupby: ['start', 'end'],
+  ops: [{ op: 'count' }, { op: 'count', weight: 'overlap', as: 'bases' }],
+}
+
+test('a clip keeps a long feature’s fused bins to the fetched region’s', () => {
+  const input = [feature(1_000_000, 3_200_000, { species: 'a' })]
+  const binStep: BinStep = { type: 'bin', step: 5, fields: ['start', 'end'] }
+  const clip = { refName: 'ctgA', start: 1_500_000, end: 1_504_000 }
+  const kernelRuns = jest.spyOn(kernel, 'binnedAggregate')
+  const [layer] = layerTables(input, {
+    layers: [{ transform: [binStep, COUNT] }],
+    clip,
+  }).layers
+  const faceted = layerTables(input, {
+    facet: { field: 'species' },
+    layers: [{ transform: [binStep, COUNT] }],
+    clip,
+  }).layers[0]!
+  expect(kernelRuns).toHaveBeenCalledTimes(2)
+  expect(kernelRuns.mock.results.every(r => r.value !== undefined)).toBe(true)
+  kernelRuns.mockRestore()
+  const binned = rows(layer!.table, 'start', 'end', 'count', 'bases')
+  expect(binned).toHaveLength(800)
+  expect(binned[0]).toEqual([1_500_000, 1_500_005, 1, 5])
+  expect(binned.at(-1)).toEqual([1_503_995, 1_504_000, 1, 5])
+  expect(rows(faceted.table, 'start', 'end', 'count', 'bases')).toEqual(binned)
+})
+
+test('a clipped kernel and the steps it hands back when bins spread thinly answer alike', () => {
+  const input = [
+    feature(0, 3, { v: 1 }),
+    feature(95, 50_000, { v: 3 }),
+    feature(101, 102, { v: 2 }),
+    feature(203, 300, { v: 4 }),
+  ]
+  const binStep: BinStep = { type: 'bin', step: 1, fields: ['start', 'end'] }
+  const agg: AggregateStep = {
+    type: 'aggregate',
+    groupby: ['start', 'end'],
+    ops: [{ op: 'mean', field: 'v', weight: 'overlap' }, { op: 'count' }],
+  }
+  const request = {
+    layers: [{ transform: [binStep, agg] }],
+    clip: { refName: 'ctgA', start: 100, end: 205 },
+  }
+  const kernelRuns = jest.spyOn(kernel, 'binnedAggregate')
+  const fused = layerTables(input, request).layers[0]!.table
+  expect(kernelRuns.mock.results[0]!.value).toBeDefined()
+  kernelRuns.mockReturnValue(undefined)
+  const handedBack = layerTables(input, request).layers[0]!.table
+  expect(kernelRuns).toHaveBeenCalledTimes(2)
+  kernelRuns.mockRestore()
+  const fields = ['start', 'end', 'mean_v', 'count']
+  expect(answers(handedBack, fields)).toEqual(answers(fused, fields))
+  expect(fused.length).toBe(105)
+  expect(rows(fused, 'start', 'mean_v', 'count').slice(0, 3)).toEqual([
+    [100, 3, 1],
+    [101, 2.5, 2],
+    [102, 3, 1],
+  ])
+})
+
+test('a row on another reference is not clipped', () => {
+  const input = [feature(0, 1000), feature(2000, 2100, { refName: 'ctgB' })]
+  const { table } = layerTables(input, {
+    layers: [{ transform: [INTERVAL_BIN, COUNT] }],
+    clip: { refName: 'ctgA', start: 400, end: 500 },
+  }).layers[0]!
+  expect(rows(table, 'refName', 'start')).toEqual([
+    ...Array.from({ length: 10 }, (_, b) => ['ctgA', 400 + b * 10]),
+    ...Array.from({ length: 10 }, (_, b) => ['ctgB', 2000 + b * 10]),
+  ])
 })
