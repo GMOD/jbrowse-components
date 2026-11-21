@@ -246,8 +246,6 @@ export const retiredConfigSpellings: Record<string, RetiredSpelling> = {
 }
 // #endregion
 
-const isPlainObject = isObject
-
 /**
  * v4's three filter keys on a display config, `filterBy` and the read arcs
  * display's `drawInter` and `drawLongRange`, as one predicate list under the
@@ -265,7 +263,7 @@ export function liftV4Filter(snapshot: Record<string, unknown>) {
     return snapshot
   }
   const lifted = predicatesOfFilterObject({
-    ...(isPlainObject(filterBy) ? filterBy : {}),
+    ...(isObject(filterBy) ? filterBy : {}),
     connections: {
       ...(drawInter === false ? { interchrom: 'exclude' } : {}),
       ...(drawLongRange === false ? { offscreenMates: 'exclude' } : {}),

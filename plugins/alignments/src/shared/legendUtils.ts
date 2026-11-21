@@ -481,7 +481,7 @@ export function readColorCategoryLabel(
 }
 
 // Under any field that colors ordinary reads by something OTHER than their own
-// strand (normal, insert size, pair orientation, mapq, modifications, tag …), a
+// strand (normal, insertSizeAndOrientation, mapq, modifications, tag …), a
 // fwd/rev-strand bucket can only have been produced by the split-read
 // (chained-supplementary) branch of readColorCategory — the field's own
 // classifier yields a different category (plain/mapq/insert/pair/…) for a
@@ -527,7 +527,7 @@ const FIRST_OF_PAIR_LABELS: Partial<Record<SwatchCategory, string>> = {
 
 // Per-field relabeling of the shared fwd/rev-strand swatches: the fragment
 // strand under `firstOfPairStrand`, a split segment against its molecule under
-// the orientation fields, and the read's own strand under `strand`.
+// every other field, and the read's own strand under `strand`.
 function strandLabelOverrides(colorField: string | undefined) {
   return colorField === 'firstOfPairStrand'
     ? FIRST_OF_PAIR_LABELS
@@ -536,12 +536,6 @@ function strandLabelOverrides(colorField: string | undefined) {
       : SPLIT_STRAND_LABELS
 }
 
-// Per-field relabeling of the whole shared swatch table. On top of the strand
-// rewording, the CPU-baked fields name what the leftover neutral bucket means
-// in their own terms — a read the tag is absent from, or a block with no mate —
-// rather than the bare "No value" the table can't specialize.
-// `declared` is `encoding.color.scale.names` by bucket (`declaredReadLabels`), which names a
-// bucket over every wording here.
 /**
  * The insert-size rows of a key named with the band they part at, in bp.
  */
@@ -561,6 +555,12 @@ function bpLabel(bp: number) {
   return Math.round(bp).toLocaleString('en-US')
 }
 
+// Per-field relabeling of the whole shared swatch table. On top of the strand
+// rewording, the CPU-baked fields name what the leftover neutral bucket means
+// in their own terms — a read the tag is absent from, or a block with no mate —
+// rather than the bare "No value" the table can't specialize.
+// `declared` is `encoding.color.scale.names` by bucket (`declaredReadLabels`), which names a
+// bucket over every wording here.
 export function readCategoryLabelOverrides(
   colorField: string | undefined,
   declared: Partial<Record<ReadColorCategory, string>> = {},
@@ -1177,8 +1177,8 @@ function readFillLegend({
   if (isStrandTag(colorField) && !bakedScale?.declared) {
     return strandTagLegend(fieldTag(colorField), presentTagValues, palette)
   }
-  // The strand, insert-size and orientation fields add only the buckets that
-  // occurred.
+  // The baked fields key only the values that occurred; the other fields'
+  // buckets are `bucketItems`'.
   return isBakedField(colorField)
     ? bakedValueLegend(
         colorField,

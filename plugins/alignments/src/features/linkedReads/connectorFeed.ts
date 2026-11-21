@@ -38,6 +38,7 @@ import {
 import type { SwatchCategory } from '../../LinearAlignmentsDisplay/colorUtils.ts'
 import type { ColorPalette, RGBColor } from '../../shaders/colors.ts'
 import type { LinkedPair } from './compute.ts'
+import type { DisplayedRegion } from './computeOverlay.ts'
 import type { HiddenSegment } from '@jbrowse/alignments-core'
 import type { ConnectorChannels } from '@jbrowse/render-core/marks'
 
@@ -97,13 +98,6 @@ export function connectorArrowPx(featureHeight: number) {
   return featureHeight >= LOOP_ARROW_MIN_FEATURE_HEIGHT_PX
     ? Math.min(featureHeight, LOOP_MAX_ARROW_PX) / 2
     : 0
-}
-
-interface DisplayedRegion {
-  refName: string
-  reversed?: boolean
-  start?: number
-  end?: number
 }
 
 function within(r: DisplayedRegion, bp: number) {

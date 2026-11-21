@@ -174,14 +174,11 @@ export function resolveConnectorsByGroup(
   return out
 }
 
-interface Opts {
-  pairs: LinkedPair[]
-  displayedRegions: readonly { refName: string; reversed?: boolean }[]
-  featureHeight: number
-  featureSpacing: number
-  // The section's laid-out pileup band height, which is how deep a discordant
-  // connector may dip: a layout quantity, so a scroll moves no depth.
-  pileupHeight: number
+export interface DisplayedRegion {
+  refName: string
+  reversed?: boolean
+  start?: number
+  end?: number
 }
 
 // Left-to-right screen order without projecting, which answers nothing for the
@@ -190,7 +187,7 @@ interface Opts {
 const REGION_STRIDE = 2 ** 33
 
 export function screenOrder(
-  displayedRegions: Opts['displayedRegions'],
+  displayedRegions: readonly DisplayedRegion[],
   regionIndex: number,
   bp: number,
 ) {
@@ -211,7 +208,7 @@ function screenStrand(strand: number, reversed: boolean | undefined) {
 
 function crossesOwnAlignment(
   { e1, e2, c, segments }: LinkedPair,
-  displayedRegions: Opts['displayedRegions'],
+  displayedRegions: readonly DisplayedRegion[],
 ) {
   const row = e1.data.readYs[e1.readIdx]
   const a = screenOrder(displayedRegions, e1.displayedRegionIndex, c.bp1)
@@ -246,9 +243,9 @@ function crossesOwnAlignment(
 // straight across the seam.
 export function connectorShape(
   pair: LinkedPair,
-  r1: Opts['displayedRegions'][number],
-  r2: Opts['displayedRegions'][number],
-  displayedRegions: Opts['displayedRegions'],
+  r1: DisplayedRegion,
+  r2: DisplayedRegion,
+  displayedRegions: readonly DisplayedRegion[],
   pileupHeight: number,
 ) {
   const { e1, e2, c } = pair
