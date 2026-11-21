@@ -3,8 +3,8 @@ title: A bacterial genome annotated by Prokka
 sidebar_label: Bacterial genome (Prokka GenBank)
 description:
   A bacterial assembly annotated by Prokka and opened from the one GenBank file
-  Prokka writes, with its plasmids as rings, its genes searchable by name and a
-  plasmid saved back out as GenBank
+  Prokka writes, with its chromosome and plasmids as rings, its genes searchable
+  by name and a plasmid saved back out as GenBank
 guide_category: Tutorials
 tutorial_category: Genes & annotation
 ---
@@ -21,7 +21,7 @@ pO157 (Makino et al. 1998). We:
 
 - annotate the assembly's FASTA with Prokka
 - load Prokka's GenBank file as the genome and as a gene track, with the
-  plasmids marked circular
+  chromosome and plasmids marked circular
 - index the gene names, find a gene by typing its name, and read its protein
 - open pO157 in the circular view
 - save pO157 and its genes back out as a GenBank file
@@ -114,10 +114,10 @@ names in your FASTA and in any reads mapped to it.
 
 We'll run the JBrowse commands from the `annotation` folder, beside `sakai.gbk`.
 The GenBank file is the genome, and `circularRefNames` lists the contigs that
-are rings, since Prokka writes every record as linear. On your own assembly,
-Flye's `assembly_info.txt` marks each circular contig `Y`. The add-genome form
-has no field for `circularRefNames` or a GenBank file, so in JBrowse Desktop the
-assembly loads from a
+are rings, here the chromosome and both plasmids, since Prokka writes every
+record as linear. On your own assembly, Flye's `assembly_info.txt` marks each
+circular contig `Y`. The add-genome form has no field for `circularRefNames` or
+a GenBank file, so in JBrowse Desktop the assembly loads from a
 [CLI-built config.json](/docs/tutorials/cli_desktop#open-the-cli-built-folder-in-jbrowse-desktop):
 
 ```json addassembly
@@ -125,7 +125,7 @@ assembly loads from a
   "name": "sakai",
   "displayName": "E. coli O157:H7 Sakai (Prokka)",
   "uri": "sakai.gbk",
-  "circularRefNames": ["NC_002127.1", "NC_002128.1"]
+  "circularRefNames": ["NC_002695.2", "NC_002127.1", "NC_002128.1"]
 }
 ```
 
@@ -256,7 +256,7 @@ wraps every step above. It:
 - downloads the Sakai assembly, or takes your own FASTA
 - annotates it with Prokka
 - writes a JBrowse with the GenBank file as the assembly and the gene track, the
-  plasmids circular and the gene names indexed
+  chromosome and plasmids circular and the gene names indexed
 
 ```bash
 curl -fO https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/build_prokka_genbank.sh

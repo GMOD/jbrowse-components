@@ -6,8 +6,8 @@
 # The assembly is E. coli O157:H7 Sakai (GCF_000008865.2: a chromosome and the
 # plasmids pOSAK1 and pO157), fetched from the copy on jbrowse.org. Prokka
 # annotates it, and the one GenBank file it writes loads as both the assembly
-# and the gene track, with the plasmids marked circular and the gene names
-# indexed for search.
+# and the gene track, with the chromosome and plasmids marked circular and the
+# gene names indexed for search.
 #
 # Requires: curl, prokka, and node (the JBrowse CLI is fetched via npx unless
 #           `jbrowse` is on PATH, or JBROWSE_CLI names a command to run in its
@@ -24,7 +24,7 @@ OUTDIR="${1:-prokka_genbank_build}"
 # contigs to draw as rings, comma-separated, and RING the one the default
 # session opens
 FASTA="${FASTA:-}"
-CIRCULAR="${CIRCULAR:-NC_002127.1,NC_002128.1}"
+CIRCULAR="${CIRCULAR:-NC_002695.2,NC_002127.1,NC_002128.1}"
 RING="${RING:-${CIRCULAR##*,}}"
 NAME="${NAME:-sakai}"
 LOCUSTAG="${LOCUSTAG:-SAKAI}"

@@ -120,7 +120,7 @@ record:
 {
   "name": "sakai",
   "uri": "sakai.gbk",
-  "circularRefNames": ["NC_002127.1", "NC_002128.1"]
+  "circularRefNames": ["NC_002695.2", "NC_002127.1", "NC_002128.1"]
 }
 ```
 
