@@ -6,9 +6,9 @@ import { observer } from 'mobx-react'
 
 import {
   channelEdit,
-  channelScales,
   draftMarks,
   editChannels,
+  offeredScales,
   unreadChannels,
   withChannel,
   withChannelScale,
@@ -259,7 +259,7 @@ const MarkPlotDialog = observer(function MarkPlotDialog({
                   key={`${listGeneration}-${at}-${channel}`}
                   mark={mark}
                   channel={channel}
-                  scales={channelScales(channel)}
+                  scales={offeredScales(mark, channel)}
                   onScale={scale => {
                     write(withChannelScale(mark, channel, scale))
                   }}

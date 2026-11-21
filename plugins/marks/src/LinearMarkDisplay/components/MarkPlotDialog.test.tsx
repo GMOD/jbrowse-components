@@ -303,12 +303,38 @@ describe('a scale beside its field', () => {
     })
     expect(screen.getByTestId('scale-color')).toHaveValue('identity')
     expect(screen.queryByTestId('range-color')).toBeNull()
+    expect(screen.queryByTestId('missingLabel-color')).toBeNull()
     fireEvent.change(screen.getByTestId('domain-color'), {
       target: { value: '#d73027' },
     })
     fireEvent.click(apply())
     expect(written.mock.calls[0]![0].marks[0].encoding.color).toEqual({
       field: 'color',
+      scale: { type: 'identity', domain: ['#d73027'] },
+    })
+  })
+
+  it("holds an identity color with no field, which paints each feature's own color", () => {
+    const { channel, apply, written } = setup({
+      marks: [
+        {
+          mark: 'rect',
+          encoding: {
+            color: { scale: { type: 'identity', domain: ['#d73027'] } },
+          },
+        },
+      ],
+    })
+    const options = [...screen.getByTestId('scale-color').children].map(o =>
+      o.getAttribute('value'),
+    )
+    expect(options).toEqual(['identity'])
+    expect(screen.getByTestId('domain-color')).toHaveValue('#d73027')
+    expect(screen.queryByTestId('missingLabel-color')).toBeNull()
+    fireEvent.change(channel('color'), { target: { value: 'strand' } })
+    fireEvent.click(apply())
+    expect(written.mock.calls[0]![0].marks[0].encoding.color).toEqual({
+      field: 'strand',
       scale: { type: 'identity', domain: ['#d73027'] },
     })
   })

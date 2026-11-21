@@ -46,13 +46,6 @@ traced it and nobody reread it; reread before fixing.
 - **With any `flatten` in the plot, a cross-sequence link's hover locus mixes
   the two sequences.** `featureInstances.ts` `featureSpan` takes min and max
   over `x` and `x2` once `withRootLane` adds the `root` lane.
-- **An identity color with no `field` reads as unset in the form.**
-  `markEdit.ts` `channelScale` returns `''` without a field, so
-  `MarkScaleRow` hides `domain` and `names`, and typing a field replaces the
-  identity scale. The main session read `editOf` and `channelScale` and they
-  match the description; the write path was not traced.
-- **"Key name for no value" is offered under an identity color and does
-  nothing.** `legend.ts` `identityRows` never reads `missingLabel`.
 - **"Sort rows by value here" is offered when no mark compares.**
   `markMenus.ts`; `rowCompare` is undefined when only a link draws, and the
   neighbouring Cluster rows item is already disabled in that state.

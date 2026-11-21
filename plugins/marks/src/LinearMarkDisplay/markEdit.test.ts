@@ -14,6 +14,7 @@ import {
   withChannel,
   withoutChannel,
   listMember,
+  offeredScales,
   withListMember,
 } from './markEdit.ts'
 
@@ -505,6 +506,71 @@ describe('the scale beside a field', () => {
 
 // MarkSize is closed and has no scheme or reverse, so a width ramp keeps its
 // ends across a kind change and nothing a color ramp would.
+// ADR-243: an identity color with no field paints each feature's own color,
+// and the key names the colors its domain lists.
+describe('an identity color naming no field', () => {
+  const own: DraftMark = {
+    mark: 'rect',
+    encoding: {
+      color: {
+        scale: { type: 'identity', domain: ['#d73027'], names: ['active'] },
+      },
+    },
+  }
+
+  it('reads as identity, the one scale offered without a field', () => {
+    expect(channelScale(own, 'color')).toBe('identity')
+    expect(offeredScales(own, 'color')).toEqual(['identity'])
+    expect(
+      offeredScales(withChannel(own, 'color', 'strand', FIELDS), 'color'),
+    ).toEqual(channelScales('color'))
+  })
+
+  it('keeps its scale and key when a field is typed', () => {
+    expect(withChannel(own, 'color', 'strand', FIELDS).encoding?.color).toEqual(
+      {
+        field: 'strand',
+        scale: { type: 'identity', domain: ['#d73027'], names: ['active'] },
+      },
+    )
+    expect(withChannel(own, 'color', 'score', FIELDS).encoding?.color).toEqual({
+      field: 'score',
+      scale: { type: 'identity', domain: ['#d73027'], names: ['active'] },
+    })
+  })
+
+  it('reads as no scale under a constant', () => {
+    const constant = {
+      encoding: { color: { value: 'red', scale: { type: 'identity' } } },
+    }
+    expect(channelScale(constant, 'color')).toBe('')
+  })
+
+  it("drops the key's name for no value on a switch to identity", () => {
+    const named = withScaleMember(
+      withScaleMember(
+        { encoding: { color: { field: 'strand' } } },
+        'color',
+        'missingLabel',
+        'none',
+      ),
+      'color',
+      'title',
+      'Strand',
+    )
+    expect(
+      withChannelScale(named, 'color', 'identity').encoding?.color,
+    ).toEqual({
+      field: 'strand',
+      scale: { type: 'identity' },
+      legend: { title: 'Strand' },
+    })
+    expect(
+      withChannelScale(named, 'color', 'ordinal').encoding?.color,
+    ).toMatchObject({ legend: { title: 'Strand', missingLabel: 'none' } })
+  })
+})
+
 describe('the scale beside a width', () => {
   const width = {
     mark: 'link' as const,

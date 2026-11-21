@@ -274,7 +274,8 @@ const MarkScaleRow = observer(function MarkScaleRow({
           />
         </>
       ) : null}
-      {channel === 'color' || channel === 'shape' ? (
+      {(channel === 'color' || channel === 'shape') &&
+      scale !== IDENTITY_SCALE ? (
         <MemberField
           mark={mark}
           channel={channel}

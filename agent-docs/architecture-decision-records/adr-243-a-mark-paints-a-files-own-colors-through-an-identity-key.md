@@ -43,7 +43,11 @@ of the multi-row worker against 0.46-0.50x for a key over the column.
 - **Edit plot's scale picker leaves identity out.** The picker sits beside a
   field, which identity does not read. Since ADR-249 identity reads a written
   field's CSS colors, so from 2026-11-11 the picker offers it, with its
-  `domain` and `names`.
+  `domain` and `names`. From 2026-11-21 an identity naming no field shows as
+  identity, the one scale offered until a field is typed; typing one keeps
+  the scale with its `domain` and `names`. The key's name for no value is
+  neither offered nor kept under identity, since its key lists `domain`
+  alone.
 
 ## Consequences
 
@@ -59,3 +63,6 @@ of the multi-row worker against 0.46-0.50x for a key over the column.
   the key.
 - **A categorical key over a named field.** The config would have to know
   which of the three names the file uses, as ADR-166 found.
+- **Offering every color scale beside an identity naming no field.** Every
+  other scale reads a field, so picking one would write a scale that reads
+  nothing until a field is typed.

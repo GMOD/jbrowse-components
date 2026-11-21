@@ -1,5 +1,6 @@
 import {
   FEATURE_FIELD_PRESETS,
+  IDENTITY_SCALE,
   fieldScaleOf,
   isRampScale,
 } from '@jbrowse/core/util/colorScale'
@@ -255,17 +256,44 @@ function channelField(mark: DraftMark, channel: EditChannel): string {
     : paintedField(objectOf(declared))
 }
 
+// An identity scale naming no field or constant, which paints each feature's
+// own color.
+function ownColors(mark: DraftMark, channel: EditChannel) {
+  return (
+    partOfChannel(mark, channel, 'scale').type === IDENTITY_SCALE &&
+    channelObject(mark, channel)?.value === undefined
+  )
+}
+
 /**
- * The scale a channel reads its field through, as its control shows it. Empty
- * where the channel names no field, since a constant reads through none.
+ * The scale a channel reads its field through, as its control shows it:
+ * `identity` for one naming no field, which paints each feature's own color,
+ * and otherwise empty where the channel names no field, since a constant
+ * reads through none.
  */
 export function channelScale(mark: DraftMark, channel: EditChannel): string {
   const field = channelField(mark, channel)
-  if (channelEdit(mark, channel).beyond || !field) {
-    return ''
-  }
   const { type } = partOfChannel(mark, channel, 'scale')
-  return typeof type === 'string' ? type : presetScale(channel, field)
+  return channelEdit(mark, channel).beyond
+    ? ''
+    : field
+      ? typeof type === 'string'
+        ? type
+        : presetScale(channel, field)
+      : ownColors(mark, channel)
+        ? IDENTITY_SCALE
+        : ''
+}
+
+/**
+ * The scale kinds a channel's picker offers: the channel's own, or identity
+ * alone where it names no field, the one scale that reads none.
+ */
+export function offeredScales(
+  mark: DraftMark,
+  channel: EditChannel,
+): readonly string[] {
+  return channelField(mark, channel) ? channelScales(channel) : [IDENTITY_SCALE]
 }
 
 /** What one scale or key member says, as a control holds it: text, never a number. */
@@ -304,11 +332,12 @@ function pick(part: Record<string, unknown>, members: readonly string[]) {
 }
 
 /**
- * The mark with a channel read through another scale. A field is required —
- * a constant reads through no scale — and the members the new kind does not
- * paint are dropped, which the rule list would otherwise report as unread.
- * One ramp becoming the other keeps its `range`, the stops or widths both
- * read alike.
+ * The mark with a channel read through another scale. A field is required,
+ * but by identity — a constant reads through no scale — and the members the
+ * new kind does not paint are dropped, which the rule list would otherwise
+ * report as unread. One ramp becoming the other keeps its `range`, the stops
+ * or widths both read alike, and an identity key, listing only its `domain`,
+ * drops the name for no value.
  */
 export function withChannelScale(
   mark: DraftMark,
@@ -328,10 +357,10 @@ export function withChannelScale(
       type: scale,
       ...pick(partOfChannel(mark, channel, 'scale'), keptScale),
     },
-    legend: pick(partOfChannel(mark, channel, 'legend'), [
-      'title',
-      'missingLabel',
-    ]),
+    legend: pick(
+      partOfChannel(mark, channel, 'legend'),
+      scale === IDENTITY_SCALE ? ['title'] : ['title', 'missingLabel'],
+    ),
   })
 }
 
@@ -432,7 +461,9 @@ function spellsConstant(channel: 'color' | 'shape', value: string) {
  * the scan found is a field whatever it spells. A field edit keeps the scale
  * it is read through and that scale's members; only a field the scan types
  * the other way — a number under `ordinal`, text under a ramp — takes the
- * scale it implies, the rule Color by follows.
+ * scale it implies, the rule Color by follows. An identity scale is kept
+ * whatever the field, with or without one held before, since the user chose
+ * it to read colors.
  *
  * `base` is the channel as declared before the edit began, so a value typed
  * through a constant on its way to a field (`red` on the way to `reads`) keeps
@@ -468,9 +499,10 @@ export function withChannel(
         scale: { ...heldScale, type: 'ordinal' },
       })
     }
-    return heldField &&
-      (implied === undefined ||
-        readsNumbers(implied) === readsNumbers(heldScale?.type))
+    return heldScale?.type === IDENTITY_SCALE ||
+      (heldField &&
+        (implied === undefined ||
+          readsNumbers(implied) === readsNumbers(heldScale?.type)))
       ? writeChannel(mark, channel, { ...held, field: value })
       : writeChannel(mark, channel, {
           value: held?.value,
