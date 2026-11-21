@@ -14,6 +14,8 @@ const ZOOM_INTERVAL =
 
 const ALLOWED: Record<string, string> = {
   hideUris: "the About dialog's option, not a drawn part",
+  showBandChips:
+    "a viewer preference the Preferences dialog's checkbox names, not a drawn part",
   maxDepth: "the details panel's nesting limit, not a drawn part",
   minGcPercent: "an adapter's guide search parameter, not a display filter",
   maxGcPercent: "an adapter's guide search parameter, not a display filter",
