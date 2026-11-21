@@ -14,6 +14,10 @@ export type {
   BaseInternetAccountStateModel,
 } from './InternetAccountModel.ts'
 export { BaseInternetAccountConfig } from './baseInternetAccountConfig.ts'
+export type {
+  BaseInternetAccountConfigModel,
+  BaseInternetAccountConfigNode,
+} from './baseInternetAccountConfig.ts'
 export { createBaseTrackModel } from './BaseTrackModel.ts'
 export type {
   BaseTrackModel,

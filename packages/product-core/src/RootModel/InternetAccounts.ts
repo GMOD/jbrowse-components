@@ -4,8 +4,7 @@ import { autorun } from 'mobx'
 import { asRoot } from '../siblingCast.ts'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
-import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
-import type { BaseInternetAccountModel } from '@jbrowse/core/pluggableElementTypes'
+import type { BaseInternetAccountConfigModel } from '@jbrowse/core/pluggableElementTypes/models'
 import type { UriLocation } from '@jbrowse/core/util'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 
@@ -107,7 +106,7 @@ export function InternetAccountsRootModelMixin(pluginManager: PluginManager) {
        * #action
        */
       initializeInternetAccount(
-        internetAccountConfig: AnyConfigurationModel,
+        internetAccountConfig: BaseInternetAccountConfigModel,
         initialSnapshot: object = {},
       ) {
         self.internetAccounts.push({
@@ -139,12 +138,12 @@ export function InternetAccountsRootModelMixin(pluginManager: PluginManager) {
           description: '',
           domains: origin ? [`${origin}/`] : [],
         }
-        self.internetAccounts.push({
+        const length = self.internetAccounts.push({
           ...initialSnapshot,
           type: configuration.type,
           configuration,
         })
-        return self.internetAccounts.at(-1)
+        return self.internetAccounts[length - 1]!
       },
     }))
     .actions(self => ({
@@ -156,8 +155,7 @@ export function InternetAccountsRootModelMixin(pluginManager: PluginManager) {
         const selectedId = location.internetAccountId
         const selectedAccount = selectedId
           ? self.internetAccounts.find(
-              (account): account is BaseInternetAccountModel =>
-                account.internetAccountId === selectedId,
+              account => account.internetAccountId === selectedId,
             )
           : undefined
         if (selectedId) {
@@ -215,7 +213,7 @@ export function InternetAccountsRootModelMixin(pluginManager: PluginManager) {
             parseEphemeralId(selectedId).name,
           )
         }
-        return null
+        return undefined
       },
     }))
     .actions(self => ({

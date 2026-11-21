@@ -32,7 +32,9 @@ import type { BaseConnectionModel } from './pluggableElementTypes/models/BaseCon
 import type { DisplayModel } from './pluggableElementTypes/models/BaseDisplayModel.tsx'
 import type { TrackModelOf } from './pluggableElementTypes/models/BaseTrackModel.ts'
 import type { IBaseViewModel } from './pluggableElementTypes/models/BaseViewModel.ts'
+import type { BaseInternetAccountModel } from './pluggableElementTypes/models/InternetAccountModel.ts'
 import type { BaseConnectionConfigNode } from './pluggableElementTypes/models/baseConnectionConfig.ts'
+import type { BaseInternetAccountConfigNode } from './pluggableElementTypes/models/baseInternetAccountConfig.ts'
 import type { TrackConfigNode } from './pluggableElementTypes/models/baseTrackConfig.ts'
 // Side-effect type imports, for the augmentations rather than for a name. Every
 // plugin's `install`/`configure` takes a PluginManager, so a declaration this
@@ -111,6 +113,11 @@ export interface WidgetSnapshot {
 }
 
 export interface ConnectionSnapshot {
+  type: string
+  [key: string]: unknown
+}
+
+export interface InternetAccountSnapshot {
   type: string
   [key: string]: unknown
 }
@@ -1113,6 +1120,10 @@ export default class PluginManager {
     fieldName: 'stateModel',
   ): PluggableStateModelUnion<Instance<BaseConnectionModel>, ConnectionSnapshot>
   pluggableMstType(
+    groupName: 'internet account',
+    fieldName: 'stateModel',
+  ): PluggableStateModelUnion<BaseInternetAccountModel, InternetAccountSnapshot>
+  pluggableMstType(
     groupName: PluggableElementTypeGroup,
     fieldName: string,
     fallback?: IAnyType,
@@ -1162,6 +1173,9 @@ export default class PluginManager {
   pluggableConfigSchemaType(
     typeGroup: 'track',
   ): IType<any, any, TrackConfigNode>
+  pluggableConfigSchemaType(
+    typeGroup: 'internet account',
+  ): IType<any, any, BaseInternetAccountConfigNode>
   pluggableConfigSchemaType(
     typeGroup: PluggableElementTypeGroup,
     fieldName?: string,

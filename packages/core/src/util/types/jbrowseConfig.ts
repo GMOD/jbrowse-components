@@ -6,6 +6,7 @@ import type {
   TrackConfigEntry,
 } from '../../configuration/index.ts'
 import type { BaseConnectionConfigModel } from '../../pluggableElementTypes/models/baseConnectionConfig.ts'
+import type { BaseInternetAccountConfigModel } from '../../pluggableElementTypes/models/baseInternetAccountConfig.ts'
 import type { PluginDefinition } from '../../pluginDefinitions.ts'
 import type RpcManager from '../../rpc/RpcManager.ts'
 import type { RpcConfigModel } from '../../rpc/configSchema.ts'
@@ -22,7 +23,7 @@ export interface JBrowseConfigModel extends IStateTreeNode {
   assemblyNames: string[]
   tracks: TrackConfigEntry[]
   connections: BaseConnectionConfigModel[]
-  internetAccounts: AnyConfigurationModel[]
+  internetAccounts: BaseInternetAccountConfigModel[]
   aggregateTextSearchAdapters: AnyConfigurationModel[]
   addConnectionConf(conf: AnyConfiguration): BaseConnectionConfigModel
   deleteConnectionConf(conf: AnyConfigurationModel): boolean

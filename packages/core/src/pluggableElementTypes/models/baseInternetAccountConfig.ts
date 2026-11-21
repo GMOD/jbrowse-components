@@ -1,5 +1,7 @@
 import { ConfigurationSchema } from '../../configuration/index.ts'
 
+import type { Instance } from '@jbrowse/mobx-state-tree'
+
 /**
  * #config BaseInternetAccount
  * Holds an internet account's name and description, the domains it handles,
@@ -60,3 +62,15 @@ export const BaseInternetAccountConfig = ConfigurationSchema(
     explicitlyTyped: true,
   },
 )
+
+export type BaseInternetAccountConfigSchema = typeof BaseInternetAccountConfig
+export type BaseInternetAccountConfigModel =
+  Instance<BaseInternetAccountConfigSchema>
+
+/**
+ * A live internet account config of any account type, its other members a raw
+ * `unknown`, as `BaseConnectionConfigNode` is for connections.
+ */
+export type BaseInternetAccountConfigNode = BaseInternetAccountConfigModel & {
+  readonly [key: string]: unknown
+}

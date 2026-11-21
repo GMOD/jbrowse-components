@@ -99,10 +99,6 @@
 1 no-unsafe-argument packages/product-core/src/RootModel/createConfigModel.ts
 1 no-unsafe-assignment packages/product-core/src/RootModel/createConfigModel.ts
 1 no-unsafe-return packages/product-core/src/RootModel/createConfigModel.ts
-2 no-unsafe-assignment packages/product-core/src/RootModel/InternetAccounts.ts
-1 no-unsafe-call packages/product-core/src/RootModel/InternetAccounts.ts
-3 no-unsafe-member-access packages/product-core/src/RootModel/InternetAccounts.ts
-4 no-unsafe-return packages/product-core/src/RootModel/InternetAccounts.ts
 1 no-unsafe-argument packages/product-core/src/rpcWorker.ts
 1 no-unsafe-call packages/product-core/src/Session/BaseSession.ts
 4 no-unsafe-argument packages/product-core/src/Session/Connections.ts

@@ -108,7 +108,7 @@ test('naming an account cannot put it outside its domains', () => {
   const warn = jest.spyOn(console, 'warn').mockImplementation(() => {})
   try {
     expect(root.internetAccounts[0]!.handlesLocation(outOfScope)).toBe(false)
-    expect(root.findAppropriateInternetAccount(outOfScope)).toBe(null)
+    expect(root.findAppropriateInternetAccount(outOfScope)).toBeUndefined()
     expect(warn.mock.calls[0]?.[0]).toContain('labToken')
     expect(warn.mock.calls[0]?.[0]).toContain('evil.example.com')
   } finally {
@@ -137,7 +137,7 @@ test('no request carries the credential to a host outside the domains', async ()
     })
 
   try {
-    // Deliberately not asserting the match is null first — that is the test
+    // Deliberately not asserting the match is undefined first — that is the test
     // above, and asserting it here would fail before anything issues a request,
     // leaving the assertion that matters unproven. Take whatever the walk
     // returns all the way to the credential instead.
@@ -202,7 +202,7 @@ test('a relative uri under an off-origin baseUri is not same-origin', () => {
     internetAccountId: 'localToken',
   })
   warn.mockRestore()
-  expect(found).toBe(null)
+  expect(found).toBeUndefined()
 })
 
 test('an unnamed location still matches on domains', () => {
@@ -258,7 +258,7 @@ test('an undeclared typed id is created for a file on the app origin only', () =
     internetAccountId: 'HTTPBasicInternetAccount-HTTPBasicTest',
   })
   warn.mockRestore()
-  expect(offOrigin).toBe(null)
+  expect(offOrigin).toBeUndefined()
   expect(root.internetAccounts.length).toBe(1)
 })
 
@@ -272,7 +272,7 @@ test('an id naming another origin is not created for a file on the app origin', 
       uri: 'volvox_microarray.bw',
       internetAccountId: 'HTTPBasicInternetAccount-https://data.mylab.org',
     }),
-  ).toBe(null)
+  ).toBeUndefined()
   expect(root.internetAccounts.length).toBe(0)
 })
 
@@ -288,7 +288,7 @@ test.each(['http://localhost:8080/x.bw', 'https://localhost/x.bw'])(
         uri,
         internetAccountId: 'HTTPBasicInternetAccount-HTTPBasicTest',
       }),
-    ).toBe(null)
+    ).toBeUndefined()
     expect(root.internetAccounts.length).toBe(0)
   },
 )
@@ -305,14 +305,14 @@ test.each([
       uri,
       internetAccountId: 'HTTPBasicInternetAccount-https://data.mylab.org',
     }),
-  ).toBe(null)
+  ).toBeUndefined()
   expect(
     root.findAppropriateInternetAccount({
       locationType: 'UriLocation',
       uri,
       internetAccountId: 'HTTPBasicInternetAccount-null',
     }),
-  ).toBe(null)
+  ).toBeUndefined()
   expect(root.internetAccounts.length).toBe(0)
 })
 
@@ -367,7 +367,7 @@ describe('an origin account minted for one file', () => {
     const root = rootAfterFirst401()
     expect(
       root.findAppropriateInternetAccount({ locationType: 'UriLocation', uri }),
-    ).toBe(null)
+    ).toBeUndefined()
   })
 })
 
@@ -385,7 +385,7 @@ test('an existing origin account is not offered to another host', () => {
     internetAccountId: labOrigin,
   })
   warn.mockRestore()
-  expect(found).toBe(null)
+  expect(found).toBeUndefined()
   expect(root.internetAccounts.length).toBe(1)
 })
 
@@ -413,7 +413,7 @@ test('an origin account is not created for a location on another host', () => {
       uri: 'https://evil.example.com/attacker.bam',
       internetAccountId: labOrigin,
     }),
-  ).toBe(null)
+  ).toBeUndefined()
   expect(
     root.findAppropriateInternetAccount({
       locationType: 'UriLocation',
@@ -421,14 +421,14 @@ test('an origin account is not created for a location on another host', () => {
       baseUri: 'https://evil.example.com/',
       internetAccountId: labOrigin,
     }),
-  ).toBe(null)
+  ).toBeUndefined()
   expect(
     root.findAppropriateInternetAccount({
       locationType: 'UriLocation',
       uri: 'https://data.mylab.org/reads.bam',
       internetAccountId: 'HTTPBasicInternetAccount-labToken',
     }),
-  ).toBe(null)
+  ).toBeUndefined()
   expect(root.internetAccounts.length).toBe(0)
 })
 
@@ -452,7 +452,7 @@ test('an id naming no registered type is ignored', () => {
       uri: 'https://data.mylab.org/reads.bam',
       internetAccountId: 'SomeRemovedPluginAccount-https://data.mylab.org',
     }),
-  ).toBe(null)
+  ).toBeUndefined()
   expect(root.internetAccounts.length).toBe(0)
 })
 
@@ -477,13 +477,13 @@ describe.each([
     const warn = jest.spyOn(console, 'warn').mockImplementation(() => {})
     const found = root.findAppropriateInternetAccount(location)
     warn.mockRestore()
-    expect(found).toBe(null)
+    expect(found).toBeUndefined()
     expect(root.internetAccounts.length).toBe(1)
   })
 
   test('does not create one', () => {
     const root = makeRoot()
-    expect(root.findAppropriateInternetAccount(location)).toBe(null)
+    expect(root.findAppropriateInternetAccount(location)).toBeUndefined()
     expect(root.internetAccounts.length).toBe(0)
   })
 })
@@ -511,7 +511,7 @@ describe.each([
       internetAccountId,
     })
     warn.mockRestore()
-    expect(found).toBe(null)
+    expect(found).toBeUndefined()
     expect(root.internetAccounts.length).toBe(1)
   })
 })
