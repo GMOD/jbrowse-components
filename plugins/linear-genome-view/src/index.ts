@@ -164,13 +164,10 @@ export type {
   ViewTrackLabelMode,
   VolatileGuide,
 } from './LinearGenomeView/types.ts'
-// Not for consumers to import — it is the element type of the view model's
-// `scalebarRefNameLabels` getter, so tsc has to name it when it serializes the
-// model's inferred type into every downstream `.d.ts`. With no path to it from
-// this entry, tsc falls back to the source path
-// (`@jbrowse/plugin-linear-genome-view/src/LinearGenomeView/util.ts`), which
-// tarballs don't ship and consumers can't resolve. check-declaration-leaks
-// guards this; see issue #4678.
+// Not for consumers to import: the view model's inferred type names these, so
+// every downstream `.d.ts` must reach them from this entry. This package has no
+// workspace `exports` map, so a missing one is a silent `/src/` path rather
+// than TS2883 (TOOLCHAIN.md, "Composing another package's model").
 export type { ZoomLinkable, ZoomMarker } from './LinearGenomeView/zoomOf.ts'
 export type { ScalebarRefNameLabel } from './LinearGenomeView/util.ts'
 export type {

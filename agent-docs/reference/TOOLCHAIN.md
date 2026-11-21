@@ -86,6 +86,24 @@ Instance<…> {}` (ADR-055).
   new action is the real error. Put the helper outside the factory
   (`openSpanInNewView` in `LinearGenomeView/menuItems.ts`).
 
+## Composing another package's model
+
+A factory with no annotated return type writes its inferred type into its own
+`.d.ts`. When it composes a model or mixin from another package, declaration
+emit has to name every type the base model's members mention, through that
+package's entry. A missing name fails one of two ways:
+
+- **The base package has an `exports` map**: `build:esm` fails with TS2883 in
+  the composing package. Export the type from a subpath the map lists.
+- **It has none** (`main` only, as in plugin-linear-genome-view): the build
+  passes and the `.d.ts` names `@jbrowse/<pkg>/src/…`, which tarballs don't
+  ship. `pnpm check-declaration-leaks` catches it after `build:esm`. Re-export
+  the type from the entry `index.ts`.
+
+`pnpm typecheck` sees neither. Post-merge runs both checks, and pre-push runs
+`build:esm`. Such an export has no importer outside its package, so a tidy-up
+that keeps only imported names breaks the build.
+
 ## Project references
 
 **Module augmentations must be reachable from the package entry.** A `declare
