@@ -2011,9 +2011,7 @@ function stateModelFactory(
 }
 
 type ModelParts<M> =
-  M extends IModelType<infer P, infer O, infer C, infer S>
-    ? { props: P; others: O; creation: C; snapshot: S }
-    : never
+  M extends IModelType<infer P, infer O> ? { props: P; others: O } : never
 type InferredParts = ModelParts<ReturnType<typeof stateModelFactory>>
 type InferredOthers = InferredParts['others']
 
