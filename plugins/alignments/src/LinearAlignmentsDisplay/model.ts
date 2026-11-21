@@ -138,7 +138,7 @@ import {
 } from './groupedDataMaps.ts'
 import { NO_CONNECTOR_READ_IDS, nextHover } from './hoverState.ts'
 import { computeInsertSizeTicks } from './insertSizeTicks.ts'
-import { junctionInWindows } from './keyWindows.ts'
+import { junctionKeyOf } from './keyWindows.ts'
 import {
   drawnLaneViews,
   laneViews,
@@ -196,7 +196,6 @@ import type {
   RowCap,
   WorkerPileupData,
 } from '../RenderAlignmentDataRPC/types'
-import type { ArcSplitCategory } from '../features/arcs/arcSplitCategory.ts'
 import type { ArcBandFeed } from '../features/arcs/bandFeed.ts'
 import type { JunctionsBandFeed } from '../features/junctions/bandFeed.ts'
 import type { HoveredJunction } from '../features/junctions/supportingReads.ts'
@@ -1417,29 +1416,17 @@ export default function stateModelFactory(
           /**
            * #getter
            * The splice junction strands and split junction classes drawn in
-           * `keyWindows`, one key row each. Read off the merged junctions and
-           * the settled window rather than the projected arcs, so a pan's
-           * frames do not rebuild the legend. A split junction has no
-           * transcript strand.
+           * `keyWindows`, one key row each (`junctionKeyOf`). Read off the
+           * merged junctions and the settled window rather than the projected
+           * arcs, so a pan's frames do not rebuild the legend.
            */
           get junctionLegendKeys() {
-            const strands = new Set<number>()
-            const splitClasses = new Set<ArcSplitCategory>()
-            if (self.showLegend) {
-              const windows = self.keyWindows
-              for (const sec of this.junctionSections) {
-                for (const j of sec.junctions.filter(j =>
-                  junctionInWindows(j, windows),
-                )) {
-                  if (j.split) {
-                    splitClasses.add(j.split)
-                  } else {
-                    strands.add(j.strand)
-                  }
-                }
-              }
-            }
-            return { strands, splitClasses }
+            return junctionKeyOf(
+              self.showLegend
+                ? this.junctionSections.flatMap(sec => sec.junctions)
+                : [],
+              self.keyWindows,
+            )
           },
 
           /**

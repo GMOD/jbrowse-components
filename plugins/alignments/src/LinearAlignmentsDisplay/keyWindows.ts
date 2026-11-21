@@ -12,6 +12,7 @@ import type {
   PileupLayoutArrays,
   WorkerPileupData,
 } from '../RenderAlignmentDataRPC/types.ts'
+import type { ArcSplitCategory } from '../features/arcs/arcSplitCategory.ts'
 import type { CrossRegionArc } from '../features/arcs/arcTypes.ts'
 import type { ArcsUploadData } from '../features/arcs/types.ts'
 import type { MergedJunction } from '../features/junctions/junctions.ts'
@@ -293,6 +294,31 @@ export function junctionInWindows(
     }
   }
   return false
+}
+
+/**
+ * The splice junction strands and split junction classes a junctions key
+ * rows: those of the junctions touching a window. A split junction has no
+ * transcript strand.
+ */
+export function junctionKeyOf(
+  junctions: Iterable<
+    Pick<MergedJunction, 'refName' | 'start' | 'end' | 'strand' | 'split'>
+  >,
+  windows: readonly KeyWindow[],
+) {
+  const strands = new Set<number>()
+  const splitClasses = new Set<ArcSplitCategory>()
+  for (const j of junctions) {
+    if (junctionInWindows(j, windows)) {
+      if (j.split) {
+        splitClasses.add(j.split)
+      } else {
+        strands.add(j.strand)
+      }
+    }
+  }
+  return { strands, splitClasses }
 }
 
 /**

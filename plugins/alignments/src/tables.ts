@@ -110,7 +110,7 @@ import {
   ceilingCap,
   groupClipSource,
 } from './LinearAlignmentsDisplay/groupLayout.ts'
-import { junctionInWindows } from './LinearAlignmentsDisplay/keyWindows.ts'
+import { junctionKeyOf } from './LinearAlignmentsDisplay/keyWindows.ts'
 import {
   drawnLaneViews,
   laneViews,
@@ -169,7 +169,6 @@ import {
 } from './features/junctions/bandFeed.ts'
 import { visibleRegionJunctions } from './features/junctions/computeOverlay.ts'
 import {
-  SPLIT_JUNCTION_CLASSES,
   junctionClass,
   junctionSource,
 } from './features/junctions/junctionClass.ts'
@@ -904,24 +903,12 @@ function interbase(d: WorkerPileupData, paint: MarkColors) {
  * holding each foot, -1 where none does.
  */
 function junctions(
-  perRegion: RegionJunctions[],
+  merged: MergedJunction[],
   regionInfos: RegionInfo[],
   paint: MarkColors,
   thresholds: MarkThresholds,
   bandOf: (junction: MergedJunction) => JunctionBand,
 ) {
-  const contigOrder = new Map<string, number>()
-  for (const { refName } of regionInfos) {
-    if (!contigOrder.has(refName)) {
-      contigOrder.set(refName, contigOrder.size)
-    }
-  }
-  const merged = [...mergeJunctions(perRegion, { minReads: 0 }).values()].sort(
-    (a, b) =>
-      contigOrder.get(a.refName)! - contigOrder.get(b.refName)! ||
-      a.start - b.start ||
-      a.end - b.end,
-  )
   return {
     start: merged.map(j => j.start),
     end: merged.map(j => j.end),
@@ -942,6 +929,28 @@ function junctions(
     startRegion: merged.map(j => footRegion(regionInfos, j.refName, j.start)),
     endRegion: merged.map(j => footRegion(regionInfos, j.refName, j.end)),
   }
+}
+
+/**
+ * Every junction the regions' reads support, down to a single read, merged
+ * once as the junctions band merges them, in contig then position order.
+ */
+function mergedJunctions(
+  perRegion: RegionJunctions[],
+  regionInfos: RegionInfo[],
+) {
+  const contigOrder = new Map<string, number>()
+  for (const { refName } of regionInfos) {
+    if (!contigOrder.has(refName)) {
+      contigOrder.set(refName, contigOrder.size)
+    }
+  }
+  return [...mergeJunctions(perRegion, { minReads: 0 }).values()].sort(
+    (a, b) =>
+      contigOrder.get(a.refName)! - contigOrder.get(b.refName)! ||
+      a.start - b.start ||
+      a.end - b.end,
+  )
 }
 
 type JunctionBand = 'coverage' | 'junctions'
@@ -1786,6 +1795,15 @@ function laidOutTables(
         : []
     }),
   )
+  const junctionsBySection = new Map(
+    order.map(({ key }) => [
+      key,
+      mergedJunctions(
+        visibleRegionJunctions(sectionData.get(key)!, regionInfos),
+        regionInfos,
+      ),
+    ]),
+  )
   const tables = drawnBands(conf, {
     ...denseKeys(joinTables(pileups, { read: 'reads' })),
     ...joinTables(
@@ -1801,7 +1819,7 @@ function laidOutTables(
         columns: { section: label },
         tables: {
           junctions: junctions(
-            visibleRegionJunctions(sectionData.get(key)!, regionInfos),
+            junctionsBySection.get(key)!,
             regionInfos,
             paint,
             thresholds,
@@ -1813,7 +1831,19 @@ function laidOutTables(
   })
   return {
     ...tables,
-    ...markLegends(tables, paint, host.theme, host.keyWindows),
+    ...markLegends(
+      tables,
+      paint,
+      host.theme,
+      junctionKeyOf(
+        host.showJunctions
+          ? [...junctionsBySection.values()]
+              .flat()
+              .filter(j => passesJunctionFilter(j, thresholds.junctions))
+          : [],
+        host.keyWindows,
+      ),
+    ),
     sections: {
       key: order.map(g => g.key),
       label: order.map(g => g.label),
@@ -1946,34 +1976,13 @@ function markLegends(
   tables: {
     mismatches: { base: string[] }
     alleleCoverage: { base: string[]; shown: boolean[] }
-    junctions: {
-      strand: number[]
-      source: string[]
-      class: string[]
-      level: string[]
-      shown: boolean[]
-      refName: string[]
-      start: number[]
-      end: number[]
-    }
     interbaseCoverage: { type: InterbaseTypeName[] }
     indicators: { type: InterbaseTypeName[] }
   },
   paint: MarkColors,
   theme: JBrowsePalette,
-  keyWindows: readonly KeyWindow[],
+  junctionKey: ReturnType<typeof junctionKeyOf>,
 ) {
-  const { junctions } = tables
-  const shownJunction = (i: number) =>
-    junctions.shown[i] === true &&
-    junctionInWindows(
-      {
-        refName: junctions.refName[i]!,
-        start: junctions.start[i]!,
-        end: junctions.end[i]!,
-      },
-      keyWindows,
-    )
   const bases = new Set([
     ...tables.mismatches.base,
     ...tables.alleleCoverage.base.filter(
@@ -1981,28 +1990,11 @@ function markLegends(
     ),
   ])
   const keyedBases = paint.muted ? [] : BASES.filter(b => bases.has(b))
-  const junctionKey = junctionLegendItems(
-    junctionLegend(
-      new Set(
-        tables.junctions.strand.filter(
-          (_, i) => shownJunction(i) && tables.junctions.source[i] === 'gap',
-        ),
-      ),
-      theme.alignmentFill,
-      {
-        classes: new Set(
-          SPLIT_JUNCTION_CLASSES.filter(split =>
-            tables.junctions.class.some(
-              (c, i) =>
-                shownJunction(i) &&
-                c === junctionClass(split) &&
-                tables.junctions.level[i] === arcLevelOf(split),
-            ),
-          ),
-        ),
-        palette: paint.palette,
-      },
-    ),
+  const junctionItems = junctionLegendItems(
+    junctionLegend(junctionKey.strands, theme.alignmentFill, {
+      classes: junctionKey.splitClasses,
+      palette: paint.palette,
+    }),
   )
   const events = new Set([
     ...tables.interbaseCoverage.type,
@@ -2016,8 +2008,8 @@ function markLegends(
     },
     baseLegendTitle: 'Base',
     junctionLegend: {
-      label: junctionKey.map(item => item.label),
-      color: junctionKey.map(item => cssColorToHex(item.color!)),
+      label: junctionItems.map(item => item.label),
+      color: junctionItems.map(item => cssColorToHex(item.color!)),
     },
     junctionLegendTitle: JUNCTION_LEGEND_TITLE,
     interbaseLegend: {
