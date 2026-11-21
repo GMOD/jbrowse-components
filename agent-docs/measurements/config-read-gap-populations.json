@@ -33,16 +33,16 @@
     },
     {
       "values": {
-        "population": "root config",
-        "slots": "`shareURL`, `logoPath`, `disableAnalytics`, `hierarchical`, `formatAbout`, `LinearGenomeViewPlugin`",
-        "reads": 4
+        "population": "plugin namespace on the root config",
+        "slots": "`LinearGenomeViewPlugin`",
+        "reads": 1
       }
     },
     {
       "values": {
         "population": "frozen slot, `any` by design",
-        "slots": "`theme`, `extraThemes`, `features`, `metadata`, `assemblyNameToPanSN`, `geneticCodes`, `samples`, `lanes`, `bedLocations`, `subadapters`",
-        "reads": 14
+        "slots": "`theme`, `extraThemes`, `formatAbout`, `features`, `metadata`, `assemblyNameToPanSN`, `geneticCodes`, `samples`, `lanes`, `bedLocations`, `subadapters`",
+        "reads": 16
       }
     },
     {
