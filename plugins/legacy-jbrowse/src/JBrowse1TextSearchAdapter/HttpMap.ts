@@ -26,6 +26,21 @@ interface Meta {
   tracks: string[]
 }
 
+interface MetaFile {
+  hash_bits: number
+  compress: number
+  track_names: string[]
+}
+
+export interface SearchResults {
+  prefix: ({ name: string } | string)[]
+  // generate-names.pl record: [name, trackIndex, ?, refName, start, end], start
+  // 0-based and, in some records, a string
+  exact: [string, number, string, string, number | string, number | string][]
+}
+
+export type IndexFile = Record<string, SearchResults | undefined>
+
 export default class HttpMap {
   url: string
 
@@ -39,7 +54,7 @@ export default class HttpMap {
    * loads meta.json file from names directory and reads number of hash_bits used
    */
   async readMeta(): Promise<Meta> {
-    this.metaPromise ??= this.loadFile('meta.json')
+    this.metaPromise ??= this.loadFile<MetaFile>('meta.json')
       .then(meta => ({
         hashHexCharacters: Math.ceil(meta.hash_bits / 4),
         compress: meta.compress,
@@ -77,12 +92,12 @@ export default class HttpMap {
    * Returns a bucket given a key
    * @param key - string
    */
-  async getBucket(key: string) {
+  async getBucket(key: string): Promise<IndexFile> {
     const bucketIdent = this.hash(key)
     const hexToDirPath = await this.hexToDirPath(bucketIdent)
     // generate-names.pl writes only the buckets that hold a name, so a missing
     // one is an empty bucket, as JBrowse 1's own Store/Hash reads it
-    return this.loadFile(hexToDirPath, {})
+    return this.loadFile<IndexFile>(hexToDirPath, {})
   }
 
   /**
@@ -91,14 +106,14 @@ export default class HttpMap {
    * @param id - string
    * @param ifMissing - the contents a 404 stands for, if it is not an error
    */
-  async loadFile(id: string, ifMissing?: object) {
+  async loadFile<T>(id: string, ifMissing?: T): Promise<T> {
     const response = await fetch(`${this.url}${id}`)
-    if (response.status === 404 && ifMissing) {
+    if (response.status === 404 && ifMissing !== undefined) {
       return ifMissing
     } else if (!response.ok) {
       throw new Error(`HTTP ${response.status} ${response.statusText}`)
     }
-    return response.json()
+    return (await response.json()) as T
   }
 
   /**

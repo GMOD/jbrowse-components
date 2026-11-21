@@ -1,5 +1,6 @@
 import { aesDecrypt, aesDecryptBytes, aesEncryptBytes } from './aes.ts'
 import { base64Decode, toBase64Url } from './crypto.ts'
+import { isObject } from './objectUtils.ts'
 import {
   ENCODED_PREFIX,
   SHARE_KEY_LENGTH,
@@ -26,8 +27,8 @@ export type { SessionParamKind } from './sessionParam.ts'
 
 function getErrorMsg(err: string) {
   try {
-    const obj = JSON.parse(err)
-    return obj.message ?? err
+    const obj: unknown = JSON.parse(err)
+    return isObject(obj) && typeof obj.message === 'string' ? obj.message : err
   } catch {
     return err
   }

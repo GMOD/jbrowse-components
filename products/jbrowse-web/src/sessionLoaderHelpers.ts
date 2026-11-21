@@ -1,7 +1,7 @@
 import { buildLgvInit as buildSharedLgvInit } from '@jbrowse/app-core'
 import PluginLoader from '@jbrowse/core/PluginLoader'
 import { dropVendoredPlugins } from '@jbrowse/core/pluginDefinitions'
-import { resolveStorePluginRefs } from '@jbrowse/core/util'
+import { isObject, resolveStorePluginRefs } from '@jbrowse/core/util'
 import { openLocation } from '@jbrowse/core/util/io'
 
 import packageJSON from '../package.json' with { type: 'json' }
@@ -66,9 +66,10 @@ export function readSessionFromStorage(query: string) {
   try {
     const str = sessionStorage.getItem('current')
     if (str) {
-      const snap = JSON.parse(str).session ?? {}
-      if (query === snap.id) {
-        return snap as Snap
+      const parsed: unknown = JSON.parse(str)
+      const snap = isObject(parsed) ? parsed.session : undefined
+      if (isObject(snap) && query === snap.id) {
+        return snap
       }
     }
   } catch (e) {

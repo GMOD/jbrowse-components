@@ -52,9 +52,7 @@ function sourceMapUrl(script: string, uri: string) {
 async function loadSourceMap(uri: string) {
   try {
     const mapUrl = sourceMapUrl(await myfetchtext(uri), uri)
-    return mapUrl
-      ? new SourceMapConsumer(JSON.parse(await myfetchtext(mapUrl)))
-      : undefined
+    return mapUrl ? new SourceMapConsumer(await myfetchtext(mapUrl)) : undefined
   } catch {
     // a frame can point at a script with no map, an unreachable url, or a
     // revoked blob: worker url. Those frames stay raw instead of failing the

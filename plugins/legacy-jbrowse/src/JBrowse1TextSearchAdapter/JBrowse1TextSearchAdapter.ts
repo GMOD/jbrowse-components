@@ -6,6 +6,7 @@ import { isUriLocation } from '@jbrowse/core/util/types'
 
 import HttpMap from './HttpMap.ts'
 
+import type { IndexFile, SearchResults } from './HttpMap.ts'
 import type { JBrowse1TextSearchAdapterConfig } from './configSchema.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type {
@@ -13,15 +14,6 @@ import type {
   BaseTextSearchArgs,
 } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { getSubAdapterType } from '@jbrowse/core/data_adapters/dataAdapterCache'
-
-interface SearchResults {
-  prefix: ({ name: string } | string)[]
-  // generate-names.pl record: [name, trackIndex, ?, refName, start, end], start
-  // 0-based and, in some records, a string
-  exact: [string, number, string, string, number | string, number | string][]
-}
-
-type IndexFile = Record<string, SearchResults>
 
 // Uses index built by generate-names.pl
 export default class JBrowse1TextSearchAdapter

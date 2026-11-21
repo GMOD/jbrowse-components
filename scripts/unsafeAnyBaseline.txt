@@ -50,7 +50,6 @@
 1 no-unsafe-argument packages/core/src/rpc/RpcServer.ts
 2 no-unsafe-member-access packages/core/src/rpc/WebWorkerRpcDriver.ts
 1 no-unsafe-argument packages/core/src/TextSearch/TextSearchManager.ts
-1 no-unsafe-argument packages/core/src/ui/mapStackTrace.ts
 1 no-unsafe-assignment packages/core/src/ui/styleTheme.ts
 1 no-unsafe-return packages/core/src/ui/styleTheme.ts
 1 no-unsafe-assignment packages/core/src/util/fieldPredicate.ts
@@ -59,10 +58,6 @@
 1 no-unsafe-assignment packages/core/src/util/io/index.ts
 2 no-unsafe-member-access packages/core/src/util/io/index.ts
 1 no-unsafe-return packages/core/src/util/io/index.ts
-2 no-unsafe-argument packages/core/src/util/sessionSharing.ts
-1 no-unsafe-assignment packages/core/src/util/sessionSharing.ts
-1 no-unsafe-member-access packages/core/src/util/sessionSharing.ts
-1 no-unsafe-return packages/core/src/util/sessionSharing.ts
 1 no-unsafe-return packages/core/src/util/simpleFeature.ts
 1 no-unsafe-assignment packages/core/src/util/svAlt.ts
 1 no-unsafe-assignment packages/core/src/util/TimeTraveller.ts
@@ -173,10 +168,6 @@
 1 no-unsafe-argument plugins/legacy-jbrowse/src/JBrowse1Connection/util.ts
 1 no-unsafe-call plugins/legacy-jbrowse/src/JBrowse1Connection/util.ts
 1 no-unsafe-member-access plugins/legacy-jbrowse/src/JBrowse1Connection/util.ts
-3 no-unsafe-assignment plugins/legacy-jbrowse/src/JBrowse1TextSearchAdapter/HttpMap.ts
-4 no-unsafe-member-access plugins/legacy-jbrowse/src/JBrowse1TextSearchAdapter/HttpMap.ts
-3 no-unsafe-return plugins/legacy-jbrowse/src/JBrowse1TextSearchAdapter/HttpMap.ts
-1 no-unsafe-return plugins/legacy-jbrowse/src/JBrowse1TextSearchAdapter/JBrowse1TextSearchAdapter.ts
 1 no-unsafe-argument plugins/legacy-jbrowse/src/NCListAdapter/NCListAdapter.ts
 1 no-unsafe-assignment plugins/legacy-jbrowse/src/NCListAdapter/NCListAdapter.ts
 1 no-unsafe-member-access plugins/legacy-jbrowse/src/NCListAdapter/NCListAdapter.ts
@@ -212,8 +203,6 @@
 1 no-unsafe-assignment products/jbrowse-cli/src/commands/validate/configSchema.generated.ts
 1 no-unsafe-assignment products/jbrowse-cli/src/commands/validate/validateConfig.ts
 2 no-unsafe-return products/jbrowse-cli/src/commands/validate/validateConfig.ts
-1 no-unsafe-assignment products/jbrowse-cli/src/utils.ts
-1 no-unsafe-return products/jbrowse-cli/src/utils.ts
 1 no-unsafe-return products/jbrowse-desktop/electron/ipc/quickstartHandlers.ts
 1 no-unsafe-return products/jbrowse-desktop/electron/ipc/sessionHandlers.ts
 1 no-unsafe-return products/jbrowse-desktop/electron/mcp/screenshot.ts
@@ -239,5 +228,4 @@
 4 no-unsafe-assignment products/jbrowse-web/src/SessionLoader.ts
 1 no-unsafe-member-access products/jbrowse-web/src/SessionLoader.ts
 1 no-unsafe-argument products/jbrowse-web/src/sessionLoaderHelpers.ts
-3 no-unsafe-assignment products/jbrowse-web/src/sessionLoaderHelpers.ts
-2 no-unsafe-member-access products/jbrowse-web/src/sessionLoaderHelpers.ts
+2 no-unsafe-assignment products/jbrowse-web/src/sessionLoaderHelpers.ts
