@@ -523,6 +523,12 @@ describe('two pairwise files against volvox', () => {
         display: { ribbons: { encoding: { color: { field: 'strand' } } } },
       },
     },
+    {
+      name: 'a lane per copy, one copy kept',
+      config: {
+        display: { rows: { field: 'refName', kept: ['{volvox_ins}ctgA'] } },
+      },
+    },
   ])
 })
 
