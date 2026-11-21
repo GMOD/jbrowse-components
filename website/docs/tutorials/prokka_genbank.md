@@ -67,7 +67,7 @@ We'll download the assembly, 1.6 MB compressed:
 wget -c https://jbrowse.org/demos/prokka_sakai/GCF_000008865.2_ASM886v2_genomic.fna.gz
 ```
 
-Prokka reads an uncompressed FASTA:
+We decompress it for Prokka:
 
 ```bash
 gzip -dc GCF_000008865.2_ASM886v2_genomic.fna.gz > assembly.fna
