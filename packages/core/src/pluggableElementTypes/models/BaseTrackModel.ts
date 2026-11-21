@@ -42,16 +42,14 @@ import type PluginManager from '../../PluginManager.ts'
 import type { Assembly } from '../../assemblyManager/assembly.ts'
 import type { ContigLengthMismatch } from '../../assemblyManager/contigLengthMismatch.ts'
 import type { RefNameMismatch } from '../../assemblyManager/refNameMismatch.ts'
-import type {
-  AnyConfigurationModel,
-  AnyConfigurationSchemaType,
-} from '../../configuration/index.ts'
+import type { AnyConfigurationSchemaType } from '../../configuration/index.ts'
 import type { MenuItem } from '../../ui/index.ts'
 import type { DisplaySnapshot } from '../../util/tracks.ts'
 import type { DisplayModel } from './BaseDisplayModel.tsx'
 import type {
   BaseTrackConfig,
   BaseTrackConfigSchema,
+  DisplayConfigNode,
 } from './baseTrackConfig.ts'
 import type { FileTypeExporter } from './saveTrackFileTypes/types.ts'
 import type {
@@ -81,11 +79,12 @@ function getCompatibleDisplays(
   const fed = new Set(
     displayTypesFedBy(pluginManager, configuration.type, configuration.adapter),
   )
-  const displays: AnyConfigurationModel[] = configuration.displays
-  return displays.filter(d => viewDisplays.has(d.type) && fed.has(d.type))
+  return configuration.displays.filter(
+    d => viewDisplays.has(d.type) && fed.has(d.type),
+  )
 }
 
-function getDisplayConf(displays: AnyConfigurationModel[], displayId: string) {
+function getDisplayConf(displays: DisplayConfigNode[], displayId: string) {
   const displayConf = displays.find(d => d.displayId === displayId)
   if (!displayConf) {
     throw new Error(`could not find display config ${displayId}`)

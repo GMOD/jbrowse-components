@@ -51,15 +51,15 @@
     {
       "values": {
         "scope": "tests",
-        "calls": 1011,
-        "unchecked": 215
+        "calls": 1015,
+        "unchecked": 216
       }
     },
     {
       "values": {
         "scope": "all",
-        "calls": 1751,
-        "unchecked": 252
+        "calls": 1755,
+        "unchecked": 253
       }
     }
   ]

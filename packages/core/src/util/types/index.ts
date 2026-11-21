@@ -901,12 +901,10 @@ export function isViewModel(thing: unknown): thing is AbstractViewModel {
   )
 }
 
-type Display = { displayId: string } & AnyConfigurationModel
-
 export interface AbstractTrackModel {
   id: string
   displays: AbstractDisplayModel[]
-  configuration: BaseTrackConfig & { displays: Display[] }
+  configuration: BaseTrackConfig
   minimized: boolean
   resizing: boolean
   setResizing: (flag: boolean) => void

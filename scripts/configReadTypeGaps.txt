@@ -39,8 +39,8 @@
 #     or a tail through a pluggable union (`['adapter', 'fetchSizeLimit']`).
 #     A head that is a track or root slot files it with that population.
 #
-# 37 unchecked in source, 215 in tests,
-# of 1751 total config accessor calls. The gate counts source only.
+# 37 unchecked in source, 216 in tests,
+# of 1755 total config accessor calls. The gate counts source only.
 # A read spelled `this.getConf` / `self.getConf` / `….getConf` is an
 # adapter's or model's own accessor method, whose slot is its first argument.
 
@@ -50,7 +50,7 @@ packages/core/src/assemblyManager/assembly.ts  (1)
   649	self.getConf('geneticCodes')
 packages/core/src/BaseFeatureWidget/formatDetails.ts  (1)
   56	readConfObject('trackId')
-packages/core/src/configuration/configTypeNarrowing.test.ts  (17)  [test]
+packages/core/src/configuration/configTypeNarrowing.test.ts  (18)  [test]
   162	readConfObject('frozen')
   163	readConfObject('maybeFrozen')
   214	getConf('colorBy')
@@ -66,8 +66,9 @@ packages/core/src/configuration/configTypeNarrowing.test.ts  (17)  [test]
   363	getConf(['facet', 'fields'])
   367	getConf(['facet', 'inner', 'size'])
   474	readConfObject('raw')
-  528	readConfObject('own')
-  695	getConf(['LinearGenomeViewPlugin', 'trackLabels'])
+  503	readConfObject('raw')
+  554	readConfObject('own')
+  721	getConf(['LinearGenomeViewPlugin', 'trackLabels'])
 packages/core/src/configuration/configurationSchema.test.ts  (12)  [test]
   331	readConfObject('inherited')
   398	readConfObject(['mySubConfiguration', 'dropped'])
@@ -121,7 +122,7 @@ packages/core/src/data_adapters/keepAdapters.test.ts  (2)  [test]
 packages/core/src/pluggableElementTypes/models/baseTrackConfigAliasDedup.test.ts  (1)  [test]
   106	readConfObject('displayId')
 packages/core/src/pluggableElementTypes/models/BaseTrackModel.ts  (1)
-  541	readConfObject(['adapter', 'fetchSizeLimit'])
+  540	readConfObject(['adapter', 'fetchSizeLimit'])
 packages/core/src/pluggableElementTypes/models/components/fetchTrackData.ts  (1)
   205	getConf(['adapter'])
 packages/core/src/pluggableElementTypes/models/expandTrackConfigShorthandE2e.test.ts  (14)  [test]

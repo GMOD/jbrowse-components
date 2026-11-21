@@ -30,6 +30,9 @@ export {
 } from './baseTrackConfig.ts'
 export type {
   BaseTrackConfig,
+  DisplayConfigDefinition,
+  DisplayConfigNode,
+  DisplayConfigSchema,
   TrackConfigModel,
   TrackConfigNode,
   TrackConfigDefinition,

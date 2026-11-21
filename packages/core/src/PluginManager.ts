@@ -35,7 +35,10 @@ import type { IBaseViewModel } from './pluggableElementTypes/models/BaseViewMode
 import type { BaseInternetAccountModel } from './pluggableElementTypes/models/InternetAccountModel.ts'
 import type { BaseConnectionConfigNode } from './pluggableElementTypes/models/baseConnectionConfig.ts'
 import type { BaseInternetAccountConfigNode } from './pluggableElementTypes/models/baseInternetAccountConfig.ts'
-import type { TrackConfigNode } from './pluggableElementTypes/models/baseTrackConfig.ts'
+import type {
+  DisplayConfigNode,
+  TrackConfigNode,
+} from './pluggableElementTypes/models/baseTrackConfig.ts'
 // Side-effect type imports, for the augmentations rather than for a name. Every
 // plugin's `install`/`configure` takes a PluginManager, so a declaration this
 // module pulls in is one every plugin's program contains — and a registry
@@ -1173,6 +1176,9 @@ export default class PluginManager {
   pluggableConfigSchemaType(
     typeGroup: 'track',
   ): IType<any, any, TrackConfigNode>
+  pluggableConfigSchemaType(
+    typeGroup: 'display',
+  ): IType<any, any, DisplayConfigNode>
   pluggableConfigSchemaType(
     typeGroup: 'internet account',
   ): IType<any, any, BaseInternetAccountConfigNode>

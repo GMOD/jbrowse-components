@@ -38,8 +38,7 @@
 2 no-unsafe-assignment packages/core/src/data_adapters/dataAdapterCache.ts
 1 no-unsafe-call packages/core/src/data_adapters/dataAdapterCache.ts
 1 no-unsafe-member-access packages/core/src/data_adapters/dataAdapterCache.ts
-6 no-unsafe-argument packages/core/src/pluggableElementTypes/models/BaseTrackModel.ts
-2 no-unsafe-assignment packages/core/src/pluggableElementTypes/models/BaseTrackModel.ts
+1 no-unsafe-assignment packages/core/src/pluggableElementTypes/models/BaseTrackModel.ts
 4 no-unsafe-assignment packages/core/src/pluggableElementTypes/models/components/fetchTrackData.ts
 1 no-unsafe-assignment packages/core/src/pluggableElementTypes/models/InternetAccountModel.ts
 1 no-unsafe-member-access packages/core/src/pluggableElementTypes/models/InternetAccountModel.ts
@@ -164,7 +163,6 @@
 1 no-unsafe-argument plugins/data-management/src/HierarchicalTrackSelectorWidget/model.ts
 1 no-unsafe-return plugins/data-management/src/HierarchicalTrackSelectorWidget/model.ts
 1 no-unsafe-assignment plugins/data-management/src/JB2TrackHubConnection/doConnect.ts
-1 no-unsafe-assignment plugins/dotplot-view/src/DotplotView/model.ts
 2 no-unsafe-return plugins/dotplot-view/src/DotplotView/model.ts
 3 no-unsafe-return plugins/features/src/tables.ts
 1 no-unsafe-argument plugins/gccontent/src/GCContentTrack/liftGCSettings.ts

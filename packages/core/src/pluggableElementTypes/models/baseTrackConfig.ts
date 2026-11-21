@@ -19,6 +19,10 @@ import type {
   ConfigurationSchemaOptions,
   ConfigurationSchemaType,
 } from '../../configuration/configurationSchema.ts'
+import type {
+  IdentifierSlotDef,
+  TypeSlotDef,
+} from '../../configuration/types.ts'
 import type { LegacyDisplaySnapshot } from './migrateTrackConfig.ts'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 
@@ -392,5 +396,25 @@ export type TrackConfigModel = Instance<TrackConfigSchema>
  * node brand in the intersection widens every slot read back to `any`.
  */
 export type TrackConfigNode = TrackConfigModel & {
+  readonly [key: string]: unknown
+}
+
+/** What every display config declares, whatever display type it is. */
+export interface DisplayConfigDefinition {
+  displayId: IdentifierSlotDef
+  type: TypeSlotDef
+}
+
+/** A track's `displays` entry, the union of every display's config schema. */
+export type DisplayConfigSchema = ConfigurationSchemaType<
+  DisplayConfigDefinition,
+  ConfigurationSchemaOptions<undefined, undefined>
+>
+
+/**
+ * A live display config of any display type, its other members a raw
+ * `unknown`, as `TrackConfigNode` is for a track.
+ */
+export type DisplayConfigNode = Instance<DisplayConfigSchema> & {
   readonly [key: string]: unknown
 }

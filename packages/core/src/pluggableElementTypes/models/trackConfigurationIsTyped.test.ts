@@ -13,3 +13,13 @@ test("a shown track's configuration is the base track config", () => {
     : false = true
   expect([notAny, viewTrackNotAny, isBase]).toEqual([false, false, true])
 })
+
+// The `displays` entries were PluggableConfigNode, whose `displayId` read as
+// `any` through its index signature.
+test("a track config's display entries name their id and type", () => {
+  type Entry = BaseTrackConfig['displays'][number]
+  const idNotAny: IsAny<Entry['displayId']> = false
+  const typeNotAny: IsAny<Entry['type']> = false
+  const otherIsUnknown: unknown extends Entry['height'] ? true : false = true
+  expect([idNotAny, typeNotAny, otherIsUnknown]).toEqual([false, false, true])
+})
