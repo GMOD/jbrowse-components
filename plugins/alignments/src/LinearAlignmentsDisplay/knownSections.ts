@@ -3,6 +3,7 @@ import {
   categoricalField,
 } from '@jbrowse/core/util/categoricalField'
 import { OVERFLOW_GROUP_KEY } from '@jbrowse/core/util/groupKeys'
+import { knownSectionsOf } from '@jbrowse/display-kit/sectionHost'
 import { fieldHeading } from '@jbrowse/display-kit/sectionsHeading'
 
 import { FACET_LABELS, fieldTag } from '../shared/facetLabels.ts'
@@ -27,28 +28,27 @@ export function knownSections(
   facet: Facet | undefined,
   hidden: ReadonlySet<string>,
 ): GroupId[] {
-  if (!facet) {
-    return []
-  }
-  const compare = sectionOrder(facet.field, facet.sort)
-  const valueLabel = isReadDimension(facet.field)
-    ? (key: string) => (key === '' ? NO_VALUE_LABEL : key)
-    : categoricalField(fieldTag(facet.field) ?? facet.field).label
-  const sections = new Map(
-    orderedGroups(rpcDataMap, undefined, compare).map(({ key, label }) => [
-      key,
-      isReadDimension(facet.field) ? label : valueLabel(key),
-    ]),
+  return facet ? knownFacetSections(rpcDataMap, facet, hidden) : []
+}
+
+export function knownFacetSections(
+  rpcDataMap: ReadonlyMap<number, GroupedAlignmentsResult>,
+  { field, sort = [] }: Facet,
+  hidden: ReadonlySet<string>,
+) {
+  const compare = sectionOrder(field, sort)
+  const fetched = new Map(
+    orderedGroups(rpcDataMap, undefined, compare)
+      .filter(({ key }) => key !== OVERFLOW_GROUP_KEY)
+      .map(({ key, label }) => [key, label]),
   )
-  for (const key of [...(facet.sort ?? []), ...hidden]) {
-    if (!sections.has(key)) {
-      sections.set(key, valueLabel(key))
-    }
-  }
-  sections.delete(OVERFLOW_GROUP_KEY)
-  return [...sections]
-    .sort(([a], [b]) => compare(a, b))
-    .map(([key, label]) => ({ key, label }))
+  const label = isReadDimension(field)
+    ? (key: string) => fetched.get(key) ?? (key === '' ? NO_VALUE_LABEL : key)
+    : categoricalField(fieldTag(field) ?? field).label
+  return knownSectionsOf(fetched.keys(), { compare, label }, [
+    ...sort,
+    ...hidden,
+  ])
 }
 
 /** The Sections dialog's column header for a facet on `field`. */

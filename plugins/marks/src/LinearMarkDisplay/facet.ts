@@ -1,3 +1,4 @@
+import { knownSectionsOf } from '@jbrowse/display-kit/sectionHost'
 import { spansInRow } from '@jbrowse/render-core/marks'
 
 import { drawnScales } from './drawnScales.ts'
@@ -172,15 +173,14 @@ export function knownFacetSections(
   field: CategoricalField,
   known: Iterable<string>,
 ) {
-  const keys = new Set(known)
-  for (const region of regions) {
-    for (const { key } of sectionsOn(region, field.field) ?? []) {
-      keys.add(key)
+  function* keysSeen() {
+    for (const region of regions) {
+      for (const { key } of sectionsOn(region, field.field) ?? []) {
+        yield key
+      }
     }
   }
-  return [...keys]
-    .sort(field.compare)
-    .map(key => ({ key, label: field.label(key) }))
+  return knownSectionsOf(keysSeen(), field, known)
 }
 
 /**

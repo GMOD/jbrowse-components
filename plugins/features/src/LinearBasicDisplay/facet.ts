@@ -6,6 +6,7 @@ import {
   CHIPLESS_SECTION_GAP_PX,
   GROUP_LABEL_HEIGHT,
 } from '@jbrowse/display-kit/groupLabelStyle'
+import { knownSectionsOf } from '@jbrowse/display-kit/sectionHost'
 
 import { isPlacedRow } from './rowPlacement.ts'
 
@@ -73,17 +74,18 @@ export function knownSections(
   facet: FeatureFacet,
   known: Iterable<string>,
 ): GroupId[] {
-  const field = facetField(facet)
   const sectionOf = sectionIdsOf(facet)
-  const keys = new Set([...facet.sort, ...known])
-  for (const data of regions) {
-    for (const item of data.flatbushItems) {
-      keys.add(sectionOf(item).key)
+  function* keysSeen() {
+    for (const data of regions) {
+      for (const item of data.flatbushItems) {
+        yield sectionOf(item).key
+      }
     }
   }
-  return [...keys]
-    .sort((a, b) => field.compare(a, b))
-    .map(key => ({ key, label: field.label(key) }))
+  return knownSectionsOf(keysSeen(), facetField(facet), [
+    ...facet.sort,
+    ...known,
+  ])
 }
 
 /**
