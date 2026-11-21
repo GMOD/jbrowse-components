@@ -169,14 +169,22 @@ export function rowNoticeViews<S extends Row>(self: RowNoticeHost<S>) {
     },
     /**
      * #getter
+     * The lines on what the rows settings leave, whatever draws them:
+     * `rowBandingNotices`, then `rowNarrowingNotices`. A tables export
+     * warns with these.
+     */
+    get rowSettingNotices(): string[] {
+      return [...this.rowBandingNotices, ...this.rowNarrowingNotices]
+    },
+    /**
+     * #getter
      * The corner notice's lines on the rows, which each display spreads
-     * into its `notices`: `rowBandingNotices`, `rowNarrowingNotices`, then
-     * `rowAnnotationNotices` at the track's `height`.
+     * into its `notices`: `rowSettingNotices`, then `rowAnnotationNotices`
+     * at the track's `height`.
      */
     get rowNotices(): string[] {
       return [
-        ...this.rowBandingNotices,
-        ...this.rowNarrowingNotices,
+        ...this.rowSettingNotices,
         ...this.rowAnnotationNotices(self.height),
       ]
     },

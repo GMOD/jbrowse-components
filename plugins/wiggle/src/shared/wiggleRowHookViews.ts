@@ -55,6 +55,14 @@ export function wiggleRowHookViews(self: WiggleRowHookHost) {
     },
     /**
      * #getter
+     * `TreeSidebarMixin`'s hook: the adapter lists its subtracks, so a
+     * `rows.kept` name no subtrack has is named.
+     */
+    get rowsListedUpFront(): boolean {
+      return true
+    },
+    /**
+     * #getter
      * `TreeSidebarMixin`'s hook: on only with a row per source. An overlay
      * collapses every source onto one row and grouped rows hold several, so
      * a tree spreading its leaves over the full height would align to

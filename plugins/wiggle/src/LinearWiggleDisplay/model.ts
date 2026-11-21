@@ -306,15 +306,6 @@ export default function stateModelFactory(
     .views(self => ({
       /**
        * #getter
-       * `TreeSidebarMixin`'s hook: the adapter lists its subtracks, so a
-       * `rows.kept` name no subtrack has is named.
-       */
-      get rowsListedUpFront(): boolean {
-        return true
-      },
-
-      /**
-       * #getter
        * What the loaded sources said they could not serve, and
        * `rowNotices`.
        */

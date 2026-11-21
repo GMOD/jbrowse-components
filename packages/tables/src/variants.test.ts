@@ -340,6 +340,27 @@ test('the rows take rows.filter over the samples file, then rows.kept', async ()
   expect(none.cells.row).toEqual([])
 })
 
+// The display's corner notice on a narrowing that leaves no row reaches the
+// export as a warning, so an empty `rows` is not read as an empty file.
+test('a narrowing leaving no row warns, as the display does', async () => {
+  const kept = await engine.variants({
+    ...DOG_VCF,
+    display: { rows: { kept: ['no such sample'] } },
+  })
+  expect(kept.warnings).toEqual([
+    'rows.kept names no row (no such sample), so no row shows',
+  ])
+  const filtered = await engine.variants({
+    ...DOG_VCF,
+    display: { rows: { filter: [{ field: 'cohort', equal: 'x' }] } },
+  })
+  expect(filtered.rows.name).toEqual([])
+  expect(filtered.warnings).toEqual([
+    'rows.filter tests "cohort", which no row carries, so it filters out every row',
+  ])
+  expect((await engine.variants(DOG_VCF)).warnings).toEqual([])
+})
+
 test('a sample named in the order places each of its haplotype rows', async () => {
   const plain = await engine.variants(DOG_VCF)
   const last = plain.rows.name.at(-1)!

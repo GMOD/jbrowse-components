@@ -30,6 +30,7 @@
     "./rowColorKey": "./src/color/rowColorKey.ts",
     "./RowHeightMixin": "./src/rowHeight/RowHeightMixin.ts",
     "./RowArrangementDialog": "./src/rowArrangementDialog/RowArrangementDialog.tsx",
+    "./rowNoticeViews": "./src/rows/rowNoticeViews.ts",
     "./treeSidebarRowViews": "./src/rows/treeSidebarRowViews.ts"
   },
   "files": [
@@ -75,6 +76,7 @@
       "./rowColorKey": "./esm/color/rowColorKey.js",
       "./RowHeightMixin": "./esm/rowHeight/RowHeightMixin.js",
       "./RowArrangementDialog": "./esm/rowArrangementDialog/RowArrangementDialog.js",
+      "./rowNoticeViews": "./esm/rows/rowNoticeViews.js",
       "./treeSidebarRowViews": "./esm/rows/treeSidebarRowViews.js"
     }
   },

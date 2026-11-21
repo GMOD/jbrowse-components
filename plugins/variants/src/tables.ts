@@ -24,6 +24,7 @@ import {
 } from '@jbrowse/plugin-features/tables'
 import { RowHeightMixin } from '@jbrowse/tree-sidebar/RowHeightMixin'
 import { ROW_COLOR_SCALE_ID } from '@jbrowse/tree-sidebar/rowColorKey'
+import { rowNoticeViews } from '@jbrowse/tree-sidebar/rowNoticeViews'
 import {
   rowsContentHeightViews,
   treeSidebarRowsConfigViews,
@@ -227,6 +228,7 @@ const VariantTablesHost = variantHostRows
   .views(self => variantDataKeyViews(self))
   .views(self => recordsSettingsViews(self))
   .views(variantRpcPropsViews)
+  .views(self => rowNoticeViews<ProcessedSource>(self))
 
 const NO_RECORDS_VIEW: RecordsView = {
   coarseBpPerPx: 1,
@@ -463,7 +465,9 @@ async function fetchedVariantHost(
  * draws at, `rows.step` or what the track leaves the rows divided between
  * them, under a records band at `records.height`, or unset at its default up
  * to its share of the track, which is the display's band wherever the
- * records in view stack that high; and `warnings`, the samples file's. With
+ * records in view stack that high; and `warnings`, the samples file's, then
+ * the display's notices on its rows' banding and narrowing, such as a
+ * `rows.kept` naming no sample. With
  * `genotypes.reference.show` off, the default, a
  * reference call draws no cell, and `rowBackground` is the reference call's
  * color, standing in for every one; on, `rowBackground` is `''`. With
@@ -497,6 +501,7 @@ export async function variantTables(
     rowBackground,
     height,
     rowHeight,
+    rowWarnings,
   } = runInAction(() => {
     const rowColors = host.resolvedRowColors
     return {
@@ -515,6 +520,7 @@ export async function variantTables(
       rowBackground: host.rowBackground,
       height: host.height,
       rowHeight: host.effectiveRowHeight,
+      rowWarnings: host.rowSettingNotices,
     }
   })
   const rows = {
@@ -616,7 +622,7 @@ export async function variantTables(
     height,
     rowHeight,
     config: fullConfSnapshot(host.configuration),
-    warnings: listing.warnings,
+    warnings: [...listing.warnings, ...rowWarnings],
   }
 }
 

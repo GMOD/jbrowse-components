@@ -15,6 +15,7 @@ import {
   rowColorSettingOf,
 } from '../color/rowColorChoice.ts'
 import { ROW_COLOR_SCALE_ID, rowColorKeyEntries } from '../color/rowColorKey.ts'
+import { rowColorFieldViews } from '../color/rowColorViews.ts'
 import {
   dealValueColors,
   resolveRowColors,
@@ -320,6 +321,26 @@ export function treeSidebarRowHookDefaults<S extends Row>() {
      */
     rowColorDeclaredValues(_field: string): readonly string[] {
       return []
+    },
+    /**
+     * #getter
+     * Overridable hook: whether the track lists its rows before any region
+     * loads (a VCF's samples, a multi-wiggle's subtracks), so a `rows.kept`
+     * name no row has is a typo worth naming. False by default, for rows
+     * found per window.
+     */
+    get rowsListedUpFront(): boolean {
+      return false
+    },
+    /**
+     * #method
+     * Overridable hook: whether a row named `name` exists only at some
+     * loci even where the track lists its rows, so a `rows.kept` name
+     * missing here is no typo: MAF's copy rows (`mm10~2`). False by
+     * default.
+     */
+    rowFoundAtSomeLoci(_name: string): boolean {
+      return false
     },
   }
 }
@@ -1090,4 +1111,5 @@ export function treeSidebarRowStages<S extends Row>() {
       .views(self => arrangedRowViews<S>(self))
       .views(self => bandedRowViews<S>(self))
       .views(self => drawnRowViews<S>(self))
+      .views(self => rowColorFieldViews(self))
 }

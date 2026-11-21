@@ -162,7 +162,9 @@ async function fetchedWiggleHost(
  * shows where one ramp paints every row (`rampKeyOf`); `legend` and
  * `legendTitle`, the categorical key beside it (`colorKeyTables`): the
  * threshold bands and the row color key, the subtracks of an overlay or a
- * `rows.color` field's values; and `warnings`, the samples file's. For a host that draws them itself, such as
+ * `rows.color` field's values; and `warnings`, the samples file's, then the
+ * display's notices on its rows' banding and narrowing, such as a `rows.kept`
+ * naming no subtrack. For a host that draws them itself, such as
  * R through V8. The adapters must be registered on `pluginManager`
  * (`registerWiggleAdapters`).
  */
@@ -192,6 +194,7 @@ export async function wiggleTables(
     rowsField,
     drawnRows,
     height,
+    rowWarnings,
   } = runInAction(() => {
     const { rampLut, rampMid } = model.wiggleColor
     return {
@@ -220,6 +223,7 @@ export async function wiggleTables(
       rowsField: model.rowsField,
       drawnRows: model.wiggleRows.map(({ row }) => row),
       height: model.height,
+      rowWarnings: model.rowSettingNotices,
     }
   })
   const symlogConstant = resolveSymlogConstant(
@@ -405,7 +409,7 @@ export async function wiggleTables(
     },
     height,
     config: fullConfSnapshot(conf),
-    warnings: data.warnings ?? [],
+    warnings: [...(data.warnings ?? []), ...rowWarnings],
   }
 }
 

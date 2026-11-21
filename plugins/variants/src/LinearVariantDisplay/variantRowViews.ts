@@ -289,6 +289,14 @@ export function variantRowHookViews(self: VariantRowHookHost) {
       return false
     },
     /**
+     * #getter
+     * `TreeSidebarMixin`'s hook: the VCF lists its samples, so a
+     * `rows.kept` name no sample has is named.
+     */
+    get rowsListedUpFront(): boolean {
+      return true
+    },
+    /**
      * #method
      * `TreeSidebarMixin`'s hook: a haplotype row refines its sample, read
      * off the row's own `sampleName` and `HP`, so an order, a label, a

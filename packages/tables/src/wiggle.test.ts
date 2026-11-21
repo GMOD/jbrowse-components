@@ -438,6 +438,29 @@ test('a multi-wiggle draws the sources rows.filter and rows.kept leave', async (
   expect(kept.scoreScale.domain[1]).toBeLessThan(hiddenTop)
 })
 
+// The display's corner notice on a narrowing that leaves no row reaches the
+// export as a warning, so an empty `sources` is not read as an empty file.
+test('a narrowing leaving no subtrack warns, as the display does', async () => {
+  const kept = await engine.wiggle({
+    ...MULTI_BIGWIG,
+    display: { rows: { field: 'source', kept: ['posneg_rw9'] } },
+  })
+  expect(kept.sources.name).toEqual([])
+  expect(kept.warnings).toEqual([
+    'rows.kept names no row (posneg_rw9), so no row shows',
+  ])
+  const filtered = await engine.wiggle({
+    ...MULTI_BIGWIG,
+    display: {
+      rows: { field: 'source', filter: [{ field: 'cohort', equal: 'x' }] },
+    },
+  })
+  expect(filtered.sources.name).toEqual([])
+  expect(filtered.warnings).toEqual([
+    'rows.filter tests "cohort", which no row carries, so it filters out every row',
+  ])
+})
+
 test('a multi-wiggle reads under the multi-track defaults: a row per source, no min-max extent', async () => {
   const zoomedOut = { ...MULTI_BIGWIG, bpPerPx: 500 }
   const t = await engine.wiggle(zoomedOut)

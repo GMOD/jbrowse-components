@@ -2,6 +2,7 @@ import LegendMixin from '@jbrowse/display-kit/LegendMixin'
 import TrackHeightMixin from '@jbrowse/display-kit/TrackHeightMixin'
 import { trackCanvasWidthPx } from '@jbrowse/display-kit/foundationView'
 import { types } from '@jbrowse/mobx-state-tree'
+import { rowNoticeViews } from '@jbrowse/tree-sidebar/rowNoticeViews'
 import {
   hierarchyViews,
   rowSidebarViews,
@@ -46,7 +47,7 @@ const NO_FRAME: WiggleStaticFrame = {
 /**
  * The wiggle display reduced to its config, the fetched scores and the frame
  * they were fetched over, under the views the display installs, in the
- * display's order, its row views, row hooks and key among them. No session, no
+ * display's order, its row views, row hooks, key and row notices among them. No session, no
  * view, no autoruns, and so no autoscale group: the axis autoscales over
  * this track alone. The tables run it.
  */
@@ -93,7 +94,7 @@ function wiggleStaticHost(
     .views(self => hierarchyViews(self))
     .views(self => rowSidebarViews(self))
     .views(self => wiggleLabelViews(self))
-  return wiggleSidebarStages(scored)
+  return wiggleSidebarStages(scored).views(self => rowNoticeViews<Source>(self))
 }
 
 const QuantitativeStaticHost = wiggleStaticHost(linearWiggleDisplayConfigSchema)
