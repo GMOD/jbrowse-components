@@ -1,3 +1,5 @@
+import { fileHandleBlobId } from '../util/fileHandleFiles.ts'
+
 const PRE_AUTHORIZATION = 'internetAccountPreAuthorization'
 
 class Hasher {
@@ -45,7 +47,7 @@ function asSentToWorker(location: Record<string, unknown>) {
     ? {
         locationType: 'BlobLocation',
         name: location.name,
-        blobId: `fh-blob-${String(location.handleId)}`,
+        blobId: fileHandleBlobId(String(location.handleId)),
       }
     : location
 }

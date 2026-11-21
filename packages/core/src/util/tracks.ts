@@ -12,6 +12,12 @@ export { getRpcSessionId } from './parentWalk.ts'
 export { localIndexNeed, makeIndex } from './formatGuessers.ts'
 export { pickDisplayForView } from './displayChoice.ts'
 export {
+  clearFileFromCache,
+  getFileFromCache,
+  hasFileHandlesInCache,
+  setFileInCache,
+} from './fileHandleFiles.ts'
+export {
   adapterAssemblyNames,
   adapterNamespaceNames,
   adapterSpelling,
@@ -37,7 +43,6 @@ import {
   isAlive,
   isStateTreeNode,
 } from '@jbrowse/mobx-state-tree'
-import { observable, runInAction, untracked } from 'mobx'
 
 import { isConfigurationModel, readConfObject } from '../configuration/index.ts'
 import { adapterConfigCacheKey } from '../data_adapters/dataAdapterCache.ts'
@@ -47,6 +52,11 @@ import {
 } from '../pluggableElementTypes/models/baseTrackConfig.ts'
 import { adapterSpelling } from './adapterAssemblyNames.ts'
 import { chooseDisplay } from './displayChoice.ts'
+import {
+  getFileFromCache,
+  noteFileHandleId,
+  setFileInCache,
+} from './fileHandleFiles.ts'
 import {
   getFileHandle,
   storeFileHandle,
@@ -61,7 +71,7 @@ import {
   objectHash,
 } from './mstUtils.ts'
 import { getNotificationSink } from './sessionServices.ts'
-import { isBlobLocation } from './types/data.ts'
+import { isBlobLocation, isFileHandleLocation } from './types/data.ts'
 import { isViewModel } from './types/index.ts'
 import {
   displayConfigSchema,
@@ -331,15 +341,20 @@ export function getBlob(id: string) {
 }
 
 /**
- * The names of the files an adapter config opened from this computer in an
- * earlier session, whose bytes this page no longer holds. One track can hold
- * two (a BAM and its BAI); the track's settings mark each "(need to reload)".
+ * The names of the files an adapter config opened from this computer whose
+ * bytes this page does not hold: a blob from an earlier session, or a file
+ * handle this page has no access to yet. One track can hold two (a BAM and its
+ * BAI); the track's settings mark each "(need to reload)".
  */
 export function blobFilesToReopen(adapterConfig: unknown) {
   const names: string[] = []
   function walk(node: unknown) {
     if (isBlobLocation(node)) {
       if (!getBlob(node.blobId)) {
+        names.push(node.name)
+      }
+    } else if (isFileHandleLocation(node)) {
+      if (!getFileFromCache(node.handleId)) {
         names.push(node.name)
       }
     } else if (typeof node === 'object' && node !== null) {
@@ -384,48 +399,21 @@ export function storeBlobLocation(
   return location
 }
 
-// openLocation is synchronous, so File objects are cached here after async handle
-// resolution. Observable so an open LocalFileChooser reactively clears its "needs
-// reload" notice once a restore (afterAttach / "Restore access") populates the
-// cache; the worker/RPC readers run outside any reaction so nothing else
-// subscribes.
-const fileHandleCache = observable.map<string, File>()
-
-export function getFileFromCache(handleId: string) {
-  return fileHandleCache.get(handleId)
-}
-
-export function setFileInCache(handleId: string, file: File) {
-  runInAction(() => {
-    fileHandleCache.set(handleId, file)
-  })
-}
-
-export function clearFileFromCache(handleId: string) {
-  runInAction(() => {
-    fileHandleCache.delete(handleId)
-  })
-}
-
-export function hasFileHandlesInCache() {
-  // read in RpcMethodType.serializeArguments, which an RPC-fetch autorun can
-  // reach; untracked so populating the cache never re-triggers that autorun
-  // eslint-disable-next-line no-restricted-syntax -- self-write: the fetch this is reached from populates the cache
-  return untracked(() => fileHandleCache.size > 0)
-}
+class MissingFileHandleError extends Error {}
 
 export async function ensureFileHandleReady(
   handleId: string,
   requestPermission = true,
 ) {
-  const cached = fileHandleCache.get(handleId)
+  noteFileHandleId(handleId)
+  const cached = getFileFromCache(handleId)
   if (cached) {
     return cached
   }
 
   const handle = await getFileHandle(handleId)
   if (!handle) {
-    throw new Error(
+    throw new MissingFileHandleError(
       `File handle not found for handleId: ${handleId}. The file may have been opened in a different browser or the IndexedDB was cleared.`,
     )
   }
@@ -438,7 +426,7 @@ export async function ensureFileHandleReady(
   }
 
   const file = await handle.getFile()
-  setFileInCache(handleId, file)
+  setFileInCache(handleId, file, handle)
   return file
 }
 
@@ -447,7 +435,7 @@ export async function storeFileHandleLocation(
 ): Promise<FileHandleLocation> {
   const handleId = await storeFileHandle(handle)
   const file = await handle.getFile()
-  setFileInCache(handleId, file)
+  setFileInCache(handleId, file, handle)
   return {
     locationType: 'FileHandleLocation',
     name: handle.name,
@@ -460,7 +448,12 @@ async function settleFileHandle(handleId: string, requestPermission: boolean) {
     await ensureFileHandleReady(handleId, requestPermission)
     return { handleId, success: true as const }
   } catch (error) {
-    return { handleId, success: false as const, error }
+    return {
+      handleId,
+      success: false as const,
+      missing: error instanceof MissingFileHandleError,
+      error,
+    }
   }
 }
 

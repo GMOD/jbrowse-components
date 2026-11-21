@@ -1,6 +1,6 @@
 import { getConf } from '@jbrowse/core/configuration'
 import { samePlugin } from '@jbrowse/core/pluginDefinitions'
-import { editableConfig } from '@jbrowse/core/util'
+import { editableConfig, pluralize } from '@jbrowse/core/util'
 import {
   restoreFileHandles,
   restoreFileHandlesFromSnapshot,
@@ -188,11 +188,25 @@ export function BaseWebSessionModel({
         // The IndexedDB round-trip below outlives a session swap (setSession
         // destroys this node), so the result lands on a dead node unless the
         // write is gated on liveness.
-        restoreFileHandlesFromSnapshot(getSnapshot(self), false)
+        restoreFileHandlesFromSnapshot(
+          self.adminMode
+            ? [getSnapshot(self), getSnapshot(self.jbrowse)]
+            : getSnapshot(self),
+          false,
+        )
           .then(results => {
-            const failed = results.filter(r => !r.success)
-            if (failed.length > 0 && isAlive(self)) {
-              self.setPendingFileHandleIds(failed.map(f => f.handleId))
+            const pending = results.filter(r => !r.success && !r.missing)
+            const missing = results.filter(r => !r.success && r.missing).length
+            if (isAlive(self)) {
+              if (pending.length > 0) {
+                self.setPendingFileHandleIds(pending.map(r => r.handleId))
+              }
+              if (missing > 0) {
+                self.notify(
+                  `${missing} local ${pluralize(missing, 'file')} in this session ${pluralize(missing, 'is', 'are')} unknown to this browser; choose ${pluralize(missing, 'it', 'them')} again from ${pluralize(missing, 'its track', 'their tracks')}`,
+                  'warning',
+                )
+              }
             }
           })
           .catch((err: unknown) => {
@@ -207,7 +221,7 @@ export function BaseWebSessionModel({
           yield restoreFileHandles(self.pendingFileHandleIds, true)
         if (isAlive(self)) {
           self.setPendingFileHandleIds(
-            results.filter(r => !r.success).map(r => r.handleId),
+            results.filter(r => !r.success && !r.missing).map(r => r.handleId),
           )
         }
       }),

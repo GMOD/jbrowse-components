@@ -1,4 +1,6 @@
 import PluginManager from '../PluginManager.ts'
+import { adapterConfigCacheKey } from '../data_adapters/dataAdapterCache.ts'
+import { noteFileHandleId } from '../util/fileHandleFiles.ts'
 import { clearFileFromCache, setFileInCache } from '../util/tracks.ts'
 import RpcMethodType, { convertFileHandleLocations } from './RpcMethodType.ts'
 
@@ -232,7 +234,9 @@ describe('convertFileHandleLocations', () => {
     const converted = obj.adapter.fileLocation as any
     expect(converted.locationType).toBe('BlobLocation')
     expect(converted.name).toBe('test.bam')
-    expect(converted.blobId).toBe('fh-blob-test-handle-1')
+    expect(converted.blobId).toBe(
+      `fh-blob-test-handle-1@${mockFile.lastModified}:${mockFile.size}`,
+    )
     expect(blobMap[converted.blobId]).toBe(mockFile)
   })
 
@@ -346,7 +350,7 @@ describe('convertFileHandleLocations', () => {
 
     expect(() => {
       convertFileHandleLocations(obj, blobMap)
-    }).toThrow(/File not in cache for handleId: nonexistent-handle/)
+    }).toThrow('file ("missing.bam") requires permission')
   })
 
   test('handles circular references without infinite loop', () => {
@@ -370,4 +374,41 @@ describe('convertFileHandleLocations', () => {
     expect(converted.locationType).toBe('BlobLocation')
     expect(Object.keys(blobMap).length).toBe(1)
   })
+})
+
+test('a file-handle track keys the same adapter on the main thread and in the worker', async () => {
+  setFileInCache('keyed-test', new File(['x'], 'a.bed', { lastModified: 7 }))
+  try {
+    const adapter = {
+      type: 'BedAdapter',
+      bedLocation: {
+        locationType: 'FileHandleLocation',
+        handleId: 'keyed-test',
+        name: 'a.bed',
+      },
+    }
+    const sent = await new MockRpcMethodType(pluginManager).serializeArguments({
+      adapter,
+    })
+    expect(adapterConfigCacheKey(sent.adapter as Record<string, unknown>)).toBe(
+      adapterConfigCacheKey(adapter),
+    )
+  } finally {
+    clearFileFromCache('keyed-test')
+  }
+})
+
+test('a file handle this page cannot read is refused before it reaches the worker', async () => {
+  noteFileHandleId('never-granted')
+  await expect(
+    new MockRpcMethodType(pluginManager).serializeArguments({
+      adapter: {
+        bedLocation: {
+          locationType: 'FileHandleLocation',
+          handleId: 'never-granted',
+          name: 'b.bed',
+        },
+      },
+    }),
+  ).rejects.toThrow('b.bed')
 })

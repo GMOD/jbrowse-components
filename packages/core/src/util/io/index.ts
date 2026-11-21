@@ -1,7 +1,8 @@
 import { BlobFile, LocalFile } from 'generic-filehandle2'
 
 import { isElectron, isNode } from '../environment.ts'
-import { getBlob, getFileFromCache } from '../tracks.ts'
+import { fileForHandleLocation, fileHandleBlobId } from '../fileHandleFiles.ts'
+import { getBlob } from '../tracks.ts'
 import {
   AuthNeededError,
   isLocalPathLocation,
@@ -95,19 +96,9 @@ export function openLocation(
     return new CachedFilehandle(new BlobFile(blob), `blob://${location.blobId}`)
   }
   if (hasHandleIdKey(location)) {
-    // FileHandleLocation uses an in-memory cache of File objects
-    // The cache is populated asynchronously via ensureFileHandleReady
-    const file = getFileFromCache(location.handleId)
-    if (!file) {
-      throw new Error(
-        `file ("${location.name}") requires permission. Please reopen the file from track settings`,
-      )
-    }
-    // A File is a snapshot: the handle yields a new one once the file changes
-    // on disk, and its chunks must not be the old snapshot's
     return new CachedFilehandle(
-      new BlobFile(file),
-      `filehandle://${location.handleId}@${file.lastModified}:${file.size}`,
+      new BlobFile(fileForHandleLocation(location)),
+      `blob://${fileHandleBlobId(location.handleId)}`,
     )
   }
   if (isUriLocation(location)) {

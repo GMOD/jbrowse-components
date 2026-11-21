@@ -11,6 +11,7 @@ import {
   getRpcSessionId,
   getTrackName,
   restoreFileHandles,
+  setFileInCache,
   storeBlobLocation,
   stripFileExtension,
   trackCatalog,
@@ -414,6 +415,28 @@ describe('restoreFileHandles', () => {
     expect((await all).map(r => r.success)).toEqual([false, true])
   })
 
+  test('tells a handle this browser never stored from one it was denied', async () => {
+    ;(getFileHandle as jest.Mock).mockImplementation((handleId: string) =>
+      Promise.resolve(
+        handleId === 'gone'
+          ? undefined
+          : {
+              name: `${handleId}.bam`,
+              getFile: () => Promise.resolve(new File([], 'x')),
+            },
+      ),
+    )
+    const all = restoreFileHandles(['gone', 'denied'], false)
+    await checkStarted[0]!.promise
+    checks[0]!.answer(false)
+
+    expect(
+      (await all).map(r =>
+        r.success ? 'ok' : r.missing ? 'missing' : 'denied',
+      ),
+    ).toEqual(['missing', 'denied'])
+  })
+
   test('runs the batch at once when it cannot prompt', async () => {
     // nothing to take turns over, and this is the session-load path
     const all = restoreFileHandles(['s1', 's2', 's3'], false)
@@ -528,4 +551,19 @@ test('blobFilesToReopen names each local file this page no longer holds', () => 
       bamLocation: { uri: 'volvox.bam', locationType: 'UriLocation' },
     }),
   ).toEqual([])
+})
+
+test('blobFilesToReopen names a file handle this page has no access to', () => {
+  const handleLocation = (handleId: string, name: string) => ({
+    locationType: 'FileHandleLocation',
+    handleId,
+    name,
+  })
+  setFileInCache('granted', new File(['x'], 'reads.bam.bai'))
+  expect(
+    blobFilesToReopen({
+      bamLocation: handleLocation('not-granted', 'reads.bam'),
+      index: { location: handleLocation('granted', 'reads.bam.bai') },
+    }),
+  ).toEqual(['reads.bam'])
 })

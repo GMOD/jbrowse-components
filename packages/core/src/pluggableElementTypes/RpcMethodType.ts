@@ -2,15 +2,15 @@ import { isAlive, isStateTreeNode } from '@jbrowse/mobx-state-tree'
 import { untracked } from 'mobx'
 
 import { getSequenceAdapterConfigByName } from '../assemblyManager/getSequenceAdapterConfig.ts'
+import {
+  fileForHandleLocation,
+  fileHandleBlobId,
+  hasFileHandlesInCache,
+} from '../util/fileHandleFiles.ts'
 import { renameRegionsIfNeeded } from '../util/index.ts'
 import { resolveUriLocation } from '../util/io/index.ts'
 import { unwrapRpcResult } from '../util/rpc.ts'
-import {
-  getBlobMap,
-  getFileFromCache,
-  hasFileHandlesInCache,
-  setBlobMap,
-} from '../util/tracks.ts'
+import { getBlobMap, setBlobMap } from '../util/tracks.ts'
 import {
   isAppRootModel,
   isFileHandleLocation,
@@ -50,16 +50,8 @@ function convertFileHandleToBlob(
   loc: FileHandleLocation,
   blobMap: Record<string, File>,
 ) {
-  const file = getFileFromCache(loc.handleId)
-  if (!file) {
-    throw new Error(
-      `File not in cache for handleId: ${loc.handleId}. ` +
-        `The file "${loc.name}" may need to be reopened.`,
-    )
-  }
-  // Deterministic blobId from handleId so the same FileHandleLocation always
-  // produces the same BlobLocation — keeps adapter config hashes stable.
-  const blobId = `fh-blob-${loc.handleId}`
+  const file = fileForHandleLocation(loc)
+  const blobId = fileHandleBlobId(loc.handleId)
   blobMap[blobId] = file
   return { locationType: 'BlobLocation' as const, name: loc.name, blobId }
 }

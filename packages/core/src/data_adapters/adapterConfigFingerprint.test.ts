@@ -1,3 +1,4 @@
+import { setFileInCache } from '../util/fileHandleFiles.ts'
 import { fingerprintAdapterConfig } from './adapterConfigFingerprint.ts'
 import { adapterConfigCacheKey, withAdapterId } from './dataAdapterCache.ts'
 
@@ -63,24 +64,19 @@ test('credentials are not identity, but are told apart', () => {
   expect(first.credentials).not.toBe(renewed.credentials)
 })
 
-test('a FileHandleLocation hashes as the BlobLocation the worker receives', () => {
-  expect(
-    keyOf({
-      type: 'Gff3Adapter',
-      gffLocation: {
-        locationType: 'FileHandleLocation',
-        name: 'a.gff3',
-        handleId: 'h1',
-      },
-    }),
-  ).toBe(
-    keyOf({
-      type: 'Gff3Adapter',
-      gffLocation: {
-        locationType: 'BlobLocation',
-        name: 'a.gff3',
-        blobId: 'fh-blob-h1',
-      },
-    }),
-  )
+test('a FileHandleLocation is a new adapter once its file is restored or changes on disk', () => {
+  const conf = {
+    type: 'Gff3Adapter',
+    gffLocation: {
+      locationType: 'FileHandleLocation',
+      name: 'a.gff3',
+      handleId: 'h1',
+    },
+  }
+  const unresolved = keyOf(conf)
+  setFileInCache('h1', new File(['a'], 'a.gff3', { lastModified: 1 }))
+  const restored = keyOf(conf)
+  setFileInCache('h1', new File(['ab'], 'a.gff3', { lastModified: 2 }))
+  const edited = keyOf(conf)
+  expect(new Set([unresolved, restored, edited]).size).toBe(3)
 })
