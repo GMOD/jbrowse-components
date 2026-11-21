@@ -1,3 +1,5 @@
+import { backingScale } from '@jbrowse/render-core/canvas2dUtils'
+
 import { topDrawnCell } from './variantCellLookup.ts'
 import { HIT_TOLERANCE_PX } from './variantHitTest.ts'
 import { VARIANT_MARKS } from './variantMarks.ts'
@@ -48,24 +50,16 @@ function distSqWithinTolerance(
     : undefined
 }
 
-function paintsOver(
-  data: VariantUploadData,
-  block: VariantRenderBlock,
-  state: VariantRenderState,
+function paintsOverInside(
+  { cellPositions }: VariantUploadData,
   near: CellHit,
   under: CellHit,
 ) {
-  const a = CELL_MARK.ink!(data, block, state, near.cellIndex)
-  const b = CELL_MARK.ink!(data, block, state, under.cellIndex)
   return (
     near.cellIndex > under.cellIndex &&
-    a !== undefined &&
-    b !== undefined &&
-    a.width < b.width &&
-    a.left < b.left + b.width &&
-    b.left < a.left + a.width &&
-    a.top < b.top + b.height &&
-    b.top < a.top + a.height
+    cellPositions[near.cellIndex * 2]! >= cellPositions[under.cellIndex * 2]! &&
+    cellPositions[near.cellIndex * 2 + 1]! <=
+      cellPositions[under.cellIndex * 2 + 1]!
   )
 }
 
@@ -77,6 +71,11 @@ function nearestThenTop(best: CellHit | undefined, hit: CellHit) {
     : best
 }
 
+function deviceCentrePx(cssPx: number, state: VariantRenderState) {
+  const dpr = state.snapScale ?? backingScale(state.canvasWidth)
+  return (Math.floor(cssPx * dpr) + 0.5) / dpr
+}
+
 /**
  * Resolve a cursor to the one cell it is over, or undefined.
  *
@@ -84,14 +83,15 @@ function nearestThenTop(best: CellHit | undefined, hit: CellHit) {
  * the cell it paints on top over the row band `rowLowest..rowNearest` (one
  * row unless rows are sub-pixel), which is the largest cell index there, not
  * the nearest row's: a lower row's alt cell paints over a nearer reference
- * cell. Candidates whose *drawn* cell is not within the click tolerance of the
- * cursor are dropped. Of the survivors, the top cell the cursor is on wins,
- * unless a narrower cell painted after it overlaps it within the tolerance —
- * a SNP inside a large deletion, as cells paint in index order with records
- * laid out longest first (`recordsByBlock`) — and then the nearest of those
- * wins. With the cursor on no cell, the nearest survivor wins. Ties go to the
- * cell painted last. Distances and boxes come from the cell shape's own hit
- * test and ink.
+ * cell. The cursor is taken at the centre of its device pixel, as the cells
+ * are snapped to that grid, so it never sits on a shared edge. Candidates
+ * whose *drawn* cell is not within the click tolerance of it are dropped. Of
+ * the survivors, the top cell the cursor is on wins, unless a cell painted
+ * after it whose bp span lies within its span is within the tolerance — a SNP
+ * inside a large deletion, as cells paint in index order with records laid
+ * out longest first (`recordsByBlock`) — and then the nearest of those wins.
+ * With the cursor on no cell, the nearest survivor wins. Ties go to the cell
+ * painted last. Distances come from the cell shape's own hit test.
  *
  * Rows are screen rows throughout, in and out; `rowUnmap` converts each to the
  * worker numbering the cell arrays are keyed by (see variantCellLookup.ts). A screen
@@ -122,6 +122,7 @@ export function pickVariantCell({
   // Screen row -> worker row, or -1. See the display model's `rowUnmap`.
   rowUnmap: Int32Array
 }): PickedCell | undefined {
+  const x = deviceCentrePx(mouseX, state)
   const hits: CellHit[] = []
   for (const featureIndex of candidateFeatures) {
     const top = topDrawnCell(
@@ -137,7 +138,7 @@ export function pickVariantCell({
         data,
         block,
         state,
-        mouseX,
+        x,
         mouseY,
         cellIndex,
       )
@@ -150,7 +151,7 @@ export function pickVariantCell({
     .filter(hit => hit.distSq === 0)
     .reduce<CellHit | undefined>(nearestThenTop, undefined)
   const contenders = under
-    ? hits.filter(hit => paintsOver(data, block, state, hit, under))
+    ? hits.filter(hit => paintsOverInside(data, hit, under))
     : hits
   return (
     contenders.reduce<CellHit | undefined>(nearestThenTop, undefined) ?? under

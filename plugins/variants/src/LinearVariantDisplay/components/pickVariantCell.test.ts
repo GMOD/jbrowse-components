@@ -149,7 +149,7 @@ describe('pickVariantCell candidate narrowing', () => {
   const snp = indexOf('snp')
 
   test('a SNP inside a deletion paints over it, so it picks from a click tolerance away', () => {
-    for (const mouseX of [300, 302 + HIT_TOLERANCE_PX]) {
+    for (const mouseX of [300, 302 + HIT_TOLERANCE_PX - 1]) {
       const picked = pickVariantCell({
         data,
         candidateFeatures: [del, snp],
@@ -183,6 +183,34 @@ describe('pickVariantCell candidate narrowing', () => {
       })
       expect(picked?.featureIndex).toBe(offsetIndexOf('shortFirst'))
     }
+    const pastShortEnd = pickVariantCell({
+      data: offset,
+      candidateFeatures: [0, 1],
+      mouseX: 503,
+      mouseY: rowY(0),
+      rowNearest: 0,
+      rowLowest: 0,
+      ...geom,
+    })
+    expect(pastShortEnd?.featureIndex).toBe(offsetIndexOf('longLater'))
+  })
+
+  test("a SNP at a deletion's last base picks from a tolerance inside the deletion", () => {
+    // the SNP draws over [499, 501), past the deletion's ink, at the 2px floor
+    const atEdge = painted([
+      { id: 'del', start: 100, end: 500, genotypes: ['0/1'] },
+      { id: 'snp', start: 499, end: 500, genotypes: ['0/1'] },
+    ])
+    const picked = pickVariantCell({
+      data: atEdge.data,
+      candidateFeatures: [0, 1],
+      mouseX: 496,
+      mouseY: rowY(0),
+      rowNearest: 0,
+      rowLowest: 0,
+      ...geom,
+    })
+    expect(picked?.featureIndex).toBe(atEdge.indexOf('snp'))
   })
 
   test('a no-call on a shorter record paints over an alt on a longer one, so it picks', () => {
@@ -287,7 +315,7 @@ describe('pickVariantCell candidate narrowing', () => {
       expect(pickAt(494.5, flipped)?.featureIndex).toBe(neighbours.indexOf('B'))
     })
 
-    test('a narrower record beside the one under the pointer does not take it', () => {
+    test('a shorter record beside the one under the pointer does not take it', () => {
       // a 10bp deletion over [300, 310), a SNP after it over [312, 314)
       const beside = painted([
         { id: 'del', start: 300, end: 310, genotypes: ['0/1'] },
@@ -322,6 +350,45 @@ describe('pickVariantCell candidate narrowing', () => {
       })
       expect(picked?.featureIndex).toBe(touching.indexOf('A'))
     })
+
+    test('a later record drawn narrower by the pixel snap does not take the one under the pointer', () => {
+      // at 2/3 bp per px two 3bp records snap to A over [456, 461) and B over
+      // [458, 462)
+      const snapped = painted([
+        { id: 'A', start: 304, end: 307, genotypes: ['0/1'] },
+        { id: 'B', start: 305, end: 308, genotypes: ['0/1'] },
+      ])
+      const picked = pickVariantCell({
+        ...geom,
+        block: { ...block, end: 400, screenEndPx: 600 },
+        data: snapped.data,
+        candidateFeatures: [0, 1],
+        mouseX: 456.5,
+        mouseY: rowY(0),
+        rowNearest: 0,
+        rowLowest: 0,
+      })
+      expect(picked?.featureIndex).toBe(snapped.indexOf('A'))
+    })
+
+    test('the pointer on a pixel edge names the cell whose pixel it is in', () => {
+      // reversed at 0.5 bp per px: A over [198, 200), B abutting over [196, 198)
+      const abutting = painted([
+        { id: 'A', start: 300, end: 301, genotypes: ['0/1'] },
+        { id: 'B', start: 301, end: 302, genotypes: ['0/1'] },
+      ])
+      const picked = pickVariantCell({
+        ...geom,
+        block: { ...block, end: 400, reversed: true },
+        data: abutting.data,
+        candidateFeatures: [0, 1],
+        mouseX: 198,
+        mouseY: rowY(0),
+        rowNearest: 0,
+        rowLowest: 0,
+      })
+      expect(picked?.featureIndex).toBe(abutting.indexOf('A'))
+    })
   })
 
   test('candidate order does not change the pick', () => {
@@ -353,7 +420,7 @@ describe('pickVariantCell candidate narrowing', () => {
     expect(picked?.featureIndex).toBe(del)
   })
 
-  test('the click tolerance extends exactly one tolerance past the drawn edge', () => {
+  test('the click tolerance reaches the pixels whose centres lie within it', () => {
     const atX = (mouseX: number) =>
       pickVariantCell({
         data,
@@ -364,12 +431,13 @@ describe('pickVariantCell candidate narrowing', () => {
         rowLowest: 0,
         ...geom,
       })
-    // The 1bp SNP draws at the 2px floor, so its extent is [300, 302).
+    // The 1bp SNP draws at the 2px floor, so its extent is [300, 302): five
+    // pixels reach it on either side.
     const drawnRight = 302
     expect(atX(300 - HIT_TOLERANCE_PX)).toBeDefined()
     expect(atX(300 - HIT_TOLERANCE_PX - 1)).toBeUndefined()
-    expect(atX(drawnRight + HIT_TOLERANCE_PX)).toBeDefined()
-    expect(atX(drawnRight + HIT_TOLERANCE_PX + 1)).toBeUndefined()
+    expect(atX(drawnRight + HIT_TOLERANCE_PX - 1)).toBeDefined()
+    expect(atX(drawnRight + HIT_TOLERANCE_PX)).toBeUndefined()
   })
 
   test('the bp window reaches a click tolerance past the drawn edge', () => {
@@ -387,7 +455,7 @@ describe('pickVariantCell candidate narrowing', () => {
         ...geom,
       })
     }
-    expect(atX(302 + HIT_TOLERANCE_PX)?.featureIndex).toBe(snp)
+    expect(atX(302 + HIT_TOLERANCE_PX - 1)?.featureIndex).toBe(snp)
     expect(atX(300 - HIT_TOLERANCE_PX)?.featureIndex).toBe(snp)
   })
 

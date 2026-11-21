@@ -85,8 +85,9 @@ The mechanism is [MULTI_SAMPLE_VARIANTS.md](MULTI_SAMPLE_VARIANTS.md).
   Painting every alt over every no-call was declined: a covered no-call reads
   as reference, as on 470 rows at `HGSV_1823` in the 1KGP SV callset. The
   hover pick follows that order (`pickVariantCell`): the top cell under the
-  pointer, unless a narrower cell painted over it lies within the click
-  tolerance, as a SNP inside a deletion does; off every cell, the nearest.
+  pointer's device pixel, unless a cell painted after it whose bp span lies
+  within its span is within the click tolerance, as a SNP inside a deletion is;
+  off every cell, the nearest.
   `featureInfo` is in paint order; the variants tables list by start.
 - **Buckets stay sorted by `(featureIndex, rowIndex)`** within each of the
   reference / non-reference partitions, or `findCellIndex` needs reworking. Read
