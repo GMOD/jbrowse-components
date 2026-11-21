@@ -39,13 +39,11 @@ traced it and nobody reread it; reread before fixing.
   `markTooltipRows` lists y, color, shape and row. Trigger: the BEDPE loops
   config in `website/docs/user_guides/hic_track.md`. A tooltip row is small; a
   width key is a feature, not a defect.
-- **A far foot off screen prints the file's refName, not the assembly's.**
-  `findMarkHit.ts` `farRefNameOf` falls back to `layer.x2RefNames[ref]` raw,
-  while `linkOwners.ts` canonicalizes the same names twice. This is the
-  CLAUDE.md refName rule; canonicalize once in `withMateRegions`.
-- **With any `flatten` in the plot, a cross-sequence link's hover locus mixes
-  the two sequences.** `featureInstances.ts` `featureSpan` takes min and max
-  over `x` and `x2` once `withRootLane` adds the `root` lane.
+- **A point or rect sharing the flatten root with a cross-sequence link
+  still hovers a span mixing the two sequences.** `featureInstances.ts`
+  `featureSpan` takes min and max over every instance of the root, the
+  link's far `x2` included. The link's own hit reads its two feet
+  (`findMarkHit.ts`); the other marks of that feature do not.
 - **"Sort rows by value here" is offered when no mark compares.**
   `markMenus.ts`; `rowCompare` is undefined when only a link draws, and the
   neighbouring Cluster rows item is already disabled in that state.

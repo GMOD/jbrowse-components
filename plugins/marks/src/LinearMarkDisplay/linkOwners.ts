@@ -18,8 +18,10 @@ export interface MateRegion extends OwnerRegion {
  * Each link layer's `x2Region`: the region the far foot places through, its
  * refName read through the assembly's aliases. The block's own region when it
  * holds the foot, else any displayed region that does, else the block's own
- * region when the foot is on its contig past its edge, else none. Once per
- * fetch or region change, so a pan places through the shader's table alone.
+ * region when the foot is on its contig past its edge, else none. Beside it,
+ * `x2CanonicalRefNames`, the far refNames read through the block's own
+ * assembly. Once per fetch or region change, so a pan places through the
+ * shader's table alone.
  */
 export function withMateRegions(
   data: MarkRegionData,
@@ -37,6 +39,7 @@ export function withMateRegions(
     }
   }
   const assemblies = [...new Set(regions.map(r => r.assemblyName))]
+  const ownAssembly = regions.find(r => r.index === ownIndex)?.assemblyName
   return {
     ...data,
     layers: data.layers.map(layer => {
@@ -64,12 +67,14 @@ export function withMateRegions(
         const region = own && holds(own) ? own : (onRef.find(holds) ?? own)
         x2Region[i] = region ? region.index : LINK_NO_REGION
       }
-      return { ...layer, x2Region }
+      const x2CanonicalRefNames =
+        ownAssembly === undefined
+          ? x2RefNames
+          : x2RefNames.map(name => canonical(ownAssembly, name))
+      return { ...layer, x2Region, x2CanonicalRefNames }
     }),
   }
 }
-
-type Canonical = (assemblyName: string, refName: string) => string
 
 function footKey(ref: string, bp: number, ref2: string, bp2: number) {
   const a = `${ref}:${bp}`
@@ -83,16 +88,11 @@ function linkKey(layer: StoredLayer, i: number, feet: string) {
   return `${layer.row?.[i] ?? 0}#${feet}`
 }
 
-function linkKeys(
-  layer: StoredLayer,
-  region: OwnerRegion,
-  canonical: Canonical,
-) {
-  const { x2Ref, x2RefNames, x2Region } = layer
-  if (!x2Ref || !x2RefNames || !x2Region) {
+function linkKeys(layer: StoredLayer, region: OwnerRegion) {
+  const { x2Ref, x2CanonicalRefNames: far, x2Region } = layer
+  if (!x2Ref || !far || !x2Region) {
     return undefined
   }
-  const far = x2RefNames.map(name => canonical(region.assemblyName, name))
   const keys = new Array<string>(layer.count)
   for (let i = 0; i < layer.count; i++) {
     keys[i] = linkKey(
@@ -135,7 +135,6 @@ export function createLinkOwners() {
   return (
     mated: ReadonlyMap<number, MarkRegionData>,
     regions: readonly OwnerRegion[],
-    canonical: Canonical,
   ): ReadonlyMap<number, MarkRegionData> => {
     if (last?.mated === mated && last.regions === regions) {
       return last.out
@@ -152,7 +151,7 @@ export function createLinkOwners() {
         continue
       }
       const perLayer = data.layers.map((layer, li) => {
-        const keys = linkKeys(layer, region, canonical)
+        const keys = linkKeys(layer, region)
         if (keys) {
           for (let i = 0; i < keys.length; i++) {
             const x = layer.x[i]!

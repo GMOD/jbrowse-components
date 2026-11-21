@@ -39,7 +39,10 @@ export interface MarkHitInfo {
    */
   root?: number
   refName: string
-  /** The span of the instance's whole feature, every block of it. */
+  /**
+   * The span of the instance's whole feature, every block of it; a link's
+   * two feet where they lie on two sequences.
+   */
   start: number
   end: number
   /**
@@ -81,7 +84,8 @@ export interface MarkHitInfo {
 const HIT_RADIUS_PX = 8
 
 // The sequence a link's far foot lies on: the displayed region it draws to,
-// else the name the file gives it; undefined for a mark whose `x2` is its own.
+// else the file's name for it read through the assembly's aliases; undefined
+// for a mark whose `x2` is its own.
 function farRefNameOf(
   layer: StoredLayer,
   i: number,
@@ -91,7 +95,8 @@ function farRefNameOf(
   const shown = region === undefined ? undefined : displayedRegions[region]
   const ref = layer.x2Ref?.[i]
   return (
-    shown?.refName ?? (ref === undefined ? undefined : layer.x2RefNames?.[ref])
+    shown?.refName ??
+    (ref === undefined ? undefined : layer.x2CanonicalRefNames?.[ref])
   )
 }
 
@@ -245,11 +250,13 @@ export function findMarkHit(
   const root = raw === undefined || raw === NO_ROOT ? undefined : raw
   const x = layer.x[hit.index]!
   const x2 = layer.x2[hit.index]!
-  const { start, end } =
-    root === undefined ? { start: x, end: x2 } : featureSpan(hit.region, root)
   const { refName } = displayedRegions[regionIndex]!
   const farRefName = farRefNameOf(layer, hit.index, displayedRegions)
   const x2RefName = farRefName === refName ? undefined : farRefName
+  const { start, end } =
+    root === undefined || x2RefName !== undefined
+      ? { start: x, end: x2 }
+      : featureSpan(hit.region, root)
   const lo = Math.min(x, x2)
   const hi = Math.max(x, x2)
   const tooltip = layer.tooltip?.[hit.index]

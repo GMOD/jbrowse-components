@@ -50,6 +50,11 @@ export type StoredLayer = HitIndexed<EncodedChannels> &
      * none. Present on a link's layer alone.
      */
     x2Region?: Uint32Array
+    /**
+     * `x2RefNames` read through the aliases of the block's own assembly,
+     * which name a far foot no displayed region holds. Set with `x2Region`.
+     */
+    x2CanonicalRefNames?: string[]
   }
 
 type ChannelLane = Exclude<LaneName, 'index'> | 'x2Region'

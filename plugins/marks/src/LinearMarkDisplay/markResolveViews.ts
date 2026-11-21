@@ -401,9 +401,7 @@ export function markRegionViews(self: MarkKeySpaceHost) {
      * the upload re-packs.
      */
     get rpcDataMap(): ReadonlyMap<number, MarkRegionData> {
-      return self.hasLinkMark
-        ? owners(mated(), mateRegions.get(), canonical)
-        : drawn()
+      return self.hasLinkMark ? owners(mated(), mateRegions.get()) : drawn()
     },
   }
 }

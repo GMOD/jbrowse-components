@@ -2,6 +2,7 @@ import { NO_ROOT, hitIndexOf } from '@jbrowse/core/util/markEncoding'
 import { SHAPE_CODES } from '@jbrowse/core/util/shapeNames'
 import {
   HIDDEN_ROW,
+  LINK_NO_REGION,
   RAMP_NO_VALUE_BITS,
   RowKeys,
   backToFront,
@@ -12,6 +13,7 @@ import {
 
 import { facetLayout } from './facet.ts'
 import { findMarkHit, hitLocString, sameMarkHit } from './findMarkHit.ts'
+import { withMateRegions } from './linkOwners.ts'
 import { buildMarkList } from './markList.ts'
 import { facetRowName, facetRowTable, keyRegion } from './rowTable.ts'
 
@@ -531,8 +533,12 @@ test('a facet with a hidden section answers from the rows it shows', () => {
   }
 })
 
-test('a link to another sequence names both feet, each on its own sequence', () => {
-  const [mark] = buildMarkList([{ ...entries('link')[0]!, linkShape: 'line' }])
+const LINK_BLOCKS: RenderBlock[] = [
+  { ...BLOCK, screenEndPx: 400 },
+  { ...BLOCK, displayedRegionIndex: 1, screenStartPx: 400 },
+]
+
+function linkLayer(x2RefNames: string[], extra?: Partial<StoredLayer>) {
   const layer: StoredLayer = {
     count: 1,
     skipped: 0,
@@ -540,17 +546,22 @@ test('a link to another sequence names both feet, each on its own sequence', () 
     x2: Uint32Array.of(50),
     y: Float32Array.of(5),
     x2Ref: Uint32Array.of(0),
-    x2RefNames: ['ctgB'],
-    x2Region: Uint32Array.of(1),
+    x2RefNames,
     color: 0xff0000ff,
     yMin: 5,
     yMax: 5,
+    ...extra,
   }
-  const data = withFlatbush({ layers: [layer] })
-  const blocks: RenderBlock[] = [
-    { ...BLOCK, screenEndPx: 400 },
-    { ...BLOCK, displayedRegionIndex: 1, screenStartPx: 400 },
-  ]
+  return layer
+}
+
+// The first instance a sweep down the column at bp 100 answers.
+function linkHit(
+  data: MarkRegionData,
+  blocks: RenderBlock[],
+  regions: readonly { refName: string }[],
+) {
+  const [mark] = buildMarkList([{ ...entries('link')[0]!, linkShape: 'line' }])
   const state: MarkRenderState = {
     ...STATE,
     bpPerPx: 2.5,
@@ -562,14 +573,79 @@ test('a link to another sequence names both feet, each on its own sequence', () 
       rightPx: b.screenEndPx,
     })),
   }
-  const regions = [{ refName: 'ctgA' }, { refName: 'ctgB' }]
-  const hits = Array.from({ length: 360 }, (_, y) =>
-    findMarkHit(40, y, blocks, new Map([[0, data]]), [mark!], state, regions),
-  ).filter(h => h !== undefined)
-  expect(hits.length).toBeGreaterThan(0)
-  const [hit] = hits
+  const map = new Map([[0, withFlatbush(data)]])
+  return Array.from({ length: 360 }, (_, y) =>
+    findMarkHit(40, y, blocks, map, [mark!], state, regions),
+  ).find(h => h !== undefined)
+}
+
+const ALIASES: Record<string, Record<string, string> | undefined> = {
+  volvox: { chrB: 'ctgB' },
+  other: { s1: 'scaffold1' },
+}
+const canonical = (assemblyName: string, name: string) =>
+  ALIASES[assemblyName]?.[name] ?? name
+
+const mateRegion = (index: number, refName: string, assemblyName: string) => ({
+  index,
+  refName,
+  start: 0,
+  end: 1000,
+  assemblyName,
+})
+
+test('a link to another sequence names both feet, each on its own sequence', () => {
+  const layer = linkLayer(['ctgB'], { x2Region: Uint32Array.of(1) })
+  const hit = linkHit({ layers: [layer] }, LINK_BLOCKS, [
+    { refName: 'ctgA' },
+    { refName: 'ctgB' },
+  ])
   expect(hit).toMatchObject({ refName: 'ctgA', x2RefName: 'ctgB', bp: 100 })
   expect(hitLocString(hit!)).toBe('ctgA:101 → ctgB:51')
+})
+
+test('a link to another sequence keeps its two feet under a flatten root', () => {
+  const layer = linkLayer(['ctgB'], {
+    x2Region: Uint32Array.of(1),
+    root: Uint32Array.of(0),
+  })
+  const hit = linkHit({ layers: [layer] }, LINK_BLOCKS, [
+    { refName: 'ctgA' },
+    { refName: 'ctgB' },
+  ])
+  expect(hit).toMatchObject({ root: 0, start: 100, end: 50 })
+  expect(hitLocString(hit!)).toBe('ctgA:101 → ctgB:51')
+})
+
+test("a far foot on no displayed region prints the assembly's refName, not the file's", () => {
+  const data = withMateRegions(
+    { layers: [linkLayer(['chrB'])] },
+    [mateRegion(0, 'ctgA', 'volvox')],
+    canonical,
+    0,
+  )
+  const hit = linkHit(
+    data,
+    [{ ...BLOCK, screenEndPx: 400 }],
+    [{ refName: 'ctgA' }],
+  )
+  expect(data.layers[0]!.x2Region).toEqual(Uint32Array.of(LINK_NO_REGION))
+  expect(hit).toMatchObject({ refName: 'ctgA', x2RefName: 'ctgB' })
+})
+
+test("a far foot on another assembly's displayed region places there", () => {
+  const data = withMateRegions(
+    { layers: [linkLayer(['s1'])] },
+    [mateRegion(0, 'ctgA', 'volvox'), mateRegion(1, 'scaffold1', 'other')],
+    canonical,
+    0,
+  )
+  const hit = linkHit(data, LINK_BLOCKS, [
+    { refName: 'ctgA' },
+    { refName: 'scaffold1' },
+  ])
+  expect(data.layers[0]!.x2Region).toEqual(Uint32Array.of(1))
+  expect(hit).toMatchObject({ refName: 'ctgA', x2RefName: 'scaffold1' })
 })
 
 test('a block of a spliced feature answers as the feature, the same hit across its blocks', () => {

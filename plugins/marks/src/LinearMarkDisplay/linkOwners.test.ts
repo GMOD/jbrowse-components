@@ -23,6 +23,7 @@ function payload(
         x2: Uint32Array.from(links, l => l.x2),
         x2Ref: Uint32Array.from(links, l => refs.indexOf(l.ref)),
         x2RefNames: refs,
+        x2CanonicalRefNames: refs.map(name => canonical('volvox', name)),
         x2Region: Uint32Array.from(links, l => l.region),
         color: new Uint32Array(links.length),
         featureIndex: Uint32Array.from(links, (_, i) => i),
@@ -45,7 +46,6 @@ test('a pair whose two ends both have records draws from one region', () => {
       [1, payload([{ x: 1982, x2: 21681, ref: 'ctgA', region: 0 }])],
     ]),
     [A, B],
-    canonical,
   )
   expect(lane(out, 0)).toEqual([1])
   expect(lane(out, 1)).toEqual([LINK_ELSEWHERE])
@@ -58,7 +58,6 @@ test('the two halves pair through the assembly aliases', () => {
       [1, payload([{ x: 200, x2: 100, ref: 'ctgA', region: 0 }])],
     ]),
     [A, B],
-    canonical,
   )
   expect([lane(out, 0), lane(out, 1)]).toEqual([[1], [LINK_ELSEWHERE]])
 })
@@ -76,7 +75,6 @@ test('a pair spelt through an alias inside one region draws once', () => {
       ],
     ]),
     [A],
-    canonical,
   )
   expect(lane(out, 0)).toEqual([0, LINK_ELSEWHERE, 0])
 })
@@ -88,7 +86,6 @@ test('a record with no partner draws whole from its own region, the far one load
       [1, payload([])],
     ]),
     [A, B],
-    canonical,
   )
   expect(lane(out, 0)).toEqual([1])
   const alone = createLinkOwners()(
@@ -96,7 +93,6 @@ test('a record with no partner draws whole from its own region, the far one load
       [1, payload([{ x: 3000, x2: 5, ref: 'ctgC', region: LINK_NO_REGION }])],
     ]),
     [A, B],
-    canonical,
   )
   expect(lane(alone, 1)).toEqual([LINK_NO_REGION])
 })
@@ -111,7 +107,6 @@ test('one record fetched into two regions draws from the region holding its foot
       [0, payload([{ ...del, region: 1 }])],
     ]),
     [left, right],
-    canonical,
   )
   expect([lane(out, 0), lane(out, 1)]).toEqual([[1], [LINK_ELSEWHERE]])
 })
@@ -119,14 +114,13 @@ test('one record fetched into two regions draws from the region holding its foot
 test('a region whose drawn set did not move keeps its payload', () => {
   const owners = createLinkOwners()
   const a = payload([{ x: 100, x2: 3000, ref: 'ctgB', region: 1 }])
-  const first = owners(new Map([[0, a]]), [A, B], canonical)
+  const first = owners(new Map([[0, a]]), [A, B])
   const second = owners(
     new Map([
       [0, a],
       [1, payload([{ x: 5000, x2: 7, ref: 'ctgB', region: 1 }])],
     ]),
     [A, B],
-    canonical,
   )
   expect(second.get(0)).toBe(first.get(0))
 })
@@ -138,6 +132,6 @@ test('the same feet in two rows are two curves, and both draw', () => {
     { x: 100, x2: 900, ref: 'ctgA', region: 0 },
   ])
   data.layers[0]!.row = Uint32Array.of(0, 1, 1)
-  const out = createLinkOwners()(new Map([[0, data]]), [A], canonical)
+  const out = createLinkOwners()(new Map([[0, data]]), [A])
   expect(lane(out, 0)).toEqual([0, 0, LINK_ELSEWHERE])
 })
