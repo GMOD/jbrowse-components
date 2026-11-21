@@ -783,14 +783,6 @@ export function stateModelFactory(
         get connectorsHeight(): number {
           return this.connectorsStack.reserved.connectors
         },
-        /**
-         * #getter
-         * `TreeSidebarMixin`'s hook: the VCF lists its samples, so a
-         * `rows.kept` name no sample has is named.
-         */
-        get rowsListedUpFront(): boolean {
-          return true
-        },
       }))
       .views(recordsKeyViews)
       .views(recordsSettingsViews)
