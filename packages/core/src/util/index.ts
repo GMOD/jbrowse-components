@@ -52,6 +52,7 @@ export {
   type AppRootConfigModel,
   type EditableJBrowseConfigModel,
   type JBrowseConfigModel,
+  type RootConfigModel,
   type DrawerPosition,
   type FileHandleLocation,
   type FileLocation,

@@ -38,8 +38,8 @@
 #     or a tail through a pluggable union (`['adapter', 'fetchSizeLimit']`).
 #     A head that is a track or root slot files it with that population.
 #
-# 48 unchecked in source, 223 in tests,
-# of 1746 total config accessor calls. The gate counts source only.
+# 42 unchecked in source, 224 in tests,
+# of 1751 total config accessor calls. The gate counts source only.
 # A read spelled `this.getConf` / `self.getConf` / `….getConf` is an
 # adapter's or model's own accessor method, whose slot is its first argument.
 
@@ -49,23 +49,24 @@ packages/core/src/assemblyManager/assembly.ts  (1)
   649	self.getConf('geneticCodes')
 packages/core/src/BaseFeatureWidget/formatDetails.ts  (1)
   56	readConfObject('trackId')
-packages/core/src/configuration/configTypeNarrowing.test.ts  (16)  [test]
-  161	readConfObject('frozen')
-  162	readConfObject('maybeFrozen')
-  213	getConf('colorBy')
-  244	getConf('notASlot')
-  268	readConfObject('sub')
-  270	readConfObject(['sub', 'deeper'])
-  272	getConf('sub')
-  337	getConf(['facet', 'fields'])
-  339	readConfObject(['facets', 'field'])
-  341	getConf(['facet', 'inner', 'sizes'])
-  345	getConf(['blob', 'present'])
-  360	getConf(['facet', 'fields'])
-  362	getConf(['facet', 'fields'])
-  366	getConf(['facet', 'inner', 'size'])
-  473	readConfObject('raw')
-  527	readConfObject('own')
+packages/core/src/configuration/configTypeNarrowing.test.ts  (17)  [test]
+  162	readConfObject('frozen')
+  163	readConfObject('maybeFrozen')
+  214	getConf('colorBy')
+  245	getConf('notASlot')
+  269	readConfObject('sub')
+  271	readConfObject(['sub', 'deeper'])
+  273	getConf('sub')
+  338	getConf(['facet', 'fields'])
+  340	readConfObject(['facets', 'field'])
+  342	getConf(['facet', 'inner', 'sizes'])
+  346	getConf(['blob', 'present'])
+  361	getConf(['facet', 'fields'])
+  363	getConf(['facet', 'fields'])
+  367	getConf(['facet', 'inner', 'size'])
+  474	readConfObject('raw')
+  528	readConfObject('own')
+  695	getConf(['LinearGenomeViewPlugin', 'trackLabels'])
 packages/core/src/configuration/configurationSchema.test.ts  (12)  [test]
   331	readConfObject('inherited')
   398	readConfObject(['mySubConfiguration', 'dropped'])
@@ -163,11 +164,9 @@ packages/product-core/src/Session/Themes.ts  (4)
   252	getConf('theme')
 packages/product-core/src/ui/DescriptionPanel.tsx  (1)
   130	readConfObject('metadata')
-packages/product-core/src/ui/util.ts  (4)
-  42	getConf(['formatAbout', 'config'])
-  43	readConfObject(['formatAbout', 'config'])
-  56	getConf(['formatAbout', 'hideUris'])
-  57	readConfObject(['formatAbout', 'hideUris'])
+packages/product-core/src/ui/util.ts  (2)
+  41	getConf(['formatAbout', 'config'])
+  42	readConfObject(['formatAbout', 'config'])
 packages/synteny-core/src/lodTier.ts  (1)
   193	getConf(['adapter', 'coarseBpPerPxThreshold'])
 packages/synteny-core/src/SyntenyColorsMixin.ts  (1)
@@ -221,12 +220,6 @@ plugins/data-management/src/BulkAddTracksWorkflow/BulkAddTracksWorkflow.test.tsx
   203	readConfObject('name')
   354	readConfObject('trackId')
   369	readConfObject('name')
-plugins/data-management/src/HierarchicalTrackSelectorWidget/model.ts  (3)
-  556	getConf(['hierarchical', 'sort', 'trackNames'])
-  557	getConf(['hierarchical', 'sort', 'categories'])
-  974	getConf(['hierarchical', 'defaultFolderCategories'])
-plugins/data-management/src/TrackTable/trackTableModel.ts  (1)
-  330	getConf(['hierarchical', 'table', 'columns'])
 plugins/features/src/LinearBasicDisplay/retiredSpellings.test.ts  (1)  [test]
   44	readConfObject(['encoding', 'color', 'value'])
 plugins/features/src/shared/FeatureGateMixin.test.ts  (1)  [test]

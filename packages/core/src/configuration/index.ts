@@ -69,6 +69,8 @@ export {
   DEFAULT_FORMAT_DETAILS_DEPTH,
   FormatDetailsConfigSchemaFactory,
 } from './formatDetailsConfigSchema.ts'
+export { HierarchicalConfigSchemaFactory } from './hierarchicalConfigSchema.ts'
+export { PreferencesConfigSchemaFactory } from './preferencesConfigSchema.ts'
 export { mergeFormatCallbacks } from './mergeFormatCallbacks.ts'
 export {
   evaluateForFeature,

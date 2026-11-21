@@ -1,4 +1,4 @@
-import { ConfigurationSchema } from '@jbrowse/core/configuration'
+import { ConfigurationSchema } from './configurationSchema.ts'
 
 /**
  * #config HierarchicalConfigSchema

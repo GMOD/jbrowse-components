@@ -23,7 +23,7 @@ import type { HighlightType } from '../highlights.ts'
 import type { Feature } from '../simpleFeature.ts'
 import type { TrackConfigChange } from '../trackConfigDelta.ts'
 import type { UriLocation } from './data.ts'
-import type { JBrowseConfigModel } from './jbrowseConfig.ts'
+import type { JBrowseConfigModel, RootConfigModel } from './jbrowseConfig.ts'
 import type { RenderingServices } from './renderingServices.ts'
 import type { DialogHost, NotificationSink, ViewProblem } from './services.ts'
 import type {
@@ -44,6 +44,7 @@ export type {
   AppRootConfigModel,
   EditableJBrowseConfigModel,
   JBrowseConfigModel,
+  RootConfigModel,
 } from './jbrowseConfig.ts'
 export {
   DEFAULT_SHARE_URL,
@@ -182,7 +183,7 @@ export interface AbstractSessionModel
   // false when the session draws no title bar above its views, so a view puts
   // its own menu in its own controls; absent reads as a title bar being there
   viewTitleBars?: boolean
-  configuration: AnyConfigurationModel
+  configuration: RootConfigModel
   rpcManager: RpcManager
   assemblyNames: string[]
   selection?: unknown

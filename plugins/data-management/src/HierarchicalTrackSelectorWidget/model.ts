@@ -942,7 +942,6 @@ export default function stateTreeFactory(pluginManager: PluginManager) {
       // as, so an older build reads back what this one wrote
       function loadCategoryModes(assemblyNames: string[], viewType: string) {
         const session = getSession(self)
-        const r = ['hierarchical', 'defaultCollapsed']
         const savedCollapsed = localStorageGetJSON<
           [string, boolean][] | undefined
         >(scopedK('collapsedCategories', assemblyNames, viewType), undefined)
@@ -957,13 +956,29 @@ export default function stateTreeFactory(pluginManager: PluginManager) {
             self.setCategoryCollapsed(id, collapsed)
           }
         } else {
-          if (getConf(session, [...r, 'topLevelCategories'])) {
+          if (
+            getConf(session, [
+              'hierarchical',
+              'defaultCollapsed',
+              'topLevelCategories',
+            ])
+          ) {
             self.collapseTopLevelCategories()
           }
-          if (getConf(session, [...r, 'subCategories'])) {
+          if (
+            getConf(session, [
+              'hierarchical',
+              'defaultCollapsed',
+              'subCategories',
+            ])
+          ) {
             self.collapseSubCategories()
           }
-          for (const elt of getConf(session, [...r, 'categoryNames'])) {
+          for (const elt of getConf(session, [
+            'hierarchical',
+            'defaultCollapsed',
+            'categoryNames',
+          ])) {
             self.setCategoryCollapsed(categoryId(mainGroupId, elt), true)
           }
         }

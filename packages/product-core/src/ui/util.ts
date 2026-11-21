@@ -5,7 +5,6 @@ import {
   readConfObject,
 } from '@jbrowse/core/configuration'
 
-import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { TrackConfigModel } from '@jbrowse/core/pluggableElementTypes/models'
 import type { AbstractSessionModel } from '@jbrowse/core/util'
 
@@ -34,7 +33,7 @@ export function getAboutDialogConfig({
   config,
   session,
 }: {
-  config: AnyConfigurationModel
+  config: TrackConfigModel
   session: AbstractSessionModel
 }) {
   const conf: Record<string, unknown> = readConfObject(config)

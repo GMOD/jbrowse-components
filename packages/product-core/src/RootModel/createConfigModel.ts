@@ -1,17 +1,12 @@
 import {
   ConfigurationSchema,
-  FormatAboutConfigSchemaFactory,
-  FormatDetailsConfigSchemaFactory,
   readConfObject,
 } from '@jbrowse/core/configuration'
+import { rootConfigSchemaFields } from '@jbrowse/core/configuration/rootConfigSchema'
 import { migrateRetiredDisplays } from '@jbrowse/core/pluggableElementTypes/models'
-import RpcManager from '@jbrowse/core/rpc/RpcManager'
 import { expandLooseSearchIndex } from '@jbrowse/core/util/expandLooseSearchIndex'
 import { expandLooseTrackConfig } from '@jbrowse/core/util/tracks'
 import { getParent, types } from '@jbrowse/mobx-state-tree'
-
-import { HierarchicalConfigSchemaFactory } from './HierarchicalConfig.ts'
-import { PreferencesConfigSchemaFactory } from './PreferencesConfig.ts'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { BaseAssemblyConfigSchema } from '@jbrowse/core/assemblyManager'
@@ -20,6 +15,7 @@ import type {
   AnyConfigurationModel,
   ConfigurationSnapshot,
 } from '@jbrowse/core/configuration'
+import type RpcManager from '@jbrowse/core/rpc/RpcManager'
 
 // This config model lives at rootModel.jbrowse, so its MST parent is the root
 // model; this is the slice it reaches for. Mirrors app-core's JBrowseModelParent
@@ -33,14 +29,7 @@ interface ConfigModelParent {
 // for its type, since `SnapshotIn` of the model erases every slot name (a
 // schema's MST props are assembled as a `Record<string, any>`).
 function rootConfigurationSchema() {
-  return ConfigurationSchema('Root', {
-    rpc: RpcManager.configSchema,
-    hierarchical: HierarchicalConfigSchemaFactory(),
-    preferences: PreferencesConfigSchemaFactory(),
-    formatDetails: FormatDetailsConfigSchemaFactory(),
-    formatAbout: FormatAboutConfigSchemaFactory(),
-    theme: { type: 'frozen', defaultValue: {} },
-  })
+  return ConfigurationSchema('Root', rootConfigSchemaFields())
 }
 
 /**

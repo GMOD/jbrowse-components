@@ -5,19 +5,32 @@ import type {
   ConfigModelForFields,
   TrackConfigEntry,
 } from '../../configuration/index.ts'
+import type { rootConfigSchemaFields } from '../../configuration/rootConfigSchema.ts'
 import type { BaseConnectionConfigModel } from '../../pluggableElementTypes/models/baseConnectionConfig.ts'
 import type { BaseInternetAccountConfigModel } from '../../pluggableElementTypes/models/baseInternetAccountConfig.ts'
 import type { PluginDefinition } from '../../pluginDefinitions.ts'
 import type RpcManager from '../../rpc/RpcManager.ts'
-import type { RpcConfigModel } from '../../rpc/configSchema.ts'
-import type { IStateTreeNode } from '@jbrowse/mobx-state-tree'
+import type { IAnyType, IStateTreeNode } from '@jbrowse/mobx-state-tree'
+
+/**
+ * A plugin's namespace (`LinearGenomeViewPlugin`) beside the root slots core
+ * declares, which reads untyped: only some products' root schemas declare one.
+ */
+type PluginRootConfigNamespaces = Record<string, IAnyType>
+
+/**
+ * The root config every product declares, as `session.configuration` reads it.
+ */
+export type RootConfigModel = ConfigModelForFields<
+  ReturnType<typeof rootConfigSchemaFields> & PluginRootConfigNamespaces
+>
 
 /**
  * The loaded config every product's root holds as `jbrowse`, and its session
  * reads as `session.jbrowse`.
  */
 export interface JBrowseConfigModel extends IStateTreeNode {
-  configuration: AnyConfigurationModel
+  configuration: RootConfigModel
   rpcManager: RpcManager
   assemblies: BaseAssemblyConfigModel[]
   assemblyNames: string[]
@@ -59,7 +72,9 @@ export const appRootConfigSchemaFields = {
 } as const
 
 export type AppRootConfigModel = ConfigModelForFields<
-  typeof appRootConfigSchemaFields
+  ReturnType<typeof rootConfigSchemaFields> &
+    typeof appRootConfigSchemaFields &
+    PluginRootConfigNamespaces
 >
 
 /**
@@ -68,7 +83,7 @@ export type AppRootConfigModel = ConfigModelForFields<
  * connections.
  */
 export interface EditableJBrowseConfigModel extends JBrowseConfigModel {
-  configuration: AppRootConfigModel & { rpc: RpcConfigModel }
+  configuration: AppRootConfigModel
   plugins: PluginDefinition[]
   defaultSession: { name: string; [key: string]: unknown }
   preConfiguredSessions: { name: string; [key: string]: unknown }[]

@@ -11,6 +11,7 @@ import { ConfigurationSchemaUnion } from './configurationSchemaUnion.ts'
 import { getConf, readConfObject, setConf } from './index.ts'
 
 import type { FileLocation } from '../util/types/index.ts'
+import type { RootConfigModel } from '../util/types/jbrowseConfig.ts'
 import type { IConfigurationReference } from './configurationSchema.ts'
 import type {
   AnyConfigurationModel,
@@ -668,5 +669,33 @@ describe('an undeclared member of a config node does not compile', () => {
       colour: 'blue',
     }
     expect(nested.create(snapshot, { pluginManager }).color).toBe('blue')
+  })
+})
+
+describe('the root config a session reads', () => {
+  it("types core's slots and leaves a plugin's namespace unchecked", () => {
+    const check = (session: { configuration: RootConfigModel }) => {
+      const trackNames = getConf(session, [
+        'hierarchical',
+        'sort',
+        'trackNames',
+      ])
+      assertType<Equal<typeof trackNames, boolean>>()
+      const columns = getConf(session, ['hierarchical', 'table', 'columns'])
+      assertType<Equal<typeof columns, string[]>>()
+      const hideUris = getConf(session, ['formatAbout', 'hideUris'])
+      assertType<Equal<typeof hideUris, boolean>>()
+      const animationMode = readConfObject(
+        session.configuration.preferences,
+        'animationMode',
+      )
+      assertType<
+        Equal<typeof animationMode, 'system' | 'enabled' | 'disabled'>
+      >()
+      const labels = getConf(session, ['LinearGenomeViewPlugin', 'trackLabels'])
+      assertType<Equal<typeof labels, any>>()
+    }
+    void check
+    expect(true).toBe(true)
   })
 })

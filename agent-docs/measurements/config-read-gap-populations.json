@@ -35,7 +35,7 @@
       "values": {
         "population": "root config",
         "slots": "`shareURL`, `logoPath`, `disableAnalytics`, `hierarchical`, `formatAbout`, `LinearGenomeViewPlugin`",
-        "reads": 10
+        "reads": 4
       }
     },
     {

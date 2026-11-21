@@ -14,12 +14,12 @@ import type { HeldNode } from '../pruneUnbuildableNodes.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type TextSearchManager from '@jbrowse/core/TextSearch/TextSearchManager'
 import type { BaseAssemblyConfigModel } from '@jbrowse/core/assemblyManager'
-import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type RpcManager from '@jbrowse/core/rpc/RpcManager'
 import type {
   AnimationMode,
   DialogComponentType,
   JBrowseConfigModel,
+  RootConfigModel,
   TrackConfigChange,
 } from '@jbrowse/core/util'
 import type { HighlightType } from '@jbrowse/core/util/highlights'
@@ -177,7 +177,7 @@ export function BaseSessionModel(_pluginManager: PluginManager) {
       /**
        * #getter
        */
-      get configuration(): AnyConfigurationModel {
+      get configuration(): RootConfigModel {
         return this.jbrowse.configuration
       },
       /**
@@ -221,8 +221,7 @@ export function BaseSessionModel(_pluginManager: PluginManager) {
        * any runtime override — i.e. what a reset falls back to
        */
       getPreferenceDefault(key: string): unknown {
-        const { preferences } = self.configuration
-        return preferences ? readConfObject(preferences, key) : undefined
+        return readConfObject(self.configuration, ['preferences', key])
       },
       /**
        * #method

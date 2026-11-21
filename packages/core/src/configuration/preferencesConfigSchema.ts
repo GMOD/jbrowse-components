@@ -1,5 +1,6 @@
-import { ConfigurationSchema } from '@jbrowse/core/configuration'
 import { types } from '@jbrowse/mobx-state-tree'
+
+import { ConfigurationSchema } from './configurationSchema.ts'
 
 /**
  * #config PreferencesConfigSchema

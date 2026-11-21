@@ -48,7 +48,7 @@ export function PreferencesSessionMixin(pluginManager: PluginManager) {
         // too; a key the config no longer declares is a retired preference
         const { preferences } = self.configuration
         const stored = Object.entries(loadStoredPreferences()).filter(
-          ([key]) => !preferences || key in preferences,
+          ([key]) => key in preferences,
         )
         self.preferencesOverrides.replace(
           freezeDeep(Object.fromEntries(stored)),

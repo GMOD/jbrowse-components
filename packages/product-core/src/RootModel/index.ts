@@ -14,15 +14,15 @@ export type {
   RootModelWithInternetAccounts,
   RootModelWithInternetAccountsType,
 } from './InternetAccounts.ts'
-// re-exported rather than declared here: the same two schemas hang off every
-// track config, so they live in core next to `createBaseTrackConfig` and this
-// keeps the long-published `@jbrowse/product-core` spelling working
+// re-exported rather than declared here: two of these hang off every track
+// config and core types the root config by all four, so they live in core and
+// this keeps the long-published `@jbrowse/product-core` spelling working
 export {
   FormatAboutConfigSchemaFactory,
   FormatDetailsConfigSchemaFactory,
+  HierarchicalConfigSchemaFactory,
+  PreferencesConfigSchemaFactory,
 } from '@jbrowse/core/configuration'
-export { HierarchicalConfigSchemaFactory } from './HierarchicalConfig.ts'
-export { PreferencesConfigSchemaFactory } from './PreferencesConfig.ts'
 export { createConfigModel } from './createConfigModel.ts'
 export type { RootConfigurationSnapshot } from './createConfigModel.ts'
 export {
