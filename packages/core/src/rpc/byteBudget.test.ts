@@ -5,6 +5,7 @@ import {
   measureRegionBytes,
   measuredBytes,
   overByteBudget,
+  ungatedResult,
 } from './byteBudget.ts'
 import { deserializeError, serializeError } from './serializeError/index.ts'
 
@@ -91,6 +92,16 @@ describe('isRegionRefused', () => {
   it('is false for null and undefined rather than throwing', () => {
     expect(isRegionRefused(null)).toBe(false)
     expect(isRegionRefused(undefined)).toBe(false)
+  })
+})
+
+describe('ungatedResult', () => {
+  it('passes a payload through and throws on a refusal, naming the RPC', () => {
+    const payload = { value: 1 }
+    expect(ungatedResult(payload, 'SomeRpc')).toBe(payload)
+    expect(() => ungatedResult({ regionTooLarge: true }, 'SomeRpc')).toThrow(
+      'SomeRpc refused a region it was given no budget for',
+    )
   })
 })
 

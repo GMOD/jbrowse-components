@@ -1,4 +1,5 @@
 import { fullConfSnapshot } from '@jbrowse/core/configuration'
+import { ungatedResult } from '@jbrowse/core/rpc/byteBudget'
 import {
   fitTargetHeightViews,
   heightModeViews,
@@ -212,31 +213,29 @@ export async function fetchFeatureRegions(
   const fetched = await Promise.all(
     regions.map(
       async ({ region, index }): Promise<[number, LayoutRegionData]> => {
-        const result = await executeRenderFeatureData({
-          pluginManager,
-          peptideCache,
-          args: {
-            sessionId: host.id,
-            adapterConfig,
-            sequenceAdapter,
-            ...settings,
-            ...zoomArgs,
-            region,
-            bpPerPx,
-            geneticCodeId:
-              geneticCodeId ?? assemblyGeneticCodeId?.(region.refName),
-            statusCallback: () => {},
-          } satisfies RpcExecuteArgs<'RenderFeatureData'>,
-        })
-        if ('regionTooLarge' in result) {
-          throw new Error(
-            'RenderFeatureData refused a region it was given no budget for',
-          )
-        }
+        const { value } = ungatedResult(
+          await executeRenderFeatureData({
+            pluginManager,
+            peptideCache,
+            args: {
+              sessionId: host.id,
+              adapterConfig,
+              sequenceAdapter,
+              ...settings,
+              ...zoomArgs,
+              region,
+              bpPerPx,
+              geneticCodeId:
+                geneticCodeId ?? assemblyGeneticCodeId?.(region.refName),
+              statusCallback: () => {},
+            } satisfies RpcExecuteArgs<'RenderFeatureData'>,
+          }),
+          'RenderFeatureData',
+        )
         return [
           index,
           {
-            ...result.value,
+            ...value,
             regionKey: layoutRegionKey(region),
             regionStart: region.start,
             regionEnd: region.end,

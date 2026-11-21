@@ -48,6 +48,22 @@ export function isRegionRefused(
   )
 }
 
+function isPayload<T>(result: T): result is Exclude<T, RegionTooLargeResult> {
+  return !isRegionRefused(result)
+}
+
+/**
+ * A gated fetch's payload where the caller passed no `byteLimit` and no
+ * density budget, so nothing was measured and nothing can be refused: a
+ * refusal there breaks that contract and throws, naming `rpcName`.
+ */
+export function ungatedResult<T>(result: T, rpcName: string) {
+  if (!isPayload(result)) {
+    throw new Error(`${rpcName} refused a region it was given no budget for`)
+  }
+  return result
+}
+
 /**
  * The thrown form of the same refusal, for an adapter whose limit only a fetch
  * can find, such as a graph's node count. Marked by an own `regionTooLarge`

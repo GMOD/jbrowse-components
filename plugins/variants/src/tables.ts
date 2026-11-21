@@ -4,6 +4,7 @@ import {
   DEFAULT_BYTE_LIMIT,
   numberByFirstAppearance,
 } from '@jbrowse/core/data_adapters/tables'
+import { ungatedResult } from '@jbrowse/core/rpc/byteBudget'
 import { colorKeyTables } from '@jbrowse/core/ui/rampKey'
 import { isObject } from '@jbrowse/core/util'
 import { boundBandHeight } from '@jbrowse/core/util/bandHeight'
@@ -381,12 +382,10 @@ async function fetchedVariantHost(
       statusCallback: () => {},
     }),
   )
-  const result = await variantCellData({ pluginManager, args })
-  if ('regionTooLarge' in result) {
-    throw new Error(
-      'MultiSampleVariantGetCellData refused a region it was given no budget for',
-    )
-  }
+  const result = ungatedResult(
+    await variantCellData({ pluginManager, args }),
+    'MultiSampleVariantGetCellData',
+  )
   const value = result.value
   const fetchOrder = new Map(result.records.map((r, i) => [r.id(), i]))
   const perRegion = regions.flatMap((region, i) => {
@@ -922,21 +921,19 @@ export async function variantFeatureTables(
     displayedRegions: fetchRegions,
     settledDynamicBlocks: tablesBlocks(regions, bpPerPx),
   })
-  const result = await variantCellData({
-    pluginManager,
-    args: runInAction(() => ({
-      sessionId: 'tables',
-      adapterConfig,
-      regions: fetchRegions,
-      ...host.rpcProps(),
-      statusCallback: () => {},
-    })),
-  })
-  if ('regionTooLarge' in result) {
-    throw new Error(
-      'MultiSampleVariantGetCellData refused a region it was given no budget for',
-    )
-  }
+  const result = ungatedResult(
+    await variantCellData({
+      pluginManager,
+      args: runInAction(() => ({
+        sessionId: 'tables',
+        adapterConfig,
+        regions: fetchRegions,
+        ...host.rpcProps(),
+        statusCallback: () => {},
+      })),
+    }),
+    'MultiSampleVariantGetCellData',
+  )
   host.setCellData(result.value)
   const band = runInAction(() => ({
     rpcDataMap: host.recordsRenderDataMap,
