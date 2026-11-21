@@ -7,8 +7,13 @@ import { getRoot, unprotect } from '@jbrowse/mobx-state-tree'
 import { maxBottom } from '@jbrowse/plugin-features/band'
 
 import { NO_RECORD_FIELD_READS } from '../shared/recordFields.ts'
+import { getCachedABGR } from '../shared/variantWebglUtils.ts'
 import { recordsBandSurface } from './components/RecordsBandOverlay.tsx'
-import { KIT, recordsDisplayAt } from './recordsBand.fixture.ts'
+import {
+  KIT,
+  recordsCellData,
+  recordsDisplayAt,
+} from './recordsBand.fixture.ts'
 import { svClassColors } from './recordsSvColors.ts'
 
 import type { LinearVariantDisplayModel } from './model.ts'
@@ -441,6 +446,75 @@ describe('encoding.color identity', () => {
       encoding: { color: { value: identity.value } },
     })
     expect(display.colorScales.find(s => s.id === 'identity')).toBeUndefined()
+  })
+
+  describe('a field read off the records', () => {
+    const svTypes: BandRecord[] = [
+      ['del', 100, 5000, '', 'DEL'],
+      ['ins', 9000, 9001, '', 'INS'],
+    ]
+    const fieldIdentity = { ...identity, value: undefined, field: 'INFO.COLOR' }
+
+    // what the worker reads off INFO.COLOR: del red, ins blue
+    function identityDisplayAt(rows: boolean) {
+      const { display } = recordsDisplayAt(svTypes, 51, {}, rows, {
+        encoding: { color: fieldIdentity },
+      })
+      const data = recordsCellData(svTypes)
+      display.setCellData(
+        {
+          ...data,
+          colorRead: display.cellHueRead,
+          perRegionCellData: {
+            0: {
+              ...data.perRegionCellData[0]!,
+              colorValues: ['#d73027', '#4575b4'],
+              featureColorValues: Uint32Array.of(1, 2),
+            },
+          },
+        },
+        [0],
+      )
+      return display
+    }
+
+    function colorByTicks(display: LinearVariantDisplayModel) {
+      const colorBy = display
+        .trackMenuItems()
+        .find(i => 'label' in i && i.label === 'Color by')
+      const items =
+        colorBy && 'subMenu' in colorBy ? resolveSubMenu(colorBy) : []
+      return items.flatMap(i =>
+        'checked' in i && i.checked && 'label' in i ? [i.label] : [],
+      )
+    }
+
+    test('over rows the records paint the colors the field holds, with no SV type key', () => {
+      const display = identityDisplayAt(true)
+      expect([...display.regionRecordColors.get(0)!]).toEqual([
+        getCachedABGR('#d73027'),
+        getCachedABGR('#4575b4'),
+      ])
+      expect(display.colorScales.find(s => s.id === 'records')).toBeUndefined()
+    })
+
+    test('with no rows drawn the records paint the colors and the key names them', () => {
+      const display = identityDisplayAt(false)
+      expect([...display.regionRecordColors.get(0)!]).toEqual([
+        getCachedABGR('#d73027'),
+        getCachedABGR('#4575b4'),
+      ])
+      expect(display.colorScales.map(s => s.id)).toEqual(['identity'])
+    })
+
+    test('the Color by menu ticks Field..., not the default', () => {
+      for (const rows of [true, false]) {
+        expect(colorByTicks(identityDisplayAt(rows))).toContain('Field...')
+        expect(colorByTicks(identityDisplayAt(rows))).not.toContain(
+          rows ? 'Genotype' : 'Default',
+        )
+      }
+    })
   })
 })
 

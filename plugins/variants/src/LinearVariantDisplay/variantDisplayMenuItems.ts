@@ -23,7 +23,6 @@ import {
 } from '@jbrowse/display-kit/groupByMenu'
 import { fieldHeading } from '@jbrowse/display-kit/sectionsHeading'
 import { sectionsMenuItemsFor } from '@jbrowse/display-kit/sectionsMenu'
-import { rampEncodingOf } from '@jbrowse/display-kit/valueRamp'
 import {
   featureHeightMenuItem,
   featureHighlightMenuItems,
@@ -46,7 +45,6 @@ import SplitscreenIcon from '@mui/icons-material/Splitscreen'
 import ViewQuiltIcon from '@mui/icons-material/ViewQuilt'
 
 import { breakendSplitViewMenuItem } from '../shared/breakendSplitViewMenuItem.ts'
-import { recordHueField } from '../shared/cellHue.ts'
 import { PHASE_SET_FIELD } from '../shared/getPhasedColor.ts'
 // lazy: this file is reached from a state model, so a dialog named here is in
 // every host's first paint — see ./lazyDialogs.ts
@@ -284,13 +282,13 @@ export function variantTrackMenuItems(
   self: LinearVariantDisplayModel,
 ): MenuItem[] {
   const loaded = !!self.cellData
-  const hueField =
-    rampEncodingOf(self.colorEncoding)?.field ??
-    recordHueField(self.colorEncoding)?.field
-  const recordField =
-    hueField === SV_TYPE_FIELD || hueField === IMPACT_FIELD
-      ? undefined
-      : hueField
+  const { colorField } = self
+  const recordFieldPicked = !new Set<string>([
+    '',
+    SV_TYPE_FIELD,
+    IMPACT_FIELD,
+    PHASE_SET_FIELD,
+  ]).has(colorField)
   const phaseSet = needs(
     'Phase set',
     'phase sets (FORMAT PS)',
@@ -314,7 +312,7 @@ export function variantTrackMenuItems(
               // with no rows a phase set, which no record holds, paints the
               // records as the default does
               checked: self.drawsGenotypeRows
-                ? self.colorEncoding === undefined
+                ? self.colorEncoding === undefined && colorField === ''
                 : self.recordsColorBySvClass,
               onClick: () => {
                 self.setColorValue(undefined)
@@ -366,7 +364,7 @@ export function variantTrackMenuItems(
             {
               label: 'Field...',
               type: 'radio',
-              checked: !!recordField,
+              checked: recordFieldPicked,
               keepMenuOpen: false,
               onClick: () => {
                 getDialogHost(self).queueDialog(handleClose => [

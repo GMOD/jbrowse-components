@@ -42,7 +42,6 @@ import {
 } from '@jbrowse/plugin-features/band'
 import { computed } from 'mobx'
 
-import { cellHueField } from '../shared/cellHue.ts'
 import { PHASE_SET_FIELD } from '../shared/getPhasedColor.ts'
 import { resolveSampleName } from '../shared/getSources.ts'
 import { DEFAULT_VARIANT_DISPLAY_HEIGHT } from './configSchema.ts'
@@ -101,6 +100,7 @@ export interface RecordsSettingsHost {
   drawsGenotypeRows: boolean
   atGenomicPositions: boolean
   colorEncoding: ReturnType<typeof cellColorEncodingOf>
+  colorField: string
   gateActive: boolean
   aboveForceLoadFloor: boolean
   openingRecordsHeight: number | undefined
@@ -109,7 +109,11 @@ export interface RecordsSettingsHost {
 /** What {@link recordsKeyViews} reads: the layout, the rows and the coloring. */
 export type RecordsKeyHost = Pick<
   RecordsSettingsHost,
-  'configuration' | 'atGenomicPositions' | 'drawsGenotypeRows' | 'colorEncoding'
+  | 'configuration'
+  | 'atGenomicPositions'
+  | 'drawsGenotypeRows'
+  | 'colorEncoding'
+  | 'colorField'
 >
 
 /**
@@ -139,9 +143,10 @@ export function recordsKeyViews(self: RecordsKeyHost) {
      * paints the cells.
      */
     get recordsColorBySvClass() {
-      const encoding = self.colorEncoding
+      const field = self.colorField
       return (
-        encoding === undefined || cellHueField(encoding) === PHASE_SET_FIELD
+        field === PHASE_SET_FIELD ||
+        (field === '' && self.colorEncoding === undefined)
       )
     },
     /**
@@ -152,10 +157,9 @@ export function recordsKeyViews(self: RecordsKeyHost) {
      * paints them by SV class, so neither keys a cell nothing draws.
      */
     get cellColorKeyed() {
-      const field = cellHueField(self.colorEncoding)
+      const field = self.colorField
       return (
-        self.drawsGenotypeRows ||
-        (field !== undefined && field !== PHASE_SET_FIELD)
+        self.drawsGenotypeRows || (field !== '' && field !== PHASE_SET_FIELD)
       )
     },
   }

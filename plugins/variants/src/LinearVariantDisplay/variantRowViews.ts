@@ -1,13 +1,14 @@
 import { getConf } from '@jbrowse/core/configuration'
 import SerializableFilterChain from '@jbrowse/core/pluggableElementTypes/renderers/util/serializableFilterChain'
 import { getEnv } from '@jbrowse/core/util'
+import { identityFieldOf } from '@jbrowse/core/util/colorScale'
 import { predicatesOf } from '@jbrowse/core/util/fieldPredicate'
 import { colorSnapshotOf } from '@jbrowse/display-kit/colorConfigSchema'
 import { facetSettingOf } from '@jbrowse/display-kit/facetConfigSchema'
 import { stableIdentityComputed } from '@jbrowse/display-kit/stableIdentityComputed'
 import { narrowRows } from '@jbrowse/tree-sidebar/narrowRows'
 
-import { cellColorEncodingOf } from '../shared/cellHue.ts'
+import { cellColorEncodingOf, cellHueField } from '../shared/cellHue.ts'
 import { REFERENCE_COLOR } from '../shared/constants.ts'
 import {
   entryAliasOf,
@@ -115,6 +116,19 @@ export function variantColorSettingViews(self: VariantRowConfigHost) {
      */
     get colorEncoding() {
       return cellColorEncodingOf(this.colorSetting)
+    },
+    /**
+     * #getter
+     * The field the alt cells paint by, an identity scale's included, ''
+     * while they paint the genotype colors, a constant or a `jexl:`
+     * callback.
+     */
+    get colorField(): string {
+      return (
+        identityFieldOf(this.colorSetting) ??
+        cellHueField(this.colorEncoding) ??
+        ''
+      )
     },
   }
 }

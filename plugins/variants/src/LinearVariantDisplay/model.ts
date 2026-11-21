@@ -60,7 +60,6 @@ import {
   regionCoversColumn,
 } from '@jbrowse/tree-sidebar'
 
-import { cellHueField } from '../shared/cellHue.ts'
 import {
   HIDDEN_ROW,
   HAPLOTYPE_ROW_FIELDS,
@@ -695,14 +694,6 @@ export function stateModelFactory(
               self.unreadFilterFieldNotice(field, 'variant'),
             ),
           ]
-        },
-        /**
-         * #getter
-         * The field the alt cells paint by, '' while they paint the genotype
-         * colors or a constant.
-         */
-        get colorField(): string {
-          return cellHueField(self.colorEncoding) ?? ''
         },
         /**
          * #getter
