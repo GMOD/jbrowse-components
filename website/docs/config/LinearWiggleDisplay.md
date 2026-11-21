@@ -102,7 +102,7 @@ Display slots go on a display entry: `"displays": [{ "type": "LinearWiggleDispla
 | <span id="slot-data">**data**</span><br>[WiggleData](../wiggledata) | What the fetch reads, a [](/docs/config/wiggledata) object: `resolution` is the points per pixel asked of a tiered file. |
 | <span id="slot-legend">**legend**</span><br>[Legend](../legend) | The key: density's score color ramp, a threshold's bands, or the source colors where several share one plot. |
 | <span id="slot-height">**height**</span><br>[`number`](/docs/config_guides/slot_types#number) = <code>100</code> | default height for the track |
-| <span id="slot-origin">**origin**</span><br>[`number`](/docs/config_guides/slot_types#number) = <code>0</code> | The value bars grow from, and the cut a threshold color scale with an empty domain uses. The same slot, with the same meaning, as the mark display's origin |
+| <span id="slot-origin">**origin**</span><br>[`number`](/docs/config_guides/slot_types#number) = <code>0</code> | The value bars grow from and a line drops to across a gap; a threshold color scale with no `domain` cut splits its two colors there |
 
 ## Retired keys
 

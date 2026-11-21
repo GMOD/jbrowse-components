@@ -252,6 +252,7 @@ const loaders: ReExportLoaders = {
   '@jbrowse/core/ui/PluggableComponents': () => import('../ui/PluggableComponents.tsx').then(ns => ns.default),
   '@jbrowse/core/ui/PluginStoreCard': () => import('../ui/PluginStoreCard.tsx').then(ns => ns.default),
   '@jbrowse/core/ui/PopoverPicker': () => import('../ui/PopoverPicker.tsx').then(ns => ns.default),
+  '@jbrowse/core/ui/preferencesPanels': () => import('../ui/preferencesPanels.ts'),
   '@jbrowse/core/ui/ProgressChip': () => import('../ui/ProgressChip.tsx').then(ns => ns.default),
   '@jbrowse/core/ui/rampKey': () => import('../ui/rampKey.ts'),
   '@jbrowse/core/ui/ResizeHandle': () => import('../ui/ResizeHandle.tsx').then(ns => ns.default),

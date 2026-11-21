@@ -2182,6 +2182,11 @@
         "@mui/material"
       ]
     },
+    "@jbrowse/core/ui/preferencesPanels": {
+      "package": "@jbrowse/core",
+      "names": [],
+      "worker": "real"
+    },
     "@jbrowse/core/ui/ProgressChip": {
       "package": "@jbrowse/core",
       "names": [
@@ -4570,7 +4575,8 @@
       "names": [
         "BandChip",
         "BandChipButton",
-        "BandChipRow"
+        "BandChipRow",
+        "bandChipsShown"
       ],
       "worker": "real"
     },

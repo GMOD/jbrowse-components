@@ -56,11 +56,11 @@ Display slots go on a display entry: `"displays": [{ "type": "LinearReferenceSeq
 | --- | --- |
 | <span id="slot-height">**height**</span><br>[`maybeNumber`](/docs/config_guides/slot_types#the-maybe-types) | explicit display height (e.g. from a drag-resize); unset means auto-fit to the zoom-aware computed height. See the model's `height` getter. |
 | <span id="slot-forward">**forward**</span><br>[SequenceForward sub-schema](#slot-forwardshow) | The forward-strand base row. |
-| <span id="slot-forwardshow">**forward.show**</span><br>[`boolean`](/docs/config_guides/slot_types#boolean) = <code>true</code> | draw the rows |
+| <span id="slot-forwardshow">**forward.show**</span><br>[`boolean`](/docs/config_guides/slot_types#boolean) = <code>true</code> | draw the forward-strand base row |
 | <span id="slot-reverse">**reverse**</span><br>[SequenceReverse sub-schema](#slot-reverseshow) | The reverse-complement base row; a protein sequence has none. |
-| <span id="slot-reverseshow">**reverse.show**</span><br>[`boolean`](/docs/config_guides/slot_types#boolean) = <code>true</code> | draw the rows |
+| <span id="slot-reverseshow">**reverse.show**</span><br>[`boolean`](/docs/config_guides/slot_types#boolean) = <code>true</code> | draw the reverse-complement base row |
 | <span id="slot-translation">**translation**</span><br>[SequenceTranslation sub-schema](#slot-translationshow) | The three translation frame rows per drawn strand; a protein sequence has none. |
-| <span id="slot-translationshow">**translation.show**</span><br>[`boolean`](/docs/config_guides/slot_types#boolean) = <code>true</code> | draw the rows |
+| <span id="slot-translationshow">**translation.show**</span><br>[`boolean`](/docs/config_guides/slot_types#boolean) = <code>true</code> | draw the three translation frame rows per drawn strand |
 | <span id="slot-fetchsizelimit">**fetchSizeLimit**</span><br>[`number`](/docs/config_guides/slot_types#number) = <code>1000000</code> | bytes a region may fetch before the display asks first; an adapter that sets its own limit takes precedence over this<br>_advanced_ |
 | <span id="slot-forceload">**forceLoad**</span><br>[`boolean`](/docs/config_guides/slot_types#boolean) = <code>false</code> | Declarative equivalent of the "Force load" button on the "too much data" banner: when true the display always renders, however large the region or dense the features. Off by default (the gate guards against huge downloads). Set it on a view with no user interaction, such as an embedded or notebook view or a screenshot, where the region is known and should draw without a click.<br>_advanced_ |
 

@@ -251,6 +251,7 @@ export default [
   '@jbrowse/core/ui/PluggableComponents',
   '@jbrowse/core/ui/PluginStoreCard',
   '@jbrowse/core/ui/PopoverPicker',
+  '@jbrowse/core/ui/preferencesPanels',
   '@jbrowse/core/ui/ProgressChip',
   '@jbrowse/core/ui/rampKey',
   '@jbrowse/core/ui/ResizeHandle',

@@ -17,7 +17,8 @@ it stacks the anchor at that place, where otherwise it stacks first. `kept` name
 lanes drawn, empty drawing the track's lanes or every lane. Haplotype lanes
 read off a graph follow by structure instead, below any lanes `sort` pins,
 so lanes whose deletions and insertions against the anchor match sit
-together, in an order worked out once per window. Lanes take no tree.
+together, in an order worked out once per window. Lanes take no tree. A
+string is the field.
 
 ## Example usage
 
@@ -37,6 +38,10 @@ together, in an order worked out once per window. Lanes take no tree.
   type: 'MultiWaySyntenyDisplay',
   rows: { field: 'refName', sort: ['{grape}chr9', 'peach', '{grape}chr11'] },
 }
+```
+
+```js
+{ type: 'MultiWaySyntenyDisplay', rows: 'refName' }
 ```
 
 ## Config slots

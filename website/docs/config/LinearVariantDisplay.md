@@ -107,7 +107,7 @@ separate at their positions:
 <!-- prettier-ignore -->
 | Setting | Page | `scale.type` | Preset fields |
 | --- | --- | --- | --- |
-| `encoding.color` | [](/docs/config/variantcellcolor#preset-fields) | ordinal, threshold, linear, log, identity | `strand`, `svType`, `impact`, `score` |
+| `encoding.color` | [](/docs/config/variantcellcolor#preset-fields) | ordinal, threshold, linear, log, symlog, identity | `strand`, `svType`, `impact`, `score` |
 
 ## Config slots
 

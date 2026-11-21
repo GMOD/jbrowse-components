@@ -15,7 +15,7 @@ The alignments display's `pileup` setting: the band of stacked reads, the
 ```js
 {
   type: 'LinearAlignmentsDisplay',
-  pileup: { mark: { height: 3 }, softClips: { show: true } },
+  pileup: { mark: { height: 3 }, softclips: { show: true } },
 }
 ```
 
@@ -36,6 +36,6 @@ Slot types (`fileLocation`, `frozen`, ...) are explained in the [config slot typ
 | <span id="slot-mark">**mark**</span><br>[PileupMark](../pileupmark) | The bar each read draws as: `height`. |
 | <span id="slot-maxlayoutheight">**maxLayoutHeight**</span><br>[`number`](/docs/config_guides/slot_types#number) = <code>6000</code> | the tallest the pileup's layout grows in pixels; reads past it are not stacked, and coverage still counts them. Not the display's growMaxHeight, which caps how tall the track grows<br>_advanced_ |
 | <span id="slot-mismatches">**mismatches**</span><br>[PileupMismatches](../pileupmismatches) | How reads differ from the reference: `show`, and `encoding.opacity`, the fade by base quality. |
-| <span id="slot-softclips">**softClips**</span><br>[PileupSoftClips](../pileupsoftclips) | The soft-clipped ends of each read: `show`. |
+| <span id="slot-softclips">**softclips**</span><br>[PileupSoftClips](../pileupsoftclips) | The soft-clipped ends of each read: `show`. |
 | <span id="slot-connectors">**connectors**</span><br>[PileupConnectors](../pileupconnectors) | Lines over the pileup joining each read to its mate or split segment: `show`. |
 | <span id="slot-fadelowfrequency">**fadeLowFrequency**</span><br>[`boolean`](/docs/config_guides/slot_types#boolean) = <code>true</code> | fade each sub-pixel mismatch, insertion, deletion and clip mark by the share of reads at its position that have it: a mark every read has stays opaque, and one under the depth-dependent noise threshold drops to the sub-pixel floor and, past one base per pixel, takes no clicks. Off draws them all at full opacity. The coverage band is not faded<br>_advanced_ |

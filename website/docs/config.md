@@ -28,7 +28,7 @@ each takes, and the fields with presets of their own.
 | [](/docs/config/ldtrackdisplay) | `encoding.color` | [](/docs/config/ldcolor#preset-fields) | linear, threshold | `r2`, `dprime` |
 | [](/docs/config/lgvsyntenydisplay) | `encoding.color` | [](/docs/config/lgvsyntenycolor#preset-fields) | ordinal, linear, threshold | `strand`, `mapq`, `firstOfPairStrand`, `insertSizeAndOrientation`, `mateRefName` |
 | [](/docs/config/linearalignmentsdisplay) | `encoding.color` | [](/docs/config/alignmentscolor#preset-fields) | ordinal, linear, threshold | `strand`, `mapq`, `firstOfPairStrand`, `insertSizeAndOrientation`, `mateRefName` |
-| [](/docs/config/linearbasicdisplay) | `encoding.color` | [](/docs/config/featurecolor#preset-fields) | ordinal, threshold, linear, log, identity | `strand`, `svType`, `impact`, `score` |
+| [](/docs/config/linearbasicdisplay) | `encoding.color` | [](/docs/config/featurecolor#preset-fields) | ordinal, threshold, linear, log, symlog, identity | `strand`, `svType`, `impact`, `score` |
 | [](/docs/config/linearhicdisplay) | `encoding.color` | [](/docs/config/hiccolor#preset-fields) | linear, symlog, log | `observed`, `observed/expected`, `observed/control` |
 | [](/docs/config/linearmafdisplay) | `encoding.color` | [](/docs/config/mafcolor#preset-fields) | fixed by the field | `identity`, `refNameRank` |
 | [](/docs/config/linearmanhattandisplay) | `marks.encoding.color` | [](/docs/config/markcolor#preset-fields) | ordinal, linear, log, symlog, threshold, identity | `strand`, `svType`, `impact`, `score` |
@@ -37,9 +37,9 @@ each takes, and the fields with presets of their own.
 | [](/docs/config/linearmarkdisplay) | `encoding.color` | [](/docs/config/markcolor#preset-fields) | ordinal, linear, log, symlog, threshold, identity | `strand`, `svType`, `impact`, `score` |
 | [](/docs/config/linearmultirowfeaturedisplay) | `marks.encoding.color` | [](/docs/config/markcolor#preset-fields) | ordinal, linear, log, symlog, threshold, identity | `strand`, `svType`, `impact`, `score` |
 | [](/docs/config/linearmultirowfeaturedisplay) | `encoding.color` | [](/docs/config/markcolor#preset-fields) | ordinal, linear, log, symlog, threshold, identity | `strand`, `svType`, `impact`, `score` |
-| [](/docs/config/linearvariantdisplay) | `encoding.color` | [](/docs/config/variantcellcolor#preset-fields) | ordinal, threshold, linear, log, identity | `strand`, `svType`, `impact`, `score` |
+| [](/docs/config/linearvariantdisplay) | `encoding.color` | [](/docs/config/variantcellcolor#preset-fields) | ordinal, threshold, linear, log, symlog, identity | `strand`, `svType`, `impact`, `score` |
 | [](/docs/config/linearwiggledisplay) | `encoding.color` | [](/docs/config/wigglecolor#preset-fields) | linear, threshold | `source` |
-| [](/docs/config/multiwaysyntenydisplay) | `encoding.color` | [](/docs/config/multiwaygenecolor#preset-fields) | ordinal, threshold, linear, log | `strand`, `svType`, `impact`, `score` |
+| [](/docs/config/multiwaysyntenydisplay) | `encoding.color` | [](/docs/config/multiwaygenecolor#preset-fields) | ordinal, threshold, linear, log, symlog | `strand`, `svType`, `impact`, `score` |
 | [](/docs/config/multiwaysyntenydisplay) | `ribbons.encoding.color` | [](/docs/config/ribboncolor#preset-fields) | linear, threshold, ordinal | `mapq`, `identity`, `dnds`, `syntenicDepth`, `strand` |
 | [](/docs/config/multiwaysyntenydisplay) | `laneLayers.marks.encoding.color` | [](/docs/config/markcolor#preset-fields) | ordinal, linear, log, symlog, threshold, identity | `strand`, `svType`, `impact`, `score` |
 

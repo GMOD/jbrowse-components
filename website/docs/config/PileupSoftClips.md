@@ -1,19 +1,19 @@
 ---
 id: pileupsoftclips
 title: PileupSoftClips
-description: "The pileup's softClips layer: the bases at each end of a read the aligner soft-clipped, drawn past the aligned span."
+description: "The pileup's softclips layer: the bases at each end of a read the aligner soft-clipped, drawn past the aligned span."
 sidebar_label: Display setting -> PileupSoftClips
 ---
 
 Auto-generated from the config schema in the source. See the [config guide](/docs/config_guide) for concepts. Provided by the `alignments` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/alignments/src/LinearAlignmentsDisplay/pileupSoftClipsConfigSchema.ts).
 
-The pileup's `softClips` layer: the bases at each end of a read the aligner
+The pileup's `softclips` layer: the bases at each end of a read the aligner
 soft-clipped, drawn past the aligned span.
 
 ## Example usage
 
 ```js
-{ type: 'LinearAlignmentsDisplay', pileup: { softClips: { show: true } } }
+{ type: 'LinearAlignmentsDisplay', pileup: { softclips: { show: true } } }
 ```
 
 ## Config slots
