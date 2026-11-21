@@ -39,6 +39,7 @@ import {
   NORMAL_ROW_PROPORTION,
 } from './markVocabulary.ts'
 
+import type { MarkHitInfo } from './findMarkHit.ts'
 import type { LinearMarkDisplayModel } from './model.ts'
 import type { MenuItem } from '@jbrowse/core/ui'
 import type { RowHeightPreset } from '@jbrowse/tree-sidebar'
@@ -47,6 +48,9 @@ const JexlFilterDialog = lazy(() => import('@jbrowse/core/ui/JexlFilterDialog'))
 const MarkClusterDialog = lazy(
   () => import('./components/MarkClusterDialog.tsx'),
 )
+
+const NO_ROW_COMPARE =
+  'No bar, point, line, rule or rect mark draws at this zoom'
 
 const ROW_HEIGHT_PRESETS: RowHeightPreset[] = [
   { label: 'Normal', rowHeight: 15, rowProportion: NORMAL_ROW_PROPORTION },
@@ -62,7 +66,7 @@ function rowsMenuItems(self: LinearMarkDisplayModel): MenuItem[] {
         runItem: {
           label: 'Cluster rows by similarity...',
           disabled: self.rowCompare === undefined,
-          disabledHelpText: 'No bar, point or rect mark draws at this zoom',
+          disabledHelpText: NO_ROW_COMPARE,
           onClick: () => {
             getDialogHost(self).queueDialog(handleClose => [
               MarkClusterDialog,
@@ -184,6 +188,19 @@ export function markTrackMenuItems(self: LinearMarkDisplayModel): MenuItem[] {
   ]
 }
 
+function sortRowsHereItem(self: LinearMarkDisplayModel, hit: MarkHitInfo) {
+  const item = sortRowsHereMenuItem({
+    label: `Sort rows by ${self.rowCompareLabel} here`,
+    rowCount: self.arrangedRows.length,
+    onClick: () => {
+      self.sortRowsByValueAt(hit.refName, hit.bp)
+    },
+  })
+  return self.rowCompare === undefined
+    ? { ...item, disabled: true, disabledHelpText: NO_ROW_COMPARE }
+    : item
+}
+
 /** The right-click menu over a hit: its feature, and under `rows` a sort at the column. */
 export function markContextMenuItems(self: LinearMarkDisplayModel): MenuItem[] {
   const hit = self.contextMenuInfo?.hit
@@ -204,16 +221,7 @@ export function markContextMenuItems(self: LinearMarkDisplayModel): MenuItem[] {
           },
         },
         ...(self.drawsRows
-          ? [
-              sortRowsHereMenuItem({
-                label: `Sort rows by ${self.rowCompareLabel} here`,
-                rowCount: self.arrangedRows.length,
-                onClick: () => {
-                  self.sortRowsByValueAt(hit.refName, hit.bp)
-                },
-              }),
-              ...resetRowOrderMenuItems(self),
-            ]
+          ? [sortRowsHereItem(self, hit), ...resetRowOrderMenuItems(self)]
           : []),
       ]
     : []

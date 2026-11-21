@@ -252,6 +252,45 @@ test('Sort rows by value here sorts at the base right-clicked, not at the start 
   expect(display.rowSort).toEqual(['dad', 's10', 'mom', 's2'])
 })
 
+test('Sort rows by value here is disabled where only a link draws', () => {
+  const display = loaded({
+    marks: [{ mark: 'link', encoding: { x2: 'end' } }],
+    rows: 'source',
+  })
+  expect(display.arrangedRows.length).toBeGreaterThan(1)
+  expect(display.rowCompare).toBeUndefined()
+  display.openContextMenu({
+    clientX: 0,
+    clientY: 0,
+    hit: {
+      markIndex: 0,
+      regionIndex: 0,
+      instance: 0,
+      featureIndex: 0,
+      refName: 'ctgA',
+      start: 500,
+      end: 900,
+      bp: 500,
+      y: undefined,
+      color: undefined,
+      colorValue: undefined,
+      glyph: undefined,
+      row: 0,
+      screenX: 0,
+      screenY: 0,
+    },
+  })
+  expect(
+    display
+      .contextMenuItems()
+      .find(i => 'label' in i && i.label === 'Sort rows by value here'),
+  ).toMatchObject({
+    disabled: true,
+    disabledHelpText:
+      'No bar, point, line, rule or rect mark draws at this zoom',
+  })
+})
+
 test('a region arriving with a new value adds its row, and the arranged rows keep their places', () => {
   const nextRegion = { ...REGION, refName: 'ctgB' }
   const { display } = createTestEnvironment({ marks: BARS, rows: 'source' }, [

@@ -55,7 +55,7 @@ export async function markRowMatrixArgs(
   const layer = rowCompare && model.layerRequests[rowCompare.mark]
   if (!facet || !layer) {
     throw new Error(
-      'Clustering compares the rows of a bar, point or rect mark, and none draws at this zoom',
+      'Clustering compares the rows of a bar, point, line, rule or rect mark, and none draws at this zoom',
     )
   }
   return {

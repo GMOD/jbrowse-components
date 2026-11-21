@@ -44,9 +44,6 @@ traced it and nobody reread it; reread before fixing.
   `featureSpan` takes min and max over every instance of the root, the
   link's far `x2` included. The link's own hit reads its two feet
   (`findMarkHit.ts`); the other marks of that feature do not.
-- **"Sort rows by value here" is offered when no mark compares.**
-  `markMenus.ts`; `rowCompare` is undefined when only a link draws, and the
-  neighbouring Cluster rows item is already disabled in that state.
 
 ## Simplifications
 
