@@ -9,7 +9,8 @@ const { COPYFILE_EXCL } = fs.constants
 
 // A GenBank file is an assembly and a track at once, so `add-assembly x.gbk
 // --load copy` then `add-track x.gbk --load copy` copies it twice; the second
-// finds its own copy already there and has nothing left to do.
+// finds its own copy already there and has nothing left to do. Under --force
+// the copy replaces it, which is cheaper than reading both files.
 async function sameBytes(src: string, dest: string) {
   const [a, b] = await Promise.all(
     [src, dest].map(file => fs.promises.stat(file).catch(() => undefined)),
@@ -23,12 +24,14 @@ async function sameChunks(src: string, dest: string) {
     fs.promises.open(src),
     fs.promises.open(dest),
   ])
+  const bufferX = Buffer.alloc(chunk)
+  const bufferY = Buffer.alloc(chunk)
   try {
     let same = true
     for (let pos = 0, read = chunk; same && read === chunk; pos += chunk) {
       const [p, q] = await Promise.all([
-        x.read(Buffer.alloc(chunk), 0, chunk, pos),
-        y.read(Buffer.alloc(chunk), 0, chunk, pos),
+        x.read(bufferX, 0, chunk, pos),
+        y.read(bufferY, 0, chunk, pos),
       ])
       same =
         p.bytesRead === q.bytesRead &&
@@ -67,7 +70,7 @@ async function loadFile({
   // that isn't there still has to fail, so fall through to get its ENOENT.
   if (
     (path.resolve(src) === path.resolve(dest) && fs.existsSync(src)) ||
-    (mode === 'copy' && (await sameBytes(src, dest)))
+    (mode === 'copy' && !force && (await sameBytes(src, dest)))
   ) {
     return
   }
