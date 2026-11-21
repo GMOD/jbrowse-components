@@ -529,12 +529,17 @@ export async function stringifyGBK({
   // so each gets its own fan-out slot rather than the caller's raw callback —
   // otherwise the first contig to finish blanks the label for the rest
   const slot = createStatusFanOut(statusCallback)
+  const assembly = session.assemblyManager.get(assemblyName)
+  const canonical = (refName: string) =>
+    assembly?.getCanonicalRefName2(refName) ?? refName
   const records = await Promise.all(
     Object.entries(byRefName).map(([refName, feats]) =>
       formatRecord({
         refName,
         features: feats,
-        regions: regions.filter(region => region.refName === refName),
+        regions: regions.filter(
+          region => canonical(region.refName) === canonical(refName),
+        ),
         circularLength: circularLengths.get(refName),
         assemblyName,
         session,

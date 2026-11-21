@@ -23,7 +23,17 @@ function createFeature(data: Record<string, any>): SimpleFeature {
   return new SimpleFeature({ id: `${data.id}-unique`, data })
 }
 
-const mockSession = {} as AbstractSessionModel
+function sessionWithAliases(aliases: Record<string, string>) {
+  return {
+    assemblyManager: {
+      get: () => ({
+        getCanonicalRefName2: (refName: string) => aliases[refName] ?? refName,
+      }),
+    },
+  } as unknown as AbstractSessionModel
+}
+
+const mockSession = sessionWithAliases({})
 
 const noCircular = { regions: [], circularLengths: new Map<string, number>() }
 
@@ -845,6 +855,41 @@ describe('GenBank export across a circular origin', () => {
       [length - 1000, length],
       [0, 1000],
     ])
+  })
+
+  it('finds the exported window when the file names the sequence by an alias', async () => {
+    const length = 5_000_000
+    const result = await stringifyGBK({
+      regions: [
+        {
+          assemblyName: 'b',
+          refName: 'chr',
+          start: length - 1000,
+          end: length,
+        },
+        { assemblyName: 'b', refName: 'chr', start: 0, end: 1000 },
+      ],
+      circularLengths: new Map([['NC_000001.1', length]]),
+      features: [
+        createFeature({
+          id: 'head',
+          refName: 'NC_000001.1',
+          start: 100,
+          end: 300,
+          type: 'gene',
+        }),
+        createFeature({
+          id: 'crossing',
+          refName: 'NC_000001.1',
+          start: length - 500,
+          end: length + 400,
+          type: 'gene',
+        }),
+      ],
+      assemblyName: 'b',
+      session: sessionWithAliases({ 'NC_000001.1': 'chr' }),
+    })
+    expect(result.split('\n')[0]!.slice(29, 40).trim()).toBe('2000')
   })
 
   it('reads a feature past the end of a sequence the data does not declare circular as linear', async () => {
