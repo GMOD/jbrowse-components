@@ -3,11 +3,8 @@ import {
   eventRecords,
   outputName,
   parseBedpe,
-  recordRows,
+  recordWindows,
 } from './batch.ts'
-
-const windows = (...args: Parameters<typeof recordRows>) =>
-  recordRows(...args).flat()
 
 const ROW = {
   loci: [
@@ -81,71 +78,77 @@ describe('parseBedpe', () => {
   })
 })
 
-describe('recordRows', () => {
+describe('recordWindows', () => {
   const at = (refName: string, start: number) => ({
     refName,
     start,
     end: start + 1,
   })
 
-  it('puts two ends on one contig in one row, read left to right', () => {
+  it('reads two ends on one contig left to right', () => {
     // a breakend naming its upstream mate: the windows still run in genome order
     expect(
-      recordRows({ loci: [at('chr1', 90000), at('chr1', 20000)] }, 600),
-    ).toEqual([['chr1:19401-20601', 'chr1:89401-90601']])
+      recordWindows({ loci: [at('chr1', 90000), at('chr1', 20000)] }, 600),
+    ).toEqual(['chr1:19401-20601', 'chr1:89401-90601'])
   })
 
-  it('gives each contig a row, in the order the record names them', () => {
+  it('puts the contigs side by side, in the order the record names them', () => {
     expect(
-      recordRows({ loci: [at('chr5', 90000), at('chr1', 20000)] }, 600),
-    ).toEqual([['chr5:89401-90601'], ['chr1:19401-20601']])
+      recordWindows({ loci: [at('chr5', 90000), at('chr1', 20000)] }, 600),
+    ).toEqual(['chr5:89401-90601', 'chr1:19401-20601'])
   })
 
   it("keeps an event's windows of one contig together", () => {
     expect(
-      recordRows(
+      recordWindows(
         {
           loci: [
             at('chr2', 5000),
-            at('chrX', 1000),
             at('chrX', 20000),
-            at('chrX', 90000),
+            at('chr2', 1000),
+            at('chrX', 1000),
           ],
         },
         600,
       ),
     ).toEqual([
-      ['chr2:4401-5601'],
-      ['chrX:401-1601', 'chrX:19401-20601', 'chrX:89401-90601'],
+      'chr2:401-1601',
+      'chr2:4401-5601',
+      'chrX:401-1601',
+      'chrX:19401-20601',
     ])
   })
 
-  it('wraps a contig of more than four windows', () => {
-    const rows = recordRows(
-      { loci: Array.from({ length: 10 }, (_, i) => at('chr1', i * 10000)) },
-      600,
-    )
-    expect(rows.map(row => row.length)).toEqual([4, 4, 2])
-    expect(rows[2]).toEqual(['chr1:79401-80601', 'chr1:89401-90601'])
+  it('keeps every window of a contig of many in the one row', () => {
+    expect(
+      recordWindows(
+        { loci: Array.from({ length: 10 }, (_, i) => at('chr1', i * 10000)) },
+        600,
+      ),
+    ).toHaveLength(10)
   })
 })
 
-describe('recordRows windows', () => {
+describe('recordWindows flanks', () => {
   it('makes one panel per side, in file order, grown by the flank and 1-based', () => {
-    expect(windows(ROW, 100)).toEqual(['chr1:901-1101', 'chr5:1901-2101'])
+    expect(recordWindows(ROW, 100)).toEqual(['chr1:901-1101', 'chr5:1901-2101'])
   })
 
   it('reads a short variant base by base and a junction at 500 bp', () => {
     const at = { loci: [{ refName: 'chr1', start: 1000, end: 1001 }] }
-    expect(windows({ ...at, alleleLength: 1 })).toEqual(['chr1:951-1051'])
-    expect(windows({ ...at, alleleLength: 49 })).toEqual(['chr1:951-1051'])
-    expect(windows({ ...at, alleleLength: 50 })).toEqual(['chr1:501-1501'])
-    expect(windows(at)).toEqual(['chr1:501-1501'])
+    expect(recordWindows({ ...at, alleleLength: 1 })).toEqual(['chr1:951-1051'])
+    expect(recordWindows({ ...at, alleleLength: 49 })).toEqual([
+      'chr1:951-1051',
+    ])
+    expect(recordWindows({ ...at, alleleLength: 50 })).toEqual([
+      'chr1:501-1501',
+    ])
+    expect(recordWindows(at)).toEqual(['chr1:501-1501'])
   })
 
   it('takes a stated flank over the record’s own', () => {
     expect(
-      windows(
+      recordWindows(
         {
           loci: [{ refName: 'chr1', start: 1000, end: 1001 }],
           alleleLength: 1,
@@ -157,7 +160,7 @@ describe('recordRows windows', () => {
 
   it('clamps at the start of a chromosome', () => {
     expect(
-      windows({ loci: [{ refName: 'chr1', start: 10, end: 11 }] }, 500),
+      recordWindows({ loci: [{ refName: 'chr1', start: 10, end: 11 }] }, 500),
     ).toEqual(['chr1:1-511'])
   })
 
@@ -171,7 +174,7 @@ describe('recordRows windows', () => {
       ],
       sort: { field: 'base' as const, pos: 5001 },
     }
-    expect(windows(del, 600)).toEqual(['chr1:4401-5773'])
+    expect(recordWindows(del, 600)).toEqual(['chr1:4401-5773'])
   })
 
   it('cuts the windows of a junction’s two near ends between them', () => {
@@ -183,7 +186,7 @@ describe('recordRows windows', () => {
         { refName: 'chr3', start: 24523617, end: 24523618 },
       ],
     }
-    expect(windows(bnd, 600)).toEqual([
+    expect(recordWindows(bnd, 600)).toEqual([
       'chr3:24523018-24524152',
       'chr3:24524153-24525288',
     ])
@@ -196,7 +199,7 @@ describe('recordRows windows', () => {
         { refName: 'chr1', start: 9000, end: 9001 },
       ],
     }
-    expect(windows(del, 600)).toHaveLength(2)
+    expect(recordWindows(del, 600)).toHaveLength(2)
   })
 
   it('never merges across contigs, whatever the coordinates', () => {
@@ -206,7 +209,7 @@ describe('recordRows windows', () => {
         { refName: 'chr2', start: 5000, end: 5001 },
       ],
     }
-    expect(windows(tra, 600)).toHaveLength(2)
+    expect(recordWindows(tra, 600)).toHaveLength(2)
   })
 })
 
@@ -258,7 +261,10 @@ describe('eventRecords', () => {
       ],
       ['chr3', 'chr10'],
     )
-    expect(windows(event!, 600)).toEqual(['chr3:401-2001', 'chr10:4401-5801'])
+    expect(recordWindows(event!, 600)).toEqual([
+      'chr3:401-2001',
+      'chr10:4401-5801',
+    ])
   })
 })
 

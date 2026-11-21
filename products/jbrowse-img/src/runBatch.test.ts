@@ -155,7 +155,7 @@ describe('runBatch', () => {
     expect(rows[2]).toMatch(/\tok$/)
   })
 
-  it('renders a record that fits one panel as a linear view, with one locus in the manifest', async () => {
+  it('renders every record as one row of a linear view, with its windows in the manifest', async () => {
     const vcf = path.join(dir, 'calls.vcf')
     fs.writeFileSync(
       vcf,
@@ -193,12 +193,11 @@ describe('runBatch', () => {
           argv: [string, string[]][]
         },
     )
-    // Ends on one contig are one row of a linear view, joined; only ends on two
-    // contigs stack as a breakpoint view's panels.
+    // a record of several windows is joined, whether on one contig or two
     expect(calls.map(c => [c.mode, c.loc, c.joined])).toEqual([
       ['linear', 'chr1:4400-5600', false],
       ['linear', 'chr1:8400-9772', false],
-      ['breakpoint', undefined, undefined],
+      ['linear', 'chr1:19400-20600 chr5:100-1300', true],
       ['linear', 'chr1:29400-30600 chr1:62988-64188', true],
     ])
     // every record's adapters stay open for the next
@@ -213,11 +212,7 @@ describe('runBatch', () => {
       start: 9000,
       end: 9172,
     })
-    expect(calls[0]!.argv).toEqual([])
-    expect(calls[2]!.argv).toEqual([
-      ['loc', ['chr1:19400-20600']],
-      ['loc', ['chr5:100-1300']],
-    ])
+    expect(calls.map(c => c.argv)).toEqual([[], [], [], []])
     const rows = fs
       .readFileSync(path.join(dir, 'out', 'manifest.tsv'), 'utf8')
       .trim()
@@ -296,16 +291,14 @@ describe('runBatch', () => {
     ])
   })
 
-  it('says once, not per record, that --refseq skips a breakpoint view', async () => {
+  it('draws --refseq on a record spanning two contigs, without a warning', async () => {
     const warn = jest.spyOn(console, 'warn').mockImplementation(() => {})
     await runBatch(opts({ refseq: true, progress: steps().progress }))
     const handed = mockRenderRegion.mock.calls.map(
       c => (c[0] as { refseq?: boolean }).refseq,
     )
-    expect(handed).toEqual([false, false])
-    expect(
-      warn.mock.calls.filter(c => `${c[0]}`.includes('--refseq')),
-    ).toHaveLength(1)
+    expect(handed).toEqual([true, true])
+    expect(warn).not.toHaveBeenCalled()
     warn.mockRestore()
   })
 
@@ -423,15 +416,15 @@ describe('runBatch', () => {
     })
     const last = mockRenderRegion.mock.calls.at(-1)![0] as {
       mode: string
-      argv: [string, string[]][]
+      loc: string
+      joined: boolean
     }
     expect(mockRenderRegion).toHaveBeenCalledTimes(5)
-    expect(last.mode).toBe('breakpoint')
-    expect(last.argv).toEqual([
-      ['loc', ['chr3:24400-26000']],
-      ['loc', ['chr10:57400-58800']],
-      ['loc', ['chr12:71400-72800']],
-    ])
+    expect(last).toMatchObject({
+      mode: 'linear',
+      loc: 'chr3:24400-26000 chr10:57400-58800 chr12:71400-72800',
+      joined: true,
+    })
     const rows = fs
       .readFileSync(path.join(dir, 'out', 'manifest.tsv'), 'utf8')
       .trim()
@@ -442,7 +435,7 @@ describe('runBatch', () => {
     expect(rows.filter(r => r.includes('bp7'))).toHaveLength(1)
   })
 
-  it('draws an event on one contig as rows of a linear view, four windows a row at most', async () => {
+  it('draws every window of an event on one contig in one row', async () => {
     const vcf = path.join(dir, 'one-contig.vcf')
     fs.writeFileSync(
       vcf,
@@ -463,16 +456,12 @@ describe('runBatch', () => {
     })
     const last = mockRenderRegion.mock.calls.at(-1)![0] as {
       mode: string
-      argv: [string, string[]][]
+      loc: string
     }
-    expect(last.mode).toBe('breakpoint')
-    expect(last.argv).toEqual([
-      [
-        'loc',
-        ['chr3:9400-10600 chr3:19400-20600 chr3:29400-30600 chr3:49400-50600'],
-      ],
-      ['loc', ['chr3:69400-70600 chr3:89400-90600']],
-    ])
+    expect(last).toMatchObject({
+      mode: 'linear',
+      loc: 'chr3:9400-10600 chr3:19400-20600 chr3:29400-30600 chr3:49400-50600 chr3:69400-70600 chr3:89400-90600',
+    })
   })
 
   it('names a --limit run’s images as the whole run will, so --resume finds them', async () => {

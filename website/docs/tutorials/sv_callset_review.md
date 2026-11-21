@@ -61,9 +61,9 @@ command downloads the VCF, and every command streams the reads by URL.
 
 ## Rendering every tumor junction with jb2export batch
 
-We'll start with `jb2export batch`, which renders one image per record. An event
-on one chromosome gets a single row, and a junction between two chromosomes gets
-a breakpoint split view with one panel per chromosome.
+We'll start with `jb2export batch`, which renders one image per record: a linear
+view with the record's windows side by side in one row, whether its ends are on
+one chromosome or two.
 
 ```bash
 curl -fO https://jbrowse.org/demos/cancer_sv/COLO829.somatic-sv.vcf.gz
@@ -108,7 +108,7 @@ jb2export batch --sites COLO829.somatic-sv.vcf.gz \
 <Figure caption="Rows of the two batch directories, tumor on the left and normal on the right, each labelled with its file name." src="/img/jbrowse-img/sv_callset_sheet.png" />
 
 The caller filed `009_chr1_168055349-chr19_23850381` as somatic, but the normal
-has the same curves, so the junction is germline.
+has the same joining reads, so the junction is germline.
 
 ## Sorting the calls with the manifest
 
@@ -125,7 +125,7 @@ Each `manifest.tsv` row describes one image:
 - **`line`** is the record's line in the VCF, to join a row back to the callset.
 
 A dense fan in a region of ragged coverage is usually a repeat, since a read
-mismapped there draws a curve like any other.
+mismapped there draws an arc like any other.
 
 ## Reviewing the calls as a queue
 

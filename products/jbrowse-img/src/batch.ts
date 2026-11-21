@@ -120,14 +120,11 @@ export function recordFlank(rec: BatchRecord, flank?: number) {
   )
 }
 
-// Past this a window is too narrow to read its pileup, and the row wraps
-const ROW_MAX_WINDOWS = 4
-
 // Overlapping windows merge, or a deletion shorter than the flank would draw
 // the same reads twice. A junction with no column to count its reads at keeps
 // its two ends as two windows, cut between them, so the split reads joining
 // them are counted and laid out first.
-export function recordRows(rec: BatchRecord, flankOpt?: number) {
+export function recordWindows(rec: BatchRecord, flankOpt?: number) {
   const flank = recordFlank(rec, flankOpt)
   const [left, right] = rec.loci.toSorted((a, b) => a.start - b.start)
   const junction = !rec.sort && rec.loci.length === 2
@@ -153,16 +150,11 @@ export function recordRows(rec: BatchRecord, flankOpt?: number) {
       windows.push({ refName, start: lo, end: hi })
     }
   }
-  return [...byContig.values()].flatMap(windows => {
-    const locs = windows
+  return [...byContig.values()].flatMap(windows =>
+    windows
       .sort((a, b) => a.start - b.start)
-      .map(w => `${w.refName}:${w.start + 1}-${w.end}`)
-    return Array.from(
-      { length: Math.ceil(locs.length / ROW_MAX_WINDOWS) },
-      (_, row) =>
-        locs.slice(row * ROW_MAX_WINDOWS, (row + 1) * ROW_MAX_WINDOWS),
-    )
-  })
+      .map(w => `${w.refName}:${w.start + 1}-${w.end}`),
+  )
 }
 
 // A refName like `GL000/1` needs sanitizing as much as a caller's label

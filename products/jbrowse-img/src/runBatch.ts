@@ -15,7 +15,7 @@ import {
   recordAllele,
   recordSortColumn,
   recordHighlight,
-  recordRows,
+  recordWindows,
 } from './batch.ts'
 import { batchRefusedOptions, DEFAULT_WIDTH } from './options.ts'
 import { createProgress } from './progress.ts'
@@ -59,8 +59,8 @@ export interface BatchOpts extends Opts {
 interface PlannedRow {
   rec: BatchRecord
   file: string
-  /** the image's rows, each the windows of one contig */
-  rows: string[][]
+  /** side by side in one row, a contig's windows together */
+  windows: string[]
 }
 
 interface RowResult {
@@ -137,8 +137,8 @@ function forceLoaded(tracks: Entry[] | undefined) {
 }
 
 /**
- * One image per record: a linear view for loci on one contig, a breakpoint
- * view of one panel a contig otherwise. A failed row does not stop the run.
+ * One image per record: a linear view of its windows side by side, whatever
+ * contigs they are on. A failed row does not stop the run.
  */
 export async function runBatch(opts: BatchOpts) {
   const { outDir, flank, limit, format = 'png', dryRun } = opts
@@ -166,7 +166,7 @@ export async function runBatch(opts: BatchOpts) {
   }
   // an event of two windows is already drawn by its own records
   const events = eventRecords(records, refNames).filter(
-    e => recordRows(e, flank).flat().length > 2,
+    e => recordWindows(e, flank).length > 2,
   )
   // names pad to the whole callset, so a `--limit` run matches a full one
   const planned = [
@@ -180,7 +180,7 @@ export async function runBatch(opts: BatchOpts) {
     })),
   ]
     .slice(0, limit)
-    .map(row => ({ ...row, rows: recordRows(row.rec, flank) }))
+    .map(row => ({ ...row, windows: recordWindows(row.rec, flank) }))
   if (planned.length === 0) {
     throw new Error(
       records.length
@@ -189,15 +189,9 @@ export async function runBatch(opts: BatchOpts) {
     )
   }
 
-  if (opts.refseq && !opts.shard && planned.some(row => row.rows.length > 1)) {
-    console.warn(
-      'Warning: --refseq draws only on the records drawn as a linear view, not on those spanning several contigs',
-    )
-  }
-
   if (dryRun) {
-    for (const { file, rows } of planned) {
-      console.log([file, ...rows.flat()].join('\t'))
+    for (const { file, windows } of planned) {
+      console.log([file, ...windows].join('\t'))
     }
     return { done: 0, failures: [], skipped }
   }
@@ -352,44 +346,28 @@ async function renderRows(
     await import('@jbrowse/core/util/cacheBudgets')
   decompressedBytesBudget.limit = BATCH_CACHE_BYTES
   const { renderRegionReport } = await import('./renderRegion.ts')
-  for (const { rec, file, rows: windows } of rows) {
+  for (const { rec, file, windows } of rows) {
     const out = path.join(outDir, file)
     if (opts.resume && fs.existsSync(out)) {
       report({ file, status: 'exists' })
       continue
     }
     try {
-      const argv = (opts.argv ?? []).filter(([key]) => key !== 'loc')
-      const shared = {
-        ...opts,
-        width,
-        keepAdapters: true,
-        showTracks: forceLoaded(opts.showTracks),
-        trackList: forceLoaded(opts.trackList),
-      }
-      const [only = [], ...more] = windows
       const rendered = await renderRegionReport(
-        more.length === 0
-          ? {
-              ...shared,
-              mode: 'linear',
-              argv,
-              loc: only.join(' '),
-              joined: only.length > 1,
-              sortAt: recordSortColumn(rec, flank),
-              sortAllele: recordAllele(rec),
-              highlight: only.length === 1 ? recordHighlight(rec) : undefined,
-            }
-          : {
-              ...shared,
-              refseq: false,
-              mode: 'breakpoint',
-              argv: [
-                ...argv,
-                ...windows.map((row): Entry => ['loc', [row.join(' ')]]),
-              ],
-              loc: undefined,
-            },
+        {
+          ...opts,
+          width,
+          keepAdapters: true,
+          showTracks: forceLoaded(opts.showTracks),
+          trackList: forceLoaded(opts.trackList),
+          mode: 'linear',
+          argv: (opts.argv ?? []).filter(([key]) => key !== 'loc'),
+          loc: windows.join(' '),
+          joined: windows.length > 1,
+          sortAt: recordSortColumn(rec, flank),
+          sortAllele: recordAllele(rec),
+          highlight: windows.length === 1 ? recordHighlight(rec) : undefined,
+        },
         configObject,
       )
       writeRendered(rendered.svg, partialPath(outDir, file), width)
@@ -464,10 +442,10 @@ function priorManifest(manifestFile: string) {
   return prior
 }
 
-function manifestLine({ rec, file, rows }: PlannedRow, result: RowResult) {
+function manifestLine({ rec, file, windows }: PlannedRow, result: RowResult) {
   return [
     file,
-    rows.flat().join(' '),
+    windows.join(' '),
     rec.name ?? '',
     rec.line ?? '',
     rec.event ?? '',

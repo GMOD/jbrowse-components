@@ -425,8 +425,9 @@ jb2export --config https://jbrowse.org/demos/cancer_sv/config.json \
 jb2export writes one image per command, so place the three beside each other in
 your docs.
 
-To render a whole callset, `jb2export batch` renders one image per row of a
-BEDPE. See the
+To render a whole callset, `jb2export batch` renders one image per record of a
+VCF or BEDPE, a linear view with the record's windows side by side, whatever
+contigs they are on. See the
 [SV callset review tutorial](https://jbrowse.org/jb2/docs/tutorials/sv_callset_review/),
 and `jb2export batch --help`.
 
@@ -1649,18 +1650,18 @@ Track options: --bam, --cram, --bigwig, --bigbed, --hic, --vcf, --gff, --bed, --
 
 Usage: jb2export batch --sites <file> [options]
 
-Renders one image per record, a contig a row. Loci on one contig are a
-linear view, their windows side by side: the two ends of a deletion, a
-duplication or an inversion, or one window where --flank reaches from one
-end to the other. Loci on several contigs are a breakpoint split view of
-one panel a contig. A row holds four windows at most, and a contig of
-more wraps.
+Renders one image per record, a linear view of its windows side by side:
+the two ends of a deletion, a duplication, an inversion or a junction
+between contigs, or one window where --flank reaches from one end to the
+other. A contig's windows sit together, in genome order. An event of many
+loci shares the one row among its windows, so a wider --width gives each
+more room.
 
-The reads joining an image's windows are drawn between them, as arcs in
-a linear view and as curves in a breakpoint view, and the manifest counts
-them. Each alignments track lays out its SV evidence first: split reads,
-then reads with an insertion or deletion of 50 bases or more, then
-discordant pairs, unless the track sets arcs: or sort= itself.
+The reads joining an image's windows are drawn between them as arcs, and
+the manifest counts them. Each alignments track lays out its SV evidence
+first: split reads, then reads with an insertion or deletion of 50 bases
+or more, then discordant pairs, unless the track sets arcs: or sort=
+itself.
 
 Where a record on one contig spells out its alleles, or is a symbolic
 <DEL> or <INS>, the manifest also counts the reads with the ALT at its
@@ -1675,7 +1676,7 @@ a deep pileup stops there with the variant reads on top; a height:,
 heightMode: or growMaxHeight= set on the track wins.
 
 The module graph loads once for the whole callset, so this is much faster
-than a shell loop over "jb2export breakpoint".
+than a shell loop running "jb2export" once per record.
 
 Options:
   --fasta           Genome FASTA or 2bit, for a name the file does not say; takes aliases: and cytobands: modifiers naming those files
