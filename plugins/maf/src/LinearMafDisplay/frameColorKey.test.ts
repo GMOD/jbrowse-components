@@ -1,4 +1,5 @@
 import { resolvePalette } from '@jbrowse/core/ui/palette'
+import { autorun } from 'mobx'
 
 import {
   frameColorIndex,
@@ -168,5 +169,25 @@ describe('the CDS strip keys itself', () => {
     stageDetailRegion(display, 0, emptyMafWireRegionData(), { frames: [] })
     expect(display.visibleFrames).toEqual([])
     expect(display.colorScales).toEqual([])
+  })
+
+  // The strip's boxes move with every pan frame, and the key asks only
+  // whether any are on screen, so a pan along the CDS rebuilds no key.
+  it('stays put while a pan keeps the strip on screen', () => {
+    const { display } = framesEnv().createDisplay()
+    seed(display, true)
+    let builds = 0
+    const dispose = autorun(() => {
+      void display.colorScales
+      builds += 1
+    })
+    const before = display.visibleFrames
+    for (const step of [1, 2, 3]) {
+      display.view.horizontalScroll(step)
+      expect(display.visibleFrames.length).toBeGreaterThan(0)
+    }
+    expect(display.visibleFrames).not.toEqual(before)
+    dispose()
+    expect(builds).toBe(1)
   })
 })

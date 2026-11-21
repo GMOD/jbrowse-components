@@ -1591,6 +1591,15 @@ export default function stateModelFactory(
         },
         /**
          * #getter
+         * Some CDS frame box is on screen: what the legend asks of
+         * `visibleFrames`, whose boxes move every pan frame, so a pan along
+         * the strip rebuilds no key.
+         */
+        get framesOnScreen() {
+          return this.visibleFrames.length > 0
+        },
+        /**
+         * #getter
          * The rows area paints the codon overlay.
          */
         get codonCellsActive() {
@@ -1685,7 +1694,7 @@ export default function stateModelFactory(
                 colorKeyTitle: self.colorKeyTitle,
                 oneBaseCells: self.encodeBinBp === 1,
                 maxRefNameRank: self.refNameRanks.maxRank,
-                showsFrames: self.visibleFrames.length > 0,
+                showsFrames: self.framesOnScreen,
                 rowColorScales: self.rowColorScales,
               })
             : []
