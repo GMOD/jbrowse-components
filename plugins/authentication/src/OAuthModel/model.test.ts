@@ -215,6 +215,33 @@ test('dismissing the login prompt fails the flow', async () => {
   expect(window.open).not.toHaveBeenCalled()
 })
 
+test('a read arriving after a failed refresh waits on the same login', async () => {
+  setUserActivation(false)
+  localStorage.setItem('testOAuth-refreshToken', 'refresh-token')
+  fetchMock.mockImplementation(
+    async () => new Response('{"error":"server_error"}', { status: 500 }),
+  )
+  const consoleError = jest.spyOn(console, 'error').mockImplementation(() => {})
+  const account = makeAccountInSession()
+  const tick = () =>
+    new Promise(resolve => {
+      setTimeout(resolve, 0)
+    })
+
+  const first = account.getToken(location)
+  await tick()
+  expect(queuedPrompts.length).toBe(1)
+  const second = account.getToken(location)
+  await tick()
+
+  expect(queuedPrompts.length).toBe(1)
+  expect(consoleError).toHaveBeenCalledTimes(1)
+  queuedPrompts[0]!.handleClose(false)
+  await expect(first).rejects.toThrow('OAuth login prompt was dismissed')
+  await expect(second).rejects.toThrow('OAuth login prompt was dismissed')
+  consoleError.mockRestore()
+})
+
 test('a popup blocked despite an activation is retried behind the prompt', async () => {
   setUserActivation(true)
   window.open = jest.fn(() => null)

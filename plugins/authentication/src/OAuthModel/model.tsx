@@ -275,9 +275,12 @@ const stateModelFactory = (configSchema: OAuthInternetAccountConfigModel) => {
           const inFlight = (exchangePromise ??= self.postTokenGrant(
             { grant_type: 'refresh_token', refresh_token: refreshToken },
             async response => {
-              // the access token this was going to replace is gone either way,
-              // and an invalid_grant means the refresh token itself is spent
-              self.removeToken()
+              // An invalid_grant means the refresh token itself is spent. The
+              // access token is not dropped here: proveToken dropped it before
+              // renewing, and in getTokenFromUser there is none — a
+              // removeToken() there cleared the getToken promise this exchange
+              // was running inside, so a read during the login opened a second
+              // one.
               const { isInvalidGrant, statusText } = parseOAuthError(
                 await response.text(),
               )
