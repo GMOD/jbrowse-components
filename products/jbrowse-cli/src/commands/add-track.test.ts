@@ -133,6 +133,36 @@ test('a different file of the same name is not overwritten without --force', asy
   })
 })
 
+test('a same-size file of the same name with other bytes is not overwritten without --force', async () => {
+  await runInTmpDir(async ctx => {
+    await initctx(ctx)
+    const bytes = await fs.promises.readFile(simpleBed)
+    bytes[bytes.length - 1] ^= 1
+    await writeFile(path.join(ctx.dir, 'volvox.bed'), bytes)
+    const { error } = await runCommand([
+      'add-track',
+      simpleBed,
+      '--load',
+      'copy',
+    ])
+    expect(error?.message).toMatch(/EEXIST/)
+  })
+})
+
+test('a symlink left by --load symlink is not taken as the copy --load copy asks for', async () => {
+  await runInTmpDir(async ctx => {
+    await initctx(ctx)
+    await fs.promises.symlink(simpleBed, path.join(ctx.dir, 'volvox.bed'))
+    const { error } = await runCommand([
+      'add-track',
+      simpleBed,
+      '--load',
+      'copy',
+    ])
+    expect(error?.message).toMatch(/EEXIST/)
+  })
+})
+
 // setting up a test for move difficult currently, because it would literally
 // move the file in our test data...
 //

@@ -10,12 +10,16 @@ const { COPYFILE_EXCL } = fs.constants
 // A GenBank file is an assembly and a track at once, so `add-assembly x.gbk
 // --load copy` then `add-track x.gbk --load copy` copies it twice; the second
 // finds its own copy already there and has nothing left to do. Under --force
-// the copy replaces it, which is cheaper than reading both files.
+// the copy replaces it, which is cheaper than reading both files. A symlink
+// left by an earlier --load symlink is not a copy, so it still fails EEXIST.
 async function sameBytes(src: string, dest: string) {
-  const [a, b] = await Promise.all(
-    [src, dest].map(file => fs.promises.stat(file).catch(() => undefined)),
+  const [a, b] = await Promise.all([
+    fs.promises.stat(src).catch(() => undefined),
+    fs.promises.lstat(dest).catch(() => undefined),
+  ])
+  return (
+    !!a && !!b?.isFile() && a.size === b.size && (await sameChunks(src, dest))
   )
-  return !!a && !!b && a.size === b.size && (await sameChunks(src, dest))
 }
 
 async function sameChunks(src: string, dest: string) {
