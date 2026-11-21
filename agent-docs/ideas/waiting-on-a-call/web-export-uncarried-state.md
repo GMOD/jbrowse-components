@@ -73,8 +73,8 @@ the second is the one that also fixes a plain shared session.
 not exist. A hosted-base export therefore carries exactly the accounts the base
 config declares, and a self-contained export (`?config=none`) carries none —
 `unavailableAccounts` names the ones a shipped file will ask for and not find.
-The recipient does not crash (`findAppropriateInternetAccount` returns null for
-an unknown type rather than pushing it into the union); the file goes out
+The recipient does not crash (`findAppropriateInternetAccount` returns undefined
+for an unknown type rather than pushing it into the union); the file goes out
 unauthenticated and 401s.
 
 Plugins and connections both got session-level carriers for exactly this reason,

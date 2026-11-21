@@ -41,7 +41,8 @@ lane the window aligns nothing to run the display's `laneLabelOf` and
   ([the static hosts](../../reference/TABLES.md#the-static-hosts)).
 - Alignments' read colors, read key and read palette run the model's own
   getters (`alignmentsColorViews`, `readPaletteViews`), and the coverage band's
-  autoscale its `coverageScaleViews`, with no autoscale group
+  autoscale alignments-core's `coverageStatsViews` and
+  `coverageAutoscaleViews`, with no autoscale group
   (`ungroupedAutoscaleViews`). `alignmentsReads.parity.test.ts` holds no drift: the read
   key, its title, its color bars and each read's color agree across strand,
   tag, MAPQ, insert size, modifications and base quality, a written title

@@ -97,8 +97,8 @@ export function writtenFilterOf(
 /**
  * What a config says beside the schema's rules that the reads cannot draw as
  * written: a per-base `encoding.color.field`, levels a field does not have,
- * a `facet` the `unit` cannot group by, a column `sort` with no `pos`, and a
- * layer filter test its layer does not make.
+ * a `facet` the `unit` cannot group by, a column `sort` with no `pos` or
+ * `refName`, and a layer filter test its layer does not make.
  */
 export function alignmentsConfigProblems(
   conf: BaseLinearAlignmentsDisplayConfigModel,

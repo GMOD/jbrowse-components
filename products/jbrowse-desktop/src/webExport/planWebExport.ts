@@ -501,9 +501,10 @@ function referencedAccountIds(node: unknown, out: Set<string>) {
 // `sessionInternetAccounts` for one to ride in — so a hosted-base export carries
 // exactly the accounts the base config declares, and a self-contained export
 // (`?config=none`) carries none at all. The recipient does not crash on a
-// missing one (`findAppropriateInternetAccount` returns null rather than pushing
-// an unknown type into the union), it fetches the file unauthenticated and
-// reports the 401, which is worth the sender knowing before they send the link.
+// missing one (`findAppropriateInternetAccount` returns undefined rather than
+// pushing an unknown type into the union), it fetches the file unauthenticated
+// and reports the 401, which is worth the sender knowing before they send the
+// link.
 function unavailableAccountIds(
   session: Record<string, unknown>,
   baseAccounts: { internetAccountId?: string }[],

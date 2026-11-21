@@ -32,7 +32,7 @@ export function firstNumericInfo(
 
 /**
  * INFO.END where it ends a span on the record's own contig, `start` being the
- * 0-based POS. An END at or before POS describes no span; real SV callsets do
+ * 0-based POS. An END before POS describes no span; real SV callsets do
  * emit them, and trusting one inserts an inverted interval into the adapter's
  * IntervalTree or puts a mate before its record.
  */
