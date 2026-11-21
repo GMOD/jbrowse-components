@@ -871,6 +871,41 @@ export interface PlotSnapshot {
   axis?: AxisSnapshot
 }
 
+function fieldNamed(field: unknown) {
+  return typeof field === 'string' && field !== '' ? field : undefined
+}
+
+/**
+ * How a plot splits its features: `bandsRows` where `rows` draws and the
+ * facet's field is a row attribute, so the facet bands the rows; `faceted`
+ * where the facet splits the features into sections instead; `drawsRows`
+ * where `rows` draws one row per value with no facet in its place; and
+ * `split`, the field the sections or rows are split on, which every
+ * section's rows keep through the steps that make rows.
+ */
+export function plotSplitOf({
+  facetField,
+  rowsField,
+  rowAttributes,
+}: {
+  facetField: unknown
+  rowsField: unknown
+  rowAttributes: readonly string[]
+}) {
+  const facet = fieldNamed(facetField)
+  const rows = fieldNamed(rowsField)
+  const bandsRows =
+    facet !== undefined && rows !== undefined && rowAttributes.includes(facet)
+  const faceted = facet !== undefined && !bandsRows
+  const drawsRows = rows !== undefined && !faceted
+  return {
+    bandsRows,
+    faceted,
+    drawsRows,
+    split: faceted ? facet : drawsRows ? rows : undefined,
+  }
+}
+
 /**
  * Every rule a plot breaks. The display's step lists are checked as a mark's
  * are and reported with no mark, under `transform` and `facet.transform`, and
@@ -886,17 +921,11 @@ export function markProblems({
   color,
   axis,
 }: PlotSnapshot): MarkProblem[] {
-  const bandsRows =
-    named(rows?.field) && rowAttributes.includes(String(facet?.field))
-  const faceted = named(facet?.field) && !bandsRows
-  const drawsRows = named(rows?.field) && !faceted
-  // the field the sections or rows are split on, which every section's rows
-  // keep through the steps that make rows
-  const split = faceted
-    ? String(facet?.field)
-    : drawsRows
-      ? String(rows?.field)
-      : undefined
+  const { faceted, drawsRows, split } = plotSplitOf({
+    facetField: facet?.field,
+    rowsField: rows?.field,
+    rowAttributes,
+  })
   const section = readable(facet?.transform ?? [])
   const display = readable(transform)
   const shared = [...display, ...section]

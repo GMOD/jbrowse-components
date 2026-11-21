@@ -17,6 +17,7 @@ import { paintedColorNode, saysColor } from './inheritedColor.ts'
 import { markColorsOf } from './markColor.ts'
 import { buildMarkList, markDrawsAt } from './markList.ts'
 import { rowAttributesOf } from './markPlot.ts'
+import { plotSplitOf } from './markProblems.ts'
 import {
   lastBinEdges,
   layerRequestsOf,
@@ -237,16 +238,23 @@ export function markChannelViews(self: MarkConfigHost) {
   return {
     /**
      * #getter
+     * How the facet and `rows` split the features, as the rule list
+     * reads them (`plotSplitOf`).
+     */
+    get plotSplit() {
+      return plotSplitOf({
+        facetField: self.declaredFacet?.field,
+        rowsField: self.rowsField,
+        rowAttributes: self.rowAttributeFields,
+      })
+    },
+    /**
+     * #getter
      * Whether the facet stacks the rows in bands: `rows` drawn and the
      * facet on a row attribute.
      */
     get bandsRows(): boolean {
-      const facet = self.declaredFacet
-      return (
-        !!facet &&
-        self.rowsField !== '' &&
-        self.rowAttributeFields.includes(facet.field)
-      )
+      return this.plotSplit.bandsRows
     },
     /**
      * #getter
@@ -288,7 +296,7 @@ export function markFacetViews(self: MarkChannelHost) {
      * `rows` alone and banded here.
      */
     get facet(): FacetSetting | undefined {
-      return self.bandsRows ? undefined : self.declaredFacet
+      return self.plotSplit.faceted ? self.declaredFacet : undefined
     },
     /**
      * #getter
@@ -429,7 +437,7 @@ export function markEntryViews(self: MarkFacetHost) {
      * `facet` splitting the features, which draws in the rows' place.
      */
     get drawsRows(): boolean {
-      return self.rowsField !== '' && !self.facet
+      return self.plotSplit.drawsRows
     },
     /**
      * #getter
@@ -481,7 +489,7 @@ export function markRowsViews(self: MarkEntryHost) {
      * rows'. One split serves both, so `rows` sends it as `facet`.
      */
     get splitField(): string | undefined {
-      return self.facet?.field ?? (self.drawsRows ? self.rowsField : undefined)
+      return self.plotSplit.split
     },
     /**
      * #method

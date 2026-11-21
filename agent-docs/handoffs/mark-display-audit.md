@@ -44,13 +44,6 @@ traced it and nobody reread it; reread before fixing.
 
 Ranked by how much each removes. None was prototyped.
 
-- **One problems entry for both editors.** The form and the text box reach
-  `markProblems` by different routes; the first defect is that split. One model
-  method returning `MarkProblem[]` over a lifted draft, context included.
-- **The facet-or-rows split is derived twice.** `markProblems.ts` (`bandsRows`,
-  `faceted`, `drawsRows`, `split`) repeats `markConfigViews.ts` (`bandsRows`,
-  `facet`, `drawsRows`, `splitField`). One pure function over
-  `{ facetField, rowsField, rowAttributes }`.
 - **Two chunked scans.** `keyOnScreen.ts` and `drawnScales.ts` differ only in
   which instances count; one scan taking a kept test.
 - **Two hand lists of lanes.** `facet.ts` `emptyLayer` omits `root` and
