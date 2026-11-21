@@ -15,6 +15,7 @@ export {
   parseRecords,
   recordSequence,
 } from './genbank.ts'
+export { type Span, featureSpans } from './genbankLocation.ts'
 export {
   indexCandidateNames,
   indexSpellings,

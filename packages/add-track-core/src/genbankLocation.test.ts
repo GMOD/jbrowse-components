@@ -1,4 +1,4 @@
-import { parseLocation, placeSpans } from './parseLocation.ts'
+import { parseLocation, placeSpans } from './genbankLocation.ts'
 
 const plus = (start: number, end: number) => ({ start, end, strand: 1 })
 const minus = (start: number, end: number) => ({ start, end, strand: -1 })

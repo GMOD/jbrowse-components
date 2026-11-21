@@ -1,10 +1,7 @@
-import { parseFeatureTable } from '@jbrowse/add-track-core'
+import { featureSpans, parseFeatureTable } from '@jbrowse/add-track-core'
 
-import { parseLocation, placeSpans } from './parseLocation.ts'
-
-import type { Span } from './parseLocation.ts'
 import type { LazyGffFeature } from '@gmod/gff-nostream'
-import type { FeatureEntry } from '@jbrowse/add-track-core'
+import type { FeatureEntry, Span } from '@jbrowse/add-track-core'
 
 const TRANSCRIPT_KEYS = new Set([
   'mRNA',
@@ -183,13 +180,7 @@ export function genbankFeatures(
     { feature: LazyGffFeature; spans: Span[] }[]
   >()
   for (const entry of parseFeatureTable(lines)) {
-    const spans = placeSpans(
-      parseLocation(entry.location, refName),
-      length,
-      circular &&
-        !entry.location.includes('order(') &&
-        !entry.qualifiers.has('trans_splicing'),
-    )
+    const spans = featureSpans(entry, refName, length, circular)
     if (spans.length > 0) {
       const start = Math.min(...spans.map(s => s.start))
       const end = Math.max(...spans.map(s => s.end))

@@ -1,3 +1,5 @@
+import type { FeatureEntry } from './genbank.ts'
+
 export interface Span {
   start: number
   end: number
@@ -109,4 +111,24 @@ export function placeSpans(spans: Span[], length: number, wraps: boolean) {
     : minus
       ? placed.toReversed()
       : placed
+}
+
+/**
+ * A feature's spans where `GenbankAdapter` draws it: on a circular record a
+ * join across the origin is one span past the record's end, except in an
+ * `order()` or a trans-spliced feature, whose pieces need not be contiguous.
+ */
+export function featureSpans(
+  { location, qualifiers }: FeatureEntry,
+  refName: string,
+  length: number,
+  circular: boolean,
+) {
+  return placeSpans(
+    parseLocation(location, refName),
+    length,
+    circular &&
+      !location.includes('order(') &&
+      !qualifiers.has('trans_splicing'),
+  )
 }

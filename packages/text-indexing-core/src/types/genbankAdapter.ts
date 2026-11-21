@@ -1,4 +1,8 @@
-import { parseFeatureTable, parseRecords } from '@jbrowse/add-track-core'
+import {
+  featureSpans,
+  parseFeatureTable,
+  parseRecords,
+} from '@jbrowse/add-track-core'
 
 import { trixLine } from '../util.ts'
 import { createReadlineInterface, getLocalOrRemoteStream } from './common.ts'
@@ -24,7 +28,9 @@ function qualifierFor(attribute: string) {
  * and indexed once over their union: a plastome's two inverted-repeat copies of
  * a gene stay two hits.
  *
- * The file is parsed whole, as the adapter does.
+ * Each feature spans where the adapter places it, so a join across a circular
+ * record's origin runs past the record's end and a span on another entry is
+ * left out. The file is parsed whole, as the adapter does.
  */
 export async function* indexGenbank({
   config,
@@ -47,20 +53,19 @@ export async function* indexGenbank({
     checkAbort?.()
     lines.push(line)
   }
-  for (const { refName, featureLines } of parseRecords(lines.join('\n'))) {
+  for (const { refName, length, circular, featureLines } of parseRecords(
+    lines.join('\n'),
+  )) {
     const groups = new Map<string, Group[]>()
-    for (const { key, location, qualifiers } of parseFeatureTable(
-      featureLines,
-    )) {
-      const positions = (
-        location.replaceAll(/[A-Za-z_][\w.]*:/g, '').match(/\d+/g) ?? []
-      ).map(Number)
+    for (const entry of parseFeatureTable(featureLines)) {
+      const { key, qualifiers } = entry
+      const spans = featureSpans(entry, refName, length, circular)
       const values = attributesToIndex.flatMap(
         attribute => qualifiers.get(qualifierFor(attribute)) ?? [],
       )
-      if (key !== 'source' && positions.length > 0 && values.length > 0) {
-        const start = Math.min(...positions)
-        const end = Math.max(...positions)
+      if (key !== 'source' && spans.length > 0 && values.length > 0) {
+        const start = Math.min(...spans.map(s => s.start)) + 1
+        const end = Math.max(...spans.map(s => s.end))
         const locusTag = qualifiers.get('locus_tag')?.[0]
         const id = locusTag ?? qualifiers.get('gene')?.[0] ?? `${key}:${start}`
         const sharing = groups.get(id) ?? []

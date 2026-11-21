@@ -110,6 +110,25 @@ FEATURES             Location/Qualifiers
     ])
   })
 
+  test('a join across a circular record’s origin spans it as the adapter places it, and a span on another entry is left out', async () => {
+    const file = path.join(tmpDir, 'po157.gbk')
+    fs.writeFileSync(
+      file,
+      `LOCUS       NC_002128              92721 bp    DNA     circular CON 28-AUG-2016
+FEATURES             Location/Qualifiers
+     CDS             join(92000..92721,1..500)
+                     /gene="across"
+     CDS             join(100..200,J00194.1:30000..40000)
+                     /gene="remote"
+//
+`,
+    )
+    expect((await index(file)).map(hit => hit.loc)).toEqual([
+      'NC_002128:92000..93221',
+      'NC_002128:100..200',
+    ])
+  })
+
   test('a GenbankAdapter track in a config is indexed, not skipped', async () => {
     const file = path.join(tmpDir, 'sakai.gbk')
     fs.writeFileSync(file, genbank)
