@@ -22,7 +22,11 @@ interface PickedCell {
 const CELL_MARK = VARIANT_MARKS[0]!
 const TOLERANCE_SQ = HIT_TOLERANCE_PX ** 2
 
-function withinCellTolerance(
+interface CellHit extends PickedCell {
+  distSq: number
+}
+
+function distSqWithinTolerance(
   data: VariantUploadData,
   block: VariantRenderBlock,
   state: VariantRenderState,
@@ -40,6 +44,37 @@ function withinCellTolerance(
     Infinity,
   )
   return hit !== undefined && hit.distSq <= TOLERANCE_SQ
+    ? hit.distSq
+    : undefined
+}
+
+function paintsOver(
+  data: VariantUploadData,
+  block: VariantRenderBlock,
+  state: VariantRenderState,
+  near: CellHit,
+  under: CellHit,
+) {
+  const a = CELL_MARK.ink!(data, block, state, near.cellIndex)
+  const b = CELL_MARK.ink!(data, block, state, under.cellIndex)
+  return (
+    near.cellIndex > under.cellIndex &&
+    a !== undefined &&
+    b !== undefined &&
+    a.width < b.width &&
+    a.left < b.left + b.width &&
+    b.left < a.left + a.width &&
+    a.top < b.top + b.height &&
+    b.top < a.top + a.height
+  )
+}
+
+function nearestThenTop(best: CellHit | undefined, hit: CellHit) {
+  return !best ||
+    hit.distSq < best.distSq ||
+    (hit.distSq === best.distSq && hit.cellIndex > best.cellIndex)
+    ? hit
+    : best
 }
 
 /**
@@ -50,12 +85,13 @@ function withinCellTolerance(
  * row unless rows are sub-pixel), which is the largest cell index there, not
  * the nearest row's: a lower row's alt cell paints over a nearer reference
  * cell. Candidates whose *drawn* cell is not within the click tolerance of the
- * cursor are dropped, and of the survivors the one whose top cell has the
- * largest index wins, since cells paint in index order: the reference bucket
- * under the rest, and within a bucket a shorter record over a longer one, as
- * records are laid out longest first (`recordsByBlock`). That keeps a SNP
- * inside a large deletion selectable from a click tolerance away. Where the
- * ink is comes from the cell shape's own hit test.
+ * cursor are dropped. Of the survivors, the top cell the cursor is on wins,
+ * unless a narrower cell painted after it overlaps it within the tolerance —
+ * a SNP inside a large deletion, as cells paint in index order with records
+ * laid out longest first (`recordsByBlock`) — and then the nearest of those
+ * wins. With the cursor on no cell, the nearest survivor wins. Ties go to the
+ * cell painted last. Distances and boxes come from the cell shape's own hit
+ * test and ink.
  *
  * Rows are screen rows throughout, in and out; `rowUnmap` converts each to the
  * worker numbering the cell arrays are keyed by (see variantCellLookup.ts). A screen
@@ -86,7 +122,7 @@ export function pickVariantCell({
   // Screen row -> worker row, or -1. See the display model's `rowUnmap`.
   rowUnmap: Int32Array
 }): PickedCell | undefined {
-  let best: PickedCell | undefined
+  const hits: CellHit[] = []
   for (const featureIndex of candidateFeatures) {
     const top = topDrawnCell(
       data,
@@ -97,13 +133,26 @@ export function pickVariantCell({
     )
     if (top) {
       const { cellIndex, rowIndex } = top
-      if (
-        cellIndex > (best?.cellIndex ?? -1) &&
-        withinCellTolerance(data, block, state, mouseX, mouseY, cellIndex)
-      ) {
-        best = { cellIndex, featureIndex, rowIndex }
+      const distSq = distSqWithinTolerance(
+        data,
+        block,
+        state,
+        mouseX,
+        mouseY,
+        cellIndex,
+      )
+      if (distSq !== undefined) {
+        hits.push({ cellIndex, featureIndex, rowIndex, distSq })
       }
     }
   }
-  return best
+  const under = hits
+    .filter(hit => hit.distSq === 0)
+    .reduce<CellHit | undefined>(nearestThenTop, undefined)
+  const contenders = under
+    ? hits.filter(hit => paintsOver(data, block, state, hit, under))
+    : hits
+  return (
+    contenders.reduce<CellHit | undefined>(nearestThenTop, undefined) ?? under
+  )
 }

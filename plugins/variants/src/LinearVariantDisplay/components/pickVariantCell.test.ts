@@ -251,6 +251,79 @@ describe('pickVariantCell candidate narrowing', () => {
     }
   })
 
+  describe('neighbours that do not overlap', () => {
+    // two SNPs a few px apart, each drawn at the 2px floor: A over [300, 302),
+    // B over [305, 307), B later in paint order
+    const neighbours = painted([
+      { id: 'A', start: 300, end: 301, genotypes: ['0/1'] },
+      { id: 'B', start: 305, end: 306, genotypes: ['0/1'] },
+    ])
+    const pickAt = (mouseX: number, pickBlock = block) =>
+      pickVariantCell({
+        ...geom,
+        block: pickBlock,
+        data: neighbours.data,
+        candidateFeatures: [0, 1],
+        mouseX,
+        mouseY: rowY(0),
+        rowNearest: 0,
+        rowLowest: 0,
+      })
+
+    test('the pointer on one names it, not the neighbour a tolerance away', () => {
+      expect(pickAt(300.5)?.featureIndex).toBe(neighbours.indexOf('A'))
+      expect(pickAt(305.5)?.featureIndex).toBe(neighbours.indexOf('B'))
+    })
+
+    test('between them, the nearer one is named', () => {
+      expect(pickAt(302.5)?.featureIndex).toBe(neighbours.indexOf('A'))
+      expect(pickAt(304.5)?.featureIndex).toBe(neighbours.indexOf('B'))
+    })
+
+    test('on a reversed region, where A draws right of B', () => {
+      // A over [498, 500), B over [493, 495)
+      const flipped = { ...block, reversed: true }
+      expect(pickAt(498.5, flipped)?.featureIndex).toBe(neighbours.indexOf('A'))
+      expect(pickAt(494.5, flipped)?.featureIndex).toBe(neighbours.indexOf('B'))
+    })
+
+    test('a narrower record beside the one under the pointer does not take it', () => {
+      // a 10bp deletion over [300, 310), a SNP after it over [312, 314)
+      const beside = painted([
+        { id: 'del', start: 300, end: 310, genotypes: ['0/1'] },
+        { id: 'snp', start: 312, end: 313, genotypes: ['0/1'] },
+      ])
+      const picked = pickVariantCell({
+        ...geom,
+        data: beside.data,
+        candidateFeatures: [0, 1],
+        mouseX: 309.5,
+        mouseY: rowY(0),
+        rowNearest: 0,
+        rowLowest: 0,
+      })
+      expect(picked?.featureIndex).toBe(beside.indexOf('del'))
+    })
+
+    test('a record as wide drawn partly over the one under the pointer does not take it', () => {
+      // A over [300, 302), B over [301, 303): B covers A's right pixel only
+      const touching = painted([
+        { id: 'A', start: 300, end: 301, genotypes: ['0/1'] },
+        { id: 'B', start: 301, end: 302, genotypes: ['0/1'] },
+      ])
+      const picked = pickVariantCell({
+        ...geom,
+        data: touching.data,
+        candidateFeatures: [0, 1],
+        mouseX: 300.5,
+        mouseY: rowY(0),
+        rowNearest: 0,
+        rowLowest: 0,
+      })
+      expect(picked?.featureIndex).toBe(touching.indexOf('A'))
+    })
+  })
+
   test('candidate order does not change the pick', () => {
     const reversed = pickVariantCell({
       data,
