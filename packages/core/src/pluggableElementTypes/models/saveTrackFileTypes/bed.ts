@@ -42,7 +42,11 @@ const SEGMENT_TYPES = new Set(['exon', 'block', 'match_part'])
 function collectRows(feature: Feature): BedRow[] {
   const subfeatures = feature.get('subfeatures') ?? []
   const exons = subfeatures.filter(f => SEGMENT_TYPES.has(f.get('type') ?? ''))
-  const cds = subfeatures.filter(f => f.get('type') === 'CDS')
+  const cdsRows = subfeatures.filter(f => f.get('type') === 'CDS')
+  const cds =
+    subfeatures.length === 0 && feature.get('type') === 'CDS'
+      ? [feature]
+      : cdsRows
 
   if (exons.length === 0 && cds.length === 0 && subfeatures.length > 0) {
     return subfeatures.flatMap(f => collectRows(f))

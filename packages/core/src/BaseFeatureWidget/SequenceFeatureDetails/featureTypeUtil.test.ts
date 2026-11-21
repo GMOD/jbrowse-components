@@ -69,6 +69,18 @@ describe('hasExonOrCDS', () => {
     expect(featureHasCDS(feature)).toBe(true)
     expect(featureHasExonOrCDS(feature)).toBe(true)
   })
+
+  test('a CDS with no child rows is its own coding block', () => {
+    const feature = {
+      uniqueId: 'a',
+      refName: 'pUC19',
+      start: 0,
+      end: 99,
+      type: 'CDS',
+    }
+    expect(featureHasCDS(feature)).toBe(true)
+    expect(getAvailableModes(feature)).toContain('protein')
+  })
 })
 
 describe('getTranscripts/rankTranscripts', () => {

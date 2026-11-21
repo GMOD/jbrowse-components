@@ -15,7 +15,7 @@ const row = (type: string, start: number, end: number) => ({
 const product = (start: number, end: number) =>
   row('mature_protein_region_of_CDS', start, end)
 
-function polyprotein(subfeatures: SimpleFeatureSerializedNoId[]) {
+function cdsBlocks(subfeatures: SimpleFeatureSerializedNoId[]) {
   return getSequenceData({
     feature: {
       uniqueId: 'pp',
@@ -33,7 +33,7 @@ function polyprotein(subfeatures: SimpleFeatureSerializedNoId[]) {
 
 describe('getSequenceData for a polyprotein CDS', () => {
   it('stitches the cleavage products of a single-frame polyprotein', () => {
-    expect(polyprotein([product(100, 130), product(130, 157)])).toEqual([
+    expect(cdsBlocks([product(100, 130), product(130, 157)])).toEqual([
       [0, 30],
       [30, 57],
     ])
@@ -43,7 +43,7 @@ describe('getSequenceData for a polyprotein CDS', () => {
   // reading frame, overlapping by the slipped base, beside its products.
   it('stitches the reading frames of a frameshift polyprotein, not its products', () => {
     expect(
-      polyprotein([
+      cdsBlocks([
         row('CDS', 100, 130),
         row('CDS', 129, 160),
         product(100, 130),
@@ -53,6 +53,12 @@ describe('getSequenceData for a polyprotein CDS', () => {
       [0, 30],
       [29, 60],
     ])
+  })
+})
+
+describe('getSequenceData for a CDS with no child rows', () => {
+  it('reads the whole CDS as one coding block', () => {
+    expect(cdsBlocks([])).toEqual([[0, 60]])
   })
 })
 

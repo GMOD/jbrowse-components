@@ -36,19 +36,19 @@ function processFeatureData(
   // rare but were seen in Gencode v36 track NCList (produces broken protein
   // translations if included)
   const featureType = feature.type?.toLowerCase()
-  const isMatureProteinRegion = featureType === 'mature_protein_region_of_cds'
   const ofType = (type: string) =>
     children.filter(sub => sub.type?.toLowerCase() === type)
   // A frameshift polyprotein's CDS carries its reading frames as CDS rows beside
   // its cleavage products; a single-frame one has only the products.
-  const codingRows = ofType('cds')
-  const cds = isMatureProteinRegion
+  const cdsRows = ofType('cds')
+  const codingRows =
+    cdsRows.length > 0 ? cdsRows : ofType('mature_protein_region_of_cds')
+  const wholeFeatureIsCoding =
+    featureType === 'mature_protein_region_of_cds' ||
+    (featureType === 'cds' && codingRows.length === 0)
+  const cds = wholeFeatureIsCoding
     ? [{ start: 0, end: feature.end - feature.start, type: 'CDS' }]
-    : filterSuccessiveElementsWithSameStartAndEndCoord(
-        codingRows.length > 0
-          ? codingRows
-          : ofType('mature_protein_region_of_cds'),
-      )
+    : filterSuccessiveElementsWithSameStartAndEndCoord(codingRows)
   const exons = filterSuccessiveElementsWithSameStartAndEndCoord(ofType('exon'))
   // annotated UTRs are deliberately not read: a UTR is just the exonic sequence
   // outside the CDS, so the renderer derives the split from cds+exons. Trusting

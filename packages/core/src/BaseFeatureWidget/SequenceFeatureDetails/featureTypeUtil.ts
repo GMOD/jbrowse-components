@@ -16,16 +16,14 @@ import type { SeqType, SequenceDisplayMode } from './sequenceModes.ts'
 
 // these predicates only ever read type/subfeatures, so they accept a bare
 // subfeature (no guaranteed uniqueId) as readily as a full feature
+const codingTypes = new Set(['cds', 'mature_protein_region_of_cds'])
+
+function isCoding(feature: SimpleFeatureSerializedNoId) {
+  return codingTypes.has(feature.type?.toLowerCase() ?? '')
+}
+
 export function featureHasCDS(feature: SimpleFeatureSerializedNoId) {
-  if (feature.type?.toLowerCase() === 'mature_protein_region_of_cds') {
-    return true
-  }
-  return (
-    feature.subfeatures?.some(sub => {
-      const type = sub.type?.toLowerCase()
-      return type === 'cds' || type === 'mature_protein_region_of_cds'
-    }) ?? false
-  )
+  return isCoding(feature) || !!feature.subfeatures?.some(isCoding)
 }
 
 export function featureHasExon(feature: SimpleFeatureSerializedNoId) {

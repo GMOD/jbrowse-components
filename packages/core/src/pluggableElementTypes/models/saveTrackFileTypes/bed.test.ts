@@ -195,6 +195,18 @@ describe('BED export', () => {
     },
   )
 
+  it('writes a CDS with no child rows as coding across its span', () => {
+    const f = createFeature({
+      id: 'cds1',
+      refName: 'pUC19',
+      start: 100,
+      end: 400,
+      type: 'CDS',
+    })
+    const [row] = rows(stringifyBED({ features: [f] }))
+    expect(row?.slice(6, 8)).toEqual(['100', '400'])
+  })
+
   it('falls back to CDS blocks when a transcript has no exons', () => {
     const f = createFeature({
       id: 'mRNA1',
