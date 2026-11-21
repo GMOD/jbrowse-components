@@ -10,20 +10,22 @@ const DISPLAY_MODELS = [
   'plugins/marks/src/LinearMarkDisplay/model.ts',
 ]
 
-const MAF_DIR = 'plugins/maf/src/LinearMafDisplay'
-
-// The views modules a display installs its hook overrides from, outside its
-// model file.
-const HOOK_VIEWS = [
-  ...fs
-    .readdirSync(path.join(root, MAF_DIR))
-    .filter(file => /^maf\w*Views\.ts$/.test(file))
-    .map(file => `${MAF_DIR}/${file}`),
-  'plugins/variants/src/LinearVariantDisplay/variantRowViews.ts',
-  'plugins/wiggle/src/shared/wiggleAxisViews.ts',
-  'plugins/wiggle/src/shared/wiggleResolveViews.ts',
-  'plugins/wiggle/src/shared/wiggleRowHookViews.ts',
+// The directories whose views modules a display installs its hook overrides
+// from, outside its model file.
+const HOOK_VIEWS_DIRS = [
+  'plugins/maf/src/LinearMafDisplay',
+  'plugins/marks/src/LinearMarkDisplay',
+  'plugins/variants/src/LinearVariantDisplay',
+  'plugins/wiggle/src/shared',
 ]
+
+const HOOK_VIEWS_BY_DIR = HOOK_VIEWS_DIRS.map(dir => ({
+  dir,
+  files: fs
+    .readdirSync(path.join(root, dir))
+    .filter(file => /^\w+Views\.ts$/.test(file))
+    .map(file => `${dir}/${file}`),
+}))
 
 function read(file: string) {
   return fs.readFileSync(path.join(root, file), 'utf8')
@@ -64,8 +66,13 @@ test('a display overrides only the members the mixin declares as hooks', () => {
   }
   expect(members.get('hierarchy')).toBe(false)
   expect(members.get('rowsContentHeight')).toBe(false)
-  expect(HOOK_VIEWS).toContain(`${MAF_DIR}/mafCoverageViews.ts`)
-  const undeclared = [...DISPLAY_MODELS, ...HOOK_VIEWS].flatMap(file =>
+  expect(
+    HOOK_VIEWS_BY_DIR.filter(({ files }) => files.length === 0).map(
+      ({ dir }) => dir,
+    ),
+  ).toEqual([])
+  const hookViews = HOOK_VIEWS_BY_DIR.flatMap(({ files }) => files)
+  const undeclared = [...DISPLAY_MODELS, ...hookViews].flatMap(file =>
     [...definedMembers(read(file))]
       .filter(name => members.get(name) === false)
       .map(name => `${file}: ${name}`),
