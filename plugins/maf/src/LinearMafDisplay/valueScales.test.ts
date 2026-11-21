@@ -16,6 +16,7 @@ function inputs(
       { height: 220, floor: 20 },
     ),
     coverageDomain: [0, 30],
+    coverageTicks: { items: [], yTop: 0, yBottom: 60 },
     scaleType: 'linear',
     symlogConstant: 1,
     guide: { caption: 'Depth', grid: false, showAxis: true },

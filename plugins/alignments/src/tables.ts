@@ -22,6 +22,8 @@ import {
   readSnpSegments,
   coverageAutoscaleViews,
   coverageDomainViews,
+  coverageStatsViews,
+  coverageTicksViews,
 } from '@jbrowse/alignments-core'
 import {
   COVERAGE_Y_PATHS,
@@ -102,8 +104,7 @@ import { configSlotViews } from './LinearAlignmentsDisplay/configSlotViews.ts'
 import { connectionKeyViews } from './LinearAlignmentsDisplay/connectionKeyViews.ts'
 import {
   bandPlotViews,
-  coverageStatsViews,
-  coverageTicksViews,
+  shownGroupCoverage,
 } from './LinearAlignmentsDisplay/coverageScaleViews.ts'
 import {
   MAX_LAYOUT_ROWS,
@@ -652,10 +653,12 @@ const AlignmentsTablesHost = types
   .views(self => bandPlotViews(self))
   .views(self => junctionsStripViews(self))
   .views(self => bandStackViews(self))
-  .views(self => coverageStatsViews(self))
+  .views(self => coverageStatsViews(self, shownGroupCoverage(self)))
   .views(self => coverageAutoscaleViews(self))
   .views(self => coverageDomainViews(self))
-  .views(self => coverageTicksViews(self))
+  .views(self =>
+    coverageTicksViews(self, () => self.bandHeights.coverageHeight),
+  )
   .views(self => rowlessLaneViews(self))
   .views(self => alignmentsColorViews(self))
   .views(self => connectionKeyViews(self))
@@ -1541,7 +1544,7 @@ function rowsAt<T extends Record<string, ArrayLike<unknown>>>(
 
 /**
  * The coverage band's depth axis as the display autoscales it
- * (`coverageScaleViews`): every shown section's visible depths in every
+ * (`coverageStatsViews`): every shown section's visible depths in every
  * region under `coverage.encoding.y`'s fence, rules and bounds, nice-rounded,
  * with a log scale floored at one read, and the ticks the display labels it
  * with at its height. A band the display does not draw has no ticks.

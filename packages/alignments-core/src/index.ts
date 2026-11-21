@@ -201,10 +201,15 @@ export { computeCoverage } from './coverageCompute.ts'
 export {
   coverageAutoscaleViews,
   coverageDomainViews,
+  coverageStatsViews,
+  coverageTicksViews,
 } from './coverageAutoscaleViews.ts'
 export type {
   CoverageAutoscaleHost,
   CoverageDomainHost,
+  CoverageSource,
+  CoverageStatsHost,
+  CoverageTicksHost,
 } from './coverageAutoscaleViews.ts'
 export type { CoverageGap } from './coverageCompute.ts'
 export {

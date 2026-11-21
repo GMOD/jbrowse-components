@@ -1,8 +1,14 @@
 import { scaleTypeCode } from '@jbrowse/render-core/scoreScale'
-import { resolveSymlogConstant, widenRangeToRules } from '@jbrowse/wiggle-core'
+import {
+  resolveSymlogConstant,
+  visibleStats,
+  widenRangeToRules,
+} from '@jbrowse/wiggle-core'
 
 import {
+  computeCoverageTicks,
   computeVisibleCoverageDomain,
+  computeVisibleCoverageStats,
   coverageDefaultDomain,
   coverageDepthDomain,
 } from './coverageDownsampling.ts'
@@ -10,9 +16,52 @@ import {
 import type { CoverageRegion } from './coverageDownsampling.ts'
 import type {
   ScoreStats,
+  SettledBlocksView,
   ValueScaleRule,
   VisibleStats,
 } from '@jbrowse/wiggle-core'
+
+/** What {@link coverageStatsViews} reads: the frame. */
+export interface CoverageStatsHost {
+  view: SettledBlocksView
+}
+
+/**
+ * Where a display keeps the depths its coverage band draws: whether the band
+ * draws, and the shown coverage of one displayed region, every shown section
+ * of it.
+ */
+export interface CoverageSource {
+  active: () => boolean
+  regionsAt: (displayedRegionIndex: number) => CoverageRegion[]
+}
+
+/**
+ * The depths the coverage band shows in the settled blocks of the frame,
+ * which `coverageAutoscaleViews` scales against. Every display drawing a
+ * depth band installs this one getter over its own `CoverageSource`.
+ */
+export function coverageStatsViews(
+  self: CoverageStatsHost,
+  source: CoverageSource,
+) {
+  return {
+    /**
+     * #getter
+     * The depth stats of the shown coverage in the settled blocks; a
+     * hidden section is excluded.
+     */
+    get statsInView() {
+      return visibleStats({
+        active: source.active(),
+        view: self.view,
+        payloadFor: index => source.regionsAt(index),
+        itemsFor: regions => regions,
+        accumulate: entries => computeVisibleCoverageStats(entries),
+      })
+    },
+  }
+}
 
 /** What {@link coverageAutoscaleViews} reads: the walked depths and the y scale. */
 export interface CoverageAutoscaleHost {
@@ -129,6 +178,40 @@ export function coverageDomainViews(self: CoverageDomainHost) {
         showAlleles: self.showCoverageAlleles,
         showInterbase: self.showInterbase,
       }
+    },
+  }
+}
+
+/** What {@link coverageTicksViews} reads: the domain and its scale. */
+export interface CoverageTicksHost {
+  coverageDepthDomain: [number, number] | undefined
+  scaleType: string
+  symlogConstant: number
+}
+
+/** The coverage band's tick ladder, over the height `bandHeight` reads. */
+export function coverageTicksViews(
+  self: CoverageTicksHost,
+  bandHeight: () => number,
+) {
+  return {
+    /**
+     * #getter
+     * The coverage band's own ladder (`computeCoverageTicks`) over the
+     * height it is drawn at, which `valueScales` hands the chrome in place
+     * of the mixin's. Takes the raw `coverage.encoding.y.scale.constant`,
+     * resolved from the same domain as the band's scale, so the labels sit
+     * on the bars.
+     */
+    get coverageTicks() {
+      return self.coverageDepthDomain
+        ? computeCoverageTicks(
+            self.coverageDepthDomain,
+            bandHeight(),
+            self.scaleType,
+            self.symlogConstant,
+          )
+        : undefined
     },
   }
 }

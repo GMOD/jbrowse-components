@@ -3,6 +3,8 @@ import { lazy } from 'react'
 import {
   coverageAutoscaleViews,
   coverageDomainViews,
+  coverageStatsViews,
+  coverageTicksViews,
 } from '@jbrowse/alignments-core'
 import {
   COVERAGE_Y_PATHS,
@@ -116,11 +118,7 @@ import {
   requireReadsConf,
 } from './configSlotViews.ts'
 import { connectionKeyViews } from './connectionKeyViews.ts'
-import {
-  bandPlotViews,
-  coverageStatsViews,
-  coverageTicksViews,
-} from './coverageScaleViews.ts'
+import { bandPlotViews, shownGroupCoverage } from './coverageScaleViews.ts'
 import { filterFieldInEffect, layersInEffect } from './dialogs/layerFilters.ts'
 import { fetchExportedReads } from './exportedReads.ts'
 import {
@@ -513,7 +511,7 @@ export default function stateModelFactory(
       .views(self => connectorSettingViews(self))
       .views(self => facetLayoutViews(self))
       .views(self => bandPlotViews(self))
-      .views(self => coverageStatsViews(self))
+      .views(self => coverageStatsViews(self, shownGroupCoverage(self)))
       .views(self => coverageAutoscaleViews(self))
       .views(self => coverageDomainViews(self))
       .views(self => {
@@ -989,7 +987,9 @@ export default function stateModelFactory(
       })
       .views(self => pileupLayoutViews(self))
       .views(self => connectorViews(self))
-      .views(self => coverageTicksViews(self))
+      .views(self =>
+        coverageTicksViews(self, () => self.bandHeights.coverageHeight),
+      )
       .views(self => rowlessLaneViews(self))
       .views(self => alignmentsColorViews(self))
       .views(self => connectionKeyViews(self))

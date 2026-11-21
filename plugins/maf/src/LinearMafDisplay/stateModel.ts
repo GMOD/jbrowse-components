@@ -1,8 +1,9 @@
 import {
   buildCoverageTooltipBin,
-  computeVisibleCoverageStats,
   coverageAutoscaleViews,
   coverageDomainViews,
+  coverageStatsViews,
+  coverageTicksViews,
   hitCoverageBand,
 } from '@jbrowse/alignments-core'
 import {
@@ -56,7 +57,7 @@ import {
   sortRowsAtColumn,
   sortRowsHereMenuItem,
 } from '@jbrowse/tree-sidebar'
-import { ScoreScaleMixin, visibleStats } from '@jbrowse/wiggle-core'
+import { ScoreScaleMixin } from '@jbrowse/wiggle-core'
 import ContentCopyIcon from '@mui/icons-material/ContentCopy'
 import MenuOpenIcon from '@mui/icons-material/MenuOpen'
 
@@ -1150,24 +1151,20 @@ export default function stateModelFactory(
           }
         },
       }))
-      .views(self => ({
-        /**
-         * #getter
-         * The depth stats over the visible content blocks, from the
-         * worker-shipped `coverage.coverageDepths`.
-         */
-        get statsInView() {
-          return visibleStats({
-            active: self.coverageBandActive,
-            view: self.view,
-            payloadFor: index => self.detailOnScreen.get(index)?.coverage,
-            itemsFor: coverage => [coverage],
-            accumulate: entries => computeVisibleCoverageStats(entries),
-          })
-        },
-      }))
+      .views(self =>
+        coverageStatsViews(self, {
+          active: () => self.coverageBandActive,
+          regionsAt: index => {
+            const coverage = self.detailOnScreen.get(index)?.coverage
+            return coverage ? [coverage] : []
+          },
+        }),
+      )
       .views(self => coverageAutoscaleViews(self))
       .views(self => coverageDomainViews(self))
+      .views(self =>
+        coverageTicksViews(self, () => self.topBands.rects.coverage.height),
+      )
       .views(self => ({
         /**
          * #getter
@@ -1187,6 +1184,7 @@ export default function stateModelFactory(
           return mafValueScales({
             topBands: self.topBands,
             coverageDomain: self.coverageDepthDomain,
+            coverageTicks: self.coverageTicks,
             scaleType: self.scaleType,
             symlogConstant: self.symlogConstant,
             guide: self.axisGuide,
