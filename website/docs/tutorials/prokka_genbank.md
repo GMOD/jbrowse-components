@@ -108,7 +108,9 @@ LOCUS       NC_002128.1            92721 bp    DNA     linear       21-NOV-2026
 A contig name longer than the LOCUS line's name column, such as SPAdes's
 `NODE_1_length_52345_cov_23.451523`, runs into the length on that line; JBrowse
 splits the two again by the record's length, so the refNames match the contig
-names in your FASTA and in any reads mapped to it.
+names in your FASTA and in any reads mapped to it. Prokka refuses a name over 37
+characters, though, and its `--centre` and `--compliant` options get past that
+by renaming the contigs, after which the names match neither.
 
 ## Loading the genome and the genes
 
