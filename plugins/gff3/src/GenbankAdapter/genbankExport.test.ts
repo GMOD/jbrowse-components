@@ -130,6 +130,81 @@ test("an NCBI GFF3 region saved as GenBank's source takes INSDC's qualifier name
   expect(exported).toContain('/db_xref="GeneID:944742"')
 })
 
+async function exportedSource(attributes: Record<string, string>) {
+  const region = new SimpleFeature({
+    uniqueId: 'region',
+    refName: 'NC_000913.3',
+    start: 0,
+    end: 5000,
+    type: 'region',
+    gbkey: 'Src',
+    mol_type: 'genomic DNA',
+    ...attributes,
+  })
+  const exported = await stringifyGBK({
+    features: [gene],
+    sourceRecords: sourceRecords([region, gene]),
+    circularLengths: new Map<string, number>(),
+    regions: [],
+    assemblyName: 'ecoli',
+    session,
+  })
+  return sourceBlock(exported).slice(1)
+}
+
+test("NCBI GFF3's hyphenated source attributes take INSDC's qualifier names", async () => {
+  expect(
+    await exportedSource({
+      'collection-date': 'Dec-2019',
+      'nat-host': 'Homo sapiens',
+      'isolation-source': 'bronchoalveolar lavage fluid',
+      'lat-lon': '30.6 N 114.3 E',
+      'plasmid-name': 'pO157',
+      'culture-collection': 'ATCC:700927',
+    }),
+  ).toEqual([
+    '                     /organism="ecoli"',
+    '                     /mol_type="genomic DNA"',
+    '                     /collection_date="Dec-2019"',
+    '                     /host="Homo sapiens"',
+    '                     /isolation_source="bronchoalveolar lavage fluid"',
+    '                     /lat_lon="30.6 N 114.3 E"',
+    '                     /plasmid="pO157"',
+    '                     /culture_collection="ATCC:700927"',
+  ])
+})
+
+test.each([
+  ['mitochondrion', ['                     /organelle="mitochondrion"']],
+  ['chloroplast', ['                     /organelle="plastid:chloroplast"']],
+  [
+    'kinetoplast',
+    ['                     /organelle="mitochondrion:kinetoplast"'],
+  ],
+  ['genomic', []],
+  ['chromosome', []],
+  ['plasmid', []],
+])(
+  "NCBI GFF3's genome=%s is written as INSDC's /organelle only for an organelle",
+  async (genome, organelle) => {
+    expect(await exportedSource({ genome })).toEqual([
+      '                     /organism="ecoli"',
+      ...organelle,
+      '                     /mol_type="genomic DNA"',
+    ])
+  },
+)
+
+test('a source with its own /organelle keeps it over the genome attribute', async () => {
+  expect(
+    await exportedSource({ genome: 'mitochondrion', organelle: 'plastid' }),
+  ).toEqual([
+    '                     /organism="ecoli"',
+    '                     /mol_type="genomic DNA"',
+    '                     /organelle="plastid"',
+  ])
+})
+
 test('a record with two source features takes the widest as its own', async () => {
   const source = (uniqueId: string, end: number, organism: string) =>
     new SimpleFeature({

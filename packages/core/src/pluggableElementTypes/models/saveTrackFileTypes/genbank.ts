@@ -186,13 +186,35 @@ const FLAG_QUALIFIERS = new Set([
 ])
 
 // INSDC's spelling of a qualifier GenBank import reads back lowercased, or
-// NCBI's GFF3 names otherwise
+// NCBI's GFF3 names otherwise, which are its ASN.1 source subtypes
 const QUALIFIER_SPELLING: Record<string, string> = {
+  'bio-material': 'bio_material',
+  'cell-line': 'cell_line',
+  'cell-type': 'cell_type',
+  'clone-lib': 'clone_lib',
+  'collected-by': 'collected_by',
+  'collection-date': 'collection_date',
+  'culture-collection': 'culture_collection',
   dbxref: 'db_xref',
+  'dev-stage': 'dev_stage',
   ec_number: 'EC_number',
+  'environmental-sample': 'environmental_sample',
+  'identified-by': 'identified_by',
+  'isolation-source': 'isolation_source',
+  'lab-host': 'lab_host',
+  'lat-lon': 'lat_lon',
+  'mating-type': 'mating_type',
+  'nat-host': 'host',
   pcr_conditions: 'PCR_conditions',
   pcr_primers: 'PCR_primers',
+  'plasmid-name': 'plasmid',
+  'pop-variant': 'pop_variant',
+  'specimen-voucher': 'specimen_voucher',
+  'sub-species': 'sub_species',
   substr: 'sub_strain',
+  'tissue-lib': 'tissue_lib',
+  'tissue-type': 'tissue_type',
+  'type-material': 'type_material',
 }
 
 // a qualifier the file repeated, as Prokka repeats /inference, is written once
@@ -420,8 +442,29 @@ function formatLocus(refName: string, length: number, circular: boolean) {
 }
 
 // what GenBank import and NCBI's GFF3 mark a source feature with, which the
-// record says in its LOCUS line or INSDC has no qualifier for
+// record says in its LOCUS line, or as /organelle, or INSDC has no qualifier
+// for
 const SOURCE_MARKERS = new Set(['gbkey', 'is_circular', 'genome'])
+
+// INSDC's /organelle for an NCBI genome value naming one; the rest, such as
+// genomic, chromosome or plasmid, have no qualifier
+const ORGANELLES = new Map([
+  ['apicoplast', 'plastid:apicoplast'],
+  ['chloroplast', 'plastid:chloroplast'],
+  ['chromatophore', 'chromatophore'],
+  ['chromoplast', 'plastid:chromoplast'],
+  ['cyanelle', 'plastid:cyanelle'],
+  ['hydrogenosome', 'hydrogenosome'],
+  ['kinetoplast', 'mitochondrion:kinetoplast'],
+  ['leucoplast', 'plastid:leucoplast'],
+  ['mitochondrion', 'mitochondrion'],
+  ['nitroplast', 'nitroplast'],
+  ['nucleomorph', 'nucleomorph'],
+  ['plasmid-in-mitochondrion', 'mitochondrion'],
+  ['plasmid-in-plastid', 'plastid'],
+  ['plastid', 'plastid'],
+  ['proplastid', 'plastid:proplastid'],
+])
 
 // INSDC requires /organism and /mol_type on every source; a track with no
 // source feature of its own, or one that leaves either out, gets the assembly
@@ -432,8 +475,12 @@ function sourceQualifiers(source: Feature | undefined, organism: string) {
         key => !coreFields.has(key) && !SOURCE_MARKERS.has(key),
       )
     : []
+  const organelle = keys.includes('organelle')
+    ? undefined
+    : ORGANELLES.get(formatAttributeValue(source?.get('genome')) ?? '')
   return [
     ...(keys.includes('organism') ? [] : [qualifier('organism', organism)]),
+    ...(organelle ? [qualifier('organelle', organelle)] : []),
     ...(keys.includes('mol_type')
       ? []
       : [qualifier('mol_type', 'genomic DNA')]),
