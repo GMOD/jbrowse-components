@@ -104,6 +104,35 @@ test('use force to overwrite a copied file', async () => {
   })
 })
 
+test('a GenBank file copied in as the assembly is copied in again as its track', async () => {
+  await runInTmpDir(async ctx => {
+    const gbk = path.join(base, 'two_records.gbk')
+    await runCommand(['add-assembly', gbk, '--load', 'copy'])
+    const { error } = await runCommand(['add-track', gbk, '--load', 'copy'])
+    expect(error).toBe(undefined)
+    expect(readConf(ctx).tracks?.[0]).toMatchObject({
+      adapter: {
+        type: 'GenbankAdapter',
+        genbankLocation: { uri: 'two_records.gbk' },
+      },
+    })
+  })
+})
+
+test('a different file of the same name is not overwritten without --force', async () => {
+  await runInTmpDir(async ctx => {
+    await initctx(ctx)
+    await writeFile(path.join(ctx.dir, 'simple.bam'), 'another file')
+    const { error } = await runCommand([
+      'add-track',
+      simpleBam,
+      '--load',
+      'copy',
+    ])
+    expect(error?.message).toMatch(/EEXIST/)
+  })
+})
+
 // setting up a test for move difficult currently, because it would literally
 // move the file in our test data...
 //

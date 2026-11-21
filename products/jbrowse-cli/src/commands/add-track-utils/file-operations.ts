@@ -1,3 +1,4 @@
+import { Buffer } from 'node:buffer'
 import fs from 'node:fs'
 import path from 'node:path'
 
@@ -5,6 +6,42 @@ import { ignoreNotFound } from '../../utils.ts'
 
 const { copyFile, rename, symlink, unlink } = fs.promises
 const { COPYFILE_EXCL } = fs.constants
+
+// A GenBank file is an assembly and a track at once, so `add-assembly x.gbk
+// --load copy` then `add-track x.gbk --load copy` copies it twice; the second
+// finds its own copy already there and has nothing left to do.
+async function sameBytes(src: string, dest: string) {
+  const [a, b] = await Promise.all(
+    [src, dest].map(file => fs.promises.stat(file).catch(() => undefined)),
+  )
+  return !!a && !!b && a.size === b.size && (await sameChunks(src, dest))
+}
+
+async function sameChunks(src: string, dest: string) {
+  const chunk = 1 << 20
+  const [x, y] = await Promise.all([
+    fs.promises.open(src),
+    fs.promises.open(dest),
+  ])
+  try {
+    let same = true
+    for (let pos = 0, read = chunk; same && read === chunk; pos += chunk) {
+      const [p, q] = await Promise.all([
+        x.read(Buffer.alloc(chunk), 0, chunk, pos),
+        y.read(Buffer.alloc(chunk), 0, chunk, pos),
+      ])
+      same =
+        p.bytesRead === q.bytesRead &&
+        p.buffer
+          .subarray(0, p.bytesRead)
+          .equals(q.buffer.subarray(0, q.bytesRead))
+      read = p.bytesRead
+    }
+    return same
+  } finally {
+    await Promise.all([x.close(), y.close()])
+  }
+}
 
 async function loadFile({
   src,
@@ -28,7 +65,10 @@ async function loadFile({
   // force-unlink matters: dest and src are the same file, so unlinking it
   // deleted the user's data and left the copy with nothing to read. A source
   // that isn't there still has to fail, so fall through to get its ENOENT.
-  if (path.resolve(src) === path.resolve(dest) && fs.existsSync(src)) {
+  if (
+    (path.resolve(src) === path.resolve(dest) && fs.existsSync(src)) ||
+    (mode === 'copy' && (await sameBytes(src, dest)))
+  ) {
     return
   }
   if (force) {
