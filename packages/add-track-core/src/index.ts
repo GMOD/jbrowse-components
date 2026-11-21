@@ -40,5 +40,6 @@ export {
   type VcfSpanRecord,
   firstNumericInfo,
   parseFiniteNumber,
+  spanningInfoEnd,
   vcfRecordSpan,
 } from './vcfSpan.ts'

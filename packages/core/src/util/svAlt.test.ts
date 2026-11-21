@@ -66,6 +66,14 @@ test('a symbolic allele with no END ends SVLEN bases past POS', () => {
   expect(junctionEnds(vcf(['<INS>'], { SVLEN: [500] }))).toBeUndefined()
 })
 
+test('a symbolic allele whose END is at or before POS ends where its SVLEN does, as its drawn span does', () => {
+  expect(
+    junctionEnds(vcf(['<DEL>'], { END: [900], SVLEN: [-50] }))?.mate.pos,
+  ).toBe(1049)
+  expect(junctionEnds(vcf(['<INV>'], { END: [1000] }))?.mate.pos).toBe(999)
+  expect(junctionEnds(vcf(['<INV>'], { END: [999] }))).toBeUndefined()
+})
+
 test('a translocation takes its directions from STRANDS, and none without it', () => {
   const tra = (info: Record<string, unknown[]>) =>
     junctionEnds(vcf(['<TRA>'], { CHR2: ['chr5'], END: [300], ...info }))

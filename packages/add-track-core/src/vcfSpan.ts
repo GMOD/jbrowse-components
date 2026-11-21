@@ -30,6 +30,20 @@ export function firstNumericInfo(
   return Array.isArray(value) ? parseFiniteNumber(value[0]) : undefined
 }
 
+/**
+ * INFO.END where it ends a span on the record's own contig, `start` being the
+ * 0-based POS. An END at or before POS describes no span; real SV callsets do
+ * emit them, and trusting one inserts an inverted interval into the adapter's
+ * IntervalTree or puts a mate before its record.
+ */
+export function spanningInfoEnd(
+  info: Record<string, unknown> | undefined,
+  start: number,
+) {
+  const end = firstNumericInfo(info, 'END')
+  return end !== undefined && end > start ? end : undefined
+}
+
 // INFO.END states the span of a record with no ALT (a gVCF reference block) and
 // of one with a symbolic ALT. A translocation is single-breakpoint, and a
 // breakend or a sequence allele takes its length from REF: callers put a
@@ -41,11 +55,8 @@ function vcfRecordEnd(record: VcfSpanRecord, start: number) {
   const hasTRA = ALT.includes('<TRA>')
   const statesSpan = ALT.length === 0 || hasSymbolic
   if (!hasTRA) {
-    // an END at or before POS describes no span on this contig; real SV
-    // callsets do emit them, and trusting one inserts an inverted interval into
-    // the adapter's IntervalTree. Treat it as absent and keep falling back.
-    const end = firstNumericInfo(INFO, 'END')
-    if (statesSpan && end !== undefined && end > start) {
+    const end = spanningInfoEnd(INFO, start)
+    if (statesSpan && end !== undefined) {
       return Math.max(end, start + REF.length)
     }
     if (hasSymbolic && Array.isArray(INFO.SVLEN)) {

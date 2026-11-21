@@ -1,4 +1,5 @@
 import { parseBreakend } from '@gmod/vcf'
+import { firstNumericInfo, spanningInfoEnd } from '@jbrowse/add-track-core'
 
 import type { Feature } from './simpleFeature.ts'
 import type { Breakend } from '@gmod/vcf'
@@ -93,8 +94,12 @@ export function parseSvAlt(
     const info = feature.get('INFO') as
       | Record<string, (string | number)[]>
       | undefined
+    // a translocation's END is its mate's position, which may be on another
+    // contig; any other allele's END is where its span ends
     const matePos =
-      (info?.END?.[0] as number | undefined) ??
+      (alt.startsWith('<TRA')
+        ? firstNumericInfo(info, 'END')
+        : spanningInfoEnd(info, feature.get('start'))) ??
       spannedEnd(feature, alt, info?.SVLEN, alleleIndex)
     if (matePos === undefined) {
       return undefined
