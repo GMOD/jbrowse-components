@@ -36,11 +36,6 @@ locstring).
   `packages/add-track-core/src/formats.ts`. That means a new form field and
   about 10 call sites in `packages/core/src/util/assemblyConfigUtils.ts`. Config and
   `jbrowse add-assembly` already work.
-- **Check that the generated GenBank pages appear.**
-  `website/docs/config/Genbank*.md` and the FILE_TYPES rows were not written:
-  pre-push autogen stopped on two unrelated docs gates (the hand-written fence
-  baseline, and an ideas description over 45 words). They regenerate on the
-  first push whose autogen passes.
 - **GenBank export writes NCBI GFF3 spellings on `source`.** A GFF3 track's
   `gbkey=Src` region becomes the record's `source` (`sourceQualifiers` in
   `packages/core/src/pluggableElementTypes/models/saveTrackFileTypes/genbank.ts`),
@@ -48,6 +43,12 @@ locstring).
   INSDC writes `/db_xref`, and NCBI's `genome` and `gb-synonym` as qualifiers
   INSDC has no key for (`test_data/sars-cov2/ncbi_original.gff3`). No qualifier
   line is wrapped at 80 columns; Biopython 1.86 reads the output either way.
+- **A text-index hit across a circular origin navigates to its first piece
+  only.** The GenBank indexer writes `join(92000..92721,1..500)` on a
+  `LOCUS circular` record as `NC_002128:92000..93221`, where the adapter draws
+  it, but `locStringsToRegions` clamps an end past the contig, so choosing the
+  hit shows 92000..92721. NCBI records only; Prokka writes every record linear.
+  Read from `packages/text-indexing-core/src/types/genbankAdapter.ts`, not run.
 
 ## Open questions, unverified
 
