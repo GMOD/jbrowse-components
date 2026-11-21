@@ -243,16 +243,22 @@ export const InternetAccount = types
         // the rejected promise it leaves behind would then be handed to every
         // request for the rest of the session. Failing to get a token must
         // never be a state the account stays in.
-        tokenPromise = new Promise<string>((resolve, reject) => {
+        // Cleared only if still ours: a removeToken() during the prompt lets a
+        // later read start its own, and this failure must not wipe that one
+        // or the token it stored.
+        const prompt = new Promise<string>((resolve, reject) => {
           self.getTokenFromUser(token => {
             self.storeToken(token)
             resolve(token)
           }, reject)
         }).catch((error: unknown) => {
-          clearToken()
+          if (tokenPromise === prompt) {
+            clearToken()
+          }
           throw error
         })
-        return tokenPromise
+        tokenPromise = prompt
+        return prompt
       },
     }
   })
