@@ -1,10 +1,8 @@
 import {
-  buildCoverageTooltipBin,
   coverageAutoscaleViews,
   coverageDomainViews,
   coverageStatsViews,
   coverageTicksViews,
-  hitCoverageBand,
 } from '@jbrowse/alignments-core'
 import {
   COVERAGE_Y_PATHS,
@@ -51,7 +49,6 @@ import { ScoreScaleMixin } from '@jbrowse/wiggle-core'
 import ContentCopyIcon from '@mui/icons-material/ContentCopy'
 import MenuOpenIcon from '@mui/icons-material/MenuOpen'
 
-import { mafCoverageBandColors } from '../LinearMafRenderer/coverageBandColors.ts'
 import { identityOver } from '../LinearMafRenderer/identity.ts'
 import { getMafColorPalette } from '../LinearMafRenderer/util.ts'
 import { computeVisibleCodonGlyphs, findCodonAt } from './codons.ts'
@@ -76,7 +73,6 @@ import {
   configSlotActions,
   configSlotViews,
 } from './configSlotViews.ts'
-import { coverageTooltipBinAt } from './coverageTooltipBin.ts'
 import {
   EMPTY_MAF_COVERAGE,
   createRowsSourceJoin,
@@ -86,6 +82,11 @@ import { fetchMafAlignmentData, fetchMafSummaryData } from './fetchMafData.ts'
 import { mafLaunchMenuItems } from './launchMenuItems.ts'
 import { mafBandActions, mafBandViews } from './mafBandViews.ts'
 import { MAF_FIELD_PRESETS } from './mafColorConfigSchema.ts'
+import {
+  mafCoverageHoverViews,
+  mafCoverageSource,
+  mafCoverageViews,
+} from './mafCoverageViews.ts'
 import { mafDrawnRowViews, mafRowActions, mafRowViews } from './mafRowViews.ts'
 import { openInsertionWidget } from './openInsertionWidget.ts'
 import { orderMafRowsByBaseAt } from './orderMafRowsByBaseAt.ts'
@@ -97,7 +98,6 @@ import {
   buildMafTrackMenuItems,
   zoomGatedItem,
 } from './trackMenuItems.ts'
-import { mafValueScales } from './valueScales.ts'
 
 import type {
   MafGPURenderState,
@@ -122,7 +122,6 @@ import type { LinearMafDisplayConfigModel } from './configSchema.ts'
 import type { MafRowsEncodeProps, MafRowsSource } from './encodeMafRows.ts'
 import type { RowPlan } from './rowPlan.ts'
 import type { MafHover } from './util.ts'
-import type { CoverageBandState } from '@jbrowse/alignments-core'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { ContextMenuAnchor, MenuItem } from '@jbrowse/core/ui'
 import type { ColorScale } from '@jbrowse/core/ui/colorScale'
@@ -136,7 +135,6 @@ import type {
 import type { IndexedRegion } from '@jbrowse/display-kit/planRegionFetch'
 import type { ExportSvgDisplayOptions } from '@jbrowse/display-kit/types'
 import type { Instance } from '@jbrowse/mobx-state-tree'
-import type { ValueScale } from '@jbrowse/wiggle-core'
 
 /**
  * The row under the pointer, published as `hoveredFeature` so another display
@@ -594,70 +592,14 @@ export default function stateModelFactory(
           }
         },
       }))
-      .views(self =>
-        coverageStatsViews(self, {
-          active: () => self.coverageBandActive,
-          regionsAt: index => {
-            const coverage = self.detailOnScreen.get(index)?.coverage
-            return coverage ? [coverage] : []
-          },
-        }),
-      )
+      .views(self => coverageStatsViews(self, mafCoverageSource(self)))
       .views(self => coverageAutoscaleViews(self))
       .views(self => coverageDomainViews(self))
       .views(self =>
         coverageTicksViews(self, () => self.topBands.rects.coverage.height),
       )
-      .views(self => ({
-        /**
-         * #getter
-         * Overrides `ScoreScaleMixin`'s: `coverage.encoding.y.rules` are depths, so they
-         * draw on the coverage band while it reserves px, never on the fixed
-         * conservation scale.
-         */
-        get scoreRulesDrawn(): boolean {
-          return self.topBands.reserved.coverage > 0
-        },
-        /**
-         * #getter
-         * The scales the chrome places the axes from: coverage over its
-         * autoscaled depth, and conservation over a fixed 0-100%.
-         */
-        get valueScales(): ValueScale[] {
-          return mafValueScales({
-            topBands: self.topBands,
-            coverageDomain: self.coverageDepthDomain,
-            coverageTicks: self.coverageTicks,
-            scaleType: self.scaleType,
-            symlogConstant: self.symlogConstant,
-            guide: self.axisGuide,
-          })
-        },
-        /**
-         * #getter
-         * The coverage band's palette slots, packed. Separate from
-         * `renderState` so the nine-color CSS parse memoizes against the
-         * palette.
-         */
-        get coverageBandColors() {
-          return mafCoverageBandColors(getPaletteHost(self).palette)
-        },
-      }))
-      .views(self => ({
-        /**
-         * #getter
-         * The coverage band as the shared marks and their hit test take it.
-         * Height 0 draws no band: the setting is off or the summary tier owns
-         * the view.
-         */
-        get coverageBandState(): CoverageBandState {
-          return {
-            ...self.topBands.rects.coverage,
-            ...self.coverageScaleState,
-            colors: self.coverageBandColors,
-          }
-        },
-      }))
+      .views(mafCoverageViews)
+      .views(mafCoverageHoverViews)
       .views(self => ({
         /**
          * #method
@@ -712,70 +654,6 @@ export default function stateModelFactory(
             self.rowIndexBySrc,
           )
           return hit ? { name: hit.name } : undefined
-        },
-        /**
-         * #method
-         * The interbase bar or indicator triangle under a canvas point in the
-         * coverage band, through the shared band's own hit test, or undefined
-         * for the depth area and everywhere else.
-         */
-        coverageBandHit(displayedRegionIndex: number, x: number, y: number) {
-          const coverage =
-            self.detailOnScreen.get(displayedRegionIndex)?.coverage
-          const block = self.renderBlocks.find(
-            b => b.displayedRegionIndex === displayedRegionIndex,
-          )
-          return coverage && block
-            ? hitCoverageBand(coverage, self.coverageBandState, block, x, y)
-            : undefined
-        },
-        /**
-         * #method
-         * The depth and SNP tooltip bin at the base under the cursor, with the
-         * percent identity at that position. Undefined when the region has no
-         * fetched data or depth is zero.
-         */
-        coverageTooltipBin(
-          displayedRegionIndex: number,
-          basePos: number,
-          bpPerPx: number,
-          reversed = false,
-        ) {
-          const coverage =
-            self.detailOnScreen.get(displayedRegionIndex)?.coverage
-          return coverage
-            ? coverageTooltipBinAt(
-                coverage,
-                basePos,
-                bpPerPx,
-                reversed,
-                self.coverageBandState,
-              )
-            : undefined
-        },
-        /**
-         * #method
-         * The insertions at a band boundary the hit test named, summarized the
-         * way the alignments band summarizes its interbase events.
-         */
-        interbaseTooltipBin(displayedRegionIndex: number, position: number) {
-          const coverage =
-            self.detailOnScreen.get(displayedRegionIndex)?.coverage
-          const bin = coverage
-            ? buildCoverageTooltipBin(
-                position,
-                coverage,
-                coverage,
-                {
-                  interbasePositions: coverage.insertionPositions,
-                  interbaseLengths: coverage.insertionLengths,
-                },
-                position,
-              )
-            : undefined
-          return bin?.interbase.insertion
-            ? { interbase: bin.interbase, interbaseDepth: bin.interbaseDepth }
-            : undefined
         },
       }))
       .views(self => ({
