@@ -367,6 +367,12 @@ export const TUTORIAL_THUMB_SPECS: Record<string, ThumbSpec> = {
     src: 'organelle_map/mito_ring.png',
     band: [0.19, 0.85],
   },
+  prokka_genbank: {
+    // The middle of the pO157 ring with the gene labels on its right, where
+    // the enterohemolysin operon sits.
+    src: 'prokka_genbank/po157_ring.png',
+    band: [0.19, 0.85],
+  },
   t2t_apes_cactus_synteny: {
     // The human lane and the ape lanes under it at ERBB2, where the two blue
     // gutters split the stack, past the app chrome and the gene track.

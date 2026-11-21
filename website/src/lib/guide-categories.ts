@@ -170,6 +170,7 @@ export const TUTORIAL_ORDER = [
   'protein_domains',
   'gene_density',
   'organelle_map',
+  'prokka_genbank',
   'alu_age',
   'read_marks',
   'cookbook',

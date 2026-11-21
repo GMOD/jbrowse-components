@@ -91,6 +91,8 @@ export const demoCaptions: Record<string, string> = {
     'Human and mouse chromosomes in a circle, joined by UCSC liftOver chains, with gene density.',
   organelle_map:
     'The human mitochondrial genome, NC_012920.1, as a circular map.',
+  prokka_genbank:
+    'E. coli O157:H7 Sakai annotated by Prokka and opened from its GenBank file.',
   t2t_apes_cactus_synteny:
     'ERBB2 across human and six T2T ape genomes, from a Cactus alignment.',
   hg38_vertebrates_synteny:

@@ -66,6 +66,7 @@ import { paperHprcWorkspaceSpecs } from './specs/paper-hprc-workspace.ts'
 import { paperSvReadsSpecs } from './specs/paper-sv-reads.ts'
 import { paperSvSpecs } from './specs/paper-sv.ts'
 import { popgenSpecs } from './specs/popgen.ts'
+import { prokkaGenbankSpecs } from './specs/prokka_genbank.ts'
 import { proteinDomainsSpecs } from './specs/protein_domains.ts'
 import { proteinBrca1M1775rSpecs } from './specs/protein_figure_brca1_m1775r.ts'
 import { proteinCcr5ComboSpecs } from './specs/protein_figure_ccr5_combo.ts'
@@ -142,6 +143,7 @@ export const specs: ScreenshotSpec[] = [
   ...geneDensitySpecs,
   ...proteinDomainsSpecs,
   ...organelleMapSpecs,
+  ...prokkaGenbankSpecs,
   ...hg002HaplotypeSpecs,
   ...hicSpecs,
   ...qtlSpecs,

@@ -1,0 +1,57 @@
+{
+  "assemblies": [
+    {
+      "name": "sakai",
+      "displayName": "E. coli O157:H7 Sakai (Prokka)",
+      "circularRefNames": ["NC_002127.1", "NC_002128.1"],
+      "sequence": {
+        "type": "ReferenceSequenceTrack",
+        "trackId": "sakai-ReferenceSequenceTrack",
+        "adapter": {
+          "type": "GenbankSequenceAdapter",
+          "genbankLocation": {
+            "uri": "https://jbrowse.org/demos/prokka_sakai/sakai.gbk.gz",
+            "locationType": "UriLocation"
+          }
+        }
+      }
+    }
+  ],
+  "configuration": {
+    "disableAnalytics": true
+  },
+  "tracks": [
+    {
+      "type": "FeatureTrack",
+      "trackId": "sakai_prokka",
+      "name": "Prokka genes",
+      "assemblyNames": ["sakai"],
+      "adapter": {
+        "type": "GenbankAdapter",
+        "genbankLocation": {
+          "uri": "https://jbrowse.org/demos/prokka_sakai/sakai.gbk.gz",
+          "locationType": "UriLocation"
+        }
+      }
+    }
+  ],
+  "aggregateTextSearchAdapters": [
+    {
+      "type": "TrixTextSearchAdapter",
+      "textSearchAdapterId": "sakai-index",
+      "ixFilePath": {
+        "uri": "https://jbrowse.org/demos/prokka_sakai/trix/sakai.ix",
+        "locationType": "UriLocation"
+      },
+      "ixxFilePath": {
+        "uri": "https://jbrowse.org/demos/prokka_sakai/trix/sakai.ixx",
+        "locationType": "UriLocation"
+      },
+      "metaFilePath": {
+        "uri": "https://jbrowse.org/demos/prokka_sakai/trix/sakai_meta.json",
+        "locationType": "UriLocation"
+      },
+      "assemblyNames": ["sakai"]
+    }
+  ]
+}

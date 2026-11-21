@@ -240,6 +240,7 @@ npx --yes serve organelle_map_build/jbrowse2  # then open the printed URL
 ## See also
 
 - [](/docs/user_guides/circular_view)
+- [](/docs/tutorials/prokka_genbank)
 - [](/docs/tutorials/circular_synteny)
 - [](/docs/tutorials/gene_density)
 - [](/docs/quickstart_web)
