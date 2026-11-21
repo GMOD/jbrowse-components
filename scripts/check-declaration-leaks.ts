@@ -9,8 +9,10 @@
 // serializing the file path. The fix is always to re-export the type from that
 // package's entry `index.ts`.
 //
-// Run after `pnpm build:esm`.
-import { readFileSync, readdirSync, statSync } from 'node:fs'
+// Run after `pnpm build:esm`. Incremental tsc never deletes the output of a
+// removed source, so a `.d.ts` with no `src/` file behind it is skipped: a leak
+// fixed by moving the file would otherwise fail here until a clean build.
+import { existsSync, readFileSync, readdirSync, statSync } from 'node:fs'
 import { join, relative } from 'node:path'
 
 const root = join(import.meta.dirname, '..')
@@ -28,21 +30,29 @@ function* declarationFiles(dir: string): Generator<string> {
   }
 }
 
+function hasSource(pkg: string, esm: string, file: string) {
+  const stem = join(pkg, 'src', relative(esm, file).slice(0, -'.d.ts'.length))
+  return existsSync(`${stem}.ts`) || existsSync(`${stem}.tsx`)
+}
+
 // leaked specifier -> declaration files naming it
 const found = new Map<string, Set<string>>()
 for (const workspaceDir of workspaceDirs) {
   for (const entry of readdirSync(join(root, workspaceDir))) {
-    const esm = join(root, workspaceDir, entry, 'esm')
+    const pkg = join(root, workspaceDir, entry)
+    const esm = join(pkg, 'esm')
     try {
       statSync(esm)
     } catch {
       continue // not built, or not a package that emits esm
     }
     for (const file of declarationFiles(esm)) {
-      for (const [specifier] of readFileSync(file, 'utf8').matchAll(leak)) {
-        const files = found.get(specifier) ?? new Set<string>()
-        files.add(relative(root, file))
-        found.set(specifier, files)
+      if (hasSource(pkg, esm, file)) {
+        for (const [specifier] of readFileSync(file, 'utf8').matchAll(leak)) {
+          const files = found.get(specifier) ?? new Set<string>()
+          files.add(relative(root, file))
+          found.set(specifier, files)
+        }
       }
     }
   }
