@@ -17,6 +17,7 @@ import {
   ALL_VS_ALL_PAST_DELETION,
   ALL_VS_ALL_UNALIGNED,
   ALL_VS_ALL_ZOOMED,
+  COPIES_IN_THE_MARGIN,
   GENE_BLOCK_LANES,
   STAR_LANES,
   SYRI_LANES,
@@ -661,6 +662,15 @@ describe('volvox ctgB, which no lane aligns to', () => {
     {
       name: 'rows.kept',
       config: { display: { rows: { kept: ['volvox_del'] } } },
+    },
+  ])
+})
+
+describe('a lane per copy, one copy holding genes only past the window', () => {
+  parityCases(multiwayParity(COPIES_IN_THE_MARGIN), [
+    {
+      name: 'rows.field refName',
+      config: { display: { rows: { field: 'refName' } } },
     },
   ])
 })

@@ -1,3 +1,5 @@
+import { doesIntersect2 } from '@jbrowse/core/util'
+
 import type { MatePlacement, MultiWayGroup } from './layoutMultiWay.ts'
 
 // An old duplication keeps few of its genes: on the grape-peach gamma window
@@ -122,6 +124,34 @@ export interface CopyLaneFiling {
    * whose genes all sit in the fetch's margin past the viewport draws no lane
    */
   inWindow: (group: MultiWayGroup) => boolean
+}
+
+interface RefSpan {
+  refName: string
+  start: number
+  end: number
+}
+
+/** whether `span` overlaps one of `window`'s regions */
+export function touchesWindow(window: readonly RefSpan[], span: RefSpan) {
+  return window.some(
+    w =>
+      w.refName === span.refName &&
+      doesIntersect2(w.start, w.end, span.start, span.end),
+  )
+}
+
+/**
+ * `CopyLaneFiling.inWindow` over the regions a view shows, the display's and
+ * the export's alike: whether `blocks` hold a group's anchor, its refName
+ * spelled as `canon` spells the blocks'
+ */
+export function anchorInBlocks(
+  blocks: readonly RefSpan[],
+  canon: (refName: string) => string,
+) {
+  return ({ anchor }: MultiWayGroup) =>
+    touchesWindow(blocks, { ...anchor, refName: canon(anchor.refName) })
 }
 
 /**

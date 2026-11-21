@@ -16,7 +16,6 @@ import { colorScaleIsEmpty, summarizePast } from '@jbrowse/core/ui/colorScale'
 import { featureDefaultColor } from '@jbrowse/core/ui/palette'
 import {
   animationAllowed,
-  doesIntersect2,
   getEnv,
   getPaletteHost,
   getSession,
@@ -107,6 +106,7 @@ import {
   ribbonColorFieldOf,
 } from './configSlotViews.ts'
 import {
+  anchorInBlocks,
   copyLaneFiling,
   laneFieldOf,
   copyLaneName,
@@ -763,17 +763,15 @@ export function stateModelFactory(
        * #method
        * whether the settled viewport shows a group's anchor
        */
-      inWindow({ anchor }: MultiWayGroup) {
+      inWindow(group: MultiWayGroup) {
         const view = self.lgv
-        const refName =
-          getSession(self)
-            .assemblyManager.get(view.assemblyNames[0]!)
-            ?.getCanonicalRefName2(anchor.refName) ?? anchor.refName
-        return view.settledDynamicBlocks.some(
-          b =>
-            b.refName === refName &&
-            doesIntersect2(b.start, b.end, anchor.start, anchor.end),
+        const assembly = getSession(self).assemblyManager.get(
+          view.assemblyNames[0]!,
         )
+        return anchorInBlocks(
+          view.settledDynamicBlocks,
+          refName => assembly?.getCanonicalRefName2(refName) ?? refName,
+        )(group)
       },
       /**
        * #getter

@@ -254,3 +254,64 @@ export const GENE_BLOCK_LANES: MultiwayFixture = {
     width: 800,
   },
 }
+
+/**
+ * Grape's four genes, each on one of two peach contigs: g2 and g3 on Pp1,
+ * under the window, and g1 and g4 on Pp2, in the static blocks fetched past
+ * either side of it.
+ */
+function copiesInTheMargin() {
+  const dir = mkdtempSync(path.join(tmpdir(), 'parity-copies-'))
+  const write = (name: string, lines: string[]) => {
+    const file = path.join(dir, name)
+    writeFileSync(file, `${lines.join('\n')}\n`)
+    return file
+  }
+  const genes = [
+    ['1', 'Pp2', 100],
+    ['2', 'Pp1', 300],
+    ['3', 'Pp1', 500],
+    ['4', 'Pp2', 700],
+  ] as const
+  const blocks = write(
+    'grape.blocks',
+    genes.map(([n]) => `g${n}\tp${n}`),
+  )
+  const peachBed = write(
+    'peach.bed',
+    genes.map(
+      ([n, refName, start]) =>
+        `${refName}\t${start}\t${start + 100}\tp${n}\t0\t+`,
+    ),
+  )
+  const peachSizes = write('peach.chrom.sizes', ['Pp1\t1000', 'Pp2\t1000'])
+  return {
+    adapterConfig: {
+      type: 'MCScanBlocksAdapter',
+      mcscanBlocksLocation: fileUri(blocks),
+      blockAssemblies: ['grape', 'peach'],
+      bedLocations: [
+        fileUri('test_data/multiway_blocks/grape.bed'),
+        fileUri(peachBed),
+      ],
+      assemblyNames: ['grape', 'peach'],
+    },
+    assemblies: [
+      chromSizesAssembly(
+        'grape',
+        'test_data/multiway_blocks/grape.chrom.sizes',
+      ),
+      chromSizesAssembly('peach', peachSizes),
+    ],
+  }
+}
+
+/** grape chr1:250..650, its Pp2 copy's genes all past the window. */
+export const COPIES_IN_THE_MARGIN: MultiwayFixture = {
+  ...copiesInTheMargin(),
+  anchor: {
+    assemblyName: 'grape',
+    regions: [{ refName: 'chr1', start: 250, end: 650 }],
+    width: 800,
+  },
+}

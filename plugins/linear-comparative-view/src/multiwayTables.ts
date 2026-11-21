@@ -42,6 +42,7 @@ import { displayedRegionSpans } from './MultiWaySyntenyDisplay/anchorAxis.ts'
 import { configSchemaFactory } from './MultiWaySyntenyDisplay/configSchema.ts'
 import { geneNamesDraw } from './MultiWaySyntenyDisplay/configSlotViews.ts'
 import {
+  anchorInBlocks,
   copyLaneFiling,
   laneFieldOf,
   copyLaneName,
@@ -605,8 +606,9 @@ export async function multiwayTables(
   const groups = groupsOfField(field, groupFeatures(features), () =>
     copyLaneFiling(
       settings.kept,
-      axis.regions.map(r => copyLaneName(anchor, r.refName)),
+      anchorFrame.regions.map(r => copyLaneName(anchor, r.refName)),
       keyOf,
+      anchorInBlocks(axis.regions, stage.canon),
     ),
   )
   const openingsOf = laneOpeningsOf(groups)
