@@ -8,7 +8,6 @@ import {
   COVERAGE_Y_PATHS,
   coverageBandSlotActions,
   coverageBandSlotViews,
-  coverageLayerProblems,
 } from '@jbrowse/alignments-core/coverageBandConfigSchema'
 import { getCoverageMenuItems } from '@jbrowse/alignments-core/coverageMenuItems'
 import { ConfigurationReference, getConf } from '@jbrowse/core/configuration'
@@ -31,7 +30,6 @@ import SolidColorDialog from '@jbrowse/display-kit/SolidColorDialog'
 import StoredHoverMixin from '@jbrowse/display-kit/StoredHoverMixin'
 import TrackHeightMixin from '@jbrowse/display-kit/TrackHeightMixin'
 import { editPlotMenuItems } from '@jbrowse/display-kit/plotMenu'
-import { sameAsLast } from '@jbrowse/display-kit/stableIdentityComputed'
 import { types } from '@jbrowse/mobx-state-tree'
 import { containingLgv } from '@jbrowse/plugin-linear-genome-view'
 import { createEncodeMemo } from '@jbrowse/render-core/encodeMemo'
@@ -49,18 +47,7 @@ import ContentCopyIcon from '@mui/icons-material/ContentCopy'
 import MenuOpenIcon from '@mui/icons-material/MenuOpen'
 
 import { getMafColorPalette } from '../LinearMafRenderer/util.ts'
-import { mafColorScales } from './colorScales.ts'
-import { perRowRefNameRanks } from './components/refNameRanks.ts'
-import {
-  basesFieldOf,
-  configSlotActions,
-  configSlotViews,
-} from './configSlotViews.ts'
-import {
-  EMPTY_MAF_COVERAGE,
-  createRowsSourceJoin,
-  encodeMafRows,
-} from './encodeMafRows.ts'
+import { configSlotActions, configSlotViews } from './configSlotViews.ts'
 import { fetchMafAlignmentData, fetchMafSummaryData } from './fetchMafData.ts'
 import { mafLaunchMenuItems } from './launchMenuItems.ts'
 import { mafBandActions, mafBandViews } from './mafBandViews.ts'
@@ -70,6 +57,13 @@ import {
   mafCoverageSource,
   mafCoverageViews,
 } from './mafCoverageViews.ts'
+import {
+  mafEncodedUploadViews,
+  mafLegendViews,
+  mafRefNameRankViews,
+  mafRowPlanViews,
+  mafRowsEncodeViews,
+} from './mafEncodeViews.ts'
 import { mafHoverViews } from './mafHoverViews.ts'
 import { mafCodonGlyphViews, mafOverlayViews } from './mafOverlayViews.ts'
 import { mafDrawnRowViews, mafRowActions, mafRowViews } from './mafRowViews.ts'
@@ -77,7 +71,6 @@ import { openInsertionWidget } from './openInsertionWidget.ts'
 import { orderMafRowsByBaseAt } from './orderMafRowsByBaseAt.ts'
 import { placeMafRegionData } from './placeMafRows.ts'
 import { rowNavigationTargetsOf } from './rowNavigationTargets.ts'
-import { resolveRowPlan } from './rowPlan.ts'
 import {
   ZOOM_IN_FOR_BAND,
   buildMafTrackMenuItems,
@@ -85,10 +78,8 @@ import {
 } from './trackMenuItems.ts'
 
 import type {
-  MafGPURenderState,
   MafRegionData,
   MafRenderingBackend,
-  MafUploadPayload,
   MafWireRegionData,
 } from '../LinearMafRenderer/mafRenderingBackendTypes.ts'
 import type { MafColorPalette } from '../LinearMafRenderer/util.ts'
@@ -100,13 +91,8 @@ import type {
 } from '../types.ts'
 import type { MafRowGeometryParams } from './components/visibleRegionGeometry.ts'
 import type { LinearMafDisplayConfigModel } from './configSchema.ts'
-import type { MafRowsEncodeProps, MafRowsSource } from './encodeMafRows.ts'
-import type { RowPlan } from './rowPlan.ts'
 import type { MafHover } from './util.ts'
-import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { ContextMenuAnchor, MenuItem } from '@jbrowse/core/ui'
-import type { ColorScale } from '@jbrowse/core/ui/colorScale'
-import type { JBrowsePalette } from '@jbrowse/core/ui/palette'
 import type { ColorSchemeName } from '@jbrowse/core/util/colorSchemes'
 import type { FetchContext } from '@jbrowse/core/util/fetchContext'
 import type {
@@ -123,13 +109,6 @@ import type { Instance } from '@jbrowse/mobx-state-tree'
  */
 export interface MafRowHover {
   name: string
-}
-
-/** A stacked band's title, at the y its band starts. */
-export interface MafBandLabel {
-  band: 'coverage' | 'conservation'
-  text: string
-  top: number
 }
 
 // A right-click's reference column plus the hit under it, resolved once so menu
@@ -612,268 +591,12 @@ export default function stateModelFactory(
           })
         },
       }))
-      .views(self => ({
-        /**
-         * #getter
-         * At base level each reference base spans at least a pixel (UCSC's
-         * `zoomedToBaseLevel`). Reads the throttled `coarseBpPerPx` so the
-         * rendering swap does not thrash mid-zoom. False until the view is
-         * initialized.
-         */
-        get zoomedToBaseLevel() {
-          const view = self.view
-          return view.initialized && view.coarseBpPerPx <= 1
-        },
-      }))
-      .views(self => {
-        const superConfigProblemsOf = self.configProblemsOf
-        const keepPlan = sameAsLast<RowPlan>()
-        return {
-          /**
-           * #method
-           * The schema's rules, then what the rows cannot paint as written: a
-           * coverage layer filter test its layer does not make, a codon color
-           * with no reading frames, and a range on a field that paints the
-           * theme's colors.
-           */
-          configProblemsOf(conf: AnyConfigurationModel): string[] {
-            return [
-              ...superConfigProblemsOf(conf),
-              ...coverageLayerProblems(conf.coverage),
-              ...(basesFieldOf(conf) === 'codon' && !self.framesAdapterConfig
-                ? [
-                    'alignments.bases.encoding.color.field: codon needs a framesAdapter on the MAF adapter to define reading frames, so the layer draws nothing',
-                  ]
-                : []),
-            ]
-          },
-          /**
-           * #getter
-           * What the rows draw now (`resolveRowPlan`). The same object while
-           * its members are, since every region's encode keys on it: crossing
-           * base level with nothing to redraw re-encodes nothing.
-           */
-          get rowPlan(): RowPlan {
-            const next = resolveRowPlan({
-              field: self.colorField,
-              y: self.yField,
-              mismatches: self.showMismatches,
-              bases: self.basesField,
-              summaryTier: self.coarseTierActive,
-              baseLevel: self.zoomedToBaseLevel,
-              hasFrames: !!self.framesAdapterConfig,
-            })
-            return keepPlan(next)
-          },
-        }
-      })
-      .views(self => ({
-        /**
-         * #getter
-         * Render state passed to the GPU/Canvas2D backend each frame.
-         *
-         * `canvasHeight` is the whole canvas, stacked bands plus rows viewport,
-         * because the coverage band draws on the same canvas as the rows.
-         * `rowsTop` and `rowsHeight` are the rows band inside it.
-         */
-        get renderState(): MafGPURenderState {
-          // Never undefined: zero rows over a region with no blocks is valid
-          // state, and withholding it leaves the loading overlay spinning. The
-          // first-paint gate is `hasFetched`.
-          return {
-            canvasWidth: self.canvasWidthPx,
-            canvasHeight: self.height,
-            rowsTop: self.rowsTopOffset,
-            rowsHeight: self.rowsHeight,
-            coverage: self.coverageBandState,
-            conservation: self.topBands.rects.conservation,
-            rowHeight: self.effectiveRowHeight,
-            rowProportion: self.rowProportion,
-            cellsFill: self.rowPlan.color === undefined,
-            palette: self.colorPalette,
-          }
-        },
-      }))
+      .views(mafRowPlanViews)
       .views(mafOverlayViews)
-      .views(self => {
-        const keepRanks = sameAsLast<ReturnType<typeof perRowRefNameRanks>>()
-        return {
-          /**
-           * #getter
-           * Each row's source sequences ranked by aligned bp over the loaded
-           * regions, so a pan within loaded data keeps every block's color.
-           * Empty unless `refNameRank` fills the rows. The same object while
-           * the ranks are, so a fetch that ranks nothing new re-encodes only
-           * its own region.
-           */
-          get refNameRanks(): ReturnType<typeof perRowRefNameRanks> {
-            const next =
-              self.rowPlan.color === 'refNameRank'
-                ? perRowRefNameRanks(self.rpcDataMap.values())
-                : { ranks: new Map<number, Map<string, number>>(), maxRank: 0 }
-            return keepRanks(next)
-          },
-        }
-      })
-      .views(self => ({
-        /**
-         * #getter
-         * Titles for the stacked bands, with the y they sit at; empty unless
-         * both bands reserve px, so a band's chip never hides the last band.
-         * The on-screen chips and the SVG export both read it.
-         *
-         * The conservation title names what the band draws
-         * (`codonConservationActive`), not the mode asked for.
-         */
-        get bandLabels(): MafBandLabel[] {
-          const { coverage, conservation } = self.topBands.rects
-          return coverage.height > 0 && conservation.height > 0
-            ? [
-                { band: 'coverage', text: 'Coverage', top: coverage.top },
-                {
-                  band: 'conservation',
-                  text: self.codonConservationActive
-                    ? 'Conservation (aa identity)'
-                    : 'Conservation (% identity)',
-                  top: conservation.top,
-                },
-              ]
-            : []
-        },
-        /**
-         * #getter
-         * `LegendMixin`'s hook: the key for the fill `rowPlan` paints, the
-         * codon layer's, then the CDS frame key while the strip draws, then
-         * the row color key. Each key is built by the module that paints it,
-         * so the swatches match the screen.
-         */
-        get colorScales(): ColorScale[] {
-          return this.colorScalesIn(getPaletteHost(self).palette)
-        },
-        /**
-         * #method
-         * `colorScales` in another theme: the SVG export's, whose codon and
-         * CDS-frame swatches follow it.
-         */
-        colorScalesIn(palette: JBrowsePalette): ColorScale[] {
-          return self.view.initialized
-            ? mafColorScales({
-                palette,
-                plan: self.rowPlan,
-                colorEncoding: self.colorEncoding,
-                colorKeyTitle: self.colorKeyTitle,
-                oneBaseCells: self.encodeBinBp === 1,
-                maxRefNameRank: self.refNameRanks.maxRank,
-                showsFrames: self.framesOnScreen,
-                rowColorScales: self.rowColorScales,
-              })
-            : []
-        },
-        /**
-         * #getter
-         * Whether this display has a color key, as opposed to whether one is
-         * drawn now: the question "Show legend" is offered on. A constant fill
-         * and the bases key nothing; a field, the bars' height, the codon
-         * layer and the frame strip key what they paint. Read off the
-         * settings rather than `rowPlan` or the frames on screen, so the row
-         * stays put through zoom and pan.
-         *
-         * Overrides `LegendMixin`'s, whose scale reads decline on an
-         * uninitialized view and would drop the row while a track loads.
-         */
-        get hasLegendKey(): boolean {
-          return (
-            self.colorField !== undefined ||
-            self.yField !== undefined ||
-            (self.basesField === 'codon' && !!self.framesAdapterConfig) ||
-            self.framesActive ||
-            self.rowColorScales.length > 0
-          )
-        },
-      }))
-      .views(self => ({
-        /**
-         * #method
-         * What a region's rows encode reads beyond the region, in a given
-         * palette, since the SVG export's theme need not be the session's. A
-         * mode flip lives here so it re-encodes every region as a declared
-         * input.
-         */
-        rowsEncodePropsIn(colorPalette: MafColorPalette): MafRowsEncodeProps {
-          return {
-            plan: self.rowPlan,
-            value: self.colorValue,
-            identityColors: self.identityColors,
-            gpu: {
-              palette: colorPalette,
-              binBp: self.encodeBinBp,
-            },
-            refNameRanks: self.refNameRanks.ranks,
-            refNameRankPalette: self.refNameRankPalette,
-            rowIndexBySrc: self.rowIndexBySrc,
-            codons:
-              (self.codonCellsActive || self.codonConservationActive) &&
-              self.defaultCodonSpecies !== undefined
-                ? {
-                    anchor: self.defaultCodonSpecies,
-                    cells: self.codonCellsActive,
-                    band: self.codonConservationActive,
-                    refRowIndex: self.referenceRowIndex,
-                  }
-                : undefined,
-            conservation:
-              self.conservationBandActive && !self.codonConservationActive,
-          }
-        },
-        /**
-         * #method
-         * `rowsEncodePropsIn` in the session's palette, for the on-screen
-         * encode.
-         */
-        rowsEncodeProps(): MafRowsEncodeProps {
-          return this.rowsEncodePropsIn(self.colorPalette)
-        },
-      }))
-      .views(self => {
-        const join = createRowsSourceJoin()
-        return {
-          /**
-           * #getter
-           * Each region's detail and summary tiers, paired: what its rows
-           * draw from. A pair keeps its identity while neither tier moved.
-           */
-          get rowsSources(): ReadonlyMap<number, MafRowsSource> {
-            return join(
-              self.detailOnScreen,
-              self.summaryDataMap,
-              self.framesDataMap,
-            )
-          },
-        }
-      })
-      .views(self => {
-        const encoded = createEncodeMemo(
-          () => self.rowsSources,
-          () => self.rowsEncodeProps(),
-          (source, props): MafUploadPayload => ({
-            ...encodeMafRows(source, props),
-            coverage: source.detail?.coverage ?? EMPTY_MAF_COVERAGE,
-          }),
-        )
-        return {
-          /**
-           * #getter
-           * Every loaded region's upload payload, the rows band's `span`
-           * channels beside the coverage band's buffers, keyed by
-           * displayedRegionIndex. Held here rather than in the upload's setup
-           * thunk so a theme or color change re-encodes without an RPC
-           * roundtrip and the memo outlives a context-loss recovery.
-           */
-          get encodedUpload(): ReadonlyMap<number, MafUploadPayload> {
-            return encoded()
-          },
-        }
-      })
+      .views(mafRefNameRankViews)
+      .views(mafLegendViews)
+      .views(mafRowsEncodeViews)
+      .views(mafEncodedUploadViews)
       .views(mafCodonGlyphViews)
       .views(mafHoverViews)
       // #region superMethod
