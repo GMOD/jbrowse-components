@@ -51,6 +51,21 @@ export function setHiddenGroupsOn(
 }
 
 /**
+ * `HiddenGroupsMixin`'s `hideGroup` over `owner`'s facet: adds `key` to the
+ * sections hidden under `groupKeySpace`, writing nothing where it already is.
+ */
+export function hideGroupOn(
+  owner: SectionFacetOwner,
+  groupKeySpace: string,
+  key: string,
+) {
+  const hidden = hiddenGroupsOf(owner, groupKeySpace)
+  if (!hidden.has(key)) {
+    setHiddenGroupsOn(owner, [...hidden, key])
+  }
+}
+
+/**
  * The sections hidden off `facet.hidden`, which `HiddenGroupsMixin` installs
  * and a static host composes beside its config node.
  */
@@ -138,9 +153,8 @@ export default function HiddenGroupsMixin() {
        * section has no chip to restore it.
        */
       hideGroup(key: string) {
-        if (!self.hiddenGroups.has(key)) {
-          self.setHiddenGroups([...self.hiddenGroups, key])
-        }
+        const host = keySpaceHost(self)
+        hideGroupOn(host.configuration, host.groupKeySpace, key)
       },
       /**
        * #action

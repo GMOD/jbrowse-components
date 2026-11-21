@@ -21,6 +21,7 @@ import {
 } from '@jbrowse/display-kit/FacetWritesMixin'
 import {
   hiddenGroupsOf,
+  hideGroupOn,
   setHiddenGroupsOn,
 } from '@jbrowse/display-kit/HiddenGroupsMixin'
 import { autorunOnReadyView } from '@jbrowse/display-kit/displayAutoruns'
@@ -190,7 +191,8 @@ export function recordsSettingsViews(self: RecordsSettingsHost) {
      */
     get recordsHeightHeld() {
       return (
-        this.recordsHeightWritten || self.openingRecordsHeight !== undefined
+        getConf(self, ['records', 'height']) !== undefined ||
+        self.openingRecordsHeight !== undefined
       )
     },
     /**
@@ -237,7 +239,7 @@ export function recordsSettingsViews(self: RecordsSettingsHost) {
     get recordsHiddenGroups(): ReadonlySet<string> {
       return hiddenGroupsOf(
         self.configuration.records,
-        this.recordsFacet?.field ?? '',
+        getConf(self, ['records', 'facet', 'field']),
       )
     },
     /**
@@ -263,7 +265,7 @@ export function recordsSettingsViews(self: RecordsSettingsHost) {
      * checkbox redraws rather than refetches.
      */
     get recordFieldReads(): RecordFieldReads {
-      const tooltip = this.recordsTooltipField
+      const tooltip = getConf(self, ['records', 'tooltip', 'field'])
       const name = getConf(self, ['records', 'labels', 'name', 'field'])
       const description = getConf(self, [
         'records',
@@ -273,7 +275,7 @@ export function recordsSettingsViews(self: RecordsSettingsHost) {
       ])
       return {
         tooltip: tooltip === DEFAULT_TOOLTIP ? '' : tooltip,
-        facet: this.recordsFacet?.field ?? '',
+        facet: getConf(self, ['records', 'facet', 'field']),
         labelName: name === FEATURE_NAME_FIELD ? '' : name,
         labelDescription:
           description === FEATURE_DESCRIPTION_FIELD ? '' : description,
@@ -379,15 +381,17 @@ export function recordsBandActions(self: RecordsActionsHost) {
      * brings it back.
      */
     hideRecordsGroup(key: string) {
-      if (!self.recordsHiddenGroups.has(key)) {
-        this.setRecordsHiddenGroups([...self.recordsHiddenGroups, key])
-      }
+      hideGroupOn(
+        self.configuration.records,
+        getConf(self, ['records', 'facet', 'field']),
+        key,
+      )
     },
     /**
      * #action
      */
     showAllRecordsGroups() {
-      this.setRecordsHiddenGroups([])
+      setHiddenGroupsOn(self.configuration.records, [])
     },
     /**
      * #action
