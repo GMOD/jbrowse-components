@@ -104,10 +104,10 @@ BigWig assumptions:
   (`MultiWiggleAdapter.ts`), so a samples-TSV column never reaches
   `rows.color` or `facet`, and the table's warnings are dropped
   there too.
-- It declares `READS_REFERENCE`, so members get a reference:
+- It declares `READS_REFERENCE`, as `MultiWiggleAdapter` does:
   `getSubAdapter` hands each member its parent's `keyedSequence`
-  (`dataAdapterCache.ts`), which is undefined otherwise, and a GC-content
-  or CRAM member would read none.
+  (`dataAdapterCache.ts`), so without it a sequence-search or CRAM member
+  reads none.
 
 `MultiWiggleAdapter` stays as a name for the same class, because hosted hub
 configs written for older JBrowse keep using it (jb2hubs writes it with

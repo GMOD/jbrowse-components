@@ -47,6 +47,24 @@ keys any type declaring `READS_REFERENCE` on its config AND that sequence, and
 hands the sequence to the constructor. One BAM shown on two genomes is two
 instances; two assemblies over one FASTA, or an alias spelling, hash to one.
 
+- **A sub-adapter gets its parent's reference, not the request's.** A wrapper
+  whose members can be any type declares `READS_REFERENCE` itself
+  (`MultiWiggleAdapter`: a multi-row track stacked from sequence-search tracks
+  has scan members). Handing the request's reference to members whatever the
+  parent declares is wrong: the parent stays keyed on its config alone, and
+  builds its members once, against the first genome that asked.
+- **A call naming no assembly builds a second, reference-less instance** of a
+  `READS_REFERENCE` type. `CoreGetMetadata` (`createAdapterMetadataFetch`) and
+  `MarkGetRowSources` both do; neither reads the reference, so it costs an
+  instance and a header read, not a wrong answer.
+- **Render-side reference reads stay on the RPC's own `sequenceAdapter`**
+  (`plugins/alignments/src/shared/fetchReferenceSequence.ts`), not the
+  adapter's `getSequenceAdapter()`: both reach one cached FASTA, and the
+  adapter route would turn a skip without a reference into a throw.
+- `getSequenceSubAdapter` throws where `BaseAlignmentsAdapter` returns
+  `undefined` on a sequence-less assembly, on purpose: a scan cannot run
+  without residues, while mismatch drawing degrades.
+
 ## Plugin workarounds
 
 A new plugin that receives an out-of-request refName should **type it
