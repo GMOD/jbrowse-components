@@ -4,6 +4,7 @@ import { getSnapshot } from '@jbrowse/mobx-state-tree'
 
 import { configSchemaFactory } from './configSchema.ts'
 import { withChannel } from './markEdit.ts'
+import { markProblems } from './markProblems.ts'
 import {
   splitOrder,
   stepFields,
@@ -13,6 +14,8 @@ import {
 } from './plotEdit.ts'
 
 import type { MarkPlot } from './markPlot.ts'
+import type { StepSnapshot } from './markProblems.ts'
+import type { AggregateOpName } from './markVocabulary.ts'
 import type { Signature } from '@jbrowse/core/util/jexl'
 
 test('a text field a step writes is picked as a category, a number as a ramp', () => {
@@ -244,4 +247,38 @@ test('a new aggregate op keeps the name its output is read by', () => {
   expect(
     withAggregateOp({ type: 'aggregate', ops: [] }, 'count', 'score'),
   ).toEqual({ type: 'aggregate', ops: [{ op: 'count' }] })
+})
+
+// MarkTransform.md's weighted mean: an edit of its field or summary keeps the
+// weight, which a count sums and a max ignores, as the rule list says.
+test('a new aggregate op keeps the weight it was written with', () => {
+  const weighted: StepSnapshot = {
+    type: 'aggregate',
+    ops: [{ op: 'mean', field: 'score', weight: 'n_valid_cov' }],
+  }
+  const opsAfter = (op: AggregateOpName, field: string) => {
+    const step = withAggregateOp(weighted, op, field)
+    return step.type === 'aggregate' ? step.ops : undefined
+  }
+  expect(opsAfter('mean', 'depth')).toEqual([
+    { op: 'mean', field: 'depth', weight: 'n_valid_cov' },
+  ])
+  expect(opsAfter('count', 'score')).toEqual([
+    { op: 'count', weight: 'n_valid_cov' },
+  ])
+  expect(opsAfter('mean', '')).toEqual([{ op: 'mean', weight: 'n_valid_cov' }])
+  expect(opsAfter('max', 'score')).toEqual([
+    { op: 'max', field: 'score', weight: 'n_valid_cov' },
+  ])
+  expect(
+    markProblems({
+      marks: [
+        {
+          mark: 'bar',
+          encoding: { y: 'max' },
+          transform: [withAggregateOp(weighted, 'max', 'score')],
+        },
+      ],
+    }).map(p => p.rule),
+  ).toContain('unread-weight')
 })

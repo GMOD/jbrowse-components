@@ -257,8 +257,9 @@ export function withStepSlot(
 }
 
 /**
- * An aggregate or window with its one op, or the first of several, written, keeping the
- * name its output was written under, which a channel may read.
+ * An aggregate or window with its one op, or the first of several, written,
+ * keeping its `weight` and the name its output was written under, which a
+ * channel may read. A `count` reads no field, and sums the weight.
  */
 export function withAggregateOp(
   step: StepSnapshot,
@@ -275,6 +276,7 @@ export function withAggregateOp(
       {
         op,
         ...(op === 'count' || !field ? {} : { field }),
+        ...(first?.weight ? { weight: first.weight } : {}),
         ...(first?.as ? { as: first.as } : {}),
       },
       ...rest,

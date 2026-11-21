@@ -18,10 +18,6 @@ traced it and nobody reread it; reread before fixing.
 
 ## Checked defects
 
-- **Editing an aggregate or window op in the form drops its `weight`.**
-  `plotEdit.ts` `withAggregateOp` rebuilds the first op as `{ op, field, as }`.
-  A `mean` weighted by `n_valid_cov`, the `MarkTransform.md` example, becomes
-  an unweighted mean on the first edit of its field or summary.
 - **A scale's list box keeps the text of the mark that was there before.**
   `MarkScaleRow.tsx` `ListField` holds `useState(initial)` and is keyed by
   `${scale}-${member}` inside a row keyed `${at}-${channel}`
