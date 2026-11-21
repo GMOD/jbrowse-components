@@ -133,6 +133,36 @@ export interface TrackDataResult {
 }
 
 /**
+ * The sequences the fetched data declares circular, then those the assembly's
+ * `circularRefNames` lists, keyed by the refName the features carry: a
+ * FASTA + GFF3 or a Prokka GenBank, whose every record says `linear`, is
+ * circular only by that setting.
+ */
+function circularLengths(
+  model: ExportableTrack,
+  assemblyName: string | undefined,
+  fetched: Feature[],
+) {
+  const lengths = declaredCircularLengths(fetched)
+  const assembly = assemblyName
+    ? getSession(model).assemblyManager.get(assemblyName)
+    : undefined
+  for (const refName of new Set(fetched.map(f => f.get('refName')))) {
+    const region = assembly?.getRegionForRefName(
+      assembly.getCanonicalRefName2(refName),
+    )
+    if (
+      region &&
+      !lengths.has(refName) &&
+      assembly?.isCircularRefName(refName)
+    ) {
+      lengths.set(refName, region.end)
+    }
+  }
+  return lengths
+}
+
+/**
  * The features in `regions` the display keeps, for a display whose filter
  * reads the fetched features themselves (`exportedFeatures`).
  */
@@ -171,7 +201,7 @@ async function fetchedThenFiltered({
   return {
     features,
     filteredOut: fetched.length - features.length,
-    circularLengths: declaredCircularLengths(fetched),
+    circularLengths: circularLengths(model, regions[0]?.assemblyName, fetched),
   }
 }
 

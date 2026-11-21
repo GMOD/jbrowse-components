@@ -66,6 +66,18 @@ const options: Record<string, FileTypeExporter> = {
 
 const call = jest.fn()
 
+// an assembly whose `circularRefNames` lists ctgB by its alias, plasmidB
+const assemblyManager = {
+  get: () => ({
+    getCanonicalRefName2: (refName: string) =>
+      refName === 'plasmidB' ? 'ctgB' : refName,
+    getRegionForRefName: (refName: string) =>
+      ({ ctgA: { end: 50001 }, ctgB: { end: 6079 } })[refName],
+    isCircularRefName: (refName: string) =>
+      refName === 'ctgB' || refName === 'plasmidB',
+  }),
+}
+
 let model: ExportableTrack
 
 function setup({
@@ -94,6 +106,7 @@ function setup({
   jest.mocked(getRpcSessionId).mockReturnValue('session-1')
   jest.mocked(getSession).mockReturnValue({
     rpcManager: { call },
+    assemblyManager,
   } as unknown as ReturnType<typeof getSession>)
 }
 
@@ -254,6 +267,28 @@ test('a circular declaration the display filters out still reaches the writer', 
 
   expect(writer.mock.calls[0]![0]).toMatchObject({
     circularLengths: new Map([['ctgA', 1000]]),
+  })
+})
+
+test("a sequence the assembly's circularRefNames lists reaches the writer as circular, by the file's name for it", async () => {
+  setup()
+  respond({
+    CoreGetFeatures: [
+      feature('gene1'),
+      new SimpleFeature({
+        uniqueId: 'repA',
+        refName: 'plasmidB',
+        start: 100,
+        end: 900,
+        name: 'repA',
+      }),
+    ],
+  })
+
+  await fetchTrackData({ model, regions, type: 'bed', options })
+
+  expect(writer.mock.calls[0]![0]).toMatchObject({
+    circularLengths: new Map([['plasmidB', 6079]]),
   })
 })
 
