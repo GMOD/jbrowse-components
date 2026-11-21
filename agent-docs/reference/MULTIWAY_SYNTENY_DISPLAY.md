@@ -56,9 +56,10 @@ every cost is linear in lanes.
   unless `rows.kept` names it, and the lane dialog offers it unticked; the
   floor weighs only groups the settled viewport shows (`anchorInBlocks`), since a
   copy whose pairs all sit in the fetch's margin drew an empty lane; only the anchor's own contig draws no
-  copy lane, so the anchor genome's other copies draw. The display and
-  `multiwayTables` share the wiring (`groupsOfField`, `anchorInBlocks`,
-  `rowsReadAgainstAnchor`, `anchorRowOf`). Every path that treats a lane as an assembly reads
+  copy lane, so the anchor genome's other copies draw. `multiwayTables` runs
+  the display's own lane row views (`laneRowViews.ts`, over `groupsOfField`,
+  `anchorInBlocks`, `rowsReadAgainstAnchor` and `anchorRowOf`) on
+  `MultiWayTablesHost`. Every path that treats a lane as an assembly reads
   `laneGenome`. Continuing a LinearSyntenyView's ribbons into each row as
   faint columns was the declined alternative: it painted over the ruler,
   track headers and block bars (ADR-278).
@@ -176,12 +177,13 @@ every cost is linear in lanes.
   takes both in the same shape (`pins`, `hidden`). The decision is stored as
   data and the drawn frame derives from it against the live view on every pan
   (`frameFromDecision`, `rowFrames`).
-- **The display and `multiwayTables` share one lane pipeline**: `laneRowsOf`
-  picks and orders the lanes, `pinsInForceOf` resolves the pins, and an
-  `AnchorStage` (`laneStage.ts`) runs the decisions, frames and stack against
-  the view or a static layout. The model calls them from separate getters,
-  deciding at the settled view in an autorun and laying out frames and the
-  stack at the live one. A table keeps sub-px placements (`wholePx: false`),
+- **`multiwayTables` runs the display's lane pipeline on
+  `MultiWayTablesHost`**: the lane row views (`laneRowViews.ts`), where
+  `laneRowsOf` picks and orders the lanes and `pinsInForceOf` resolves the
+  pins, and an `AnchorStage` (`laneStage.ts`) that runs the decisions, frames
+  and stack against the view or a static layout. The model calls them from
+  separate getters, deciding at the settled view in an autorun and laying out
+  frames and the stack at the live one. A table keeps sub-px placements (`wholePx: false`),
   where the view places at whole px.
 - **Lanes decide at the settled view, and draw at the live one.** The decision
   reads the coarse blocks and the zoom and offset they were laid out at

@@ -772,7 +772,8 @@ A table runs the display's own decisions, not a copy of them, on a static host:
 a minimal MST model per display with no session, view or autoruns
 (`wiggleStaticHost.ts` and `featureStaticHost.ts` in each plugin's `shared/`,
 `VariantTablesHost`, `VariantRecordsTablesHost` and `AlignmentsTablesHost` in
-their `tables.ts`).
+their `tables.ts`, and `MultiWayTablesHost` in linear-comparative-view's
+`multiwayTables.ts`).
 
 - **The display's chain is views functions** over a duck-typed host, each
   returning an object of getters. The display model installs each with
@@ -796,7 +797,9 @@ their `tables.ts`).
   wiggle and variants hosts), and `wiggleScoreStages` and
   `wiggleSidebarStages` (`LinearWiggleDisplay` and the wiggle host). Views that
   read `configuration`, a prop, are listed in both, since an installer would
-  have to constrain the model's props.
+  have to constrain the model's props. `MultiWayTablesHost` lists the lane row
+  views by hand: the display installs `laneNameViews` between them, which the
+  host leaves out.
 - **Not a plain object.** A plain object with getters installed by hand needed
   a cast for the views' own hooks and lazy forwarding between host and views,
   and one spread-merged with a views object evaluated every getter eagerly, so

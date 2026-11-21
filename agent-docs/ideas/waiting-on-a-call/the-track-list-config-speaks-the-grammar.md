@@ -11,7 +11,7 @@ idea". Parked until he wants it; nothing below is built.
 
 ## Today
 
-`configuration.hierarchical` (`packages/product-core/src/RootModel/HierarchicalConfig.ts`):
+`configuration.hierarchical` (`packages/core/src/configuration/hierarchicalConfigSchema.ts`):
 
 ```json
 {

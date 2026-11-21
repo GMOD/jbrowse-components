@@ -166,6 +166,8 @@ export interface ClusterRun {
  * A change in the drawn rows' order (a sort, a clustering run landing, a
  * focus) clears the display's stored hover, which would otherwise name a row
  * no longer under a still pointer; a relabel moves no row and keeps it.
+ * The composing display must provide `clearHoveredFeature` (`BaseDisplay`
+ * does): `TreeSidebarHost` is asserted onto `self`, not checked.
  */
 export function TreeSidebarMixin<S extends Row = Row>() {
   const base = types
