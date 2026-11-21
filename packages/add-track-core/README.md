@@ -1,7 +1,8 @@
 # @jbrowse/add-track-core
 
-The file-format table the add-track guessers and the CLI both read — no
-framework deps.
+The file-format table the add-track guessers and the CLI both read, and the
+GenBank record and location parsers the GenBank adapters and the text indexer
+share — no framework deps.
 
 One entry per format: the filename regex that identifies it, the adapter type
 and location field its config uses, and where its index or sidecar files sit.

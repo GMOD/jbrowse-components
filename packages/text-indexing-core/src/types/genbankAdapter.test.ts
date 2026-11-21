@@ -20,7 +20,8 @@ function words(line: string) {
 }
 
 // an NCBI record, where a gene and its CDS share a /locus_tag, then a Prokka
-// one, a CDS with no gene above it and a contig name run into the length
+// one, a CDS with no gene above it and a contig name run into the length, its
+// date pushed onto a line of its own as Prokka writes it
 const genbank = `LOCUS       NC_002128              92721 bp    DNA     circular CON 28-AUG-2016
 VERSION     NC_002128.1
 FEATURES             Location/Qualifiers

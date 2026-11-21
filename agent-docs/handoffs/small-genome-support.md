@@ -50,14 +50,15 @@ locstring).
   pre-push autogen stopped on two unrelated docs gates (the hand-written fence
   baseline, and an ideas description over 45 words). They regenerate on the
   first push whose autogen passes.
-
 - **GenBank export writes its own `source` feature.** The file's `/organism`,
   `/strain` and `/db_xref` on `source` are replaced by `/organism="<assembly
   name>"` (`formatHeader` in
   `packages/core/src/pluggableElementTypes/models/saveTrackFileTypes/genbank.ts`),
-  and no qualifier line is wrapped at 80 columns; Biopython 1.86 reads the
-  output either way. Repro: `tutorials/prokka_genbank.md` § "Saving a plasmid
-  as GenBank".
+  and every record gets `/chromosome="<refName>"`, a plasmid included
+  (`/chromosome="NC_002128.1"` for pO157, where INSDC would write
+  `/plasmid="pO157"`). No qualifier line is wrapped at 80 columns; Biopython
+  1.86 reads the output either way. Repro: `tutorials/prokka_genbank.md` §
+  "Saving a plasmid as GenBank".
 
 ## Open questions, unverified
 

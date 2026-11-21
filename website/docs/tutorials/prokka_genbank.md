@@ -93,7 +93,7 @@ prokka --outdir annotation --prefix sakai --locustag SAKAI --cpus 0 assembly.fna
 
 `annotation/sakai.gbk` is the GenBank file: one record per contig, each with its
 sequence and its genes. Prokka names each record after its contig and writes
-every record as linear, so the first lines of the file name the three replicons:
+every record as linear, as each record's first line shows:
 
 ```bash
 grep '^LOCUS' annotation/sakai.gbk
@@ -131,8 +131,9 @@ a GenBank file, so in JBrowse Desktop the assembly loads from a
 }
 ```
 
-`sakai.gbk` is also the gene track. Its features are Prokka's CDS, tRNA and rRNA
-records, each labeled by its `/gene`, else its `/locus_tag`:
+`sakai.gbk` is also the gene track. Its features are Prokka's CDS, tRNA, rRNA
+and tmRNA records, each labeled by its `/gene`, else its `/locus_tag`, and one
+CRISPR array as a `repeat_region`:
 
 ```json addtrack
 {
@@ -274,7 +275,8 @@ npx --yes serve prokka_genbank_build/jbrowse2  # then open the printed URL
     track over `sakai.fna` as the assembly. Bakta (Schwengers et al. 2021)
     writes its GenBank file as `<prefix>.gbff`, which loads the same way; on
     this assembly it named the contigs `contig_1` to `contig_3` and wrote each
-    as circular.
+    as circular, because NCBI's FASTA headers call each one complete
+    (`--complete` does the same for any FASTA).
 
 ## See also
 
