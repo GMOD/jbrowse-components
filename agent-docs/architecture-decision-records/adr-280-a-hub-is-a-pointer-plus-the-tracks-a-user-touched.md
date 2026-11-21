@@ -104,6 +104,9 @@ may add genomes as session assemblies once their tracks are read.
   keep drawing from their copies.
 - A JBrowse 1 connection reports failure through its own code rather than the
   shared `lazyConnect` handler, which lives in another plugin.
+- **A hub that never answers stalls a link or session-spec load.**
+  `whenConnectionsSettle` (`loadSessionSpec.ts`) and `settleAssemblyResolution`
+  (`assemblyManager.ts`) wait on `loading` with no bound and show no message.
 
 ## Rejected alternatives
 
@@ -112,8 +115,7 @@ found fatal; each saves less than it first appeared to and costs compatibility
 work, so neither is worth it while hubs are rarely used.
 
 - **Copy an opened hub track into `sessionTracks`, tagged with its
-  `connectionId`** (the parked step in
-  `handoffs/connection-tracks-frozen.md`). It deletes `connectionTrackConfigs`
+  `connectionId`**. It deletes `connectionTrackConfigs`
   and its actions, but a prune on close must stay (or a reopened track keeps a
   stale copy and sessions grow), the hub tier of the lookup must stay (an
   unopened hub track resolves only there), `connectionId` needs a real slot
