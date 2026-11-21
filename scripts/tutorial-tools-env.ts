@@ -6,7 +6,9 @@
 //
 // An entry's `bins` lists its commands (default: the entry's own name),
 // `modules` the Python modules and `rlibs` the R packages it provides. Cargo, npm and download-only tools
-// stay out: the env holds what conda and pip deliver.
+// stay out: the env holds what conda and pip deliver. So does an entry with a
+// `condaEnv`, which the pages install into an environment of its own because
+// conda cannot solve it beside the rest.
 //
 // Run: node scripts/tutorial-tools-env.ts create <prefix>
 //      node scripts/tutorial-tools-env.ts check <prefix>
@@ -18,6 +20,7 @@ import path from 'node:path'
 
 interface Entry {
   conda?: string
+  condaEnv?: string
   pip?: string
   bins?: string[]
   modules?: string[]
@@ -34,7 +37,9 @@ const registry = JSON.parse(
   ),
 ) as Record<string, Entry>
 
-const entries = Object.entries(registry).filter(([, e]) => e.conda ?? e.pip)
+const entries = Object.entries(registry).filter(
+  ([, e]) => (e.conda ?? e.pip) && !e.condaEnv,
+)
 
 function condaFrontend() {
   const found = ['micromamba', 'mamba', 'conda'].find(

@@ -13,12 +13,16 @@ import { rewriteGroupedMarkerBlocks } from '../markerDocs.ts'
 // a wget line; one with no packaged install stays a bullet with a link. A
 // package released with JBrowse names its `npmPrerelease` dist-tag, which the
 // npm line installs while JBrowse is on a prerelease, as the tutorials' beta
-// notice tells readers to.
+// notice tells readers to. A tool whose `condaEnv` names an environment stays
+// out of the shared conda line and gets a `conda create` of its own, stacked on
+// the reader's current environment, for a package conda cannot solve well
+// beside the others.
 const MANAGERS = ['apt', 'conda', 'cargo', 'pip', 'npm'] as const
 
 type Manager = (typeof MANAGERS)[number]
 
 type Entry = Partial<Record<Manager, string>> & {
+  condaEnv?: string
   download?: string[]
   npmPrerelease?: string
   bins?: string[]
@@ -89,8 +93,13 @@ function renderInstall(tools: string[], where: string) {
   const packages = (m: Manager) =>
     entries.flatMap(({ entry }) => {
       const name = packageOf(entry, m)
-      return name ? [name] : []
+      return name && !(m === 'conda' && entry.condaEnv) ? [name] : []
     })
+  const ownEnvs = entries.flatMap(({ tool, entry }) =>
+    entry.conda && entry.condaEnv
+      ? [{ tool, spec: entry.conda, env: entry.condaEnv }]
+      : [],
+  )
 
   const lines: string[] = []
   const apt = packages('apt')
@@ -102,6 +111,13 @@ function renderInstall(tools: string[], where: string) {
     lines.push(
       apt.length ? '# or conda, which has every tool above' : '# conda',
       ...wrap(COMMANDS.conda, conda),
+    )
+  }
+  for (const { tool, spec, env } of ownEnvs) {
+    lines.push(
+      `# ${tool} in a conda environment of its own`,
+      ...wrap(`conda create -n ${env} -c bioconda -c conda-forge`, [spec]),
+      `conda activate --stack ${env}`,
     )
   }
   const urls = entries.flatMap(({ entry }) =>

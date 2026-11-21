@@ -41,16 +41,26 @@ function aptKnows(pkg: string) {
 const probes: Record<string, (value: string) => Promise<boolean | undefined>> =
   {
     apt: async pkg => aptKnows(pkg),
-    conda: async pkg =>
-      (await exists(`https://api.anaconda.org/package/bioconda/${pkg}`)) ||
-      (await exists(`https://api.anaconda.org/package/conda-forge/${pkg}`)),
+    conda: async spec => {
+      const pkg = spec.replace(/[=<>!].*/, '')
+      return (
+        (await exists(`https://api.anaconda.org/package/bioconda/${pkg}`)) ||
+        (await exists(`https://api.anaconda.org/package/conda-forge/${pkg}`))
+      )
+    },
     cargo: pkg => exists(`https://crates.io/api/v1/crates/${pkg}`),
     pip: pkg => exists(`https://pypi.org/pypi/${pkg}/json`),
     npm: pkg => exists(`https://registry.npmjs.org/${pkg}`),
     download: url => exists(url, 'HEAD'),
   }
 
-const NOT_PACKAGES = new Set(['bins', 'modules', 'rlibs', 'npmPrerelease'])
+const NOT_PACKAGES = new Set([
+  'bins',
+  'modules',
+  'rlibs',
+  'npmPrerelease',
+  'condaEnv',
+])
 
 const errors: string[] = []
 let checked = 0
