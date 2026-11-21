@@ -10,9 +10,11 @@ const DISPLAY_MODELS = [
   'plugins/marks/src/LinearMarkDisplay/model.ts',
 ]
 
-// The views functions a display installs its hook overrides from, which its
-// tables export installs too.
+// The views modules a display installs its hook overrides from, outside its
+// model file.
 const HOOK_VIEWS = [
+  'plugins/maf/src/LinearMafDisplay/mafBandViews.ts',
+  'plugins/maf/src/LinearMafDisplay/mafRowViews.ts',
   'plugins/variants/src/LinearVariantDisplay/variantRowViews.ts',
   'plugins/wiggle/src/shared/wiggleAxisViews.ts',
   'plugins/wiggle/src/shared/wiggleResolveViews.ts',
