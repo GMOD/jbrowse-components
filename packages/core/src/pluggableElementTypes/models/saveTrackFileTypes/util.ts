@@ -35,19 +35,21 @@ export function declaredCircularLengths(features: Feature[]) {
   return lengths
 }
 
-/**
- * A record's `source` feature, as GenBank import and NCBI's GFF3 both mark it.
- * A feature track never draws one, so a writer that needs it is handed these
- * from the fetch rather than finding them among the features.
- */
-export function isSourceRecord(feature: Feature) {
-  return feature.get('gbkey') === 'Src'
+function span(feature: Feature) {
+  return feature.get('end') - feature.get('start')
 }
 
+/**
+ * Each sequence's widest `source` feature, as GenBank import and NCBI's GFF3
+ * both mark it (`gbkey=Src`). A feature track never draws one, so a writer that
+ * needs it is handed these from the fetch rather than finding them among the
+ * features.
+ */
 export function sourceRecords(features: Feature[]) {
   const sources = new Map<string, Feature>()
   for (const f of features) {
-    if (isSourceRecord(f) && !sources.has(f.get('refName'))) {
+    const prior = sources.get(f.get('refName'))
+    if (f.get('gbkey') === 'Src' && (!prior || span(f) > span(prior))) {
       sources.set(f.get('refName'), f)
     }
   }

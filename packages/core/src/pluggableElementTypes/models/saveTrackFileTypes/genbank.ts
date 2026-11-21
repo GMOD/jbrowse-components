@@ -185,18 +185,20 @@ const FLAG_QUALIFIERS = new Set([
   'transgenic',
 ])
 
-// The qualifiers INSDC spells with capitals, which GenBank import reads back
-// lowercased like every attribute
-const QUALIFIER_CASE: Record<string, string> = {
+// INSDC's spelling of a qualifier GenBank import reads back lowercased, or
+// NCBI's GFF3 names otherwise
+const QUALIFIER_SPELLING: Record<string, string> = {
+  dbxref: 'db_xref',
   ec_number: 'EC_number',
   pcr_conditions: 'PCR_conditions',
   pcr_primers: 'PCR_primers',
+  substr: 'sub_strain',
 }
 
 // a qualifier the file repeated, as Prokka repeats /inference, is written once
 // per value rather than joined into one value with a comma that is in neither
 function qualifierLines(attribute: string, value: unknown) {
-  const key = QUALIFIER_CASE[attribute] ?? attribute
+  const key = QUALIFIER_SPELLING[attribute] ?? attribute
   return [value]
     .flat()
     .flatMap(v => formatAttributeValue(v) || [])
@@ -418,8 +420,8 @@ function formatLocus(refName: string, length: number, circular: boolean) {
 }
 
 // what GenBank import and NCBI's GFF3 mark a source feature with, which the
-// record says in its LOCUS line or does not need said
-const SOURCE_MARKERS = new Set(['gbkey', 'is_circular'])
+// record says in its LOCUS line or INSDC has no qualifier for
+const SOURCE_MARKERS = new Set(['gbkey', 'is_circular', 'genome'])
 
 // INSDC requires /organism and /mol_type on every source; a track with no
 // source feature of its own, or one that leaves either out, gets the assembly

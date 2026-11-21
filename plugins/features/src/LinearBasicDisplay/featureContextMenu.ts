@@ -466,7 +466,12 @@ function copyJsonItem(
           const { uniqueId: _, ...rest } = (target ?? parent).toJSON()
           void copyText(
             self,
-            JSON.stringify(rest, null, 4),
+            JSON.stringify(
+              rest,
+              (key, value: unknown) =>
+                key === 'circularLength' ? undefined : value,
+              4,
+            ),
             `${target ? scope : wholeScope} attributes`,
           )
         },
