@@ -237,7 +237,7 @@ import type { HeightMode } from '@jbrowse/display-kit/heightMode'
 import type { HighlightRect } from '@jbrowse/display-kit/highlightHost'
 import type { IndexedRegion } from '@jbrowse/display-kit/planRegionFetch'
 import type { ExportSvgDisplayOptions } from '@jbrowse/display-kit/types'
-import type { Instance } from '@jbrowse/mobx-state-tree'
+import type { IModelType, Instance } from '@jbrowse/mobx-state-tree'
 import type { LinkRegion } from '@jbrowse/render-core/marks'
 import type { ValueScale } from '@jbrowse/wiggle-core'
 import type { IComputedValue } from 'mobx'
@@ -362,7 +362,7 @@ export interface AlignmentsContextMenuInfo extends ContextMenuAnchor {
  * }
  * ```
  */
-export default function stateModelFactory(
+function stateModelFactory(
   configSchema: BaseLinearAlignmentsDisplayConfigSchema,
 ) {
   return (
@@ -2768,9 +2768,29 @@ export type { OverlapLegendRow } from '../shared/legendUtils.ts'
 export type { DeclaredFilters } from './dialogs/layerFilters.ts'
 export type { GroupLayoutContext, GroupSize } from './groupLayout.ts'
 
-export type LinearAlignmentsDisplayStateModel = ReturnType<
-  typeof stateModelFactory
+type ModelParts<M> =
+  M extends IModelType<infer P, infer O, infer C, infer S>
+    ? { props: P; others: O; creation: C; snapshot: S }
+    : never
+type InferredParts = ModelParts<ReturnType<typeof stateModelFactory>>
+type InferredOthers = InferredParts['others']
+
+export type LinearAlignmentsDisplayProps = InferredParts['props']
+// An interface, so a package composing this model names it in its emitted
+// declaration rather than spelling out every member's type.
+export interface LinearAlignmentsDisplayOthers extends InferredOthers {}
+
+export type LinearAlignmentsDisplayStateModel = IModelType<
+  LinearAlignmentsDisplayProps,
+  LinearAlignmentsDisplayOthers,
+  InferredParts['creation']
 >
+
+const linearAlignmentsDisplayStateModelFactory: (
+  configSchema: BaseLinearAlignmentsDisplayConfigSchema,
+) => LinearAlignmentsDisplayStateModel = stateModelFactory
+export default linearAlignmentsDisplayStateModelFactory
+
 // interface (not type alias) breaks the circular reference TypeScript would
 // encounter through React.lazy → PileupComponent → useAlignmentsBase → model
 export interface LinearAlignmentsDisplayModel extends Instance<LinearAlignmentsDisplayStateModel> {}
