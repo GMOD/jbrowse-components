@@ -3,12 +3,14 @@ import {
   resetSectionOrderItems,
   groupByRadioMenuItem as sharedGroupByRadioMenuItem,
 } from '@jbrowse/display-kit/groupByMenu'
+import { sectionSortOf } from '@jbrowse/display-kit/sectionHost'
 
 import { isChainFacetable } from '../../shared/groupFeatures.ts'
 
 import type { Facet, ReadDimension } from '../../shared/types.ts'
 import type { AlignmentsUnit } from '../constants.ts'
 import type { MenuItem } from '@jbrowse/core/ui'
+import type { SectionHost } from '@jbrowse/display-kit/sectionHost'
 
 // The shared builder, with chain mode as the `offered` rule: chain layout can
 // only honor a dimension a chain resolves to one key under, and the worker
@@ -77,8 +79,8 @@ export function sectionOrderOf(model: SectionOrderMenuModel) {
   )
 }
 
-export function sectionOrderResetItems(model: SectionOrderMenuModel) {
-  return resetSectionOrderItems(sectionOrderOf(model))
+export function sectionOrderResetItems(model: SectionHost) {
+  return resetSectionOrderItems(sectionSortOf(model))
 }
 
 export { hiddenGroupsItems } from '@jbrowse/display-kit/groupByMenu'

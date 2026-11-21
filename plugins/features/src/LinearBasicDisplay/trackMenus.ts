@@ -20,6 +20,7 @@ import {
 } from '@jbrowse/display-kit/groupByMenu'
 import { heightModeMenuItems } from '@jbrowse/display-kit/heightModeMenu'
 import { editPlotMenuItems } from '@jbrowse/display-kit/plotMenu'
+import { sectionSortOf } from '@jbrowse/display-kit/sectionHost'
 import { sectionsMenuItems } from '@jbrowse/display-kit/sectionsMenu'
 import HeightIcon from '@mui/icons-material/Height'
 
@@ -32,6 +33,7 @@ import type { Reversibles } from '@jbrowse/core/ui/filterMenuItems'
 import type { HiddenGroupsModel } from '@jbrowse/display-kit/groupByMenu'
 import type { HeightModeMenuModel } from '@jbrowse/display-kit/heightModeMenu'
 import type { PlotDisplay } from '@jbrowse/display-kit/plotMenu'
+import type { SectionHost } from '@jbrowse/display-kit/sectionHost'
 import type { SectionsHost } from '@jbrowse/display-kit/sectionsMenu'
 
 // Rows come from core's `radioItems`, so every radio keeps the menu
@@ -72,11 +74,6 @@ interface FeatureHeightSelf extends HeightModeMenuModel {
   setDisplayMode: (value: DisplayMode) => void
 }
 
-interface FacetSelf {
-  facet: FeatureFacet | undefined
-  setFacetSort: (domain: readonly string[]) => void
-}
-
 interface GroupByMenuSelf {
   facet: FeatureFacet | undefined
   colorSetting: { value?: string }
@@ -86,7 +83,7 @@ interface GroupByMenuSelf {
 }
 
 interface TrackMenuSelf
-  extends GroupByMenuSelf, FacetSelf, SectionsHost, PlotDisplay {
+  extends GroupByMenuSelf, SectionHost, SectionsHost, PlotDisplay {
   featureNarrowings: () => Reversibles
   featureMarks: () => Reversibles
   showSubmenuMenuItems: () => MenuItem[]
@@ -262,14 +259,7 @@ export function featureTrackMenuItems(self: TrackMenuSelf): MenuItem[] {
     ...self.colorMenuItems(),
     ...groupByMenuItems(self),
     ...sectionsMenuItems(self),
-    ...resetSectionOrderItems(
-      self.facet && {
-        domain: self.facet.sort,
-        setDomain: domain => {
-          self.setFacetSort(domain)
-        },
-      },
-    ),
+    ...resetSectionOrderItems(sectionSortOf(self)),
     ...makeShowSubMenu(self.showSubmenuMenuItems()),
     ...self.featureHeightMenuItems(),
     ...editPlotMenuItems(self),

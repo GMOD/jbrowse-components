@@ -14,6 +14,7 @@ import { createJBrowseTheme } from '@jbrowse/core/ui'
 import { resolvePalette } from '@jbrowse/core/ui/palette'
 import { SimpleFeature, getSession } from '@jbrowse/core/util'
 import { moveSectionOnto } from '@jbrowse/display-kit/groupByMenu'
+import { sectionSortOf } from '@jbrowse/display-kit/sectionHost'
 import { autorun } from 'mobx'
 
 import {
@@ -34,7 +35,6 @@ import { CHAIN_FRAME_REV, CHAIN_SUPP_PRESENT } from '../shared/types.ts'
 import { READ_COLOR_CATEGORY_BY_INDEX } from './colorUtils.ts'
 import { declaredLayerFilterState } from './dialogs/layerFilters.ts'
 import { applyReadColorsByGroup } from './groupLayout.ts'
-import { sectionOrderOf } from './menus/groupByMenu.ts'
 import { sectionRenderState } from './renderers/rendererTypes.ts'
 import {
   bootAlignmentsDisplay,
@@ -2062,7 +2062,11 @@ describe('per-lane state belongs to one grouping key space', () => {
         | undefined
     expect(reset()).toBeUndefined()
     const fetched = display.rpcProps()
-    moveSectionOnto(sectionOrderOf(display)!, '1', '2')
+    moveSectionOnto(
+      { sections: display.groupOrder, ...sectionSortOf(display)! },
+      '1',
+      '2',
+    )
     expect(display.facet).toEqual({ field: 'tags.HP', sort: ['2', '1'] })
     expect(display.rpcProps()).toEqual(fetched)
     expect(display.groupOrder.map(g => g.key)).toEqual(['2', '1'])
