@@ -263,6 +263,10 @@ wraps every step above. It:
 - writes a JBrowse with the GenBank file as the assembly and the gene track, the
   chromosome and plasmids circular and the gene names indexed
 
+With your own FASTA, `CIRCULAR` names the contigs that are rings, and none are
+unless you list them; the default session opens the last one listed in the
+circular view, or every contig in a linear view when the list is empty.
+
 ```bash
 curl -fO https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/build_prokka_genbank.sh
 bash build_prokka_genbank.sh                    # builds ./prokka_genbank_build/jbrowse2

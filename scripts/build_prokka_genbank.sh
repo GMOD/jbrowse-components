@@ -21,11 +21,16 @@ set -euo pipefail
 
 OUTDIR="${1:-prokka_genbank_build}"
 # an assembly of your own replaces the Sakai download; CIRCULAR lists the
-# contigs to draw as rings, comma-separated, and RING the one the default
-# session opens
+# contigs to draw as rings, comma-separated (the Sakai three by default, none
+# for your own FASTA unless listed), and RING the one the default session opens
+# in the circular view, a linear view of every contig when there is none
 FASTA="${FASTA:-}"
-CIRCULAR="${CIRCULAR:-NC_002695.2,NC_002127.1,NC_002128.1}"
-RING="${RING:-${CIRCULAR##*,}}"
+if [ -z "$FASTA" ]; then
+  CIRCULAR="${CIRCULAR-NC_002695.2,NC_002127.1,NC_002128.1}"
+else
+  CIRCULAR="${CIRCULAR-}"
+fi
+RING="${RING-${CIRCULAR##*,}}"
 NAME="${NAME:-sakai}"
 LOCUSTAG="${LOCUSTAG:-SAKAI}"
 DISPLAY_NAME="${DISPLAY_NAME:-E. coli O157:H7 Sakai (Prokka)}"
@@ -79,14 +84,18 @@ jb add-track "annotation/$NAME.gbk" --trackId "${NAME}_prokka" \
   --name "Prokka genes" --assemblyNames "$NAME" --load copy --out "$APP" \
   --force
 jb text-index --out "$APP" --tracks "${NAME}_prokka" --force
+if [ -n "$RING" ]; then
+  view_type='"type": "CircularView", "displayedRegionNames": ["'"$RING"'"]'
+else
+  view_type='"type": "LinearGenomeView"'
+fi
 jb set-default-session --out "$APP" --session - <<EOF
 {
   "name": "$NAME",
   "views": [
     {
-      "type": "CircularView",
+      $view_type,
       "assembly": "$NAME",
-      "displayedRegionNames": ["$RING"],
       "tracks": ["${NAME}_prokka"]
     }
   ]
