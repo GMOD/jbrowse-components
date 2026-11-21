@@ -1068,4 +1068,42 @@ describe('GenBank CDS qualifiers', () => {
       `/translation="${qualifiers.translation}"`,
     ])
   })
+
+  // the shape GenBank import gives a join() CDS with no gene to sit under
+  it('writes a spliced CDS of its own as one join() line', () => {
+    const rest = {
+      product: qualifiers.product,
+      protein_id: qualifiers.protein_id,
+      transl_except: qualifiers.transl_except,
+      translation: qualifiers.translation,
+    }
+    const own = { ...rest, name: 'AmpR', label: 'AmpR', note: 'whole CDS' }
+    const cds = createFeature({
+      ...own,
+      id: 'cds-AmpR',
+      refName: 'chr1',
+      start: 0,
+      end: 300,
+      strand: 1,
+      type: 'CDS',
+      subfeatures: [
+        { ...rest, id: 'p1', type: 'CDS', start: 0, end: 100, phase: 0 },
+        { ...rest, id: 'p2', type: 'CDS', start: 200, end: 300, phase: 2 },
+      ],
+    })
+    const lines = formatFeatWithSubfeatures({ feature: cds, minPos: 0 })
+      .split('\n')
+      .map(line => line.trim())
+    expect(lines).toEqual([
+      'CDS             join(1..100,201..300)',
+      '/gene="AmpR"',
+      '/label="AmpR"',
+      '/codon_start=1',
+      '/product="beta-galactosidase"',
+      '/protein_id="AAA24053.1"',
+      '/transl_except="(pos:1..3,aa:Met)"',
+      `/translation="${qualifiers.translation}"`,
+      '/note="whole CDS"',
+    ])
+  })
 })

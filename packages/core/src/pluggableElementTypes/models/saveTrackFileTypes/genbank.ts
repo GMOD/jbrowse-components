@@ -224,27 +224,28 @@ function codonStart(feats: Feature[], strand: number) {
 }
 
 // every piece of a CDS carries the whole CDS's qualifiers, so the first speaks
-// for all of them; a piece's id names a row, not the protein, so the gene
-// labels a CDS that has no name of its own
+// for all of them unless the CDS is a feature of its own; a piece's id names a
+// row, not the protein, so the gene labels a CDS that has no name of its own
 function formatCDS({
   feats,
+  whole,
   gene,
   strand,
   frame,
 }: {
   feats: Feature[]
+  whole: Feature
   gene?: string
   strand: number
   frame: RecordFrame
 }) {
-  const piece = feats[0]!
   return [
     featureLine('CDS', joinLoc(feats, strand, frame)),
     ...formatTags({
-      feature: piece,
+      feature: whole,
       gene,
       key: 'CDS',
-      label: piece.get('name') ?? gene ?? piece.get('id'),
+      label: whole.get('name') ?? gene ?? whole.get('id'),
       codonStart: codonStart(feats, strand),
     }),
   ]
@@ -285,17 +286,24 @@ export function formatFeatWithSubfeatures({
   const segments = exons.length > 0 ? exons : [feature]
   const location = joinLoc(segments, strand, frame)
 
-  const primary = [
-    featureLine(key, location),
-    ...formatTags({ feature, gene, key }),
-  ]
-
   const cds = subfeatures.filter(f => f.get('type') === 'CDS')
   const sansCDS = subfeatures.filter(
     f => f.get('type') !== 'CDS' && f.get('type') !== 'exon',
   )
+  const ownCDS = key === 'CDS' && cds.length > 0
+  const primary = ownCDS
+    ? []
+    : [featureLine(key, location), ...formatTags({ feature, gene, key })]
   const cdsLines =
-    cds.length > 0 ? formatCDS({ feats: cds, gene, strand, frame }) : []
+    cds.length > 0
+      ? formatCDS({
+          feats: cds,
+          whole: ownCDS ? feature : cds[0]!,
+          gene,
+          strand,
+          frame,
+        })
+      : []
   return [
     ...primary,
     ...cdsLines,
