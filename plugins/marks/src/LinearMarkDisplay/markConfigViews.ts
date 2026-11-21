@@ -16,6 +16,7 @@ import { getSnapshot } from '@jbrowse/mobx-state-tree'
 import { paintedColorNode, saysColor } from './inheritedColor.ts'
 import { markColorsOf } from './markColor.ts'
 import { buildMarkList, markDrawsAt } from './markList.ts'
+import { rowAttributesOf } from './markPlot.ts'
 import {
   lastBinEdges,
   layerRequestsOf,
@@ -27,7 +28,7 @@ import {
 } from './markRequest.ts'
 import { markSizePx, pxChannelOf } from './markSpecs.ts'
 import { DEFAULT_POINT_DIAMETER_PX } from './markVocabulary.ts'
-import { ROW_GROUP_FIELD, compileRowGroups, tagRowGroups } from './rowGroups.ts'
+import { compileRowGroups, tagRowGroups } from './rowGroups.ts'
 
 import type {
   LinearMarkDisplayConfig,
@@ -39,7 +40,6 @@ import type { ColorSource, HiddenCategory } from './markColor.ts'
 import type { MarkEntry, TextMarkEntry } from './markList.ts'
 import type { RowGroup } from './rowGroups.ts'
 import type { StepChannels } from './stepChannels.ts'
-import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type {
   FacetSpec,
   LayerRequest,
@@ -49,17 +49,6 @@ import type {
 import type { RowStep } from '@jbrowse/core/util/resolveRowHeight'
 import type { FacetSetting } from '@jbrowse/display-kit/facetConfigSchema'
 import type { RowBanding, Row } from '@jbrowse/tree-sidebar'
-
-/**
- * The row attributes a config gives its rows: `group` where `rows.groups`
- * declares any.
- */
-export function rowAttributesOf(
-  conf: AnyConfigurationModel,
-): readonly string[] {
-  const { rows } = getSnapshot<{ rows?: { groups?: unknown[] } }>(conf)
-  return rows?.groups?.length ? [ROW_GROUP_FIELD] : []
-}
 
 // A mark's px, its `encoding.size` or `encoding.strokeWidth` number by its
 // type, or its type's default where none is written.

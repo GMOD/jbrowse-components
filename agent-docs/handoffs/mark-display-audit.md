@@ -1,6 +1,6 @@
 ---
 name: mark-display-audit
-description: "A read-only audit of LinearMarkDisplay (plugins/marks, the worker encoder, Edit plot, hover, legend, export) on 2026-11-21: five checked defects in Edit plot and the default plot, one unmeasured interval-bin cost, six hover and menu findings not yet rechecked, and the simplifications the readers named."
+description: "A read-only audit of LinearMarkDisplay (plugins/marks, the worker encoder, Edit plot, hover, legend, export) on 2026-11-21: checked defects in Edit plot and the default plot, one unmeasured interval-bin cost, hover and menu findings not yet rechecked, and the simplifications the readers named."
 ---
 
 # Mark display audit
@@ -18,17 +18,6 @@ traced it and nobody reread it; reread before fixing.
 
 ## Checked defects
 
-- **The Edit plot form checks a draft without its context.**
-  `MarkPlotDialog.tsx` `readDraft` calls `markProblems(model.liftMarkPlot(draft))`,
-  and `liftMarkPlot` (`model.ts`) returns `markPlotSettingsOf` alone, without
-  the `rowAttributes` and display `color` that `configProblems` adds through
-  `plotContextOf`.
-  - Trigger: the banding example in `markRowsConfigSchema.ts` (`rows.field`
-    with `rows.groups`, `facet: 'group'`). The form prints `rows-beside-facet`
-    while the track bands and the corner notice says nothing; display-level
-    color findings are missing from the form.
-  - Fix: `liftMarkPlot` returns the settings with `plotContextOf` of the lifted
-    config, or `markPlotSettingsOf` carries the context itself.
 - **The genome-alignments default plot writes `size: 2` on a rule.**
   `plotDefault.ts` `marksOf`; a rule's px channel is `strokeWidth`
   (`markSpecs.ts`), so the rule draws at its default width and the display

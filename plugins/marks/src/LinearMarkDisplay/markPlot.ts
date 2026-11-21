@@ -5,6 +5,7 @@ import { confNodeAt } from '@jbrowse/wiggle-core'
 
 import { NORMAL_ROW_PROPORTION } from './markVocabulary.ts'
 import { MARK_Y_PATHS } from './markYPaths.ts'
+import { ROW_GROUP_FIELD } from './rowGroups.ts'
 
 import type {
   AxisSnapshot,
@@ -63,15 +64,30 @@ export interface MarkPlotSettings extends PlotSnapshot {
 }
 
 /**
+ * The row attributes a config gives its rows: `group` where `rows.groups`
+ * declares any.
+ */
+export function rowAttributesOf(
+  conf: AnyConfigurationModel,
+): readonly string[] {
+  const { rows } = getSnapshot<{ rows?: { groups?: unknown[] } }>(conf)
+  return rows?.groups?.length ? [ROW_GROUP_FIELD] : []
+}
+
+/**
  * The settings the rule list reads off a lifted config: the marks drawn, a
- * default plot's included, the rows with their field in force, and the
- * snapshot's other three.
+ * default plot's included, the rows with their field in force, the
+ * snapshot's other three, and beside them the row attributes the rows carry
+ * and the display's own `encoding.color`.
  */
 export function markPlotSettingsOf(
   conf: AnyConfigurationModel,
 ): MarkPlotSettings {
   const node = conf as unknown as Record<string, AnyConfigurationModel>
   const snapshot = getSnapshot<Record<string, unknown>>(conf)
+  const { encoding } = getSnapshot<{
+    encoding?: { color?: PlotSnapshot['color'] }
+  }>(conf)
   return {
     marks: getSnapshot(node.marks!) as MarkSnapshot[],
     transform: (snapshot.transform ?? []) as StepSnapshot[],
@@ -80,6 +96,8 @@ export function markPlotSettingsOf(
       | RowsSnapshot
       | undefined,
     axis: axisOf(conf),
+    rowAttributes: rowAttributesOf(conf),
+    color: encoding?.color,
   }
 }
 

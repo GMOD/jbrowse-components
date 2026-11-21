@@ -39,12 +39,7 @@ import { openPlotDialog as queuePlotDialog } from '@jbrowse/display-kit/plotMenu
 import { rpcArgs } from '@jbrowse/display-kit/rpcArgs'
 import { stableIdentityComputed } from '@jbrowse/display-kit/stableIdentityComputed'
 import { TEXT_BASELINE_RATIO } from '@jbrowse/display-ui'
-import {
-  addDisposer,
-  getSnapshot,
-  isAlive,
-  types,
-} from '@jbrowse/mobx-state-tree'
+import { addDisposer, isAlive, types } from '@jbrowse/mobx-state-tree'
 import { installUpload } from '@jbrowse/render-core/installUpload'
 import { inkOfInstances, shiftInk, keySlot } from '@jbrowse/render-core/marks'
 import {
@@ -69,7 +64,6 @@ import {
   markFacetViews,
   markRequestViews,
   markRowsViews,
-  rowAttributesOf,
   isSizedRect,
 } from './markConfigViews.ts'
 import { rowValuesAt, storedRegionData } from './markList.ts'
@@ -112,7 +106,7 @@ import type { MarkHitInfo } from './findMarkHit.ts'
 import type { ColorSource, HiddenCategory } from './markColor.ts'
 import type { MarkRegionData, MarkRenderState } from './markList.ts'
 import type { MarkPlot, MarkPlotSettings } from './markPlot.ts'
-import type { MarkProblem, MarkSnapshot } from './markProblems.ts'
+import type { MarkProblem } from './markProblems.ts'
 import type { DefaultPlot } from './plotDefault.ts'
 import type { RowCompare } from './rowCompare.ts'
 import type { JoinedPlotFields, PlotFields } from './scanPlotFields.ts'
@@ -150,18 +144,6 @@ export type MarkRenderingBackend = PerRegionRenderingBackend<
 >
 
 const MarkPlotDialog = lazy(() => import('./components/MarkPlotDialog.tsx'))
-
-// What the rule list reads beside the plot: the row attributes a config
-// gives its rows, `group` where `rows.groups` declares any, and the display's
-// own `encoding.color`.
-type MarkColorSnapshot = NonNullable<MarkSnapshot['encoding']>['color']
-
-function plotContextOf(conf: AnyConfigurationModel) {
-  const { encoding } = getSnapshot<{
-    encoding?: { color?: MarkColorSnapshot }
-  }>(conf)
-  return { rowAttributes: rowAttributesOf(conf), color: encoding?.color }
-}
 
 const NO_JOINED_FIELDS: JoinedPlotFields = { numeric: [], categorical: [] }
 
@@ -538,10 +520,7 @@ export function stateModelFactory(
          * slot: jbrowse-img fails an export on an error and warns on the rest.
          */
         get configProblems(): MarkProblem[] {
-          return markProblems({
-            ...markPlotSettingsOf(self.conf),
-            ...plotContextOf(self.conf),
-          })
+          return markProblems(markPlotSettingsOf(self.conf))
         },
         /**
          * #method
@@ -550,10 +529,7 @@ export function stateModelFactory(
          * `encoding.y` itself.
          */
         configProblemsOf(conf: AnyConfigurationModel): string[] {
-          return markProblems({
-            ...markPlotSettingsOf(conf),
-            ...plotContextOf(conf),
-          }).map(problemText)
+          return markProblems(markPlotSettingsOf(conf)).map(problemText)
         },
         /**
          * #method

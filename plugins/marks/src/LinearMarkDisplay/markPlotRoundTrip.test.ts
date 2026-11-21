@@ -105,3 +105,25 @@ it('says through the corner notice exactly what the box would say', () => {
     markProblems(display.liftMarkPlot(display.plot)).map(p => p.rule),
   ).toContain('mark-without-value')
 })
+
+// The banding example in markRowsConfigSchema.ts: the form reads the row
+// attributes and the display's own color the corner notice reads.
+it("checks a draft with the rows' attributes and the display's color", () => {
+  const display = displayOn({
+    marks: [{ mark: 'rect' }],
+    rows: {
+      field: 'source',
+      groups: [
+        { match: '^CLUP', group: 'Wolf' },
+        { match: '^CLAT', group: 'Coyote' },
+      ],
+    },
+    facet: 'group',
+    encoding: { color: { field: 'score', scale: { type: 'threshold' } } },
+  })
+  const rules = markProblems(display.liftMarkPlot(display.plot)).map(
+    p => p.rule,
+  )
+  expect(rules).not.toContain('rows-beside-facet')
+  expect(rules).toContain('threshold-no-cuts')
+})
