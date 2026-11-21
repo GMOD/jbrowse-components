@@ -16,10 +16,49 @@ export interface WrittenFacet {
 
 /** The whole of what `FacetWritesMixin` needs a composing display to be. */
 export interface FacetWritesHost {
-  configuration: AnyConfigurationModel & { facet: AnyConfigurationModel }
+  configuration: FacetOwner
+}
+
+/**
+ * A config node holding a `facet` object: a display's own configuration, or a
+ * band's within it, such as the variant display's `records`.
+ */
+export type FacetOwner = AnyConfigurationModel & {
+  facet: AnyConfigurationModel
 }
 
 const host = (self: object) => self as FacetWritesHost
+
+/** `owner`'s `facet` object as written. */
+export function writtenFacetOf(owner: FacetOwner): WrittenFacet {
+  return getSnapshot<WrittenFacet | undefined>(owner.facet) ?? {}
+}
+
+function writeFacet(owner: FacetOwner, next: WrittenFacet) {
+  if (!compareStructural(next, writtenFacetOf(owner))) {
+    setConf(owner, 'facet', next)
+  }
+}
+
+/**
+ * `FacetWritesMixin`'s `facetByField` over `owner`'s facet: split by
+ * `field`, keeping the order and hidden sections while it is the field
+ * already grouping, and writing nothing where the pick already holds.
+ */
+export function facetByFieldOn(owner: FacetOwner, field: string) {
+  writeFacet(owner, facetForField(writtenFacetOf(owner), field))
+}
+
+/**
+ * `FacetWritesMixin`'s `setFacetSort` over `owner`'s facet: the order its
+ * sections take, written only while a field splits them.
+ */
+export function setFacetSortOn(owner: FacetOwner, sort: readonly string[]) {
+  const written = writtenFacetOf(owner)
+  if (written.field) {
+    writeFacet(owner, { ...written, sort: [...sort] })
+  }
+}
 
 /**
  * The facet a pick of `field` writes over `current`, by the keyed rule
@@ -51,38 +90,25 @@ export default function FacetWritesMixin() {
        * The `facet` object as written.
        */
       get writtenFacet(): WrittenFacet {
-        return (
-          getSnapshot<WrittenFacet | undefined>(
-            host(self).configuration.facet,
-          ) ?? {}
-        )
+        return writtenFacetOf(host(self).configuration)
       },
     }))
-    .actions(self => {
-      function write(next: WrittenFacet) {
-        if (!compareStructural(next, self.writtenFacet)) {
-          setConf(host(self), 'facet', next)
-        }
-      }
-      return {
-        /**
-         * #action
-         * Split the sections by `field`, `''` for none, keeping the order and
-         * hidden sections while it is the field already grouping.
-         */
-        facetByField(field: string) {
-          write(facetForField(self.writtenFacet, field))
-        },
-        /**
-         * #action
-         * The order the sections take, the ones it names first; `[]` sorts
-         * them all.
-         */
-        setFacetSort(sort: readonly string[]) {
-          if (self.writtenFacet.field) {
-            write({ ...self.writtenFacet, sort: [...sort] })
-          }
-        },
-      }
-    })
+    .actions(self => ({
+      /**
+       * #action
+       * Split the sections by `field`, `''` for none, keeping the order and
+       * hidden sections while it is the field already grouping.
+       */
+      facetByField(field: string) {
+        facetByFieldOn(host(self).configuration, field)
+      },
+      /**
+       * #action
+       * The order the sections take, the ones it names first; `[]` sorts
+       * them all.
+       */
+      setFacetSort(sort: readonly string[]) {
+        setFacetSortOn(host(self).configuration, sort)
+      },
+    }))
 }

@@ -1,4 +1,4 @@
-import { getConf, setConf } from '@jbrowse/core/configuration'
+import { readConfObject, setConf } from '@jbrowse/core/configuration'
 import { addDisposer, types } from '@jbrowse/mobx-state-tree'
 import { reaction } from 'mobx'
 
@@ -7,18 +7,48 @@ import type { ConfigModelForFields } from '@jbrowse/core/configuration'
 
 export const NO_HIDDEN_GROUPS: ReadonlySet<string> = new Set()
 
+/**
+ * A config node holding a section facet: a display's own configuration, or a
+ * band's within it, such as the variant display's `records`.
+ */
+export type SectionFacetOwner = ConfigModelForFields<{
+  facet: typeof sectionFacetConfigSchema
+}>
+
 /** The whole of what `HiddenGroupsMixin` needs a composing display to be. */
 export interface GroupKeySpaceHost {
   groupKeySpace: string
-  configuration: ConfigModelForFields<{
-    facet: typeof sectionFacetConfigSchema
-  }>
+  configuration: SectionFacetOwner
 }
 
 // The mixin's own `self` is the model it declares, so it cannot see the
 // `groupKeySpace` getter or the config the concrete display supplies. Same
 // idiom as `LegendMixin`'s `confNode`.
 const keySpaceHost = (self: object) => self as GroupKeySpaceHost
+
+/**
+ * `owner`'s `facet.hidden`, while `groupKeySpace` is the facet's field: a key
+ * names a section only within the grouping that issued it, so a hidden list
+ * written beside no field, or another, hides nothing. A fresh Set per call.
+ */
+export function hiddenGroupsOf(
+  owner: SectionFacetOwner,
+  groupKeySpace: string,
+): ReadonlySet<string> {
+  const hidden =
+    groupKeySpace && groupKeySpace === readConfObject(owner, ['facet', 'field'])
+      ? readConfObject(owner, ['facet', 'hidden'])
+      : []
+  return hidden.length > 0 ? new Set(hidden) : NO_HIDDEN_GROUPS
+}
+
+/** `HiddenGroupsMixin`'s `setHiddenGroups` over `owner`'s facet. */
+export function setHiddenGroupsOn(
+  owner: SectionFacetOwner,
+  keys: readonly string[],
+) {
+  setConf(owner, ['facet', 'hidden'], [...new Set(keys)])
+}
 
 /**
  * The sections hidden off `facet.hidden`, which `HiddenGroupsMixin` installs
@@ -33,15 +63,7 @@ export function hiddenGroupsViews(self: GroupKeySpaceHost) {
      * its inputs by identity sees a hide.
      */
     get hiddenGroups(): ReadonlySet<string> {
-      const { groupKeySpace } = self
-      if (
-        !groupKeySpace ||
-        groupKeySpace !== getConf(self, ['facet', 'field'])
-      ) {
-        return NO_HIDDEN_GROUPS
-      }
-      const hidden = getConf(self, ['facet', 'hidden'])
-      return hidden.length > 0 ? new Set(hidden) : NO_HIDDEN_GROUPS
+      return hiddenGroupsOf(self.configuration, self.groupKeySpace)
     },
   }
 }
@@ -105,7 +127,7 @@ export default function HiddenGroupsMixin() {
        * The whole hidden set at once.
        */
       setHiddenGroups(keys: readonly string[]) {
-        setConf(keySpaceHost(self), ['facet', 'hidden'], [...new Set(keys)])
+        setHiddenGroupsOn(keySpaceHost(self).configuration, keys)
       },
     }))
     .actions(self => ({

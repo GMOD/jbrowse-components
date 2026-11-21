@@ -14,7 +14,14 @@ import {
   clampBandHeight,
 } from '@jbrowse/core/util/bandHeight'
 import { reservedPx } from '@jbrowse/core/util/bandLayout'
-import { facetForField } from '@jbrowse/display-kit/FacetWritesMixin'
+import {
+  facetByFieldOn,
+  setFacetSortOn,
+} from '@jbrowse/display-kit/FacetWritesMixin'
+import {
+  hiddenGroupsOf,
+  setHiddenGroupsOn,
+} from '@jbrowse/display-kit/HiddenGroupsMixin'
 import { autorunOnReadyView } from '@jbrowse/display-kit/displayAutoruns'
 import { facetSettingOf } from '@jbrowse/display-kit/facetConfigSchema'
 import { GROUP_LABEL_HEIGHT } from '@jbrowse/display-kit/groupLabelStyle'
@@ -22,7 +29,6 @@ import {
   sameAsLast,
   stableIdentityComputed,
 } from '@jbrowse/display-kit/stableIdentityComputed'
-import { getSnapshot } from '@jbrowse/mobx-state-tree'
 import {
   DEFAULT_TOOLTIP,
   FEATURE_DESCRIPTION_FIELD,
@@ -77,7 +83,6 @@ import type { RecordCarrierCounter } from './recordCarriers.ts'
 import type { RecordsLabels } from './recordsRenderData.ts'
 import type { ColorScale } from '@jbrowse/core/ui/colorScale'
 import type { Band } from '@jbrowse/core/util/bandLayout'
-import type { WrittenFacet } from '@jbrowse/display-kit/FacetWritesMixin'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 import type {
   DisplayMode,
@@ -222,10 +227,14 @@ export function recordsSettingsViews(self: RecordsSettingsHost) {
     },
     /**
      * #getter
-     * The record sections the user hid, `records.facet.hidden`.
+     * The record sections the user hid, `records.facet.hidden`, while
+     * `records.facet.field` splits the records.
      */
     get recordsHiddenGroups(): ReadonlySet<string> {
-      return new Set<string>(getConf(self, ['records', 'facet', 'hidden']))
+      return hiddenGroupsOf(
+        self.configuration.records,
+        this.recordsFacet?.field ?? '',
+      )
     },
     /**
      * #getter
@@ -350,18 +359,15 @@ export function recordsBandActions(self: RecordsActionsHost) {
      * already grouping.
      */
     recordsFacetByField(field: string) {
-      const written =
-        getSnapshot<WrittenFacet | undefined>(
-          self.configuration.records.facet,
-        ) ?? {}
-      setConf(self, ['records', 'facet'], facetForField(written, field))
+      facetByFieldOn(self.configuration.records, field)
     },
     /**
      * #action
-     * The order the record sections take, the ones it names first.
+     * The order the record sections take, the ones it names first,
+     * while a field splits them.
      */
     setRecordsFacetSort(sort: readonly string[]) {
-      setConf(self, ['records', 'facet', 'sort'], [...sort])
+      setFacetSortOn(self.configuration.records, sort)
     },
     /**
      * #action
@@ -369,7 +375,9 @@ export function recordsBandActions(self: RecordsActionsHost) {
      * brings it back.
      */
     hideRecordsGroup(key: string) {
-      this.setRecordsHiddenGroups([...self.recordsHiddenGroups, key])
+      if (!self.recordsHiddenGroups.has(key)) {
+        this.setRecordsHiddenGroups([...self.recordsHiddenGroups, key])
+      }
     },
     /**
      * #action
@@ -382,7 +390,7 @@ export function recordsBandActions(self: RecordsActionsHost) {
      * The whole hidden set of record sections at once.
      */
     setRecordsHiddenGroups(keys: readonly string[]) {
-      setConf(self, ['records', 'facet', 'hidden'], [...new Set(keys)])
+      setHiddenGroupsOn(self.configuration.records, keys)
     },
   }
 }

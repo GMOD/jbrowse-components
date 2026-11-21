@@ -1,3 +1,4 @@
+import { getConf } from '@jbrowse/core/configuration'
 import { resolveSubMenu } from '@jbrowse/core/ui'
 import {
   CHIPLESS_SECTION_GAP_PX,
@@ -199,6 +200,21 @@ describe('records.facet', () => {
     expect(labelsOf(display.trackMenuItems())).toContain('Sections...')
     display.setRecordsHiddenGroups(['Benign'])
     expect(display.recordsGroupSections.map(s => s.key)).toEqual(['Pathogenic'])
+  })
+
+  test('a hidden list or order written with no field holds nothing back', () => {
+    const { display } = recordsDisplayAt(
+      SECTIONED,
+      10,
+      { facet: { hidden: ['Benign'] } },
+      false,
+    )
+    expect(display.recordsHiddenGroups.size).toBe(0)
+    expect(subMenuLabels(display.trackMenuItems(), 'Show')).not.toContain(
+      'Show 1 hidden group',
+    )
+    display.setRecordsFacetSort(['Pathogenic', 'Benign'])
+    expect(getConf(display, ['records', 'facet', 'sort'])).toEqual([])
   })
 
   test('is not the sample facet', () => {
