@@ -66,21 +66,15 @@ const POPULATIONS: { label: string; slots: string[] }[] = [
     slots: ['name', 'assemblyNames', 'trackId', 'adapter'],
   },
   {
-    label: 'root config',
-    slots: [
-      'shareURL',
-      'logoPath',
-      'disableAnalytics',
-      'hierarchical',
-      'formatAbout',
-      'LinearGenomeViewPlugin',
-    ],
+    label: 'plugin namespace on the root config',
+    slots: ['LinearGenomeViewPlugin'],
   },
   {
     label: 'frozen slot, `any` by design',
     slots: [
       'theme',
       'extraThemes',
+      'formatAbout',
       'features',
       'metadata',
       'assemblyNameToPanSN',
