@@ -18,13 +18,6 @@ traced it and nobody reread it; reread before fixing.
 
 ## Checked defects
 
-- **A scale's list box keeps the text of the mark that was there before.**
-  `MarkScaleRow.tsx` `ListField` holds `useState(initial)` and is keyed by
-  `${scale}-${member}` inside a row keyed `${at}-${channel}`
-  (`MarkPlotDialog.tsx`). Removing or moving a mark so another lands on the
-  selected index leaves the old list in the box, and the next keystroke writes
-  it into the new mark. Two readers found this independently. `MarkSteps
-  key={at}` has the same keying and was not checked.
 - **`mark.gapBp` on a step line is read by nothing and gets no rule.**
   render-core's `lineMark.ts` reads `gapBp` in the linear variant only; the
   slot's doc says "a `linear` line", but `MARK_SPECS.line.members` lists it for

@@ -112,6 +112,9 @@ const MarkPlotDialog = observer(function MarkPlotDialog({
   const [plot, setPlot] = useState<MarkPlot>(() => seed ?? model.plot)
   const marks = draftMarks(plot)
   const [selected, setSelected] = useState(0)
+  // Every add, move, copy and removal selects, and may put another mark at
+  // the selected place, so the scale rows' held text starts over.
+  const [listGeneration, setListGeneration] = useState(0)
   const editing = useRef<{ at: number; channel: EditChannel; base: unknown }>(
     undefined,
   )
@@ -184,7 +187,10 @@ const MarkPlotDialog = observer(function MarkPlotDialog({
             marks={marks}
             selected={at}
             problems={problems}
-            onSelect={setSelected}
+            onSelect={index => {
+              setSelected(index)
+              setListGeneration(generation => generation + 1)
+            }}
             onChange={setMarks}
           />
         </div>
@@ -250,7 +256,7 @@ const MarkPlotDialog = observer(function MarkPlotDialog({
                   }}
                 />
                 <MarkScaleRow
-                  key={`${at}-${channel}`}
+                  key={`${listGeneration}-${at}-${channel}`}
                   mark={mark}
                   channel={channel}
                   scales={channelScales(channel)}

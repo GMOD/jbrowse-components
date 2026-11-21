@@ -769,6 +769,53 @@ describe('the mark list', () => {
     )
   })
 
+  // Each mark a different list, so a box left holding the old mark's text
+  // shows it, and its next keystroke writes it into the mark now selected.
+  const TWO_LISTS: MarkPlot = {
+    marks: [
+      {
+        mark: 'rect',
+        encoding: {
+          color: { field: 'strand', scale: { type: 'ordinal', domain: ['+'] } },
+        },
+      },
+      {
+        mark: 'rect',
+        encoding: {
+          color: { field: 'strand', scale: { type: 'ordinal', domain: ['-'] } },
+        },
+      },
+    ],
+  }
+
+  const domainWritten = (written: jest.Mock, at: number) =>
+    written.mock.calls[0]![0].marks[at].encoding.color.scale.domain
+
+  it('shows the list of the mark a removal selects, and writes into it', () => {
+    const { apply, written } = setup(TWO_LISTS)
+    expect(screen.getByTestId('domain-color')).toHaveValue('+')
+    fireEvent.click(screen.getByLabelText('remove mark 1'))
+    expect(screen.getByTestId('domain-color')).toHaveValue('-')
+    fireEvent.change(screen.getByTestId('domain-color'), {
+      target: { value: '-, .' },
+    })
+    fireEvent.click(apply())
+    expect(written.mock.calls[0]![0].marks).toHaveLength(1)
+    expect(domainWritten(written, 0)).toEqual(['-', '.'])
+  })
+
+  it('shows the list of the mark a move selects, and writes into it', () => {
+    const { apply, written } = setup(TWO_LISTS)
+    fireEvent.click(screen.getByLabelText('move mark 2 up'))
+    expect(screen.getByTestId('domain-color')).toHaveValue('-')
+    fireEvent.change(screen.getByTestId('domain-color'), {
+      target: { value: '-, .' },
+    })
+    fireEvent.click(apply())
+    expect(domainWritten(written, 0)).toEqual(['-', '.'])
+    expect(domainWritten(written, 1)).toEqual(['+'])
+  })
+
   it('prints a finding no control claims beneath the controls', () => {
     setup({
       marks: [
