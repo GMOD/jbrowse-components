@@ -236,8 +236,5 @@
     "conda": "bioconductor-limma",
     "bins": [],
     "rlibs": ["limma"]
-  },
-  "prokka": {
-    "conda": "prokka"
   }
 }

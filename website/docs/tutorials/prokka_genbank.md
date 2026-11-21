@@ -35,18 +35,26 @@ pO157 (Makino et al. 1998). We:
 - the [JBrowse CLI](/docs/cli), for `jbrowse add-assembly`, `jbrowse add-track`
   and `jbrowse text-index`
 
-<!-- BEGIN GENERATED TUTORIAL_INSTALL prokka,node,jbrowse-cli -->
+<!-- BEGIN GENERATED TUTORIAL_INSTALL node,jbrowse-cli -->
 
 ```bash
 # Debian/Ubuntu
 sudo apt install nodejs
 # or conda, which has every tool above
-conda install -c bioconda -c conda-forge prokka nodejs
+conda install -c bioconda -c conda-forge nodejs
 # any platform
 npm install -g @jbrowse/cli@next
 ```
 
-<!-- END GENERATED TUTORIAL_INSTALL prokka,node,jbrowse-cli -->
+<!-- END GENERATED TUTORIAL_INSTALL node,jbrowse-cli -->
+
+Prokka goes in a conda environment of its own: installed beside `nodejs`, conda
+picked Prokka 1.13, where an environment holding only Prokka gets 1.15.6:
+
+```bash
+conda create -n prokka -c conda-forge -c bioconda prokka
+conda activate prokka
+```
 
 ## The data
 
