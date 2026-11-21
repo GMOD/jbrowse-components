@@ -1092,6 +1092,39 @@ describe('GenBank CDS label', () => {
   })
 })
 
+describe('GenBank qualifier values', () => {
+  // the shape GenBank import gives a Prokka CDS with no gene above it
+  it('repeats a repeated qualifier, writes numbers bare and a flag with no value', () => {
+    const cds = createFeature({
+      id: 'SAKAI_05417',
+      name: 'lsoB',
+      refName: 'pOSAK1',
+      start: 970,
+      end: 1351,
+      strand: -1,
+      type: 'CDS',
+      gene: 'lsoB',
+      inference: [
+        'ab initio prediction:Prodigal:v2.6',
+        'similar to AA sequence:UniProtKB:Q7DKW4',
+      ],
+      codon_start: '1',
+      transl_table: '11',
+      pseudo: 'true',
+    })
+    const lines = formatFeatWithSubfeatures({ feature: cds, minPos: 0 })
+      .split('\n')
+      .map(line => line.trim())
+    expect(lines.slice(3)).toEqual([
+      '/inference="ab initio prediction:Prodigal:v2.6"',
+      '/inference="similar to AA sequence:UniProtKB:Q7DKW4"',
+      '/codon_start=1',
+      '/transl_table=11',
+      '/pseudo',
+    ])
+  })
+})
+
 describe('GenBank CDS qualifiers', () => {
   // the shape GenBank import gives a CDS under a gene: every piece carries the
   // CDS's qualifiers, /gene and /codon_start among them

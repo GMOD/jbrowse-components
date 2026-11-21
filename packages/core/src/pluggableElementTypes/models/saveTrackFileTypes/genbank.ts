@@ -163,6 +163,43 @@ export function insdcFeatureKey(type: string) {
   return INSDC_KEYS.has(mapped) ? mapped : 'misc_feature'
 }
 
+// INSDC writes these values unquoted
+const NUMBER_QUALIFIERS = new Set([
+  'codon_start',
+  'transl_table',
+  'estimated_length',
+  'number',
+])
+
+// and these with no value at all; GenBank import reads one as `true`
+const FLAG_QUALIFIERS = new Set([
+  'environmental_sample',
+  'focus',
+  'germline',
+  'macronuclear',
+  'proviral',
+  'pseudo',
+  'rearranged',
+  'ribosomal_slippage',
+  'trans_splicing',
+  'transgenic',
+])
+
+// a qualifier the file repeated, two /inference lines say, is repeated here
+// rather than joined into one value with a comma that is not in either
+function qualifierLines(key: string, value: unknown) {
+  return [value]
+    .flat()
+    .flatMap(v => formatAttributeValue(v) || [])
+    .map(v =>
+      FLAG_QUALIFIERS.has(key) && v === 'true'
+        ? `${QUALIFIER_INDENT}/${key}`
+        : NUMBER_QUALIFIERS.has(key) && /^\d+$/.test(v)
+          ? `${QUALIFIER_INDENT}/${key}=${v}`
+          : qualifier(key, v),
+    )
+}
+
 function formatTags({
   feature,
   gene,
@@ -200,10 +237,7 @@ function formatTags({
   }
   for (const key of Object.keys(feature.toJSON())) {
     if (!coreFields.has(key) && !written.has(key)) {
-      const value = formatAttributeValue(feature.get(key))
-      if (value) {
-        tags.push(qualifier(key, value))
-      }
+      tags.push(...qualifierLines(key, feature.get(key)))
     }
   }
   return tags

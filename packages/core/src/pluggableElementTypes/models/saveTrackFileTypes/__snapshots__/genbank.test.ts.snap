@@ -131,7 +131,8 @@ FEATURES             Location/Qualifiers
      gene            1..100
                      /label="gene6"
                      /custom_tag="custom_value"
-                     /another_tag="val1,val2"
+                     /another_tag="val1"
+                     /another_tag="val2"
                      /complex_obj="{""key"":""value""}"
 ORIGIN
         1 aaaaaaaaaa aaaaaaaaaa aaaaaaaaaa aaaaaaaaaa aaaaaaaaaa aaaaaaaaaa
