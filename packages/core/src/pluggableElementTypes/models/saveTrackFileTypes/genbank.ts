@@ -224,8 +224,8 @@ function codonStart(feats: Feature[], strand: number) {
 }
 
 // every piece of a CDS carries the whole CDS's qualifiers, so the first speaks
-// for all of them unless the CDS is a feature of its own; a piece's id names a
-// row, not the protein, so the gene labels a CDS that has no name of its own
+// for all of them unless the CDS is a feature of its own; a CDS's Name is often
+// its protein accession, so the gene symbol labels a CDS the file gave no /label
 function formatCDS({
   feats,
   whole,
@@ -245,7 +245,8 @@ function formatCDS({
       feature: whole,
       gene,
       key: 'CDS',
-      label: whole.get('name') ?? gene ?? whole.get('id'),
+      label:
+        whole.get('label') ?? gene ?? whole.get('name') ?? whole.get('id'),
       codonStart: codonStart(feats, strand),
     }),
   ]

@@ -1017,6 +1017,39 @@ describe('GenBank CDS reading frame', () => {
   })
 })
 
+describe('GenBank CDS label', () => {
+  const geneWithCDS = (cds: Record<string, unknown>) =>
+    createFeature({
+      id: 'gene-1',
+      name: 'TP53',
+      refName: 'chr1',
+      start: 0,
+      end: 300,
+      strand: 1,
+      type: 'gene',
+      subfeatures: [{ id: 'cds-1', type: 'CDS', start: 0, end: 300, ...cds }],
+    })
+  const cdsLines = (cds: Record<string, unknown>) => {
+    const lines = formatFeatWithSubfeatures({
+      feature: geneWithCDS(cds),
+      minPos: 0,
+    })
+      .split('\n')
+      .map(line => line.trim())
+    return lines.slice(lines.findIndex(line => line.startsWith('CDS')))
+  }
+
+  it('labels a CDS named by its protein accession with the gene symbol', () => {
+    expect(cdsLines({ name: 'NP_000537.3' })).toContain('/label="TP53"')
+  })
+
+  it('keeps a /label the file wrote on the CDS', () => {
+    expect(cdsLines({ name: 'p53', label: 'p53 protein' })).toContain(
+      '/label="p53 protein"',
+    )
+  })
+})
+
 describe('GenBank CDS qualifiers', () => {
   // the shape GenBank import gives a CDS under a gene: every piece carries the
   // CDS's qualifiers, /gene and /codon_start among them
