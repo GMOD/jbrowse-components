@@ -16,7 +16,7 @@ its `observed/expected` or `observed/control` ratio, through a `linear`,
   default, or at their maximum at a quantile of 1. Setting it gives every
   zoom, and every track that sets the same number, one scale.
 - `observed/expected`: each count over the file's expected count at that
-  distance, the view Juicebox calls O/E, which shows compartments and loops
+  distance, Juicebox's Log[Observed/Expected], which shows compartments and loops
   under the decay of contact with distance. It diverges around 1 from a
   quarter to fourfold, and where the file has no expected values at the
   binsize, the display paints the counts and the key says so.

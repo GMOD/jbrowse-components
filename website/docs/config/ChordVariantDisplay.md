@@ -51,7 +51,7 @@ hovered chord darkens it and a selected one takes the theme's highlight:
 <!-- prettier-ignore -->
 | Setting | Page | `scale.type` | Preset fields |
 | --- | --- | --- | --- |
-| `encoding.color` | [](/docs/config/chordcolor#preset-fields) | ordinal, threshold | `strand`, `svType`, `impact`, `mendelian` |
+| `encoding.color` | [](/docs/config/chordcolor#preset-fields) | ordinal, threshold | `strand`, `svType`, `impact` |
 
 ## Config slots
 

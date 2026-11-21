@@ -349,6 +349,7 @@ export default [
   '@jbrowse/core/util/isDataCurrent',
   '@jbrowse/core/util/isoformRank',
   '@jbrowse/core/util/isTextEntryFocused',
+  '@jbrowse/core/util/jbrowseProtocol',
   '@jbrowse/core/util/jexl',
   '@jbrowse/core/util/jexlDiagnostics',
   '@jbrowse/core/util/jexlFilters',

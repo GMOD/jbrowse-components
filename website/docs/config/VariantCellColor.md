@@ -12,12 +12,10 @@ every genotype cell with an alt allele, which a heterozygote paints
 lighter. Unset, the records paint their SV type and the
 cells the genotype colors. A CSS color or
 `jexl:` callback in `value` paints every alt cell of a variant; a `field`
-gives each of its values a color with a key. Four fields are presets:
+gives each of its values a color with a key. Three fields are presets:
 `impact`, the most severe SnpEff/VEP consequence tier; `svType`, the
 structural-variant class; `phaseSet`, the FORMAT PS block, which paints
-only under `rows: 'haplotype'`; `mendelian`, the site's most severe call
-over the trios a pedigree names (`deNovoCandidate`, `mendelianViolation`,
-`consistent`), a site no trio settles keeping the default alt color.
+only under `rows: 'haplotype'`.
 Any other field is read off the record — `INFO.CLNSIG`, `QUAL`, or a
 `jexl:` expression — and a numeric one cut into intervals by a `threshold`
 scale or run along a `linear` or `log` ramp. A string is the field.
@@ -76,7 +74,6 @@ A `field` named here paints through its own scale while `scale.type` is unset, a
 | `strand` | ordinal | `1`, `-1`, `0` | Forward strand, Reverse strand, No strand | `range`: `tomato`, `cornflowerblue`, `goldenrod` |
 | `svType` | ordinal | `DEL`, `DUP`, `INS`, `INV`, `CNV`, `TR`, `BND`, `CPX`, `OTHER` | Deletion, Duplication, Insertion, Inversion, Copy-number variable, Tandem repeat, Breakend / translocation, Complex, Other / mixed | `range`: `#e41a1c`, `#377eb8`, `#800080`, `#ff7f00`, `#7e6148`, `#e7298a`, `#17becf`, `#66a61e`, `#000000`; key "SV type" |
 | `impact` | ordinal | `HIGH`, `MODERATE`, `LOW`, `MODIFIER`, `Unannotated` |  | `range`: `#d32f2f`, `#f57c00`, `#fbc02d`, `#9e9e9e`, `#607d8b`; key "Consequence impact" |
-| `mendelian` | ordinal | `deNovoCandidate`, `mendelianViolation`, `consistent` | De novo candidate, Mendelian violation, Consistent | `range`: `#c2185b`, `#f57c00`, `#90a4ae`; key "Mendelian check" |
 | `score` | linear |  |  |  |
 
 ## Config slots
@@ -89,7 +86,7 @@ A setting written to it replaces it whole: a member left out returns to its defa
 | <span id="slot-value">**value**</span><br>[`maybeColor`](/docs/config_guides/slot_types#the-maybe-types) | A CSS color, or a jexl callback over `feature` returning one, for every alt cell of the variant. Unset, the cells paint the genotype colors.<br>_callback args:_ `feature` |
 | <span id="slot-scale">**scale**</span><br>[VariantCellColorScale sub-schema](#slot-scaletype) | How the field's values map to colors, Vega-Lite's scale object. |
 | <span id="slot-legend">**legend**</span><br>[VariantCellColorLegend sub-schema](#slot-legendtitle) | The key this channel draws. |
-| <span id="slot-field">**field**</span><br>[`featureField`](/docs/config_guides/slot_types#featurefield) = <code>''</code> | impact, the most severe SnpEff/VEP consequence tier; svType, the structural-variant class; phaseSet, the FORMAT PS block, painting only under rows haplotype; mendelian, the most severe call over the trios a pedigree names; or any record field, INFO.CLNSIG say, or a jexl expression over feature, whose values each paint one range color with a key. A record with no value keeps the default alt color |
+| <span id="slot-field">**field**</span><br>[`featureField`](/docs/config_guides/slot_types#featurefield) = <code>''</code> | impact, the most severe SnpEff/VEP consequence tier; svType, the structural-variant class; phaseSet, the FORMAT PS block, painting only under rows haplotype; or any record field, INFO.CLNSIG say, or a jexl expression over feature, whose values each paint one range color with a key. A record with no value keeps the default alt color |
 | <span id="slot-scaletype">**scale.type**</span><br>[`maybeStringEnum`](/docs/config_guides/slot_types#the-maybe-types) ('ordinal', 'threshold', 'linear', 'log', 'identity') | ordinal a range color per value of field; threshold a range color per interval between the cut points in domain; linear or log a color along a ramp from domainMin to domainMax; identity paints each variant the CSS color its field holds, else the color its value callback returns, and the key names the colors in domain; unset is linear for score and ordinal for any other field |
 | <span id="slot-scaledomain">**scale.domain**</span><br>[`stringArray`](/docs/config_guides/slot_types#stringarray) of strings or numbers = <code>[]</code> | the values that take the range first, in order; under threshold, the ascending cut points, a value on a cut taking the interval above it |
 | <span id="slot-scalerange">**scale.range**</span><br>[`colorArray`](/docs/config_guides/slot_types#colorarray) = <code>[]</code> | CSS colors the domain takes, in order, a value past the end of the list sampling the scheme where one is set, else continuing into the default palette; under threshold one per interval, one more than the cuts, an interval left out sampling the scheme, else the default ramp; under linear or log the ramp's stops, winning over scheme |

@@ -351,6 +351,7 @@ const loaders: ReExportLoaders = {
   '@jbrowse/core/util/isDataCurrent': () => import('../util/isDataCurrent.ts'),
   '@jbrowse/core/util/isoformRank': () => import('../util/isoformRank.ts'),
   '@jbrowse/core/util/isTextEntryFocused': () => import('../util/isTextEntryFocused.ts'),
+  '@jbrowse/core/util/jbrowseProtocol': () => import('../util/jbrowseProtocol.ts'),
   '@jbrowse/core/util/jexl': () => import('../util/jexl.ts').then(ns => ns.default),
   '@jbrowse/core/util/jexlDiagnostics': () => import('../util/jexlDiagnostics.ts'),
   '@jbrowse/core/util/jexlFilters': () => import('../util/jexlFilters.ts'),

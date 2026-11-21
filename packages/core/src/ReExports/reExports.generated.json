@@ -3572,6 +3572,15 @@
       ],
       "worker": "real"
     },
+    "@jbrowse/core/util/jbrowseProtocol": {
+      "package": "@jbrowse/core",
+      "names": [
+        "JBROWSE_PROTOCOL",
+        "parseProtocolUrl",
+        "toProtocolUrl"
+      ],
+      "worker": "real"
+    },
     "@jbrowse/core/util/jexl": {
       "package": "@jbrowse/core",
       "names": [
