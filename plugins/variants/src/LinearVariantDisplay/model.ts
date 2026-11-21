@@ -22,6 +22,7 @@ import {
   withLowerBound,
   withUpperBound,
 } from '@jbrowse/core/util/fieldPredicate'
+import { installClearHoverOnSurfaceMove } from '@jbrowse/core/util/installClearHoverOnSurfaceMove'
 import { readFor } from '@jbrowse/core/util/installPrerequisiteFetch'
 import { DEFAULT_CANONICAL_TRANSCRIPTS } from '@jbrowse/core/util/isoformRank'
 import {
@@ -1793,6 +1794,13 @@ export function stateModelFactory(
             { name: 'RecordsHitIndexes' },
           )
           installRecordsOpeningHeight(self)
+          installClearHoverOnSurfaceMove(self, {
+            transform: () => self.rowRemap,
+            clear: () => {
+              self.clearHoveredFeature()
+            },
+            name: 'ClearHoverOnRowReorder',
+          })
         },
       }))
   )

@@ -1,3 +1,4 @@
+import { cellDataOf } from '../shared/cellData.fixture.ts'
 import { createTestEnvironment } from './testEnv.ts'
 
 // The genotype matrix is a sticky canvas, so when the content moves and the
@@ -73,5 +74,25 @@ test('setting a hover does not clear it', () => {
 test('a new payload clears the hover', () => {
   const { display } = hovering()
   display.setCellData(undefined)
+  expect(display.hoveredFeature).toBeUndefined()
+})
+
+// a reorder that refetches nothing (a clustering run landing, a sort) moves
+// the hovered cell to another row, so the tooltip would name a sample no
+// longer under the pointer; a relabel moves no row and keeps it
+test('a row reorder clears the hover, a relabel does not', () => {
+  const { display } = createTestEnvironment().createDisplay()
+  display.setSources([{ name: 'S0' }, { name: 'S1' }])
+  display.setCellData(cellDataOf({ rowNames: ['S0', 'S1'] }))
+  display.setHoveredFeature(HOVER)
+
+  display.applyRowEdits(
+    display.arrangedRows.map((s, i) =>
+      i === 0 ? { ...s, label: 'Renamed' } : s,
+    ),
+  )
+  expect(display.hoveredFeature).toEqual(HOVER)
+
+  display.setRowOrder([{ name: 'S1' }, { name: 'S0' }])
   expect(display.hoveredFeature).toBeUndefined()
 })
