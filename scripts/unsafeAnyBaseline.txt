@@ -202,7 +202,7 @@
 2 no-unsafe-member-access plugins/linear-genome-view/src/LinearGenomeView/model.ts
 4 no-unsafe-return plugins/linear-genome-view/src/LinearGenomeView/model.ts
 1 no-unsafe-argument plugins/maf/src/LinearMafClusterIdentityRpc/buildIdentityMatrix.ts
-1 no-unsafe-argument plugins/maf/src/LinearMafDisplay/stateModel.ts
+1 no-unsafe-argument plugins/maf/src/LinearMafDisplay/mafEncodeViews.ts
 1 no-unsafe-return plugins/maf/src/LinearMafDisplay/stateModel.ts
 2 no-unsafe-return plugins/maf/src/MafAddTrackWorkflow/buildAdapterConfig.ts
 1 no-unsafe-argument plugins/maf/src/util/getSamples.ts

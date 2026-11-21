@@ -19,6 +19,7 @@ import type {
   SettledBlocksView,
   ValueScaleRule,
   VisibleStats,
+  YScaleTicks,
 } from '@jbrowse/wiggle-core'
 
 /** What {@link coverageStatsViews} reads: the frame. */
@@ -203,7 +204,7 @@ export function coverageTicksViews(
      * resolved from the same domain as the band's scale, so the labels sit
      * on the bars.
      */
-    get coverageTicks() {
+    get coverageTicks(): YScaleTicks | undefined {
       return self.coverageDepthDomain
         ? computeCoverageTicks(
             self.coverageDepthDomain,
