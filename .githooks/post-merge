@@ -106,7 +106,7 @@ if [ -n "$range" ]; then
   # The sources these gates read. A land that is purely CI config matches
   # nothing and skips.
   printf '%s' "$range" | grep -Eq \
-    '^(website/|products/|plugins/|packages/|agent-docs/|scripts/|figures\.lock)' ||
+    '^(website/|products/|plugins/|packages/|agent-docs/|scripts/|figures\.lock|package\.json|pnpm-lock\.yaml|tsconfig[^/]*\.json)' ||
     exit 0
 fi
 
@@ -120,10 +120,11 @@ lock=$common/post-merge-check.lock
 
 # One check at a time. Several agents landing in the same minute would otherwise
 # each start a run, and they would all reach the same answer. mkdir is the
-# atomic test-and-set; a lock older than 10 minutes is a crashed run, not a live
-# one.
+# atomic test-and-set. The run touches the lock before each step that can wait
+# behind heavy-run-slot, so a lock untouched for 30 minutes is a crashed run,
+# not a live one.
 if [ -d "$lock" ]; then
-  if [ -z "$(find "$lock" -maxdepth 0 -mmin +10 2>/dev/null)" ]; then
+  if [ -z "$(find "$lock" -maxdepth 0 -mmin +30 2>/dev/null)" ]; then
     exit 0
   fi
   rm -rf "$lock"
@@ -144,6 +145,7 @@ mkdir "$lock" 2>/dev/null || exit 0
     find packages plugins products example-plugins -name tsconfig.build.esm.tsbuildinfo \
       -not -path '*/node_modules/*' -delete 2>/dev/null || true
   fi
+  touch -c "$lock" 2>/dev/null || true
   esm=$(pnpm build:esm 2>&1) && esm_status=0 || esm_status=$?
   # Only over a fresh build: after a failed one, esm/ is the last good build's.
   leak_status=0
@@ -152,6 +154,7 @@ mkdir "$lock" 2>/dev/null || exit 0
   fi
   # No --fix, unlike pre-push's copy: that one runs on your own push, this one
   # against a checkout other agents have open.
+  touch -c "$lock" 2>/dev/null || true
   esl=$(pnpm lint:eslint 2>&1) && esl_status=0 || esl_status=$?
   oxl=$(pnpm lint 2>&1) && oxl_status=0 || oxl_status=$?
 
