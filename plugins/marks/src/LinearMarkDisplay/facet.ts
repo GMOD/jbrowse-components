@@ -2,6 +2,7 @@ import { knownSectionsOf } from '@jbrowse/display-kit/sectionHost'
 import { spansInRow } from '@jbrowse/render-core/marks'
 
 import { drawnScales } from './drawnScales.ts'
+import { keptInstances } from './keptInstances.ts'
 import { rowSpanIndexOf } from './rowSpanIndexes.ts'
 
 import type { MarkRegionData, StoredLayer } from './markList.ts'
@@ -206,32 +207,9 @@ export function rowsLayout(
   }
 }
 
-// The layer with no instances: each lane an empty view of its own, and its
-// keys and extents over none.
-function emptyLayer(layer: StoredLayer): StoredLayer {
-  const { color } = layer
-  return drawnScales({
-    ...layer,
-    count: 0,
-    x: layer.x.subarray(0, 0),
-    x2: layer.x2.subarray(0, 0),
-    y: layer.y?.subarray(0, 0),
-    row: layer.row?.subarray(0, 0),
-    featureIndex: layer.featureIndex?.subarray(0, 0),
-    color: typeof color === 'object' ? color.subarray(0, 0) : color,
-    colorValue: layer.colorValue?.subarray(0, 0),
-    colorKey: layer.colorKey?.subarray(0, 0),
-    glyph: layer.glyph?.subarray(0, 0),
-    text: layer.text && [],
-    tooltip: layer.tooltip && [],
-    size: layer.size?.subarray(0, 0),
-    x2Ref: layer.x2Ref?.subarray(0, 0),
-    feet: layer.feet?.subarray(0, 0),
-    x2Region: layer.x2Region?.subarray(0, 0),
-    series: layer.series?.subarray(0, 0),
-    flatbush: undefined,
-    flatbushData: undefined,
-  })
+// The layer with no instances, and its keys and extents over none.
+function emptyLayer(layer: StoredLayer) {
+  return drawnScales(keptInstances(layer, new Uint8Array(layer.count)))
 }
 
 /** The region with every instance gone from every layer. */

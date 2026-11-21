@@ -33,10 +33,9 @@ function compact<T extends Lane<T>>(
  * instances', and a hit index is rebuilt over them. `layer` itself where
  * every instance is kept.
  */
-export function keptInstances<L extends EncodedChannels>(
-  layer: L,
-  keep: Uint8Array,
-): L {
+export function keptInstances<
+  L extends EncodedChannels & { x2Region?: Uint32Array },
+>(layer: L, keep: Uint8Array): L {
   const { count } = layer
   let kept = 0
   for (let i = 0; i < count; i++) {
@@ -83,6 +82,7 @@ export function keptInstances<L extends EncodedChannels>(
     size: lane(layer.size),
     x2Ref: lane(layer.x2Ref),
     feet: lane(layer.feet),
+    x2Region: lane(layer.x2Region),
     flatbushData: undefined,
     flatbush: undefined,
   }

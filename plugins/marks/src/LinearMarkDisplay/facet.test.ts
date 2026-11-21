@@ -191,6 +191,47 @@ test('with no split, a region fetched under one draws nothing, and an unsplit on
   expect(unsplitRegion(unsplit)).toBe(unsplit)
 })
 
+test('a region drawing nothing empties every per-instance lane, keeps the far refName tables, and measures its y over none', () => {
+  const y = Float32Array.from([5, 9, 1, 7])
+  const split: MarkRegionData = {
+    layers: [
+      {
+        ...linkLayer(),
+        y,
+        yMin: 1,
+        yMax: 9,
+        colorValue: y,
+        root: Uint32Array.from([7, 7, 8, 8]),
+        x2Region: Uint32Array.from([0, 1, 0, 1]),
+        x2CanonicalRefNames: ['1', '2'],
+        text: ['a', 'b', 'c', 'd'],
+      },
+    ],
+    facet: [{ key: '1', firstRow: 0, rowCount: 2 }],
+    request: splitOn('strand'),
+  }
+  const empty = unsplitRegion(split).layers[0]!
+  expect(empty.count).toBe(0)
+  for (const lane of [
+    empty.x,
+    empty.x2,
+    empty.y,
+    empty.colorValue,
+    empty.row,
+    empty.root,
+    empty.size,
+    empty.x2Ref,
+    empty.x2Region,
+    empty.featureIndex,
+    empty.text,
+  ]) {
+    expect(lane).toHaveLength(0)
+  }
+  expect(empty.x2RefNames).toEqual(['chr1', 'chr2'])
+  expect(empty.x2CanonicalRefNames).toEqual(['1', '2'])
+  expect([empty.yMin, empty.yMax]).toEqual([Infinity, -Infinity])
+})
+
 function barLayer(rows: number[]): StoredLayer {
   return {
     count: rows.length,
