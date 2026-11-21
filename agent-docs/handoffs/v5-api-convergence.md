@@ -52,8 +52,8 @@ displays or a display's parts, with the ruling on each.
   painters already drew it, and the multi-way `rows` takes the string
   shorthand `rows: 'refName'` (`=assembly`, `=auto`, `=refName`), as `Rows`
   does. The regeneration also carries `preferences.showBandChips`
-  (aa9181ec89). ggjbrowse owes an engine re-pin and the `softclips` respell
-  in `R/alignments.R`, its Rd and the cancer_sv tutorial.
+  (aa9181ec89). ggjbrowse took the engine and the `softclips` respell at
+  e00bb27, its tests and tutorial lint green on a8b49ba7a9.
 - Before it, the arc bands' `placement` values
   (2026-11-17, +9 / −6 shared, 9b1a3fe173): `sashimi.placement` and
   `readConnections.placement` take `overlay`, `above` and `below` where they
