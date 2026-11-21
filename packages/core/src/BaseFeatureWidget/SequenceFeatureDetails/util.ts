@@ -1,20 +1,29 @@
 import type { Assembly } from '../../assemblyManager/assembly.ts'
-import type { SimpleFeatureSerialized } from '../../util/index.ts'
+import type {
+  SimpleFeatureSerialized,
+  SimpleFeatureSerializedNoId,
+} from '../../util/index.ts'
 import type { Feat } from './types.ts'
 
 /**
  * The length of a circular sequence a feature runs past the origin of, or
- * undefined when it ends on the sequence: only an adapter that knows the
- * sequence is circular writes an end past it.
+ * undefined when it ends on the sequence or its sequence is linear. Circular
+ * as the feature's own file declares it (`circularLength`, stamped by
+ * `GetBasicFeatureDetails`) or as the assembly does (`isCircularRefName`): a
+ * feature ending past a linear sequence's end is read as written.
  */
 export function originCrossingLength(
   assembly: Assembly | undefined,
-  refName: string,
-  end: number,
+  feature: SimpleFeatureSerializedNoId,
 ) {
-  const length = assembly?.getRegionForRefName(
-    assembly.getCanonicalRefName2(refName),
-  )?.end
+  const { refName, end, circularLength } = feature
+  const length =
+    typeof circularLength === 'number'
+      ? circularLength
+      : assembly?.isCircularRefName(refName)
+        ? assembly.getRegionForRefName(assembly.getCanonicalRefName2(refName))
+            ?.end
+        : undefined
   return length !== undefined && end > length ? length : undefined
 }
 

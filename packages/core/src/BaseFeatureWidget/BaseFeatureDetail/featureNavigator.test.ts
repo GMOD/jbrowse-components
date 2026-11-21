@@ -22,6 +22,7 @@ function setup(navTo: (loc: unknown, grow?: number) => void) {
         get: () => ({
           getCanonicalRefName2: (refName: string) => refName,
           getRegionForRefName: () => ({ end: 1000 }),
+          isCircularRefName: (refName: string) => refName === 'chr1',
         }),
       },
       notifyError: jest.fn(),
@@ -69,6 +70,32 @@ test('a span wholly past a circular origin goes to where it lies', () => {
   locate({ ...feature, start: 1010, end: 1040 })!()
   expect(navTo).toHaveBeenCalledWith(
     { refName: 'chr1', start: 10, end: 40, assemblyName: 'hg38' },
+    0.1,
+  )
+})
+
+test('a feature ending past a linear sequence goes to its span as written', () => {
+  const navTo = jest.fn()
+  const { locate } = setup(navTo)
+  locate({ ...feature, refName: 'ctgL', start: 900, end: 1100 })!()
+  expect(navTo).toHaveBeenCalledWith(
+    { refName: 'ctgL', start: 900, end: 1100, assemblyName: 'hg38' },
+    0.1,
+  )
+})
+
+test('a feature its file marks crossing a circular origin goes to its part before it though the assembly does not list it circular', () => {
+  const navTo = jest.fn()
+  const { locate } = setup(navTo)
+  locate({
+    ...feature,
+    refName: 'ctgL',
+    start: 900,
+    end: 1100,
+    circularLength: 1000,
+  })!()
+  expect(navTo).toHaveBeenCalledWith(
+    { refName: 'ctgL', start: 900, end: 1000, assemblyName: 'hg38' },
     0.1,
   )
 })

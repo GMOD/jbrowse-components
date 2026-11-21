@@ -91,7 +91,7 @@ export function featureNavigator(model: FeatureDetailsModel) {
               const { start, end } = onSequence(
                 feature.start,
                 feature.end,
-                originCrossingLength(assembly, refName, feature.end),
+                originCrossingLength(assembly, feature),
               )
               try {
                 view.navTo({ refName, start, end, assemblyName }, GROW)

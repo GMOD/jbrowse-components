@@ -2,6 +2,8 @@ import fs from 'node:fs'
 import os from 'node:os'
 import path from 'node:path'
 
+import PluginManager from '@jbrowse/core/PluginManager'
+import AdapterType from '@jbrowse/core/pluggableElementTypes/AdapterType'
 import {
   originTailCandidates,
   wholeSubfeatureId,
@@ -10,8 +12,10 @@ import SimpleFeature from '@jbrowse/core/util/simpleFeature'
 import { firstValueFrom } from 'rxjs'
 import { toArray } from 'rxjs/operators'
 
+import { originCrossingLength } from '../../../packages/core/src/BaseFeatureWidget/SequenceFeatureDetails/util.ts'
 import { stringifyGFF3 } from '../../../packages/core/src/pluggableElementTypes/models/saveTrackFileTypes/gff3.ts'
 import { declaredCircularLengths } from '../../../packages/core/src/pluggableElementTypes/models/saveTrackFileTypes/util.ts'
+import GetBasicFeatureDetails from '../../../packages/core/src/rpc/methods/GetBasicFeatureDetails.ts'
 import Gff3Adapter from './Gff3Adapter/Gff3Adapter.ts'
 import gff3ConfigSchema from './Gff3Adapter/configSchema.ts'
 import Gff3TabixAdapter from './Gff3TabixAdapter/Gff3TabixAdapter.ts'
@@ -201,5 +205,58 @@ describe.each(Object.entries(adapters))('%s', (_name, make) => {
         .pipe(toArray()),
     )
     expect(spans(features)).toEqual(spans(await fetch(0, 1000)))
+  })
+})
+
+describe('feature details read with no assembly to say which sequence is circular', () => {
+  const pluginManager = new PluginManager()
+  pluginManager.addAdapterType(
+    () =>
+      new AdapterType({
+        name: 'Gff3Adapter',
+        configSchema: gff3ConfigSchema,
+        getAdapterClass: () => Promise.resolve(Gff3Adapter),
+      }),
+  )
+  pluginManager.createPluggableElements()
+  pluginManager.configure()
+
+  // the gene a display drew over the window, read whole as a click on it is
+  const clickedGene = async (refName: string, start: number, end: number) => {
+    const region = { assemblyName: 'p', refName, start, end }
+    const drawn = await firstValueFrom(
+      adapters.Gff3Adapter().getFeatures(region).pipe(toArray()),
+    )
+    const { feature } = await new GetBasicFeatureDetails(pluginManager).execute(
+      {
+        sessionId: 'test',
+        adapterConfig: {
+          type: 'Gff3Adapter',
+          gffLocation: {
+            localPath: require.resolve('./test_data/origin_spanning.gff3'),
+          },
+        },
+        featureId: drawn.find(f => f.get('type') === 'gene')!.id(),
+        region,
+      },
+    )
+    return feature!
+  }
+
+  test('a feature across the origin its file declares circular wraps there, and so does its exon past it', async () => {
+    const gene = await clickedGene('pTest', 0, 50)
+    const exons = gene.subfeatures![0]!.subfeatures!
+    expect([gene.start, gene.end]).toEqual([949, 1150])
+    expect(originCrossingLength(undefined, gene)).toBe(1000)
+    expect(exons.map(exon => originCrossingLength(undefined, exon))).toEqual([
+      undefined,
+      1000,
+    ])
+  })
+
+  test('a feature ending past a sequence its file does not declare circular is read as written', async () => {
+    const gene = await clickedGene('pLinear', 940, 1000)
+    expect([gene.start, gene.end]).toEqual([949, 1100])
+    expect(originCrossingLength(undefined, gene)).toBeUndefined()
   })
 })

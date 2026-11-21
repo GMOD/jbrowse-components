@@ -33,11 +33,7 @@ export function useSequenceFetch({
     refName: feature.refName,
     upDownBp,
     forceLoad,
-    circularLength: originCrossingLength(
-      assembly,
-      feature.refName,
-      feature.end,
-    ),
+    circularLength: originCrossingLength(assembly, feature),
   })
   // assembly-configured translation table for the feature's contig (e.g. a
   // mitochondrial contig = 2); the protein panel uses it as the fallback when

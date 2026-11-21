@@ -97,6 +97,8 @@ const globalOmit = [
   'reserved',
   'cdsStartStat',
   'cdsEndStat',
+  // GetBasicFeatureDetails' mark of a feature crossing a circular origin
+  'circularLength',
 ]
 
 function isLocation(value: unknown) {

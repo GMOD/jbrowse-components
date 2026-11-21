@@ -1,6 +1,6 @@
 ---
 name: small-genome-support
-description: "Bacterial, viral and mitochondrial genomes after the GenBank reader, the density-10 default and the origin-export fix landed: the deep amplicon BAM docs and measurement, GenBank in the open-genome form, and a linear feature past its sequence's end."
+description: "Bacterial, viral and mitochondrial genomes after the GenBank reader, the density-10 default and the origin-export fix landed: the deep amplicon BAM docs and measurement and GenBank in the open-genome form."
 ---
 
 # Small-genome support
@@ -36,15 +36,6 @@ locstring).
   `packages/add-track-core/src/formats.ts`. That means a new form field and
   about 10 call sites in `packages/core/src/util/assemblyConfigUtils.ts`. Config and
   `jbrowse add-assembly` already work.
-- **A feature on a linear sequence ending past its end wraps in feature details.**
-  `originCrossingLength`
-  (`packages/core/src/BaseFeatureWidget/SequenceFeatureDetails/util.ts`) tests
-  only `end > length`, so the sequence panel and `featureNavigator.ts` treat any
-  such feature as crossing an origin. Export now gates on the file's
-  `Is_circular` line (`declaredCircularLengths` in `fetchTrackData.ts`), but
-  details has no declaration in hand. A candidate gate is
-  `assembly.isCircularRefName`, which now also reads a GenBank `LOCUS circular`.
-  Repro: the `pLinear` fixture in `plugins/gff3/src/originSpanning.test.ts`.
 - **Check that the generated GenBank pages appear.**
   `website/docs/config/Genbank*.md` and the FILE_TYPES rows were not written:
   pre-push autogen stopped on two unrelated docs gates (the hand-written fence
