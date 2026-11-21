@@ -343,7 +343,7 @@ the inherited track menu:
         ...mafLaunchMenuItems({
           session: getSession(self),
           model: self,
-          view: containingLgv(self),
+          view: self.view,
           pluginManager: getEnv(self).pluginManager,
         }),
       ]

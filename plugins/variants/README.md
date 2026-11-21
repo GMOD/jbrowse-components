@@ -281,19 +281,20 @@ and its chips' strip inside it; `rowHeight`, the px each row draws at,
 `rows.step` or what the track leaves the rows divided between them, under a
 records band at `records.height`, or unset at its default up to its share of the
 track, which is the display's band wherever the records in view stack that high;
-and `warnings`, the samples file's. With `genotypes.reference.show` off, the
-default, a reference call draws no cell, and `rowBackground` is the reference
-call's color, standing in for every one; on, `rowBackground` is `''`. With
-`genotypes.show` off, and unset on a one-sample VCF, no row draws, so `rows` and
-`cells` are empty, the key is the records', and no genotype is read, so
-`minorAlleleFrequency` and `missingness` filter nothing, as on a sites-only VCF.
-The records sit at their genomic positions whatever `variantLayout` says.
-Several regions share the rows and the key, as the display's regions do: a
-record crossing regions is listed in each, under one `key`, with its
-`annotations` once, under its first listing; every `variants` and `cells` row
-names its `region`'s index, and `cells.variant` indexes the joined `variants`.
-For a host that draws them itself, such as R through V8. The adapters must be
-registered on `pluginManager` (`registerVariantAdapters`).
+and `warnings`, the samples file's, then the display's notices on its rows'
+banding and narrowing, such as a `rows.kept` naming no sample. With
+`genotypes.reference.show` off, the default, a reference call draws no cell, and
+`rowBackground` is the reference call's color, standing in for every one; on,
+`rowBackground` is `''`. With `genotypes.show` off, and unset on a one-sample
+VCF, no row draws, so `rows` and `cells` are empty, the key is the records', and
+no genotype is read, so `minorAlleleFrequency` and `missingness` filter nothing,
+as on a sites-only VCF. The records sit at their genomic positions whatever
+`variantLayout` says. Several regions share the rows and the key, as the
+display's regions do: a record crossing regions is listed in each, under one
+`key`, with its `annotations` once, under its first listing; every `variants`
+and `cells` row names its `region`'s index, and `cells.variant` indexes the
+joined `variants`. For a host that draws them itself, such as R through V8. The
+adapters must be registered on `pluginManager` (`registerVariantAdapters`).
 
 ```ts
 import { variantTables } from '@jbrowse/plugin-variants/tables'
@@ -309,7 +310,7 @@ function variantTables(
   height: number
   rowHeight: number
   config: Record<string, unknown>
-  warnings: never[] | string[]
+  warnings: string[]
   legend: { label: string[]; color: string[]; section: string[] }
   legendTitle: string
   ramps: {

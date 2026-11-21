@@ -1329,7 +1329,8 @@
         "measurementPartial",
         "overByteBudget",
         "perRegionBytes",
-        "totalRegionBytes"
+        "totalRegionBytes",
+        "ungatedResult"
       ],
       "worker": "real"
     },

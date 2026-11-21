@@ -58,9 +58,10 @@ it rules no band, as a density plot does not; `ramps`, the color bar its key
 shows where one ramp paints every row (`rampKeyOf`); `legend` and `legendTitle`,
 the categorical key beside it (`colorKeyTables`): the threshold bands and the
 row color key, the subtracks of an overlay or a `rows.color` field's values; and
-`warnings`, the samples file's. For a host that draws them itself, such as R
-through V8. The adapters must be registered on `pluginManager`
-(`registerWiggleAdapters`).
+`warnings`, the samples file's, then the display's notices on its rows' banding
+and narrowing, such as a `rows.kept` naming no subtrack. For a host that draws
+them itself, such as R through V8. The adapters must be registered on
+`pluginManager` (`registerWiggleAdapters`).
 
 ```ts
 import { wiggleTables } from '@jbrowse/plugin-wiggle/tables'

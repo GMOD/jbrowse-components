@@ -245,8 +245,7 @@ function formatCDS({
       feature: whole,
       gene,
       key: 'CDS',
-      label:
-        whole.get('label') ?? gene ?? whole.get('name') ?? whole.get('id'),
+      label: whole.get('label') ?? gene ?? whole.get('name') ?? whole.get('id'),
       codonStart: codonStart(feats, strand),
     }),
   ]

@@ -286,7 +286,9 @@ records band and its chips' strip inside it; `rowHeight`, the px each row
 draws at, `rows.step` or what the track leaves the rows divided between
 them, under a records band at `records.height`, or unset at its default up
 to its share of the track, which is the display's band wherever the
-records in view stack that high; and `warnings`, the samples file's. With
+records in view stack that high; and `warnings`, the samples file's, then
+the display's notices on its rows' banding and narrowing, such as a
+`rows.kept` naming no sample. With
 `genotypes.reference.show` off, the default, a
 reference call draws no cell, and `rowBackground` is the reference call's
 color, standing in for every one; on, `rowBackground` is `''`. With
@@ -316,7 +318,7 @@ function variantTables(
   height: number
   rowHeight: number
   config: Record<string, unknown>
-  warnings: never[] | string[]
+  warnings: string[]
   legend: { label: string[]; color: string[]; section: string[] }
   legendTitle: string
   ramps: {

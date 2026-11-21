@@ -48,7 +48,7 @@ Dotplot1DView
 LinearSyntenyViewHelper
 TimeTraveller
 
-# model members with no description (1223)
+# model members with no description (1224)
 # fix: write a sentence under the member’s #property/#volatile/#getter/#method/#action tag
 AddTrackModel.adapterHint
 AddTrackModel.altAssemblyName
@@ -798,7 +798,6 @@ LinearMafDisplay.showReferenceRow
 LinearMafDisplay.startRenderingBackend
 LinearMafDisplay.svgSidebar
 LinearMafDisplay.trackMenuItems
-LinearMafDisplay.view
 LinearMafDisplay.yField
 LinearManhattanDisplay.contextMenuItems
 LinearManhattanDisplay.hasLdData
@@ -963,6 +962,7 @@ MultiWaySyntenyDisplay.anchorAssembly
 MultiWaySyntenyDisplay.anchorAssemblyName
 MultiWaySyntenyDisplay.anchorFetchRegions
 MultiWaySyntenyDisplay.anchorLocString
+MultiWaySyntenyDisplay.anchorRecordsLoaded
 MultiWaySyntenyDisplay.anchorReversed
 MultiWaySyntenyDisplay.anchorRule
 MultiWaySyntenyDisplay.anchorlessGroups
@@ -987,6 +987,7 @@ MultiWaySyntenyDisplay.endAnimation
 MultiWaySyntenyDisplay.endDescribingLanes
 MultiWaySyntenyDisplay.endLaneDrag
 MultiWaySyntenyDisplay.featureOps
+MultiWaySyntenyDisplay.features
 MultiWaySyntenyDisplay.fetchedFeatures
 MultiWaySyntenyDisplay.flipLane
 MultiWaySyntenyDisplay.forgetUndescribedLanes
@@ -1277,8 +1278,9 @@ WorkspaceLayoutMixin.tabs
 # members the structural pass cannot see (0)
 # fix: add #getter/#method/#action to the local declaration the shorthand returns
 
-# member tags in a file that documents no #stateModel (100)
+# member tags in a file that documents no #stateModel (104)
 # fix: give the file a #stateModel, reach the block from one via .views(name), or drop the tags
+packages/tree-sidebar/src/color/rowColorViews.ts rowColorFields
 packages/tree-sidebar/src/rows/treeSidebarRowViews.ts arrangedRows
 packages/tree-sidebar/src/rows/treeSidebarRowViews.ts dealtValueColors
 packages/tree-sidebar/src/rows/treeSidebarRowViews.ts dealtValueColorsFor
@@ -1315,6 +1317,7 @@ packages/tree-sidebar/src/rows/treeSidebarRowViews.ts rowColorTitle
 packages/tree-sidebar/src/rows/treeSidebarRowViews.ts rowColumnLabels
 packages/tree-sidebar/src/rows/treeSidebarRowViews.ts rowFocusLineHeight
 packages/tree-sidebar/src/rows/treeSidebarRowViews.ts rowForks
+packages/tree-sidebar/src/rows/treeSidebarRowViews.ts rowFoundAtSomeLoci
 packages/tree-sidebar/src/rows/treeSidebarRowViews.ts rowNarrowing
 packages/tree-sidebar/src/rows/treeSidebarRowViews.ts rowNarrowingShows
 packages/tree-sidebar/src/rows/treeSidebarRowViews.ts rowNoun
@@ -1327,6 +1330,7 @@ packages/tree-sidebar/src/rows/treeSidebarRowViews.ts rowTree
 packages/tree-sidebar/src/rows/treeSidebarRowViews.ts rowsHeaderControlsHeight
 packages/tree-sidebar/src/rows/treeSidebarRowViews.ts rowsHeaderHeight
 packages/tree-sidebar/src/rows/treeSidebarRowViews.ts rowsLeadHeight
+packages/tree-sidebar/src/rows/treeSidebarRowViews.ts rowsListedUpFront
 packages/tree-sidebar/src/rows/treeSidebarRowViews.ts rowsTopOffset
 packages/tree-sidebar/src/rows/treeSidebarRowViews.ts sharesPanel
 packages/tree-sidebar/src/rows/treeSidebarRowViews.ts shownRows
@@ -1378,6 +1382,7 @@ plugins/wiggle/src/shared/wiggleRowGroups.ts wiggleRows
 plugins/wiggle/src/shared/wiggleRowHookViews.ts discoveredRows
 plugins/wiggle/src/shared/wiggleRowHookViews.ts drawsTree
 plugins/wiggle/src/shared/wiggleRowHookViews.ts rowNoun
+plugins/wiggle/src/shared/wiggleRowHookViews.ts rowsListedUpFront
 plugins/wiggle/src/shared/wiggleRowHookViews.ts sharesPanel
 
 # baseConfiguration references that resolved to no documented #config (0)
@@ -1389,7 +1394,7 @@ plugins/wiggle/src/shared/wiggleRowHookViews.ts sharesPanel
 # config slots whose type prints as their source (0)
 # fix: write the slot as { type, ... }, or teach describeValue in slotSource.ts the MST type it holds
 
-# model members and #api exports whose type prints as MST internals or collapses to nothing (17)
+# model members and #api exports whose type prints as MST internals or collapses to nothing (16)
 # fix: tag the model it names #stateModel (#internal keeps it off the site), or write the type it should read as
 BaseDisplay.DisplayBlurb
 BaseDisplay.RenderingComponent
@@ -1400,7 +1405,6 @@ BreakpointAlignmentsWidget.read2
 EmbeddedRootModel.config
 EmbeddedRootModel.session
 HierarchicalTrackSelectorWidget.configAndSessionTrackConfigurations
-InternetAccountsMixin.internetAccounts
 LinearFeatureBaseDisplay.featureHighlights
 LinearVariantDisplay.featureHighlights
 SessionTracksManagerSessionMixin.deleteTrackConf
