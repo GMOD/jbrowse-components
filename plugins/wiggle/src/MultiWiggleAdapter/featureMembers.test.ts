@@ -124,3 +124,24 @@ test('reads the request reference through a sequence search member', async () =>
     new Set(['polyA']),
   )
 })
+
+test('builds a stack once per genome and a plain BigWig member once', async () => {
+  const fasta = {
+    type: 'IndexedFastaAdapter',
+    fastaLocation: local(`${volvox}/volvox.fa`),
+    faiLocation: local(`${volvox}/volvox.fa.fai`),
+  }
+  const twoBit = {
+    type: 'TwoBitAdapter',
+    twoBitLocation: local(`${volvox}/volvox.2bit`),
+  }
+  const members = [
+    { type: 'BigWigAdapter', bigWigLocation: local(`${volvox}/volvox.bw`) },
+  ]
+  const onFasta = await stackOf(members, fasta)
+  const onTwoBit = await stackOf(members, twoBit)
+  expect(onFasta).not.toBe(onTwoBit)
+  const [fastaMember] = await onFasta.getAdapters()
+  const [twoBitMember] = await onTwoBit.getAdapters()
+  expect(fastaMember!.dataAdapter).toBe(twoBitMember!.dataAdapter)
+})
