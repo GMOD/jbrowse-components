@@ -1446,7 +1446,6 @@ function drawnBands<
 
 export type AlignmentTables = Awaited<ReturnType<typeof alignmentTables>>
 
-export { arcClassOf } from './connectionTables.ts'
 export {
   alignmentConnectorCurves,
   alignmentMarkAlpha,

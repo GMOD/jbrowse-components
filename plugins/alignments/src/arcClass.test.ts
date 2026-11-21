@@ -1,6 +1,6 @@
+import { arcClassOf } from './connectionTables.ts'
 import { JUNCTION_CLASSES } from './features/junctions/junctionClass.ts'
 import { ARC_SLOT_CATEGORY } from './shaders/palettes.ts'
-import { arcClassOf } from './tables.ts'
 
 test('the arcs table names each split arc class, an insertion included', () => {
   expect(
