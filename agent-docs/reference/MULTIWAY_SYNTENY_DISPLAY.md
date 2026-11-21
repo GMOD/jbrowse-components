@@ -54,11 +54,11 @@ every cost is linear in lanes.
   its copies together under its densest (`rowAssembliesOf`). A contig under
   `COPY_SHARE` of its genome's heaviest evidence in the viewport draws no lane
   unless `rows.kept` names it, and the lane dialog offers it unticked; the
-  floor weighs only groups the settled viewport shows (`inWindow`), since a
+  floor weighs only groups the settled viewport shows (`anchorInBlocks`), since a
   copy whose pairs all sit in the fetch's margin drew an empty lane; only the anchor's own contig draws no
   copy lane, so the anchor genome's other copies draw. The display and
-  `multiwayTables` share the wiring (`groupsOfField`, `rowsReadAgainstAnchor`,
-  `anchorRowOf`). Every path that treats a lane as an assembly reads
+  `multiwayTables` share the wiring (`groupsOfField`, `anchorInBlocks`,
+  `rowsReadAgainstAnchor`, `anchorRowOf`). Every path that treats a lane as an assembly reads
   `laneGenome`. Continuing a LinearSyntenyView's ribbons into each row as
   faint columns was the declined alternative: it painted over the ruler,
   track headers and block bars (ADR-278).

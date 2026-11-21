@@ -110,7 +110,6 @@ import {
   copyLaneFiling,
   laneFieldOf,
   copyLaneName,
-  copyLanesUnderFloor,
   groupsOfField,
   laneGenome,
   laneKeyIn,
@@ -269,7 +268,6 @@ import type { Lane, LaneStack } from './laneStack.ts'
 import type { AnchorStage } from './laneStage.ts'
 import type {
   FetchRegion,
-  MultiWayGroup,
   PlacedGroup,
   RowFrame,
   Span,
@@ -669,6 +667,22 @@ export function stateModelFactory(
       get lgv() {
         return containingLgv(self)
       },
+      /** #getter */
+      get anchorAssemblyName() {
+        return this.lgv.assemblyNames[0]!
+      },
+      /** #getter */
+      get anchorAssembly() {
+        return getSession(self).assemblyManager.get(this.anchorAssemblyName)
+      },
+      /**
+       * #getter
+       * the anchor assembly's canonical spelling of a refName
+       */
+      get anchorCanon(): (refName: string) => string {
+        const assembly = this.anchorAssembly
+        return refName => assembly?.getCanonicalRefName2(refName) ?? refName
+      },
       /**
        * #getter
        * undefined while the view's anchor differs from the fetch's
@@ -746,7 +760,8 @@ export function stateModelFactory(
       /**
        * #method
        * how copy lanes file: `rows.kept` lifts the floor, and the anchor's
-       * own contigs file nowhere
+       * own contigs file nowhere, and only the groups the settled viewport
+       * shows weigh against the floor
        */
       copyFiling() {
         const { assemblyManager } = getSession(self)
@@ -756,45 +771,33 @@ export function stateModelFactory(
             copyLaneName(r.assemblyName, r.refName),
           ),
           lane => laneKeyIn(assemblyManager, lane),
-          group => this.inWindow(group),
+          anchorInBlocks(self.lgv.settledDynamicBlocks, self.anchorCanon),
         )
-      },
-      /**
-       * #method
-       * whether the settled viewport shows a group's anchor
-       */
-      inWindow(group: MultiWayGroup) {
-        const view = self.lgv
-        const assembly = getSession(self).assemblyManager.get(
-          view.assemblyNames[0]!,
-        )
-        return anchorInBlocks(
-          view.settledDynamicBlocks,
-          refName => assembly?.getCanonicalRefName2(refName) ?? refName,
-        )(group)
       },
       /**
        * #getter
-       * each mate filed under its genome's lane, or its copy lane
+       * the groups as `rows.field` files them, in one pass with the copy
+       * lanes the floor drops
        */
-      get groups() {
+      get filedGroups() {
         return groupsOfField(this.laneField, this.groupedFeatures, () =>
           this.copyFiling(),
         )
       },
       /**
        * #getter
+       * each mate filed under its genome's lane, or its copy lane
+       */
+      get groups() {
+        return this.filedGroups.groups
+      },
+      /**
+       * #getter
        * the copy lanes the window places too little of to draw, which the
        * lane dialog offers unticked
        */
-      get copyLanesUnderFloor(): string[] {
-        return this.laneField === 'refName'
-          ? copyLanesUnderFloor(
-              this.groupedFeatures,
-              this.groups,
-              this.copyFiling(),
-            )
-          : []
+      get copyLanesUnderFloor(): readonly string[] {
+        return this.filedGroups.underFloor
       },
       /**
        * #getter
@@ -983,12 +986,6 @@ export function stateModelFactory(
     })
     .views(self => ({
       /** #getter */
-      get anchorAssemblyName() {
-        return self.lgv.assemblyNames[0]!
-      },
-    }))
-    .views(self => ({
-      /** #getter */
       get adapterCapabilities(): readonly string[] {
         const type = self.adapterConfig.type
         return typeof type === 'string'
@@ -1161,18 +1158,6 @@ export function stateModelFactory(
        */
       rpcProps() {
         return { haplotypes: self.fetchLaneSelection }
-      },
-      /** #getter */
-      get anchorAssembly() {
-        return getSession(self).assemblyManager.get(self.anchorAssemblyName)
-      },
-      /**
-       * #getter
-       * the anchor assembly's canonical spelling of a refName
-       */
-      get anchorCanon(): (refName: string) => string {
-        const assembly = this.anchorAssembly
-        return refName => assembly?.getCanonicalRefName2(refName) ?? refName
       },
       /** #getter */
       get anchorLocString() {

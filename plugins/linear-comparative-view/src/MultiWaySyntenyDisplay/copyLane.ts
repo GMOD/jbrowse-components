@@ -185,10 +185,11 @@ export function copyLaneFiling(
 /**
  * `groups` with each mate filed under its contig's copy lane. A contig holding
  * under `COPY_SHARE` of its genome's heaviest contig's evidence is a stray
- * paralog hit, not a copy, and draws no lane unless `chosen` names it. A mate
- * on the anchor's own contig files nowhere; one on another contig of the
- * anchor's genome is a copy like any other. Only the groups `inWindow` shows
- * weigh against the floor.
+ * paralog hit, not a copy, and draws no lane unless `chosen` names it; such a
+ * lane is `underFloor`, which the lane dialog offers unticked. A mate on the
+ * anchor's own contig files nowhere; one on another contig of the anchor's
+ * genome is a copy like any other. Only the groups `inWindow` shows weigh
+ * against the floor.
  */
 export function fileUnderCopies(
   groups: readonly MultiWayGroup[],
@@ -232,10 +233,14 @@ export function fileUnderCopies(
         weight >= heaviest.get(laneGenome(lane))! * COPY_SHARE)
     )
   }
-  return filed.map(({ group, mates }) => ({
-    ...group,
-    mates: new Map([...mates].filter(([lane]) => drawn(lane))),
-  }))
+  const placed = new Set(filed.flatMap(({ mates }) => [...mates.keys()]))
+  return {
+    groups: filed.map(({ group, mates }) => ({
+      ...group,
+      mates: new Map([...mates].filter(([lane]) => drawn(lane))),
+    })),
+    underFloor: [...placed].filter(lane => !drawn(lane)),
+  }
 }
 
 /** each lane the groups place, once */
@@ -244,30 +249,16 @@ export function lanesPlacedIn(groups: readonly MultiWayGroup[]) {
 }
 
 /**
- * The copy lanes `grouped` places that `filed` drops under the floor, which
- * the lane dialog offers unticked
- */
-export function copyLanesUnderFloor(
-  grouped: readonly MultiWayGroup[],
-  filed: readonly MultiWayGroup[],
-  filing: CopyLaneFiling,
-) {
-  const drawn = lanesPlacedIn(filed)
-  return [
-    ...lanesPlacedIn(
-      fileUnderCopies(grouped, { ...filing, chosen: () => true }),
-    ),
-  ].filter(lane => !drawn.has(lane))
-}
-
-/**
  * The groups `rows.field` draws, the display's and the export's alike: each
- * mate under its genome's lane, or under its copy lane as `filing` files it
+ * mate under its genome's lane, or under its copy lane as `filing` files it,
+ * with the copy lanes the floor drops
  */
 export function groupsOfField(
   field: LaneRowsField,
   grouped: MultiWayGroup[],
   filing: () => CopyLaneFiling,
 ) {
-  return field === 'refName' ? fileUnderCopies(grouped, filing()) : grouped
+  return field === 'refName'
+    ? fileUnderCopies(grouped, filing())
+    : { groups: grouped, underFloor: [] }
 }

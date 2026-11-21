@@ -211,7 +211,7 @@ test("a lane's color is its pin, else its source's, else none, through any spell
 })
 
 describe('copy lanes', () => {
-  const groups = fileUnderCopies(
+  const { groups } = fileUnderCopies(
     groupFeatures(
       ['chr11', 'chr9', 'chr11', 'chrG3'].map(
         (refName, i) =>
@@ -362,7 +362,7 @@ describe('switching rows.field', () => {
   ])
   const kept = ['{grape}chr9', '{grape}chr11']
   const rowsUnder = (copies: boolean, selection: string[], sort: string[]) => {
-    const groups = copies ? fileUnderCopies(grouped) : grouped
+    const groups = copies ? fileUnderCopies(grouped).groups : grouped
     return laneRowsOf({
       groups,
       placeless: unalignedChosenLanesOf(

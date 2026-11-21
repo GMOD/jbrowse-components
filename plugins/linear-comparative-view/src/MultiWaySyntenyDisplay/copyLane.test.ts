@@ -69,7 +69,7 @@ describe('a copy lane name', () => {
 
 describe('fileUnderCopies', () => {
   test('files each pair under its contig’s lane, one group per anchor gene', () => {
-    const groups = fileUnderCopies(groupFeatures(triplicated))
+    const { groups } = fileUnderCopies(groupFeatures(triplicated))
     expect(groups.map(g => g.key)).toEqual(['g1', 'g2', 'g3'])
     expect([...groups[0]!.mates.keys()]).toEqual([
       '{grape}chr11',
@@ -85,15 +85,14 @@ describe('fileUnderCopies', () => {
     ...genes.slice(0, 3).map((name, i) => anchorsRow(name, i * 100, 'chr9')),
     anchorsRow('g0', 0, 'chr2'),
   ])
-  const lanesOf = (groups: ReturnType<typeof fileUnderCopies>) => [
+  const lanesOf = ({ groups }: ReturnType<typeof fileUnderCopies>) => [
     ...new Set(groups.flatMap(g => [...g.mates.keys()])),
   ]
 
   test('a contig under a tenth of its genome’s heaviest draws no lane', () => {
-    expect(lanesOf(fileUnderCopies(sparse))).toEqual([
-      '{grape}chr11',
-      '{grape}chr9',
-    ])
+    const filed = fileUnderCopies(sparse)
+    expect(lanesOf(filed)).toEqual(['{grape}chr11', '{grape}chr9'])
+    expect(filed.underFloor).toEqual(['{grape}chr2'])
   })
 
   test('a contig the reader chose draws its lane however few its genes', () => {
@@ -106,11 +105,18 @@ describe('fileUnderCopies', () => {
 
   test('a contig whose genes sit only past the viewport draws no lane', () => {
     const shown = new Set(genes.slice(5))
+    const filed = fileUnderCopies(sparse, {
+      inWindow: group => shown.has(group.key),
+    })
+    expect(lanesOf(filed)).toEqual(['{grape}chr11'])
+    expect(filed.underFloor).toEqual(['{grape}chr9', '{grape}chr2'])
+  })
+
+  test('a contig the reader chose is never under the floor', () => {
     expect(
-      lanesOf(
-        fileUnderCopies(sparse, { inWindow: group => shown.has(group.key) }),
-      ),
-    ).toEqual(['{grape}chr11'])
+      fileUnderCopies(sparse, { chosen: lane => lane === '{grape}chr2' })
+        .underFloor,
+    ).toEqual([])
   })
 
   // wheat anchored at 1A: an all-against-all source pairs every 1A gene with
@@ -173,14 +179,14 @@ describe('groupsOfField', () => {
     expect(
       groupsOfField('assembly', grouped, () => {
         throw new Error('genome lanes need no filing')
-      }),
+      }).groups,
     ).toBe(grouped)
     expect(
       groupsOfField('refName', grouped, () => ({
         chosen: () => false,
         onAnchorContig: () => false,
         inWindow: () => true,
-      }))[0]!.mates.size,
+      })).groups[0]!.mates.size,
     ).toBe(3)
   })
 })
@@ -202,7 +208,7 @@ describe('a copy lane’s key', () => {
 })
 
 describe('copy lanes around an anchor in the middle', () => {
-  const groups = fileUnderCopies(groupFeatures(triplicated))
+  const { groups } = fileUnderCopies(groupFeatures(triplicated))
   // each copy draws at half the anchor's scale, so its px differ from the anchor's
   const copyFrame = (refName: string): RowFrame => ({
     refName,

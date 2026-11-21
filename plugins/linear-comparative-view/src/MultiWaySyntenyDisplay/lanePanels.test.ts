@@ -202,7 +202,7 @@ test("a panel's mate ends are cut along the record's alignment where it carries 
 
 test('a copy lane launches a panel on its genome', () => {
   const { mates } = lanePanelsForRegion({
-    groups: fileUnderCopies(groups),
+    groups: fileUnderCopies(groups).groups,
     rowAssemblies: ['{mouse}M1'],
     laneDecisions: new Map([['{mouse}M1', decision('M1', [5000, 10_000])]]),
     region: { refName: 'chr1', start: 0, end: 10_000 },

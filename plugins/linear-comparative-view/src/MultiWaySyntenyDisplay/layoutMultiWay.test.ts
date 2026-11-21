@@ -454,13 +454,9 @@ test("a genome's copy lanes stack together, under its densest copy", () => {
       })
     }),
   )
-  expect(rowAssembliesOf(fileUnderCopies(groupFeatures(records)), [])).toEqual([
-    '{durum}3B',
-    '{durum}3A',
-    '{wheat}3D',
-    '{wheat}3B',
-    '{wheat}3A',
-  ])
+  expect(
+    rowAssembliesOf(fileUnderCopies(groupFeatures(records)).groups, []),
+  ).toEqual(['{durum}3B', '{durum}3A', '{wheat}3D', '{wheat}3B', '{wheat}3A'])
 })
 
 test('the runs of one clipped record are sibling groups, weighed by the anchor bp they cover', () => {

@@ -603,7 +603,7 @@ export async function multiwayTables(
     adapterAssemblyNames(adapterConfig),
     name => name === anchor,
   )
-  const groups = groupsOfField(field, groupFeatures(features), () =>
+  const { groups } = groupsOfField(field, groupFeatures(features), () =>
     copyLaneFiling(
       settings.kept,
       anchorFrame.regions.map(r => copyLaneName(anchor, r.refName)),
