@@ -45,21 +45,21 @@
       "values": {
         "scope": "source",
         "calls": 740,
-        "unchecked": 42
+        "unchecked": 37
       }
     },
     {
       "values": {
         "scope": "tests",
         "calls": 1011,
-        "unchecked": 224
+        "unchecked": 215
       }
     },
     {
       "values": {
         "scope": "all",
         "calls": 1751,
-        "unchecked": 266
+        "unchecked": 252
       }
     }
   ]

@@ -156,16 +156,13 @@ export default class HicAdapter extends BaseFeatureDataAdapter<HicAdapterConfig>
   }
 
   private async openControl(opts: BaseOptions): Promise<Control | undefined> {
-    const config: Record<string, unknown> | undefined =
-      this.getConf('controlAdapter')
+    const config = this.getConf('controlAdapter')
     if (!config || !this.getSubAdapter) {
       return undefined
     }
     const { dataAdapter } = await this.getSubAdapter(config)
     if (!(dataAdapter instanceof HicAdapter)) {
-      throw new Error(
-        `A Hi-C control must be a HicAdapter, not ${String(config.type)}`,
-      )
+      throw new Error(`A Hi-C control must be a HicAdapter, not ${config.type}`)
     }
     const [mine, side, theirs] = await Promise.all([
       this.setup(opts),

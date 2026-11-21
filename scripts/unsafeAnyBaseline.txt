@@ -169,9 +169,7 @@
 3 no-unsafe-return plugins/features/src/tables.ts
 1 no-unsafe-argument plugins/gccontent/src/GCContentTrack/liftGCSettings.ts
 1 no-unsafe-assignment plugins/gccontent/src/GCContentTrack/liftGCSettings.ts
-1 no-unsafe-assignment plugins/gwas/src/GWASAdapter/GWASAdapter.ts
 1 no-unsafe-return plugins/gwas/src/LinearManhattanDisplay/stateModelFactory.ts
-1 no-unsafe-assignment plugins/hic/src/HicAdapter/HicAdapter.ts
 1 no-unsafe-assignment plugins/legacy-jbrowse/src/JBrowse1Connection/jb1ConfigParse.ts
 1 no-unsafe-return plugins/legacy-jbrowse/src/JBrowse1Connection/jb1ConfigParse.ts
 1 no-unsafe-argument plugins/legacy-jbrowse/src/JBrowse1Connection/util.ts
@@ -203,7 +201,6 @@
 1 no-unsafe-return plugins/maf/src/LinearMafDisplay/stateModel.ts
 2 no-unsafe-return plugins/maf/src/MafAddTrackWorkflow/buildAdapterConfig.ts
 1 no-unsafe-argument plugins/maf/src/util/getSamples.ts
-1 no-unsafe-assignment plugins/maf/src/util/MafAdapterBase.ts
 1 no-unsafe-assignment plugins/variants/src/LinearVariantDisplay/anchoredHaplotypeSort.ts
 1 no-unsafe-assignment plugins/variants/src/LinearVariantDisplay/configSchema.ts
 2 no-unsafe-assignment plugins/variants/src/LinearVariantDisplay/model.ts

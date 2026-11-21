@@ -166,15 +166,14 @@ export abstract class MafAdapterBase<
  * points it at a `BigBedAdapter` over UCSC's `bigMafSummary.bb` while a tabix
  * or TAF track points it at a `BedTabixAdapter` over a summary BED.
  */
-async function loadSummaryAdapter(self: BaseFeatureDataAdapter) {
-  const config: Record<string, unknown> | undefined =
-    self.getConf('summaryAdapter')
+async function loadSummaryAdapter(self: MafAdapterBase) {
+  const config = self.getConf('summaryAdapter')
   let adapter: BaseFeatureDataAdapter | undefined
   if (config && self.getSubAdapter) {
     const { dataAdapter } = await self.getSubAdapter(config)
     if (!isFeatureAdapter(dataAdapter)) {
       throw new Error(
-        `MAF summaryAdapter ${String(config.type)} does not serve features`,
+        `MAF summaryAdapter ${config.type} does not serve features`,
       )
     }
     adapter = dataAdapter

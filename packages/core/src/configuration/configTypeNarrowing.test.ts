@@ -480,6 +480,32 @@ describe('a pluggable union slot reads as the member it holds', () => {
   })
 })
 
+describe('a frozen slot declaring what it holds', () => {
+  it('reads as the adapter config, a list of them, or possibly none', () => {
+    const holder = ConfigurationSchema('ConfigHeldAdapters', {
+      sequenceAdapter: { type: 'maybeFrozen', holds: 'adapter' },
+      controlAdapter: { type: 'frozen', holds: 'adapter', defaultValue: {} },
+      adapters: { type: 'frozen', holds: 'adapter', defaultValue: [] },
+      raw: { type: 'frozen', defaultValue: [] },
+    })
+    const node = holder.create(
+      { adapters: [{ type: 'BedAdapter' }] },
+      { pluginManager },
+    )
+    const sequenceAdapter = readConfObject(node, 'sequenceAdapter')
+    assertType<
+      Equal<typeof sequenceAdapter, PluggableConfigSnapshot | undefined>
+    >()
+    const controlAdapter = readConfObject(node, 'controlAdapter')
+    assertType<Equal<typeof controlAdapter, PluggableConfigSnapshot>>()
+    const adapters = readConfObject(node, 'adapters')
+    assertType<Equal<typeof adapters, PluggableConfigSnapshot[]>>()
+    const raw = readConfObject(node, 'raw')
+    assertType<Equal<typeof raw, any>>()
+    expect(adapters.map(a => a.type)).toEqual(['BedAdapter'])
+  })
+})
+
 describe('a track schema written inline in new TrackType', () => {
   it('keeps its identifier literal, so it is a TrackConfigSchema', () => {
     const check = (pm: PluginManager, stateModel: IAnyModelType) =>

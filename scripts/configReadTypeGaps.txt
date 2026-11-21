@@ -23,6 +23,7 @@
 #     (adr-052); naming the table is not that.
 #   - a `frozen`/`maybeFrozen` slot, which is `any` BY DESIGN — the escape
 #     hatch for arbitrary JSON. Accepted; it will never leave this list.
+#     One declaring `holds: 'adapter'` reads as the adapter config it holds.
 #   - a read against a TRACK schema (`trackId`, `assemblyNames`, `adapter`,
 #     often via getContainingTrack/parentTrack). Grouped under the display
 #     file that happens to contain it, so it LOOKS like display debt; naming
@@ -38,7 +39,7 @@
 #     or a tail through a pluggable union (`['adapter', 'fetchSizeLimit']`).
 #     A head that is a track or root slot files it with that population.
 #
-# 42 unchecked in source, 224 in tests,
+# 37 unchecked in source, 215 in tests,
 # of 1751 total config accessor calls. The gate counts source only.
 # A read spelled `this.getConf` / `self.getConf` / `….getConf` is an
 # adapter's or model's own accessor method, whose slot is its first argument.
@@ -200,8 +201,7 @@ plugins/comparative-adapters/src/MCScanBlocksAdapter/configSchema.test.ts  (2)  
   36	readConfObject('bedLocations')
 plugins/comparative-adapters/src/MCScanBlocksAdapter/MCScanBlocksAdapter.ts  (1)
   223	this.getConf('bedLocations')
-plugins/comparative-adapters/src/MultiPairwiseSyntenyAdapter/MultiPairwiseSyntenyAdapter.ts  (2)
-  198	this.getConf('adapters')
+plugins/comparative-adapters/src/MultiPairwiseSyntenyAdapter/MultiPairwiseSyntenyAdapter.ts  (1)
   234	this.getConf('lanes')
 plugins/comparative-adapters/src/util.ts  (1)
   45	readConfObject('assemblyNameToPanSN')
@@ -224,20 +224,14 @@ plugins/features/src/LinearBasicDisplay/retiredSpellings.test.ts  (1)  [test]
   44	readConfObject(['encoding', 'color', 'value'])
 plugins/features/src/shared/FeatureGateMixin.test.ts  (1)  [test]
   17	getConf('maxFeatureScreenDensty')
-plugins/gccontent/src/GCContentAdapter/GCContentAdapter.ts  (1)
-  41	this.getConf('sequenceAdapter')
 plugins/gccontent/src/GCContentTrack/gcTrack.test.ts  (5)  [test]
   214	readConfObject(['adapter', 'type'])
   215	readConfObject(['adapter', 'window'])
   216	readConfObject(['adapter', 'step'])
   217	readConfObject(['adapter', 'sequenceAdapter'])
   222	readConfObject(['encoding', 'y', 'field'])
-plugins/gwas/src/GWASAdapter/GWASAdapter.ts  (1)
-  30	readConfObject('ldAdapter')
 plugins/gwas/src/LinearManhattanDisplay/stateModelFactory.ts  (1)
   83	getConf(['adapter', 'ldAdapter'])
-plugins/hic/src/HicAdapter/HicAdapter.ts  (1)
-  160	this.getConf('controlAdapter')
 plugins/linear-comparative-view/src/LinearSyntenyView/initTracks.integration.test.ts  (2)  [test]
   109	readConfObject('trackId')
   116	readConfObject('trackId')
@@ -254,26 +248,13 @@ plugins/linear-genome-view/src/TrackModifiers/writeMembers.test.ts  (1)  [test]
   123	readConfObject(['rows', 'tree', 'provenance'])
 plugins/maf/src/BgzipTaffyAdapter/configSchema.test.ts  (1)  [test]
   51	readConfObject('nhLocation')
-plugins/maf/src/BigMafAdapter/configSchema.test.ts  (4)  [test]
-  8	readConfObject('summaryAdapter')
-  17	readConfObject('summaryAdapter')
-  22	readConfObject('framesAdapter')
-  34	readConfObject('framesAdapter')
 plugins/maf/src/LinearMafDisplay/configSlotViews.ts  (2)
   30	readConfObject(['alignments', 'bases', 'show'])
   31	readConfObject(['alignments', 'bases', 'encoding', 'color', 'field'])
 plugins/maf/src/LinearMafDisplay/stateModel.ts  (1)
   282	getConf(['adapter', 'framesAdapter'])
-plugins/maf/src/MafTabixAdapter/summaryAdapter.test.ts  (5)  [test]
-  239	readConfObject('summaryAdapter')
-  249	readConfObject('summaryAdapter')
-  258	readConfObject('summaryAdapter')
-  275	readConfObject('summaryAdapter')
-  285	readConfObject('summaryAdapter')
 plugins/maf/src/util/getSamples.ts  (1)
   212	readConfObject('samples')
-plugins/maf/src/util/MafAdapterBase.ts  (1)
-  171	self.getConf('summaryAdapter')
 plugins/marks/src/LinearMarkDisplay/markRowsConfigSchema.test.ts  (3)  [test]
   32	readConfObject(['rows', 'groups'])
   39	readConfObject(['rows', 'groups'])

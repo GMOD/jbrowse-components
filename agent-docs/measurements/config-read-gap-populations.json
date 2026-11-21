@@ -41,8 +41,8 @@
     {
       "values": {
         "population": "frozen slot, `any` by design",
-        "slots": "`theme`, `extraThemes`, `features`, `metadata`, `ldAdapter`, `assemblyNameToPanSN`, `geneticCodes`, `samples`, `lanes`, `bedLocations`, `adapters`, `subadapters`, `sequenceAdapter`, `controlAdapter`, `summaryAdapter`",
-        "reads": 19
+        "slots": "`theme`, `extraThemes`, `features`, `metadata`, `assemblyNameToPanSN`, `geneticCodes`, `samples`, `lanes`, `bedLocations`, `subadapters`",
+        "reads": 14
       }
     },
     {

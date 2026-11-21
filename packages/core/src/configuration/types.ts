@@ -63,13 +63,15 @@ type MergeSlotDef<BASE_ENTRY, ENTRY> = BASE_ENTRY extends { type: string }
   : ENTRY
 
 /**
- * Only `type`, `model` and a widened `defaultValue`: carrying a description or
- * a literal default makes a subclass that changes one unassignable to its base.
+ * Only `type`, `model`, `holds` and a widened `defaultValue`: carrying a
+ * description or a literal default makes a subclass that changes one
+ * unassignable to its base.
  */
 type NormalizeSlotDef<E> = E extends AnyConfigurationSchemaType
   ? E
   : E extends { type: infer T }
     ? { type: T } & (E extends { model: infer M } ? { model: M } : unknown) &
+        (E extends { holds: infer H } ? { holds: H } : unknown) &
         (E extends { defaultValue: infer V }
           ? { defaultValue: WidenDefaultValue<V> }
           : unknown)
@@ -81,7 +83,9 @@ type WidenDefaultValue<V> = [V] extends [boolean]
     ? string
     : [V] extends [number]
       ? number
-      : unknown
+      : [V] extends [readonly unknown[]]
+        ? readonly unknown[]
+        : unknown
 
 // A pluggable union slot (a track's `adapter`), whose member names its `type`.
 // A raw MST type whose instance is `any` is not one.
@@ -236,27 +240,37 @@ type SlotValueRawFromDef<DEF> = DEF extends AnyConfigurationSchemaType
     ? SlotValueRawFromLeafDef<DEF>
     : PluggableConfigSnapshot
 
-type SlotValueRawFromLeafDef<DEF> = DEF extends {
-  model: ISimpleType<infer T extends string>
-}
-  ? DEF extends { type: 'maybeStringEnum' }
-    ? T | undefined
-    : DEF extends { type: 'stringEnumArray' }
-      ? T[]
-      : T
-  : DEF extends { type: infer T extends keyof SlotValueByType }
-    ? SlotValueByType[T]
-    : // only a `type` the table doesn't name, such as one widened to
-      // `string` by a schema not inferred `const`
-      DEF extends { defaultValue: infer V }
-      ? [V] extends [boolean]
-        ? boolean
-        : [V] extends [string]
-          ? string
-          : [V] extends [number]
-            ? number
-            : any
-      : any
+type SlotValueRawFromLeafDef<DEF> = DEF extends { holds: 'adapter' }
+  ? HeldAdapterValue<DEF>
+  : DEF extends {
+        model: ISimpleType<infer T extends string>
+      }
+    ? DEF extends { type: 'maybeStringEnum' }
+      ? T | undefined
+      : DEF extends { type: 'stringEnumArray' }
+        ? T[]
+        : T
+    : DEF extends { type: infer T extends keyof SlotValueByType }
+      ? SlotValueByType[T]
+      : // only a `type` the table doesn't name, such as one widened to
+        // `string` by a schema not inferred `const`
+        DEF extends { defaultValue: infer V }
+        ? [V] extends [boolean]
+          ? boolean
+          : [V] extends [string]
+            ? string
+            : [V] extends [number]
+              ? number
+              : any
+        : any
+
+// A frozen slot declaring `holds: 'adapter'` holds an adapter config as
+// written, or a list of them where its default is a list.
+type HeldAdapterValue<DEF> = DEF extends { defaultValue: readonly unknown[] }
+  ? PluggableConfigSnapshot[]
+  : DEF extends { type: 'maybeFrozen' }
+    ? PluggableConfigSnapshot | undefined
+    : PluggableConfigSnapshot
 
 // Without the IsAny arm a widened schema's path walk answers `never` from two
 // segments on, which satisfies any annotation and refuses every member read.
