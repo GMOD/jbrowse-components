@@ -31,10 +31,8 @@ test('reset confirmation lists the active differences then clears them', () => {
 
   fireEvent.click(getByRole('button', { name: 'Reset to defaults…' }))
 
-  // the confirmation surfaces the exact diff across subsystems (preference-map
-  // override + layout flag), not a blind reset
-  expect(getByText('scrollZoom')).toBeTruthy()
-  expect(getByText('stickyViewHeaders')).toBeTruthy()
+  expect(getByText('Zoom on scroll')).toBeTruthy()
+  expect(getByText('Keep view header visible')).toBeTruthy()
 
   fireEvent.click(getByRole('button', { name: /^Reset to defaults$/ }))
 
