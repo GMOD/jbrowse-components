@@ -20,7 +20,9 @@ function qualifierFor(attribute: string) {
  * A GenBank file's features as trix records, under the refNames
  * `GenbankAdapter` gives its records. A `gene` and the CDS under it repeat one
  * `/locus_tag`, so a feature is grouped with the others sharing its
- * `/locus_tag` (else its `/gene`) and indexed once over their union.
+ * `/locus_tag`, else with those sharing its `/gene` that it overlaps or abuts,
+ * and indexed once over their union: a plastome's two inverted-repeat copies of
+ * a gene stay two hits.
  *
  * The file is parsed whole, as the adapter does.
  */
@@ -46,7 +48,7 @@ export async function* indexGenbank({
     lines.push(line)
   }
   for (const { refName, featureLines } of parseRecords(lines.join('\n'))) {
-    const groups = new Map<string, Group>()
+    const groups = new Map<string, Group[]>()
     for (const { key, location, qualifiers } of parseFeatureTable(
       featureLines,
     )) {
@@ -59,11 +61,12 @@ export async function* indexGenbank({
       if (key !== 'source' && positions.length > 0 && values.length > 0) {
         const start = Math.min(...positions)
         const end = Math.max(...positions)
-        const id =
-          qualifiers.get('locus_tag')?.[0] ??
-          qualifiers.get('gene')?.[0] ??
-          `${key}:${start}`
-        const group = groups.get(id)
+        const locusTag = qualifiers.get('locus_tag')?.[0]
+        const id = locusTag ?? qualifiers.get('gene')?.[0] ?? `${key}:${start}`
+        const sharing = groups.get(id) ?? []
+        const group = locusTag
+          ? sharing[0]
+          : sharing.find(g => start <= g.end + 1 && g.start <= end + 1)
         if (group) {
           group.start = Math.min(group.start, start)
           group.end = Math.max(group.end, end)
@@ -71,11 +74,11 @@ export async function* indexGenbank({
             group.values.add(value)
           }
         } else {
-          groups.set(id, { start, end, values: new Set(values) })
+          groups.set(id, [...sharing, { start, end, values: new Set(values) }])
         }
       }
     }
-    for (const { start, end, values } of groups.values()) {
+    for (const { start, end, values } of [...groups.values()].flat()) {
       yield trixLine(`${refName}:${start}..${end}`, trackId, [...values])
     }
   }

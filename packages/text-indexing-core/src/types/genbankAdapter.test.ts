@@ -87,6 +87,29 @@ describe('indexGenbank', () => {
     ])
   })
 
+  test('one /gene with no /locus_tag is one hit per copy, its gene and CDS merged where they overlap', async () => {
+    const file = path.join(tmpDir, 'plastome.gbk')
+    fs.writeFileSync(
+      file,
+      `LOCUS       plastome                 150000 bp    DNA     circular PLN 01-JAN-2020
+FEATURES             Location/Qualifiers
+     gene            complement(95000..97000)
+                     /gene="ndhB"
+     CDS             complement(join(95000..95700,96400..97000))
+                     /gene="ndhB"
+     gene            140000..142000
+                     /gene="ndhB"
+     CDS             join(140000..140600,141300..142000)
+                     /gene="ndhB"
+//
+`,
+    )
+    expect((await index(file)).map(hit => hit.loc)).toEqual([
+      'plastome:95000..97000',
+      'plastome:140000..142000',
+    ])
+  })
+
   test('a GenbankAdapter track in a config is indexed, not skipped', async () => {
     const file = path.join(tmpDir, 'sakai.gbk')
     fs.writeFileSync(file, genbank)
