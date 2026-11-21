@@ -71,7 +71,6 @@ import {
   bandInk,
   bandPalette,
   colorableColumns,
-  declaredAnchorColorOf,
   declaredAttributes,
   declaredLanesOf,
   featureAttributeRanges,
@@ -148,6 +147,11 @@ import {
   lanesPastHalfway,
   shownFrame,
 } from './laneMotion.ts'
+import {
+  laneColorActions,
+  laneColorDialogActions,
+  laneNameViews,
+} from './laneNameViews.ts'
 import { lanePanelsForRegion } from './lanePanels.ts'
 import { isFlipPin, pinnedRowOf, withPin } from './lanePins.ts'
 import {
@@ -163,7 +167,7 @@ import {
   laneSourceViews,
   unalignedLaneViews,
 } from './laneRowViews.ts'
-import { laneColorOf, laneLabelOf, laneUniverseOf } from './laneSelection.ts'
+import { laneUniverseOf } from './laneSelection.ts'
 import { gutterNearViewport, laneGeometry, stackReach } from './laneStack.ts'
 import {
   decideLanesOn,
@@ -213,7 +217,6 @@ import {
 } from './multiwayRenderTypes.ts'
 import { RIBBON_GREY } from './ribbonColorConfigSchema.ts'
 import { RIBBON_OPACITY } from './ribbonPaint.ts'
-import { againstAnchorName } from './sourceShape.ts'
 
 import type { SyntenyRenderState } from '../LinearSyntenyDisplay/syntenyRenderingBackendTypes.ts'
 import type { SyntenyInstanceData } from '../LinearSyntenyRPC/buildSyntenyGeometry.ts'
@@ -1008,107 +1011,9 @@ export function stateModelFactory(
           conf => isObject(conf) && conf.name === name,
         )
       },
-      /**
-       * #getter
-       * keyed by `laneKey`
-       */
-      get declaredLaneLabels() {
-        const out = new Map<string, string>()
-        for (const { name, label } of self.declaredLanes) {
-          if (label !== undefined) {
-            out.set(self.laneKey(name), label)
-          }
-        }
-        return out
-      },
-      /**
-       * #getter
-       * `rows.labels`, keyed by `laneKey`
-       */
-      get rowLabels() {
-        const labels = getConf(self, ['rows', 'labels'])
-        return new Map(
-          Object.entries(labels).map(([name, label]) => [
-            self.laneKey(name),
-            label,
-          ]),
-        )
-      },
-      /** #method */
-      laneLabel(lane: string) {
-        const { assemblyManager } = getSession(self)
-        return laneLabelOf(lane, {
-          written: this.rowLabels,
-          heldName: name =>
-            this.holdsAssembly(name)
-              ? assemblyManager.getDisplayName(name)
-              : undefined,
-          declared: this.declaredLaneLabels,
-          keyOf: self.laneKey,
-          shownRefName: (assemblyName, refName) =>
-            (this.holdsAssembly(assemblyName) &&
-              assemblyManager
-                .get(assemblyName)
-                ?.getCanonicalRefName2(refName)) ||
-            refName,
-        })
-      },
-      /**
-       * #getter
-       * the anchor's name in a lane's `vs` badge and the legend where the
-       * lanes read against it: its label beside copy lanes, which name their
-       * genome's label, else its assembly name
-       */
-      get againstAnchor(): string | undefined {
-        return againstAnchorName(
-          self.rowsVsAnchor,
-          self.laneField,
-          self.anchorAssemblyName,
-          lane => this.laneLabel(lane),
-        )
-      },
-      /**
-       * #getter
-       * the colors the source declares, the anchor's `anchorColor` among
-       * them, keyed by `laneKey`
-       */
-      get declaredLaneColors() {
-        const out = new Map<string, string>()
-        for (const { name, color } of self.declaredLanes) {
-          if (color !== undefined) {
-            out.set(self.laneKey(name), color)
-          }
-        }
-        const anchorColor = declaredAnchorColorOf(self.adapterHeader)
-        if (anchorColor !== undefined) {
-          out.set(self.laneKey(self.anchorAssemblyName), anchorColor)
-        }
-        return out
-      },
-      /**
-       * #getter
-       * `rows.colors`, keyed by `laneKey`
-       */
-      get rowColors() {
-        const colors = getConf(self, ['rows', 'colors'])
-        return new Map(
-          Object.entries(colors).map(([name, color]) => [
-            self.laneKey(name),
-            color,
-          ]),
-        )
-      },
-      /**
-       * #method
-       * the color a lane's label bar draws, undefined for none
-       */
-      laneColor(assemblyName: string) {
-        return laneColorOf(assemblyName, {
-          pinned: this.rowColors,
-          declared: this.declaredLaneColors,
-          keyOf: self.laneKey,
-        })
-      },
+    }))
+    .views(laneNameViews)
+    .views(self => ({
       /**
        * #getter
        * the anchor is never a lane
@@ -1123,7 +1028,7 @@ export function stateModelFactory(
           declared: self.declaredLanes,
           trackAssemblies: getTrackAssemblyNames(self.parentTrack),
           keyOf: self.laneKey,
-          labelOf: name => this.laneLabel(name),
+          labelOf: name => self.laneLabel(name),
           selection: self.laneSelection,
           hidden: self.hiddenLanes,
           featuresLoaded: self.anchorRecordsLoaded,
@@ -1182,46 +1087,9 @@ export function stateModelFactory(
     }))
     .actions(laneOrderHoldActions)
     .actions(laneSelectionActions)
+    .actions(laneColorActions)
+    .actions(laneColorDialogActions)
     .actions(self => ({
-      /**
-       * #action
-       * pins `rows.colors` for the lane, replacing an entry under any other
-       * spelling of it; undefined drops the pin, so the source's color shows
-       */
-      setLaneColor(assemblyName: string, color: string | undefined) {
-        const key = self.laneKey(assemblyName)
-        const kept = Object.entries(getConf(self, ['rows', 'colors'])).filter(
-          ([name]) => self.laneKey(name) !== key,
-        )
-        setConf(
-          self,
-          ['rows', 'colors'],
-          Object.fromEntries(
-            color === undefined ? kept : [...kept, [assemblyName, color]],
-          ),
-        )
-        persistTrackConfigNow(self)
-      },
-    }))
-    .actions(self => ({
-      /** #action */
-      openLaneColorDialog(assemblyName: string) {
-        getSession(self).queueDialog(handleClose => [
-          SolidColorDialog,
-          {
-            label: `${self.laneLabel(assemblyName)} lane color`,
-            color: self.laneColor(assemblyName) ?? bandInk().text,
-            written: self.rowColors.get(self.laneKey(assemblyName)),
-            onChange: (color: string) => {
-              self.setLaneColor(assemblyName, color)
-            },
-            onReset: () => {
-              self.setLaneColor(assemblyName, undefined)
-            },
-            handleClose,
-          },
-        ])
-      },
       /** #action */
       openLaneSelection() {
         getSession(self).queueDialog(handleClose => [
