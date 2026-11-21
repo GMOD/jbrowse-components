@@ -54,6 +54,11 @@ members that differ only in where they put the slots:
   spread into the root config, for a schema that has to be built against what is
   registered.
 
+In TypeScript, `session.configuration` names only the root slots core and the
+app declare, so read a plugin namespace through a config typed
+`AnyConfigurationModel`, as plugin-linear-genome-view's `sessionTrackLabels`
+does.
+
 For plugins that don't need a build step (e.g. jexl callbacks or small behavior
 tweaks), see
 [writing a no-build plugin](/docs/developer_guides/no_build_plugin).
