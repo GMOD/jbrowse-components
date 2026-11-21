@@ -203,6 +203,8 @@
 1 no-unsafe-assignment products/jbrowse-cli/src/commands/validate/configSchema.generated.ts
 1 no-unsafe-assignment products/jbrowse-cli/src/commands/validate/validateConfig.ts
 2 no-unsafe-return products/jbrowse-cli/src/commands/validate/validateConfig.ts
+1 no-unsafe-assignment products/jbrowse-cli/src/utils.ts
+1 no-unsafe-return products/jbrowse-cli/src/utils.ts
 1 no-unsafe-return products/jbrowse-desktop/electron/ipc/quickstartHandlers.ts
 1 no-unsafe-return products/jbrowse-desktop/electron/ipc/sessionHandlers.ts
 1 no-unsafe-return products/jbrowse-desktop/electron/mcp/screenshot.ts

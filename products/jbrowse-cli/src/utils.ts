@@ -87,17 +87,12 @@ function readStdin() {
   return readFileSync(0, 'utf8')
 }
 
-// JSON a command reads takes the type its caller names, as fetchJson's does
-function parseJson<T>(text: string) {
-  return JSON.parse(text) as T
-}
-
 export async function readJsonFile<T>(location: string): Promise<T> {
   const contents =
     location === STDIN_ARG
       ? readStdin()
       : await fsPromises.readFile(location, { encoding: 'utf8' })
-  return parseJson<T>(contents)
+  return JSON.parse(contents)
 }
 
 // reads the config of an existing install. Running a command from the wrong
@@ -131,7 +126,7 @@ export async function readInlineOrFileJson<T>(inlineOrFileName: string) {
   let result: T
   // see if it's inline JSON
   try {
-    result = parseJson<T>(inlineOrFileName)
+    result = JSON.parse(inlineOrFileName)
   } catch (error) {
     debug(
       `Not valid inline JSON, attempting to parse as filename: '${inlineOrFileName}'`,
