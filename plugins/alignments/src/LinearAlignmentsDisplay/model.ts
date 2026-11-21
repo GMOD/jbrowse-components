@@ -64,9 +64,6 @@ import { autorun, computed, observable } from 'mobx'
 
 import { buildArcBandFeeds } from '../features/arcs/bandFeed.ts'
 import { buildJunctionsBandFeeds } from '../features/junctions/bandFeed.ts'
-import { visibleRegionJunctions } from '../features/junctions/computeOverlay.ts'
-import { mergeJunctions } from '../features/junctions/junctions.ts'
-import { junctionSupportingReadSlots } from '../features/junctions/supportingReads.ts'
 import { buildConnectorFeeds } from '../features/linkedReads/connectorFeed.ts'
 import { connectorStyler } from '../features/linkedReads/connectorStyle.ts'
 import { withBasesFields } from '../shared/basesFilter.ts'
@@ -90,7 +87,6 @@ import {
   readPaletteViews,
 } from './alignmentsColorViews.ts'
 import { sortOf } from './alignmentsSortConfigSchema.ts'
-import { bandChips } from './bandChips.ts'
 import {
   bandStackViews,
   dragStripHeight,
@@ -130,7 +126,7 @@ import {
 } from './groupedDataMaps.ts'
 import { NO_CONNECTOR_READ_IDS, nextHover } from './hoverState.ts'
 import { computeInsertSizeTicks } from './insertSizeTicks.ts'
-import { junctionKeyOf } from './keyWindows.ts'
+import { junctionViews } from './junctionViews.ts'
 import {
   drawnLaneViews,
   laneViews,
@@ -188,7 +184,6 @@ import type {
 } from '../RenderAlignmentDataRPC/types'
 import type { ArcBandFeed } from '../features/arcs/bandFeed.ts'
 import type { JunctionsBandFeed } from '../features/junctions/bandFeed.ts'
-import type { HoveredJunction } from '../features/junctions/supportingReads.ts'
 import type { ConnectorFeed } from '../features/linkedReads/connectorFeed.ts'
 import type { ConnectorStyler } from '../features/linkedReads/connectorStyle.ts'
 import type { ColorPalette } from '../shaders/colors.ts'
@@ -1146,121 +1141,7 @@ function stateModelFactory(
             : undefined
         },
       }))
-      .views(self => {
-        // The regions on screen as a value a pan frame compares equal:
-        // `view.visibleRegions` rebuilds fresh objects every frame, and the
-        // merge only needs which regions are on screen and what each is called.
-        const junctionRegions = stableIdentityComputed(() => {
-          const view = self.view
-          return view.initialized
-            ? view.visibleRegions.map(r => ({
-                refName: r.refName,
-                displayedRegionIndex: r.displayedRegionIndex,
-              }))
-            : []
-        })
-        return {
-          /**
-           * #getter
-           * The junctions each lane draws, merged and filtered, in stacking
-           * order. A gesture owes none of it: it reads loaded data, the on-screen
-           * region set and the junction filters, and only the count labels
-           * (`junctionLabels`) read the pan. Not a lane
-           * field: a lane feeds the LAYOUT, which the on-screen region set must
-           * never reach.
-           */
-          get junctionSections() {
-            const view = self.view
-            if (!self.showJunctions || !view.initialized) {
-              return []
-            }
-            const filter = self.junctionFilter
-            const regions = junctionRegions.get()
-            return self.renderSections.map(sec => ({
-              groupKey: sec.groupKey,
-              junctionsStripKeys: sec.junctionsStripKeys,
-              junctions: [
-                ...mergeJunctions(
-                  visibleRegionJunctions(sec.rawPileupMap, regions),
-                  filter,
-                ).values(),
-              ],
-            }))
-          },
-
-          /**
-           * #getter
-           * Whether any lane has a junction to draw. What the view's region
-           * table and the count labels wait on, so a track of unspliced reads
-           * pays for neither.
-           */
-          get drawsJunctions() {
-            return this.junctionSections.some(sec => sec.junctions.length > 0)
-          },
-
-          /**
-           * #getter
-           * The chips naming each band that draws, in content space, once
-           * for the stack, and the row the topmost section chip carries
-           * (`bandChips`).
-           */
-          get bandChips() {
-            const junctionSections = this.junctionSections
-            return bandChips(
-              self.renderSections.map((sec, i) => ({
-                ...sec,
-                junctionsOverCoverage:
-                  junctionSections[i]?.junctions.some(
-                    j => !sec.junctionsStripKeys.has(j.key),
-                  ) ?? false,
-              })),
-              self.showPileup,
-              self.showsGroupLabels,
-            )
-          },
-
-          /**
-           * #getter
-           * The splice junction strands and split junction classes drawn in
-           * `keyWindows`, one key row each (`junctionKeyOf`). Read off the
-           * merged junctions and the settled window rather than the projected
-           * arcs, so a pan's frames do not rebuild the legend.
-           */
-          get junctionLegendKeys() {
-            return junctionKeyOf(
-              self.showLegend
-                ? this.junctionSections.flatMap(sec => sec.junctions)
-                : [],
-              self.keyWindows,
-            )
-          },
-
-          /**
-           * #method
-           * The slots of the reads that support the junction, in its lane, or
-           * in every drawn lane for a junction naming none.
-           */
-          junctionSupportingReadSlots(junction: HoveredJunction) {
-            return self.renderSections
-              .filter(
-                s =>
-                  junction.groupKey === undefined ||
-                  s.groupKey === junction.groupKey,
-              )
-              .flatMap(sec =>
-                junctionSupportingReadSlots(
-                  [...sec.laidOutPileupMap].map(([i, data]) => ({
-                    displayedRegionIndex: i,
-                    refName: self.loadedRegions.get(i)?.refName,
-                    data,
-                  })),
-                  { ...junction, groupKey: sec.groupKey },
-                  self.canonicalRefName,
-                ),
-              )
-          },
-        }
-      })
+      .views(self => junctionViews(self))
       .views(self => readPaletteViews(self))
       .views(self => {
         function themedIn(theme: JBrowsePalette): ThemedSources {
