@@ -1,4 +1,4 @@
-import { fullConfSnapshot, getConf } from '@jbrowse/core/configuration'
+import { fullConfSnapshot } from '@jbrowse/core/configuration'
 import { tablesFeatureAdapter } from '@jbrowse/core/data_adapters/getFeatureAdapter'
 import {
   DEFAULT_BYTE_LIMIT,
@@ -7,7 +7,6 @@ import {
 import { ungatedResult } from '@jbrowse/core/rpc/byteBudget'
 import { colorKeyTables } from '@jbrowse/core/ui/rampKey'
 import { isObject } from '@jbrowse/core/util'
-import { boundBandHeight } from '@jbrowse/core/util/bandHeight'
 import { abgrToHex, cssColorToHex } from '@jbrowse/core/util/colorBits'
 import {
   fitTargetHeightViews,
@@ -75,9 +74,7 @@ import {
   variantRowsHeightViews,
 } from './LinearVariantDisplay/variantRowViews.ts'
 import {
-  DEFAULT_RECORDS_HEIGHT,
-  RECORDS_BAND_BOUNDS,
-  boundRecordsBand,
+  boundHeldRecordsBand,
   variantTopBandsGeometry,
 } from './LinearVariantDisplay/variantTopBands.ts'
 import SplitVcfTabixAdapterF from './SplitVcfTabixAdapter/index.ts'
@@ -190,36 +187,6 @@ const variantHostRows = treeSidebarRowStages<ProcessedSource>()(base)
  */
 const VariantTablesHost = variantHostRows
   .views(self => ({
-    /**
-     * `TreeSidebarMixin`'s hook, as the display answers it while rows draw:
-     * its top bands' bottom (`variantTopBandsGeometry`), the chips' strip
-     * under the records band, no connectors at genomic positions. The
-     * band is `records.height`, else its default, bound against the track
-     * as the display binds it, which is the display's band wherever the
-     * records in view stack to the default.
-     */
-    get rowsHeaderHeight() {
-      const written = getConf(self, ['records', 'height'])
-      return self.drawsGenotypeRows
-        ? variantTopBandsGeometry({
-            records: boundRecordsBand({
-              band: {
-                active: self.showRecords,
-                height: boundBandHeight(
-                  written ?? DEFAULT_RECORDS_HEIGHT,
-                  RECORDS_BAND_BOUNDS,
-                ),
-              },
-              written: written !== undefined,
-              trackHeight: self.height,
-            }),
-            showChips: true,
-            connectors: { active: false, height: 0 },
-          }).bottom
-        : 0
-    },
-  }))
-  .views(self => ({
     /** The records the band keys: with no layout, every keyed record. */
     get keyedRecords() {
       return self.keyedVariants
@@ -231,6 +198,33 @@ const VariantTablesHost = variantHostRows
   .views(self => regionCellColorViews(self))
   .views(self => variantDataKeyViews(self))
   .views(self => recordsSettingsViews(self))
+  .views(self => ({
+    /**
+     * `TreeSidebarMixin`'s hook, as the display answers it while rows draw:
+     * its top bands' bottom (`variantTopBandsGeometry`), the chips' strip
+     * under the records band, no connectors at genomic positions. With no
+     * layout the band's stack is the height it states, `records.height`
+     * else its default, bound against the track as the display binds it
+     * (`boundHeldRecordsBand`), which is the display's band wherever the
+     * records in view stack to the default.
+     */
+    get rowsHeaderHeight() {
+      return self.drawsGenotypeRows
+        ? variantTopBandsGeometry({
+            records: boundHeldRecordsBand({
+              active: self.showRecords,
+              written: self.recordsHeightWritten,
+              trackHeight: self.height,
+              recordsHeight: self.recordsHeight,
+              recordsHeightHeld: self.recordsHeightHeld,
+              recordsContentHeight: self.recordsHeight,
+            }),
+            showChips: self.atGenomicPositions && !self.recordsOnly,
+            connectors: { active: false, height: 0 },
+          }).bottom
+        : 0
+    },
+  }))
   .views(variantRpcPropsViews)
   .views(self => rowNoticeViews<ProcessedSource>(self))
 

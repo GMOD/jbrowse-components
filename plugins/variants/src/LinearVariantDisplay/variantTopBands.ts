@@ -135,6 +135,28 @@ export function boundRecordsBand({
   ).records
 }
 
+/**
+ * The records band over drawn genotype rows: the height
+ * {@link recordsBandHeightOverRows} holds, bound against the track
+ * ({@link boundRecordsBand}).
+ */
+export function boundHeldRecordsBand({
+  active,
+  written,
+  trackHeight,
+  ...held
+}: Parameters<typeof recordsBandHeightOverRows>[0] & {
+  active: boolean
+  written: boolean
+  trackHeight: number
+}) {
+  return boundRecordsBand({
+    band: { active, height: recordsBandHeightOverRows(held) },
+    written,
+    trackHeight,
+  })
+}
+
 /** The bound records band folded alone, the stack its seam drag is clamped against. */
 export function recordsBandStack(band: Band) {
   return stackBands(['records'], { records: band })
