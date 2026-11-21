@@ -256,12 +256,11 @@ reset rules are [TREE_SIDEBAR.md](TREE_SIDEBAR.md)'s. What is specific here:
   its sample there (`keptRows` with `entryAliasOf`, through `parseRowName`).
 - **Phased rows are the ploidy `samplePloidy` reports plus any haplotype the
   order names.** Until the first ploidy lands, the named haplotypes stand in for
-  it. After that the last payload's ploidy (`phasing`, with the
-  `hasPhasedOrHaploid` and `hasPhaseSet` gates) outlives the clear a settings
-  change makes, so the rows, the scroll and the menu's active choices hold
-  until the refetch lands; only a payload or a different adapter config
-  replaces it. `samplePloidy` keeps its identity while each fetch reports the
-  same ploidies, so a region arrival re-derives no row.
+  it. After that `payloadFacts`, the ploidy and menu gates of the last payload
+  that read genotypes, outlives the clear a settings change makes; only such a
+  payload or a different adapter config replaces it. `samplePloidy` keeps its
+  identity while each fetch reports the same ploidies, so a region arrival
+  re-derives no row.
 - **A row's color shows on the label bar only**: the cells are colored by
   genotype, so `rowColorPaintsMarks` is false. The tooltip swatch reads it too,
   and the row color key follows the genotype key. A `samplesTsv` `color` column

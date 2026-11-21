@@ -1,5 +1,6 @@
 import { resolveSubMenu } from '@jbrowse/core/ui/menuItems'
 
+import { findItem } from './menuItem.fixture.ts'
 import { RECORDS_BAND_OFF, createTestEnvironment } from './testEnv.ts'
 
 import type { MenuItem } from '@jbrowse/core/ui'
@@ -119,20 +120,6 @@ test('says it is still loading before the samples arrive', () => {
   expect(row.disabled).toBe(true)
   expect(row.disabledHelpText).toBe('Loading samples...')
 })
-
-function findItem(items: MenuItem[], label: string): MenuItem | undefined {
-  for (const item of items) {
-    if ('label' in item && item.label === label) {
-      return item
-    }
-    const found =
-      'subMenu' in item ? findItem(resolveSubMenu(item), label) : undefined
-    if (found) {
-      return found
-    }
-  }
-  return undefined
-}
 
 // Before `samplePloidy` the phased rows are still samples, and a submit would
 // write a sample order over the haplotype rows the display is about to draw.

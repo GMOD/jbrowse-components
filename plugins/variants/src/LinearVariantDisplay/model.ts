@@ -182,6 +182,23 @@ type VariantHoverFields = Record<string, unknown> & {
   name: string
 }
 
+type PayloadFacts = Pick<
+  CellDataResult,
+  | 'samplePloidy'
+  | 'hasPhasedOrHaploid'
+  | 'hasPhaseSet'
+  | 'hasConsequence'
+  | 'hasSvType'
+>
+
+function payloadFactsOf(self: {
+  cellData: CellDataResult | undefined
+  payloadFacts: AdapterRead<PayloadFacts> | undefined
+  adapterConfig: Record<string, unknown>
+}) {
+  return self.cellData ?? readFor(self, self.payloadFacts)
+}
+
 // Warned as the sample list lands rather than from a computed, which would
 // warn per menu render.
 function warnUnknownSampleFields(
@@ -374,18 +391,12 @@ export function stateModelFactory(
         cellData: undefined as CellDataResult | undefined,
         /**
          * #volatile
-         * The phasing the last payload reported, held across the clear a
-         * settings change makes, so the haplotype rows and the choices they
-         * gate stay put until the refetch lands.
+         * What the last payload that read genotypes reported, standing in
+         * for `cellData` across the clear a settings change makes, so the
+         * haplotype rows and the choices these gate stay put until the
+         * refetch lands.
          */
-        phasing: undefined as
-          | AdapterRead<
-              Pick<
-                CellDataResult,
-                'samplePloidy' | 'hasPhasedOrHaploid' | 'hasPhaseSet'
-              >
-            >
-          | undefined,
+        payloadFacts: undefined as AdapterRead<PayloadFacts> | undefined,
         /**
          * #volatile
          * The displayed regions the current `cellData` was fetched for. The
@@ -494,35 +505,6 @@ export function stateModelFactory(
           return readFor(self, self.sampleListing)
         },
       }))
-      .actions(self => ({
-        /**
-         * #action
-         * Store a payload and the regions it covers. One payload serves every
-         * region of a fetch and replaces the last one whole, so this is also
-         * where the previous batch's regions stop having data behind them, and
-         * where a hover indexing the old payload's cells goes.
-         */
-        setCellData(
-          data: CellDataResult | undefined,
-          displayedRegionIndices: Iterable<number> = [],
-          bpPerPx?: number,
-        ) {
-          self.cellData = data
-          if (data) {
-            self.phasing = {
-              adapterConfig: self.adapterConfig,
-              value: {
-                samplePloidy: data.samplePloidy,
-                hasPhasedOrHaploid: data.hasPhasedOrHaploid,
-                hasPhaseSet: data.hasPhaseSet,
-              },
-            }
-          }
-          self.cellDataRegionIndices = new Set(displayedRegionIndices)
-          self.cellDataBpPerPx = bpPerPx
-          self.clearHoveredFeature()
-        },
-      }))
       .views(self => {
         let held:
           | {
@@ -626,7 +608,7 @@ export function stateModelFactory(
          * with no `|` anywhere.
          */
         get hasPhasedOrHaploid() {
-          return readFor(self, self.phasing)?.hasPhasedOrHaploid ?? false
+          return payloadFactsOf(self)?.hasPhasedOrHaploid ?? false
         },
         /**
          * #getter
@@ -634,7 +616,7 @@ export function stateModelFactory(
          * the "Color by→Consequence impact" menu option.
          */
         get hasConsequence() {
-          return self.cellData?.hasConsequence ?? false
+          return payloadFactsOf(self)?.hasConsequence ?? false
         },
         /**
          * #getter
@@ -642,7 +624,7 @@ export function stateModelFactory(
          * by...→SV type" menu option.
          */
         get hasSvType() {
-          return self.cellData?.hasSvType ?? false
+          return payloadFactsOf(self)?.hasSvType ?? false
         },
         /**
          * #getter
@@ -650,20 +632,20 @@ export function stateModelFactory(
          * gating the "Color by→Phase set" menu option.
          */
         get hasPhaseSet() {
-          return readFor(self, self.phasing)?.hasPhaseSet ?? false
+          return payloadFactsOf(self)?.hasPhaseSet ?? false
         },
       }))
       .views(self => {
         const ploidy = stableIdentityComputed(
-          () => readFor(self, self.phasing)?.samplePloidy,
+          () => payloadFactsOf(self)?.samplePloidy,
         )
         return {
           /**
            * #getter
-           * Each sample's ploidy as the latest fetch of this adapter
-           * reported it, the same object while a region arrival reports the
-           * same ploidies, so the phased rows are expanded again only when
-           * one changes.
+           * Each sample's ploidy as the payload on screen reports it, or
+           * across a refetch the last one that read genotypes, the same
+           * object while a region arrival reports the same ploidies, so the
+           * phased rows are expanded again only when one changes.
            */
           get samplePloidy(): Readonly<Record<string, number>> | undefined {
             return ploidy.get()
@@ -1043,6 +1025,37 @@ export function stateModelFactory(
       })
       .actions(recordsBandActions)
       .views(self => variantFetchViews(self))
+      .actions(self => ({
+        /**
+         * #action
+         * Store a payload and the regions it covers. One payload serves every
+         * region of a fetch and replaces the last one whole, so this is also
+         * where the previous batch's regions stop having data behind them, and
+         * where a hover indexing the old payload's cells goes.
+         */
+        setCellData(
+          data: CellDataResult | undefined,
+          displayedRegionIndices: Iterable<number> = [],
+          bpPerPx?: number,
+        ) {
+          self.cellData = data
+          if (data && self.sampleFilter?.length !== 0) {
+            self.payloadFacts = {
+              adapterConfig: self.adapterConfig,
+              value: {
+                samplePloidy: data.samplePloidy,
+                hasPhasedOrHaploid: data.hasPhasedOrHaploid,
+                hasPhaseSet: data.hasPhaseSet,
+                hasConsequence: data.hasConsequence,
+                hasSvType: data.hasSvType,
+              },
+            }
+          }
+          self.cellDataRegionIndices = new Set(displayedRegionIndices)
+          self.cellDataBpPerPx = bpPerPx
+          self.clearHoveredFeature()
+        },
+      }))
       .views(self => ({
         /**
          * #getter
@@ -1106,12 +1119,14 @@ export function stateModelFactory(
          * #getter
          * Whether the rows are at the granularity they draw, which clustering
          * and the arrangement dialog need: phased mode draws haplotypes, which
-         * needs the `samplePloidy` a fetch brings.
+         * needs the `samplePloidy` a fetch brings, from the payload on
+         * screen rather than one held across a refetch.
          */
         get clusteringReady() {
           return (
             !!self.adapterSamples &&
-            (self.rowsField !== 'haplotype' || !!self.samplePloidy)
+            (self.rowsField !== 'haplotype' ||
+              (!!self.cellData && !!self.samplePloidy))
           )
         },
         /**
