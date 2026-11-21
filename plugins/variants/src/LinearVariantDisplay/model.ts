@@ -62,13 +62,14 @@ import {
 } from '@jbrowse/tree-sidebar'
 
 import {
+  connectorsBandActions,
+  connectorsBandViews,
+} from '../shared/connectorsBandViews.ts'
+import {
   HIDDEN_ROW,
   HAPLOTYPE_ROW_FIELDS,
   INTERNAL_SOURCE_KEYS,
   VARIANT_DISPLAY,
-  boundConnectorsBand,
-  connectorsBandStack,
-  dragConnectorsHeight,
 } from '../shared/constants.ts'
 import { locusViewportXFor } from '../shared/genomicViewportX.ts'
 import { buildSampleIndex } from '../shared/genotypeCodec.ts'
@@ -757,33 +758,18 @@ export function stateModelFactory(
       }))
       .views(self => variantGenotypeRowViews(self))
       .views(self => variantDrawnRowViews(self))
-      .views(self => ({
-        /**
-         * #getter
-         * The `connectors` band above the columns, taken from the track's
-         * slot height so the rows keep their floor; nothing at genomic
-         * positions, where nothing needs connecting.
-         */
-        get connectorsBand() {
-          return boundConnectorsBand(self.fitTargetHeight, {
-            active:
-              !self.atGenomicPositions && getConf(self, ['connectors', 'show']),
-            height: getConf(self, ['connectors', 'height']),
-          })
-        },
-        /**
-         * #getter
-         */
-        get connectorsStack() {
-          return connectorsBandStack(this.connectorsBand)
-        },
-        /**
-         * #getter
-         */
-        get connectorsHeight(): number {
-          return this.connectorsStack.reserved.connectors
-        },
-      }))
+      .views(self =>
+        connectorsBandViews(self, {
+          trackHeight: () => self.fitTargetHeight,
+          active: () =>
+            !self.atGenomicPositions && getConf(self, ['connectors', 'show']),
+        }),
+      )
+      .actions(self =>
+        connectorsBandActions(self, {
+          trackHeight: () => self.fitTargetHeight,
+        }),
+      )
       .views(recordsKeyViews)
       .views(recordsSettingsViews)
       .actions(self => {
@@ -967,20 +953,6 @@ export function stateModelFactory(
             // the other layout mounts a backend of its own; a failure of this
             // one's must not keep the banner up in its place
             self.setRenderError(undefined)
-          },
-          /**
-           * #action
-           */
-          setConnectorsHeight(n: number) {
-            setConf(
-              self,
-              ['connectors', 'height'],
-              dragConnectorsHeight(
-                self.connectorsStack,
-                self.fitTargetHeight,
-                n,
-              ),
-            )
           },
           /**
            * #action

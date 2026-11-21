@@ -25,10 +25,9 @@ import { installUpload } from '@jbrowse/render-core/installUpload'
 
 import { bandDepthFraction, bandPairIndex } from '../RenderLDDataRPC/ldBand.ts'
 import {
-  boundConnectorsBand,
-  connectorsBandStack,
-  dragConnectorsHeight,
-} from '../shared/constants.ts'
+  connectorsBandActions,
+  connectorsBandViews,
+} from '../shared/connectorsBandViews.ts'
 import { locusViewportXFor } from '../shared/genomicViewportX.ts'
 import { ldMetricLabel } from './components/ldValueLabel.ts'
 import { LD_FIELD_PRESETS, LD_VALUE_EXTENT } from './ldColorConfigSchema.ts'
@@ -273,6 +272,17 @@ export default function stateModelFactory(configSchema: LDDisplayConfigSchema) {
         return LD_VALUE_EXTENT
       },
     }))
+    .views(self =>
+      connectorsBandViews(self, {
+        trackHeight: () => self.height,
+        active: () =>
+          getConf(self, ['connectors', 'show']) &&
+          (!self.atGenomicPositions || self.showNames),
+      }),
+    )
+    .actions(self =>
+      connectorsBandActions(self, { trackHeight: () => self.height }),
+    )
     .views(self => ({
       /**
        * #getter
@@ -295,45 +305,18 @@ export default function stateModelFactory(configSchema: LDDisplayConfigSchema) {
       },
       /**
        * #getter
-       * The `connectors` band above the matrix: the connector lines in
-       * columns, the labels at genomic positions when they are on, else
-       * nothing; taken from the display's height so the triangle keeps its
-       * floor.
-       */
-      get connectorsBand() {
-        return boundConnectorsBand(self.height, {
-          active:
-            getConf(self, ['connectors', 'show']) &&
-            (!self.atGenomicPositions || self.showNames),
-          height: getConf(self, ['connectors', 'height']),
-        })
-      },
-      /**
-       * #getter
-       */
-      get connectorsStack() {
-        return connectorsBandStack(this.connectorsBand)
-      },
-      /**
-       * #getter
-       */
-      get connectorsHeight(): number {
-        return this.connectorsStack.reserved.connectors
-      },
-      /**
-       * #getter
        * Whether the SNP labels draw: on, in a `connectors` band that
        * reserves room for them, so they never paint over the triangle.
        */
       get drawsLabels(): boolean {
-        return self.showNames && this.connectorsHeight > 0
+        return self.showNames && self.connectorsHeight > 0
       },
       /**
        * #getter
        * Where the triangle begins, under the `connectors` band.
        */
       get matrixTop(): number {
-        return this.connectorsStack.bottom
+        return self.connectorsStack.bottom
       },
       /**
        * #getter
@@ -463,16 +446,6 @@ export default function stateModelFactory(configSchema: LDDisplayConfigSchema) {
       },
     }))
     .actions(self => ({
-      /**
-       * #action
-       */
-      setConnectorsHeight(n: number) {
-        setConf(
-          self,
-          ['connectors', 'height'],
-          dragConnectorsHeight(self.connectorsStack, self.height, n),
-        )
-      },
       /**
        * #action
        */
