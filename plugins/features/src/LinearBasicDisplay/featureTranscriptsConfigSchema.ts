@@ -56,7 +56,7 @@ export const featureTranscriptsConfigSchema = ConfigurationSchema(
       type: 'stringArray',
       defaultValue: GENE_GLYPH_DEFAULTS.canonicalTranscriptTags,
       description:
-        'the values of field that rank an isoform first, in order; the rest follow by coding length',
+        'the values of field that rank an isoform first, in order; the rest follow coding isoforms by protein length, then the others by span',
     },
   },
   { closed: true },

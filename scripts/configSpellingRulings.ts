@@ -61,7 +61,7 @@ export const RULINGS: Record<string, Ruling> = {
       '=linear =log =symlog',
       '=linear =log =ordinal =symlog =threshold',
     ],
-    why: "a scale's `type` lists the scales its display's painter reads (`colorScaleTypeSlot`): `identity` only where features carry colors of their own (colorScale.ts), so not on multi-way genes; a chord the discrete ones (chordColorConfigSchema.ts); alignments, synteny ribbons and LD ramp only linearly (bakedColorScale.ts, colorRamps.ts `rampNorm`, ldUniforms.slang), and wiggle's ramp takes the y scale's type (wiggleColorConfigSchema.ts), so none offers `log` or `symlog`; Hi-C a ramp alone, binning no cells as LD's `paintedCells` does (LDDisplay/model.ts); LD's fields are numbers and wiggle's `source` takes the rows' colors, so neither writes `ordinal`",
+    why: "a scale's `type` lists the scales its display's painter reads (`colorScaleTypeSlot`): `identity` only where the painter reads a feature's own color (colorScale.ts), so not the multi-way gene, read or ribbon painters; a chord the discrete ones (chordColorConfigSchema.ts); alignments, synteny ribbons and LD ramp only linearly (bakedColorScale.ts, colorRamps.ts `rampNorm`, ldUniforms.slang), and wiggle's ramp takes the y scale's type (wiggleColorConfigSchema.ts), so none offers `log` or `symlog`; Hi-C a ramp alone, binning no cells as LD's `paintedCells` does (LDDisplay/model.ts); LD's fields are numbers and wiggle's `source` takes the rows' colors, so neither writes `ordinal`",
   },
   'encoding.opacity': {
     shapes: ['value', 'field scale value'],

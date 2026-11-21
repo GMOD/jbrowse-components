@@ -110,12 +110,11 @@ export interface Ruling {
 
 const variantLines = (bySlot: Map<string, string[]>) =>
   [...bySlot].map(
-    ([members, holders]) =>
-      `    ${JSON.stringify(members)} <- ${holders.join(', ')}`,
+    ([members, holders]) => `    '${members}' <- ${holders.join(', ')}`,
   )
 
 const shapesLiteral = (bySlot: Map<string, string[]>) =>
-  `shapes: [${[...bySlot.keys()].map(shape => JSON.stringify(shape)).join(', ')}]`
+  `shapes: [${[...bySlot.keys()].map(shape => `'${shape}'`).join(', ')}]`
 
 /**
  * Where the rulings and the differing paths disagree: a path with no entry,
@@ -146,7 +145,7 @@ export function rulingProblems(
           ? [
               [
                 `${slot} changed shape since its why was written; say in the why what each change means, then set ${shapesLiteral(bySlot)}. Was:`,
-                ...[...pinned].map(shape => `    ${JSON.stringify(shape)}`),
+                ...[...pinned].map(shape => `    '${shape}'`),
                 'Now:',
                 ...variantLines(bySlot),
               ].join('\n'),

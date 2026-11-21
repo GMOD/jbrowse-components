@@ -5675,7 +5675,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           }
         },
         "sort": {
-          "description": "the values of field that rank an isoform first, in order; the rest follow by coding length.",
+          "description": "the values of field that rank an isoform first, in order; the rest follow coding isoforms by protein length, then the others by span.",
           "default": [
             "MANE Select",
             "MANE_Select",

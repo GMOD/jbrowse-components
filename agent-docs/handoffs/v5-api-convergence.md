@@ -174,10 +174,8 @@ displays or a display's parts, with the ruling on each.
 
 - CONFIG_SPELLINGS.md's "Open differences" list is empty, each entry ruled
   as kept or respelled. Each ruling pins its variants' members, so a changed
-  member stops `pnpm autogen` until its why is re-read; every why was re-read
-  when the pins were written (2026-11-20). A display that moves between two
-  existing variants passes the pin, so a why naming the displays it rules on
-  is re-read when the table's Who column moves.
+  member stops `pnpm autogen` until its why is re-read. A display that moves
+  between two existing variants passes the pin.
 - The meter shows no shared-path change, respell, addition or removal, past
   the last one "Measuring churn" lists.
 - Every `retired` key, `retiredState` key and `retiredTypes` entry maps a
