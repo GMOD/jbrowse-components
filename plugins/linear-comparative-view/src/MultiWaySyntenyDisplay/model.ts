@@ -3458,7 +3458,9 @@ export function stateModelFactory(
           .navToLocString(loc, assemblyName)
           .then(landed => {
             if (landed) {
-              self.showLane(outgoing)
+              if (isAlive(self)) {
+                self.showLane(outgoing)
+              }
               session.notify(`Re-anchored on ${assemblyName}`, 'info', {
                 name: 'Undo',
                 onClick: () => {

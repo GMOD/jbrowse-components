@@ -1,4 +1,5 @@
-import { SimpleFeature } from '@jbrowse/core/util'
+import { SimpleFeature, getSession } from '@jbrowse/core/util'
+import { isAlive } from '@jbrowse/mobx-state-tree'
 
 import { captureStackViewports } from '../SyntenyFollow/stackMove.ts'
 import { createDisplayWithSession } from './testEnv.ts'
@@ -211,4 +212,22 @@ test('a fetch landing after the navigation commits nothing', async () => {
   expect(display.fetchedFeatures).toBeUndefined()
   expect(display.anchorRecordsLoaded).toBe(false)
   expect(display.laneDecisions.size).toBe(0)
+})
+
+// the console gate fails the test on MST's warning about a dead node's action
+test('a track closed before the re-anchoring navigation lands still re-anchors the view', async () => {
+  const display = setup()
+  const session = getSession(display)
+  const notify = jest.spyOn(session, 'notify')
+  display.reanchor(B, 'ctgA:1..1000')
+  display.lgv.hideTrack(display.parentTrack.configuration.trackId)
+  expect(isAlive(display)).toBe(false)
+  for (let i = 0; i < 200 && notify.mock.calls.length === 0; i++) {
+    await new Promise(r => setTimeout(r, 5))
+  }
+  expect(notify).toHaveBeenCalledWith(
+    `Re-anchored on ${B}`,
+    'info',
+    expect.anything(),
+  )
 })
