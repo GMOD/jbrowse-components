@@ -67,7 +67,7 @@ export function isCopyLane(lane: string) {
   return laneOf(lane).refName !== undefined
 }
 
-interface LaneAssemblies {
+export interface LaneAssemblies {
   getCanonicalAssemblyName: (name: string) => string | undefined
   has: (name: string) => boolean
   get: (

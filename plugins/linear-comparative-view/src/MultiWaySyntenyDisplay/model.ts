@@ -95,7 +95,6 @@ import {
 } from '../LaunchSyntenyView/regionLaunchMenuItems.ts'
 import { createSyntenyPicker } from '../LinearSyntenyDisplay/syntenyPickEngine.ts'
 import { captureStackViewports } from '../SyntenyFollow/stackMove.ts'
-import { isNamedRecord } from '../syntenyMate.ts'
 import { NO_OPS } from './alignmentOps.ts'
 import { axisSpan, axisTickXs } from './anchorAxis.ts'
 import LaneSelectionDialog from './components/LaneSelectionDialog.tsx'
@@ -105,16 +104,7 @@ import {
   releaseHideUnlabelled,
   ribbonColorFieldOf,
 } from './configSlotViews.ts'
-import {
-  anchorInBlocks,
-  copyLaneFiling,
-  laneFieldOf,
-  copyLaneName,
-  groupsOfField,
-  laneGenome,
-  laneKeyIn,
-  touchesWindow,
-} from './copyLane.ts'
+import { laneGenome, laneKeyIn, touchesWindow } from './copyLane.ts'
 import { featureWidgetOf } from './featureWidget.ts'
 import { dealGeneColors, geneColorRampOf, geneColors } from './geneColor.ts'
 import { laneGeneTracksOf } from './laneAnnotation.ts'
@@ -159,21 +149,21 @@ import {
   shownFrame,
 } from './laneMotion.ts'
 import { lanePanelsForRegion } from './lanePanels.ts'
-import { isFlipPin, pinnedRowOf, pinsInForceOf, withPin } from './lanePins.ts'
+import { isFlipPin, pinnedRowOf, withPin } from './lanePins.ts'
 import {
-  anchorRowOf,
-  answeredLaneTest,
-  laneColorOf,
-  laneLabelOf,
-  laneOrderOf,
-  laneRowsOf,
-  laneUniverseOf,
-  lanesInForce,
-  pickedLanes,
-  unalignedChosenLanesOf,
-  withLaneHidden,
-  withLaneShown,
-} from './laneSelection.ts'
+  anchorRowViews,
+  fetchLaneSelectionViews,
+  laneDomainViews,
+  laneGroupViews,
+  laneOrderHoldActions,
+  laneOrderViews,
+  laneRowAssemblyViews,
+  laneSelectionActions,
+  laneSelectionViews,
+  laneSourceViews,
+  unalignedLaneViews,
+} from './laneRowViews.ts'
+import { laneColorOf, laneLabelOf, laneUniverseOf } from './laneSelection.ts'
 import { gutterNearViewport, laneGeometry, stackReach } from './laneStack.ts'
 import {
   decideLanesOn,
@@ -185,10 +175,8 @@ import { laneTrackIds } from './laneTrackPattern.ts'
 import {
   anchorlessGroupsOf,
   frameBpPerPx,
-  groupFeatures,
   laneFetchRegion,
   laneFetchRegionMaxBp,
-  laneIndelsOf,
   laneTemplateRegion,
   mergeContiguousRegions,
   tickIntervalFor,
@@ -225,20 +213,14 @@ import {
 } from './multiwayRenderTypes.ts'
 import { RIBBON_GREY } from './ribbonColorConfigSchema.ts'
 import { RIBBON_OPACITY } from './ribbonPaint.ts'
-import {
-  againstAnchorName,
-  laneFetchesFor,
-  rowsReadAgainstAnchor,
-  stacksByStructure,
-} from './sourceShape.ts'
-import { laneProfiles, structureOrder } from './structureOrder.ts'
+import { againstAnchorName } from './sourceShape.ts'
 
 import type { SyntenyRenderState } from '../LinearSyntenyDisplay/syntenyRenderingBackendTypes.ts'
 import type { SyntenyInstanceData } from '../LinearSyntenyRPC/buildSyntenyGeometry.ts'
 import type { WindowDeletion } from './MultiWayGetFeatures.ts'
 import type { AlignmentOpsById, LaneLinks } from './alignmentOps.ts'
 import type { MultiWaySyntenyDisplayConfigModel } from './configSchema.ts'
-import type { LaneRowsField } from './copyLane.ts'
+import type { LaneAssemblies, LaneRowsField } from './copyLane.ts'
 import type { GeneColors } from './geneColor.ts'
 import type { LaneGene } from './geneGlyph.ts'
 import type { FrozenLanes, LaneDecision } from './laneDecision.ts'
@@ -255,7 +237,6 @@ import type {
   LanePair,
   LaneWindow,
 } from './laneFetch.ts'
-import type { Placeless } from './laneHeader.ts'
 import type { GeneLabel, NamedSpan, PlacedLaneLabel } from './laneLabels.ts'
 import type {
   HeldLaneLayer,
@@ -264,6 +245,7 @@ import type {
 } from './laneLayers.ts'
 import type { LaneTransition } from './laneMotion.ts'
 import type { LanePin, LanePlacePin } from './lanePins.ts'
+import type { HeldLaneOrder } from './laneRowViews.ts'
 import type { LaneChoice } from './laneSelection.ts'
 import type { Lane, LaneStack } from './laneStack.ts'
 import type { AnchorStage } from './laneStage.ts'
@@ -355,18 +337,6 @@ interface MultiWayVolatiles {
   laneMotionHalfway: ReadonlySet<string>
   laneDragPx: ReadonlyMap<string, number>
   heldLaneOrder: HeldLaneOrder | undefined
-}
-
-/**
- * The structure order haplotype lanes read off a graph stack by while no
- * order is pinned, worked out once per window and lane selection so a pan
- * never reshuffles it
- */
-interface HeldLaneOrder {
-  anchor: string
-  window: FetchRegion[]
-  drawn: string[]
-  lanes: string[]
 }
 
 const NO_GENES: LaneGene[] = []
@@ -693,6 +663,17 @@ export function stateModelFactory(
       },
       /**
        * #getter
+       * how the session spells a lane's genome and contigs
+       */
+      get laneAssemblies(): LaneAssemblies {
+        return getSession(self).assemblyManager
+      },
+      /** #getter */
+      get trackAssemblyNames() {
+        return getTrackAssemblyNames(self.parentTrack)
+      },
+      /**
+       * #getter
        * the held anchor fetch, empty while none is held or the view's anchor
        * differs from the fetch's
        */
@@ -756,90 +737,9 @@ export function stateModelFactory(
         const blocks = self.staticBlockSignature
         return blocks === undefined ? undefined : `${blocks}|${self.lodTier}`
       },
-      /**
-       * #getter
-       * `rows.field` resolved: a lane per genome, or per copy of the window a
-       * genome holds
-       */
-      get laneField(): LaneRowsField {
-        const { assemblyManager } = getSession(self)
-        const anchor = self.lgv.assemblyNames[0]
-        return laneFieldOf(
-          getConf(self, ['rows', 'field']),
-          getTrackAssemblyNames(self.parentTrack),
-          name => isSameAssemblyName(name, anchor, assemblyManager),
-        )
-      },
-      /** #getter */
-      get groupedFeatures() {
-        return groupFeatures(self.features)
-      },
-      /**
-       * #method
-       * how copy lanes file: `rows.kept` lifts the floor, and the anchor's
-       * own contigs file nowhere, and only the groups the settled viewport
-       * shows weigh against the floor
-       */
-      copyFiling() {
-        const { assemblyManager } = getSession(self)
-        return copyLaneFiling(
-          getConf(self, ['rows', 'kept']),
-          self.lgv.displayedRegions.map(r =>
-            copyLaneName(r.assemblyName, r.refName),
-          ),
-          lane => laneKeyIn(assemblyManager, lane),
-          anchorInBlocks(self.lgv.settledDynamicBlocks, self.anchorCanon),
-        )
-      },
-      /**
-       * #getter
-       * the groups as `rows.field` files them, in one pass with the copy
-       * lanes the floor drops
-       */
-      get filedGroups() {
-        return groupsOfField(this.laneField, this.groupedFeatures, () =>
-          this.copyFiling(),
-        )
-      },
-      /**
-       * #getter
-       * each mate filed under its genome's lane, or its copy lane
-       */
-      get groups() {
-        return this.filedGroups.groups
-      },
-      /**
-       * #getter
-       * the copy lanes the window places too little of to draw, which the
-       * lane dialog offers unticked
-       */
-      get copyLanesUnderFloor(): readonly string[] {
-        return this.filedGroups.underFloor
-      },
-      /**
-       * #getter
-       * each lane's holes and stated changes against the anchor, read off
-       * every fetched group rather than the viewport's, so one appears once
-       * both its pieces arrive and not as the second scrolls in
-       */
-      get laneIndels() {
-        return laneIndelsOf(this.groups)
-      },
-      /**
-       * #getter
-       * each lane's holes, one per deletion `laneIndels` opens
-       */
-      get laneOpenings() {
-        return this.laneIndels.openings
-      },
-      /**
-       * #getter
-       * each lane's deletions, insertions and inversions as its records state
-       * them, for the header
-       */
-      get laneChanges() {
-        return this.laneIndels.changes
-      },
+    }))
+    .views(laneGroupViews)
+    .views(self => ({
       /** #getter */
       get ribbonColorAttributes(): string[] {
         return colorableColumns(declaredAttributes(self.adapterConfig))
@@ -1081,90 +981,10 @@ export function stateModelFactory(
         })
       },
     }))
-    .views(self => ({
-      /**
-       * #getter
-       * whether each gutter draws its far lane against the anchor
-       * (`rowsReadAgainstAnchor`)
-       */
-      get rowsVsAnchor(): boolean {
-        return rowsReadAgainstAnchor(
-          self.adapterCapabilities,
-          self.starAnchor,
-          self.laneField,
-        )
-      },
-      /**
-       * #getter
-       * the fetches beyond the anchor's that its records call for
-       */
-      get laneFetchKinds() {
-        return laneFetchesFor(self.features, this.rowsVsAnchor, self.starAnchor)
-      },
-    }))
-    .views(self => ({
-      /**
-       * #getter
-       * `rows.sort` in each placed lane's own spelling, so an order a config
-       * wrote with an alias merges with one a drag writes
-       */
-      get domain(): string[] {
-        const spelled = new Map<string, string>()
-        for (const group of self.groups) {
-          for (const name of group.mates.keys()) {
-            const key = self.laneKey(name)
-            if (!spelled.has(key)) {
-              spelled.set(key, name)
-            }
-          }
-        }
-        const written = getConf(self, ['rows', 'sort'])
-        return [
-          ...new Set(
-            written.map(name => spelled.get(self.laneKey(name)) ?? name),
-          ),
-        ]
-      },
-      /**
-       * #getter
-       * the track's assemblies beside the anchor for a source that declares the
-       * lanes itself, empty for every other source
-       */
-      get configuredLanes(): string[] {
-        const anchor = self.laneKey(self.anchorAssemblyName)
-        return self.adapterDeclaresLanes
-          ? getTrackAssemblyNames(self.parentTrack).filter(
-              name => self.laneKey(name) !== anchor,
-            )
-          : []
-      },
-    }))
-    .views(self => ({
-      /**
-       * #getter
-       * undefined means every lane, and a hidden lane stays in force
-       */
-      get laneSelection(): readonly string[] | undefined {
-        return lanesInForce(self.laneChoice, self.configuredLanes)
-      },
-      /** #getter */
-      get hiddenLanes(): readonly string[] {
-        return self.hiddenLaneNames ?? []
-      },
-    }))
-    .views(self => ({
-      /**
-       * #getter
-       * undefined unless the adapter declares its lanes, and lists each held
-       * genome under every name the session knows it by
-       */
-      get fetchLaneSelection(): string[] | undefined {
-        const selection = self.adapterDeclaresLanes
-          ? self.laneSelection
-          : undefined
-        return selection && [...new Set(selection.flatMap(self.laneSpellings))]
-      },
-    }))
+    .views(laneSourceViews)
+    .views(laneDomainViews)
+    .views(laneSelectionViews)
+    .views(fetchLaneSelectionViews)
     .views(self => ({
       /**
        * reads only user-controlled state, never a fetch's output, or it loops
@@ -1311,137 +1131,12 @@ export function stateModelFactory(
           underFloor: self.copyLanesUnderFloor,
         })
       },
-      /**
-       * #getter
-       * the lanes `rows.kept` names that the held fetch answered for and
-       * placed nothing in; an unchosen lane placing nothing draws no row
-       */
-      get unalignedChosenLanes(): string[] {
-        return unalignedChosenLanesOf(
-          self.laneChoice,
-          self.groups,
-          answeredLaneTest(
-            self.anchorRecordsLoaded,
-            self.currentFetch.lanes,
-            self.laneKey,
-          ),
-          self.laneKey,
-          self.laneField,
-        )
-      },
-      /**
-       * #method
-       * why a lane the window shows none of draws a row, or undefined where it
-       * draws none
-       */
-      placelessOf(assemblyName: string): Placeless | undefined {
-        const key = self.laneKey(assemblyName)
-        const spanning = self.windowDeletions.filter(
-          d => self.laneKey(d.assemblyName) === key,
-        )
-        return spanning.length
-          ? { kind: 'deletion', bp: Math.max(...spanning.map(d => d.bp)) }
-          : this.unalignedChosenLanes.some(name => self.laneKey(name) === key)
-            ? { kind: 'unaligned' }
-            : undefined
-      },
     }))
-    .views(self => {
-      const sameRows = sameAsLast<string[]>()
-      return {
-        /**
-         * #getter
-         * a paralogy mate on the anchor assembly draws on its axis, not as a
-         * row
-         */
-        get rowAssemblies() {
-          return sameRows(
-            laneRowsOf({
-              groups: self.groups,
-              placeless: [
-                ...self.windowDeletions.map(d => d.assemblyName),
-                ...self.unalignedChosenLanes,
-              ],
-              anchor: self.anchorAssemblyName,
-              preferred: [...self.domain, ...(self.heldLaneOrder?.lanes ?? [])],
-              selection: self.laneSelection,
-              hidden: self.hiddenLanes,
-              keyOf: self.laneKey,
-            }),
-          )
-        },
-      }
-    })
+    .views(unalignedLaneViews)
+    .views(laneRowAssemblyViews)
+    .views(anchorRowViews)
+    .views(laneOrderViews)
     .views(self => ({
-      /**
-       * #getter
-       * the anchor's row in the stack: first, or among copy lanes after the
-       * lanes `rows.sort` places before its assembly (`anchorRowOf`)
-       */
-      get anchorRow(): number {
-        return anchorRowOf({
-          field: self.laneField,
-          sort: self.domain,
-          rows: self.rowAssemblies,
-          anchor: self.anchorAssemblyName,
-          keyOf: self.laneKey,
-        })
-      },
-    }))
-    .views(self => ({
-      /**
-       * #getter
-       * every lane in the order it stacks, the anchor's included
-       */
-      get laneOrder(): string[] {
-        return laneOrderOf(
-          self.rowAssemblies,
-          self.anchorAssemblyName,
-          self.anchorRow,
-        )
-      },
-      /**
-       * #getter
-       * the pins that hold under the anchor, each naming its lane as
-       * `rowAssemblies` spells it
-       */
-      get pinsInForce(): LanePin[] {
-        return pinsInForceOf(
-          self.lanePins ?? [],
-          self.rowAssemblies,
-          self.anchorAssemblyName,
-          self.laneKey,
-        )
-      },
-      /**
-       * #getter
-       * every fetched lane's key, chained by its deletions and insertions
-       * against the anchor
-       */
-      get structureLaneKeys(): string[] {
-        return structureOrder(laneProfiles(self.features, self.featureOps)).map(
-          self.laneKey,
-        )
-      },
-      /**
-       * #getter
-       * the drawn lanes in `structureLaneKeys` order, for "Order lanes by
-       * structure"; empty for a gene table
-       */
-      get laneStructureOrder(): string[] {
-        const row = this.rowOfLane
-        return self.anchorRecordsLoaded && !self.features.some(isNamedRecord)
-          ? this.structureLaneKeys.flatMap(lane => row.get(lane) ?? [])
-          : []
-      },
-      /**
-       * #getter
-       * each drawn lane's row name by its canonical name, for data keyed by
-       * the records' spelling of a lane
-       */
-      get rowOfLane(): ReadonlyMap<string, string> {
-        return new Map(self.rowAssemblies.map(r => [self.laneKey(r), r]))
-      },
       /**
        * #getter
        * the genomes the lanes draw that the session lacks, each once however
@@ -1485,90 +1180,8 @@ export function stateModelFactory(
         return view.initialized ? self.canvasWidthPx * view.bpPerPx : 0
       },
     }))
-    .actions(self => ({
-      /**
-       * #action
-       * runs when the anchor fetch for `regions` completes. Haplotype lanes read
-       * off a graph stack by structure while no order is pinned, worked out
-       * again only once a fetch leaves the window it was worked out on or asks
-       * for other lanes, so panning never reshuffles the stack
-       */
-      holdLaneOrder(regions: FetchRegion[]) {
-        if (
-          !self.anchorRecordsLoaded ||
-          !stacksByStructure(self.adapterCapabilities, self.laneFetchKinds)
-        ) {
-          self.heldLaneOrder = undefined
-          return
-        }
-        const anchor = self.laneKey(self.anchorAssemblyName)
-        const drawn = [
-          ...new Set((self.currentFetch.lanes ?? []).map(self.laneKey)),
-        ].sort()
-        const held = self.heldLaneOrder
-        const onWindow =
-          held !== undefined && regions.some(r => touchesWindow(held.window, r))
-        if (
-          held?.anchor === anchor &&
-          held.drawn.join('\t') === drawn.join('\t') &&
-          onWindow
-        ) {
-          return
-        }
-        self.heldLaneOrder = {
-          anchor,
-          window: regions,
-          drawn,
-          lanes: self.structureLaneKeys,
-        }
-      },
-      /** #action */
-      chooseLanes(names: string[]) {
-        self.setSelectedLanes(
-          pickedLanes(
-            {
-              picked: names,
-              offered: self.laneUniverse
-                .filter(lane => !lane.underFloor)
-                .map(lane => lane.name),
-              inForce: self.laneSelection,
-              configured: self.configuredLanes,
-            },
-            self.laneKey,
-          ),
-        )
-      },
-      /** #action */
-      hideLane(assemblyName: string) {
-        self.hiddenLaneNames = withLaneHidden(
-          self.hiddenLanes,
-          assemblyName,
-          self.laneKey,
-        )
-      },
-      /** #action */
-      showLane(assemblyName: string) {
-        const choice = self.laneChoice
-        const { kept, hidden } = withLaneShown(
-          {
-            kept: choice,
-            hidden: self.hiddenLanes,
-            configured: self.configuredLanes,
-          },
-          assemblyName,
-          self.laneKey,
-        )
-        if (kept !== choice) {
-          setConf(self, ['rows', 'kept'], kept)
-        }
-        self.hiddenLaneNames = hidden.length ? hidden : undefined
-        persistTrackConfigNow(self)
-      },
-      /** #action */
-      showHiddenLanes() {
-        self.hiddenLaneNames = undefined
-      },
-    }))
+    .actions(laneOrderHoldActions)
+    .actions(laneSelectionActions)
     .actions(self => ({
       /**
        * #action
