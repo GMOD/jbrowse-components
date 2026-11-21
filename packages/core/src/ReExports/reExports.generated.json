@@ -5142,6 +5142,7 @@
         "default",
         "hiddenGroupsOf",
         "hiddenGroupsViews",
+        "hideGroupOn",
         "setHiddenGroupsOn"
       ],
       "worker": "real"

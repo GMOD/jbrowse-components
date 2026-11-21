@@ -489,7 +489,7 @@ const names: Record<string, string[]> = {
   '@jbrowse/display-kit/heightModeMenu': ['heightModeMenuItems'],
   '@jbrowse/display-kit/HeightModeMixin': ['default', 'fitTargetHeightViews', 'grownHeightViews', 'heightModeViews', 'installGrowExitBake'],
   '@jbrowse/display-kit/heldColorSlots': ['heldColorSlots'],
-  '@jbrowse/display-kit/HiddenGroupsMixin': ['NO_HIDDEN_GROUPS', 'default', 'hiddenGroupsOf', 'hiddenGroupsViews', 'setHiddenGroupsOn'],
+  '@jbrowse/display-kit/HiddenGroupsMixin': ['NO_HIDDEN_GROUPS', 'default', 'hiddenGroupsOf', 'hiddenGroupsViews', 'hideGroupOn', 'setHiddenGroupsOn'],
   '@jbrowse/display-kit/hiddenLegendConfigSchema': ['hiddenLegendConfigSchema'],
   '@jbrowse/display-kit/highlightHost': ['isHighlightHost', 'isPinnedInkHost', 'mergeBounds'],
   '@jbrowse/display-kit/installGlobalFetchAutorun': ['installGlobalFetchAutorun'],

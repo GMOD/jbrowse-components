@@ -20,10 +20,7 @@ export {
   hiddenGroupsItems,
   sectionOrderResetItems,
 } from './groupByMenu.ts'
-export type {
-  CollapseSectionsModel,
-  HiddenGroupsModel,
-} from './groupByMenu.ts'
+export type { CollapseSectionsModel, HiddenGroupsModel } from './groupByMenu.ts'
 export {
   getReadConnectionsBandItems,
   getReadConnectionsMenuItem,
