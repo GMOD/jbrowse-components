@@ -171,15 +171,18 @@ The display types, grouped by the track type they attach to:
 
 ## The "Zoom in to see more features" limits
 
-Two limits guard a region, and either one shows "Zoom in to see features or
-force load (may be slow)" with a **Force load** button: the bytes the fetch
-would download, and the features that would be drawn on screen. Regions under
-about 20 kb are never held back, and adapters that summarize at screen
+Two limits guard a region, and either one shows "Zoom in to see features, or
+force load this track for the rest of the session (may be slow)" with a **Force
+load** button: the bytes the fetch would download, and the features that would
+be drawn on screen. The feature limit never holds back a region under about 20
+kb, where the byte limit is doubled, and adapters that summarize at screen
 resolution (bigWig, Hi-C, MultiWiggle, sequence) are never too large.
 
 Alignments and MAF tracks' cost per reference base scales with read depth or
 with the number of aligned species instead, which zooming does not reduce, so
-the message can appear at any zoom and offers only **Force load**.
+the message can appear at any zoom. Once zooming in to half the width leaves the
+byte estimate nearly unchanged, the message drops "Zoom in to see features" and
+offers only **Force load**.
 
 ### Raising the feature limit
 
@@ -230,12 +233,15 @@ takes priority over the display's, so for those formats set it on the adapter:
 
 Amplicon sequencing of a virus puts thousands of reads over every base of a
 genome a few tens of kilobases long. A BAM's `.bai` index has nothing finer than
-a 16 kb bin, so on a 30 kb genome the estimate stays the same at every zoom and
-the message never clears. Three changes help:
+a 16 kb bin, so the estimate falls as the window narrows only until the window
+fits inside one bin, and stops shrinking there. Where one bin's reads outweigh
+the limit, as they can at thousands-fold depth, zooming in never clears the
+message. Three changes help:
 
-- Use CRAM, or index the BAM with `samtools index -c -m 10`. Both estimate a
-  small window from what that window holds, so zooming in clears the message. A
-  `.csi` built with the default `-m 14` estimates as a `.bai` does.
+- Use CRAM, or index the BAM with `samtools index -c -m 10` and add
+  `"csi": true` to the adapter. Both estimate a small window from what that
+  window holds, so zooming in clears the message. A `.csi` built with the
+  default `-m 14` estimates as a `.bai` does.
 - Raise `fetchSizeLimit` on that track's adapter. The limit belongs to the one
   track, and an assembly this small has no larger window to ask for.
 - Load a coverage bigWig from `mosdepth` or deepTools `bamCoverage` as a
