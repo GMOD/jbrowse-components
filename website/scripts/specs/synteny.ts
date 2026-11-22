@@ -397,6 +397,48 @@ function mcscanFilePartSpecs(): ScreenshotSpec[] {
   ]
 }
 
+// Peach chrG7 against the grape chr8 lane alone, where five blocks meet: by
+// strand each block mixes both colors, by block each takes one.
+function mcscanBlockPartSpecs(): ScreenshotSpec[] {
+  const part = (
+    name: string,
+    ribbons?: Record<string, unknown>,
+  ): ScreenshotSpec => ({
+    mode: 'url',
+    name,
+    url: sessionSpec(GRAPE_PEACH_CONFIG, {
+      views: [
+        {
+          type: 'LinearGenomeView',
+          assembly: PEACH,
+          loc: 'chrG7:8,400,000-15,200,000',
+          tracks: [
+            {
+              trackId: 'grape_peach_anchors',
+              type: 'MultiWaySyntenyDisplay',
+              rows: { kept: [`{${GRAPE}}chr8`] },
+              height: 300,
+              ...(ribbons ? { ribbons } : {}),
+            },
+          ],
+        },
+      ],
+    }),
+    readySelector: displaySettled('multiway-synteny-display'),
+    readyTimeout: 120000,
+    viewportHeight: 520,
+  })
+  return [
+    part('mcscan_synteny/blocks_by_strand', {
+      encoding: { opacity: 0.6 },
+    }),
+    part('mcscan_synteny/blocks_by_block', {
+      encoding: { color: 'block', opacity: 0.6 },
+      filter: [{ field: 'blockSpan', gte: 30 }],
+    }),
+  ]
+}
+
 const ECOLI_STRAINS = ['K12', 'Sakai', 'CFT073', 'NCTC86', 'IAI39']
 const ECOLI_IDENTITY_TRACK = {
   type: 'SyntenyTrack',
@@ -2418,6 +2460,16 @@ export const syntenySpecs: ScreenshotSpec[] = [
     readySelector: displaySettled('multiway-synteny-display'),
     readyTimeout: 120000,
     viewportHeight: 640,
+  },
+
+  ...mcscanBlockPartSpecs(),
+  {
+    mode: 'compose',
+    name: 'mcscan_synteny/blocks',
+    parts: [
+      'mcscan_synteny/blocks_by_strand',
+      'mcscan_synteny/blocks_by_block',
+    ],
   },
 
   ...mcscanFilePartSpecs(),

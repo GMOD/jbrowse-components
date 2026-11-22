@@ -19,6 +19,8 @@ have diverged too far to align base by base. We:
 - open a linear synteny view, with a ribbon for each gene pair and a bar for
   each block (a run of gene pairs in conserved order), and color by syntenic
   depth
+- color the gene pairs by block in a multi-way synteny display, and filter them
+  by block size
 - open the same pairs in a dotplot, and convert an MCScanX run the same way
 
 ## Prerequisites
@@ -288,6 +290,57 @@ turn on the .anchors track:
 
 The older copy shares far fewer genes with the peach stretch, and the gene
 tracks in each lane show the genes a copy kept and lost.
+
+## Coloring gene pairs by block {#blocks}
+
+`MCScanAnchorsAdapter` reads the `###` lines too, and puts two fields on every
+gene pair: `block`, the block the pair belongs to (`block0` is the file's
+first), and `blockSpan`, the number of genes that block spans on its shorter
+side. We'll move the same multi-way display to `chrG7:8,400,000-15,200,000`,
+where several blocks join peach to grape chr8:
+
+- In **Lanes → Choose lanes...**, untick every grape chromosome but chr8.
+- Pick **Color by → Color by value → block**, under **Ribbons** in the track
+  menu. Each block takes one color, and hovering a ribbon names its block.
+
+<Figure src="/img/mcscan_synteny/blocks.png" links="By strand=mcscan_synteny/blocks_by_strand,By block=mcscan_synteny/blocks_by_block" caption="Peach chrG7 against grape chr8 in the .anchors track. Top: gene pairs colored by strand. Bottom: the same pairs colored by block." />
+
+A block holds gene pairs on both strands, so the strand colors mix inside one
+block.
+
+`blockSpan` is the size `screen --minspan=30` tested when it wrote
+`.anchors.simple`, so a `filter` on it leaves the gene pairs of the blocks that
+file holds. This session opens the view with the color and the filter set:
+
+```json session config=https://jbrowse.org/demos/grape_peach_cacao/config.json
+{
+  "defaultSession": {
+    "name": "Peach against grape chr8, by block",
+    "views": [
+      {
+        "type": "LinearGenomeView",
+        "assembly": "GCF_000346465.2",
+        "loc": "chrG7:8,400,000-15,200,000",
+        "tracks": [
+          {
+            "trackId": "grape_peach_anchors",
+            "type": "MultiWaySyntenyDisplay",
+            "rows": { "kept": ["{GCF_030704535.1}chr8"] },
+            "ribbons": {
+              "encoding": { "color": "block", "opacity": 0.6 },
+              "filter": [{ "field": "blockSpan", "gte": 30 }]
+            },
+            "height": 300
+          }
+        ]
+      }
+    ]
+  }
+}
+```
+
+A linear synteny view and a dotplot list both fields under **Color by value** on
+the palette button.
 
 ## Viewing the gene pairs as a dotplot
 

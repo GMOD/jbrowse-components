@@ -45,8 +45,9 @@ without touching the pairwise geometry the linear layout needs anyway: consisten
 block across every row it touches (`color: { field: 'group' }`, hash the id in `syntenyColors.ts`,
 main-thread recolor with no RPC), hover-one-highlight-the-block across rows, and "present in
 all N" filtering. MultiWaySyntenyDisplay, which groups on gene name with `syntenyId` as the
-nameless fallback, would be its third consumer. MCScan `.anchors` and MAF already carry block structure to populate it; PAF
-(independent lines) leaves it undefined. This is the cheap 80% and is consistent with "don't
+nameless fallback, would be its third consumer. An MCScan `.anchors` pair has its block
+already, as `block` (per file, so not yet an id shared across rows) beside `blockSpan`; MAF
+has block structure that could populate it; PAF (independent lines) leaves it undefined. This is the cheap 80% and is consistent with "don't
 make N-way blocks the primitive" above — it's an identity *overlay*, not a new render unit.
 
 What the id does **not** do on its own: draw a literal ribbon that skips a row (a block present
