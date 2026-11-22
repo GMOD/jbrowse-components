@@ -129,6 +129,7 @@ export const paperCohortSpecs: ScreenshotSpec[] = [
             },
             graphTrack('hprc_minigraph_segments', {
               layoutMode: 'force',
+              layoutEngine: 'stress',
               paneHeight: 270,
               encoding: { color: { field: 'position' } },
               layers: { lengths: true },
@@ -146,6 +147,7 @@ export const paperCohortSpecs: ScreenshotSpec[] = [
       'header.MuiAppBar-root',
       // the HGSVC blurb sits where this chip draws
       '[data-testid="show_genotypes_chip"]',
+      '[data-testid="graph-layout-switch"]',
     ],
     tooltip: 'hide',
     diffThreshold: 0.02,

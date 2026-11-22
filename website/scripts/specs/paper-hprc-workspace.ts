@@ -1,7 +1,6 @@
 // Candidates for the JBrowse 2 v5 paper's HPRC figure, which uses
-// hprc_lanes_graph_stacked_force: eight haplotype lanes and the graph of the
-// same CFH window in one view. The hprc demo config has no PIF track, so the
-// lanes' PIF, unpacked from the release 2 GFA, rides along as a session track.
+// hprc_lanes_graph_stacked_force: eight haplotype lanes, read from the graph's
+// walk file, and the graph of the same CFH window in one view.
 import { displaySettled } from '@jbrowse/browser-test-utils'
 
 import { sessionSpec } from '../screenshot-spec-helpers.ts'
@@ -9,38 +8,10 @@ import { GRAPH_DRAWN, graphTrack } from './graph-fixtures.ts'
 
 import type { Annotation, ScreenshotSpec } from '../screenshot-spec-types.ts'
 
-// The hprc demo config, its graph plugin pinned at 10.0.1, which draws the paper's figure.
+// The hprc demo config, its graph plugin pinned at 10.4.3, which draws the paper's figure.
 const CONFIG = 'test_data/graphgenomeview/paper_hprc.json'
 const SEGMENTS_TRACK = 'hprc_minigraph_segments'
-const LANES_TRACK = 'hprc_multiway'
-
-const HAPLOTYPES = [
-  'HG01109.1',
-  'HG01123.1',
-  'HG01960.1',
-  'HG02055.1',
-  'HG00097.1',
-  'HG00099.1',
-  'HG00128.1',
-  'HG00133.1',
-]
-const PIF_ASSEMBLIES = ['hg38', ...HAPLOTYPES]
-const LANES_PIF_TRACK = {
-  type: 'SyntenyTrack',
-  trackId: LANES_TRACK,
-  name: 'HPRC haplotypes vs GRCh38 (hg38 + 8 haplotypes, unpacked from the v2.1 GFA)',
-  assemblyNames: PIF_ASSEMBLIES,
-  adapter: {
-    type: 'MultiGenomeIndexedPAFAdapter',
-    uri: 'https://jbrowse.org/demos/hprc_multiway/hprc_multiway_gfa.pif.gz',
-    csi: true,
-    assemblyNames: PIF_ASSEMBLIES,
-    assemblyNameToPanSN: Object.fromEntries([
-      ['hg38', 'GRCh38#0'],
-      ...HAPLOTYPES.map(h => [h, `${h.split('.')[0]}#1`]),
-    ]),
-  },
-}
+const LANES_TRACK = 'hprc_v2_1_walk_lanes'
 
 const CFHR_WINDOW = 'chr1:196,640,000-196,900,000'
 
@@ -85,6 +56,7 @@ const view = (
     },
     graphTrack(SEGMENTS_TRACK, {
       layoutMode,
+      layoutEngine: 'stress',
       paneHeight,
       encoding: { color: { field: 'position' } },
       layers: { lengths: true },
@@ -106,14 +78,13 @@ const session = (
   lanePlacement: 'above' | 'overlay' = 'above',
 ) =>
   sessionSpec(CONFIG, {
-    sessionTracks: [LANES_PIF_TRACK],
     views: [
       view(layoutMode, lanesHeight, genesHeight, paneHeight, lanePlacement),
     ],
   })
 
-// The lanes are range requests against the hosted PIF and its CSI, and the
-// graph cuts its subgraph from the segments track's tabix indexes.
+// The lanes are range requests against the hosted walk file, and the graph
+// cuts its subgraph from the segments track's tabix indexes.
 const gates = {
   readySelector: BOTH_READY,
   readyTimeout: 240000,
@@ -135,9 +106,9 @@ const callouts: Annotation[] = [
     leader: true,
     fontSize: CALLOUT_FONT,
     anchor: { graphNode: DELETION_NODE },
-    // under the backbone, between the gene chips and the detour past the node
-    dx: -30,
-    dy: 85,
+    // under the node, so the leader runs between the 11.8 kb and 2.5 kb labels
+    dx: 30,
+    dy: 170,
   },
 ]
 
@@ -165,7 +136,10 @@ export const paperHprcWorkspaceSpecs: ScreenshotSpec[] = [
     // the paper prints it at its full text width
     viewportWidth: 930,
     viewportHeight: 998,
-    hideSelectors: ['header.MuiAppBar-root'],
+    hideSelectors: [
+      'header.MuiAppBar-root',
+      '[data-testid="graph-layout-switch"]',
+    ],
     ...gates,
     annotations: callouts,
   },

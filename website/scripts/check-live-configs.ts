@@ -50,7 +50,7 @@ const network = process.argv.includes('--network')
 const PLUGIN_URL =
   'https://jbrowse.org/plugins/jbrowse-plugin-graphgenomeviewer/latest/dist/jbrowse-plugin-graphgenomeviewer.esm.js'
 const PAPER_PLUGIN_URL =
-  'https://jbrowse.org/plugins/jbrowse-plugin-graphgenomeviewer/10.0.1/dist/jbrowse-plugin-graphgenomeviewer.esm.js'
+  'https://jbrowse.org/plugins/jbrowse-plugin-graphgenomeviewer/10.4.3/dist/jbrowse-plugin-graphgenomeviewer.esm.js'
 const PAPER_CONFIGS = new Set([
   'test_data/graphgenomeview/hprc_cnv.json',
   'test_data/graphgenomeview/paper_hprc.json',
