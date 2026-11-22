@@ -8,10 +8,12 @@ import type { SnapshotIn } from '@jbrowse/mobx-state-tree'
 type ConfigSnap = SnapshotIn<AnyConfigurationSchemaType>
 
 function adapterIdentity(conf: Record<string, unknown>) {
-  const { adapterId } = conf
-  return typeof adapterId === 'string' && adapterId
-    ? { key: adapterId, credentials: '' }
-    : fingerprintAdapterConfig(conf)
+  const { adapterId, type } = conf
+  const { key, credentials } =
+    typeof adapterId === 'string' && adapterId
+      ? { key: adapterId, credentials: '' }
+      : fingerprintAdapterConfig(conf)
+  return { key: `${String(type)}:${key}`, credentials }
 }
 
 export function adapterConfigCacheKey(conf: Record<string, unknown>) {

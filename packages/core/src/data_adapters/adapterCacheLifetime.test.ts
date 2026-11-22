@@ -159,3 +159,17 @@ test('a trim declining a sub-adapter its parent still holds leaves it cached for
   expect(cachedAdapterCount()).toBe(0)
   expect(freed.sort()).toEqual(['ReadingAdapter', 'SequenceAdapter'])
 })
+
+test('two configs sharing a hand-set adapterId but not a type are two instances', async () => {
+  const plain = await getAdapter(pluginManager, 'A', {
+    type: 'PlainAdapter',
+    adapterId: 'shared',
+  })
+  const named = await getAdapter(pluginManager, 'A', {
+    type: 'SequenceAdapter',
+    adapterId: 'shared',
+  })
+  expect(named.dataAdapter).toBeInstanceOf(SequenceAdapter)
+  expect(plain.dataAdapter).not.toBeInstanceOf(SequenceAdapter)
+  expect(cachedAdapterCount()).toBe(2)
+})

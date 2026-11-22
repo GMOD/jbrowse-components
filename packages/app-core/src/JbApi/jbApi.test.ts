@@ -1279,8 +1279,8 @@ describe('getFeatures reads through the RPC', () => {
       ],
     })
     expect(calls.map(c => c.slice(0, 2))).toEqual([
-      ['genes-adapter', 'CoreGetRegionByteEstimate'],
-      ['genes-adapter', 'CoreGetFeatures'],
+      ['BigBedAdapter:genes-adapter', 'CoreGetRegionByteEstimate'],
+      ['BigBedAdapter:genes-adapter', 'CoreGetFeatures'],
     ])
     expect(adapterSpy).not.toHaveBeenCalled()
   })

@@ -99,11 +99,11 @@ describe('adapterConfigCacheKey', () => {
       AdapterConfig.create({ uri: '/path/to/file' }, { pluginManager }),
     )
     const cacheKey = adapterConfigCacheKey(snap)
-    expect(cacheKey).toMatch(/^adp-/)
+    expect(cacheKey).toMatch(/^SomeAdapter:adp-/)
     expect(cacheKey).toBe(adapterConfigCacheKey(snap))
   })
 
-  it('uses adapterId directly when present', () => {
+  it('uses adapterId with the type when present', () => {
     const AdapterConfig = ConfigurationSchema(
       'SomeAdapter',
       {
@@ -119,7 +119,7 @@ describe('adapterConfigCacheKey', () => {
         { pluginManager },
       ),
     )
-    expect(adapterConfigCacheKey(snap)).toBe('my-stable-id')
+    expect(adapterConfigCacheKey(snap)).toBe('SomeAdapter:my-stable-id')
   })
 
   it('falls back to hash when adapterId is empty string', () => {
@@ -135,6 +135,6 @@ describe('adapterConfigCacheKey', () => {
     const snap = getSnapshot(
       AdapterConfig.create({ uri: '/path/to/file' }, { pluginManager }),
     )
-    expect(adapterConfigCacheKey(snap)).toMatch(/^adp-/)
+    expect(adapterConfigCacheKey(snap)).toMatch(/^SomeAdapter:adp-/)
   })
 })
