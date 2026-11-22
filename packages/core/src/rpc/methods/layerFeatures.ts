@@ -82,6 +82,7 @@ export async function layerFeatures(
         transform: r.transform,
         row: r.encoding.row,
       })),
+      clip: region,
     },
     jexl,
   )

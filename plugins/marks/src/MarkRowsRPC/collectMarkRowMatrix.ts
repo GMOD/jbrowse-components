@@ -178,11 +178,16 @@ export async function collectMarkRowMatrix({
         ),
       ),
   )
-  const encodedRegions = fetched.map(table => {
+  const encodedRegions = fetched.map((table, i) => {
     checkAbortSignal(signal)
     const { layers, sections } = layerTables(
       table,
-      { transform, facet, layers: [{ transform: layer.transform }] },
+      {
+        transform,
+        facet,
+        layers: [{ transform: layer.transform }],
+        clip: regions[i],
+      },
       jexl,
     )
     const split = layers[0]!
