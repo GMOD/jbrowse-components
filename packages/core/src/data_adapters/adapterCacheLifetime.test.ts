@@ -45,11 +45,18 @@ class SequenceAdapter extends FeaturelessAdapter {
   }
 }
 
+class FailingFreeAdapter extends FeaturelessAdapter {
+  freeResources() {
+    throw new Error('free failed')
+  }
+}
+
 const pluginManager = new PluginManager()
 for (const [name, AdapterClass, capabilities] of [
   ['ReadingAdapter', ReadingAdapter, [READS_REFERENCE]],
   ['SequenceAdapter', SequenceAdapter, []],
   ['PlainAdapter', FeaturelessAdapter, []],
+  ['FailingFreeAdapter', FailingFreeAdapter, []],
 ] as const) {
   pluginManager.addAdapterType(
     () =>
@@ -172,4 +179,25 @@ test('two configs sharing a hand-set adapterId but not a type are two instances'
   expect(named.dataAdapter).toBeInstanceOf(SequenceAdapter)
   expect(plain.dataAdapter).not.toBeInstanceOf(SequenceAdapter)
   expect(cachedAdapterCount()).toBe(2)
+})
+
+test('a superseded instance whose freeResources throws reports it rather than rejecting unhandled', async () => {
+  const consoleError = jest.spyOn(console, 'error').mockImplementation(() => {})
+  const signed = (token: string) => ({
+    type: 'FailingFreeAdapter',
+    location: {
+      uri: 'https://example.org/a.bed',
+      internetAccountPreAuthorization: { authInfo: { token } },
+    },
+  })
+  try {
+    await getAdapter(pluginManager, 'A', signed('t1'))
+    await getAdapter(pluginManager, 'A', signed('t2'))
+    await new Promise(resolve => {
+      setTimeout(resolve, 0)
+    })
+    expect(consoleError).toHaveBeenCalledWith(new Error('free failed'))
+  } finally {
+    consoleError.mockRestore()
+  }
 })

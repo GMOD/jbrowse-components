@@ -220,11 +220,15 @@ function storeEntry(
     superseded ? superseded.sessionIds : new Set(),
   )
   if (superseded) {
-    void evict(key, superseded)
+    evict(key, superseded).catch(reportFailedFree)
   }
   adapterCache.set(key, entry)
-  void entry.adapter.catch(() => evict(key, entry))
+  entry.adapter.catch(() => evict(key, entry)).catch(reportFailedFree)
   return entry
+}
+
+function reportFailedFree(error: unknown) {
+  console.error(error)
 }
 
 /**
