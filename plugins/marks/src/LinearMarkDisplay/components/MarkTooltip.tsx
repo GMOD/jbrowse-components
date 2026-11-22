@@ -130,12 +130,7 @@ function strokeWidthRow(
 ): ChannelRow | undefined {
   const { size } = hit
   const declared = encoding?.size
-  const field =
-    typeof declared === 'object'
-      ? declared.field
-      : typeof declared === 'string'
-        ? declared
-        : undefined
+  const field = typeof declared === 'object' ? declared.field : undefined
   return size === undefined || field === undefined
     ? undefined
     : {

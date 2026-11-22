@@ -84,10 +84,9 @@ export function markPlotSettingsOf(
   conf: AnyConfigurationModel,
 ): MarkPlotSettings {
   const node = conf as unknown as Record<string, AnyConfigurationModel>
-  const snapshot = getSnapshot<Record<string, unknown>>(conf)
-  const { encoding } = getSnapshot<{
-    encoding?: { color?: PlotSnapshot['color'] }
-  }>(conf)
+  const snapshot = getSnapshot<
+    Record<string, unknown> & { encoding?: { color?: PlotSnapshot['color'] } }
+  >(conf)
   return {
     marks: getSnapshot(node.marks!) as MarkSnapshot[],
     transform: (snapshot.transform ?? []) as StepSnapshot[],
@@ -97,7 +96,7 @@ export function markPlotSettingsOf(
       | undefined,
     axis: axisOf(conf),
     rowAttributes: rowAttributesOf(conf),
-    color: encoding?.color,
+    color: snapshot.encoding?.color,
   }
 }
 

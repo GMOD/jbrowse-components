@@ -252,8 +252,8 @@ function channelField(mark: DraftMark, channel: EditChannel): string {
 }
 
 // An identity scale naming no field or constant, which paints each feature's
-// own color.
-function ownColors(mark: DraftMark, channel: EditChannel) {
+// own value.
+function fieldlessIdentity(mark: DraftMark, channel: EditChannel) {
   return (
     partOfChannel(mark, channel, 'scale').type === IDENTITY_SCALE &&
     channelObject(mark, channel)?.value === undefined
@@ -275,7 +275,7 @@ export function channelScale(mark: DraftMark, channel: EditChannel): string {
       ? typeof type === 'string'
         ? type
         : presetScale(channel, field)
-      : ownColors(mark, channel)
+      : fieldlessIdentity(mark, channel)
         ? IDENTITY_SCALE
         : ''
 }
@@ -327,8 +327,8 @@ function pick(part: Record<string, unknown>, members: readonly string[]) {
 }
 
 /**
- * The mark with a channel read through another scale. A field is required,
- * but by identity — a constant reads through no scale — and the members the
+ * The mark with a channel read through another scale. A field is required
+ * except under identity — a constant reads through no scale — and the members the
  * new kind does not paint are dropped, which the rule list would otherwise
  * report as unread. One ramp becoming the other keeps its `range`, the stops
  * or widths both read alike, and an identity key, listing only its `domain`,

@@ -504,8 +504,6 @@ describe('the scale beside a field', () => {
   })
 })
 
-// MarkSize is closed and has no scheme or reverse, so a width ramp keeps its
-// ends across a kind change and nothing a color ramp would.
 // ADR-243: an identity color with no field paints each feature's own color,
 // and the key names the colors its domain lists.
 describe('an identity color naming no field', () => {
@@ -583,6 +581,8 @@ describe('an identity color naming no field', () => {
   })
 })
 
+// MarkSize is closed and has no scheme or reverse, so a width ramp keeps its
+// ends across a kind change and nothing a color ramp would.
 describe('the scale beside a width', () => {
   const width = {
     mark: 'link' as const,

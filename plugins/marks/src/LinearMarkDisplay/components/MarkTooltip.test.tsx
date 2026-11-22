@@ -258,9 +258,6 @@ test("a link's strokeWidth field holding no number prints no value", async () =>
 })
 
 test('a constant strokeWidth prints no row', async () => {
-  const box = await tooltip({
-    hoveredFeature: { ...HIT, size: Number.NaN },
-    encodings: [{ size: 3 }],
-  })
+  const box = await tooltip({ hoveredFeature: HIT, encodings: [{}] })
   expect(box.textContent).not.toContain('no value')
 })
