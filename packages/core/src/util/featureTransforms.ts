@@ -1625,10 +1625,11 @@ function partitionPoint(steps: readonly TransformStep[], field: FieldRef) {
  * comes as early as it can: after the last shared step that must see every
  * row, so the steps that follow it read the rows already in section order.
  *
- * `clip` names the fetched region: an interval bin fused with its aggregate
- * makes no bin outside it for a row on its `refName`, so a feature far longer
- * than the view is cut only where it is fetched. A bin it keeps gathers the
- * pieces it did unclipped; one it drops lies wholly outside the fetch.
+ * `clip` names the fetched region: an interval bin fused with its aggregate,
+ * where every later step reads one row at a time, makes no bin outside it for
+ * a row on its `refName`, so a feature far longer than the view is cut only
+ * where it is fetched. A bin it keeps gathers the pieces it did unclipped;
+ * one it drops lies wholly outside the fetch.
  */
 export function layerTables(
   input: readonly Feature[] | FeatureTable,
