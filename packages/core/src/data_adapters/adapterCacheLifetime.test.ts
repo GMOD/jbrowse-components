@@ -201,3 +201,10 @@ test('a superseded instance whose freeResources throws reports it rather than re
     consoleError.mockRestore()
   }
 })
+
+test('a parent left over from a cleared cache claims nothing in the new one', async () => {
+  const parent = await readingAdapter('A')
+  clearAdapterCache()
+  await parent.reference()
+  expect(cachedAdapterCount()).toBe(0)
+})

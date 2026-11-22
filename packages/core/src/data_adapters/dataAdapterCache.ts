@@ -360,5 +360,8 @@ export function cachedAdapterCount() {
 }
 
 export function clearAdapterCache() {
+  for (const entry of adapterCache.values()) {
+    entry.owner.evicted = true
+  }
   adapterCache = new Map()
 }
