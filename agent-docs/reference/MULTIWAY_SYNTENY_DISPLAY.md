@@ -37,8 +37,10 @@ every cost is linear in lanes.
   the anchor alone, so every gutter draws its lower lane against the anchor: the
   top edge is the anchor's axis, marked by a ticked rule under the lane above
   (`anchorRuleY`), and each lane label opens with a `vs <anchor>` badge. A source
-  answering lane pairs draws neighbour against neighbour, and a pair it has not
-  answered draws nothing.
+  answering lane pairs on the anchor reads the same way when its header sets
+  `lanesReadAgainstAnchor`: its pair fetches, structure stacking and badge
+  follow the header. Any other source answering lane pairs draws neighbour
+  against neighbour, and a pair it has not answered draws nothing.
 - **A source's own blocks draw under its pairs** (`sourceBlocksOf`,
   `underlayKey` in `multiwayGeometry.ts`,
   [ADR-281](../architecture-decision-records/adr-281-a-sources-blocks-draw-under-its-gene-pairs.md)).
@@ -83,10 +85,13 @@ every cost is linear in lanes.
   above it mirrors the one below (`anchorRuleAboveY`), and a lane pair is
   never one that straddles the anchor (`lanePairsOf`).
 - **A lane opens a hole at each deletion it carries against the anchor**
-  (`laneOpeningsOf`, `LaneOpening`): where two pieces abut in the lane, or
-  nearly, while their anchor ends sit `SPLIT_AT_GAP_BP` or more further apart,
-  and either they are one alignment record (`recordId`, stamped by
-  `clipFeatureToRegion`) or the lane places the anchor between them nowhere.
+  (`laneIndelsOf`'s `openings`, `LaneOpening`), read on the strand the lane is
+  drawn on: between two consecutive pieces of that strand in one fetch window
+  whose anchor gap exceeds their lane gap by `SPLIT_AT_GAP_BP` or more, where
+  either they are one alignment record (`recordId`, stamped by
+  `clipFeatureToRegion`) or the lane places nowhere the anchor between them that
+  the other strand's pieces inside the gap leave. An array record bounds a gap
+  on either strand, and a gap it bounds opens nothing.
   Two records meeting where that stretch went elsewhere in the lane are a
   rearrangement's breakpoint and open nothing, which keeps the lane's rung
   independent of how far the fetch reached past the viewport. The record alone is
@@ -137,7 +142,10 @@ every cost is linear in lanes.
 - **Haplotype lanes read off a graph stack by structure** where nothing pins the
   order (`holdLaneOrder`, `structureOrder`; sources with `lanePairsOnAnchor`). A
   ribbon joins neighbours only, and densest-first puts two different structures in
-  nearly every pair. The order is worked out when the anchor fetch lands and held
+  nearly every pair. A lane's profile weighs the sequence between its pieces by
+  the gap reading the header uses (`laneProfiles`, `laneIndelsOf`), on the
+  strand holding most bp of each contig rather than the strand the lane is drawn
+  on, since the drawn orientation comes from a vote the order feeds. The order is worked out when the anchor fetch lands and held
   until a fetch leaves that window or the lane selection changes, so a pan never
   reshuffles the stack. Lanes `rows.sort` pins lead and the rest keep that order.
   Cross-species stacks keep densest-first.
@@ -223,21 +231,36 @@ every cost is linear in lanes.
   clears either.
 - **Lane changes chip**: the header lists what the records state across the gaps
   the shown frame meets, largest first, two then a count, in the HPRC portal's
-  words (`laneIndelsOf`'s `changes`, `laneHeaderRows`). Across each gap between
-  two consecutive pieces of a lane contig cut in one fetch window (`clipWindow`;
-  between two windows lies anchor the fetch never read), the anchor gap and the
-  lane gap each list at their own size once they reach `SPLIT_AT_GAP_BP`, within
-  one record, or across two where the lane places the anchor stretch nowhere. A
-  935 kb stretch replaced by 900 kb reads "935 kb deletion, 900 kb insertion". The
-  hole opens at the net of the two, so what follows sits under its own anchor
-  stretch. Netting the chip into one deletion or one shift infers an allele
+  words (`laneIndelsOf`'s `changes`, `laneHeaderRows`); the lane menu's Go to
+  lists the same. Each gap between two consecutive pieces of one strand of a lane
+  contig, cut in one fetch window (`clipWindow`; between two windows lies anchor
+  the fetch never read), within one record or across two where the lane places
+  the rest nowhere, states one change once either side reaches
+  `SPLIT_AT_GAP_BP`: the anchor stretch no piece inside it holds against the
+  lane bp no piece holds, a deletion, an insertion or "54 kb replaced by 37 kb".
+  A piece of the other strand counts by its part inside the gap. The chip states
+  the drawn strand's gaps, then each gap of the other strand sharing no anchor
+  base and no lane base with one of them, and lists a change while the frame
+  meets any of its lane stretch (`at` to `laneEnd`). The hole opens at the net of
+  the two sides, so what follows sits under its own anchor stretch. Netting the
+  chip into one deletion or one shift infers an allele
   ([ADR-137](../architecture-decision-records/adr-137-jbrowse-shows-sv-evidence-and-does-not-infer-alleles.md)).
-- **The chip names an inversion** by its anchor span where a run of the other
-  strand sits between two runs, inside their outer anchor ends and mostly outside
-  what they cover (`laneInversionsOf`). Paralog hits in flanking segdups make the
-  flanks' inner ends land out of anchor order, so the test reads the outer ends. A
-  reverse hit elsewhere on the anchor, or an inverted copy of a flank, is no
-  inversion, and the vote's `[rev]` plays no part.
+- **The chip names an inversion** by the anchor it holds where a run of the
+  other strand sits between two runs, inside their outer anchor ends and mostly
+  outside what they cover (`laneInversionsOf`), whichever way the lane is drawn.
+  Paralog hits in flanking segdups make the flanks' inner ends land out of anchor
+  order, so the test reads the outer ends. A reverse hit elsewhere on the anchor,
+  or an inverted copy of a flank, is no inversion, and the vote's `[rev]` plays
+  no part. Inversions holding a shared anchor base are one, the one holding the
+  most, and an array record parts the runs either side of it.
+- **An array record (type `'array'`) states no change**: it pairs no copy of a
+  repeat with the anchor, so it bounds gaps and enters no inversion, and
+  `clipFeatureToRegion` passes it through whole. The header names the largest
+  the frame meets, "580 kb repeat over 210 kb, 11 more", with each side's walks
+  as the hover title (`repeatsChip`). Its ribbon draws untwisted in the strand
+  scale's no-strand color, which the key, the display's and `multiwayTables`'
+  alike, lists as "Repeat, copies not paired" only while the track holds one.
+  Structure order reads it as aligning nothing (`laneProfiles`).
 - **A lane draws an inversion as its records state it**: the ribbons cross, and
   the default ribbon color (strand) paints them blue. Mirroring the inverted run
   in place was tried and reverted: it drew the lane's sequence in an order its

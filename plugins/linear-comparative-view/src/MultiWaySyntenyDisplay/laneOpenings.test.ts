@@ -7,14 +7,13 @@ import {
   frameFromDecision,
   nudgeDecision,
 } from './laneDecision.ts'
-import { changeLabel, laneRegion } from './laneHeader.ts'
+import { changeLabel, laneRegion, shownLaneChanges } from './laneHeader.ts'
 import { buildLanes, laneGeometry } from './laneStack.ts'
 import {
   frameSegments,
   frameSpan,
   groupFeatures,
   laneIndelsOf,
-  laneOpeningsOf,
   rowFrameX,
 } from './layoutMultiWay.ts'
 import {
@@ -112,7 +111,7 @@ const anchorCenter = (g: MultiWayGroup) => (g.anchor.start + g.anchor.end) / 2
 function decide(groups: MultiWayGroup[], assemblyNames = LANES) {
   return decideLaneFrames({
     groups,
-    openingsOf: laneOpeningsOf(groups),
+    openingsOf: laneIndelsOf(groups).openings,
     assemblyNames,
     anchorX: new Map(groups.map(g => [g.key, px(anchorCenter(g))])),
     anchorCoordOf: g => ({ refName: 'chr1', coord: anchorCenter(g) }),
@@ -127,7 +126,7 @@ function framesOf(
   groups: MultiWayGroup[],
   decisions: Map<string, LaneDecision | undefined>,
 ) {
-  const openingsOf = laneOpeningsOf(groups)
+  const openingsOf = laneIndelsOf(groups).openings
   return new Map(
     [...decisions].map(([assemblyName, d]) => [
       assemblyName,
@@ -179,7 +178,7 @@ function ribbonSpans(cells: Map<string, MultiWayCell>, key: string) {
   }))
 }
 
-function withoutAnchor({ anchor: _, ...change }: LaneChange) {
+function sizeOf({ anchor: _, laneEnd: _end, ...change }: LaneChange) {
   return change
 }
 
@@ -188,18 +187,18 @@ describe('a deletion the lane carries against the anchor', () => {
     const lane = (start: number) => [
       { assemblyName: 'HG00097.1', refName: 'c', start },
     ]
-    const openingsOf = laneOpeningsOf(
+    const openingsOf = laneIndelsOf(
       groupFeatures([
         piece('long', 1_000_000, 1_100_000, lane(0)),
         piece('dup', 900_000, 900_500, lane(20_000)),
         piece('next', 1_100_000, 1_150_000, lane(100_000)),
       ]),
-    )
+    ).openings
     expect(openingsOf('HG00097.1', 'c')).toEqual([])
   })
 
   test('opens one hole per carrier, at its breakpoint, the deletion’s length', () => {
-    const openingsOf = laneOpeningsOf(groupFeatures(cfhFeatures()))
+    const openingsOf = laneIndelsOf(groupFeatures(cfhFeatures())).openings
     for (const [assemblyName, [ref, at]] of Object.entries(CARRIERS)) {
       expect(openingsOf(assemblyName, ref)).toEqual([
         { at: at + BEFORE, bp: DEL_END - DEL_START },
@@ -223,19 +222,19 @@ describe('a deletion the lane carries against the anchor', () => {
 
     test('open nothing as two records whose gap the lane places elsewhere', () => {
       const groups = groupFeatures([...meeting('a', 'b'), between])
-      expect(laneOpeningsOf(groups)('HG01123.1', ref)).toEqual([])
+      expect(laneIndelsOf(groups).openings('HG01123.1', ref)).toEqual([])
     })
 
     test('open the gap as one record, wherever the lane places it', () => {
       const groups = groupFeatures([...meeting('a', 'a'), between])
-      expect(laneOpeningsOf(groups)('HG01123.1', ref)).toEqual([
+      expect(laneIndelsOf(groups).openings('HG01123.1', ref)).toEqual([
         { at: at + 50_000, bp: 3_950_000 },
       ])
     })
 
     test('open the gap as two records when the lane places it nowhere', () => {
       const groups = groupFeatures(meeting('a', 'b'))
-      expect(laneOpeningsOf(groups)('HG01123.1', ref)).toEqual([
+      expect(laneIndelsOf(groups).openings('HG01123.1', ref)).toEqual([
         { at: at + 50_000, bp: 3_950_000 },
       ])
     })
@@ -407,10 +406,10 @@ describe('a deletion the lane carries against the anchor', () => {
         -1,
       ),
     ])
-    expect(laneOpeningsOf(groups)('HG01123.1', ref, true)).toEqual([
+    expect(laneIndelsOf(groups).openings('HG01123.1', ref, true)).toEqual([
       { at: at + AFTER, bp: DEL_END - DEL_START },
     ])
-    expect(laneOpeningsOf(groups)('HG01123.1', ref)).toEqual([])
+    expect(laneIndelsOf(groups).openings('HG01123.1', ref)).toEqual([])
     const frame = framesOf(groups, decide(groups, ['HG01123.1'])).get(
       'HG01123.1',
     )!
@@ -433,7 +432,7 @@ describe('a deletion the lane carries against the anchor', () => {
         { assemblyName: 'HG01123.1', refName: ref, start: at + 70_000 },
       ]),
     ])
-    expect(laneOpeningsOf(insertion)('HG01123.1', ref)).toEqual([])
+    expect(laneIndelsOf(insertion).openings('HG01123.1', ref)).toEqual([])
     const gene = (name: string, start: number, mateStart: number) =>
       new SimpleFeature({
         uniqueId: name,
@@ -454,7 +453,7 @@ describe('a deletion the lane carries against the anchor', () => {
       gene('a', WINDOW_START, at),
       gene('b', WINDOW_START + 90_000, at + 2000),
     ])
-    expect(laneOpeningsOf(genes)('HG01123.1', ref)).toEqual([])
+    expect(laneIndelsOf(genes).openings('HG01123.1', ref)).toEqual([])
   })
 
   test('fits a lane pinned to face the other way with the holes of the strand it is drawn on', () => {
@@ -470,7 +469,7 @@ describe('a deletion the lane carries against the anchor', () => {
     const rungFacing = (flipped?: boolean) =>
       decideLaneFrames({
         groups,
-        openingsOf: laneOpeningsOf(groups),
+        openingsOf: laneIndelsOf(groups).openings,
         assemblyNames: ['HG01123.1'],
         anchorX: new Map(groups.map(g => [g.key, px(anchorCenter(g))])),
         anchorCoordOf: g => ({ refName: 'chr1', coord: anchorCenter(g) }),
@@ -484,7 +483,7 @@ describe('a deletion the lane carries against the anchor', () => {
             : [{ lane: 'HG01123.1', refName: ref, flipped }],
       }).get('HG01123.1')!.rung
     expect(rungFacing()).toBe(1.5)
-    expect(laneOpeningsOf(groups)('HG01123.1', ref)).toEqual([
+    expect(laneIndelsOf(groups).openings('HG01123.1', ref)).toEqual([
       { at: at + 40_000, bp: 50_000 },
     ])
     expect(rungFacing(true)).toBe(1)
@@ -494,7 +493,7 @@ describe('a deletion the lane carries against the anchor', () => {
     const groups = groupFeatures(cfhFeatures())
     const d = decide(groups).get('HG01123.1')!
     const [ref, at] = CARRIERS['HG01123.1']
-    const openings = laneOpeningsOf(groups)('HG01123.1', ref)
+    const openings = laneIndelsOf(groups).openings('HG01123.1', ref)
     const frame = frameFromDecision(
       d,
       px(d.pivotAnchor.coord),
@@ -553,7 +552,7 @@ describe('what a lane states across a gap against the anchor', () => {
     const { openings, changes } = laneIndelsOf(groups)
     return {
       openings: openings('HG01123.1', ref),
-      changes: changes('HG01123.1', ref).map(withoutAnchor),
+      changes: changes('HG01123.1', ref).map(sizeOf),
     }
   }
 
@@ -708,14 +707,14 @@ describe('an inversion the lane carries against the anchor', () => {
       openings: openings('HG01123.1', ref),
       changes: changes('HG01123.1', ref)
         .filter(c => c.kind !== 'inversion')
-        .map(withoutAnchor),
+        .map(sizeOf),
     }
   }
   const named = (features: SimpleFeature[]) =>
     laneIndelsOf(groupFeatures(features))
       .changes('HG01123.1', ref)
       .filter(c => c.kind === 'inversion')
-      .map(withoutAnchor)
+      .map(sizeOf)
 
   test('an inversion names the anchor stretch inverted', () => {
     const [inversion] = laneIndelsOf(
@@ -870,6 +869,61 @@ describe('an inversion the lane carries against the anchor', () => {
     ])
   })
 
+  test('opens the anchor an inverted stretch lacks when its first piece overlaps the flank in the lane', () => {
+    const overlapping = [
+      run('l', 0, 0, 40_000, 1),
+      run('m1', 39_997, 539_997, 400_003, -1),
+      run('m2', 440_000, 40_000, 400_000, -1),
+      run('r', 840_000, 940_000, 40_000, 1),
+    ]
+    expect(stated(overlapping)).toEqual({
+      openings: [{ at: at + 40_000, bp: 100_000 }],
+      changes: [
+        { at: at + 40_000, laneBp: 0, anchorBp: 100_000, kind: 'deletion' },
+      ],
+    })
+  })
+
+  test('names a gap to a frame meeting only the lane’s own bases past its inverted piece', () => {
+    const changes = laneIndelsOf(
+      groupFeatures([
+        run('l', 0, 0, 40_000, 1),
+        run('m', 40_000, 40_000, 400_000, -1),
+        run('r', 540_000, 540_000, 40_000, 1),
+      ]),
+    ).changes('HG01123.1', ref)
+    const frame: RowFrame = {
+      refName: ref,
+      min: at + 300_000,
+      max: at + 700_000,
+      flipped: false,
+      fitMin: at + 300_000,
+      fitMax: at + 700_000,
+      alsoOn: [],
+      alsoOnMore: 0,
+      alsoAt: [],
+    }
+    expect(
+      shownLaneChanges({ frame, canon: r => r }, changes).map(changeLabel),
+    ).toEqual(['400 kb inversion', '100 kb replaced by 100 kb'])
+  })
+
+  test('states the lane’s own bases between two inverted pieces once, read on either strand', () => {
+    const changes = laneIndelsOf(
+      groupFeatures([
+        run('l', 0, 0, 100_000, 1),
+        run('b1', 100_000, 150_000, 50_000, -1),
+        run('b2', 180_000, 100_000, 50_000, -1),
+        run('r', 230_000, 200_000, 100_000, 1),
+      ]),
+    ).changes
+    for (const reversed of [false, true]) {
+      expect(
+        changes('HG01123.1', ref, reversed).map(changeLabel).toSorted(),
+      ).toEqual(['100 kb inversion', '30 kb insertion'])
+    }
+  })
+
   test('names nothing with one flank', () => {
     expect(
       named([run('l', 0, 0, 40_000, 1), run('m', 40_000, 40_000, 900_000, -1)]),
@@ -1000,7 +1054,7 @@ describe('a lane with pieces on both strands', () => {
     )
       .changes('HG01123.1', ref)
       .filter(c => c.kind === 'inversion')
-      .map(withoutAnchor)
+      .map(sizeOf)
     expect(inversions).toEqual([
       {
         at: at + 40_000,
@@ -1028,13 +1082,13 @@ describe('a pivot inside a hole', () => {
     record('b', 50_000, 52_000, [24_000, 26_000]),
   ])
   const pxOf = (bp: number) => bp / 100
-  const openings = laneOpeningsOf(groups)('L', 'ctg')
+  const openings = laneIndelsOf(groups).openings('L', 'ctg')
 
   test('keeps the lane where the alignment put it', () => {
     expect(openings).toEqual([{ at: 24_000, bp: 30_000 }])
     const d = decideLaneFrames({
       groups,
-      openingsOf: laneOpeningsOf(groups),
+      openingsOf: laneIndelsOf(groups).openings,
       assemblyNames: ['L'],
       anchorX: new Map(groups.map(g => [g.key, pxOf(anchorCenter(g))])),
       anchorCoordOf: g => ({ refName: 'chr1', coord: anchorCenter(g) }),

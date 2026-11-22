@@ -50,8 +50,8 @@ import {
 } from '../src/MultiWaySyntenyDisplay/laneStack.ts'
 import {
   groupFeatures,
-  laneOpeningsOf,
   laneFetchRegion,
+  laneIndelsOf,
   rowAssembliesOf,
   tickIntervalFor,
 } from '../src/MultiWaySyntenyDisplay/layoutMultiWay.ts'
@@ -189,7 +189,7 @@ function ms(f: () => void) {
 let previous = new Map<string, LaneDecision | undefined>()
 let span = 88_000
 const geneCache = new Map<string, LaneGene[]>()
-const openingsOf = laneOpeningsOf(groups)
+const openingsOf = laneIndelsOf(groups).openings
 for (let step = 0; step < 19; step++, span *= 1.35) {
   const start = CENTER - span / 2
   const end = CENTER + span / 2

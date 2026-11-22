@@ -3,6 +3,7 @@ import { pathToFileURL } from 'node:url'
 
 import Plugin from '@jbrowse/core/Plugin'
 import PluginManager from '@jbrowse/core/PluginManager'
+import { SimpleFeature } from '@jbrowse/core/util'
 import { registerComparativeAdapters } from '@jbrowse/plugin-comparative-adapters/tables'
 
 import * as getFeatures from './MultiWaySyntenyDisplay/MultiWayGetFeatures.ts'
@@ -41,14 +42,12 @@ const SYRI = {
 
 test('a source answering lane pairs on the anchor exports its lanes stacked by structure, as the display stacks them', async () => {
   const stacked = await multiwayTables(engine(['lanePairsOnAnchor']), SYRI)
-  expect(stacked.lanes.assembly).toEqual([
-    'Col-0',
-    'Kyo',
-    'Sha',
-    'Eri',
-    'Ler',
-    'Cvi',
-  ])
+  // The chain starts from the lane whose profile is nearest the anchor's: in
+  // bins over Chr1, Kyo leaves 4.3 unaligned forward, 0.4 reversed and 1.6
+  // carried (6.3), against Cvi 8.9, Eri 9.0, Sha 10.8 and Ler 11.8
+  const [anchor, nearest, ...rest] = stacked.lanes.assembly
+  expect([anchor, nearest]).toEqual(['Col-0', 'Kyo'])
+  expect(rest.toSorted()).toEqual(['Cvi', 'Eri', 'Ler', 'Sha'])
 })
 
 test('with genome lanes the anchor exports first whatever rows.sort says', async () => {
@@ -83,6 +82,30 @@ test('a reference-anchored file not declaring lane pairs on the anchor fails the
   await expect(multiwayTables(engine([]), SYRI)).rejects.toThrow(
     /no alignments between "Kyo" and "Cvi"/,
   )
+})
+
+test('the exported ribbon key names the repeat color only for a track holding an array record', async () => {
+  const keyOf = async (array: boolean) => {
+    const real = getFeatures.executeMultiWayFeatures
+    const spy = jest
+      .spyOn(getFeatures, 'executeMultiWayFeatures')
+      .mockImplementation(async args => {
+        const features = await real(args)
+        return array && args.opts?.targetAssemblyName === undefined
+          ? features.map((f, i) =>
+              i === 0 ? new SimpleFeature({ ...f.toJSON(), type: 'array' }) : f,
+            )
+          : features
+      })
+    try {
+      return (await multiwayTables(engine(['lanePairsOnAnchor']), SYRI)).legend
+        .label
+    } finally {
+      spy.mockRestore()
+    }
+  }
+  expect(await keyOf(true)).toContain('Repeat, copies not paired')
+  expect(await keyOf(false)).not.toContain('Repeat, copies not paired')
 })
 
 test('a failed lane-pair fetch fails the export instead of reading as no alignments', async () => {

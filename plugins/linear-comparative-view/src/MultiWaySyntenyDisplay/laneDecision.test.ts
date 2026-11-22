@@ -11,7 +11,7 @@ import {
 import {
   clipGroupToAnchor,
   groupFeatures,
-  laneOpeningsOf,
+  laneIndelsOf,
   rowFrameX,
 } from './layoutMultiWay.ts'
 
@@ -71,7 +71,7 @@ function decide(
     anchorReversed ? WIDTH - px(bp - panBp) : px(bp - panBp)
   return decideLaneFrames({
     groups,
-    openingsOf: laneOpeningsOf(groups),
+    openingsOf: laneIndelsOf(groups).openings,
     assemblyNames,
     anchorX: new Map(
       groups.map(g => [g.key, pxOf((g.anchor.start + g.anchor.end) / 2)]),
@@ -802,7 +802,7 @@ describe('the placement', () => {
     const zoomedPx = (bp: number) => (bp / 850) * WIDTH
     const zoomed = decideLaneFrames({
       groups: dense,
-      openingsOf: laneOpeningsOf(dense),
+      openingsOf: laneIndelsOf(dense).openings,
       assemblyNames: ['peach'],
       anchorX: new Map(
         dense.map(g => [g.key, zoomedPx((g.anchor.start + g.anchor.end) / 2)]),

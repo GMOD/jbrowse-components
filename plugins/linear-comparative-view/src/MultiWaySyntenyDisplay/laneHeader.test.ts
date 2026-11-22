@@ -230,10 +230,25 @@ describe('the changes chip', () => {
     },
   })
   const deletions: LaneChange[] = [
-    { at: 10_000, laneBp: 0, anchorBp: 18_000, kind: 'deletion', anchor: ON },
-    { at: 50_000, laneBp: 0, anchorBp: 30_000, kind: 'deletion', anchor: ON },
+    {
+      at: 10_000,
+      laneEnd: 10_000,
+      laneBp: 0,
+      anchorBp: 18_000,
+      kind: 'deletion',
+      anchor: ON,
+    },
+    {
+      at: 50_000,
+      laneEnd: 50_000,
+      laneBp: 0,
+      anchorBp: 30_000,
+      kind: 'deletion',
+      anchor: ON,
+    },
     {
       at: 400_000,
+      laneEnd: 400_000,
       laneBp: 0,
       anchorBp: 1_234_567,
       kind: 'deletion',
@@ -257,6 +272,7 @@ describe('the changes chip', () => {
         ...deletions,
         {
           at: 20_000,
+          laneEnd: 74_000,
           laneBp: 54_000,
           anchorBp: 0,
           kind: 'insertion',
@@ -264,6 +280,7 @@ describe('the changes chip', () => {
         },
         {
           at: 140_000,
+          laneEnd: 151_000,
           laneBp: 11_000,
           anchorBp: 0,
           kind: 'insertion',
@@ -271,6 +288,7 @@ describe('the changes chip', () => {
         },
         {
           at: 300_000,
+          laneEnd: 390_000,
           laneBp: 90_000,
           anchorBp: 0,
           kind: 'insertion',
@@ -296,6 +314,7 @@ describe('the changes chip', () => {
       laneHeaderRows([anchorLane, wide], 2000, '', undefined, undefined, () => [
         {
           at: 1000,
+          laneEnd: 1000,
           laneBp: 0,
           anchorBp: 1_234_567,
           kind: 'deletion',
@@ -313,6 +332,7 @@ describe('the changes chip', () => {
       changesOf([
         {
           at: 20_000,
+          laneEnd: 69_051,
           laneBp: 49_051,
           anchorBp: 121_555,
           kind: 'replacement',
@@ -320,6 +340,7 @@ describe('the changes chip', () => {
         },
         {
           at: 60_000,
+          laneEnd: 154_146,
           laneBp: 94_146,
           anchorBp: 17,
           kind: 'replacement',
@@ -334,6 +355,7 @@ describe('the changes chip', () => {
       changesOf([
         {
           at: 100_000,
+          laneEnd: 1_000_000,
           laneBp: 900_000,
           anchorBp: 900_000,
           kind: 'inversion',

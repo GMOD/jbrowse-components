@@ -720,6 +720,7 @@ test('a lane menu goes to each change its chip names, largest first', () => {
   const changes: LaneChange[] = [
     {
       at: 0,
+      laneEnd: 0,
       laneBp: 0,
       anchorBp: 935_000,
       kind: 'deletion',
@@ -727,6 +728,7 @@ test('a lane menu goes to each change its chip names, largest first', () => {
     },
     {
       at: 0,
+      laneEnd: 30_000,
       laneBp: 30_000,
       anchorBp: 0,
       kind: 'insertion',

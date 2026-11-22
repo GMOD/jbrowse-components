@@ -40,7 +40,7 @@ import {
   SPLIT_AT_GAP_BP,
   groupFeatures,
   groupRunsOnRow,
-  laneOpeningsOf,
+  laneIndelsOf,
   rowAssembliesOf,
   rowFrameX,
 } from '../src/MultiWaySyntenyDisplay/layoutMultiWay.ts'
@@ -128,7 +128,7 @@ const anchorX = new Map(
 )
 const decisions = decideLaneFrames({
   groups,
-  openingsOf: laneOpeningsOf(groups),
+  openingsOf: laneIndelsOf(groups).openings,
   assemblyNames: lanes,
   anchorX,
   anchorCoordOf: g => ({

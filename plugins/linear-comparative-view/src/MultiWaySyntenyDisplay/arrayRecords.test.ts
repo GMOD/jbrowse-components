@@ -195,6 +195,26 @@ describe('an array record states no change', () => {
     expect(openings('HG00126#1', 'JBHIKU010000040.1')).toEqual([])
   })
 
+  test('a lone array of the other strand bounds the gap between two pieces of one record, on either strand', () => {
+    const reversedArray: Row[] = [
+      ['match', 1, 0, 40_000, 0, 40_000, 0],
+      ['array', -1, 40_000, 440_000, 40_000, 440_000, 1, 1, 2],
+      ['match', 1, 540_000, 580_000, 440_000, 480_000, 0],
+    ]
+    const forwardArray: Row[] = [
+      ['match', -1, 540_000, 580_000, 0, 40_000, 0],
+      ['array', 1, 40_000, 440_000, 40_000, 440_000, 1, 1, 2],
+      ['match', -1, 0, 40_000, 440_000, 480_000, 0],
+    ]
+    for (const rows of [reversedArray, forwardArray]) {
+      const { changes, openings } = laneIndelsOf(lane('L', 'ctg', rows))
+      for (const reversed of [false, true]) {
+        expect(changes('L', 'ctg', reversed)).toEqual([])
+        expect(openings('L', 'ctg', reversed)).toEqual([])
+      }
+    }
+  })
+
   test('P1/DAZ reads no inversion from a forward array in a lane drawn reversed', () => {
     const { changes } = laneIndelsOf(lane('HG002#1', 'chrY', DAZ_HG002))
     expect(
@@ -211,7 +231,7 @@ describe('an array record states no change', () => {
         expect(
           arrays.filter(
             ([, , , , start, end]) =>
-              start <= change.at + change.laneBp && end >= change.at,
+              start <= change.laneEnd && end >= change.at,
           ),
         ).toEqual([])
       }

@@ -8,8 +8,8 @@ import {
   CIGAR_X,
 } from '@jbrowse/cigar-utils'
 
-import { getMate } from '../syntenyMate.ts'
-import { forEachLaneGap } from './laneGaps.ts'
+import { getMate, isArrayRecord } from '../syntenyMate.ts'
+import { groupFeatures, laneIndelsOf } from './layoutMultiWay.ts'
 
 import type { AlignmentOpsById } from './alignmentOps.ts'
 import type { Feature } from '@jbrowse/core/util'
@@ -56,7 +56,11 @@ function anchorAxis(features: readonly Feature[]): AnchorAxis {
  * it aligns to forward, then reversed, then how much sequence it carries there
  * that the anchor lacks, in bins' worth, so an insertion weighs what a
  * deletion of its length does. A bin aligned reversed differs from a forward
- * one in two bands, so it weighs twice a deleted bin
+ * one in two bands, so it weighs twice a deleted bin. The sequence between
+ * pieces is the lane header's gap reading (`laneIndelsOf`) on the strand
+ * holding most bp of each contig, which need not be the strand the lane is
+ * drawn on; an array record pairs no copy, so it aligns nothing and only
+ * bounds gaps
  */
 export function laneProfiles(
   features: readonly Feature[],
@@ -64,85 +68,71 @@ export function laneProfiles(
 ) {
   const axis = anchorAxis(features)
   const profiles = new Map<string, Float64Array>()
+  const contigs = new Map<
+    string,
+    { lane: string; refName: string; strandBp: number }
+  >()
   for (const f of features) {
-    const lane = getMate(f)?.assemblyName
-    if (lane !== undefined) {
+    const mate = getMate(f)
+    if (mate !== undefined) {
+      const lane = mate.assemblyName
       const profile = profiles.get(lane) ?? new Float64Array(3 * BINS)
       profiles.set(lane, profile)
-      const refName: string = f.get('refName')
-      const band = f.get('strand') === -1 ? BINS : 0
-      const cover = (from: number, to: number) => {
-        for (let bp = from; bp < to;) {
-          const bin = axis.binOf(refName, bp)
-          const next =
-            bin === BINS - 1 ? to : Math.min(to, axis.binEnd(refName, bin))
-          const end = Math.max(next, bp + 1)
-          profile[band + bin]! += (end - bp) / axis.binBp
-          bp = end
+      if (!isArrayRecord(f)) {
+        const reversed = f.get('strand') === -1
+        const contigKey = `${lane}\t${mate.refName}`
+        const contig = contigs.get(contigKey) ?? {
+          lane,
+          refName: mate.refName,
+          strandBp: 0,
         }
-      }
-      const ops = opsById.get(f.id())
-      let bp: number = f.get('start')
-      if (!ops) {
-        cover(bp, f.get('end'))
-      } else {
-        for (let k = 0; k < ops.length; k++) {
-          const len = ops[k]! >>> 4
-          const op = ops[k]! & 0xf
-          if (op === CIGAR_RUN) {
-            k++
-            cover(bp, bp + len)
-            bp += len
-          } else if (op === CIGAR_M || op === CIGAR_EQ || op === CIGAR_X) {
-            cover(bp, bp + len)
-            bp += len
-          } else if (op === CIGAR_D || op === CIGAR_N) {
-            bp += len
-          } else if (op === CIGAR_I) {
-            profile[2 * BINS + axis.binOf(refName, bp)]! += len / axis.binBp
+        contig.strandBp += (reversed ? -1 : 1) * (mate.end - mate.start)
+        contigs.set(contigKey, contig)
+        const refName: string = f.get('refName')
+        const band = reversed ? BINS : 0
+        const cover = (from: number, to: number) => {
+          for (let bp = from; bp < to;) {
+            const bin = axis.binOf(refName, bp)
+            const next =
+              bin === BINS - 1 ? to : Math.min(to, axis.binEnd(refName, bin))
+            const end = Math.max(next, bp + 1)
+            profile[band + bin]! += (end - bp) / axis.binBp
+            bp = end
+          }
+        }
+        const ops = opsById.get(f.id())
+        let bp: number = f.get('start')
+        if (!ops) {
+          cover(bp, f.get('end'))
+        } else {
+          for (let k = 0; k < ops.length; k++) {
+            const len = ops[k]! >>> 4
+            const op = ops[k]! & 0xf
+            if (op === CIGAR_RUN) {
+              k++
+              cover(bp, bp + len)
+              bp += len
+            } else if (op === CIGAR_M || op === CIGAR_EQ || op === CIGAR_X) {
+              cover(bp, bp + len)
+              bp += len
+            } else if (op === CIGAR_D || op === CIGAR_N) {
+              bp += len
+            } else if (op === CIGAR_I) {
+              profile[2 * BINS + axis.binOf(refName, bp)]! += len / axis.binBp
+            }
           }
         }
       }
     }
   }
-  const pieces = Map.groupBy(features, f => {
-    const mate = getMate(f)
-    return `${mate?.assemblyName}\t${mate?.refName}`
-  })
-  for (const group of pieces.values()) {
-    const lane = getMate(group[0]!)?.assemblyName
-    const profile = lane === undefined ? undefined : profiles.get(lane)
-    if (profile) {
-      const sorted = group
-        .map(f => {
-          const mate = getMate(f)!
-          return {
-            lane: {
-              start: mate.start,
-              end: mate.end,
-              orientation: f.get('strand') === -1 ? -1 : 1,
-            },
-            anchor: {
-              refName: f.get('refName'),
-              start: f.get('start'),
-              end: f.get('end'),
-            },
-          }
-        })
-        .sort((a, b) => a.lane.start - b.lane.start)
-      for (const orientation of [1, -1]) {
-        forEachLaneGap(
-          sorted.filter(p => p.lane.orientation === orientation),
-          (left, _right, laneGap, anchorGap) => {
-            const excess =
-              anchorGap === undefined ? 0 : laneGap - Math.max(0, anchorGap)
-            if (excess > 0) {
-              const at = orientation < 0 ? left.anchor.start : left.anchor.end
-              profile[2 * BINS + axis.binOf(left.anchor.refName, at)]! +=
-                excess / axis.binBp
-            }
-          },
-        )
+  const { changes } = laneIndelsOf(groupFeatures(features))
+  for (const { lane, refName, strandBp } of contigs.values()) {
+    const profile = profiles.get(lane)!
+    for (const change of changes(lane, refName, strandBp < 0)) {
+      if (change.kind !== 'inversion' && change.laneBp > 0) {
+        profile[
+          2 * BINS + axis.binOf(change.anchor.refName, change.anchor.start)
+        ]! += change.laneBp / axis.binBp
       }
     }
   }

@@ -31,7 +31,7 @@ import {
   SPLIT_AT_GAP_BP,
   clipGroupToAnchor,
   groupFeatures,
-  laneOpeningsOf,
+  laneIndelsOf,
   openedBp,
   rowAssembliesOf,
 } from '../src/MultiWaySyntenyDisplay/layoutMultiWay.ts'
@@ -111,7 +111,7 @@ const fetched = groupFeatures(
     .filter(f => !f.get('spansWindow'))
     .map(f => new SimpleFeature(f.toJSON())),
 )
-const openingsOf = laneOpeningsOf(fetched)
+const openingsOf = laneIndelsOf(fetched).openings
 
 const rungs = new Map<string, number[]>(MATES.map(m => [m, []]))
 const undrawn = new Map(MATES.map(m => [m, { all: 0, missed: 0 }]))

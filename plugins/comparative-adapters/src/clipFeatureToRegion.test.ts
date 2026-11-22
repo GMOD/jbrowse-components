@@ -174,6 +174,17 @@ test('a feature with no mate is not a pairwise record and passes through', () =>
   expect(clipFeatureToRegion(f, { start: 2, end: 4 })).toEqual([f])
 })
 
+test('an array record pairs no base with its mate and passes through whole, whatever the window and options', () => {
+  const array = record({ type: 'array', hapWalks: 2.8, refWalks: 1 })
+  for (const window of [
+    { start: 1100, end: 1300 },
+    { start: 900, end: 1200 },
+  ]) {
+    expect(clipFeatureToRegion(array, window)).toEqual([array])
+    expect(clipFeatureToRegion(array, window, 10_000, true)).toEqual([array])
+  }
+})
+
 // own axis 1000 + 25000 + 1000 + 200 + 500 bp, mate axis 1000 + 1000 + 500:
 // one deletion past the 10 kb bound and one well under it
 const GAPPED = '1000M25000D1000M200D500M'

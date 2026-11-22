@@ -94,7 +94,7 @@ import {
 import { ribbonColorScales } from './MultiWaySyntenyDisplay/legend.ts'
 import { buildRibbonGeometry } from './MultiWaySyntenyDisplay/multiwayGeometry.ts'
 import { MULTIWAY_FADE_THIN } from './MultiWaySyntenyDisplay/multiwayRenderTypes.ts'
-import { getMate, getRecordName } from './syntenyMate.ts'
+import { getMate, getRecordName, isArrayRecord } from './syntenyMate.ts'
 
 import type { WindowDeletion } from './MultiWaySyntenyDisplay/MultiWayGetFeatures.ts'
 import type {
@@ -1074,6 +1074,7 @@ export async function multiwayTables(
         descending: settings.descending,
         paint: ribbon.paint,
         against,
+        repeats: features.some(isArrayRecord),
       }),
     ),
     height: laneGeom.contentHeight,

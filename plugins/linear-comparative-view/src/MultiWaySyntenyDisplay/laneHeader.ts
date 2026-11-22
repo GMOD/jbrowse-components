@@ -103,7 +103,7 @@ export function shownLaneChanges(
   return region
     ? stated
         .filter(
-          ({ at, laneBp }) => at <= region.end && at + laneBp >= region.start,
+          ({ at, laneEnd }) => at <= region.end && laneEnd >= region.start,
         )
         .toSorted((a, b) => changeBp(b) - changeBp(a))
     : []

@@ -37,7 +37,7 @@ import {
 } from '../src/MultiWaySyntenyDisplay/laneStack.ts'
 import {
   groupFeatures,
-  laneOpeningsOf,
+  laneIndelsOf,
   rowAssembliesOf,
 } from '../src/MultiWaySyntenyDisplay/layoutMultiWay.ts'
 import { buildRibbonGeometry } from '../src/MultiWaySyntenyDisplay/multiwayGeometry.ts'
@@ -162,7 +162,7 @@ function ms(f: () => void) {
 const minOf = (f: () => void) =>
   Math.min(...Array.from({ length: 9 }, () => ms(f)))
 
-const openingsOf = laneOpeningsOf(groups)
+const openingsOf = laneIndelsOf(groups).openings
 for (const span of [88_000, 1_000_000, 19_500_000]) {
   const start = CENTER - span / 2
   const end = CENTER + span / 2

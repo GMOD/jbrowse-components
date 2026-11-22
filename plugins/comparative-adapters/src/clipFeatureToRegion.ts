@@ -192,7 +192,9 @@ function clippedFeature(
  * whose gap between two runs holds the whole window, a deletion longer than
  * the window, yields that gap alone, marked `spansWindow`: its own extent the
  * deleted stretch, its mate's the lane bp between the runs. A feature with no
- * `mate` is not a pairwise record and passes through whole.
+ * `mate` is not a pairwise record and passes through whole, as does an array
+ * record (type 'array'), which pairs no copy of its repeat with the anchor, so
+ * no base of one side stands for a base of the other to cut at.
  */
 export function clipFeatureToRegion(
   feature: Feature,
@@ -201,7 +203,7 @@ export function clipFeatureToRegion(
   keepAlignment = false,
 ): Feature[] {
   const mate = mateOf(feature)
-  if (mate === undefined) {
+  if (mate === undefined || feature.get('type') === 'array') {
     return [feature]
   } else {
     return clipIntervals(

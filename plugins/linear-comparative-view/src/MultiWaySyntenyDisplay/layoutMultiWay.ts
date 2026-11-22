@@ -104,16 +104,17 @@ export interface LaneOpening {
 }
 
 /**
- * What a lane's records state over lane bp `at` to `at + laneBp`: across a gap
+ * What a lane's records state over lane bp `at` to `laneEnd`: across a gap
  * between two pieces, `anchorBp` of anchor no piece between them holds against
- * `laneBp` of the lane's own, a deletion where the lane's side is 0, an
- * insertion where the anchor's is, and one replaced by the other where both
- * have bases; or an inverted run holding `anchorBp` of anchor. `anchor` is
- * where it sits on the anchor: the stretch replaced or inverted, or the point
- * of an insertion.
+ * the `laneBp` of the gap no piece holds, the lane's own, a deletion where the
+ * lane's side is 0, an insertion where the anchor's is, and one replaced by
+ * the other where both have bases; or an inverted run holding `anchorBp` of
+ * anchor over `laneBp` of lane. `anchor` is where it sits on the anchor: the
+ * stretch replaced or inverted, or the point of an insertion.
  */
 export interface LaneChange {
   at: number
+  laneEnd: number
   laneBp: number
   anchorBp: number
   kind: 'deletion' | 'insertion' | 'replacement' | 'inversion'
@@ -274,6 +275,7 @@ function laneInversionsOf(sorted: readonly PlacedPiece[]) {
           found.push({
             change: {
               at: run.laneStart,
+              laneEnd: run.laneEnd,
               laneBp: run.laneEnd - run.laneStart,
               anchorBp: held,
               kind: 'inversion',
@@ -457,12 +459,6 @@ function placedAnchorOf(groups: MultiWayGroup[]) {
 
 type PlacedPiece = { lane: MatePlacement; anchor: MultiWayPlacement }
 
-/** a gap's change, and where the lane stretch it spans ends */
-interface StatedGap {
-  change: LaneChange
-  laneEnd: number
-}
-
 /** the stretches of `start`..`end` that `spans` leave uncovered */
 function uncoveredSpans(
   spans: readonly { start: number; end: number }[],
@@ -480,13 +476,36 @@ function uncoveredSpans(
   return from < end ? [...out, { start: from, end }] : out
 }
 
+/** the part of a piece over lane bp `start`..`end`, its anchor cut alike */
+function laneClipped(
+  { lane, anchor }: PlacedPiece,
+  start: number,
+  end: number,
+) {
+  const from = Math.max(start, lane.start)
+  const to = Math.min(end, lane.end)
+  const perLaneBp =
+    (anchor.end - anchor.start) / Math.max(lane.end - lane.start, 1)
+  const [head, tail] =
+    lane.orientation < 0
+      ? [lane.end - to, from - lane.start]
+      : [from - lane.start, lane.end - to]
+  return {
+    lane: { start: from, end: to },
+    anchor: {
+      start: anchor.start + head * perLaneBp,
+      end: anchor.end - tail * perLaneBp,
+    },
+  }
+}
+
 /**
  * What a lane states across each gap between two consecutive pieces of one
  * contig read on `orientation`, the strand the lane is drawn on, in one fetch
- * window. Pieces of the other strand never bound a gap; lying in one, they
- * hold what of its anchor stretch they align to. The rest of that stretch is
- * the anchor's side and the lane's bp holding none of it the lane's side,
- * one change worded by both. That holds within one record, and across two
+ * window. Pieces of the other strand never bound a gap; lying in one, even
+ * in part, they hold what of its anchor stretch their part in it aligns to.
+ * The rest of that stretch is the anchor's side and the lane's bp holding
+ * none of it the lane's side, one change worded by both. That holds within one record, and across two
  * where the lane places the rest nowhere; two records meeting where it went
  * elsewhere in the lane are a rearrangement's breakpoint, whose anchor
  * distance runs to megabases. An opening is the anchor bp between the two
@@ -510,7 +529,7 @@ function laneGapsOf(
     p => !arrayPiece(p) && p.lane.orientation !== orientation,
   )
   const openings: LaneOpening[] = []
-  const gaps: StatedGap[] = []
+  const gaps: LaneChange[] = []
   forEachLaneGap(drawn, (left, right, laneGap, anchorGap) => {
     const [lo, hi] =
       orientation < 0
@@ -519,8 +538,11 @@ function laneGapsOf(
     const inGap = turned.filter(
       p =>
         p.anchor.refName === left.anchor.refName &&
-        p.lane.start >= left.lane.end &&
-        p.lane.end <= right.lane.start,
+        p.lane.end > left.lane.end &&
+        p.lane.start < right.lane.start,
+    )
+    const parts = inGap.map(p =>
+      laneClipped(p, left.lane.end, right.lane.start),
     )
     if (
       anchorGap !== undefined &&
@@ -543,17 +565,17 @@ function laneGapsOf(
       }
       const stretch = [{ start: lo, end: hi }]
       const held = coveredBp(
-        inGap.map(p => p.anchor),
+        parts.map(p => p.anchor),
         stretch,
       )
-      const heldLane = inGap.reduce(
+      const heldLane = parts.reduce(
         (sum, p) =>
           sum +
           ((p.lane.end - p.lane.start) * coveredBp([p.anchor], stretch)) /
             Math.max(p.anchor.end - p.anchor.start, 1),
         0,
       )
-      const anchorBp = Math.max(anchorGap, 0) - held
+      const anchorBp = Math.round(Math.max(anchorGap, 0) - held)
       const laneBp = Math.max(0, Math.round(Math.max(laneGap, 0) - heldLane))
       if (
         anchorGap >= 0 &&
@@ -561,19 +583,17 @@ function laneGapsOf(
         Math.max(anchorBp, laneBp) >= SPLIT_AT_GAP_BP
       ) {
         gaps.push({
-          change: {
-            at,
-            laneBp,
-            anchorBp,
-            kind:
-              laneBp === 0
-                ? 'deletion'
-                : anchorBp === 0
-                  ? 'insertion'
-                  : 'replacement',
-            anchor: { refName: left.anchor.refName, start: lo, end: hi },
-          },
+          at,
           laneEnd: right.lane.start,
+          laneBp,
+          anchorBp,
+          kind:
+            laneBp === 0
+              ? 'deletion'
+              : anchorBp === 0
+                ? 'insertion'
+                : 'replacement',
+          anchor: { refName: left.anchor.refName, start: lo, end: hi },
         })
       }
     }
@@ -582,12 +602,12 @@ function laneGapsOf(
 }
 
 /** whether two gaps' anchor stretches or lane stretches share a base */
-function sameGap(a: StatedGap, b: StatedGap) {
+function sameGap(a: LaneChange, b: LaneChange) {
   return (
-    (a.change.anchor.refName === b.change.anchor.refName &&
-      Math.min(a.change.anchor.end, b.change.anchor.end) >
-        Math.max(a.change.anchor.start, b.change.anchor.start)) ||
-    Math.min(a.laneEnd, b.laneEnd) > Math.max(a.change.at, b.change.at)
+    (a.anchor.refName === b.anchor.refName &&
+      Math.min(a.anchor.end, b.anchor.end) >
+        Math.max(a.anchor.start, b.anchor.start)) ||
+    Math.min(a.laneEnd, b.laneEnd) > Math.max(a.at, b.at)
   )
 }
 
@@ -651,10 +671,8 @@ export function laneIndelsOf(groups: MultiWayGroup[]) {
     for (const { orientation, openings, gaps } of strands) {
       const other = strands.find(s => s.orientation !== orientation)!.gaps
       const stated = [
-        ...gaps.map(gap => gap.change),
-        ...other
-          .filter(gap => !gaps.some(own => sameGap(own, gap)))
-          .map(gap => gap.change),
+        ...gaps,
+        ...other.filter(gap => !gaps.some(own => sameGap(own, gap))),
         ...inversions,
       ]
       const strandKey = `${key}\u0000${orientation}`
@@ -686,10 +704,6 @@ export function laneIndelsOf(groups: MultiWayGroup[]) {
   }
 }
 
-export function laneOpeningsOf(groups: MultiWayGroup[]) {
-  return laneIndelsOf(groups).openings
-}
-
 function matesOf(feature: Feature): SyntenyGroupedMate[] {
   const mates = getMates(feature)
   const mate = getMate(feature)
@@ -715,7 +729,7 @@ function groupKeyOf(feature: Feature) {
   return syntenyId === undefined ? feature.id() : String(syntenyId)
 }
 
-export function groupFeatures(features: Feature[]) {
+export function groupFeatures(features: readonly Feature[]) {
   const byKey = new Map<string, MultiWayGroup>()
   const seen = new Map<string, number[]>()
   for (const feature of features) {
