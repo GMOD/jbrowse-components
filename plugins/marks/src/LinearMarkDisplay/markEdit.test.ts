@@ -539,6 +539,18 @@ describe('an identity color naming no field', () => {
     })
   })
 
+  it('takes the scale a typed field implies once a field is held', () => {
+    const itemRgb: DraftMark = {
+      mark: 'rect',
+      encoding: {
+        color: { field: 'itemRgb', scale: { type: 'identity' } },
+      },
+    }
+    expect(
+      withChannel(itemRgb, 'color', 'score', FIELDS).encoding?.color,
+    ).toEqual({ field: 'score', scale: { type: 'linear' } })
+  })
+
   it('reads as no scale under a constant', () => {
     const constant = {
       encoding: { color: { value: 'red', scale: { type: 'identity' } } },

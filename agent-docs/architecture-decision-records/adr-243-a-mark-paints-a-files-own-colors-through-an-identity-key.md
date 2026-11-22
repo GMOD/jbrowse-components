@@ -45,9 +45,11 @@ of the multi-row worker against 0.46-0.50x for a key over the column.
   field's CSS colors, so from 2026-11-11 the picker offers it, with its
   `domain` and `names`. From 2026-11-21 an identity naming no field shows as
   identity, the one scale offered until a field is typed; typing one keeps
-  the scale with its `domain` and `names`. The key's name for no value is
-  dropped on a switch to identity, since its key lists `domain` alone, and
-  shown under identity only while a value is held, so it can be cleared.
+  the scale with its `domain` and `names`. An identity already reading a
+  field takes `linear` for a numeric field typed over it, as `ordinal`
+  does. The key's name for no value is dropped on a switch to identity,
+  since its key lists `domain` alone, and shown under identity only while a
+  value is held, so it can be cleared.
 
 ## Consequences
 

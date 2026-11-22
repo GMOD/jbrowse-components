@@ -456,9 +456,9 @@ function spellsConstant(channel: 'color' | 'shape', value: string) {
  * the scan found is a field whatever it spells. A field edit keeps the scale
  * it is read through and that scale's members; only a field the scan types
  * the other way — a number under `ordinal`, text under a ramp — takes the
- * scale it implies, the rule Color by follows. An identity scale is kept
- * whatever the field, with or without one held before, since the user chose
- * it to read colors.
+ * scale it implies, the rule Color by follows. An identity scale naming no
+ * field keeps itself whatever field is typed, since the user chose it to read
+ * colors; one that held a field follows the rule above.
  *
  * `base` is the channel as declared before the edit began, so a value typed
  * through a constant on its way to a field (`red` on the way to `reads`) keeps
@@ -494,7 +494,7 @@ export function withChannel(
         scale: { ...heldScale, type: 'ordinal' },
       })
     }
-    return heldScale?.type === IDENTITY_SCALE ||
+    return (heldScale?.type === IDENTITY_SCALE && !heldField) ||
       (heldField &&
         (implied === undefined ||
           readsNumbers(implied) === readsNumbers(heldScale?.type)))
