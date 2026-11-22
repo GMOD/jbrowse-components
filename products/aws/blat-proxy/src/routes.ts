@@ -33,6 +33,11 @@ export interface ProxyRoute {
 
 const KEY_REJECTED = 'the apiKey may be invalid or rate-limited'
 
+const BACKEND_DOWN = /Error(?:\s|\\x20)+in(?:\s|\\x20)+TCP/i
+
+const BACKEND_DOWN_REASON =
+  'UCSC backend server is unavailable (connection refused); retry later'
+
 export const BLAT_ROUTE: ProxyRoute = {
   name: 'blat',
   defaultUpstreamUrl: DEFAULT_UPSTREAM_URL,
@@ -44,7 +49,9 @@ export const BLAT_ROUTE: ProxyRoute = {
   // Turnstile challenge, or a kent errAbort page
   rejectReason: text =>
     looksLikeHtml(text)
-      ? `hgBlat returned HTML (CAPTCHA challenge or error page) instead of JSON — ${KEY_REJECTED}`
+      ? BACKEND_DOWN.test(text)
+        ? `hgBlat: ${BACKEND_DOWN_REASON}`
+        : `hgBlat returned HTML (CAPTCHA challenge or error page) instead of JSON — ${KEY_REJECTED}`
       : undefined,
 }
 
@@ -91,9 +98,11 @@ export const ISPCR_ROUTE: ProxyRoute = {
   // A "No matches" page relays through as a 200 — an empty result is an answer,
   // and the client renders it as one.
   rejectReason: text =>
-    CHALLENGE_MARKERS.test(text)
-      ? `hgPcr returned a CAPTCHA challenge instead of results — ${KEY_REJECTED}`
-      : undefined,
+    BACKEND_DOWN.test(text)
+      ? `hgPcr: ${BACKEND_DOWN_REASON}`
+      : CHALLENGE_MARKERS.test(text)
+        ? `hgPcr returned a CAPTCHA challenge instead of results — ${KEY_REJECTED}`
+        : undefined,
 }
 
 export const ROUTES = [BLAT_ROUTE, ISPCR_ROUTE]
