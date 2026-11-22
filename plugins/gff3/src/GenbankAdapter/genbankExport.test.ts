@@ -161,6 +161,7 @@ test("NCBI GFF3's hyphenated source attributes take INSDC's qualifier names", as
       'lat-lon': '30.6 N 114.3 E',
       'plasmid-name': 'pO157',
       'culture-collection': 'ATCC:700927',
+      'metagenome-source': 'marine metagenome',
     }),
   ).toEqual([
     '                     /organism="ecoli"',
@@ -171,6 +172,7 @@ test("NCBI GFF3's hyphenated source attributes take INSDC's qualifier names", as
     '                     /lat_lon="30.6 N 114.3 E"',
     '                     /plasmid="pO157"',
     '                     /culture_collection="ATCC:700927"',
+    '                     /metagenome_source="marine metagenome"',
   ])
 })
 
@@ -202,6 +204,109 @@ test('a source with its own /organelle keeps it over the genome attribute', asyn
     '                     /organism="ecoli"',
     '                     /mol_type="genomic DNA"',
     '                     /organelle="plastid"',
+  ])
+})
+
+async function exportedNcbiRegion(
+  refName: string,
+  attributes: Record<string, string>,
+) {
+  const region = new SimpleFeature({
+    uniqueId: 'region',
+    refName,
+    start: 0,
+    end: 5000,
+    type: 'region',
+    gbkey: 'Src',
+    genome: 'genomic',
+    ...attributes,
+  })
+  const exported = await stringifyGBK({
+    features: [
+      new SimpleFeature({
+        uniqueId: 'gene',
+        refName,
+        start: 100,
+        end: 400,
+        type: 'gene',
+      }),
+    ],
+    sourceRecords: sourceRecords([region]),
+    circularLengths: new Map<string, number>(),
+    regions: [],
+    assemblyName: 'virus',
+    session,
+  })
+  const lines = exported.split('\n')
+  return lines.slice(
+    lines.findIndex(line => line.startsWith('SOURCE')),
+    lines.findIndex(line => line.startsWith('     gene')),
+  )
+}
+
+test("NC_045512.2's region writes gb-acronym on SOURCE as NCBI's flatfile does, country as /geo_loc_name and old-name, which INSDC has no qualifier for, as a /note", async () => {
+  expect(
+    await exportedNcbiRegion('NC_045512.2', {
+      dbxref: 'taxon:2697049',
+      'collection-date': 'Dec-2019',
+      country: 'China',
+      'gb-acronym': 'SARS-CoV-2',
+      isolate: 'Wuhan-Hu-1',
+      mol_type: 'genomic RNA',
+      'nat-host': 'Homo sapiens',
+      'old-name': 'Wuhan seafood market pneumonia virus',
+    }),
+  ).toEqual([
+    'SOURCE      virus (SARS-CoV-2)',
+    '  ORGANISM  virus',
+    '            .',
+    'FEATURES             Location/Qualifiers',
+    '     source          1..300',
+    '                     /organism="virus"',
+    '                     /db_xref="taxon:2697049"',
+    '                     /collection_date="Dec-2019"',
+    '                     /geo_loc_name="China"',
+    '                     /isolate="Wuhan-Hu-1"',
+    '                     /mol_type="genomic RNA"',
+    '                     /host="Homo sapiens"',
+    '                     /note="old-name: Wuhan seafood market pneumonia virus"',
+  ])
+})
+
+test("NC_001802.1's region writes gb-synonym on SOURCE as NCBI's flatfile does, and its own note as is", async () => {
+  expect(
+    await exportedNcbiRegion('NC_001802.1', {
+      dbxref: 'taxon:11676',
+      'gb-synonym': 'HIV-1',
+      mol_type: 'genomic RNA',
+      note: 'strain for reference annotation',
+    }),
+  ).toEqual([
+    'SOURCE      virus (HIV-1)',
+    '  ORGANISM  virus',
+    '            .',
+    'FEATURES             Location/Qualifiers',
+    '     source          1..300',
+    '                     /organism="virus"',
+    '                     /db_xref="taxon:11676"',
+    '                     /mol_type="genomic RNA"',
+    '                     /note="strain for reference annotation"',
+  ])
+})
+
+test('a source attribute with no INSDC source qualifier is carried as a /note, and a retired one records still carry is kept', async () => {
+  expect(
+    await exportedSource({
+      'gb-anamorph': 'Aspergillus nidulans',
+      breed: 'Holstein',
+      'tissue-lib': 'tissue library 772',
+    }),
+  ).toEqual([
+    '                     /organism="ecoli"',
+    '                     /mol_type="genomic DNA"',
+    '                     /note="gb-anamorph: Aspergillus nidulans"',
+    '                     /note="breed: Holstein"',
+    '                     /tissue_lib="tissue library 772"',
   ])
 })
 

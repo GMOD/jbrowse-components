@@ -194,6 +194,7 @@ const QUALIFIER_SPELLING: Record<string, string> = {
   'clone-lib': 'clone_lib',
   'collected-by': 'collected_by',
   'collection-date': 'collection_date',
+  country: 'geo_loc_name',
   'culture-collection': 'culture_collection',
   dbxref: 'db_xref',
   'dev-stage': 'dev_stage',
@@ -204,6 +205,7 @@ const QUALIFIER_SPELLING: Record<string, string> = {
   'lab-host': 'lab_host',
   'lat-lon': 'lat_lon',
   'mating-type': 'mating_type',
+  'metagenome-source': 'metagenome_source',
   'nat-host': 'host',
   pcr_conditions: 'PCR_conditions',
   pcr_primers: 'PCR_primers',
@@ -217,20 +219,21 @@ const QUALIFIER_SPELLING: Record<string, string> = {
   'type-material': 'type_material',
 }
 
+function attributeValues(value: unknown) {
+  return [value].flat().flatMap(v => formatAttributeValue(v) || [])
+}
+
 // a qualifier the file repeated, as Prokka repeats /inference, is written once
 // per value rather than joined into one value with a comma that is in neither
 function qualifierLines(attribute: string, value: unknown) {
   const key = QUALIFIER_SPELLING[attribute] ?? attribute
-  return [value]
-    .flat()
-    .flatMap(v => formatAttributeValue(v) || [])
-    .map(v =>
-      FLAG_QUALIFIERS.has(key) && v === 'true'
-        ? `${QUALIFIER_INDENT}/${key}`
-        : NUMBER_QUALIFIERS.has(key) && /^\d+$/.test(v)
-          ? `${QUALIFIER_INDENT}/${key}=${v}`
-          : qualifier(key, v),
-    )
+  return attributeValues(value).map(v =>
+    FLAG_QUALIFIERS.has(key) && v === 'true'
+      ? `${QUALIFIER_INDENT}/${key}`
+      : NUMBER_QUALIFIERS.has(key) && /^\d+$/.test(v)
+        ? `${QUALIFIER_INDENT}/${key}=${v}`
+        : qualifier(key, v),
+  )
 }
 
 function formatTags({
@@ -466,15 +469,97 @@ const ORGANELLES = new Map([
   ['proplastid', 'plastid:proplastid'],
 ])
 
-// INSDC requires /organism and /mol_type on every source; a track with no
-// source feature of its own, or one that leaves either out, gets the assembly
-// name and genomic DNA
-function sourceQualifiers(source: Feature | undefined, organism: string) {
-  const keys = source
+// The source key's qualifiers in the Feature Table Definition 11.4, and those
+// it retired from new entries that older records still carry, as NCBI's
+// NC_000913.3 still writes /sub_strain
+const SOURCE_QUALIFIERS = new Set([
+  'altitude',
+  'bio_material',
+  'cell_line',
+  'cell_type',
+  'chromosome',
+  'clone',
+  'clone_lib',
+  'collected_by',
+  'collection_date',
+  'cultivar',
+  'culture_collection',
+  'db_xref',
+  'dev_stage',
+  'ecotype',
+  'environmental_sample',
+  'focus',
+  'geo_loc_name',
+  'germline',
+  'haplogroup',
+  'haplotype',
+  'host',
+  'identified_by',
+  'isolate',
+  'isolation_source',
+  'lab_host',
+  'lat_lon',
+  'macronuclear',
+  'map',
+  'mating_type',
+  'metagenome_source',
+  'mol_type',
+  'note',
+  'organelle',
+  'organism',
+  'PCR_primers',
+  'plasmid',
+  'pop_variant',
+  'proviral',
+  'rearranged',
+  'segment',
+  'serotype',
+  'serovar',
+  'sex',
+  'specimen_voucher',
+  'strain',
+  'sub_clone',
+  'sub_species',
+  'sub_strain',
+  'submitter_seqid',
+  'tissue_lib',
+  'tissue_type',
+  'transgenic',
+  'type_material',
+  'variety',
+])
+
+// NCBI's flatfile puts these in parentheses on SOURCE, as NC_001802.1's GFF3
+// gb-synonym=HIV-1 and NC_045512.2's gb-acronym=SARS-CoV-2
+const COMMON_NAMES = new Set(['gb-synonym', 'gb-acronym'])
+
+function sourceKeys(source: Feature | undefined) {
+  return source
     ? Object.keys(source.toJSON()).filter(
         key => !coreFields.has(key) && !SOURCE_MARKERS.has(key),
       )
     : []
+}
+
+// a source attribute INSDC has no qualifier for is kept as a /note naming it,
+// since a key outside the vocabulary fails validation
+function sourceAttributeLines(key: string, value: unknown) {
+  return SOURCE_QUALIFIERS.has(QUALIFIER_SPELLING[key] ?? key)
+    ? qualifierLines(key, value)
+    : qualifierLines(
+        'note',
+        attributeValues(value).map(v => `${key}: ${v}`),
+      )
+}
+
+// INSDC requires /organism and /mol_type on every source; a track with no
+// source feature of its own, or one that leaves either out, gets the assembly
+// name and genomic DNA
+function sourceQualifiers(
+  source: Feature | undefined,
+  keys: string[],
+  organism: string,
+) {
   const organelle = keys.includes('organelle')
     ? undefined
     : ORGANELLES.get(formatAttributeValue(source?.get('genome')) ?? '')
@@ -484,7 +569,7 @@ function sourceQualifiers(source: Feature | undefined, organism: string) {
     ...(keys.includes('mol_type')
       ? []
       : [qualifier('mol_type', 'genomic DNA')]),
-    ...keys.flatMap(key => qualifierLines(key, source?.get(key))),
+    ...keys.flatMap(key => sourceAttributeLines(key, source?.get(key))),
   ]
 }
 
@@ -507,18 +592,27 @@ function formatHeader({
   circular: boolean
 }) {
   const organism = formatAttributeValue(source?.get('organism')) ?? assemblyName
+  const keys = sourceKeys(source)
+  const commonKey = keys.find(key => COMMON_NAMES.has(key))
+  const commonName = commonKey
+    ? formatAttributeValue(source?.get(commonKey))
+    : undefined
   return [
     formatLocus(refName, length, circular),
     `DEFINITION  ${region} from ${assemblyName}.`,
     `ACCESSION   ${refName}`,
     `VERSION     ${refName}`,
     'KEYWORDS    .',
-    `SOURCE      ${organism}`,
+    `SOURCE      ${organism}${commonName ? ` (${commonName})` : ''}`,
     `  ORGANISM  ${organism}`,
     '            .',
     'FEATURES             Location/Qualifiers',
     featureLine('source', `1..${length}`),
-    ...sourceQualifiers(source, organism),
+    ...sourceQualifiers(
+      source,
+      keys.filter(key => key !== commonKey),
+      organism,
+    ),
   ]
 }
 
