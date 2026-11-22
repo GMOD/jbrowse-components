@@ -1,6 +1,7 @@
 import PluginManager from '@jbrowse/core/PluginManager'
 import { getFeatureAdapterOrThrow } from '@jbrowse/core/data_adapters/getFeatureAdapter'
 import { asTable } from '@jbrowse/core/util/featureTable'
+import * as transforms from '@jbrowse/core/util/featureTransforms'
 import SimpleFeature from '@jbrowse/core/util/simpleFeature'
 
 import { clusterMarkRows } from './clusterMarkRows.ts'
@@ -163,6 +164,29 @@ test('1 bp calls cluster on their values in a window of wide columns', async () 
 
 // A display whose adapter joins a second file under a fetch option draws
 // features the matrix would otherwise read without the joined fields.
+test("a feature far longer than the region bins only within the region's columns", async () => {
+  stubAdapter([feats([{ source: 'a', start: 0, end: 100_000 }])])
+  const layered = jest.spyOn(transforms, 'layerTables')
+  const rows = await matrix({
+    rows: ['a'],
+    layer: {
+      encoding: { y: 'count' },
+      lanes: [],
+      transform: [
+        { type: 'bin', step: 1, fields: ['start', 'end'] },
+        {
+          type: 'aggregate',
+          groupby: ['start', 'end'],
+          ops: [{ op: 'count' }],
+        },
+      ],
+    },
+  })
+  expect(layered.mock.results[0]!.value.layers[0]!.table.length).toBe(10)
+  layered.mockRestore()
+  expect(rows).toEqual({ a: [1, 1, 1, 1] })
+})
+
 test("each region's fetch carries the adapter options the display resolved for it", async () => {
   const getFeatureTable = stubAdapter([[], []])
   await matrix({

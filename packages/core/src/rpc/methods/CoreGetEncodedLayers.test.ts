@@ -387,3 +387,43 @@ test("a layer's own transform runs after the shared one, and the other layer see
   expect([...layers[0]!.y!]).toEqual([2, 1])
   expect([...layers[1]!.y!]).toEqual([10, 40, 25])
 })
+
+test('a feature far longer than the region bins only where the region was fetched', async () => {
+  const gene = new SimpleFeature({
+    uniqueId: 'gene',
+    refName: 'ctgA',
+    start: 0,
+    end: 1_000_000,
+  })
+  jest.mocked(getAdapter).mockResolvedValue({
+    dataAdapter: {
+      getFeatures: () => {},
+      getFeatureTable: async () => asTable([gene]),
+      getZoomRange: async () => undefined,
+    },
+  } as unknown as Awaited<ReturnType<typeof getAdapter>>)
+  const result = await new CoreGetEncodedLayers({
+    jexl: createJexlInstance(),
+  } as PluginManager).invoke({
+    sessionId: 's',
+    adapterConfig: { type: 'AnyAdapter' },
+    region: { refName: 'ctgA', start: 500, end: 1000, assemblyName: 'volvox' },
+    layers: [
+      {
+        encoding: { y: 'count' },
+        lanes: ['y'],
+        transform: [
+          { type: 'bin', step: 10, fields: ['start', 'end'] },
+          {
+            type: 'aggregate',
+            groupby: ['start', 'end'],
+            ops: [{ op: 'count' }],
+          },
+        ],
+      },
+    ],
+  })
+  const [layer] = (result as RpcResult<EncodedLayersResult>).value.layers
+  expect(layer!.count).toBe(50)
+  expect(layer!.x[0]).toBe(500)
+})
