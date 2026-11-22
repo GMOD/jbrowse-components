@@ -270,9 +270,12 @@ async function evict(cacheKey: string, entry: CachedAdapter): Promise<void> {
   }
 }
 
-async function releaseClaim(claim: string) {
+async function releaseClaim(
+  claim: string,
+  entries: [string, CachedAdapter][] = [...adapterCache],
+) {
   const evictions: Promise<void>[] = []
-  for (const [cacheKey, entry] of [...adapterCache]) {
+  for (const [cacheKey, entry] of entries) {
     if (entry.sessionIds.delete(claim) && entry.sessionIds.size === 0) {
       evictions.push(evict(cacheKey, entry))
     }
@@ -313,34 +316,36 @@ export function adapterRequests() {
 }
 
 /**
- * Evict every cached adapter `keep` declines, each told to free what it holds,
- * whatever sessions claim it. `keep` sees the settled adapters most recently
- * requested first, each with the {@link adapterRequests} count at its latest
- * request. For a host with no tracks to close, such as `@jbrowse/tables`,
- * which would otherwise keep an adapter, its parsed index and its share of the
+ * Drop `sessionId`'s claim on every cached adapter `keep` declines, and evict
+ * the ones no other claim then holds, each told to free what it holds, along
+ * with the sub-adapters only they claimed. `keep` sees the settled adapters
+ * `sessionId` claims, most recently requested first, each with the
+ * {@link adapterRequests} count at its latest request. An adapter another
+ * session, or a parent still cached, also claims stays cached for it. For a
+ * host with no tracks to close, such as `@jbrowse/tables`, which would
+ * otherwise keep an adapter, its parsed index and its share of the
  * decoded-bytes budget for every file it ever read.
  */
 export async function keepAdapters(
+  sessionId: string,
   keep: (dataAdapter: AnyDataAdapter, lastRequest: number) => boolean,
 ) {
-  const cached = [...adapterCache].sort(
-    ([, a], [, b]) => b.lastRequest - a.lastRequest,
-  )
+  const claimed = [...adapterCache]
+    .filter(([, entry]) => entry.sessionIds.has(sessionId))
+    .sort(([, a], [, b]) => b.lastRequest - a.lastRequest)
   const settled = await Promise.all(
-    cached.map(([, entry]) => entry.adapter.catch(() => undefined)),
+    claimed.map(([, entry]) => entry.adapter.catch(() => undefined)),
   )
-  const evictions: Promise<void>[] = []
-  cached.forEach(([cacheKey, entry], i) => {
+  const declined = claimed.filter(([, entry], i) => {
     const dataAdapter = settled[i]
-    if (
+    return (
       dataAdapter &&
       !entry.owner.evicted &&
+      entry.sessionIds.has(sessionId) &&
       !keep(dataAdapter, entry.lastRequest)
-    ) {
-      evictions.push(evict(cacheKey, entry))
-    }
+    )
   })
-  await Promise.all(evictions)
+  await releaseClaim(sessionId, declined)
 }
 
 /** How many adapters the cache holds, failed and pending ones included. */

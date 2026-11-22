@@ -121,7 +121,7 @@ async function trim() {
   const named = new Set<string>()
   const inUse = Math.min(lastCall, running[0] ?? lastCall)
   let kept = 0
-  await keepAdapters((adapter, lastRequest) => {
+  await keepAdapters('tables', (adapter, lastRequest) => {
     const weight = weigh(adapter)
     const keep = lastRequest > inUse || kept + weight <= limit
     if (keep) {
@@ -169,7 +169,7 @@ const cache = {
     return held()
   },
   async clear() {
-    await keepAdapters(() => false)
+    await keepAdapters('tables', () => false)
     clearCache()
     wholeFileBytes.clear()
     forgetAssemblies()

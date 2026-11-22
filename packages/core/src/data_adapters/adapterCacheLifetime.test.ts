@@ -9,6 +9,7 @@ import {
   clearAdapterCache,
   freeAdapterResources,
   getAdapter,
+  keepAdapters,
 } from './dataAdapterCache.ts'
 import { getSequenceSubAdapter } from './getSequenceSubAdapter.ts'
 
@@ -143,4 +144,18 @@ test('renewed credentials replace the instance built with the old ones, keeping 
   expect(cachedAdapterCount()).toBe(1)
   await freeAdapterResources({ sessionId: 'A' })
   expect(cachedAdapterCount()).toBe(0)
+})
+
+test('a trim declining a sub-adapter its parent still holds leaves it cached for the parent', async () => {
+  const parent = await readingAdapter('tables')
+  const reference = await parent.reference()
+  await getAdapter(pluginManager, 'tables', sequence)
+  await readingAdapter('tables')
+  await keepAdapters('tables', adapter => adapter === parent)
+  expect(freed).toEqual([])
+  expect(await parent.reference()).toBe(reference)
+
+  await keepAdapters('tables', () => false)
+  expect(cachedAdapterCount()).toBe(0)
+  expect(freed.sort()).toEqual(['ReadingAdapter', 'SequenceAdapter'])
 })

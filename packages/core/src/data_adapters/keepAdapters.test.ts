@@ -6,6 +6,7 @@ import {
   adapterRequests,
   cachedAdapterCount,
   clearAdapterCache,
+  freeAdapterResources,
   getAdapter,
   keepAdapters,
 } from './dataAdapterCache.ts'
@@ -36,11 +37,11 @@ pluginManager.addAdapterType(
 pluginManager.createPluggableElements()
 pluginManager.configure()
 
-const read = async (path: string) =>
+const read = async (path: string, sessionId = 'tables') =>
   (
     await getAdapter(
       pluginManager,
-      'tables',
+      sessionId,
       { type: 'TestAdapter', adapterId: path, path },
       undefined,
     )
@@ -59,7 +60,7 @@ test('keep sees the adapters most recently requested first, and evicts and frees
   }
   await read('a')
   const seen: string[] = []
-  await keepAdapters(adapter => {
+  await keepAdapters('tables', adapter => {
     seen.push(pathOf(adapter))
     return seen.length <= 2
   })
@@ -67,7 +68,7 @@ test('keep sees the adapters most recently requested first, and evicts and frees
   expect(freed).toEqual(['c', 'b'])
   expect(cachedAdapterCount()).toBe(2)
   const kept = await read('a')
-  await keepAdapters(() => true)
+  await keepAdapters('tables', () => true)
   expect(freed).toEqual(['c', 'b'])
   expect(await read('a')).toBe(kept)
 })
@@ -78,7 +79,7 @@ test('each adapter carries the request count of its latest request', async () =>
   await read('b')
   await read('a')
   const recent: string[] = []
-  await keepAdapters((adapter, lastRequest) => {
+  await keepAdapters('tables', (adapter, lastRequest) => {
     if (lastRequest > since) {
       recent.push(pathOf(adapter))
     }
@@ -89,8 +90,26 @@ test('each adapter carries the request count of its latest request', async () =>
 
 test('keeping none empties the cache, and a later request builds anew', async () => {
   const first = await read('a')
-  await keepAdapters(() => false)
+  await keepAdapters('tables', () => false)
   expect(freed).toEqual(['a'])
   expect(cachedAdapterCount()).toBe(0)
   expect(await read('a')).not.toBe(first)
+})
+
+test("a trim sees and drops only its own session's claims, leaving what another session holds cached", async () => {
+  const shared = await read('shared')
+  await read('shared', 'browser')
+  const theirs = await read('theirs', 'browser')
+  const seen: string[] = []
+  await keepAdapters('tables', adapter => {
+    seen.push(pathOf(adapter))
+    return false
+  })
+  expect(seen).toEqual(['shared'])
+  expect(freed).toEqual([])
+  expect(await read('shared', 'browser')).toBe(shared)
+  expect(await read('theirs', 'browser')).toBe(theirs)
+  await freeAdapterResources({ sessionId: 'browser' })
+  expect(freed.sort()).toEqual(['shared', 'theirs'])
+  expect(cachedAdapterCount()).toBe(0)
 })

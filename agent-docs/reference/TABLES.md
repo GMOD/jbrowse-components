@@ -898,7 +898,9 @@ three pools that share no space, each under one setting, `limit`
   weight still fits under `limit` beside those kept. `setLimit` keeps the last call's
   too. A host running calls in parallel keeps everything requested since the oldest
   running call began, so a long call holds the other calls' adapters past `limit`
-  until a call runs alone.
+  until a call runs alone. A trim drops only the engines' own `'tables'` claim, so
+  an adapter a kept parent reads, such as a BAM's FASTA, or one a browser on the
+  same page also holds, stays cached for them.
 - **An adapter's weight** is at least `MIN_ADAPTER_BYTES`, or each file its config
   names that `readRange` read whole, at its uncompressed size (summed BGZF block
   sizes, or a gzip's last member size), times `INDEX_HOLDS_PER_BYTE` (4) for a
@@ -906,7 +908,13 @@ three pools that share no space, each under one setting, `limit`
   file. `parsed` reports the sum.
 - **Assemblies:** the `RESOLVED_ASSEMBLIES` (16) most recently read.
 - **`jbrowse.cache({ limit })`** sets `limit` and reports what is held;
-  **`jbrowse.clearCache()`** empties every cache in place.
+  **`jbrowse.clearCache()`** empties the chunk and assembly caches and drops the
+  `'tables'` claim on every adapter, evicting each that no other claim holds.
+- **The adapter trim weighs only adapters the `'tables'` claim holds**, and
+  neither it nor `clearCache()` evicts an adapter another claim still holds, so
+  that adapter counts toward no total while it stays cached; what that leaves
+  open is in
+  [handoffs/adapter-cache-leftovers.md](../handoffs/adapter-cache-leftovers.md).
 - **Every tables lookup passes the sequence adapter** through `tablesAdapter` or
   `tablesFeatureAdapter` (`@jbrowse/core/data_adapters/getFeatureAdapter`); lint
   enforces it, since core keys a BAM, SAM or CRAM on it.
