@@ -41,7 +41,7 @@ export function assertNotReaddedDifferently(
   )
   if (!same) {
     throw new Error(
-      `Track "${trackConf.trackId}" is already in this session with a different configuration, and adding it again would keep the old one. Delete it first (session.deleteTrackConf(session.getTrackById("${trackConf.trackId}"))), then add — and give a recomputed FromConfigAdapter a new adapterId, since the adapter cache is keyed on it.`,
+      `Track "${trackConf.trackId}" is already in this session with a different configuration, and adding it again would keep the old one. Delete it first (session.deleteTrackConf(session.getTrackById("${trackConf.trackId}"))), then add.`,
     )
   }
 }

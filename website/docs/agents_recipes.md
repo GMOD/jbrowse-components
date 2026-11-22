@@ -261,7 +261,6 @@ session.addSessionTrackConf({
   assemblyNames: [region.assemblyName],
   adapter: {
     type: 'FromConfigAdapter',
-    adapterId: trackId,
     features: counts.map((score, i) => ({
       uniqueId: `bin${i}`,
       refName: region.refName,
@@ -280,10 +279,9 @@ return {
 }
 ```
 
-- A fresh `trackId` and `adapterId` per computation is deliberate. Re-adding a
-  known `trackId` with different content is refused, and the adapter cache is
-  keyed on `adapterId`, so a recomputed track under the old ids keeps showing
-  the first values cached under those ids.
+- A fresh `trackId` per computation is deliberate: re-adding a known `trackId`
+  with different content is refused. Leave `adapterId` unset, so the adapter
+  cache keys on the features and a recomputed track never reads an older array.
 - Plan for a few thousand features and no more; above that, write a real file
   and load it with `jb.addTrack`.
 

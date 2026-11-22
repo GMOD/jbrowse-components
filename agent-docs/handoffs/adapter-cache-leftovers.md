@@ -1,6 +1,6 @@
 ---
 name: adapter-cache-leftovers
-description: "What a reviewed audit of dataAdapterCache still leaves open: inline features edited under a reused adapterId, claims nothing releases on worker drivers, the tables trim's weight total, credential churn that needs a generation number, lane layers and two nits."
+description: "What a reviewed audit of dataAdapterCache still leaves open: claims nothing releases on worker drivers, the tables trim's weight total, credential churn that needs a generation number, an unmeasured rehash of unstamped configs, lane layers and two nits."
 ---
 
 # Adapter cache leftovers
@@ -9,25 +9,13 @@ The audit's two main-thread bugs are fixed (ADR-086, amended 2026-11-21), the
 multi-row reference bug landed in `fd3f2e0e76`, and the tables trim, the type
 half of the `adapterId` key, the unhandled eviction rejection and the
 `clearAdapterCache` swap landed after it (`git log --grep="adapter cache" -i`).
-None of what is left returns wrong data in the shipped app except the first,
-and that one needs a hand-set id.
+None of what is left returns wrong data in the shipped app. A hand-set
+`adapterId` reused over changed inline features still serves the first ones;
+that is kept, and the FromConfig slot descriptions and the agent docs now say
+to leave the slot unset.
 
 ## Next
 
-- **Inline `features` edited under a reused `adapterId` serve the old
-  features.** The key is now `${type}:${adapterId}`, so two types no longer
-  share an instance, but a notebook re-run that edits inline features under the
-  same id (the `test_data/custom_sort/config.json` pattern) still gets the
-  first instance, and credentials are `''` on that branch. The hand-set id is a
-  documented contract: the FromConfig slot descriptions call it the cache key,
-  `website/docs/agents_live_model.md` and `agents_recipes.md` tell an agent to
-  change it when it recomputes features, and `readdedTrackConf.ts`'s error says
-  the same. Needs a ruling between:
-  - hashing every config once per snapshot object on the main thread (a
-    WeakMap) and stamping it where `RpcMethodType` serializes configs, which
-    makes the slot a no-op and touches the slot docs and both agent docs;
-  - refusing a hand-set id at config load, a compat change;
-  - keeping it as documented.
 - **Claims nothing releases, on worker drivers.** `fetchSeq.ts` and LGV's
   `fetchSequence.ts` call under the literal `'getSequence'`, the
   `util/tracks.ts` prefetch claims for tracks that may never show, and
@@ -52,6 +40,18 @@ and that one needs a hand-set id.
   the same password is typed, so right, wrong, right again would keep serving
   the wrong-password instance. A fix needs the internet account to stamp a
   rising generation into `internetAccountPreAuthorization`.
+- **Credentials are `''` on the hand-set `adapterId` branch**
+  (`adapterIdentity` in `dataAdapterCache.ts`), so a renewed credential never
+  replaces an instance keyed by a hand-set id. In `@jbrowse/tables`, where no
+  track close rebuilds an adapter, that instance keeps the old credential for
+  as long as the trim keeps it.
+- **An unstamped config is hashed again on every fetch**, in the cache key and
+  in each fetch's region renaming (`renameRegions.ts` through
+  `refNameMapKey.ts`), with no memo; `rpcSessionId` is cached only while
+  observed. 6.5 ms per 10,000 inline features (`10d23810e8`), and the agent
+  docs cap inline tracks at a few thousand. A WeakMap memo of
+  `fingerprintAdapterConfig` per config object on the main thread would remove
+  the repeats; nothing measures them as a cost yet. Read, not run.
 - **Sub-adapters built for an evicted parent never get `freeResources`**
   (`unclaimedAdapter`), so their decoded-bytes charge waits for GC, the failure
   `freeAdapterResources`' comment names. The window is one request outliving

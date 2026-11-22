@@ -490,7 +490,6 @@ session.addSessionTrackConf({
   assemblyNames: ['hg38'],
   adapter: {
     type: 'FromConfigAdapter',
-    adapterId: 'nutlin-log2',
     features: bins.map((score, i) => ({
       uniqueId: 'bin' + i,
       refName: 'chr6', // the assembly's canonical spelling
@@ -504,15 +503,13 @@ await jb.view().launchTrack('nutlin-log2')
 return jb.waitReady(60000)
 ```
 
-- `adapterId` is the adapter cache key; leave it out and the whole feature array
-  is hashed instead.
 - `addSessionTrackConf` is the destination for a track you stood up on the
   user's behalf; `session.tracks` is the site's catalog.
-- **Recomputed the values? Delete, re-add, and change the `adapterId`.**
-  `addSessionTrackConf` refuses a known trackId whose content differs (the same
-  content is idempotent), and the adapter cache is keyed on `adapterId`, so the
-  same id with new features keeps returning the first array cached under that
-  id.
+- **Recomputed the values? Delete, then re-add.** `addSessionTrackConf` refuses
+  a known trackId whose content differs (the same content is idempotent). The
+  adapter cache is keyed on the features themselves, so the re-added track reads
+  the new array. Leave `adapterId` unset: a hand-set one replaces that key, and
+  the same id with new features keeps returning the first array.
 - **Plan for a few thousand features, not more.** The array is part of the track
   config, so it is held in memory, written into the session snapshot, and
   re-serialized by every autosave. Above that, run the tool that does the job
@@ -524,10 +521,7 @@ const old = session.sessionTracks.find(t => t.trackId === 'nutlin-log2')
 if (old) {
   session.deleteTrackConf(old)
 }
-session.addSessionTrackConf({
-  ...conf,
-  adapter: { ...conf.adapter, adapterId: `nutlin-log2-${Date.now()}` },
-})
+session.addSessionTrackConf(conf)
 await jb.view().launchTrack('nutlin-log2')
 ```
 

@@ -25,8 +25,11 @@ const configSchema = ConfigurationSchema(
   {
     /**
      * #slot
-     * stable identifier used as the adapter cache key; avoids hashing the
-     * (potentially large) features array. optional — falls back to hash.
+     * leave unset, so the adapter cache keys on a hash of the config and
+     * changed features are a new adapter. Code that builds a large config sets
+     * it with `withAdapterId`, which stamps that hash in. A hand-written value
+     * replaces the hash, so the same value over different features serves the
+     * first ones
      */
     adapterId: {
       type: 'string',
