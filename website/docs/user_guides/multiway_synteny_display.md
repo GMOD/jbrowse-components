@@ -39,8 +39,10 @@ Each lane has its own scale, printed in its header:
   the anchor
 - **Right end:** the anchor prints its window's span. A lane that holds more
   sequence across the window than the anchor, such as one with insertions, is
-  squeezed to fit and prints the span it draws and how many times it is squeezed
-  (`114Kbp, squeezed 1.5×`); a lane at the anchor's scale prints nothing
+  squeezed to fit and prints how much of its own sequence it draws, the range
+  its left end names, and how many times it is squeezed
+  (`114Kbp, squeezed 1.5×`). A stretch of the anchor the lane lacks is left open
+  as a gap and takes room too. A lane at the anchor's scale prints nothing
 - **Ticks** fall at one interval shared by every lane
 - **`also at`** names a second stretch the window aligns to, a window or more
   away from the one the lane draws

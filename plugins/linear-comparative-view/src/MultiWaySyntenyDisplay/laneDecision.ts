@@ -14,7 +14,7 @@ import { flipPinOf, placePinOf } from './lanePins.ts'
 import {
   frameOpenings,
   groupRunsOnRow,
-  laneOpeningsOf,
+  laneIndelsOf,
   lanePointOfOpened,
   openedBp,
   openedAtX,
@@ -36,6 +36,7 @@ import type {
 type OpeningsOf = (
   assemblyName: string,
   refName: string,
+  reversed?: boolean,
 ) => readonly LaneOpening[]
 
 export interface AnchorCoord {
@@ -238,7 +239,7 @@ export function computeRowFrame(
     unitBp,
     undefined,
     undefined,
-    laneOpeningsOf(groups),
+    laneIndelsOf(groups).openings,
   )?.frame
 }
 
@@ -260,6 +261,10 @@ function unlessReleased<T extends FitIncumbent>(
     : incumbent
 }
 
+/**
+ * The lane's frame on the strand it is drawn on, `reversed` against the
+ * anchor's order, by default the order its placements run in
+ */
 function fitLane(
   groups: MultiWayGroup[],
   assemblyName: string,
@@ -267,6 +272,7 @@ function fitLane(
   incumbent: FitIncumbent | undefined,
   pinned: LanePlacePin | undefined,
   openingsOf: OpeningsOf,
+  reversed?: boolean,
 ) {
   const contig = pickContig(
     groups,
@@ -286,7 +292,9 @@ function fitLane(
     onPin ? pinned.at : undefined,
     held && { lo: held.fitMin, hi: held.fitMax },
   )
-  const openings = openingsOf(assemblyName, contig.refName)
+  const flipped =
+    reversed ?? anchorOrderSign(groups, assemblyName, contig.refName) < 0
+  const openings = openingsOf(assemblyName, contig.refName, flipped)
   const openedLo = openedBp(openings, fit.lo, true)
   const openedHi = Math.max(openedLo + 1, openedBp(openings, fit.hi))
   const rung =
@@ -303,7 +311,7 @@ function fitLane(
         refName: contig.refName,
         min,
         max: min + span,
-        flipped: anchorOrderSign(groups, assemblyName, contig.refName) < 0,
+        flipped,
         fitMin: fit.lo,
         fitMax: fit.hi,
         alsoOn: contig.alsoOn,
@@ -613,7 +621,7 @@ export function decideLaneFrames({
           unitBp,
           width,
           anchorReversed,
-          openingsOf(assemblyName, kept.refName),
+          openingsOf(assemblyName, kept.refName, kept.flipped),
         )
         upperX = lanePlacementXs(
           lanePlacements(groups, assemblyName, frame),
@@ -637,7 +645,7 @@ export function decideLaneFrames({
       out.set(assemblyName, undefined)
       continue
     }
-    const { rung, pinned: onPin, frame: fitted } = fit
+    const fitted = fit.frame
     const placements = lanePlacements(groups, assemblyName, fitted)
     // the vote reads screen px; the decision is against the anchor's order
     const upperVote = orientationVote(upperX, placements)
@@ -658,8 +666,28 @@ export function decideLaneFrames({
     const flipPin = flipPinOf(pins, assemblyName)
     const orientationPinned = flipPin?.refName === fitted.refName
     const relativeFlipped = orientationPinned ? flipPin.flipped : voted
-    const oriented = { ...fitted, flipped: relativeFlipped !== anchorReversed }
-    const aligned = alignFrameTo(reference, placements, oriented, width)
+    const drawn =
+      relativeFlipped === fitted.flipped
+        ? fit
+        : (fitLane(
+            groups,
+            assemblyName,
+            unitBp,
+            prev,
+            placePin,
+            openingsOf,
+            relativeFlipped,
+          ) ?? fit)
+    const { rung, pinned: onPin } = drawn
+    const drawnPlacements =
+      drawn === fit
+        ? placements
+        : lanePlacements(groups, assemblyName, drawn.frame)
+    const oriented = {
+      ...drawn.frame,
+      flipped: relativeFlipped !== anchorReversed,
+    }
+    const aligned = alignFrameTo(reference, drawnPlacements, oriented, width)
 
     let decision: LaneDecision | undefined
     let decisionPx: number | undefined
@@ -691,15 +719,15 @@ export function decideLaneFrames({
         frameOpenings(aligned),
       )
       if (
-        weightInside(placements, heldFrame) >=
-        HOLD_COVERAGE * weightInside(placements, aligned)
+        weightInside(drawnPlacements, heldFrame) >=
+        HOLD_COVERAGE * weightInside(drawnPlacements, aligned)
       ) {
         decision = sameDecision(held, carried) ? held : carried
         decisionPx = heldPx
       }
     }
     if (!decision) {
-      const pivot = placements
+      const pivot = drawnPlacements
         .map(p => ({ group: p.group, x: anchorX.get(p.group.key) }))
         .filter(
           (p): p is { group: MultiWayGroup; x: number } => p.x !== undefined,

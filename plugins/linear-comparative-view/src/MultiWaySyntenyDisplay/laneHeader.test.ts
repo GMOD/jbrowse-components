@@ -142,11 +142,34 @@ describe('the scale', () => {
     ).toBe('40Kbp, squeezed 20×')
   })
 
+  test('prints the range the label names, the holes left out, and the squeeze of the axis', () => {
+    const holed = mateLane({
+      frame: { min: 0, max: 3000, openings: [{ at: 1000, bp: 500 }] },
+    })
+    const row = rowOf(holed, 2000)
+    expect(row.label).toBe('peach  Pp1:1..2,500')
+    expect(row.scale).toBe('2.5Kbp, squeezed 1.5×')
+    expect(row.scaleTitle).toBe(
+      "This lane holds 2.5Kbp of its own and room for 500bp of the anchor it lacks across the anchor's 2Kbp window, so it is drawn 1.5× smaller to fit.",
+    )
+  })
+
+  test('prints nothing at the anchor scale, with a hole or without', () => {
+    expect(
+      rowOf(
+        mateLane({
+          frame: { min: 0, max: 2000, openings: [{ at: 1000, bp: 500 }] },
+        }),
+        2000,
+      ).scale,
+    ).toBe('')
+  })
+
   test('explains itself in a hover title wherever it prints', () => {
     expect(
       rowOf(mateLane({ frame: { min: 0, max: 3000 } }), 2000).scaleTitle,
     ).toBe(
-      "This lane has 3Kbp across the anchor's 2Kbp window, so it is drawn 1.5× smaller to fit.",
+      "This lane holds 3Kbp across the anchor's 2Kbp window, so it is drawn 1.5× smaller to fit.",
     )
     expect(rowOf(anchorLane, 2000).scaleTitle).toMatch(
       /^The span of the window/,
@@ -207,9 +230,15 @@ describe('the changes chip', () => {
     },
   })
   const deletions: LaneChange[] = [
-    { at: 10_000, laneBp: 0, bp: 18_000, kind: 'deletion', anchor: ON },
-    { at: 50_000, laneBp: 0, bp: 30_000, kind: 'deletion', anchor: ON },
-    { at: 400_000, laneBp: 0, bp: 1_234_567, kind: 'deletion', anchor: ON },
+    { at: 10_000, laneBp: 0, anchorBp: 18_000, kind: 'deletion', anchor: ON },
+    { at: 50_000, laneBp: 0, anchorBp: 30_000, kind: 'deletion', anchor: ON },
+    {
+      at: 400_000,
+      laneBp: 0,
+      anchorBp: 1_234_567,
+      kind: 'deletion',
+      anchor: ON,
+    },
   ]
   const changesOf = (changes: LaneChange[]) =>
     laneHeaderRows(
@@ -229,21 +258,21 @@ describe('the changes chip', () => {
         {
           at: 20_000,
           laneBp: 54_000,
-          bp: 54_000,
+          anchorBp: 0,
           kind: 'insertion',
           anchor: ON,
         },
         {
           at: 140_000,
           laneBp: 11_000,
-          bp: 11_000,
+          anchorBp: 0,
           kind: 'insertion',
           anchor: ON,
         },
         {
           at: 300_000,
           laneBp: 90_000,
-          bp: 90_000,
+          anchorBp: 0,
           kind: 'insertion',
           anchor: ON,
         },
@@ -265,12 +294,39 @@ describe('the changes chip', () => {
     })
     expect(
       laneHeaderRows([anchorLane, wide], 2000, '', undefined, undefined, () => [
-        { at: 1000, laneBp: 0, bp: 1_234_567, kind: 'deletion', anchor: ON },
+        {
+          at: 1000,
+          laneBp: 0,
+          anchorBp: 1_234_567,
+          kind: 'deletion',
+          anchor: ON,
+        },
       ])[1]!.changes,
     ).toEqual({
       text: '1.2 Mb deletion',
       anchor: 'grape',
     })
+  })
+
+  test('names a stretch with bases on both sides as one replaced by the other', () => {
+    expect(
+      changesOf([
+        {
+          at: 20_000,
+          laneBp: 49_051,
+          anchorBp: 121_555,
+          kind: 'replacement',
+          anchor: ON,
+        },
+        {
+          at: 60_000,
+          laneBp: 94_146,
+          anchorBp: 17,
+          kind: 'replacement',
+          anchor: ON,
+        },
+      ])[1]?.text,
+    ).toBe('120 kb replaced by 49 kb, 17 bp replaced by 94 kb')
   })
 
   test('names an inversion the shown frame meets by its anchor span', () => {
@@ -279,7 +335,7 @@ describe('the changes chip', () => {
         {
           at: 100_000,
           laneBp: 900_000,
-          bp: 900_000,
+          anchorBp: 900_000,
           kind: 'inversion',
           anchor: ON,
         },

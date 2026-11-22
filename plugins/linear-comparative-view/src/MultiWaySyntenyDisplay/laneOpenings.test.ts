@@ -138,7 +138,7 @@ function framesOf(
           UNIT_BP,
           WIDTH,
           false,
-          openingsOf(assemblyName, d.refName),
+          openingsOf(assemblyName, d.refName, d.flipped),
         ),
     ]),
   )
@@ -407,9 +407,10 @@ describe('a deletion the lane carries against the anchor', () => {
         -1,
       ),
     ])
-    expect(laneOpeningsOf(groups)('HG01123.1', ref)).toEqual([
+    expect(laneOpeningsOf(groups)('HG01123.1', ref, true)).toEqual([
       { at: at + AFTER, bp: DEL_END - DEL_START },
     ])
+    expect(laneOpeningsOf(groups)('HG01123.1', ref)).toEqual([])
     const frame = framesOf(groups, decide(groups, ['HG01123.1'])).get(
       'HG01123.1',
     )!
@@ -454,6 +455,39 @@ describe('a deletion the lane carries against the anchor', () => {
       gene('b', WINDOW_START + 90_000, at + 2000),
     ])
     expect(laneOpeningsOf(genes)('HG01123.1', ref)).toEqual([])
+  })
+
+  test('fits a lane pinned to face the other way with the holes of the strand it is drawn on', () => {
+    const [ref, at] = CARRIERS['HG01123.1']
+    const groups = groupFeatures([
+      piece('fwd/0', WINDOW_START, WINDOW_START + 40_000, [
+        { assemblyName: 'HG01123.1', refName: ref, start: at },
+      ]),
+      piece('fwd/1', WINDOW_START + 90_000, WINDOW_START + 130_000, [
+        { assemblyName: 'HG01123.1', refName: ref, start: at + 40_000 },
+      ]),
+    ])
+    const rungFacing = (flipped?: boolean) =>
+      decideLaneFrames({
+        groups,
+        openingsOf: laneOpeningsOf(groups),
+        assemblyNames: ['HG01123.1'],
+        anchorX: new Map(groups.map(g => [g.key, px(anchorCenter(g))])),
+        anchorCoordOf: g => ({ refName: 'chr1', coord: anchorCenter(g) }),
+        pxOfAnchor: c => px(c.coord),
+        unitBp: UNIT_BP,
+        width: WIDTH,
+        previous: new Map(),
+        pins:
+          flipped === undefined
+            ? []
+            : [{ lane: 'HG01123.1', refName: ref, flipped }],
+      }).get('HG01123.1')!.rung
+    expect(rungFacing()).toBe(1.5)
+    expect(laneOpeningsOf(groups)('HG01123.1', ref)).toEqual([
+      { at: at + 40_000, bp: 50_000 },
+    ])
+    expect(rungFacing(true)).toBe(1)
   })
 
   test('keeps a frame the same under a pan that moves its pivot past the hole', () => {
@@ -533,8 +567,7 @@ describe('what a lane states across a gap against the anchor', () => {
           c.anchor.end - WINDOW_START,
         ])
     expect(anchorOf(gapped(935_000, 900_000, ['r', 'r']))).toEqual([
-      ['deletion', 40_000, 975_000],
-      ['insertion', 40_000, 975_000],
+      ['replacement', 40_000, 975_000],
     ])
     expect(anchorOf(gapped(0, 30_000, ['r', 'r']))).toEqual([
       ['insertion', 40_000, 40_000],
@@ -545,7 +578,7 @@ describe('what a lane states across a gap against the anchor', () => {
     expect(read(gapped(0, 30_000, ['r', 'r']))).toEqual({
       openings: [],
       changes: [
-        { at: at + 40_000, laneBp: 30_000, bp: 30_000, kind: 'insertion' },
+        { at: at + 40_000, laneBp: 30_000, anchorBp: 0, kind: 'insertion' },
       ],
     })
   })
@@ -558,32 +591,49 @@ describe('what a lane states across a gap against the anchor', () => {
     expect(read(gapped(0, 30_000, ['r', 's']))).toEqual({
       openings: [],
       changes: [
-        { at: at + 40_000, laneBp: 30_000, bp: 30_000, kind: 'insertion' },
+        { at: at + 40_000, laneBp: 30_000, anchorBp: 0, kind: 'insertion' },
       ],
     })
   })
 
-  test('one record replacing 935 kb with 900 kb names both sides and opens the net', () => {
+  test('one record replacing 935 kb with 900 kb states one change of both sides and opens the net', () => {
     expect(read(gapped(935_000, 900_000, ['r', 'r']))).toEqual({
       openings: [{ at: at + 40_000, bp: 35_000 }],
       changes: [
-        { at: at + 40_000, laneBp: 0, bp: 935_000, kind: 'deletion' },
-        { at: at + 40_000, laneBp: 900_000, bp: 900_000, kind: 'insertion' },
+        {
+          at: at + 40_000,
+          laneBp: 900_000,
+          anchorBp: 935_000,
+          kind: 'replacement',
+        },
       ],
     })
   })
 
-  test('one record replacing 905 kb with 900 kb names both sides, though the net opens nothing', () => {
+  test('one record replacing 905 kb with 900 kb states one change of both sides, though the net opens nothing', () => {
     expect(read(gapped(905_000, 900_000, ['r', 'r']))).toEqual({
       openings: [],
       changes: [
-        { at: at + 40_000, laneBp: 0, bp: 905_000, kind: 'deletion' },
-        { at: at + 40_000, laneBp: 900_000, bp: 900_000, kind: 'insertion' },
+        {
+          at: at + 40_000,
+          laneBp: 900_000,
+          anchorBp: 905_000,
+          kind: 'replacement',
+        },
       ],
     })
   })
 
-  test('two records name both sides of the gap between them and open the net, as one record does', () => {
+  test('a side of a few bp is still a side, at any ratio', () => {
+    expect(read(gapped(17, 94_146, ['r', 's'])).changes).toEqual([
+      { at: at + 40_000, laneBp: 94_146, anchorBp: 17, kind: 'replacement' },
+    ])
+    expect(read(gapped(94_204, 1, ['r', 'r'])).changes).toEqual([
+      { at: at + 40_000, laneBp: 1, anchorBp: 94_204, kind: 'replacement' },
+    ])
+  })
+
+  test('two records state the gap between them and open the net, as one record does', () => {
     expect(read(gapped(935_000, 900_000, ['r', 's']))).toEqual(
       read(gapped(935_000, 900_000, ['r', 'r'])),
     )
@@ -592,8 +642,12 @@ describe('what a lane states across a gap against the anchor', () => {
     expect(read(gapped(416_324, 233_466, ['r', 's']))).toEqual({
       openings: [{ at: at + 40_000, bp: 182_858 }],
       changes: [
-        { at: at + 40_000, laneBp: 0, bp: 416_324, kind: 'deletion' },
-        { at: at + 40_000, laneBp: 233_466, bp: 233_466, kind: 'insertion' },
+        {
+          at: at + 40_000,
+          laneBp: 233_466,
+          anchorBp: 416_324,
+          kind: 'replacement',
+        },
       ],
     })
   })
@@ -648,6 +702,15 @@ describe('an inversion the lane carries against the anchor', () => {
       [{ assemblyName: 'HG01123.1', refName: ref, start: at + lane }],
       orientation,
     )
+  const stated = (features: SimpleFeature[]) => {
+    const { openings, changes } = laneIndelsOf(groupFeatures(features))
+    return {
+      openings: openings('HG01123.1', ref),
+      changes: changes('HG01123.1', ref)
+        .filter(c => c.kind !== 'inversion')
+        .map(withoutAnchor),
+    }
+  }
   const named = (features: SimpleFeature[]) =>
     laneIndelsOf(groupFeatures(features))
       .changes('HG01123.1', ref)
@@ -677,7 +740,12 @@ describe('an inversion the lane carries against the anchor', () => {
         run('r', 940_000, 940_000, 40_000, 1),
       ]),
     ).toEqual([
-      { at: at + 40_000, laneBp: 900_000, bp: 900_000, kind: 'inversion' },
+      {
+        at: at + 40_000,
+        laneBp: 900_000,
+        anchorBp: 900_000,
+        kind: 'inversion',
+      },
     ])
   })
 
@@ -689,7 +757,12 @@ describe('an inversion the lane carries against the anchor', () => {
         run('r', 940_000, 0, 40_000, -1),
       ]),
     ).toEqual([
-      { at: at + 40_000, laneBp: 900_000, bp: 900_000, kind: 'inversion' },
+      {
+        at: at + 40_000,
+        laneBp: 900_000,
+        anchorBp: 900_000,
+        kind: 'inversion',
+      },
     ])
   })
 
@@ -712,7 +785,12 @@ describe('an inversion the lane carries against the anchor', () => {
         run('r', 940_000, 940_000, 40_000, 1),
       ]),
     ).toEqual([
-      { at: at + 40_000, laneBp: 900_000, bp: 900_000, kind: 'inversion' },
+      {
+        at: at + 40_000,
+        laneBp: 900_000,
+        anchorBp: 900_000,
+        kind: 'inversion',
+      },
     ])
   })
 
@@ -728,18 +806,68 @@ describe('an inversion the lane carries against the anchor', () => {
         run('r2', 4_880_000, 4_900_000, 1_000_000, 1),
       ]),
     ).toEqual([
-      { at: at + 730_000, laneBp: 4_000_000, bp: 4_000_000, kind: 'inversion' },
+      {
+        at: at + 730_000,
+        laneBp: 4_000_000,
+        anchorBp: 4_000_000,
+        kind: 'inversion',
+      },
     ])
   })
 
-  test('names nothing for an inverted copy of a flank', () => {
+  test('names no inversion for an inverted copy of a flank, and reads it as the lane’s own', () => {
+    const copy = [
+      run('l', 0, 0, 500_000, 1),
+      run('m', 500_000, 100_000, 300_000, -1),
+      run('r', 800_000, 500_000, 400_000, 1),
+    ]
+    expect(named(copy)).toEqual([])
+    expect(stated(copy)).toEqual({
+      openings: [],
+      changes: [
+        { at: at + 500_000, laneBp: 300_000, anchorBp: 0, kind: 'insertion' },
+      ],
+    })
+  })
+
+  test('states nothing but the inversion between its flanks, as one record each or as two', () => {
+    const flanked = [
+      run('l', 0, 0, 40_000, 1),
+      run('m', 40_000, 40_000, 900_000, -1),
+      run('r', 940_000, 940_000, 40_000, 1),
+    ]
+    expect(stated(flanked)).toEqual({ openings: [], changes: [] })
     expect(
-      named([
-        run('l', 0, 0, 500_000, 1),
-        run('m', 500_000, 100_000, 300_000, -1),
-        run('r', 800_000, 500_000, 400_000, 1),
+      stated([
+        run('l', 0, 0, 40_000, 1),
+        run('m1', 40_000, 490_000, 450_000, -1),
+        run('m2', 490_000, 40_000, 450_000, -1),
+        run('r', 940_000, 940_000, 40_000, 1),
       ]),
-    ).toEqual([])
+    ).toEqual({ openings: [], changes: [] })
+  })
+
+  test('opens and names the anchor an inverted stretch lacks inside it, beside the inversion', () => {
+    const lacking = [
+      run('l', 0, 0, 40_000, 1),
+      run('m1', 40_000, 540_000, 400_000, -1),
+      run('m2', 440_000, 40_000, 400_000, -1),
+      run('r', 840_000, 940_000, 40_000, 1),
+    ]
+    expect(stated(lacking)).toEqual({
+      openings: [{ at: at + 40_000, bp: 100_000 }],
+      changes: [
+        { at: at + 40_000, laneBp: 0, anchorBp: 100_000, kind: 'deletion' },
+      ],
+    })
+    expect(named(lacking)).toEqual([
+      {
+        at: at + 40_000,
+        laneBp: 800_000,
+        anchorBp: 800_000,
+        kind: 'inversion',
+      },
+    ])
   })
 
   test('names nothing with one flank', () => {

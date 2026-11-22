@@ -88,6 +88,10 @@ function placelessText(placeless: Placeless) {
     : 'no alignment in this window'
 }
 
+function changeBp({ anchorBp, laneBp, kind }: LaneChange) {
+  return kind === 'inversion' ? anchorBp : Math.max(anchorBp, laneBp)
+}
+
 /** the stated changes the lane's shown frame meets, largest first */
 export function shownLaneChanges(
   lane: Pick<Lane, 'frame' | 'canon'>,
@@ -99,17 +103,21 @@ export function shownLaneChanges(
         .filter(
           ({ at, laneBp }) => at <= region.end && at + laneBp >= region.start,
         )
-        .toSorted((a, b) => b.bp - a.bp)
+        .toSorted((a, b) => changeBp(b) - changeBp(a))
     : []
 }
 
-export function changeLabel({ bp, kind }: LaneChange) {
-  return `${bpText(bp)} ${kind}`
+export function changeLabel(change: LaneChange) {
+  const { anchorBp, laneBp, kind } = change
+  return kind === 'replacement'
+    ? `${bpText(anchorBp)} replaced by ${bpText(laneBp)}`
+    : `${bpText(changeBp(change))} ${kind}`
 }
 
 /** the anchor a change sits on, padded by half its size either side */
-export function changeWindow({ anchor, bp }: LaneChange) {
-  const pad = Math.max(Math.round(bp / 2), MIN_CHANGE_PAD_BP)
+export function changeWindow(change: LaneChange) {
+  const { anchor } = change
+  const pad = Math.max(Math.round(changeBp(change) / 2), MIN_CHANGE_PAD_BP)
   return {
     refName: anchor.refName,
     start: Math.max(0, anchor.start - pad),
@@ -162,9 +170,23 @@ export function blockLocString(
 
 function scaleOf(lane: Lane, visibleBpSpan: number) {
   const windowSpan = getBpDisplayStr(visibleBpSpan)
-  const laneSpan = lane.frame ? lane.frame.max - lane.frame.min : 0
+  const { frame } = lane
+  const laneSpan = frame ? frame.max - frame.min : 0
+  const region = laneRegion(lane)
+  const shown = region ? region.end - region.start : 0
+  const openings = frame ? frameOpenings(frame) : []
+  const opened = frame
+    ? Math.round(
+        laneSpan -
+          (laneBpOfOpened(openings, frame.max) -
+            laneBpOfOpened(openings, frame.min)),
+      )
+    : 0
   const multiple = visibleBpSpan > 0 ? laneSpan / visibleBpSpan : 1
   const times = `${Number(multiple.toFixed(1))}×`
+  const holds = opened
+    ? `${getBpDisplayStr(shown)} of its own and room for ${getBpDisplayStr(opened)} of the anchor it lacks`
+    : getBpDisplayStr(shown)
   return lane.isAnchor
     ? visibleBpSpan > 0
       ? {
@@ -175,8 +197,8 @@ function scaleOf(lane: Lane, visibleBpSpan: number) {
       : { text: '' }
     : multiple > 1.02
       ? {
-          text: `${getBpDisplayStr(laneSpan)}, squeezed ${times}`,
-          title: `This lane has ${getBpDisplayStr(laneSpan)} across the anchor's ${windowSpan} window, so it is drawn ${times} smaller to fit.`,
+          text: `${getBpDisplayStr(shown)}, squeezed ${times}`,
+          title: `This lane holds ${holds} across the anchor's ${windowSpan} window, so it is drawn ${times} smaller to fit.`,
         }
       : { text: '' }
 }

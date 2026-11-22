@@ -712,6 +712,31 @@ describe('splitSyntenyFeatureAtGaps', () => {
     ).toEqual([[20_000, 21_000, 0, 1000]])
   })
 
+  test('an indel under the bound beside a cut is the gap’s, not the run’s', () => {
+    const runs = splitSyntenyFeatureAtGaps(
+      cig(
+        [1000, CIGAR_M],
+        [300, CIGAR_I],
+        [25_000, CIGAR_D],
+        [50, CIGAR_D],
+        [1000, CIGAR_M],
+      ),
+      0,
+      0,
+      2300,
+      1,
+      10_000,
+    )
+    expect(runsOf(runs)).toEqual([
+      [0, 1000, 0, 1000],
+      [26_050, 27_050, 1300, 2300],
+    ])
+    expect(runs.map(run => [...run.cigar])).toEqual([
+      [pack(1000, CIGAR_M)],
+      [pack(1000, CIGAR_M)],
+    ])
+  })
+
   test('a run clips to a window like any block, and a gap the window cuts through is still a gap', () => {
     const runs = splitSyntenyFeatureAtGaps(
       cig([1000, CIGAR_M], [25_000, CIGAR_D], [1000, CIGAR_M]),

@@ -194,15 +194,16 @@ export function laneIndelViews(self: ReturnType<typeof laneGroupListViews>) {
   return {
     /**
      * #getter
-     * each lane's holes, one per deletion `laneIndels` opens
+     * each lane's holes on the strand it is drawn on, where `laneIndels`
+     * finds the anchor's side of a gap longer than the lane's
      */
     get laneOpenings() {
       return self.laneIndels.openings
     },
     /**
      * #getter
-     * each lane's deletions, insertions and inversions as its records state
-     * them, for the header
+     * each lane's deletions, insertions, stretches replaced and inversions
+     * as its records state them on the strand it is drawn on, for the header
      */
     get laneChanges() {
       return self.laneIndels.changes

@@ -831,7 +831,11 @@ export async function multiwayTables(
       return [
         name,
         decision &&
-          laneFrameOn(stage, decision, openingsOf(name, decision.refName)),
+          laneFrameOn(
+            stage,
+            decision,
+            openingsOf(name, decision.refName, decision.flipped),
+          ),
       ]
     }),
   )

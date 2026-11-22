@@ -721,14 +721,14 @@ test('a lane menu goes to each change its chip names, largest first', () => {
     {
       at: 0,
       laneBp: 0,
-      bp: 935_000,
+      anchorBp: 935_000,
       kind: 'deletion',
       anchor: { refName: 'chr1', start: 2_000_000, end: 2_935_000 },
     },
     {
       at: 0,
       laneBp: 30_000,
-      bp: 30_000,
+      anchorBp: 0,
       kind: 'insertion',
       anchor: { refName: 'chr1', start: 5_000_000, end: 5_000_000 },
     },

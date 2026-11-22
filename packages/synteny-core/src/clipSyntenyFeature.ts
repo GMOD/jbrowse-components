@@ -227,9 +227,11 @@ function isGapOp(op: number) {
  * inside, and a 25 kb deletion 9 kb of which is in view is still a gap. The
  * walk is the clip's own — query forward, target down for a - strand block
  * from `mateEnd` — and a run's `mateStart`/`mateEnd` are its target extent
- * in ascending order. A run is only what aligned: one holding no match or
- * coarse-run op (a stretch that is deletions alone) is dropped, and a gap at
- * either edge of the block leaves no empty run behind it.
+ * in ascending order. A run is only what aligned, from its first match or
+ * coarse-run op to its last: a stretch that is deletions alone is no run, and
+ * an indel under the bound beside a cut belongs to the gap, so the gap states
+ * both its sides whole (`10D25000I` is 10 bp against 25 kb, not 25 kb against
+ * nothing).
  *
  * Wanted by a display that draws a clipped record as one straight placement
  * and has no CIGAR left to consult: a chain carrying a 25 kb indel inside the
@@ -252,9 +254,9 @@ export function splitSyntenyFeatureAtGaps(
   let run:
     | { qLo: number; qHi: number; tLo: number; tHi: number; ops: number[] }
     | undefined
-  let aligned = false
+  let trailing: number[] = []
   const close = () => {
-    if (run !== undefined && aligned && run.qHi > run.qLo) {
+    if (run !== undefined && run.qHi > run.qLo) {
       runs.push({
         start: run.qLo,
         end: run.qHi,
@@ -264,7 +266,7 @@ export function splitSyntenyFeatureAtGaps(
       })
     }
     run = undefined
-    aligned = false
+    trailing = []
   }
   for (let k = 0; k < cigar.length; k++) {
     const packed = cigar[k]!
@@ -278,10 +280,14 @@ export function splitSyntenyFeatureAtGaps(
     const bp2Next = bp2 + tAdv * revTarget
     if (isGapOp(op) && len >= gapBp) {
       close()
-    } else if (qAdv > 0 || tAdv > 0) {
+    } else if (isRun || isMatchOp(op)) {
       if (run === undefined) {
         run = { qLo: bp1, qHi: bp1, tLo: bp2, tHi: bp2, ops: [] }
       }
+      for (const held of trailing) {
+        run.ops.push(held)
+      }
+      trailing = []
       run.qHi = bp1 + qAdv
       run.tLo = Math.min(run.tLo, bp2, bp2Next)
       run.tHi = Math.max(run.tHi, bp2, bp2Next)
@@ -289,7 +295,8 @@ export function splitSyntenyFeatureAtGaps(
       if (second !== undefined) {
         run.ops.push(second)
       }
-      aligned = aligned || isRun || isMatchOp(op)
+    } else if (run !== undefined && (qAdv > 0 || tAdv > 0)) {
+      trailing.push(packed)
     }
     bp1 += qAdv
     bp2 = bp2Next

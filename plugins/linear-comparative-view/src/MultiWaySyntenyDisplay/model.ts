@@ -1301,7 +1301,7 @@ export function stateModelFactory(
         return laneFrameOn(
           this.anchorStage,
           decision,
-          self.laneOpenings(assemblyName, decision.refName),
+          self.laneOpenings(assemblyName, decision.refName, decision.flipped),
         )
       },
     }))
@@ -1430,7 +1430,7 @@ export function stateModelFactory(
             dxPx,
             (base.rung * self.visibleBpSpan) / self.canvasWidthPx,
             self.anchorReversed,
-            self.laneOpenings(assemblyName, base.refName),
+            self.laneOpenings(assemblyName, base.refName, base.flipped),
           )
           setFrozenDecision(assemblyName, nudged)
           self.laneDecisions = new Map(self.laneDecisions).set(
@@ -1806,6 +1806,19 @@ export function stateModelFactory(
       },
     }))
     .views(self => ({
+      /**
+       * #method
+       * the changes a lane states read on the strand it is drawn on
+       */
+      drawnLaneChanges(assemblyName: string, refName: string) {
+        return self.laneChanges(
+          assemblyName,
+          refName,
+          self.laneDecisions.get(assemblyName)?.flipped,
+        )
+      },
+    }))
+    .views(self => ({
       /** #getter */
       get laneHeaderRows() {
         const lanes = self.laneStack.lanes.map(lane => {
@@ -1825,7 +1838,8 @@ export function stateModelFactory(
           self.anchorLocString,
           self.inlineLaneNames ? self.laneStack.glyphHeight : undefined,
           self.againstAnchor,
-          self.laneChanges,
+          (assemblyName, refName) =>
+            self.drawnLaneChanges(assemblyName, refName),
           assemblyName => self.placelessOf(assemblyName),
           assemblyName => self.laneColor(assemblyName),
         )
@@ -1838,7 +1852,7 @@ export function stateModelFactory(
         return lane.frame
           ? shownLaneChanges(
               lane,
-              self.laneChanges(lane.assemblyName, lane.frame.refName),
+              self.drawnLaneChanges(lane.assemblyName, lane.frame.refName),
             )
           : []
       },

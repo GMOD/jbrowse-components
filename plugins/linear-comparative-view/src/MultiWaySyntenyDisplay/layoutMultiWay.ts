@@ -100,17 +100,19 @@ export interface LaneOpening {
 }
 
 /**
- * What a lane's records state over lane bp `at` to `at + laneBp`: `bp` of
- * anchor its sequence lacks, `bp` of its own sequence the anchor lacks, or an
- * inverted stretch of `bp` anchor. One record's gap can state both of the
- * first two, and each is its own change. `anchor` is where it sits on the
- * anchor: the stretch deleted or inverted, or the point of an insertion.
+ * What a lane's records state over lane bp `at` to `at + laneBp`: across a gap
+ * between two pieces, `anchorBp` of anchor no piece between them holds against
+ * `laneBp` of the lane's own, a deletion where the lane's side is 0, an
+ * insertion where the anchor's is, and one replaced by the other where both
+ * have bases; or an inverted run holding `anchorBp` of anchor. `anchor` is
+ * where it sits on the anchor: the stretch replaced or inverted, or the point
+ * of an insertion.
  */
 export interface LaneChange {
   at: number
   laneBp: number
-  bp: number
-  kind: 'deletion' | 'insertion' | 'inversion'
+  anchorBp: number
+  kind: 'deletion' | 'insertion' | 'replacement' | 'inversion'
   anchor: AnchorStretch
 }
 
@@ -166,14 +168,38 @@ function laneRunsOf(sorted: readonly LanePiece[]) {
   return runs
 }
 
+function mergedSpans(pieces: readonly { start: number; end: number }[]) {
+  const merged: { start: number; end: number }[] = []
+  for (const { start, end } of pieces.toSorted((a, b) => a.start - b.start)) {
+    const last = merged.at(-1)
+    if (last && start <= last.end) {
+      last.end = Math.max(last.end, end)
+    } else {
+      merged.push({ start, end })
+    }
+  }
+  return merged
+}
+
+/** bp of `spans` inside `within`, each base counted once */
 function coveredBp(
-  pieces: readonly { start: number; end: number }[],
-  start: number,
-  end: number,
+  spans: readonly { start: number; end: number }[],
+  within: readonly { start: number; end: number }[],
 ) {
+  const a = mergedSpans(spans)
+  const b = mergedSpans(within)
   let bp = 0
-  for (const piece of pieces) {
-    bp += Math.max(0, Math.min(end, piece.end) - Math.max(start, piece.start))
+  let i = 0
+  let j = 0
+  while (i < a.length && j < b.length) {
+    const x = a[i]!
+    const y = b[j]!
+    bp += Math.max(0, Math.min(x.end, y.end) - Math.max(x.start, y.start))
+    if (x.end < y.end) {
+      i++
+    } else {
+      j++
+    }
   }
   return bp
 }
@@ -181,10 +207,11 @@ function coveredBp(
 /**
  * Inversions: a run whose neighbours on both sides are the other strand,
  * with its anchor span between their outer ends and mostly outside what they
- * cover. A segdup-flanked breakpoint (8p23.1's REPD and REPP) puts paralog
- * hits at the flanks' inner ends, which is why the test reads their outer
- * ends. A reverse hit elsewhere on the anchor, or an inverted copy of a
- * flank, is no inversion; neither the vote nor the drawn direction enters.
+ * cover, sized by the anchor it holds. A segdup-flanked breakpoint (8p23.1's
+ * REPD and REPP) puts paralog hits at the flanks' inner ends, which is why the
+ * test reads their outer ends. A reverse hit elsewhere on the anchor, or an
+ * inverted copy of a flank, is no inversion; neither the vote nor the drawn
+ * direction enters.
  */
 function laneInversionsOf(sorted: readonly LanePiece[]): LaneChange[] {
   const runs = laneRunsOf(sorted)
@@ -193,26 +220,27 @@ function laneInversionsOf(sorted: readonly LanePiece[]): LaneChange[] {
     const left = runs[i - 1]!
     const run = runs[i]!
     const right = runs[i + 1]!
-    const span = run.anchorEnd - run.anchorStart
+    const held = coveredBp(run.anchors, run.anchors)
     if (
       left.orientation === right.orientation &&
       run.orientation !== left.orientation &&
       left.refName === run.refName &&
       right.refName === run.refName &&
-      span >= SPLIT_AT_GAP_BP
+      held >= SPLIT_AT_GAP_BP
     ) {
       const [lo, hi] =
         left.orientation > 0
           ? [left.anchorStart, right.anchorEnd]
           : [right.anchorStart, left.anchorEnd]
-      const flanked =
-        coveredBp(left.anchors, run.anchorStart, run.anchorEnd) +
-        coveredBp(right.anchors, run.anchorStart, run.anchorEnd)
-      if (run.anchorStart >= lo && run.anchorEnd <= hi && flanked < span / 2) {
+      const flanked = coveredBp(
+        [...left.anchors, ...right.anchors],
+        run.anchors,
+      )
+      if (run.anchorStart >= lo && run.anchorEnd <= hi && flanked < held / 2) {
         out.push({
           at: run.laneStart,
           laneBp: run.laneEnd - run.laneStart,
-          bp: span,
+          anchorBp: held,
           kind: 'inversion',
           anchor: {
             refName: run.refName,
@@ -373,26 +401,121 @@ function placedAnchorOf(groups: MultiWayGroup[]) {
   }
 }
 
+type PlacedPiece = { lane: MatePlacement; anchor: MultiWayPlacement }
+
+/** the stretches of `start`..`end` that `spans` leave uncovered */
+function uncoveredSpans(
+  spans: readonly { start: number; end: number }[],
+  start: number,
+  end: number,
+) {
+  const out: { start: number; end: number }[] = []
+  let from = start
+  for (const span of mergedSpans(spans)) {
+    if (span.start > from && from < end) {
+      out.push({ start: from, end: Math.min(span.start, end) })
+    }
+    from = Math.max(from, span.end)
+  }
+  return from < end ? [...out, { start: from, end }] : out
+}
+
 /**
  * What a lane states across each gap between two consecutive pieces of one
- * contig, in one fetch window: the anchor stretch between them is a deletion
- * and the lane's own stretch an insertion, each listed at its own size once
- * it reaches `SPLIT_AT_GAP_BP` and never netted into one. That holds within
- * one record, and across two where the lane places the anchor stretch
- * nowhere; two records meeting where that stretch went elsewhere in the lane
- * are a rearrangement's breakpoint, whose anchor distance runs to megabases.
- * The lane's own stretch is placed nowhere, or the pieces would not be
- * consecutive. An opening is the net of the two, so what follows sits under
- * its own anchor stretch; between two fetch windows lies anchor the fetch
- * never read, which opens and states nothing. A run of the other strand set
- * in place between two runs is an inversion (`laneInversionsOf`). Named
- * records are genes, whose spacing says nothing.
+ * contig read on `orientation`, the strand the lane is drawn on, in one fetch
+ * window. Pieces of the other strand never bound a gap; lying in one, they
+ * hold what of its anchor stretch they align to. The rest of that stretch is
+ * the anchor's side and the lane's bp holding none of it the lane's side,
+ * one change worded by both. That holds within one record, and across two
+ * where the lane places the rest nowhere; two records meeting where it went
+ * elsewhere in the lane are a rearrangement's breakpoint, whose anchor
+ * distance runs to megabases. An opening is the anchor bp between the two
+ * pieces less the lane bp between them, so each piece of the drawn strand
+ * sits under its own anchor stretch; between two fetch windows lies anchor
+ * the fetch never read, which opens and states nothing. Named records are
+ * genes, whose spacing says nothing.
+ */
+function laneGapsOf(
+  list: readonly PlacedPiece[],
+  orientation: number,
+  placedElsewhere: (refName: string, lo: number, hi: number) => boolean,
+) {
+  const drawn = list.filter(p => p.lane.orientation === orientation)
+  const turned = list.filter(p => p.lane.orientation !== orientation)
+  const openings: LaneOpening[] = []
+  const changes: LaneChange[] = []
+  forEachLaneGap(drawn, (left, right, laneGap, anchorGap) => {
+    const [lo, hi] =
+      orientation < 0
+        ? [right.anchor.end, left.anchor.start]
+        : [left.anchor.end, right.anchor.start]
+    const inGap = turned.filter(
+      p =>
+        p.anchor.refName === left.anchor.refName &&
+        p.lane.start >= left.lane.end &&
+        p.lane.end <= right.lane.start,
+    )
+    if (
+      anchorGap !== undefined &&
+      oneWindow(left.lane, right.lane) &&
+      (oneRecord(left.lane, right.lane) ||
+        !uncoveredSpans(
+          inGap.map(p => p.anchor),
+          lo,
+          hi,
+        ).some(rest =>
+          placedElsewhere(left.anchor.refName, rest.start, rest.end),
+        ))
+    ) {
+      const at = left.lane.end
+      const net = anchorGap - laneGap
+      if (laneGap >= 0 && net >= SPLIT_AT_GAP_BP) {
+        openings.push({ at, bp: net })
+      }
+      const stretch = [{ start: lo, end: hi }]
+      const held = coveredBp(
+        inGap.map(p => p.anchor),
+        stretch,
+      )
+      const heldLane = inGap.reduce(
+        (sum, p) =>
+          sum +
+          ((p.lane.end - p.lane.start) * coveredBp([p.anchor], stretch)) /
+            Math.max(p.anchor.end - p.anchor.start, 1),
+        0,
+      )
+      const anchorBp = Math.max(anchorGap, 0) - held
+      const laneBp = Math.max(0, Math.round(Math.max(laneGap, 0) - heldLane))
+      if (
+        anchorGap >= 0 &&
+        right.lane.end > left.lane.end &&
+        Math.max(anchorBp, laneBp) >= SPLIT_AT_GAP_BP
+      ) {
+        changes.push({
+          at,
+          laneBp,
+          anchorBp,
+          kind:
+            laneBp === 0
+              ? 'deletion'
+              : anchorBp === 0
+                ? 'insertion'
+                : 'replacement',
+          anchor: { refName: left.anchor.refName, start: lo, end: hi },
+        })
+      }
+    }
+  })
+  return { openings, changes }
+}
+
+/**
+ * Each lane contig's openings and stated changes, read on either strand
+ * (`laneGapsOf`), with the inversions among its runs (`laneInversionsOf`),
+ * which read the same whichever way the lane is drawn
  */
 export function laneIndelsOf(groups: MultiWayGroup[]) {
-  const pieces = new Map<
-    string,
-    { lane: MatePlacement; anchor: MultiWayPlacement }[]
-  >()
+  const pieces = new Map<string, PlacedPiece[]>()
   for (const group of groups) {
     if (!isNamedRecord(group.feature)) {
       for (const [assemblyName, placements] of group.mates) {
@@ -414,55 +537,38 @@ export function laneIndelsOf(groups: MultiWayGroup[]) {
   for (const [key, list] of pieces) {
     const assemblyName = key.slice(0, key.indexOf('\u0000'))
     list.sort((a, b) => a.lane.start - b.lane.start)
-    const openings: LaneOpening[] = []
-    const changes: LaneChange[] = []
-    forEachLaneGap(list, (left, right, laneGap, anchorGap) => {
-      if (anchorGap === undefined) {
-        return
+    const inversions = laneInversionsOf(list)
+    for (const orientation of [1, -1]) {
+      const { openings, changes } = laneGapsOf(
+        list,
+        orientation,
+        (refName, lo, hi) => placedAnchor(assemblyName, refName, lo, hi),
+      )
+      const strandKey = `${key}\u0000${orientation}`
+      const stated = [...changes, ...inversions]
+      if (openings.length) {
+        openingsByLane.set(strandKey, openings)
       }
-      const [lo, hi] =
-        left.lane.orientation < 0
-          ? [right.anchor.end, left.anchor.start]
-          : [left.anchor.end, right.anchor.start]
-      if (
-        !oneWindow(left.lane, right.lane) ||
-        (!oneRecord(left.lane, right.lane) &&
-          placedAnchor(assemblyName, left.anchor.refName, lo, hi))
-      ) {
-        return
+      if (stated.length) {
+        changesByLane.set(strandKey, stated)
       }
-      const at = left.lane.end
-      const net = anchorGap - laneGap
-      const anchor = { refName: left.anchor.refName, start: lo, end: hi }
-      if (laneGap >= 0 && net >= SPLIT_AT_GAP_BP) {
-        openings.push({ at, bp: net })
-      }
-      if (anchorGap >= SPLIT_AT_GAP_BP && right.lane.end > left.lane.end) {
-        changes.push({ at, laneBp: 0, bp: anchorGap, kind: 'deletion', anchor })
-      }
-      if (anchorGap >= 0 && laneGap >= SPLIT_AT_GAP_BP) {
-        changes.push({
-          at,
-          laneBp: laneGap,
-          bp: laneGap,
-          kind: 'insertion',
-          anchor,
-        })
-      }
-    })
-    changes.push(...laneInversionsOf(list))
-    if (openings.length) {
-      openingsByLane.set(key, openings)
-    }
-    if (changes.length) {
-      changesByLane.set(key, changes)
     }
   }
+  const keyOf = (assemblyName: string, refName: string, reversed: boolean) =>
+    `${assemblyName}\u0000${refName}\u0000${reversed ? -1 : 1}`
   return {
-    openings: (assemblyName: string, refName: string): readonly LaneOpening[] =>
-      openingsByLane.get(`${assemblyName}\u0000${refName}`) ?? NO_OPENINGS,
-    changes: (assemblyName: string, refName: string): readonly LaneChange[] =>
-      changesByLane.get(`${assemblyName}\u0000${refName}`) ?? NO_CHANGES,
+    openings: (
+      assemblyName: string,
+      refName: string,
+      reversed = false,
+    ): readonly LaneOpening[] =>
+      openingsByLane.get(keyOf(assemblyName, refName, reversed)) ?? NO_OPENINGS,
+    changes: (
+      assemblyName: string,
+      refName: string,
+      reversed = false,
+    ): readonly LaneChange[] =>
+      changesByLane.get(keyOf(assemblyName, refName, reversed)) ?? NO_CHANGES,
   }
 }
 
