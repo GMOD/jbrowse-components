@@ -393,7 +393,7 @@ const names: Record<string, string[]> = {
   '@jbrowse/core/util/samplesTsv': ['getSamplesTsvSources', 'parseSamplesTsv', 'samplesTsvAdapterConfigSchemaFields'],
   '@jbrowse/core/util/searchText': ['buildSearchText', 'highlightPatterns', 'parseSearchQuery', 'searchMatcher'],
   '@jbrowse/core/util/selectEncodedFeature': ['selectEncodedFeature'],
-  '@jbrowse/core/util/sessionParam': ['ENCODED_PREFIX', 'JSON_PREFIX', 'LOCAL_PREFIX', 'SESSION_PARAM_KINDS', 'SHARE_KEY_LENGTH', 'SHARE_PREFIX', 'SPEC_PREFIX', 'missingKeyError', 'prefetchSharedSession', 'sessionParamKind', 'sessionParamPayload', 'shareEndpoint', 'shareIdForKey', 'sharedSessionUrl', 'takePrefetchedSharedSession'],
+  '@jbrowse/core/util/sessionParam': ['ENCODED_PREFIX', 'JSON_PREFIX', 'LOCAL_PREFIX', 'SESSION_PARAM_KINDS', 'SHARE_KEY_LENGTH', 'SHARE_PREFIX', 'SPEC_PREFIX', 'missingKeyError', 'pageUrlParams', 'paramsInHash', 'prefetchSharedSession', 'sessionParamKind', 'sessionParamPayload', 'shareEndpoint', 'shareIdForKey', 'sharedSessionUrl', 'takePrefetchedSharedSession'],
   '@jbrowse/core/util/setStackTraceLimit': ['setStackTraceLimit'],
   '@jbrowse/core/util/shapeNameList': ['DEFAULT_SHAPE_RANGE', 'SHAPE_NAMES'],
   '@jbrowse/core/util/shapeNames': ['DEFAULT_SHAPE_RANGE', 'SHAPE_CODES', 'SHAPE_NAMES'],

@@ -21,8 +21,20 @@ export type MarkChannel =
   | 'size'
   | 'strokeWidth'
 
-/** The channel holding a mark's px: a point's `size`, a stroked mark's `strokeWidth`. */
-export type PxChannel = Extract<MarkChannel, 'size' | 'strokeWidth'>
+/** The channels holding a mark's px: a point's `size`, a stroked mark's `strokeWidth`. */
+export const PX_CHANNELS = [
+  'size',
+  'strokeWidth',
+] as const satisfies readonly MarkChannel[]
+
+export type PxChannel = (typeof PX_CHANNELS)[number]
+
+const PX_CHANNEL_SET: ReadonlySet<string> = new Set(PX_CHANNELS)
+
+/** Whether a channel holds a width in px, a point's `size` or a `strokeWidth`. */
+export function isPxChannel(channel: string): channel is PxChannel {
+  return PX_CHANNEL_SET.has(channel)
+}
 
 /**
  * A lane the worker fills: a channel, a quantitative color's raw values, an
@@ -91,7 +103,7 @@ export interface MarkSpec {
  * Its own module, reaching only the vocabulary beside it: the rule list reads
  * it and `jbrowse validate` carries a copy, and markList.ts takes render-core's
  * marks barrel — shader sources included — which the examples sites' eager
- * budget then pays for. `layerRequests` in model.ts is where each lane is
+ * budget then pays for. `layerRequests` in markConfigViews.ts is where each lane is
  * checked to be one the encoder fills.
  */
 export const MARK_SPECS = {

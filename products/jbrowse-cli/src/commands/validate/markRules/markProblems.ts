@@ -13,7 +13,13 @@ import {
   stepsOutput,
   universalPresetOf,
 } from './markRuleFacts.ts'
-import { MARK_SPECS, readsValue } from './markSpecs.ts'
+import {
+  MARK_SPECS,
+  PX_CHANNELS,
+  isPxChannel,
+  interpolationOf,
+  readsValue,
+} from './markSpecs.ts'
 import {
   DEFAULT_AGGREGATE_OP,
   DEFAULT_BIN_AS,
@@ -22,7 +28,6 @@ import {
   DEFAULT_PILEUP_FIELDS,
   DEFAULT_TEXT_FIELD,
   DEFAULT_WINDOW_FRAME,
-  DEFAULT_X2,
   isWindowFrame,
   MAX_THRESHOLD_CUTS,
   MARK_MEMBERS,
@@ -58,7 +63,7 @@ export const MARK_RULES = {
   'unread-channel': 'warning',
   /** An `encoding.size` or `encoding.strokeWidth` on a mark that draws no point, rule or line and strokes no link. */
   'unread-size': 'warning',
-  /** A `mark` member its type does not read: an `interpolate` off a line or a link, a `height` off a rect, a `gapBp` off a line. */
+  /** A `mark` member its type does not read: an `interpolate` off a line or a link, a `height` off a rect, a `gapBp` off a `linear` line. */
   'unread-mark-member': 'warning',
   /** An `interpolate` the mark's type does not draw, such as `dome` on a line, which then draws its default. */
   'mark-interpolate': 'warning',
@@ -260,23 +265,7 @@ function unwritten(value: unknown): boolean {
 // leaves off and a file may spell out: the two read alike, so a slot at its
 // default is no channel for a rule to find unread.
 function atDefault(channel: string, value: unknown) {
-  switch (channel) {
-    case 'x':
-      return value === DEFAULT_BIN_AS[0]
-    case 'x2':
-      return (
-        value === DEFAULT_X2 ||
-        (typeof value === 'object' &&
-          value !== null &&
-          unwritten((value as { refName?: unknown }).refName) &&
-          ((value as { pos?: unknown }).pos === DEFAULT_X2 ||
-            unwritten((value as { pos?: unknown }).pos)))
-      )
-    case 'text':
-      return value === DEFAULT_TEXT_FIELD
-    default:
-      return false
-  }
+  return channel === 'text' && value === DEFAULT_TEXT_FIELD
 }
 
 /** The channels a mark's encoding writes, less those at their default. */
@@ -298,8 +287,6 @@ function colorScaleOf({ scale, field = '' }: ColorSlots) {
     fieldScaleOf(FEATURE_FIELD_PRESETS, field),
   )
 }
-
-const PX_CHANNELS = ['size', 'strokeWidth'] as const
 
 function sizeFieldOf(size: WidthSnapshot | undefined) {
   return typeof size === 'string'
@@ -714,11 +701,10 @@ function ownProblems(
     ...spec.channels,
     ...(px ? [px] : []),
   ])
-  const pxChannels: readonly string[] = PX_CHANNELS
   for (const channel of writtenChannels(mark.encoding)) {
     if (!channels.has(channel)) {
       problems.push(
-        !pxChannels.includes(channel)
+        !isPxChannel(channel)
           ? found(
               'unread-channel',
               `encoding.${channel}`,
@@ -765,6 +751,20 @@ function ownProblems(
         ),
       )
     }
+  }
+  const interpolation = interpolationOf(type, def.interpolate)
+  if (
+    writes.gapBp &&
+    spec.members?.includes('gapBp') &&
+    interpolation !== 'linear'
+  ) {
+    problems.push(
+      found(
+        'unread-mark-member',
+        'mark.gapBp',
+        `a ${interpolation} ${type} reads no mark.gapBp, which only a linear one breaks across`,
+      ),
+    )
   }
   const drawn = spec.interpolations
   if (
@@ -858,6 +858,41 @@ export interface PlotSnapshot {
   axis?: AxisSnapshot
 }
 
+function fieldNamed(field: unknown) {
+  return typeof field === 'string' && field !== '' ? field : undefined
+}
+
+/**
+ * How a plot splits its features: `bandsRows` where `rows` draws and the
+ * facet's field is a row attribute, so the facet bands the rows; `faceted`
+ * where the facet splits the features into sections instead; `drawsRows`
+ * where `rows` draws one row per value with no facet in its place; and
+ * `split`, the field the sections or rows are split on, which every
+ * section's rows keep through the steps that make rows.
+ */
+export function plotSplitOf({
+  facetField,
+  rowsField,
+  rowAttributes,
+}: {
+  facetField: unknown
+  rowsField: unknown
+  rowAttributes: readonly string[]
+}) {
+  const facet = fieldNamed(facetField)
+  const rows = fieldNamed(rowsField)
+  const bandsRows =
+    facet !== undefined && rows !== undefined && rowAttributes.includes(facet)
+  const faceted = facet !== undefined && !bandsRows
+  const drawsRows = rows !== undefined && !faceted
+  return {
+    bandsRows,
+    faceted,
+    drawsRows,
+    split: faceted ? facet : drawsRows ? rows : undefined,
+  }
+}
+
 /**
  * Every rule a plot breaks. The display's step lists are checked as a mark's
  * are and reported with no mark, under `transform` and `facet.transform`, and
@@ -873,17 +908,11 @@ export function markProblems({
   color,
   axis,
 }: PlotSnapshot): MarkProblem[] {
-  const bandsRows =
-    named(rows?.field) && rowAttributes.includes(String(facet?.field))
-  const faceted = named(facet?.field) && !bandsRows
-  const drawsRows = named(rows?.field) && !faceted
-  // the field the sections or rows are split on, which every section's rows
-  // keep through the steps that make rows
-  const split = faceted
-    ? String(facet?.field)
-    : drawsRows
-      ? String(rows?.field)
-      : undefined
+  const { faceted, drawsRows, split } = plotSplitOf({
+    facetField: facet?.field,
+    rowsField: rows?.field,
+    rowAttributes,
+  })
   const section = readable(facet?.transform ?? [])
   const display = readable(transform)
   const shared = [...display, ...section]

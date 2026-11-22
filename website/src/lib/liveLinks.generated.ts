@@ -57,6 +57,8 @@ export const figureLiveRefs: Record<string, string> = {
   "multiway_synteny/ecoli_import_form": "?config=https%3A%2F%2Fjbrowse.org%2Fdemos%2Fecoli_pangenome%2Fconfig.json&session=spec-%7B%22views%22%3A%5B%5D%7D&sessionName=Screenshot",
   "mcscan_anchors": "?config=https%3A%2F%2Fjbrowse.org%2Fdemos%2Fgrape_peach_cacao%2Fconfig.json&session=spec-%7B%22views%22%3A%5B%7B%22type%22%3A%22LinearSyntenyView%22%2C%22mark%22%3A%7B%22interpolate%22%3A%22bump%22%7D%2C%22offscreen%22%3A%7B%22show%22%3Afalse%7D%2C%22tracks%22%3A%5B%5B%22grape_peach_anchors%22%2C%22grape_peach_anchors_simple%22%5D%5D%2C%22levelHeights%22%3A%5B236%5D%2C%22views%22%3A%5B%7B%22assembly%22%3A%22GCF_000346465.2%22%2C%22loc%22%3A%22chrG7%3A18%2C000%2C000-22%2C388%2C614%22%2C%22tracks%22%3A%5B%7B%22trackId%22%3A%22grape_peach_anchors_simple%22%2C%22height%22%3A60%7D%5D%7D%2C%7B%22assembly%22%3A%22GCF_030704535.1%22%2C%22loc%22%3A%22chr11%3A1-10%2C000%2C000%22%2C%22tracks%22%3A%5B%7B%22trackId%22%3A%22grape_peach_anchors_simple%22%2C%22height%22%3A60%7D%5D%7D%5D%7D%5D%7D&sessionName=Screenshot",
   "mcscan_synteny/gamma_copies": "?config=https%3A%2F%2Fjbrowse.org%2Fdemos%2Fgrape_peach_cacao%2Fconfig.json&session=spec-%7B%22views%22%3A%5B%7B%22type%22%3A%22LinearGenomeView%22%2C%22assembly%22%3A%22GCF_000346465.2%22%2C%22loc%22%3A%22chrG7%3A18%2C290%2C000-18%2C660%2C000%22%2C%22tracks%22%3A%5B%7B%22trackId%22%3A%22grape_peach_anchors%22%2C%22type%22%3A%22MultiWaySyntenyDisplay%22%2C%22rows%22%3A%7B%22sort%22%3A%5B%22%7BGCF_030704535.1%7Dchr9%22%2C%22GCF_000346465.2%22%2C%22%7BGCF_030704535.1%7Dchr11%22%5D%2C%22kept%22%3A%5B%22%7BGCF_030704535.1%7Dchr9%22%2C%22%7BGCF_030704535.1%7Dchr11%22%5D%7D%2C%22height%22%3A420%7D%5D%7D%5D%7D&sessionName=Screenshot",
+  "mcscan_synteny/blocks_by_strand": "?config=https%3A%2F%2Fjbrowse.org%2Fdemos%2Fgrape_peach_cacao%2Fconfig.json&session=spec-%7B%22views%22%3A%5B%7B%22type%22%3A%22LinearGenomeView%22%2C%22assembly%22%3A%22GCF_000346465.2%22%2C%22loc%22%3A%22chrG7%3A8%2C400%2C000-15%2C200%2C000%22%2C%22tracks%22%3A%5B%7B%22trackId%22%3A%22grape_peach_anchors%22%2C%22type%22%3A%22MultiWaySyntenyDisplay%22%2C%22rows%22%3A%7B%22kept%22%3A%5B%22%7BGCF_030704535.1%7Dchr8%22%5D%7D%2C%22height%22%3A300%2C%22ribbons%22%3A%7B%22encoding%22%3A%7B%22opacity%22%3A0.6%7D%7D%7D%5D%7D%5D%7D&sessionName=Screenshot",
+  "mcscan_synteny/blocks_by_block": "?config=https%3A%2F%2Fjbrowse.org%2Fdemos%2Fgrape_peach_cacao%2Fconfig.json&session=spec-%7B%22views%22%3A%5B%7B%22type%22%3A%22LinearGenomeView%22%2C%22assembly%22%3A%22GCF_000346465.2%22%2C%22loc%22%3A%22chrG7%3A8%2C400%2C000-15%2C200%2C000%22%2C%22tracks%22%3A%5B%7B%22trackId%22%3A%22grape_peach_anchors%22%2C%22type%22%3A%22MultiWaySyntenyDisplay%22%2C%22rows%22%3A%7B%22kept%22%3A%5B%22%7BGCF_030704535.1%7Dchr8%22%5D%7D%2C%22height%22%3A300%2C%22ribbons%22%3A%7B%22encoding%22%3A%7B%22color%22%3A%22block%22%2C%22opacity%22%3A0.6%7D%2C%22filter%22%3A%5B%7B%22field%22%3A%22blockSpan%22%2C%22gte%22%3A30%7D%5D%7D%7D%5D%7D%5D%7D&sessionName=Screenshot",
   "mcscan_synteny/anchors": "?config=https%3A%2F%2Fjbrowse.org%2Fdemos%2Fgrape_peach_cacao%2Fconfig.json&session=spec-%7B%22views%22%3A%5B%7B%22type%22%3A%22LinearSyntenyView%22%2C%22tracks%22%3A%5B%5B%22grape_peach_anchors%22%5D%5D%2C%22mark%22%3A%7B%22interpolate%22%3A%22linear%22%7D%2C%22levelHeights%22%3A%5B260%5D%2C%22collapseEmptyRows%22%3Atrue%2C%22views%22%3A%5B%7B%22assembly%22%3A%22GCF_030704535.1%22%2C%22loc%22%3A%22chr9%3A1-11%2C300%2C000%22%2C%22tracks%22%3A%5B%5D%7D%2C%7B%22assembly%22%3A%22GCF_000346465.2%22%2C%22loc%22%3A%22chrG3%3A2%2C150%2C000-7%2C300%2C000%22%2C%22tracks%22%3A%5B%5D%7D%5D%7D%5D%7D&sessionName=Screenshot",
   "mcscan_synteny/anchors_simple": "?config=https%3A%2F%2Fjbrowse.org%2Fdemos%2Fgrape_peach_cacao%2Fconfig.json&session=spec-%7B%22views%22%3A%5B%7B%22type%22%3A%22LinearSyntenyView%22%2C%22tracks%22%3A%5B%5B%22grape_peach_anchors_simple%22%2C%22grape_peach_anchors%22%5D%5D%2C%22mark%22%3A%7B%22interpolate%22%3A%22linear%22%7D%2C%22levelHeights%22%3A%5B260%5D%2C%22collapseEmptyRows%22%3Atrue%2C%22views%22%3A%5B%7B%22assembly%22%3A%22GCF_030704535.1%22%2C%22loc%22%3A%22chr9%3A1-11%2C300%2C000%22%2C%22tracks%22%3A%5B%5D%7D%2C%7B%22assembly%22%3A%22GCF_000346465.2%22%2C%22loc%22%3A%22chrG3%3A2%2C150%2C000-7%2C300%2C000%22%2C%22tracks%22%3A%5B%5D%7D%5D%7D%5D%7D&sessionName=Screenshot",
   "mcscan_synteny/dotplot": "?config=https%3A%2F%2Fjbrowse.org%2Fdemos%2Fgrape_peach_cacao%2Fconfig.json&session=spec-%7B%22views%22%3A%5B%7B%22type%22%3A%22DotplotView%22%2C%22views%22%3A%5B%7B%22assembly%22%3A%22GCF_000346465.2%22%7D%2C%7B%22assembly%22%3A%22GCF_030704535.1%22%7D%5D%2C%22tracks%22%3A%5B%22grape_peach_anchors%22%5D%2C%22autoDiagonalize%22%3Atrue%7D%5D%7D&sessionName=Screenshot",
@@ -645,6 +647,8 @@ export const figureSlowSpecs: string[] = [
   "maf_summary_zoomed_in",
   "maf_summary_zoomed_out",
   "mark_display/facet",
+  "mcscan_synteny/blocks_by_block",
+  "mcscan_synteny/blocks_by_strand",
   "mcscan_synteny/gamma_copies",
   "methylation/chromatin_accessibility_6ma",
   "multisv_rhd",
@@ -1069,6 +1073,16 @@ export const figureFrames: Record<
   "mcscan_synteny/gamma_copies": {
     "width": 1500,
     "height": 640,
+    "timeout": 120000
+  },
+  "mcscan_synteny/blocks_by_strand": {
+    "width": 1500,
+    "height": 520,
+    "timeout": 120000
+  },
+  "mcscan_synteny/blocks_by_block": {
+    "width": 1500,
+    "height": 520,
     "timeout": 120000
   },
   "mcscan_synteny/anchors": {
@@ -3487,6 +3501,7 @@ export const figureComposites: Record<
   }
 > = {
   "multiway_synteny/ecoli_launch_from_selection": {"parts":["multiway_synteny/ecoli_launch_selection","multiway_synteny/ecoli_launch_result"],"horizontal":false,"callouts":false},
+  "mcscan_synteny/blocks": {"parts":["mcscan_synteny/blocks_by_strand","mcscan_synteny/blocks_by_block"],"horizontal":false,"callouts":false},
   "mcscan_synteny/anchors_vs_simple": {"parts":["mcscan_synteny/anchors","mcscan_synteny/anchors_simple"],"horizontal":false,"callouts":false},
   "genomes_synteny/ribbon_settings": {"parts":["genomes_synteny/ribbons_default","genomes_synteny/ribbons_curved"],"horizontal":false,"callouts":false},
   "sv_synteny/color_by_attribute_steps": {"parts":["sv_synteny/color_by_attribute","sv_synteny/ortholog_colors"],"horizontal":true,"callouts":false},

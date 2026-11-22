@@ -4042,6 +4042,8 @@
         "SHARE_PREFIX",
         "SPEC_PREFIX",
         "missingKeyError",
+        "pageUrlParams",
+        "paramsInHash",
         "prefetchSharedSession",
         "sessionParamKind",
         "sessionParamPayload",

@@ -31,6 +31,8 @@ records
 render
 repeatKey
 repeatTrackId
+ribbons.encoding.opacity
+ribbons.filter
 rows
 showAlignment
 showProteinTracks
