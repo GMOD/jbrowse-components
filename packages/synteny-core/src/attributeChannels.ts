@@ -34,6 +34,12 @@ export const PRESET_ATTRIBUTES = [
   'syntenicDepth',
 ] as const
 
+// The columns an adapter type puts on every feature without being asked: an
+// MCScan `.anchors` pair's collinear block and that block's gene span.
+const BUILT_IN_COLUMNS: Record<string, readonly string[]> = {
+  MCScanAnchorsAdapter: ['block', 'blockSpan'],
+}
+
 // `attributeColumns` names an ortholog table's extra columns or a PAF's tags; a
 // composed adapter (MultiPairwiseSyntenyAdapter) declares its children's. Read
 // straight off the adapter config the worker was handed: it is a declared,
@@ -43,6 +49,10 @@ export function declaredAttributes(adapterConfig: unknown): string[] {
   if (typeof adapterConfig !== 'object' || adapterConfig === null) {
     return []
   }
+  const builtIn =
+    'type' in adapterConfig && typeof adapterConfig.type === 'string'
+      ? (BUILT_IN_COLUMNS[adapterConfig.type] ?? [])
+      : []
   const own =
     'attributeColumns' in adapterConfig &&
     Array.isArray(adapterConfig.attributeColumns)
@@ -52,7 +62,7 @@ export function declaredAttributes(adapterConfig: unknown): string[] {
     'adapters' in adapterConfig && Array.isArray(adapterConfig.adapters)
       ? adapterConfig.adapters.flatMap(child => declaredAttributes(child))
       : []
-  return [...new Set([...own, ...children])]
+  return [...new Set([...builtIn, ...own, ...children])]
 }
 
 /**

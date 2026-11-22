@@ -1,8 +1,14 @@
 import { SimpleFeature } from '@jbrowse/core/util'
 import { cssColorToABGR, withAbgrAlpha } from '@jbrowse/core/util/colorBits'
 import { UNIVERSAL_FIELD_PRESETS } from '@jbrowse/core/util/colorScale'
+import {
+  declaredAttributes,
+  featureAttributeRanges,
+} from '@jbrowse/synteny-core'
 
 import { ribbonPaintOf } from './ribbonPaint.ts'
+
+import type { FieldPredicate } from '@jbrowse/core/util/fieldPredicate'
 
 const record = new SimpleFeature({
   uniqueId: 'r1',
@@ -88,4 +94,44 @@ test("a text column's missing value paints in the color scale.invalid names", ()
     })
   expect(paintOf()(record, 1)).toBe(cssColorToABGR('grey'))
   expect(paintOf({ invalid: 'gold' })(record, 1)).toBe(cssColorToABGR('gold'))
+})
+
+describe('an MCScan .anchors pair, as its adapter emits it', () => {
+  const pair = (id: string, block: string, blockSpan: number) =>
+    new SimpleFeature({
+      uniqueId: id,
+      refName: 'chr1',
+      start: 0,
+      end: 100,
+      block,
+      blockSpan,
+    })
+  const grey = cssColorToABGR('grey')
+  const paintOf = (records: SimpleFeature[], filter: FieldPredicate[] = []) =>
+    ribbonPaintOf({
+      records,
+      field: 'block',
+      ribbonColor: 'grey',
+      attributeRanges: featureAttributeRanges(
+        records,
+        declaredAttributes({ type: 'MCScanAnchorsAdapter' }),
+      ),
+      opacity: { value: 1 },
+      filter,
+    })
+
+  test('paints a color per block and filters by blockSpan, no scale written', () => {
+    const records = [
+      pair('p1', 'block0', 45),
+      pair('p2', 'block0', 45),
+      pair('p3', 'block1', 12),
+    ]
+    const paint = paintOf(records)
+    const [first, second, third] = records.map(r => paint(r, 1))
+    expect(second).toBe(first)
+    expect(third).not.toBe(first)
+    expect([first, third]).not.toContain(grey)
+    const wide = paintOf(records, [{ field: 'blockSpan', gte: 30 }])
+    expect(records.map(r => wide(r, 1))).toEqual([first, first, undefined])
+  })
 })

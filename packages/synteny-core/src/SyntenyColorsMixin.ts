@@ -3,7 +3,7 @@ import { stableIdentityComputed } from '@jbrowse/display-kit/stableIdentityCompu
 import { getSnapshot } from '@jbrowse/mobx-state-tree'
 
 import { TrackColorsMixin } from './TrackColorsMixin.ts'
-import { colorableColumns } from './attributeChannels.ts'
+import { colorableColumns, declaredAttributes } from './attributeChannels.ts'
 import {
   DEFAULT_NUMERIC_OPACITY_RANGE,
   opacityFadeOf,
@@ -109,17 +109,14 @@ export function SyntenyColorsMixin({
         },
         /**
          * #method
-         * The columns the tracks declare in their adapter's `attributeColumns`
-         * (the ortholog-table adapter's slot), one color mode each.
+         * The columns the tracks' adapters declare (`declaredAttributes`), one
+         * color mode each.
          */
         colorableAttributeNames() {
           return colorableColumns(
-            self.syntenyTracks().flatMap(t => {
-              const declared = getConf(t, ['adapter', 'attributeColumns']) as
-                | string[]
-                | undefined
-              return declared ?? []
-            }),
+            self
+              .syntenyTracks()
+              .flatMap(t => declaredAttributes(getConf(t, 'adapter'))),
           )
         },
         /**

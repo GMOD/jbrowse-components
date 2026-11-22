@@ -24,6 +24,23 @@ test("a composed adapter declares its children's columns once each", () => {
   expect(declaredAttributes(undefined)).toEqual([])
 })
 
+test('an .anchors adapter declares its block columns with none configured', () => {
+  expect(declaredAttributes({ type: 'MCScanAnchorsAdapter' })).toEqual([
+    'block',
+    'blockSpan',
+  ])
+  expect(
+    declaredAttributes({
+      type: 'MultiPairwiseSyntenyAdapter',
+      adapters: [
+        { type: 'MCScanAnchorsAdapter' },
+        { type: 'PAFAdapter', attributeColumns: ['syri'] },
+      ],
+    }),
+  ).toEqual(['block', 'blockSpan', 'syri'])
+  expect(declaredAttributes({ type: 'MCScanSimpleAnchorsAdapter' })).toEqual([])
+})
+
 function feature(data: Record<string, unknown>) {
   return new SimpleFeature({
     uniqueId: String(Math.random()),

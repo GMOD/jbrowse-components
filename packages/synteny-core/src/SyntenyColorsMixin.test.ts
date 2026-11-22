@@ -1,3 +1,4 @@
+import { ConfigurationSchema } from '@jbrowse/core/configuration'
 import { getSnapshot, onPatch } from '@jbrowse/mobx-state-tree'
 import { autorun } from 'mobx'
 
@@ -119,4 +120,48 @@ test('a drag recolors nothing, under the constant or a field', () => {
   v.setOpacity(0.1)
   expect(fades).toBe(2)
   dispose()
+})
+
+// the worker collects `declaredAttributes(adapterConfig)`, so the menu lists
+// the same columns: a composed track's children's and an adapter's built-ins
+test("the color modes are the columns the tracks' adapters declare", () => {
+  const name = { type: 'string', defaultValue: '' } as const
+  const anchorsTrack = ConfigurationSchema(
+    'SyntenyTrack',
+    {
+      name,
+      adapter: ConfigurationSchema(
+        'MCScanAnchorsAdapter',
+        { attributeColumns: { type: 'stringArray', defaultValue: [] } },
+        { explicitlyTyped: true },
+      ),
+    },
+    { explicitIdentifier: 'trackId' },
+  )
+  const starTrack = ConfigurationSchema(
+    'SyntenyTrack',
+    { name, adapter: { type: 'frozen', defaultValue: {} } },
+    { explicitIdentifier: 'trackId' },
+  )
+  const tracks = [
+    anchorsTrack.create({
+      trackId: 'anchors',
+      adapter: { type: 'MCScanAnchorsAdapter', attributeColumns: ['dn'] },
+    }),
+    starTrack.create({
+      trackId: 'star',
+      adapter: {
+        type: 'MultiPairwiseSyntenyAdapter',
+        adapters: [{ type: 'PAFAdapter', attributeColumns: ['syri', 'color'] }],
+      },
+    }),
+  ].map(configuration => ({ configuration }))
+  const v = SyntenyColorsMixin({ defaultOpacity: 0.2 })
+    .views(() => ({
+      syntenyTracks() {
+        return tracks
+      },
+    }))
+    .create({})
+  expect(v.colorableAttributes).toEqual(['block', 'blockSpan', 'dn', 'syri'])
 })

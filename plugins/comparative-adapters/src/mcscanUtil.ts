@@ -34,10 +34,11 @@ export interface BlockRow {
   // one-to-one pair, 3 for each link of a tandem triple against one gene. Unset
   // on an `.anchors.simple` row, which bounds a block rather than naming a pair.
   syntenicDepth?: number
-  // Numeric columns the source file carried past its gene columns, named by
-  // config — `identity`, `dn`/`ds`, `goc_score`. They ride onto the feature so a
-  // colorBy mode or the detail panel can read them; the format itself is only
-  // gene ids, so a table with none is the ordinary case.
+  // Columns the source file carried past its gene columns, named by config
+  // (`identity`, `dn`/`ds`, `goc_score`), and the `block` and `blockSpan` an
+  // `.anchors` file's `###` sections give each pair. They ride onto the feature
+  // so a colorBy mode or the detail panel can read them; the format itself is
+  // only gene ids, so a table with none is the ordinary case.
   attrs?: Record<string, number | string> | undefined
 }
 
@@ -123,10 +124,66 @@ export type AnchorsRowParser = (
   rowNum: number,
 ) => BlockRow | undefined
 
+function ranksAlongContig(bed: Map<string, BareFeature>) {
+  const byRefName = new Map<string, BareFeature[]>()
+  for (const gene of bed.values()) {
+    getOrCreate(byRefName, gene.refName, () => []).push(gene)
+  }
+  const ranks = new Map<string, number>()
+  for (const genes of byRefName.values()) {
+    genes
+      .toSorted((x, y) => x.start - y.start || (x.name < y.name ? -1 : 1))
+      .forEach((gene, rank) => ranks.set(gene.name, rank))
+  }
+  return ranks
+}
+
+function rankSpan(ranks: Map<string, number>, names: string[]) {
+  let min = Number.POSITIVE_INFINITY
+  let max = Number.NEGATIVE_INFINITY
+  for (const name of names) {
+    const rank = ranks.get(name)
+    if (rank !== undefined) {
+      min = Math.min(min, rank)
+      max = Math.max(max, rank)
+    }
+  }
+  return max - min + 1
+}
+
+// `block` is text, which paints a color per value; `blockSpan` is the measure
+// jcvi's `screen --minspan` keeps a block by.
+function withBlockFields(
+  sections: BlockRow[][],
+  bedA: Map<string, BareFeature>,
+  bedB: Map<string, BareFeature>,
+) {
+  const ranksA = ranksAlongContig(bedA)
+  const ranksB = ranksAlongContig(bedB)
+  return sections.flatMap((rows, index) => {
+    const blockSpan = Math.min(
+      rankSpan(
+        ranksA,
+        rows.map(row => row.a.name),
+      ),
+      rankSpan(
+        ranksB,
+        rows.map(row => row.b.name),
+      ),
+    )
+    return rows.map(row => ({
+      ...row,
+      attrs: { ...row.attrs, block: `block${index}`, blockSpan },
+    }))
+  })
+}
+
 // The shared body of both anchors adapters: read the anchors file and its two
-// BEDs together, drop the `###` block separators, and join every row through
-// the BEDs. Only `parseRow` differs between them, so it is the only thing each
-// adapter supplies.
+// BEDs together and join every row through the BEDs. Only `parseRow` differs
+// between them, so it is the only thing each adapter supplies. `rowNum` counts
+// the rows and not the `###` lines between them, so a row's id is its place
+// among the pairs. Only gene pairs take a block from their `###` section: a
+// `.anchors.simple` row is a block already.
 export async function readAnchorsPair(
   {
     bed1,
@@ -139,6 +196,7 @@ export async function readAnchorsPair(
   },
   opts: BaseOptions | undefined,
   parseRow: AnchorsRowParser,
+  genePairs: boolean,
 ) {
   const [bed1text, bed2text, anchorstext] = await readFiles(
     [bed1, bed2, anchors],
@@ -148,12 +206,28 @@ export async function readAnchorsPair(
   const bed2Map = parseBed(bed2text!)
   const join = (nameA: string | undefined, nameB: string | undefined) =>
     joinBedPair(bed1Map, bed2Map, nameA, nameB)
-  const lines = anchorstext!.split(/\n|\r\n|\r/).filter(f => !!f && f !== '###')
+  const unsectioned: BlockRow[] = []
+  const sections: BlockRow[][] = []
+  let section = unsectioned
+  let sourceRows = 0
+  for (const line of anchorstext!.split(/\n|\r\n|\r/)) {
+    if (line === '###') {
+      if (genePairs) {
+        section = []
+        sections.push(section)
+      }
+    } else if (line) {
+      const row = parseRow(line.split('\t'), join, sourceRows++)
+      if (row !== undefined) {
+        section.push(row)
+      }
+    }
+  }
   return checkAnyRowsJoined(
-    lines
-      .map((line, rowNum) => parseRow(line.split('\t'), join, rowNum))
-      .filter(f => f !== undefined),
-    lines.length,
+    sections.length > 0
+      ? [...unsectioned, ...withBlockFields(sections, bed1Map, bed2Map)]
+      : unsectioned,
+    sourceRows,
   )
 }
 

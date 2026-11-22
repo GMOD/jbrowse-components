@@ -1,6 +1,7 @@
-import { mkdtempSync, writeFileSync } from 'node:fs'
+import { mkdtempSync, readFileSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
+import { gunzipSync } from 'node:zlib'
 
 import { firstValueFrom } from 'rxjs'
 import { toArray } from 'rxjs/operators'
@@ -235,4 +236,151 @@ test('an assembly this adapter has no side for is answered without reading', asy
   await expect(adapter.getRefNames({ assemblyName: 'mouse' })).resolves.toEqual(
     [],
   )
+})
+
+function inlineAdapter(files: {
+  bed1: string[]
+  bed2: string[]
+  anchors: string[]
+}) {
+  const dir = mkdtempSync(join(tmpdir(), 'mcscan-blocks-'))
+  const write = (name: string, lines: string[]) => {
+    const path = join(dir, name)
+    writeFileSync(path, `${lines.join('\n')}\n`)
+    return { localPath: path, locationType: 'LocalPathLocation' as const }
+  }
+  return new Adapter(
+    configSchema.create({
+      bed1Location: write('a.bed', files.bed1),
+      bed2Location: write('b.bed', files.bed2),
+      mcscanAnchorsLocation: write('in.anchors', files.anchors),
+      assemblyNames: ['grape', 'peach'],
+    }),
+  )
+}
+
+const genes = (refName: string, names: string[]) =>
+  names.map(
+    (name, i) =>
+      `${refName}\t${(i + 1) * 100}\t${(i + 1) * 100 + 50}\t${name}\t0\t+`,
+  )
+
+const sixAgainstFour = {
+  bed1: genes('chr1', ['a1', 'a2', 'a3', 'a4', 'a5', 'a6']),
+  bed2: genes('ctgA', ['b1', 'b2', 'b3', 'b4']),
+}
+
+// Block 0 runs a1..a6 against b1..b4 with its extreme genes on neither the
+// first nor the last row and b3 unpaired, so its shorter side is peach's 4
+// genes; block 2 runs a2..a4 against b1..b4, so its shorter side is grape's 3.
+// A pair above the first ### has no block, and block 1, whose only pair names
+// a gene no BED has, still takes its number.
+test("each pair carries its ### section and that block's shorter gene span", async () => {
+  const fa = await gets(
+    inlineAdapter({
+      ...sixAgainstFour,
+      anchors: [
+        'a5\tb3\t10',
+        '###',
+        'a3\tb2\t10',
+        'a1\tb1\t10',
+        'a6\tb4\t10',
+        '###',
+        'a5\tmissing\t10',
+        '###',
+        'a2\tb1\t10',
+        'a4\tb4\t10',
+      ],
+    }),
+  )
+  expect(
+    fa.map(f => [f.get('name'), f.get('block'), f.get('blockSpan')]),
+  ).toEqual([
+    ['a5', undefined, undefined],
+    ['a3', 'block0', 4],
+    ['a1', 'block0', 4],
+    ['a6', 'block0', 4],
+    ['a2', 'block2', 3],
+    ['a4', 'block2', 3],
+  ])
+})
+
+test('### lines move no ids, and a file without them carries no block', async () => {
+  const pairs = ['a3\tb2\t10', 'a1\tb1\t10', 'a2\tb1\t10']
+  const ids = (fa: Awaited<ReturnType<typeof gets>>) =>
+    fa.map(f => [f.id(), f.get('syntenyId')])
+  const plain = await gets(inlineAdapter({ ...sixAgainstFour, anchors: pairs }))
+  const sectioned = await gets(
+    inlineAdapter({
+      ...sixAgainstFour,
+      anchors: ['###', pairs[0]!, pairs[1]!, '###', pairs[2]!],
+    }),
+  )
+  expect(ids(sectioned)).toEqual(ids(plain))
+  expect(ids(plain)).toEqual([
+    ['0-0', 0],
+    ['0-1', 1],
+    ['0-2', 2],
+  ])
+  expect(plain.map(f => [f.get('block'), f.get('blockSpan')])).toEqual([
+    [undefined, undefined],
+    [undefined, undefined],
+    [undefined, undefined],
+  ])
+})
+
+// The 17 blocks touching peach chrG7 (NC_034015.1) 17-20 Mb in
+// jbrowse.org/demos/grape_peach_cacao, each BED cut to the genes inside those
+// blocks. The `.simple` rows are jcvi's own `screen --minspan=30` of them.
+test('blockSpan >= 30 keeps the blocks jcvi screens at minspan 30', async () => {
+  const local = (name: string) => ({
+    localPath: require.resolve(`./test_data/${name}`),
+    locationType: 'LocalPathLocation' as const,
+  })
+  const adapter = new Adapter(
+    configSchema.create({
+      mcscanAnchorsLocation: local('chrG7.anchors.gz'),
+      bed1Location: local('chrG7.grape.bed.gz'),
+      bed2Location: local('chrG7.peach.bed.gz'),
+      assemblyNames: ['grape', 'peach'],
+    }),
+  )
+  const peach = (start: number, end: number) =>
+    firstValueFrom(
+      adapter
+        .getFeatures({
+          refName: 'NC_034015.1',
+          start,
+          end,
+          assemblyName: 'peach',
+        })
+        .pipe(toArray()),
+    )
+  const wide = (fa: Awaited<ReturnType<typeof peach>>) =>
+    fa.filter(f => Number(f.get('blockSpan')) >= 30)
+  const blocks = (fa: Awaited<ReturnType<typeof peach>>) =>
+    new Set(fa.map(f => f.get('block')))
+
+  const inWindow = await peach(17_000_000, 20_000_000)
+  expect(inWindow.length).toBe(489)
+  expect(blocks(inWindow).size).toBe(17)
+  expect(blocks(wide(inWindow)).size).toBe(9)
+  expect(wide(inWindow).length).toBe(433)
+
+  const all = await peach(0, 2 ** 31)
+  const wideBlocks = blocks(wide(all))
+  const screened = gunzipSync(
+    readFileSync(require.resolve('./test_data/chrG7.anchors.simple.gz')),
+  )
+    .toString()
+    .trim()
+    .split('\n')
+    .map(line => line.split('\t')[2])
+  expect(screened.length).toBe(9)
+  expect(
+    screened.filter(gene =>
+      all.some(f => f.get('name') === gene && wideBlocks.has(f.get('block'))),
+    ),
+  ).toEqual(screened)
+  expect(wideBlocks.size).toBe(screened.length)
 })

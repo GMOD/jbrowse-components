@@ -71,7 +71,12 @@ export abstract class McscanAnchorsAdapterBase<
       this.pluginManager,
     )
     const { anchors, parseRow, genePairs } = this.anchorsSource()
-    const rows = await readAnchorsPair({ bed1, bed2, anchors }, opts, parseRow)
+    const rows = await readAnchorsPair(
+      { bed1, bed2, anchors },
+      opts,
+      parseRow,
+      genePairs,
+    )
     const [assemblyA = '', assemblyB = ''] = assemblyNames
     const counts = genePairs
       ? partnerCounts(
