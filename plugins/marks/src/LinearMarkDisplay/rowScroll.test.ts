@@ -56,6 +56,7 @@ function rowAt(display: LinearMarkDisplayModel, y: number) {
       display.markList,
       display.renderState,
       display.host.displayedRegions,
+      display.sameAssemblyName,
     )
     if (hit) {
       return { name: display.rowKeys.names[hit.row!], hit }

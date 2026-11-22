@@ -26,6 +26,10 @@ export const REGION = {
 export function createTestEnvironment(
   displayConfig: Record<string, unknown>,
   regions = [REGION],
+  assemblies: {
+    extraAssemblyNames?: string[]
+    assemblyAliases?: Record<string, string>
+  } = {},
 ) {
   return createDisplayTestEnvironment<LinearMarkDisplayModel>({
     plugins: [new LinearGenomeViewPlugin(), new WigglePlugin()],
@@ -38,6 +42,7 @@ export function createTestEnvironment(
     displayConfig,
     regions,
     assemblyRegions: regions,
+    ...assemblies,
     onViewReady: view => {
       view.showAllRegions()
     },

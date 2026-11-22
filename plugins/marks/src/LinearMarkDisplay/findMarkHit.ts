@@ -50,6 +50,8 @@ export interface MarkHitInfo {
    * than `refName`.
    */
   x2RefName?: string
+  /** The assembly `x2RefName` is on, where that is another than the hit's. */
+  x2AssemblyName?: string
   /** The base under the cursor, inside the instance's span. */
   bp: number
   /** The plotted value, or undefined for a mark with no `y`. */
@@ -88,35 +90,56 @@ export interface MarkHitInfo {
 
 const HIT_RADIUS_PX = 8
 
-// The sequence a link's far foot lies on: the displayed region it draws to,
-// else the file's name for it read through the assembly's aliases; undefined
-// for a mark whose `x2` is its own.
-function farRefNameOf(
+interface ViewRegion {
+  refName: string
+  assemblyName: string
+}
+
+// The sequence a link's far foot lies on, where that is another than `own`'s:
+// the displayed region it draws to, else the file's name for it read through
+// the assembly's aliases; undefined for a mark whose `x2` is its own.
+function farFootOf(
   layer: StoredLayer,
   i: number,
-  displayedRegions: readonly { refName: string }[],
+  displayedRegions: readonly ViewRegion[],
+  own: ViewRegion,
+  sameAssembly: (a: string, b: string) => boolean,
 ) {
   const region = layer.x2Region?.[i]
   const shown = region === undefined ? undefined : displayedRegions[region]
   const ref = layer.x2Ref?.[i]
-  return (
+  const x2RefName =
     shown?.refName ??
     (ref === undefined ? undefined : layer.x2CanonicalRefNames?.[ref])
-  )
+  const x2AssemblyName =
+    shown && !sameAssembly(shown.assemblyName, own.assemblyName)
+      ? shown.assemblyName
+      : undefined
+  return x2RefName === undefined ||
+    (x2RefName === own.refName && x2AssemblyName === undefined)
+    ? undefined
+    : { x2RefName, ...(x2AssemblyName === undefined ? {} : { x2AssemblyName }) }
 }
 
 /**
  * The hovered instance's locus: its span, or a link's two feet where the far
  * one lies on another sequence.
  */
-export function hitLocString({ refName, start, end, x2RefName }: MarkHitInfo) {
-  return x2RefName === undefined || x2RefName === refName
+export function hitLocString({
+  refName,
+  start,
+  end,
+  x2RefName,
+  x2AssemblyName,
+}: MarkHitInfo) {
+  return x2RefName === undefined ||
+    (x2RefName === refName && x2AssemblyName === undefined)
     ? assembleLocString({
         refName,
         start: Math.min(start, end),
         end: Math.max(start, end),
       })
-    : `${assembleLocString({ refName, start, end: start + 1 })} → ${assembleLocString({ refName: x2RefName, start: end, end: end + 1 })}`
+    : `${assembleLocString({ refName, start, end: start + 1 })} → ${assembleLocString({ assemblyName: x2AssemblyName, refName: x2RefName, start: end, end: end + 1 })}`
 }
 
 // The `row` keys whose bands lie within the hit radius of `yPx`: the slots
@@ -217,7 +240,8 @@ export function findMarkHit(
   regionData: ReadonlyMap<number, MarkRegionData>,
   marks: readonly DisplayMark[],
   state: MarkRenderState,
-  displayedRegions: readonly { refName: string }[],
+  displayedRegions: readonly ViewRegion[],
+  sameAssembly: (a: string, b: string) => boolean,
 ): MarkHitInfo | undefined {
   const hit = nearestMarkHit(
     marks,
@@ -255,16 +279,14 @@ export function findMarkHit(
   const root = raw === undefined || raw === NO_ROOT ? undefined : raw
   const x = layer.x[hit.index]!
   const x2 = layer.x2[hit.index]!
-  const { refName } = displayedRegions[regionIndex]!
-  const elsewhereOf = (l: StoredLayer, i: number) => {
-    const far = farRefNameOf(l, i, displayedRegions)
-    return far === refName ? undefined : far
-  }
-  const x2RefName = elsewhereOf(layer, hit.index)
+  const own = displayedRegions[regionIndex]!
+  const farOf = (l: StoredLayer, i: number) =>
+    farFootOf(l, i, displayedRegions, own, sameAssembly)
+  const far = farOf(layer, hit.index)
   const { start, end } =
-    root === undefined || x2RefName !== undefined
+    root === undefined || far
       ? { start: x, end: x2 }
-      : featureSpan(hit.region, root, (l, i) => elsewhereOf(l, i) !== undefined)
+      : featureSpan(hit.region, root, (l, i) => farOf(l, i) !== undefined)
   const lo = Math.min(x, x2)
   const hi = Math.max(x, x2)
   const tooltip = layer.tooltip?.[hit.index]
@@ -274,12 +296,12 @@ export function findMarkHit(
     instance: hit.index,
     featureIndex: featureIndexAt(layer, hit.index),
     ...(root === undefined ? {} : { root }),
-    refName,
+    refName: own.refName,
     start,
     end,
-    ...(x2RefName === undefined ? {} : { x2RefName }),
+    ...far,
     bp:
-      spansView || x2RefName !== undefined
+      spansView || far
         ? x
         : clamp(bpAtPx(mouseX, hit.block), lo, Math.max(lo, hi - 1)),
     y: layer.y?.[hit.index],

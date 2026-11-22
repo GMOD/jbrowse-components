@@ -1,6 +1,10 @@
 import { LINK_ELSEWHERE, LINK_NO_REGION } from '@jbrowse/render-core/marks'
 
-import { createLinkOwners, withMateRegions } from './linkOwners.ts'
+import {
+  createLinkOwners,
+  mateRegionsOf,
+  withMateRegions,
+} from './linkOwners.ts'
 
 import type { MarkRegionData } from './markList.ts'
 
@@ -174,4 +178,22 @@ test('raw aliased feet read through withMateRegions pair across two regions and 
     [A],
   )
   expect(lane(inside, 0)).toEqual([0, LINK_ELSEWHERE])
+})
+
+test("a far foot past its own region's edge stays on the track's assembly when another assembly shows its contig there", () => {
+  const displayed = [
+    { refName: 'chr1', start: 80, end: 1000, assemblyName: 'hg38' },
+    { refName: 'chr1', start: 0, end: 1000, assemblyName: 'hs1' },
+  ]
+  const { x2CanonicalRefNames: _names, ...layer } = payload([
+    { x: 100, x2: 50, ref: 'chr1', region: 0 },
+  ]).layers[0]!
+  const placed = withMateRegions(
+    { layers: [layer] },
+    mateRegionsOf(displayed, assemblyName => assemblyName === 'hg38'),
+    canonical,
+    0,
+  ).layers[0]!
+  expect([...placed.x2Region!]).toEqual([0])
+  expect(placed.x2CanonicalRefNames).toEqual(['chr1'])
 })

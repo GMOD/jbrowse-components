@@ -101,7 +101,7 @@ const block = {
   reversed: false,
 }
 
-const REGIONS = [{ refName: 'ctgA' }]
+const REGIONS = [{ refName: 'ctgA', assemblyName: 'volvox' }]
 
 test('mark i reads layers[i], and every mark gets its own pass id', () => {
   const marks = buildMarkList(entries('bar', 'point', 'rect'))
@@ -167,6 +167,7 @@ test('a text mark takes no place in the list, and the marks after it keep their 
     marks,
     state,
     REGIONS,
+    () => true,
   )
   expect(hit).toMatchObject({ markIndex: 0, start: 500, bp: 502 })
   const pastEnd = findMarkHit(
@@ -177,6 +178,7 @@ test('a text mark takes no place in the list, and the marks after it keep their 
     marks,
     state,
     REGIONS,
+    () => true,
   )
   expect(pastEnd).toMatchObject({ markIndex: 0, start: 500, bp: 509 })
   const spanHit = findMarkHit(
@@ -187,6 +189,7 @@ test('a text mark takes no place in the list, and the marks after it keep their 
     marks,
     state,
     REGIONS,
+    () => true,
   )
   expect(spanHit).toMatchObject({ markIndex: 2, start: 800 })
 })
@@ -298,6 +301,7 @@ test('a span mark stacks on the row lane, each band `rowHeight` px', () => {
     [mark!],
     stacked,
     REGIONS,
+    () => true,
   )
   expect(hit).toMatchObject({ instance: 1, start: 500, color: BLUE })
   expect(hit?.y).toBeUndefined()
@@ -310,6 +314,7 @@ test('a span mark stacks on the row lane, each band `rowHeight` px', () => {
       [mark!],
       stacked,
       REGIONS,
+      () => true,
     ),
   ).toBeUndefined()
 })
@@ -403,6 +408,7 @@ test('every mark places its value through the display s one domain', () => {
     marks,
     shared,
     REGIONS,
+    () => true,
   )
   expect(hit).toMatchObject({ markIndex: 1, start: 800, y: 80 })
 })
@@ -503,6 +509,7 @@ test('a mark outside its zoom range neither draws nor answers a hover', () => {
       [mark!],
       { ...state, bpPerPx },
       REGIONS,
+      () => true,
     )
   mark!.drawRegion(hal, scratch, block, clip, data, state, 0)
   expect(hal.getLastUniformsF32()).toBeNull()
@@ -534,7 +541,16 @@ describe('findMarkHit', () => {
 
   test('a cursor inside a bar hits it below its value', () => {
     // value 5 on a [0, 10] domain over 400 px is y=200; y=300 is value 2.5
-    const hit = findMarkHit(402, 300, [block], regions, marks, state, REGIONS)
+    const hit = findMarkHit(
+      402,
+      300,
+      [block],
+      regions,
+      marks,
+      state,
+      REGIONS,
+      () => true,
+    )
     expect(hit).toMatchObject({
       markIndex: 0,
       instance: 0,
@@ -548,13 +564,31 @@ describe('findMarkHit', () => {
 
   test('a cursor above a bar misses it', () => {
     expect(
-      findMarkHit(402, 100, [block], regions, marks, state, REGIONS),
+      findMarkHit(
+        402,
+        100,
+        [block],
+        regions,
+        marks,
+        state,
+        REGIONS,
+        () => true,
+      ),
     ).toBeUndefined()
   })
 
   test('a point answers at its shape', () => {
     // 800 bp is x=640; value 8 is y=80
-    const hit = findMarkHit(641, 81, [block], regions, marks, state, REGIONS)
+    const hit = findMarkHit(
+      641,
+      81,
+      [block],
+      regions,
+      marks,
+      state,
+      REGIONS,
+      () => true,
+    )
     expect(hit).toMatchObject({ markIndex: 1, start: 800, y: 8, color: BLUE })
   })
 
@@ -574,7 +608,7 @@ describe('findMarkHit', () => {
       ],
     ])
     const hitAt = (x: number, y: number) =>
-      findMarkHit(x, y, [block], banded, marks, stacked, REGIONS)
+      findMarkHit(x, y, [block], banded, marks, stacked, REGIONS, () => true)
     expect(hitAt(402, 150)).toMatchObject({ markIndex: 0, start: 500, y: 5 })
     expect(hitAt(641, 242)).toMatchObject({ markIndex: 1, start: 800, y: 8 })
     // where one band over the whole plot would have drawn them
@@ -596,6 +630,7 @@ describe('findMarkHit', () => {
       marks,
       { ...state, domainY: [1, 1024], scaleTypeY: 'log' },
       REGIONS,
+      () => true,
     )
     expect(hit).toMatchObject({ markIndex: 1, start: 800, y: 32 })
   })
@@ -620,6 +655,7 @@ describe('findMarkHit', () => {
           symlogConstantY,
         },
         REGIONS,
+        () => true,
       )
     expect(hitAt(0.1)).toMatchObject({ markIndex: 1, start: 800 })
     expect(hitAt(1)).toBeUndefined()

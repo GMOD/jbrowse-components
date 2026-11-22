@@ -84,7 +84,11 @@ const BLOCK: RenderBlock = {
   reversed: false,
 }
 
-const REGIONS = [{ refName: 'ctgA' }]
+const REGIONS = [{ refName: 'ctgA', assemblyName: 'volvox' }]
+
+const ASSEMBLY_ALIASES: Record<string, string | undefined> = { GRCh38: 'hg38' }
+const sameAssembly = (a: string, b: string) =>
+  (ASSEMBLY_ALIASES[a] ?? a) === (ASSEMBLY_ALIASES[b] ?? b)
 
 // Bars dealt across `rows` in no order: most short, a few long, some written
 // end first, some out of the domain either way, some at the origin.
@@ -166,7 +170,16 @@ function parity(
   for (let k = 0; k < probes; k++) {
     const x = rand() * state.canvasWidth
     const y = rand() * state.canvasHeight
-    const got = findMarkHit(x, y, [block], byRows, marks, state, REGIONS)
+    const got = findMarkHit(
+      x,
+      y,
+      [block],
+      byRows,
+      marks,
+      state,
+      REGIONS,
+      sameAssembly,
+    )
     const want = findMarkHit(
       x,
       y,
@@ -175,6 +188,7 @@ function parity(
       byIndex(marks),
       state,
       REGIONS,
+      sameAssembly,
     )
     const ink = truth ? nearestInkOf(marks, data, state, block, x, y) : got
     if (
@@ -210,7 +224,16 @@ test('of two bars under the cursor, the one drawn over the other answers', () =>
   const state = { ...STATE, rowHeight: STATE.canvasHeight }
   const marks = buildMarkList(entries('bar'))
   const data = new Map([[0, { layers: [layer] }]])
-  const hit = findMarkHit(96, 300, [BLOCK], data, marks, state, REGIONS)
+  const hit = findMarkHit(
+    96,
+    300,
+    [BLOCK],
+    data,
+    marks,
+    state,
+    REGIONS,
+    sameAssembly,
+  )
   expect(hit?.instance).toBe(2)
 })
 
@@ -228,7 +251,16 @@ test('a constant color answers a hover as the one number the layer holds', () =>
   const state = { ...STATE, rowHeight: STATE.canvasHeight }
   const marks = buildMarkList(entries('bar'))
   const data = new Map([[0, { layers: [layer] }]])
-  const hit = findMarkHit(176, 300, [BLOCK], data, marks, state, REGIONS)
+  const hit = findMarkHit(
+    176,
+    300,
+    [BLOCK],
+    data,
+    marks,
+    state,
+    REGIONS,
+    sameAssembly,
+  )
   expect(hit?.instance).toBe(1)
   expect(hit?.color).toBe(0xff0000ff)
 })
@@ -249,7 +281,7 @@ test('a hover carries the line naming its feature, and none where the lane holds
   const marks = buildMarkList(entries('bar'))
   const data = new Map([[0, { layers: [layer] }]])
   const at = (x: number) =>
-    findMarkHit(x, 300, [BLOCK], data, marks, state, REGIONS)
+    findMarkHit(x, 300, [BLOCK], data, marks, state, REGIONS, sameAssembly)
   expect(at(96)?.tooltip).toBe('NM_007294.4(BRCA1):c.5266dup')
   expect(at(176)?.instance).toBe(1)
   expect(at(176)).not.toHaveProperty('tooltip')
@@ -272,7 +304,8 @@ test('a ramp value hovered tells no value apart from text that is no number', ()
   const marks = buildMarkList(entries('bar'))
   const data = new Map([[0, { layers: [layer] }]])
   const at = (x: number) =>
-    findMarkHit(x, 300, [BLOCK], data, marks, state, REGIONS)?.colorMissing
+    findMarkHit(x, 300, [BLOCK], data, marks, state, REGIONS, sameAssembly)
+      ?.colorMissing
   expect(at(96)).toBe(true)
   expect(at(176)).toBe(false)
 })
@@ -370,6 +403,7 @@ test('a linear segment across a gap between sparse instances answers the instanc
           linearLine(),
           SPARSE,
           REGIONS,
+          sameAssembly,
         ),
       ).filter(h => h !== undefined)
     expect(new Set(column(150).map(h => h.instance))).toEqual(new Set([1]))
@@ -405,6 +439,7 @@ test('a point wider than the grab radius answers from anywhere on it and past it
         marks,
         state,
         REGIONS,
+        sameAssembly,
       )?.instance
     expect([at(11, 0), at(-11, 0), at(0, 11), at(0, -11)]).toEqual([0, 0, 0, 0])
     expect([at(15, 0), at(0, -15)]).toEqual([0, 0])
@@ -464,7 +499,16 @@ test('sparse linear series answer what the ink over every instance answers', () 
     for (let k = 0; k < 1500; k++) {
       const x = rand() * state.canvasWidth
       const y = rand() * state.canvasHeight
-      const got = findMarkHit(x, y, [block], regions, marks, state, REGIONS)
+      const got = findMarkHit(
+        x,
+        y,
+        [block],
+        regions,
+        marks,
+        state,
+        REGIONS,
+        sameAssembly,
+      )
       const ink = nearestInkOf(marks, data, state, block, x, y)
       if (got?.instance !== ink?.instance) {
         differ.push([x, y, got?.instance, ink?.instance])
@@ -528,6 +572,7 @@ test('a facet with a hidden section answers from the rows it shows', () => {
       marks,
       state,
       REGIONS,
+      sameAssembly,
     )
     expect(rowKeys.names[hit?.row ?? 0]!.startsWith('b')).toBe(false)
   }
@@ -559,7 +604,7 @@ function linkLayer(x2RefNames: string[], extra?: Partial<StoredLayer>) {
 function linkHit(
   data: MarkRegionData,
   blocks: RenderBlock[],
-  regions: readonly { refName: string }[],
+  regions: readonly { refName: string; assemblyName: string }[],
 ) {
   const [mark] = buildMarkList([{ ...entries('link')[0]!, linkShape: 'line' }])
   const state: MarkRenderState = {
@@ -575,7 +620,7 @@ function linkHit(
   }
   const map = new Map([[0, withFlatbush(data)]])
   return Array.from({ length: 360 }, (_, y) =>
-    findMarkHit(40, y, blocks, map, [mark!], state, regions),
+    findMarkHit(40, y, blocks, map, [mark!], state, regions, sameAssembly),
   ).find(h => h !== undefined)
 }
 
@@ -597,8 +642,8 @@ const mateRegion = (index: number, refName: string, assemblyName: string) => ({
 test('a link to another sequence names both feet, each on its own sequence', () => {
   const layer = linkLayer(['ctgB'], { x2Region: Uint32Array.of(1) })
   const hit = linkHit({ layers: [layer] }, LINK_BLOCKS, [
-    { refName: 'ctgA' },
-    { refName: 'ctgB' },
+    { refName: 'ctgA', assemblyName: 'volvox' },
+    { refName: 'ctgB', assemblyName: 'volvox' },
   ])
   expect(hit).toMatchObject({ refName: 'ctgA', x2RefName: 'ctgB', bp: 100 })
   expect(hitLocString(hit!)).toBe('ctgA:101 → ctgB:51')
@@ -610,8 +655,8 @@ test('a link to another sequence keeps its two feet under a flatten root', () =>
     root: Uint32Array.of(0),
   })
   const hit = linkHit({ layers: [layer] }, LINK_BLOCKS, [
-    { refName: 'ctgA' },
-    { refName: 'ctgB' },
+    { refName: 'ctgA', assemblyName: 'volvox' },
+    { refName: 'ctgB', assemblyName: 'volvox' },
   ])
   expect(hit).toMatchObject({ root: 0, start: 100, end: 50 })
   expect(hitLocString(hit!)).toBe('ctgA:101 → ctgB:51')
@@ -643,10 +688,38 @@ test("a rect sharing a flatten root with a link to another sequence spans its ow
       new Map([[0, { layers: [rect, link(x2Region)] }]]),
       buildMarkList(entries('rect')),
       STATE,
-      [{ refName: 'ctgA' }, { refName: 'ctgB' }],
+      [
+        { refName: 'ctgA', assemblyName: 'volvox' },
+        { refName: 'ctgB', assemblyName: 'volvox' },
+      ],
+      sameAssembly,
     )
   expect(hover(1)).toMatchObject({ root: 0, start: 100, end: 700 })
   expect(hover(0)).toMatchObject({ root: 0, start: 100, end: 900 })
+})
+
+test("a link between two assemblies' same-named contigs names both feet, the far one with its assembly", () => {
+  const hover = (far: string) =>
+    linkHit(
+      { layers: [linkLayer(['chr1'], { x2Region: Uint32Array.of(1) })] },
+      LINK_BLOCKS,
+      [
+        { refName: 'chr1', assemblyName: 'hg38' },
+        { refName: 'chr1', assemblyName: far },
+      ],
+    )!
+  const across = hover('hs1')
+  expect(across).toMatchObject({
+    refName: 'chr1',
+    x2RefName: 'chr1',
+    x2AssemblyName: 'hs1',
+    start: 100,
+    end: 50,
+  })
+  expect(hitLocString(across)).toBe('chr1:101 → {hs1}chr1:51')
+  const aliased = hover('GRCh38')
+  expect(aliased.x2RefName).toBeUndefined()
+  expect(hitLocString(aliased)).toBe('chr1:51..100')
 })
 
 test("a link's hit carries the raw value its strokeWidth reads", () => {
@@ -657,7 +730,7 @@ test("a link's hit carries the raw value its strokeWidth reads", () => {
   const hit = linkHit(
     { layers: [layer] },
     [{ ...BLOCK, screenEndPx: 400 }],
-    [{ refName: 'ctgA' }],
+    [{ refName: 'ctgA', assemblyName: 'volvox' }],
   )
   expect(hit?.size).toBe(3.5)
 })
@@ -672,7 +745,7 @@ test("a far foot on no displayed region prints the assembly's refName, not the f
   const hit = linkHit(
     data,
     [{ ...BLOCK, screenEndPx: 400 }],
-    [{ refName: 'ctgA' }],
+    [{ refName: 'ctgA', assemblyName: 'volvox' }],
   )
   expect(data.layers[0]!.x2Region).toEqual(Uint32Array.of(LINK_NO_REGION))
   expect(hit).toMatchObject({ refName: 'ctgA', x2RefName: 'ctgB' })
@@ -686,8 +759,8 @@ test("a far foot on another assembly's displayed region places there", () => {
     0,
   )
   const hit = linkHit(data, LINK_BLOCKS, [
-    { refName: 'ctgA' },
-    { refName: 'scaffold1' },
+    { refName: 'ctgA', assemblyName: 'volvox' },
+    { refName: 'scaffold1', assemblyName: 'other' },
   ])
   expect(data.layers[0]!.x2Region).toEqual(Uint32Array.of(1))
   expect(hit).toMatchObject({ refName: 'ctgA', x2RefName: 'scaffold1' })
@@ -706,7 +779,10 @@ test("a far foot off screen on another assembly's displayed contig prints that a
   const hit = linkHit(
     data,
     [{ ...BLOCK, screenEndPx: 400 }],
-    [{ refName: 'ctgA' }, { refName: 'scaffold1' }],
+    [
+      { refName: 'ctgA', assemblyName: 'volvox' },
+      { refName: 'scaffold1', assemblyName: 'other' },
+    ],
   )
   expect(data.layers[0]!.x2Region).toEqual(Uint32Array.of(LINK_NO_REGION))
   expect(hit).toMatchObject({ refName: 'ctgA', x2RefName: 'scaffold1' })
@@ -737,7 +813,16 @@ test('a block of a spliced feature answers as the feature, the same hit across i
   ])
   const marks = buildMarkList(entries('rect', 'rect'))
   const at = (bp: number) =>
-    findMarkHit(bp / STATE.bpPerPx, 15, [BLOCK], data, marks, STATE, REGIONS)!
+    findMarkHit(
+      bp / STATE.bpPerPx,
+      15,
+      [BLOCK],
+      data,
+      marks,
+      STATE,
+      REGIONS,
+      sameAssembly,
+    )!
   const first = at(50)
   expect(first).toMatchObject({ markIndex: 1, root: 5, start: 0, end: 400 })
   expect(sameMarkHit(first, at(350))).toBe(true)

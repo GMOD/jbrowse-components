@@ -48,7 +48,11 @@ import {
   markColorScales,
   paintScaleOf,
 } from './legend.ts'
-import { createLinkOwners, withMateRegions } from './linkOwners.ts'
+import {
+  createLinkOwners,
+  mateRegionsOf,
+  withMateRegions,
+} from './linkOwners.ts'
 import { baselineReached, layerSpans } from './markAutoscale.ts'
 import { withMarkColors } from './markColor.ts'
 import { MIN_MARK_WIDTH_PX, highestRow, markRowHeightPx } from './markList.ts'
@@ -67,7 +71,7 @@ import { rowQuartileGaps } from './sparseRows.ts'
 
 import type { FacetLayout } from './facet.ts'
 import type { MarkLegendSection } from './legend.ts'
-import type { MateRegion } from './linkOwners.ts'
+import type { MateRegion, OwnerRegion } from './linkOwners.ts'
 import type { RegionLayer } from './markAutoscale.ts'
 import type { ColorSource } from './markColor.ts'
 import type { MarkRowsHost } from './markConfigViews.ts'
@@ -270,6 +274,7 @@ export type MarkKeySpaceHost = MarkRegionsHost &
     rowColorPaintsMarks: boolean
     resolvedRowColors: ReadonlyMap<string, string>
     canonicalRefName: (assemblyName: string, refName: string) => string
+    isTrackAssembly: (assemblyName: string) => boolean
   }
 
 /**
@@ -342,14 +347,18 @@ export function markRegionViews(self: MarkKeySpaceHost) {
         : region,
   )
   const drawn = () => (self.splitField === undefined ? unsplit() : rowColored())
-  const mateRegions = stableIdentityComputed((): MateRegion[] =>
-    self.host.displayedRegions.map((r, index) => ({
-      index,
+  const viewRegions = stableIdentityComputed((): OwnerRegion[] =>
+    self.host.displayedRegions.map(r => ({
       refName: r.refName,
       start: r.start,
       end: r.end,
       assemblyName: r.assemblyName,
     })),
+  )
+  const mateRegions = stableIdentityComputed((): MateRegion[] =>
+    mateRegionsOf(viewRegions.get(), assemblyName =>
+      self.isTrackAssembly(assemblyName),
+    ),
   )
   const canonical = (assemblyName: string, refName: string) =>
     self.canonicalRefName(assemblyName, refName)
@@ -401,7 +410,7 @@ export function markRegionViews(self: MarkKeySpaceHost) {
      * the upload re-packs.
      */
     get rpcDataMap(): ReadonlyMap<number, MarkRegionData> {
-      return self.hasLinkMark ? owners(mated(), mateRegions.get()) : drawn()
+      return self.hasLinkMark ? owners(mated(), viewRegions.get()) : drawn()
     },
   }
 }

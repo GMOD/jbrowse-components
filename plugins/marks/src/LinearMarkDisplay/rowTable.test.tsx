@@ -77,6 +77,7 @@ function sweepHits(display: LinearMarkDisplayModel) {
         display.markList,
         display.renderState,
         display.host.displayedRegions,
+        display.sameAssemblyName,
       )
       if (hit) {
         hits.push(hit)
@@ -357,6 +358,7 @@ test("a band's order follows facet.sort, and a hit names the row the band placed
         display.markList,
         display.renderState,
         display.host.displayedRegions,
+        display.sameAssemblyName,
       )
     }
   }

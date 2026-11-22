@@ -40,6 +40,7 @@ const LinearMarkDisplayComponent = observer(
             model.markList,
             model.renderState,
             model.host.displayedRegions,
+            model.sameAssemblyName,
           )
         }
         overlay={() => (

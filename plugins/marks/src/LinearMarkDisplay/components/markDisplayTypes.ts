@@ -40,6 +40,7 @@ export interface MarkDisplayModel
   textMarkEntries: TextMarkEntry[]
   markTypes: MarkType[]
   renderState: MarkRenderState
+  sameAssemblyName: (a: string, b: string) => boolean
   hoveredFeature: MarkHitInfo | undefined
   legendSections: MarkLegendSection[]
   skippedFeatures: SkippedFeatures

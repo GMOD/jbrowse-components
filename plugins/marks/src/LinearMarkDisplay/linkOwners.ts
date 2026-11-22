@@ -15,6 +15,25 @@ export interface MateRegion extends OwnerRegion {
 }
 
 /**
+ * The displayed regions a link's far foot may place in: those on an assembly
+ * the track is on, each keeping its index among all displayed regions.
+ */
+export function mateRegionsOf(
+  displayedRegions: readonly OwnerRegion[],
+  onTrack: (assemblyName: string) => boolean,
+): MateRegion[] {
+  return displayedRegions
+    .map(({ refName, start, end, assemblyName }, index) => ({
+      index,
+      refName,
+      start,
+      end,
+      assemblyName,
+    }))
+    .filter(r => onTrack(r.assemblyName))
+}
+
+/**
  * Each link layer's `x2Region`: the region the far foot places through, its
  * refName read through the assembly's aliases. The block's own region when it
  * holds the foot, else any displayed region that does, else the block's own

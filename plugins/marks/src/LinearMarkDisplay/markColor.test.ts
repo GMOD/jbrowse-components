@@ -875,6 +875,7 @@ test('a hover on a held region says so, and a landed one does not', () => {
           display.markList,
           display.renderState,
           display.host.displayedRegions,
+          display.sameAssemblyName,
         )
         if (hit) {
           return hit

@@ -25,6 +25,7 @@ import {
   writeJexlFilters,
 } from '@jbrowse/core/util/jexlFilters'
 import { selectEncodedFeature } from '@jbrowse/core/util/selectEncodedFeature'
+import { isSameAssemblyName } from '@jbrowse/core/util/tracks'
 import { ContextMenuMixin } from '@jbrowse/display-kit/ContextMenuMixin'
 import FacetWritesMixin from '@jbrowse/display-kit/FacetWritesMixin'
 import HiddenGroupsMixin from '@jbrowse/display-kit/HiddenGroupsMixin'
@@ -380,6 +381,22 @@ export function stateModelFactory(
               .assemblyManager.get(assemblyName)
               ?.getCanonicalRefName2(refName) ?? refName
           )
+        },
+        /**
+         * #method
+         * Whether two displayed regions' assembly names are one assembly,
+         * which a link's far foot is told apart from the near one's by.
+         */
+        sameAssemblyName(a: string, b: string) {
+          return isSameAssemblyName(a, b, getSession(self).assemblyManager)
+        },
+        /**
+         * #method
+         * Whether a displayed region's assembly is one the track is on,
+         * which a link's far foot is placed in.
+         */
+        isTrackAssembly(assemblyName: string) {
+          return onTrackAssembly(self)(assemblyName)
         },
       }))
       .views(self => markDiscoveredRowViews(self))

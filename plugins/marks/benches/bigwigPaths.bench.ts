@@ -442,7 +442,7 @@ function hoverCheck(bars: EncodedChannels, region: Region, bpPerPx: number) {
     data: typeof byRows,
     marks: DisplayMark[],
     [px, py]: number[],
-  ) => findMarkHit(px!, py!, [block], data, marks, state, [region])
+  ) => findMarkHit(px!, py!, [block], data, marks, state, [region], () => true)
   let hits = 0
   for (const p of points) {
     const got = hover(byRows, rowMarks, p)
