@@ -46,10 +46,6 @@ Ranked by how much each removes. None was prototyped.
 
 - **Two chunked scans.** `keyOnScreen.ts` and `drawnScales.ts` differ only in
   which instances count; one scan taking a kept test.
-- **`setRpcData` is a test seam in the production model.** `model.ts`; its only
-  callers are the marks and GWAS tests, and it stores a request without the
-  `bpPerPx` and resolved `opts` that `fetchNeeded` stores, so the
-  feature-details tests exercise a request production never sends.
 - **A written `gapBp` rides the request and comes back unchanged**
   (`markRequest.ts` `pathOf`, `pathSeries.ts`), so editing it refetches.
 - Smaller: the px channels listed in four places (`markProblems.ts`,

@@ -750,6 +750,15 @@ export function stateModelFactory(
       .views(self => ({
         /**
          * #method
+         * What a fetch sends beside its region: `rpcProps` with the adapter,
+         * the byte budget and the view's zoom, read before any `await` so
+         * every region of a fetch asks alike.
+         */
+        fetchArgs() {
+          return { ...rpcArgs(self), bpPerPx: self.host.bpPerPx }
+        },
+        /**
+         * #method
          * The exported features this display draws: those a mark drawing at
          * this zoom reaches through the worker's steps, in a section or row
          * shown, outside the categories the key hides.
@@ -896,10 +905,12 @@ export function stateModelFactory(
         },
         /**
          * #action
-         * Stage a region as fetched, with this display's payload layout.
+         * Stage a region as fetched, with this display's payload layout, under
+         * the request `fetchNeeded` would send for it, except that `opts` is
+         * stored as given: resolving it per region is async.
          */
         setRpcData(idx: number, data: EncodedLayersResult, region: Region) {
-          const { byteLimit, ...request } = rpcArgs(self)
+          const { byteLimit, ...request } = self.fetchArgs()
           self.setLoadedRegion(idx, region, {
             ...storedRegionData(data),
             request: { ...request, region },
@@ -1138,17 +1149,13 @@ export function stateModelFactory(
          * mark plots is cut at the fetch edge.
          */
         fetchNeeded(needed: IndexedRegion[]) {
-          const { bpPerPx, displayedRegions } = self.host
           const regions = binnedFetchRegions(
             needed,
             self.rpcProps(),
             self.markView.visible,
-            displayedRegions,
+            self.host.displayedRegions,
           )
-          const { byteLimit, opts, ...request } = {
-            ...rpcArgs(self),
-            bpPerPx,
-          }
+          const { byteLimit, opts, ...request } = self.fetchArgs()
           return fetchEachRegion(self, regions, {
             call: async (region, ctx) => {
               const resolved =

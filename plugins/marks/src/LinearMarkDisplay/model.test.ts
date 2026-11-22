@@ -2190,6 +2190,18 @@ test('a click asks the worker which feature the instance is, under the request i
   expect(asked).not.toHaveProperty('byteLimit')
 })
 
+test('a region staged with setRpcData is stored under the request a fetch sends, its zoom included', async () => {
+  const { createDisplay } = createTestEnvironment(DENSITY_MARKS)
+  const { display, view, mockRpcCall } = createDisplay()
+  await loadedThroughTheWorker(display, mockRpcCall, {})
+  const { region: _, ...fetched } = display.featurePayloads.get(0)!.request!
+  display.setRpcData(1, result([{ y: [3] }, { y: [2] }]), REGION)
+  const { region, ...staged } = display.featurePayloads.get(1)!.request!
+  expect(region).toEqual(REGION)
+  expect(staged).toEqual(fetched)
+  expect(staged.bpPerPx).toBe(view.bpPerPx)
+})
+
 const VARIANT_WIDGET = { type: 'VariantFeatureWidget', id: 'variantFeature' }
 
 class StubVariantWidgetPlugin extends Plugin {
