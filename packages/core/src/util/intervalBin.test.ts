@@ -245,8 +245,9 @@ test('an interval bin fused with its aggregate answers what the two steps answer
     expect(answers(fused, FIELDS)).toEqual(answers(apart, FIELDS))
   }
 
-  // A clip drops only the fetched region's partial bins: every bin it keeps
-  // answers what the steps apart answer for it.
+  // A clip drops the bins wholly outside the fetched region and keeps its
+  // partial edge bins: every bin it keeps answers what the steps apart answer
+  // for it.
   const spans = input.flatMap(f => {
     const from = f.get('from')
     const to = f.get('to')
@@ -470,67 +471,56 @@ function layered(
   )
 }
 
-test('a fused bin whose rows a later step reads across is not clipped', () => {
-  const clip = { refName: 'ctgA', start: 500, end: 600 }
+const KEPT: TransformStep = {
+  type: 'filter',
+  predicates: [{ field: 'count', gt: 1 }],
+}
+
+test('a fused bin in a layer’s own steps clips where its later steps read one row at a time, and not before a window', () => {
+  const clip = { refName: 'ctgA', start: 480, end: 520 }
   const nearby: TransformStep = {
     type: 'window',
     frame: [-2, 2],
     ops: [{ op: 'mean', field: 'count', as: 'near' }],
   }
-  const total: TransformStep = {
-    type: 'aggregate',
-    ops: [{ op: 'sum', field: 'count', as: 'total' }],
-  }
+  const filtered = { layers: [{ transform: [INTERVAL_BIN, COUNT_ONLY, KEPT] }] }
+  expect(layered({ ...filtered, clip }, 'start', 'count')).toEqual([
+    [
+      [480, 2],
+      [490, 2],
+      [500, 2],
+    ],
+  ])
+  expect(layered(filtered, 'start')[0]).toHaveLength(4)
   const windowed = {
     layers: [{ transform: [INTERVAL_BIN, COUNT_ONLY, nearby] }],
   }
-  const summed = {
-    transform: [INTERVAL_BIN, COUNT_ONLY],
-    layers: [{ transform: [total] }],
-  }
-  const faceted = { ...summed, facet: { field: 'count' } }
   const near = layered({ ...windowed, clip }, 'start', 'near')
   expect(near).toEqual(layered(windowed, 'start', 'near'))
   expect(near[0]!.find(([start]) => start === 500)).toEqual([500, 1.6])
-  const sum = layered({ ...summed, clip }, 'start', 'end', 'total')
-  expect(sum).toEqual(layered(summed, 'start', 'end', 'total'))
-  expect(sum).toEqual([[[0, 1000, 104]]])
-  const bySection = layered({ ...faceted, clip }, 'total')
-  expect(bySection).toEqual(layered(faceted, 'total'))
-  expect(bySection).toEqual([[[96], [8]]])
 })
 
-test('a fused bin whose later steps read one row at a time still clips, across lists', () => {
-  const kept: TransformStep = {
-    type: 'filter',
-    predicates: [{ field: 'count', gt: 1 }],
+test('a fused bin in the shared steps is never clipped, whatever its layers run', () => {
+  const clip = { refName: 'ctgA', start: 480, end: 520 }
+  const shared = {
+    transform: [INTERVAL_BIN, COUNT_ONLY],
+    layers: [{ transform: [KEPT] }, {}],
   }
-  const twice = [
-    [480, 2],
-    [490, 2],
-    [500, 2],
-  ]
-  expect(
-    layered(
-      {
-        transform: [INTERVAL_BIN, COUNT_ONLY, kept],
-        layers: [{ transform: [kept] }, {}],
-        clip: { refName: 'ctgA', start: 480, end: 520 },
-      },
-      'start',
-      'count',
-    ),
-  ).toEqual([twice, twice])
-  expect(
-    layered(
-      {
-        transform: [INTERVAL_BIN, COUNT_ONLY],
-        layers: [{ transform: [kept] }],
-        clip: { refName: 'ctgA', start: 480, end: 520 },
-      },
-      'start',
-    ),
-  ).toEqual([[[480], [490], [500]]])
+  const clipped = layered({ ...shared, clip }, 'start', 'count')
+  expect(clipped).toEqual(layered(shared, 'start', 'count'))
+  expect(clipped[1]).toHaveLength(100)
+})
+
+test('a fused bin ahead of a facet split is never clipped', () => {
+  const clip = { refName: 'ctgA', start: 480, end: 520 }
+  const faceted = {
+    transform: [INTERVAL_BIN, COUNT_ONLY],
+    facet: { field: 'count' },
+    layers: [{ transform: [KEPT] }, {}],
+  }
+  const clipped = layered({ ...faceted, clip }, 'start', 'count')
+  expect(clipped).toEqual(layered(faceted, 'start', 'count'))
+  expect(clipped[1]).toHaveLength(100)
 })
 
 test('an interval bin that does not fuse is not clipped', () => {

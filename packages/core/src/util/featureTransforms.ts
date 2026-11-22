@@ -1171,35 +1171,13 @@ function runStep(
   }
 }
 
-const ROW_WISE = new Set<TransformStep['type']>([
-  'filter',
-  'formula',
-  'flatten',
-  'bin',
-])
-
-/**
- * `clip` where every list the rows flow into next reads one row at a time,
- * so a bin outside it changes no answer inside it.
- */
-function clipThrough(
-  clip: BinClip | undefined,
-  lists: readonly (readonly TransformStep[] | undefined)[],
-) {
-  return lists.every(
-    list => list?.every(step => ROW_WISE.has(step.type)) ?? true,
-  )
-    ? clip
-    : undefined
-}
-
 /**
  * The steps in order, a `cells`, `bin` and `aggregate` or a `bin` and
  * `aggregate` that fuse run as one kernel. A fused interval bin keeps only
- * `clip`'s bins where only row-wise steps follow it and no `cells` comes
- * right before it, and so does the bin the kernel hands back to the steps as
- * written, so the answer never rests on which kernel ran. `clip` arrives only
- * where the lists after these read row-wise too.
+ * `clip`'s bins where every later step in this list is row-wise and no
+ * `cells` comes right before it, and so does the bin the kernel hands back to
+ * the steps as written, so the answer never rests on which kernel ran. Only a
+ * layer's own list is handed a `clip`, so the choice reads that list alone.
  */
 function runSteps(
   staged: Staged,
@@ -1228,8 +1206,10 @@ function runSteps(
         ? { bin: step, agg: next }
         : undefined
     const pairClip =
-      pair && list[k - 1]?.type !== 'cells'
-        ? clipThrough(clip, [list.slice(k + 2)])
+      pair &&
+      list[k - 1]?.type !== 'cells' &&
+      list.slice(k + 2).every(isRowwise)
+        ? clip
         : undefined
     const fused = pair
       ? binnedAggregate(current, pair.bin, pair.agg, pairClip)
@@ -1271,10 +1251,7 @@ function runLayers(
       ? last
       : undefined
   if (!trailing) {
-    const shared = keep(
-      runSteps(staged, list, jexl, clipThrough(clip, layers)),
-      list,
-    )
+    const shared = keep(runSteps(staged, list, jexl), list)
     return layers.map(own => keep(runSteps(shared, own, jexl, clip), own))
   }
   const ahead = runSteps(staged, list.slice(0, -1), jexl)
@@ -1407,7 +1384,8 @@ function sectionOrder(
  * The split is a counting sort into section order rather than a list per
  * section: every step runs once over the ordered rows, keeping section order,
  * and one that groups rows groups within a section. A `clip` is the fetched
- * region a fused interval bin keeps the bins of, as in {@link layerTables}.
+ * region a fused interval bin in a layer's own steps keeps the bins of, as in
+ * {@link layerTables}.
  */
 export function facetLayers(
   input: readonly Feature[] | FeatureTable,
@@ -1625,11 +1603,13 @@ function partitionPoint(steps: readonly TransformStep[], field: FieldRef) {
  * comes as early as it can: after the last shared step that must see every
  * row, so the steps that follow it read the rows already in section order.
  *
- * `clip` names the fetched region: an interval bin fused with its aggregate,
- * where every later step reads one row at a time, makes no bin outside it for
- * a row on its `refName`, so a feature far longer than the view is cut only
- * where it is fetched. A bin it keeps gathers the pieces it did unclipped;
- * one it drops lies wholly outside the fetch.
+ * `clip` names the fetched region: an interval bin fused with its aggregate
+ * in a layer's own steps, where every later step of that layer reads one row
+ * at a time, makes no bin outside it for a row on its `refName`, so a feature
+ * far longer than the view is cut only where it is fetched. A bin it keeps
+ * gathers the pieces it did unclipped; one it drops lies wholly outside the
+ * fetch. A pair in the shared steps or ahead of a facet split never clips, so
+ * a layer's rows never rest on its neighbours' steps.
  */
 export function layerTables(
   input: readonly Feature[] | FeatureTable,
@@ -1645,8 +1625,8 @@ export function layerTables(
   sections: FacetSection[] | undefined
 } {
   const { transform = [], facet, layers, clip } = request
-  const table = asTable(input)
   if (!facet) {
+    const table = asTable(input)
     const layered = runLayers(
       { table, bounds: oneSection(table.length) },
       transform,
@@ -1664,16 +1644,7 @@ export function layerTables(
   }
   const at = partitionPoint(transform, facet.field)
   const split = facetLayers(
-    runSteps(
-      { table, bounds: oneSection(table.length) },
-      transform.slice(0, at),
-      jexl,
-      clipThrough(clip, [
-        transform.slice(at),
-        facet.transform,
-        ...layers.map(layer => layer.transform),
-      ]),
-    ).table,
+    runTransforms(input, transform.slice(0, at), jexl),
     {
       ...facet,
       transform: [...transform.slice(at), ...(facet.transform ?? [])],
