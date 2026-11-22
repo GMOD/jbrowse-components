@@ -1917,6 +1917,42 @@ describe('the gutter between two mate lanes', () => {
     ])
   })
 
+  test.each([
+    [undefined, false],
+    [false, false],
+    [true, true],
+  ])(
+    'a source answering lane pairs on the anchor whose header sets lanesReadAgainstAnchor %s reads each lane against the anchor: %s',
+    (lanesReadAgainstAnchor, againstAnchor) => {
+      const { display } = createDisplayWithSession({
+        syntenyAdapter: { type: 'GbzBaseSyntenyAdapter' },
+        trackAssemblyNames: ['volvox', 'volvox_random', 'volvox_ins'],
+        geneTracks: [],
+        rpc: () => new Promise(() => {}),
+      })
+      display.setFeatures(starRecords())
+      display.setLaneFrames(0, frames)
+      display.setAdapterHeader({
+        adapterConfig: display.adapterConfig,
+        value: {
+          anchorAssemblyName: 'volvox',
+          ...(lanesReadAgainstAnchor === undefined
+            ? {}
+            : { lanesReadAgainstAnchor }),
+        },
+      })
+      expect(display.adapterPairsOnAnchor).toBe(true)
+      expect(display.rowsVsAnchor).toBe(againstAnchor)
+      expect(display.laneFetchKinds.lanePairs).toBe(!againstAnchor)
+      expect(display.laneLinksFetchSpecs.length > 0).toBe(!againstAnchor)
+      expect(display.laneHeaderRows.map(row => row.against)).toEqual(
+        againstAnchor
+          ? [undefined, 'volvox', 'volvox']
+          : [undefined, undefined, undefined],
+      )
+    },
+  )
+
   test('a pair the file answers keeps its own records', () => {
     const display = createDisplay()
     display.setFeatures(starRecords())

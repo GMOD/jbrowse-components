@@ -27,6 +27,7 @@ import {
 } from './laneSelection.ts'
 import { groupFeatures, laneIndelsOf } from './layoutMultiWay.ts'
 import {
+  headerReadsAgainstAnchor,
   laneFetchesFor,
   rowsReadAgainstAnchor,
   stacksByStructure,
@@ -218,8 +219,7 @@ type LaneGroups = ReturnType<typeof laneGroupViews> &
 export type LaneSourceHost = Pick<
   LaneRowInputs,
   'adapterCapabilities' | 'starAnchor' | 'features'
-> &
-  Pick<LaneGroups, 'laneField'>
+> & { adapterHeader: unknown } & Pick<LaneGroups, 'laneField'>
 
 export function laneSourceViews(self: LaneSourceHost) {
   return {
@@ -233,6 +233,7 @@ export function laneSourceViews(self: LaneSourceHost) {
         self.adapterCapabilities,
         self.starAnchor,
         self.laneField,
+        headerReadsAgainstAnchor(self.adapterHeader),
       )
     },
   }

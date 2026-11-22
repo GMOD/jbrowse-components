@@ -4,19 +4,35 @@ import type { LaneRowsField } from './copyLane.ts'
 import type { Feature } from '@jbrowse/core/util'
 
 /**
+ * A header's `lanesReadAgainstAnchor`: a source that answers lane pairs on the
+ * anchor asking that each lane be read against the anchor instead
+ */
+export function headerReadsAgainstAnchor(header: unknown) {
+  return (
+    typeof header === 'object' &&
+    header !== null &&
+    'lanesReadAgainstAnchor' in header &&
+    header.lanesReadAgainstAnchor === true
+  )
+}
+
+/**
  * Whether each gutter reads its far lane against the anchor: a source that
  * names an anchor and answers no lane pairs states each lane against it
- * alone, and so does any source for copy lanes, since two copies of one
- * genome are paired only through the anchor gene they share
+ * alone, as does one whose header sets `lanesReadAgainstAnchor`, and so does
+ * any source for copy lanes, since two copies of one genome are paired only
+ * through the anchor gene they share
  */
 export function rowsReadAgainstAnchor(
   capabilities: readonly string[],
   starAnchor: string | undefined,
   field: LaneRowsField,
+  headerAgainstAnchor = false,
 ) {
   return (
     field === 'refName' ||
-    (starAnchor !== undefined && !capabilities.includes('lanePairsOnAnchor'))
+    (starAnchor !== undefined &&
+      (headerAgainstAnchor || !capabilities.includes('lanePairsOnAnchor')))
   )
 }
 
