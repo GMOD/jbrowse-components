@@ -162,8 +162,6 @@ test('1 bp calls cluster on their values in a window of wide columns', async () 
   expect(Math.abs(leaves.indexOf('late1') - leaves.indexOf('late2'))).toBe(1)
 })
 
-// A display whose adapter joins a second file under a fetch option draws
-// features the matrix would otherwise read without the joined fields.
 test("a feature far longer than the region bins only within the region's columns", async () => {
   stubAdapter([feats([{ source: 'a', start: 0, end: 100_000 }])])
   const layered = jest.spyOn(transforms, 'layerTables')
@@ -187,6 +185,8 @@ test("a feature far longer than the region bins only within the region's columns
   expect(rows).toEqual({ a: [1, 1, 1, 1] })
 })
 
+// A display whose adapter joins a second file under a fetch option draws
+// features the matrix would otherwise read without the joined fields.
 test("each region's fetch carries the adapter options the display resolved for it", async () => {
   const getFeatureTable = stubAdapter([[], []])
   await matrix({

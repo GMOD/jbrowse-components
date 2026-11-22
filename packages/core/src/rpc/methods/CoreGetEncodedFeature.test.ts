@@ -10,6 +10,7 @@ import type PluginManager from '../../PluginManager.ts'
 import type {
   CoreGetEncodedLayersArgs,
   EncodedLayersResult,
+  TransformStep,
 } from '../../util/markEncodingTypes.ts'
 import type { RpcResult } from '../RpcServer.ts'
 
@@ -58,22 +59,26 @@ function request(args: Partial<CoreGetEncodedLayersArgs>, features = reads) {
 async function drawnAndReadBack(
   args: Partial<CoreGetEncodedLayersArgs>,
   features = reads,
+  asked = 0,
 ) {
   const req = request(args, features)
   const encoded = (await new CoreGetEncodedLayers(pluginManager).invoke(
     req,
   )) as RpcResult<EncodedLayersResult>
-  const layer = encoded.value.layers[0]!
+  const layer = encoded.value.layers[asked]!
   const details = new CoreGetEncodedFeature(pluginManager)
+  const inRegion = Array.from({ length: layer.count }, (_, i) => i).filter(
+    i => layer.x2[i]! > req.region.start && layer.x[i]! < req.region.end,
+  )
   return Promise.all(
-    Array.from({ length: layer.count }, async (_, i) => ({
+    inRegion.map(async i => ({
       x: layer.x[i]!,
       x2: layer.x2[i]!,
       y: layer.y?.[i],
       root: layer.root?.[i],
       feature: await details.invoke({
         ...req,
-        layer: 0,
+        layer: asked,
         featureIndex: featureIndexAt(layer, i),
       }),
     })),
@@ -149,6 +154,63 @@ test('a bin reads back as the bin the steps made', async () => {
       sum_score: 9,
     },
   ])
+})
+
+test('a long feature’s bins read back as drawn, beside a layer whose bins a window reads across', async () => {
+  const gene = [
+    new SimpleFeature({
+      uniqueId: 'gene',
+      refName: 'ctgA',
+      start: 0,
+      end: 100_000,
+    }),
+  ]
+  const region = {
+    refName: 'ctgA',
+    start: 500,
+    end: 1000,
+    assemblyName: 'volvox',
+  }
+  const binned: TransformStep[] = [
+    { type: 'bin', step: 100, fields: ['start', 'end'] },
+    { type: 'aggregate', groupby: ['start', 'end'], ops: [{ op: 'count' }] },
+  ]
+  const nearby: TransformStep = {
+    type: 'window',
+    frame: [-1, 1],
+    ops: [{ op: 'mean', field: 'count', as: 'near' }],
+  }
+  const bars = { encoding: { y: 'count' }, lanes: ['y' as const] }
+  const line = { encoding: { y: 'near' }, lanes: ['y' as const] }
+  const own = {
+    region,
+    layers: [
+      { ...bars, transform: binned },
+      { ...line, transform: [...binned, nearby] },
+    ],
+  }
+  const shared = {
+    region,
+    transform: binned,
+    layers: [bars, { ...line, transform: [nearby] }],
+  }
+  const encoded = (await new CoreGetEncodedLayers(pluginManager).invoke(
+    request(own, gene),
+  )) as RpcResult<EncodedLayersResult>
+  expect(encoded.value.layers.map(layer => layer.count)).toEqual([5, 1000])
+  const starts = [500, 600, 700, 800, 900]
+  for (const [args, asked] of [
+    [own, 0],
+    [own, 1],
+    [shared, 0],
+    [shared, 1],
+  ] as const) {
+    const drawn = await drawnAndReadBack(args, gene, asked)
+    expect(drawn.map(d => [d.feature?.start, d.feature?.end])).toEqual(
+      drawn.map(d => [d.x, d.x2]),
+    )
+    expect(drawn.map(d => d.x)).toEqual(starts)
+  }
 })
 
 test('only the layer asked about runs its steps, and answers as it did beside the others', async () => {
