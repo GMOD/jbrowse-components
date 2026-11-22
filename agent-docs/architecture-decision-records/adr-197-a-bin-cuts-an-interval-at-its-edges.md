@@ -84,11 +84,31 @@ for the interval case as an explicit spelling.
   a `field` beside `fields` (`bin-field-and-fields`), on a `fields` naming
   other than two, and reads `ops[k].weight` as a field reference; `writes()`
   lists `overlap`, so a facet still splits ahead of an interval bin.
-- **No warning for a fine `step: "auto"`.** An auto bin is four pixels, so a
-  row makes at most its on-screen width over four pixels plus one piece, and
-  the fused path keeps no piece table at all. A fixed small `step` at a far
-  zoom is where pieces grow with the zoom, the fused path's bins with them,
-  and a mark's `maxBpPerPx` is what bounds it; no rule guesses that range.
+- **The fused kernel keeps only the fetched region's bins.** A row that ends
+  off screen is cut along its whole length, so one 2.2 Mb feature binned at
+  5 bp and counted made 440,000 groups in 36-49 ms and 10.6 MB on the fused
+  path, where about 800 bins lie in the region fetched at 1 bp/px.
+  `layerTables` takes the fetched region as `request.clip`
+  (`layerFeatures.ts` its region, `collectMarkRowMatrix.ts` each of its
+  regions), and `intervalsOf` keeps a row on the clip's `refName`, binned by
+  its own `start` and `end`, to the bins from the one holding the clip's start
+  to the last starting before its end; the edge bins stay whole and each
+  piece's overlap is what it was. Clipped, the same feature makes 800 groups
+  in 0.05 ms and 0.02 MB (against 42.8 ms and 10.56 MB unclipped, one ada
+  run). No in-region answer moves: fusion groups by exactly the bin edges, so
+  a kept bin gathers the pieces it gathered before, and the display widens
+  the fetch to bin edges (`binnedFetchRegions`), so a kept edge bin is
+  complete; a dropped bin lies wholly outside the fetch and held only the rows
+  that reach into the region, a partial count. Where the kernel
+  hands a sparse section back to the steps as written, that `bin` takes the
+  same clip, so the answer never rests on the density heuristic.
+- **Only the fused path clips.** On the unfused path a piece outside the
+  region still changes a correct answer: an aggregate by name sums each row's
+  overlap across every bin, a `window` running total adds the bins before the
+  region, and a row wholly off the region would vanish. So an unfused interval
+  `bin`, and a `bin` in the display's or the facet's steps with its
+  `aggregate` in a mark's list, still cut a row along its whole length; a
+  mark's `maxBpPerPx` is what bounds those.
 - The `marks_maf_identity` track in the volvox marks config declares the
   identity heatmap: `cells`, then a span over `bin: auto` by `fields` and the
   weighted mean of `match`.
@@ -150,9 +170,11 @@ a screen.
   count of the features overlapping each bin (`count` alone over the pieces)
   are declarable over any feature adapter, which `coverage` answered only as
   runs of depth.
-- Pieces past the fetched region hold only the rows that reach into it, as a
-  start bin before the region holds only the rows the fetch returned; the
-  display's bin-edge widening covers the region's own bins.
+- The fused kernel makes no bin past the fetched region. On the unfused path
+  pieces past it still hold only the rows that reach into it, as a start bin
+  before the region holds only the rows the fetch returned; the display's
+  bin-edge widening covers the region's own bins.
 - The kernel fuses only within one step list: a `bin` in the display's or the
   facet's steps and the `aggregate` in a mark's run apart, correctly and with
-  the piece table.
+  the piece table, and unclipped, so such a pair still cuts a long feature
+  along its whole length.

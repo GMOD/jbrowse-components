@@ -1596,8 +1596,8 @@ function partitionPoint(steps: readonly TransformStep[], field: FieldRef) {
  *
  * `clip` names the fetched region: an interval bin fused with its aggregate
  * makes no bin outside it for a row on its `refName`, so a feature far longer
- * than the view is cut only where it is fetched. The fetch is widened to bin
- * edges, so every bin kept is whole and the ones dropped are partial.
+ * than the view is cut only where it is fetched. A bin it keeps gathers the
+ * pieces it did unclipped; one it drops lies wholly outside the fetch.
  */
 export function layerTables(
   input: readonly Feature[] | FeatureTable,

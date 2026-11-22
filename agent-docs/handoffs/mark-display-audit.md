@@ -1,6 +1,6 @@
 ---
 name: mark-display-audit
-description: "An audit of LinearMarkDisplay (plugins/marks, the worker encoder, Edit plot, hover, legend, export) on 2026-11-21, its checked items fixed: one unmeasured interval-bin cost and two traced hover findings left open."
+description: "An audit of LinearMarkDisplay (plugins/marks, the worker encoder, Edit plot, hover, legend, export) on 2026-11-21, its checked items fixed: two traced hover findings left open."
 ---
 
 # Mark display audit
@@ -16,22 +16,6 @@ each with a test; what is below is left.
 Each item says how far it was checked. "Checked" means the main session read
 the cited code after the reader reported it; "traced" means a reviewer followed
 it through the code.
-
-## Needs a measurement before anything is built
-
-- **An interval `bin` cuts a feature at every bin along its whole length.**
-  `stepTables.ts` `intervalsOf` walks `last` up to the feature's end with no
-  clamp, and `layerFeatures.ts` hands `layerTables` no region. Checked: the
-  code has no clamp.
-  - The reader's case: `{ type: 'bin', step: 'auto', fields: ['start', 'end'] }`
-    then a `count`, at 1 bp/px inside a 2.2 Mb gene, makes about 440,000 pieces
-    for one feature, nearly all off screen. That count is arithmetic, not a
-    measurement.
-  - ADR-197 already declines a warning for a fine auto step, on the reasoning
-    that a row makes its on-screen width over four pixels plus one piece. That
-    holds only for a row that ends on screen. Measure the case above before
-    reopening it; the fix the reader names is clamping `first` and `last` to
-    the fetched region's bins, which `binnedFetchRegions` already aligns.
 
 ## Traced, not fixed: hover
 
