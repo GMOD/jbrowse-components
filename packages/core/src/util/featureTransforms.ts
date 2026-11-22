@@ -27,6 +27,7 @@ import SimpleFeature, { buildJexlContext } from './simpleFeature.ts'
 import {
   DEFAULT_COVERAGE_AS,
   DEFAULT_PILEUP_AS,
+  POSITION_FIELDS,
   isRowwise,
   replacesRows,
   stepWrites,
@@ -1171,11 +1172,17 @@ function runStep(
   }
 }
 
+const POSITIONS = new Set<string>(POSITION_FIELDS)
+
+function keepsPosition(step: TransformStep) {
+  return isRowwise(step) && !stepWrites(step).some(w => POSITIONS.has(w.field))
+}
+
 /**
  * The steps in order, a `cells`, `bin` and `aggregate` or a `bin` and
  * `aggregate` that fuse run as one kernel. A fused interval bin keeps only
- * `clip`'s bins where every later step in this list is row-wise and no
- * `cells` comes right before it, and so does the bin the kernel hands back to
+ * `clip`'s bins where every later step in this list is row-wise and leaves
+ * the position alone, and no `cells` comes right before it, and so does the bin the kernel hands back to
  * the steps as written, so the answer never rests on which kernel ran. Only a
  * layer's own list is handed a `clip`, so the choice reads that list alone.
  */
@@ -1208,7 +1215,7 @@ function runSteps(
     const pairClip =
       pair &&
       list[k - 1]?.type !== 'cells' &&
-      list.slice(k + 2).every(isRowwise)
+      list.slice(k + 2).every(keepsPosition)
         ? clip
         : undefined
     const fused = pair
@@ -1605,11 +1612,12 @@ function partitionPoint(steps: readonly TransformStep[], field: FieldRef) {
  *
  * `clip` names the fetched region: an interval bin fused with its aggregate
  * in a layer's own steps, where every later step of that layer reads one row
- * at a time, makes no bin outside it for a row on its `refName`, so a feature
- * far longer than the view is cut only where it is fetched. A bin it keeps
- * gathers the pieces it did unclipped; one it drops lies wholly outside the
- * fetch. A pair in the shared steps or ahead of a facet split never clips, so
- * a layer's rows never rest on its neighbours' steps.
+ * at a time and leaves its position alone, makes no bin outside it for a row
+ * on its `refName`, so a feature far longer than the view is cut only where
+ * it is fetched. A bin it keeps gathers the pieces it did unclipped; one it
+ * drops lies wholly outside the fetch. A pair in the shared steps, the
+ * facet's steps or ahead of a facet split never clips, so a layer's rows never
+ * rest on its neighbours' steps.
  */
 export function layerTables(
   input: readonly Feature[] | FeatureTable,

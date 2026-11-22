@@ -500,6 +500,24 @@ test('a fused bin in a layer’s own steps clips where its later steps read one 
   expect(near[0]!.find(([start]) => start === 500)).toEqual([500, 1.6])
 })
 
+test('a fused bin is not clipped where a later step moves its rows', () => {
+  const clip = { refName: 'ctgA', start: 480, end: 520 }
+  const rebinned = {
+    layers: [
+      {
+        transform: [
+          INTERVAL_BIN,
+          COUNT_ONLY,
+          { type: 'bin', step: 100, field: 'start' } satisfies BinStep,
+        ],
+      },
+    ],
+  }
+  expect(layered({ ...rebinned, clip }, 'start', 'end', 'count')).toEqual(
+    layered(rebinned, 'start', 'end', 'count'),
+  )
+})
+
 test('a fused bin in the shared steps is never clipped, whatever its layers run', () => {
   const clip = { refName: 'ctgA', start: 480, end: 520 }
   const shared = {
