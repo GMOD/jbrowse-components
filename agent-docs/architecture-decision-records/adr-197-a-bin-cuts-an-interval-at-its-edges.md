@@ -103,29 +103,31 @@ for the interval case as an explicit spelling.
   sparse section back to the steps as written, that `bin` takes the same
   clip, so the answer never rests on the density heuristic.
 - **A fused pair clips only in a layer's own steps, where nothing after it
-  reads across rows.** A dropped bin still changes an answer a later
-  cross-row step gives inside the region: a `window` mean at the region's
-  edge averages its neighbours off it, an `aggregate` with no groupby sums
-  every bin, a running total adds the bins before the region. So `runSteps`
-  passes the clip to a pair only where every later step in that list is one
-  `isRowwise` (`stepOutputs.ts`) calls row-wise and no `cells` runs right
-  before it, so the `cells` walk, which takes no clip, and the steps it hands
-  back answer alike. The choice reads that one list: a pair in the display's
-  shared steps or ahead of a facet split never clips, because a click reruns
-  only the layer asked about (`executeEncodedLayers.ts`), and a rule reading
-  the neighbours' steps drew a bar's bin from one answer and opened it from
-  another. Within a clipped layer a colour ramp's extent and the facet
-  sections cover only the fetched region's bins, no longer the bins off it
-  that the view never shows.
+  reads across rows or moves them.** A dropped bin still changes an answer a
+  later cross-row step gives inside the region: a `window` mean at the
+  region's edge averages its neighbours off it, an `aggregate` with no groupby
+  sums every bin, a running total adds the bins before the region. A later
+  `bin`, `cells` or `formula` into `start` can move a dropped bin's row into
+  the region. So `runSteps` passes the clip to a pair only where every later
+  step in that list is one `isRowwise` (`stepOutputs.ts`) calls row-wise and
+  writes no `refName`, `start` or `end`, and no `cells` runs right before it,
+  so the `cells` walk, which takes no clip, and the steps it hands back answer
+  alike. The choice reads that one list: a pair in the display's shared
+  steps, the facet's own steps or ahead of a facet split never clips, because
+  a click reruns only the layer asked about (`executeEncodedLayers.ts`), and a
+  rule reading the neighbours' steps drew a bar's bin from one answer and
+  opened it from another. Within a clipped layer a colour ramp's extent and
+  the facet sections cover only the fetched region's bins, no longer the bins
+  off it that the view never shows.
 - **Only a fused pair clips.** On the unfused path a piece outside the region
   still changes a correct answer: an aggregate by name sums each row's overlap
   across every bin, and a row wholly off the region would vanish. So an
   unfused interval `bin`, a `bin` in the display's or the facet's steps with
-  its `aggregate` in a mark's list, a fused pair in the shared steps or ahead
-  of a facet split, and a fused pair a cross-row step follows still cut a row
-  along its whole length, into length over step pieces at any zoom: a mark's
-  `maxBpPerPx` bounds only how far out the view goes, not a long feature at a
-  close zoom. These stay open in
+  its `aggregate` in a mark's list, a fused pair in the shared or facet steps
+  or ahead of a facet split, and a fused pair a cross-row or position-moving
+  step follows still cut a row along its whole length, into length over step
+  pieces at any zoom: a mark's `maxBpPerPx` bounds only how far out the view
+  goes, not a long feature at a close zoom. These stay open in
   [mark-display-audit](../handoffs/mark-display-audit.md), and the warning for
   a fine `step` stays declined for them too; no rule guesses which feature is
   long.
