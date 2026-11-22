@@ -449,3 +449,81 @@ test('a row on another reference is not clipped', () => {
     ...Array.from({ length: 10 }, (_, b) => ['ctgB', 2000 + b * 10]),
   ])
 })
+
+const COUNT_ONLY: AggregateStep = {
+  type: 'aggregate',
+  groupby: ['start', 'end'],
+  ops: [{ op: 'count' }],
+}
+
+function layered(
+  request: Parameters<typeof layerTables>[1],
+  ...fields: string[]
+) {
+  return layerTables([feature(0, 1000), feature(470, 505)], request).layers.map(
+    layer => rows(layer.table, ...fields),
+  )
+}
+
+test('a fused bin whose rows a later step reads across is not clipped', () => {
+  const clip = { refName: 'ctgA', start: 500, end: 600 }
+  const nearby: TransformStep = {
+    type: 'window',
+    frame: [-2, 2],
+    ops: [{ op: 'mean', field: 'count', as: 'near' }],
+  }
+  const total: TransformStep = {
+    type: 'aggregate',
+    ops: [{ op: 'sum', field: 'count', as: 'total' }],
+  }
+  const windowed = {
+    layers: [{ transform: [INTERVAL_BIN, COUNT_ONLY, nearby] }],
+  }
+  const summed = {
+    transform: [INTERVAL_BIN, COUNT_ONLY],
+    layers: [{ transform: [total] }],
+  }
+  const faceted = { ...summed, facet: { field: 'count' } }
+  const near = layered({ ...windowed, clip }, 'start', 'near')
+  expect(near).toEqual(layered(windowed, 'start', 'near'))
+  expect(near[0]!.find(([start]) => start === 500)).toEqual([500, 1.6])
+  const sum = layered({ ...summed, clip }, 'start', 'end', 'total')
+  expect(sum).toEqual(layered(summed, 'start', 'end', 'total'))
+  expect(sum).toEqual([[[0, 1000, 104]]])
+  const bySection = layered({ ...faceted, clip }, 'total')
+  expect(bySection).toEqual(layered(faceted, 'total'))
+  expect(bySection).toEqual([[[96], [8]]])
+})
+
+test('a fused bin whose later steps read one row at a time still clips, across lists', () => {
+  const kept: TransformStep = {
+    type: 'filter',
+    predicates: [{ field: 'count', gt: 1 }],
+  }
+  const twice = [
+    [480, 2],
+    [490, 2],
+    [500, 2],
+  ]
+  expect(
+    layered(
+      {
+        transform: [INTERVAL_BIN, COUNT_ONLY, kept],
+        layers: [{ transform: [kept] }, {}],
+        clip: { refName: 'ctgA', start: 480, end: 520 },
+      },
+      'start',
+      'count',
+    ),
+  ).toEqual([twice, twice])
+  expect(
+    layered(
+      {
+        transform: [INTERVAL_BIN, COUNT_ONLY],
+        layers: [{ transform: [kept] }],
+        clip: { refName: 'ctgA', start: 480, end: 520 },
+      },
+      'start',
+    ),
+  ).toEqual([[[480], [490], [500]]])
+})

@@ -366,3 +366,24 @@ test('a reference N splits its run and counts toward no identity', () => {
   expect(answers(fused)).toEqual(answers(apart))
   expect(fused.row(0).get('identity')).toBe(3 / 4)
 })
+
+test('a clip leaves the bins after cells whole, whether the walk runs or hands the steps back', () => {
+  const input = blocks(120, 3)
+  const [bin, agg] = identity(10)
+  const request = {
+    layers: [{ transform: [FLATTEN, CELLS, bin, agg] }],
+    clip: { refName: 'ctgA', start: 300, end: 600 },
+  }
+  const walks = jest.spyOn(kernel, 'binnedCellMatches')
+  const walked = layerTables(input, request).layers[0]!.table
+  expect(walks.mock.results[0]!.value).toBeDefined()
+  walks.mockReturnValue(undefined)
+  const handedBack = layerTables(input, request).layers[0]!.table
+  expect(walks).toHaveBeenCalledTimes(2)
+  expect(answers(handedBack)).toEqual(answers(walked))
+  expect(
+    answers(walked).some(
+      ({ json }) => json.refName === 'ctgA' && Number(json.end) <= 300,
+    ),
+  ).toBe(true)
+})

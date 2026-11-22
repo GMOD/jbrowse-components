@@ -1171,11 +1171,35 @@ function runStep(
   }
 }
 
+const ROW_WISE = new Set<TransformStep['type']>([
+  'filter',
+  'formula',
+  'flatten',
+  'bin',
+])
+
+/**
+ * `clip` where every list the rows flow into next reads one row at a time,
+ * so a bin outside it changes no answer inside it.
+ */
+function clipThrough(
+  clip: BinClip | undefined,
+  lists: readonly (readonly TransformStep[] | undefined)[],
+) {
+  return lists.every(
+    list => list?.every(step => ROW_WISE.has(step.type)) ?? true,
+  )
+    ? clip
+    : undefined
+}
+
 /**
  * The steps in order, a `cells`, `bin` and `aggregate` or a `bin` and
  * `aggregate` that fuse run as one kernel. A fused interval bin keeps only
- * `clip`'s bins, and so does the bin the kernel hands back to the steps as
- * written, so the answer never rests on which of the two ran.
+ * `clip`'s bins where only row-wise steps follow it and no `cells` comes
+ * right before it, and so does the bin the kernel hands back to the steps as
+ * written, so the answer never rests on which kernel ran. `clip` arrives only
+ * where the lists after these read row-wise too.
  */
 function runSteps(
   staged: Staged,
@@ -1203,8 +1227,12 @@ function runSteps(
       fusesBinAggregate(step, next)
         ? { bin: step, agg: next }
         : undefined
+    const pairClip =
+      pair && list[k - 1]?.type !== 'cells'
+        ? clipThrough(clip, [list.slice(k + 2)])
+        : undefined
     const fused = pair
-      ? binnedAggregate(current, pair.bin, pair.agg, clip)
+      ? binnedAggregate(current, pair.bin, pair.agg, pairClip)
       : undefined
     if (matches) {
       current = matches
@@ -1214,7 +1242,7 @@ function runSteps(
       k++
     } else {
       current = pair
-        ? bin(current, pair.bin, clip)
+        ? bin(current, pair.bin, pairClip)
         : runStep(current, step, jexl)
     }
   }
@@ -1243,10 +1271,13 @@ function runLayers(
       ? last
       : undefined
   if (!trailing) {
-    const shared = keep(runSteps(staged, list, jexl, clip), list)
+    const shared = keep(
+      runSteps(staged, list, jexl, clipThrough(clip, layers)),
+      list,
+    )
     return layers.map(own => keep(runSteps(shared, own, jexl, clip), own))
   }
-  const ahead = runSteps(staged, list.slice(0, -1), jexl, clip)
+  const ahead = runSteps(staged, list.slice(0, -1), jexl)
   let shared: Staged | undefined
   return layers.map(own =>
     fusesAfterCells(trailing, own)
@@ -1636,7 +1667,11 @@ export function layerTables(
       { table, bounds: oneSection(table.length) },
       transform.slice(0, at),
       jexl,
-      clip,
+      clipThrough(clip, [
+        transform.slice(at),
+        facet.transform,
+        ...layers.map(layer => layer.transform),
+      ]),
     ).table,
     {
       ...facet,
