@@ -261,7 +261,12 @@ test('an interval bin fused with its aggregate answers what the two steps answer
       values,
     }))
   for (const [binStep, agg] of declarations()) {
-    const own: BinStep = { ...binStep, fields: ['start', 'end'] }
+    const own: BinStep = {
+      type: 'bin',
+      step: binStep.step,
+      as: binStep.as,
+      fields: ['start', 'end'],
+    }
     const [lo, hi] = own.as ?? ['start', 'end']
     kernelRuns.mockClear()
     const fused = layerTables(spans, {
