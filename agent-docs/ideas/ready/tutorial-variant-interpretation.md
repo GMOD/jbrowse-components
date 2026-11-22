@@ -18,6 +18,13 @@ hub-backed page, and `specs/ld.ts`, `specs/popgen.ts` and `specs/qc.ts` show
 the spec form. Consequence-impact coloring already has specs
 (`variants/consequence_impact_1000g`).
 
+Part of this exists. The Variants on protein structures series reads ClinVar's
+records at a locus (`protein_variants_kras.md`,
+`protein_variants_sickle_cell.md`), and `genomes_basics.md` filters the hg38
+gnomAD variant catalog to predicted loss of function. What no page does is the
+gnomAD constraint view beside ClinVar on the hg38 hub, with a benign or
+unconstrained control, which is what this page adds.
+
 Pick one variant whose interpretation is uncontroversial and readable off the
 tracks, with a negative control: a benign neighbour, or the same class of
 variant in a constrained versus an unconstrained gene. The UniProt domain tracks

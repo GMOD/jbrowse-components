@@ -12,7 +12,9 @@ its "One row per file" section.
 
 `flatten` turns a feature carrying a list into one feature per element: a gene
 whose GFF attribute lists a value per transcript becomes one feature per
-transcript, which a point mark can then plot. No tutorial or figure uses it.
+transcript, which a point mark can then plot. The examples page never shows
+it; `tutorials/protein_domains.md`, `user_guides/maf_track.md` and the
+reference in `config_guides/mark_display.md` use it, none as a worked plot.
 `dtu`'s per-transcript statistic is the natural case: flatten to transcripts, a
 point each, a threshold color, and a reference line at significance. It fits as
 one more section of the examples page.

@@ -1,13 +1,15 @@
 ---
 name: tutorial-exporting-figures
-description: A figures tutorial that leads with exporting from the app (SVG export, the figure recipe dialog) and demotes jbrowse-img and URL automation to a later section for repeating a figure across loci. No tutorial mentions jbrowse-img; docs/automating.md already carries the URL-and-CLI half.
+description: A figures tutorial that leads with exporting from the app (SVG export, the figure recipe dialog) and demotes jbrowse-img and URL automation to a later section for repeating a figure across loci. No tutorial teaches the export; docs/automating.md already carries the URL-and-CLI half.
 ---
 
 # Tutorial: exporting figures
 
 Split out of the tutorial-ideas audit on 2026-09-27.
 
-No tutorial mentions `jbrowse-img`. The FAQ has both "How do I make an image
+No tutorial teaches exporting a figure: `sv_callset_review.md` installs
+`jbrowse-img` to batch its junction images, and `cli_desktop.md` names
+`jb2export` in passing. The FAQ has both "How do I make an image
 for a publication" and "How do I automatically create screenshots", and
 `docs/jbrowse-img.md` is generated from the product README, so the tutorial is
 the missing narrative layer: a session to a committed PNG or SVG, batching a

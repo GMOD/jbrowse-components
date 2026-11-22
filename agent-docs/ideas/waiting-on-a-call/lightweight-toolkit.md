@@ -28,8 +28,8 @@ parachute from three places:
   `util/usePanZoom`
 - `@jbrowse/display-ui`
 
-Eighteen example files, 7,561 lines, and `check-duplication.mjs` reports 3,489
-of them as copies beyond the first. That number is the rule working
+The examples site repeats its setup in every file, and `check-duplication.mjs`
+counts the copies beyond the first. That count is the rule working
 ([EXAMPLES_SITES.md](../../reference/EXAMPLES_SITES.md)) and it is also the size of
 the ceremony, which is the thing this doc is about.
 
@@ -64,8 +64,9 @@ theirs.
 `@jbrowse/display-ui/embed` (`25ebc9aef7`) since closed 2 to 5: `Track` mounts
 one display in its overlay slot, `TrackStack` measures the column and binds pan
 and zoom, and `ViewStatus` draws loading, error and nothing-to-show. Every
-example uses them (`dc2af735f8`). The root-model nouns and the palette provider
-name are still open.
+example uses them (`dc2af735f8`). `EmbedProvider` (`display-ui/src/embed/provider.tsx`)
+closes 6: it mounts `SessionPaletteProvider`, so an embedder never picks the
+palette provider by name. The root-model nouns are still open.
 
 ## Four findings
 
@@ -252,12 +253,12 @@ coordinate-system concepts. That is the differentiator.
 
 ## Work, in order of leverage over cost
 
-1. **Name the engine and export its types.** Move the `createViewState`
-   composition somewhere whose subject is the headless engine, taking the plugin
-   set as an argument; `@jbrowse/react-linear-genome-view2` keeps its API and
-   becomes a preset over it. Export the view and session types — all 18 examples
-   write `type BrowserView = ReturnType<typeof makeView>['view']` because there
-   is no name to import.
+1. **Name the engine.** Move the `createViewState` composition somewhere whose
+   subject is the headless engine, taking the plugin set as an argument;
+   `@jbrowse/react-linear-genome-view2` keeps its API and becomes a preset over
+   it. `corePlugins` can still only be added to (`createModel.ts`). The view
+   type is exported (`LinearGenomeViewModel` from
+   `@jbrowse/react-linear-genome-view2`), and the examples import it.
 2. **Make `queueDialog` and `notify` seams rather than calls** — finding 3.
    Highest effort here, and it decides whether "your own UI" is true below the
    view.

@@ -29,6 +29,11 @@ Two spellings at two sites, standard first. A third caller's key goes in the
 same two places, and a caller writing no grouping is unchanged, since the walk
 still orders its stops from the records.
 
+This flips a test on purpose: `SpreadsheetModel.test.ts` ("a caller-specific
+grouping key is not read as EVENT") pins the opposite, from the earlier choice
+that a Severus file is renamed before import. Landing this rewrites that test
+to expect `CLUSTERID` as the event column.
+
 ## `EVENTTYPE`: the class of an event, in words
 
 `EVENT` groups a rearrangement's records and the SV inspector reads it.

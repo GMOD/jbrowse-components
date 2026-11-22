@@ -1,22 +1,36 @@
 ---
 name: sv-review-portal
-description: A static review page over a whole SV callset, shaped like gene-review-portal, with one `jb2export batch --manifest` card per record (tumor and normal in one image), grouped by the caller's VCF `EVENT`, with a verdict and a live link.
+description: The SV review portal is built (variant-review-portal, with COLO829 and HG008-T portals hosted). Still unbuilt are an in-process PNG in place of `rsvg-convert`, one bundled CLI file, a cohort card for a multi-sample callset, and read-vs-ref as a launch input.
 ---
 
 # SV review portal
 
-Agreed with Colin 2026-08-27 and again 2026-09-20; parked because v5.0.0 does
-not turn on it. `sv_callset_review` renders a callset into a directory of
-images, and
+`sv_callset_review` renders a callset into a directory of images, and
 [gene-review-portal](https://github.com/cmdcolin/gene-review-portal) turns a
 directory of images into a queue a person can finish: filters, keyboard
-verdicts, TSV export, a live link per card. The SV portal is those two joined.
+verdicts, TSV export, a live link per card. The SV portal is those two joined,
+and it is built: [variant-review-portal](https://github.com/cmdcolin/variant-review-portal),
+run on the callsets under [Callsets it has been run on](#callsets-it-has-been-run-on).
+What is left is the four pieces below; the rest of this file is the design the
+cards follow.
 
 The first plan built its cards from `sv_multihop.py chains`.
 [ADR-140](../../architecture-decision-records/adr-140-sv-analysis-is-not-ours-to-ship.md)
 deleted that script, so a card groups junctions only where the caller did, and
 [ADR-137](../../architecture-decision-records/adr-137-jbrowse-shows-sv-evidence-and-does-not-infer-alleles.md)
 means a card draws an allele only where a tool outside JBrowse built one.
+
+## Pieces still unbuilt
+
+- **The PNG without the second process.** `rsvg-convert` is 15% of a render
+  and a prerequisite a reader installs by hand. An in-process rasteriser takes
+  both away, and moves every figure's antialiasing, so it is a decision about
+  the figure corpus before it is one about speed.
+- **One bundled CLI file**, for the 3 s a process spends loading.
+- **The cohort card**, for a multi-sample callset.
+- **Read vs ref as a launch input**, under
+  [The allele row is a BAM record](#the-allele-row-is-a-bam-record). `jb2export synteny` renders it, and
+  the page gains the allele row. This is the one with a design in it.
 
 ## What a card is
 
@@ -299,19 +313,6 @@ records is five to six hours at four processes, and nobody reviews that many
 cards: at that
 size the manifest is the product, a table of split-read support per call, and
 the page is for the subset a filter leaves.
-
-## Pieces still unbuilt
-
-1. **The PNG without the second process.** `rsvg-convert` is 15% of a render
-   and a prerequisite a reader installs by hand. An in-process rasteriser takes
-   both away, and moves every figure's antialiasing, so it is a decision about
-   the figure corpus before it is one about speed.
-2. **One bundled CLI file**, for the 3 s a process spends loading.
-3. **The cohort card**, for a multi-sample callset.
-4. **Read vs ref as a launch input**, above. `jb2export synteny` renders it, and
-   the page gains the allele row.
-
-4 is the one with a design in it.
 
 ## Risks
 
