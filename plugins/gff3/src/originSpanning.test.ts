@@ -15,6 +15,7 @@ import { toArray } from 'rxjs/operators'
 import { originCrossingLength } from '../../../packages/core/src/BaseFeatureWidget/SequenceFeatureDetails/util.ts'
 import { stringifyGFF3 } from '../../../packages/core/src/pluggableElementTypes/models/saveTrackFileTypes/gff3.ts'
 import { declaredCircularLengths } from '../../../packages/core/src/pluggableElementTypes/models/saveTrackFileTypes/util.ts'
+import CoreGetEncodedFeature from '../../../packages/core/src/rpc/methods/CoreGetEncodedFeature.ts'
 import GetBasicFeatureDetails from '../../../packages/core/src/rpc/methods/GetBasicFeatureDetails.ts'
 import Gff3Adapter from './Gff3Adapter/Gff3Adapter.ts'
 import gff3ConfigSchema from './Gff3Adapter/configSchema.ts'
@@ -258,5 +259,38 @@ describe('feature details read with no assembly to say which sequence is circula
     const gene = await clickedGene('pLinear', 940, 1000)
     expect([gene.start, gene.end]).toEqual([949, 1100])
     expect(originCrossingLength(undefined, gene)).toBeUndefined()
+  })
+
+  test('a mark display opens the piece of a feature it drew past the origin as the whole feature, wrapping there', async () => {
+    const request = {
+      sessionId: 'test',
+      adapterConfig: {
+        type: 'Gff3Adapter',
+        gffLocation: {
+          localPath: require.resolve('./test_data/origin_spanning.gff3'),
+        },
+      },
+      region: { assemblyName: 'p', refName: 'pTest', start: 0, end: 50 },
+      layers: [{ encoding: {}, lanes: [] }],
+      layer: 0,
+    }
+    const [region, dloop, gene, past] = await Promise.all(
+      [0, 1, 2, 3].map(featureIndex =>
+        new CoreGetEncodedFeature(pluginManager).execute({
+          ...request,
+          featureIndex,
+        }),
+      ),
+    )
+    expect([region, dloop, gene].map(f => [f!.type, f!.start, f!.end])).toEqual(
+      [
+        ['region', 0, 1000],
+        ['D_loop', 899, 1100],
+        ['gene', 949, 1150],
+      ],
+    )
+    expect(past).toBeUndefined()
+    expect(originCrossingLength(undefined, gene!)).toBe(1000)
+    expect(originCrossingLength(undefined, region!)).toBeUndefined()
   })
 })

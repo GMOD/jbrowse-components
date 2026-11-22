@@ -15,8 +15,9 @@ import type { IStateTreeNode } from '@jbrowse/mobx-state-tree'
  * `CoreGetEncodedLayers` answer. A display holds channels, not records, so it
  * sends `CoreGetEncodedFeature` the request the instance's region came back
  * under, and the worker answers the entry of `layer`'s list that the
- * instance's `featureIndex` names: the record as the adapter wrote it, or the
- * bin or run the steps made. A second click aborts the first request.
+ * instance's `featureIndex` names: the record as the adapter wrote it, whole
+ * across a circular origin, or the bin or run the steps made. A second click
+ * aborts the first request.
  */
 export function selectEncodedFeature(
   self: IStateTreeNode & { featureWidgetType: FeatureWidgetTypeRef },

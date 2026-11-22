@@ -43,6 +43,7 @@ function request(args: Partial<CoreGetEncodedLayersArgs>, features = reads) {
   jest.mocked(getAdapter).mockResolvedValue({
     dataAdapter: {
       getFeatures: () => {},
+      getFeaturesArray: async () => features,
       getFeatureTable: async () => asTable(features),
       getZoomRange: async () => undefined,
     },
@@ -153,6 +154,25 @@ test('a bin reads back as the bin the steps made', async () => {
       count: 1,
       sum_score: 9,
     },
+  ])
+})
+
+test('a read a step moved reads back where the step put it, under its own id', async () => {
+  const drawn = await drawnAndReadBack({
+    layers: [
+      {
+        encoding: {},
+        lanes: [],
+        transform: [{ type: 'bin', step: 40 }],
+      },
+    ],
+  })
+  expect(
+    drawn.map(d => [d.feature?.uniqueId, d.feature?.start, d.feature?.end]),
+  ).toEqual([
+    ['r1', 0, 40],
+    ['r2', 0, 40],
+    ['r3', 40, 80],
   ])
 })
 

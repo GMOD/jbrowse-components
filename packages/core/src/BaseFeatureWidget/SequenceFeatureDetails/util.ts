@@ -9,7 +9,7 @@ import type { Feat } from './types.ts'
  * The length of a circular sequence a feature runs past the origin of, or
  * undefined when it ends on the sequence or its sequence is linear. Circular
  * as the feature's own file declares it (`circularLength`, stamped by
- * `GetBasicFeatureDetails`) or as the assembly does (`isCircularRefName`): a
+ * `recordAcrossOrigin`) or as the assembly does (`isCircularRefName`): a
  * feature ending past a linear sequence's end is read as written.
  */
 export function originCrossingLength(

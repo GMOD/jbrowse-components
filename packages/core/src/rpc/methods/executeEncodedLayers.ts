@@ -8,6 +8,7 @@ import { createProgressReporter } from '../../util/progress.ts'
 import { wholeFeatureRow } from '../../util/stepTables.ts'
 import { measureRegionBytes } from '../byteBudget.ts'
 import { layerFeatures } from './layerFeatures.ts'
+import { recordAcrossOrigin } from './recordAcrossOrigin.ts'
 
 import type PluginManager from '../../PluginManager.ts'
 import type { EncodedLayersResult } from '../../util/markEncoding.ts'
@@ -105,7 +106,21 @@ export async function executeGetEncodedFeature({
     pluginManager.jexl,
   )
   const table = layers[0]?.table
-  return table && featureIndex < table.length
-    ? wholeFeatureRow(table, featureIndex).toJSON()
-    : undefined
+  const row =
+    table && featureIndex < table.length
+      ? wholeFeatureRow(table, featureIndex).toJSON()
+      : undefined
+  const read =
+    row &&
+    (await recordAcrossOrigin(
+      dataAdapter,
+      {
+        ...args.region,
+        start: row.start,
+        end: Math.max(row.end, row.start + 1),
+      },
+      row.uniqueId,
+      { ...args.opts, signal: args.signal },
+    ))
+  return read?.crossingOrigin ?? row
 }
