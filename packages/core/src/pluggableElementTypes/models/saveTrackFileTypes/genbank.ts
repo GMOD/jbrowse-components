@@ -16,12 +16,40 @@ const coreFields = new Set([...coreFeatureFields, 'name'])
 // qualifiers start at col 22. See https://www.insdc.org/submitting-standards/feature-table/
 const TYPE_COLUMN_WIDTH = 15
 const QUALIFIER_INDENT = ' '.repeat(21)
+const LINE_WIDTH = 79
 const DATE = '10-JAN-1970'
+
+// A line past LINE_WIDTH continues under its lead's indent, broken at the last
+// space that fits, or after the last comma in a location, else hard. Readers
+// rejoin qualifier text with a space, and a /translation or a location with
+// none.
+function wrapped(lead: string, text: string, breakAfter = ' ') {
+  const width = LINE_WIDTH - lead.length
+  const lines = []
+  let rest = text
+  while (rest.length > width) {
+    const at =
+      breakAfter === ' '
+        ? rest.lastIndexOf(' ', width)
+        : rest.lastIndexOf(breakAfter, width - 1) + 1
+    const cut = at > 0 ? at : width
+    lines.push(rest.slice(0, cut))
+    rest = rest.slice(cut).trimStart()
+  }
+  lines.push(rest)
+  return lines
+    .map((line, i) => `${i === 0 ? lead : ' '.repeat(lead.length)}${line}`)
+    .join('\n')
+}
+
+function qualifierLine(text: string) {
+  return wrapped(QUALIFIER_INDENT, text)
+}
 
 // Free-text qualifiers are wrapped in double quotes; literal quotes inside the
 // value are escaped by doubling them, per the GenBank spec.
 function qualifier(key: string, value: string) {
-  return `${QUALIFIER_INDENT}/${key}="${value.replaceAll('"', '""')}"`
+  return qualifierLine(`/${key}="${value.replaceAll('"', '""')}"`)
 }
 
 // `circularLength` is set on a circular record, whose span past the origin is
@@ -52,7 +80,11 @@ function joinLoc(feats: Feature[], strand: number, frame: RecordFrame) {
 }
 
 function featureLine(type: string, location: string) {
-  return `     ${type.slice(0, TYPE_COLUMN_WIDTH).padEnd(TYPE_COLUMN_WIDTH)} ${location}`
+  return wrapped(
+    `     ${type.slice(0, TYPE_COLUMN_WIDTH).padEnd(TYPE_COLUMN_WIDTH)} `,
+    location,
+    ',',
+  )
 }
 
 /**
@@ -229,9 +261,9 @@ function qualifierLines(attribute: string, value: unknown) {
   const key = QUALIFIER_SPELLING[attribute] ?? attribute
   return attributeValues(value).map(v =>
     FLAG_QUALIFIERS.has(key) && v === 'true'
-      ? `${QUALIFIER_INDENT}/${key}`
+      ? qualifierLine(`/${key}`)
       : NUMBER_QUALIFIERS.has(key) && /^\d+$/.test(v)
-        ? `${QUALIFIER_INDENT}/${key}=${v}`
+        ? qualifierLine(`/${key}=${v}`)
         : qualifier(key, v),
   )
 }
@@ -262,7 +294,7 @@ function formatTags({
     written.add('label')
   }
   if (codonStart !== undefined) {
-    tags.push(`${QUALIFIER_INDENT}/codon_start=${codonStart}`)
+    tags.push(qualifierLine(`/codon_start=${codonStart}`))
     written.add('codon_start')
   }
   // a feature that had to become misc_feature still knows what it is, so the
@@ -599,11 +631,14 @@ function formatHeader({
     : undefined
   return [
     formatLocus(refName, length, circular),
-    `DEFINITION  ${region} from ${assemblyName}.`,
+    wrapped('DEFINITION  ', `${region} from ${assemblyName}.`),
     `ACCESSION   ${refName}`,
     `VERSION     ${refName}`,
     'KEYWORDS    .',
-    `SOURCE      ${organism}${commonName ? ` (${commonName})` : ''}`,
+    wrapped(
+      'SOURCE      ',
+      `${organism}${commonName ? ` (${commonName})` : ''}`,
+    ),
     `  ORGANISM  ${organism}`,
     '            .',
     'FEATURES             Location/Qualifiers',

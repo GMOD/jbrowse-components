@@ -335,3 +335,93 @@ test('a record with two source features takes the widest as its own', async () =
   })
   expect(exported).toContain('  ORGANISM  synthetic construct')
 })
+
+describe('GenBank export line width', () => {
+  const refName = 'contig1'
+  const translation = 'MKTAYIAKQRQISFVKSHFSRQ'.repeat(12)
+  const note = Array.from(
+    { length: 30 },
+    (_, i) => `word${i} of a free text note`,
+  ).join(' ')
+  const exons = Array.from({ length: 14 }, (_, i) => ({
+    uniqueId: `exon${i}`,
+    refName,
+    start: 1000 + i * 200,
+    end: 1000 + i * 200 + 100,
+    type: 'exon',
+    strand: -1,
+  }))
+  const features = [
+    new SimpleFeature({
+      uniqueId: 'noted',
+      refName,
+      start: 0,
+      end: 900,
+      type: 'gene',
+      note,
+    }),
+    new SimpleFeature({
+      uniqueId: 'coding',
+      refName,
+      start: 100,
+      end: 900,
+      type: 'CDS',
+      translation,
+    }),
+    new SimpleFeature({
+      uniqueId: 'spliced',
+      refName,
+      start: 1000,
+      end: 3700,
+      type: 'mRNA',
+      strand: -1,
+      subfeatures: exons,
+    }),
+  ]
+
+  function exportedRecord() {
+    return stringifyGBK({
+      features,
+      sourceRecords: sourceRecords(features),
+      circularLengths: new Map<string, number>(),
+      regions: [],
+      assemblyName: 'test',
+      session,
+    })
+  }
+
+  it('keeps every line within 79 columns', async () => {
+    const exported = await exportedRecord()
+    expect(exported.split('\n').filter(line => line.length > 79)).toEqual([])
+  })
+
+  it('reads a wrapped translation, note and location back whole through GenbankAdapter', async () => {
+    const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'genbank-wrap-'))
+    const file = path.join(dir, 'wrapped.gbk')
+    fs.writeFileSync(file, await exportedRecord())
+    const read = await fetch(
+      new GenbankAdapter(
+        configSchema.create({ genbankLocation: { localPath: file } }),
+      ),
+      refName,
+      0,
+      5000,
+    ).finally(() => {
+      fs.rmSync(dir, { recursive: true, force: true })
+    })
+    const byType = new Map(read.map(f => [f.get('type'), f]))
+    expect(byType.get('gene')?.get('note')).toBe(note)
+    expect(byType.get('CDS')?.get('translation')).toBe(translation)
+    expect(
+      byType
+        .get('mRNA')
+        ?.get('subfeatures')
+        ?.map(f => ({
+          start: f.get('start'),
+          end: f.get('end'),
+          strand: f.get('strand'),
+        }))
+        .toSorted((a, b) => a.start - b.start),
+    ).toEqual(exons.map(e => ({ start: e.start, end: e.end, strand: -1 })))
+  })
+})
