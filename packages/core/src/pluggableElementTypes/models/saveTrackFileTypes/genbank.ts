@@ -19,22 +19,35 @@ const QUALIFIER_INDENT = ' '.repeat(21)
 const LINE_WIDTH = 79
 const DATE = '10-JAN-1970'
 
-// A line past LINE_WIDTH continues under its lead's indent, broken at the last
-// space that fits, or after the last comma in a location, else hard. Readers
-// rejoin qualifier text with a space, and a /translation or a location with
-// none.
+// Where a line past `width` breaks: after the last space that fits, else the
+// next one, since a reader rejoins qualifier text with a space and a break
+// inside a word would put one there; after the last comma in a location; and
+// anywhere in a /translation, which is rejoined with none.
+function breakAt(text: string, width: number, breakAfter: string) {
+  const fits = text.lastIndexOf(
+    breakAfter,
+    width - (breakAfter === ' ' ? 0 : 1),
+  )
+  return text.length <= width
+    ? -1
+    : breakAfter === ''
+      ? width
+      : breakAfter === ' '
+        ? fits > 0
+          ? fits
+          : text.indexOf(' ', width)
+        : fits + 1 || width
+}
+
 function wrapped(lead: string, text: string, breakAfter = ' ') {
   const width = LINE_WIDTH - lead.length
   const lines = []
   let rest = text
-  while (rest.length > width) {
-    const at =
-      breakAfter === ' '
-        ? rest.lastIndexOf(' ', width)
-        : rest.lastIndexOf(breakAfter, width - 1) + 1
-    const cut = at > 0 ? at : width
+  let cut = breakAt(rest, width, breakAfter)
+  while (cut > 0) {
     lines.push(rest.slice(0, cut))
     rest = rest.slice(cut).trimStart()
+    cut = breakAt(rest, width, breakAfter)
   }
   lines.push(rest)
   return lines
@@ -49,7 +62,11 @@ function qualifierLine(text: string) {
 // Free-text qualifiers are wrapped in double quotes; literal quotes inside the
 // value are escaped by doubling them, per the GenBank spec.
 function qualifier(key: string, value: string) {
-  return qualifierLine(`/${key}="${value.replaceAll('"', '""')}"`)
+  return wrapped(
+    QUALIFIER_INDENT,
+    `/${key}="${value.replaceAll('"', '""')}"`,
+    key === 'translation' ? '' : ' ',
+  )
 }
 
 // `circularLength` is set on a circular record, whose span past the origin is

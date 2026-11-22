@@ -395,6 +395,44 @@ describe('GenBank export line width', () => {
     expect(exported.split('\n').filter(line => line.length > 79)).toEqual([])
   })
 
+  it('leaves a word longer than a line whole, since a reader would rejoin its halves with a space', async () => {
+    const url = `https://example.org/${'a'.repeat(90)}`
+    const text = `see ${url} for "the" record`
+    const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'genbank-long-word-'))
+    const file = path.join(dir, 'word.gbk')
+    fs.writeFileSync(
+      file,
+      await stringifyGBK({
+        features: [
+          new SimpleFeature({
+            uniqueId: 'linked',
+            refName,
+            start: 0,
+            end: 900,
+            type: 'gene',
+            note: text,
+          }),
+        ],
+        sourceRecords: new Map(),
+        circularLengths: new Map<string, number>(),
+        regions: [],
+        assemblyName: 'test',
+        session,
+      }),
+    )
+    const read = await fetch(
+      new GenbankAdapter(
+        configSchema.create({ genbankLocation: { localPath: file } }),
+      ),
+      refName,
+      0,
+      5000,
+    ).finally(() => {
+      fs.rmSync(dir, { recursive: true, force: true })
+    })
+    expect(read.find(f => f.get('type') === 'gene')?.get('note')).toBe(text)
+  })
+
   it('reads a wrapped translation, note and location back whole through GenbankAdapter', async () => {
     const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'genbank-wrap-'))
     const file = path.join(dir, 'wrapped.gbk')

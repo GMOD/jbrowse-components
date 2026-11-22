@@ -120,7 +120,7 @@ export async function executeGetEncodedFeature({
         end: Math.max(row.end, row.start + 1),
       },
       row.uniqueId,
-      { ...args.opts, signal: args.signal },
+      { ...args.opts, bpPerPx: args.bpPerPx, signal: args.signal },
     ))
   return read?.crossingOrigin ?? row
 }

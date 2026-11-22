@@ -9,24 +9,30 @@ jest.mock('@jbrowse/web/makeWorkerInstance', () => () => {})
 const desktopExtensions = ['.jbrowse', '.json']
 
 test.each([
-  [['volvox.jbrowse'], desktopExtensions, 'session'],
-  [['Session.JSON'], desktopExtensions, 'session'],
-  [['session.json'], ['.json'], 'session'],
-  [['volvox.jbrowse'], ['.json'], 'tracks'],
-  [['hg19.fa', 'hg19.fa.fai'], desktopExtensions, 'genome'],
-  [['hg19.2bit', 'reads.bam'], desktopExtensions, 'genome'],
-  [['sakai.gbk'], desktopExtensions, 'genome'],
-  [['x.bed.gz', 'x.bed.gz.tbi'], desktopExtensions, 'tracks'],
-  [['a.json', 'b.json'], desktopExtensions, 'tracks'],
-  [['reads.bam', 'reads.bam.bai'], desktopExtensions, 'tracks'],
-])('%j with session extensions %j routes to %s', (names, extensions, kind) => {
-  expect(
-    routeDroppedFiles(
-      names.map(name => ({ name })),
-      extensions,
-    ).kind,
-  ).toBe(kind)
-})
+  [['volvox.jbrowse'], desktopExtensions, false, 'session'],
+  [['Session.JSON'], desktopExtensions, false, 'session'],
+  [['session.json'], ['.json'], false, 'session'],
+  [['volvox.jbrowse'], ['.json'], false, 'tracks'],
+  [['hg19.fa', 'hg19.fa.fai'], desktopExtensions, true, 'genome'],
+  [['hg19.2bit', 'reads.bam'], desktopExtensions, true, 'genome'],
+  [['sakai.gbk'], desktopExtensions, false, 'genome'],
+  [['sakai.gbk'], desktopExtensions, true, 'tracks'],
+  [['sakai.gbk', 'sakai.fa'], desktopExtensions, true, 'genome'],
+  [['x.bed.gz', 'x.bed.gz.tbi'], desktopExtensions, true, 'tracks'],
+  [['a.json', 'b.json'], desktopExtensions, false, 'tracks'],
+  [['reads.bam', 'reads.bam.bai'], desktopExtensions, true, 'tracks'],
+])(
+  '%j with session extensions %j and a view open %j routes to %s',
+  (names, extensions, hasView, kind) => {
+    expect(
+      routeDroppedFiles(
+        names.map(name => ({ name })),
+        extensions,
+        hasView,
+      ).kind,
+    ).toBe(kind)
+  },
+)
 
 function renderDropTarget() {
   const session = createTestSession()

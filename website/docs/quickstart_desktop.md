@@ -55,7 +55,8 @@ it becomes a new session on that assembly.
 - Drop the sequence file (FASTA, bgzip-compressed FASTA, 2bit or GenBank, with
   any `.fai` or `.gzi` beside it) onto the drop area, or click it to browse.
   **Open from a URL** takes file URLs, one per line. A GenBank file opens as the
-  genome only; [adding it as a track](#adding-tracks) too draws its features.
+  genome only; [adding it as a track](#adding-tracks) too draws its features,
+  and dropping it on an open view stages it as that track.
 - JBrowse classifies each file. Once it recognizes a sequence it shows a
   confirmation card with a **Genome name** field, and the drop area stays put,
   so a forgotten `.fai` can go in afterwards.

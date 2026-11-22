@@ -23,16 +23,22 @@ function isFileStagingWidget(widget: Widget): widget is FileStagingWidget {
   return 'stageLocations' in widget
 }
 
+function opensGenome(name: string, hasView: boolean) {
+  const role = classifyFilename(name)
+  return isSequenceRole(role) && !(hasView && role === 'genbank')
+}
+
 export function routeDroppedFiles<T extends { name: string }>(
   files: T[],
   sessionFileExtensions: string[],
+  hasView: boolean,
 ) {
   const [first] = files
   return files.length === 1 &&
     first &&
     sessionFileExtensions.some(ext => first.name.toLowerCase().endsWith(ext))
     ? { kind: 'session' as const, file: first }
-    : files.some(file => isSequenceRole(classifyFilename(file.name)))
+    : files.some(file => opensGenome(file.name, hasView))
       ? { kind: 'genome' as const, files }
       : { kind: 'tracks' as const, files }
 }
@@ -103,7 +109,11 @@ export async function openDroppedFiles({
   files: File[]
   viewId?: string
 }) {
-  const route = routeDroppedFiles(files, routes.sessionFileExtensions)
+  const route = routeDroppedFiles(
+    files,
+    routes.sessionFileExtensions,
+    session.views.length > 0,
+  )
   try {
     if (route.kind === 'session') {
       await routes.openSessionFile(route.file)
