@@ -207,7 +207,11 @@ export function structureOrder(profiles: ReadonlyMap<string, Float64Array>) {
           (i === 0 ? toAnchor[chain[j]!]! : d[chain[i - 1]!]![chain[j]!]!) +
           (j + 1 < n ? d[chain[i]!]![chain[j + 1]!]! : 0)
         if (after + 1e-9 < before) {
-          chain.splice(i, j - i + 1, ...chain.slice(i, j + 1).reverse())
+          for (let lo = i, hi = j; lo < hi; lo++, hi--) {
+            const swap = chain[lo]!
+            chain[lo] = chain[hi]!
+            chain[hi] = swap
+          }
           improved = true
         }
       }

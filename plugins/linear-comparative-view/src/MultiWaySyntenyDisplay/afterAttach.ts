@@ -479,7 +479,9 @@ export function doAfterAttach(self: MultiWaySyntenyDisplayModel) {
     self,
     () => {
       const ends = [...self.laneTransitions.values()].map(laneMotionEnd)
-      return ends.length > 0 ? Math.max(...ends) : undefined
+      return ends.length > 0
+        ? ends.reduce((last, end) => Math.max(last, end), -Infinity)
+        : undefined
     },
     () => {
       self.endAnimation()

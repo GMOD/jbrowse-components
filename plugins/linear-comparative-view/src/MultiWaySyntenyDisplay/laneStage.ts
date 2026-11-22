@@ -77,8 +77,8 @@ export function windowGroupsOn(
       fit.push(
         clipGroupToAnchor(
           group,
-          Math.min(...met.map(r => r.start)),
-          Math.max(...met.map(r => r.end)),
+          met.reduce((lo, r) => Math.min(lo, r.start), Infinity),
+          met.reduce((hi, r) => Math.max(hi, r.end), -Infinity),
           ops,
         ),
       )

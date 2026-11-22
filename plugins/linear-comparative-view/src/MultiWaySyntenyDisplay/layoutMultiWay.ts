@@ -879,7 +879,7 @@ export function rowAssembliesOf(
     assemblyName,
     genome: keyOf(laneGenome(assemblyName)),
     appearance,
-    density: Math.max(0, ...byContig.values()),
+    density: [...byContig.values()].reduce((most, w) => Math.max(most, w), 0),
   }))
   const genomes = new Map<string, { appearance: number; density: number }>()
   for (const { genome, appearance, density } of lanes) {

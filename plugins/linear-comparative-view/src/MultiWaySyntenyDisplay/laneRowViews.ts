@@ -397,7 +397,10 @@ export function placelessLaneViews(
         d => self.laneKey(d.assemblyName) === key,
       )
       return spanning.length
-        ? { kind: 'deletion', bp: Math.max(...spanning.map(d => d.bp)) }
+        ? {
+            kind: 'deletion',
+            bp: spanning.reduce((most, d) => Math.max(most, d.bp), 0),
+          }
         : self.unalignedChosenLanes.some(name => self.laneKey(name) === key)
           ? { kind: 'unaligned' }
           : undefined
