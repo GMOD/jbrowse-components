@@ -219,6 +219,14 @@ describe('feature details read with no assembly to say which sequence is circula
         getAdapterClass: () => Promise.resolve(Gff3Adapter),
       }),
   )
+  pluginManager.addAdapterType(
+    () =>
+      new AdapterType({
+        name: 'Gff3TabixAdapter',
+        configSchema: tabixConfigSchema,
+        getAdapterClass: () => Promise.resolve(Gff3TabixAdapter),
+      }),
+  )
   pluginManager.createPluggableElements()
   pluginManager.configure()
 
@@ -293,4 +301,57 @@ describe('feature details read with no assembly to say which sequence is circula
     expect(originCrossingLength(undefined, gene!)).toBe(1000)
     expect(originCrossingLength(undefined, region!)).toBeUndefined()
   })
+
+  test.each([
+    {
+      type: 'Gff3Adapter',
+      gffLocation: {
+        localPath: require.resolve('./test_data/origin_spanning.gff3'),
+      },
+    },
+    {
+      type: 'Gff3TabixAdapter',
+      gffGzLocation: {
+        localPath: require.resolve('./test_data/origin_spanning.gff3.gz'),
+      },
+      index: {
+        location: {
+          localPath: require.resolve('./test_data/origin_spanning.gff3.gz.tbi'),
+        },
+      },
+    },
+  ])(
+    'a mark display opens each piece it drew on either side of the origin as the whole feature, from $type',
+    async adapterConfig => {
+      const opened = (start: number, end: number) =>
+        Promise.all(
+          [0, 1, 2].map(featureIndex =>
+            new CoreGetEncodedFeature(pluginManager).execute({
+              sessionId: 'test',
+              adapterConfig,
+              region: { assemblyName: 'p', refName: 'pTest', start, end },
+              layers: [{ encoding: {}, lanes: [] }],
+              layer: 0,
+              featureIndex,
+            }),
+          ),
+        )
+      const whole = (features: Awaited<ReturnType<typeof opened>>) =>
+        features
+          .map(f => [
+            f!.type,
+            f!.start,
+            f!.end,
+            originCrossingLength(undefined, f!),
+          ])
+          .sort((a, b) => `${a[0]}`.localeCompare(`${b[0]}`))
+      const expected = [
+        ['D_loop', 899, 1100, 1000],
+        ['gene', 949, 1150, 1000],
+        ['region', 0, 1000, undefined],
+      ]
+      expect(whole(await opened(900, 1000))).toEqual(expected)
+      expect(whole(await opened(0, 50))).toEqual(expected)
+    },
+  )
 })

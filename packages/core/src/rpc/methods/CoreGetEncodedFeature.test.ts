@@ -39,11 +39,16 @@ const reads = (
 
 const pluginManager = { jexl: createJexlInstance() } as PluginManager
 
+const recordReads = jest.fn<undefined, [{ start: number; end: number }]>()
+
 function request(args: Partial<CoreGetEncodedLayersArgs>, features = reads) {
   jest.mocked(getAdapter).mockResolvedValue({
     dataAdapter: {
       getFeatures: () => {},
-      getFeaturesArray: async () => features,
+      getFeaturesArray: async (read: { start: number; end: number }) => {
+        recordReads(read)
+        return features
+      },
       getFeatureTable: async () => asTable(features),
       getZoomRange: async () => undefined,
     },
@@ -295,4 +300,17 @@ test('each block of a flattened transcript opens as the transcript', async () =>
     [0, 10, 1, 'tx1', 'VAV'],
     [60, 100, 1, 'tx1', 'VAV'],
   ])
+})
+
+test('a click reads its record back over the record’s first base alone', async () => {
+  recordReads.mockClear()
+  const feature = await new CoreGetEncodedFeature(pluginManager).invoke({
+    ...request({ layers: [{ encoding: {}, lanes: [] }] }),
+    layer: 0,
+    featureIndex: 2,
+  })
+  expect(feature?.name).toBe('r3')
+  expect(
+    recordReads.mock.calls.map(([{ start, end }]) => [start, end]),
+  ).toEqual([[40, 41]])
 })

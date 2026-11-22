@@ -114,11 +114,7 @@ export async function executeGetEncodedFeature({
     row &&
     (await recordAcrossOrigin(
       dataAdapter,
-      {
-        ...args.region,
-        start: row.start,
-        end: Math.max(row.end, row.start + 1),
-      },
+      { ...args.region, start: row.start, end: row.start + 1 },
       row.uniqueId,
       { ...args.opts, bpPerPx: args.bpPerPx, signal: args.signal },
     ))
