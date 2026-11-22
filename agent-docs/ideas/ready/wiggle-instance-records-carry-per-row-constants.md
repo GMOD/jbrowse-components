@@ -174,8 +174,10 @@ cost then moves to hidden sources staying in the buffer.
 
 - A render pass binds two combined samplers, at 2/3 and 4/5 (`55fff2c934`);
   point, bar and link already sample `colorRamp` at unit 0 and `rowTable` at
-  unit 1. Fill, line and band bind none, so they take the table at the first.
-- **Density and scatter take the second.** Their ramp LUT holds the first, and
+  unit 1. The step line binds none, so it takes the table at the first. Fill,
+  the center line and band sample `colorRamp` at the first (`wiggle.slang`,
+  `wiggleLineCenter.slang`, `wiggleBand.slang`), so they take the second.
+- **Density and scatter take the second too.** Their ramp LUT holds the first, and
   both draw off the fill pass's buffer (`bufferOf: fill`), so removing `color`
   from the fill record removes it from both; each binds the row table beside
   its ramp, as point, bar and link do.

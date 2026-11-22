@@ -1,12 +1,12 @@
 ---
 name: internet-accounts
-description: The internet account model does six jobs across an RPC boundary that needs only three, and Apollo3 decides what can break. Read before proposing the split, a sign-out menu, or a cache over the token probe.
+description: The internet account model does seven jobs across an RPC boundary that needs only three, and Apollo3 decides what can break. Read before proposing the split, a sign-out menu, or a cache over the token probe.
 ---
 
 # Internet accounts: the split the RPC boundary already draws
 
-~3,300 lines across the auth plugin (1,851), core plus the root-model mixin
-(665) and the FileSelector (786). Reviewed end to end in 2026-08, re-read
+~3,900 lines across the auth plugin (2,312), core plus the root-model mixin
+(716) and the FileSelector (873). Reviewed end to end in 2026-08, re-read
 2026-08-19; this is what came out that is not already landed.
 
 **None of this is release-blocking, and an earlier draft of this doc was wrong
@@ -19,7 +19,7 @@ which described the old `domains` matching and now describes the new.
 
 ## The diagnosis
 
-An internet account does six jobs, and they part cleanly along a line the code
+An internet account does seven jobs, and they part cleanly along a line the code
 already has and does not respect:
 
 | job | needs a main thread? |
@@ -29,6 +29,7 @@ already has and does not respect:
 | cache it (session/localStorage + promise) | **yes** |
 | apply it to a request (`addAuthHeaderToInit`) | no |
 | present a toggle in the file picker | **yes** |
+| browse the provider for a file (Drive Picker, Dropbox Chooser) | **yes** |
 | *speak a different protocol* (Dropbox, Drive) | no |
 
 The whole model goes to both sides. `util/io/index.ts` reconstructs a **full
@@ -39,8 +40,8 @@ merely unused but unusable — `getTokenFromUser` wants `root.session`,
 That is what the `isWebWorker()` and guarded-storage calls threaded through the
 model are: **the shape of the wrong half being present.** And `corePlugins.ts`
 is the worker's plugin list too, so the RPC worker bundle carries the OAuth
-popup driver, PKCE crypto and the `window.require('electron')` branch — 661 of
-the plugin's 1,851 lines it can never reach (`OAuthModel/model.tsx` plus its
+popup driver, PKCE crypto and the `window.require('electron')` branch — 674 of
+the plugin's 2,312 lines it can never reach (`OAuthModel/model.tsx` plus its
 `util.ts`, neither of which a worker can enter).
 
 ## The three moves
@@ -70,21 +71,28 @@ that **MST silently drops unknown snapshot properties**, so removing the slot
 cannot fail an old session or config load.
 
 **Blocked on move 2** for the headers-only version: Dropbox and Drive need more
-than headers, so until they stop being accounts the envelope would have to carry
-the type and configuration anyway — a relocation, not a simplification.
+than headers, so until their protocol rewrite leaves the account the envelope
+would have to carry the type and configuration anyway — a relocation, not a simplification.
 
 ### 2. Dropbox and Google Drive are location handlers, not accounts
 
 Dropbox turns a GET into a `POST .../get_shared_link_file` with the URL in a
 header; Drive rewrites `/d/<id>` into a different API URL and needs its own
-filehandle for `stat()`. Neither is authentication. Split out, each becomes a
-**config preset** over `OAuthInternetAccount` — already 80% true, since their
-schemas are 83 and 74 lines of pure defaults. Deletes both `model.tsx` (233
-lines).
+filehandle for `stat()`. Neither is authentication, and that protocol rewrite
+can leave the account for a location handler.
+
+**The account itself cannot become a bare config preset.** Since 241d1febc2 each
+also browses its provider from the Add Track form (`browseLabel`,
+`chooseLocation`): Drive's Picker opens with the account's own token
+(`self.getToken()`, plus the `apiKey` and `appId` slots), and Dropbox's Chooser
+with the account's `clientId` behind a `chooser` slot. That is a main-thread job
+bound to the account, so the schemas (102 and 97 lines) are no longer pure
+defaults and the two `model.tsx` files (181 and 155 lines) shrink by the
+protocol half rather than empty out.
 
 **The config type names must survive.** All five are written into user configs
 and documented in `website/docs/config_guides/authentication.md`; keep them
-registered with the same names and schemas and only the bodies empty out.
+registered with the same names and schemas.
 Telling users to write `OAuthInternetAccount` with explicit endpoints instead is
 a wide breaking change and not worth the lines.
 
@@ -261,9 +269,7 @@ long-lived, higher-privilege refresh token that can regenerate it gets
 
 "Nothing anywhere" would be too strong: Apollo3 has an "Apollo → Log out" menu
 item that opens a dialog and calls `removeToken()` on the account picked
-(`menus/topLevelMenu.ts`, `components/LogOut.tsx`). agent-docs/architecture-decision-records/ already
-weighed that and ruled it evidence about Apollo rather than demand here, so this
-is not a reason to reopen the menu item. Two mechanics from it are still worth
+(`menus/topLevelMenu.ts`, `components/LogOut.tsx`). Two mechanics from it are still worth
 having in hand: their handler follows the call with `globalThis.location.reload()`,
 because dropping the credential does not unwind whatever was opened with it; and
 they **override** `removeToken`, so a core revocation routed through a *new*

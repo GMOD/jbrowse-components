@@ -12,7 +12,8 @@ tier the same way. The wire table in
 [reference/SYNTENY_LOD.md](../../reference/SYNTENY_LOD.md) gives the whole-genome
 cost per tier on hs1 vs mm39.
 
-A per-axis tier needs the bidirectional fetch
-([SYNTENY_LOD.md](../../reference/SYNTENY_LOD.md)), so each
+A per-axis tier needs a fetch from the target axis as well as the query axis,
+which the display does not make today (class B mates are "never requested",
+[SYNTENY_LOD.md](../../reference/SYNTENY_LOD.md) §"Four classes"), so each
 row can be served at its own tier and joined on `syntenyId`. Measure on a real
 hub file how often the two rows straddle the threshold before building it.

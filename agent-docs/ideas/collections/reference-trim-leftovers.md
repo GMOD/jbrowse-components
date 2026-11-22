@@ -47,7 +47,7 @@ has been re-checked since the cut.
   instance encoding, `setMouseCoord` re-renders,
   and the measurements behind the wheel-backlog
   redesign.
-- **MAF_LARGE_BLOCKS:** re-measure the Canvas2D row; only 2 of the 6
+- **MAF_LARGE_BLOCKS:** re-measure the Canvas2D row; only 2 of the 3
   `MAF Track` tests pixel-compare.
 - **CROSS_BACKEND_GATE:** `Mark Display` scenes have no goldens in
   `snapshots.lock`; refresh the drifted goldens on a quiet worktree.
@@ -58,12 +58,6 @@ has been re-checked since the cut.
 - **SV_MULTIHOP:** seven HG008-T misses with reads present and no in-read
   deletion are unexplained.
 - **DOG10K:** the HMGA2 and AP3B1 candidate loci.
-
-## Findings no ADR records
-
-- Software rendering skips the WebGL2 rung. Scroll-zoom painted frames fell
-  from 435 to 107 going from 8 to 28 tracks, with 18 context losses
-  (GPU_PORTABILITY).
 
 ## Second pass (2026-09-30)
 
@@ -122,15 +116,14 @@ Items the whole-unit cuts removed. Same caveat: unverified since the cut.
   three parked per-candidate picking ideas.
 - **View init** (VIEW_INIT): a synteny size guard; `connectedViewId` for
   synteny; show the launcher when no synteny track is open.
-- **Pangenome** (PANGENOME_GRAPHS): a linearized deletion track; release-2 files
-  nothing reads yet; the abandoned gfa-to-tabix lessons.
-- **TOOLCHAIN:** the list of lint rules measured and rejected.
+- **Pangenome** (PANGENOME_GRAPHS): a linearized deletion track; the abandoned
+  gfa-to-tabix lessons.
 - **Session and fetch** (SESSION_SPEC_FORMAT, REGION_TOO_LARGE): spreadsheet
   rows leave the session snapshot silently and a local import cannot restore
   them; no fetch prioritization or back-pressure; per-JS-context pools multiply
   by the RPC worker count; the linear region walk has no cumulative index; no
-  keyboard path to features; the `LGVSyntenyDisplay` gate is inert; no BigWig
-  size estimate; the density-axis extrapolation is non-monotone.
+  keyboard path to features; no BigWig size estimate; the density-axis
+  extrapolation is non-monotone.
 - **Bundle** (EAGER_BUNDLE): a ~1% ratchet over the probe's own-graph figure;
   verify ESM workers in Firefox; a synteny renderer behind its own `import()`.
 - **ABI** (PLUGIN_ABI_STABILITY): the removal list for the session,
@@ -138,8 +131,6 @@ Items the whole-unit cuts removed. Same caveat: unverified since the cut.
   signature trap (takes a `trackId` string, not the config object);
   `createTimeGate`, the shader `SOURCE`/`BINDINGS` and `releaseTargets` ledger
   entries.
-- **Gate** (CROSS_BACKEND_GATE): the AA-ramp prediction note, closed
-  unfalsified.
-- **Misc:** the K562 BCR-ABL1 acceptor cause; the Firefox WebGL2 context
+- **Misc:** the Firefox WebGL2 context
   ceiling; the per-base cancel-overrun figure is
   stale (pre-ADR-122).

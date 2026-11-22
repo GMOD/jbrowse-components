@@ -1,6 +1,6 @@
 ---
 name: intern-read-tag-values-like-read-next-refs
-description: The `tag` and `mateRefName` color schemes ship `readTagValues` as one string per read across the RPC, the shape `readNextRefs` measured at 2.8x the cost of slots plus a table and replaced. Interning it the same way also takes the legend's swatch list off an O(reads) scan.
+description: The `tag` and `mateRefName` color schemes ship `readTagValues` as one string per read across the RPC, the shape `readNextRefs` measured at 2.8x the cost of slots plus a table and replaced. Interning it also takes the legend's swatch list off an O(reads) scan.
 ---
 
 # Intern `readTagValues` the way `readNextRefs` was interned

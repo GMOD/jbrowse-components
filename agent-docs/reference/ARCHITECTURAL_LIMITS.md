@@ -72,9 +72,12 @@ creation), against 80 MiB for the one-sample canvas texture alone. Neither
 returned the memory to the process's counters within the probe after
 `destroy()`. The alignments display, the tallest, draws at one sample and
 allocates none since 2026-10-30. `scripts/gpu-pixels/probe-msaa-residency.ts`
-takes it from `/proc/self/fdinfo` through Dawn. Which displays can draw at one
-sample:
-[arc-antialiasing-without-msaa.md](../ideas/waiting-on-a-number/arc-antialiasing-without-msaa.md).
+takes it from `/proc/self/fdinfo` through Dawn. Which displays draw at one
+sample, and why the rest stay at four:
+[ADR-283](../architecture-decision-records/adr-283-each-display-chooses-its-msaa-sample-count.md).
+Still unmeasured: whether a tile-based GPU (Apple Silicon, phones) keeps the
+target, drawn with `storeOp: 'discard'` and a `resolveTarget`, in tile memory
+and never commits it, which would make it free there.
 
 **A `union` layer is a second canvas-sized allocation, and nothing counts it
 either.** A mark display holds one per linear line declared after another

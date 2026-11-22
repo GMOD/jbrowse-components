@@ -47,14 +47,7 @@ sequence and features together
 reached from a track's **Save track data**). Four things stop it serving the
 workflow above.
 
-~~**The feature-key column takes JBrowse's type string raw.**~~ Fixed:
-`insdcFeatureKey` maps the SO spellings this tree emits and sends everything
-else to `misc_feature` with the original term in `/note`. Primer footprints are
-`primer_bind` now, and `/gene` no longer gets threaded off any parent that
-happened to have children — an hgPcr product went out as `/gene="100 bp"` and a
-BLAT hit as `/gene="YourSeq 99.1%"`.
-
-**The record still carries absolute coordinates in its attributes.** A CRISPR
+**The record carries absolute coordinates in its attributes.** A CRISPR
 guide's `cutSite` is a genomic position, dumped verbatim into a record whose own
 coordinates start at 1. The exporter has no way to know which attributes are
 coordinates, so this wants per-type knowledge it does not have.
@@ -73,10 +66,10 @@ track on screen.
 `/note` qualifier and ApE in `/ApEinfo_fwdcolor`. Reported, not verified here;
 check both against a real file before building either.
 
-Out of scope until someone asks: a GenBank **reader**. None exists, so the round
-trip is impossible today, but the tutorial's loop closes without one — step five
-takes primer sequences, not a file. A reader answers a different question,
-whether a construct someone already holds matches the genome.
+A GenBank reader exists (`GenbankAdapter` and `GenbankSequenceAdapter` in
+`plugins/gff3`), so a record exported here opens again as a track or an
+assembly. The tutorial's loop does not need it — step five takes primer
+sequences, not a file.
 
 ## Which sequence tools finish the question they start
 

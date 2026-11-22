@@ -127,41 +127,6 @@ matters.
 
 ---
 
-## Inserting the hidden windows, rather than replacing the view
-
-The loci are already walkable: a connector's right-click opens the nearer
-read's menu (ADR-225), whose "View split alignments → Split current view to
-show split alignments" replaces the view with one merged window per segment,
-the hidden ones included, after which every connector is a real junction in
-its class color. The grey connector's hover names the loci and its key row
-names their refNames (ADR-268). Declined on 2026-11-13 as a menu item of its
-own: what remains is inserting the hidden windows beside the reader's current
-ones instead of replacing them, which is one more item for a small gain. If
-that gain is wanted later:
-
-- **The loci are structured on the hit.** `hiddenSegmentsBetween` carries
-  `HiddenSegment` (`refName`/`start`/`end`/`loc`) from `hiddenSegments` in
-  `alignments-core/src/readGroupConnections.ts` through to the connector hit.
-- **Adding them is one existing helper away**, `showRegionsWithUndo` from the
-  LGV plugin, which `viewSplitAlignmentRegionsInCurrentView` already wraps —
-  but that helper REPLACES the view's regions with one window per segment. A
-  junction over hidden segments wants the hidden windows INSERTED between the two it joins, in
-  read order, so it is the same undo-able call with a different region list.
-- **An inserted window that overlaps another on its refName has to merge into
-  it**, as `viewSplitAlignmentRegionsInCurrentView` does in read order, even
-  across a visit elsewhere. Overlapping windows fetch the same records,
-  `dedupeByReadId` keeps one copy per record id, and both ends of the junction
-  land in the region that copy came from, so the other window draws the reads
-  again with no connector. A split view can keep a panel per visit, since
-  each panel there is a separate view.
-- **The gesture is the nearer read's menu.** A connector's right-click opens
-  the menu of the read a left click selects (ADR-225), so the hop item goes in
-  that read's "View split alignments" submenu, built from the fetched read's
-  segments plus the connector the menu was opened from
-  (`connector?: ConnectorHit` on `ContextMenuTarget`).
-
----
-
 ## Closed — do not re-file
 
 - **The overlay click always selected `arc.id1`**, so the far endpoint of a hop

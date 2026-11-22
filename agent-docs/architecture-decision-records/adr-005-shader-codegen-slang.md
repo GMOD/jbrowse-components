@@ -398,7 +398,7 @@ Slang instead absorbs at build time:
 | Command model   | Command buffer recording      | Immediate-mode state machine   | Immediate-mode drawing |
 | Line draw       | 6 verts (thin quad)           | 2 verts (`gl.LINES`)           | `ctx.stroke()`         |
 | Colors          | f32 [0..1] in storage buffer  | Normalized UNSIGNED_BYTE       | `rgba()` strings       |
-| MSAA            | 4x with resolve texture       | None                           | N/A                    |
+| MSAA            | 1, or 4x with resolve texture | Context `antialias` above 1    | N/A                    |
 
 Canvas2D is deliberately left out of the codegen for the same reason: it shares
 no shader at all, only the geometry decisions upstream of one.

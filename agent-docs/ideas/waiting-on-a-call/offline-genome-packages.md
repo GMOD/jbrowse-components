@@ -10,10 +10,10 @@ mouse, etc.) so jbrowse-desktop works well with no internet.
 
 ### Existing hooks
 
-- **Quickstart system** (`electron/ipc/quickstartHandlers.ts`, `paths.ts`):
+- **Quickstart system** (`electron/ipc/quickstartHandlers.ts`, `electron/paths.ts`):
   pre-baked sessions in `userData/quickstart/*.json`. Legacy hg19/hg38/mm10
   quickstarts exist. Natural hook for "install a genome".
-- **Path resolution** (`packages/core/src/util/io/index.ts:40`
+- **Path resolution** (`packages/core/src/util/io/index.ts:46`
   `resolveUriLocation`): URIs resolve relative to `baseUri` via
   `new URL(uri, baseUri)`. But `LocalPathLocation` is stored as an **absolute
   path** — the main blocker for a relocatable bundle.

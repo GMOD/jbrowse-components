@@ -25,7 +25,7 @@ runnable material, so the page is narrative over what exists.
 
 The two-way half is single-view only — `JBrowseApp`'s `view_locations` is
 read-back only and every config trait rebuilds the app
-(`~/src/jbrowse-anywidget/agent-docs/IDEAS.md`), so don't write the page around
+(`~/src/jbrowse-anywidget/agent-docs/ideas/waiting-on-a-call/jbrowseapp-write-once-from-python.md`), so don't write the page around
 panning a synteny view from Python. It is a forward bet rather than
 demand-driven: one discussion ever
 ([TUTORIAL_DEMAND.md](../../reference/TUTORIAL_DEMAND.md)).

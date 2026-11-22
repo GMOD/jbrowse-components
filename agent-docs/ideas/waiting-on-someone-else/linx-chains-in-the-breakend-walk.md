@@ -49,6 +49,10 @@ walk before the behaviour is described in a tutorial.
 
 ## What is parked
 
+Each waits on a real LINX or GRIDSS run, which
+[hartwig-colo829-outputs-feed-three-parked-items](hartwig-colo829-outputs-feed-three-parked-items.md)
+tracks.
+
 1. **`links.tsv` as a chain source.** `navToMultiLevelBreak` already takes a
    caller-supplied `stops`, written for "a spreadsheet row set". A LINX links
    file is that row set: group by `chainId`, order by `chainIndex`, and each

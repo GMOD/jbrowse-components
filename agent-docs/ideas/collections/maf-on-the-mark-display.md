@@ -22,8 +22,10 @@ the MAF display.
    flank (`rowFlank.ts`), which the MAF painters do and the steps do not;
    `bin: auto`'s 1-2-5 ladder differs from MAF's power-of-two `binBp`.
 2. **Per-mark `minWidthPx`/`seamPx`.** `markList.ts` hands every `rect` the
-   display's one `minWidthPx` and a seam of 0 (a bar takes
-   `CANVAS_SEAM_PX`), so it cannot reproduce MAF
+   display's `rectMinWidthPx` (`MIN_RECT_WIDTH_PX`, or
+   `SPARSE_RECT_MIN_WIDTH_PX` on a lone row) and a seam of 0, and every bar
+   the display's `minWidthPx` with `CANVAS_SEAM_PX`; no mark sets its own, so
+   it cannot reproduce MAF
    cells (`minWidthPx: 0`, `seamPx: GAP_STROKE_OFFSET`). The row offset has two
    spellings, `scrollTop` on render-core's `spanMark` and `rowOffsetPx` on the
    rest.

@@ -51,10 +51,10 @@ position, the allele still drawn whole) costs one bit and says the same thing at
 every zoom. Decide that before writing either. Note the segments are already
 stacked bottom-to-top by lane, so a split has to pick a second axis.
 
-**Export the coverage band's allele counts.** Save track data writes the depth
-as a bedGraph; the packed SNP buffer beside it decodes through
-`readSnpSegments`, and a VCF-ish allele-count download beside the bedGraph is
-the other half.
+**Export the coverage band's allele counts.** The tables export already carries
+them: `alleleCoverage` in `tables.ts` (position, base, depth). Save track data
+still writes the depth only, as a bedGraph (`saveTrackFormats/coverage.ts`), so
+what is left is a UI save format beside the bedGraph, built over that table.
 
 **Per-record allocation may be the CRAM lever.** The slice workers are starved
 and the RPC worker spends 12% (724 ms) in GC on a 1000x short-read render

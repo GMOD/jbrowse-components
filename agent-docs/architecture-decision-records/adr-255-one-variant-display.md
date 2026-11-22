@@ -102,6 +102,7 @@ if that idea lands, columns arrive as an ordinal x scale and lift it.
 | Lift the betas' top-level `displayMode`, `mark`, `labels` | Beta-only state earns no migration; and `facet` and `tooltip` cannot be lifted at all, being the display's own names |
 | Copy LinearBasicDisplay's menu rows onto the band | Two copies drift; the rows take a narrower host instead |
 | Lift v4's `maxHeight` into `records.maxHeight` | v4's was a second grow ceiling dead at its default, not a band cap |
+| A `links` band drawing SVs as arcs through the `link` mark (declined 2026-11-18, from captures of K562 and 1000 Genomes RHD under link-mark stand-ins) | Both ends of a fusion in view is the one case it wins, and the record's breakpoint split view row reaches that join in one click; at RHD the arcs repeated the bars and drew nothing for `<INS>` or a view-spanning deletion; "on when the file has breakends" is known only from the records in view, so the band would come and go on pan; and a `LinearMarkDisplay` with `link` + `mate` over the same VCF draws the arcs. Reopens on a breakend-only callset (GRIDSS, SvABA) with genotype rows worth keeping, captured in one chromosome, whose arcs carry spans the records band's points cannot, or on a request for arcs beside genotype rows. Its smallest shape is `links: { show, height }` (ADR-231's band object, the name ADR-232 reserves), one arc per mated breakend pair with both feet in view |
 
 ## Consequences
 

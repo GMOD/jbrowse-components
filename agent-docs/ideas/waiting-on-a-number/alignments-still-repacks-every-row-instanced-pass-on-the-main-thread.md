@@ -63,9 +63,7 @@ and
 [ADR-211](../../architecture-decision-records/adr-211-variant-cells-keep-their-screen-row-per-instance.md)
 declined it for variant cells at 25-115 ms a gesture.
 
-Related and independent: both HALs `deleteBuffer` + recreate on every
-`uploadBuffer` (`webgpuHal.ts` `createVertexBuffer`, `webgl2Hal.ts`
-`bufferData`). Reusing the allocation when capacity allows would drop the churn
-for every plugin, and a stable buffer identity is also what would let WebGL2
-cache a VAO per (region, pass) instead of re-running `bindAttributes` on each
-`drawPass`.
+Reusing the HALs' buffer allocations, a separate idea, was measured and
+declined:
+[reference/GPU_HAL.md](../../reference/GPU_HAL.md) §"Buffer pooling /
+sub-allocation".

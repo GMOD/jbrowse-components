@@ -19,5 +19,5 @@ the worker, anchors on a reference path or the rGFA tags, and answers
 locus cut.
 
 **The call:** whether to build it, and whether it lives here or in the graph
-plugin's repo (`jbrowse-plugin-graphgenomeviewer`, its `IDEAS.md`). Check that
+plugin's repo (`jbrowse-plugin-graphgenomeviewer`, its `agent-docs/ideas/`). Check that
 repo for anything landed before proposing it.

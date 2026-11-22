@@ -166,8 +166,9 @@ files naming `AbstractSessionModel` were the administration UI, which wants
 `ManageConnectionsDialog`, went with the track selector's ☰ menu, and displays
 and menus name it again: the Hi-C comparison menu (`compareTrackMenuItems.ts`)
 and the multi-way display's `afterAttach.ts` and `laneHolders.ts` take a whole
-`AbstractSessionModel`, and the LGV's `afterAttach.ts` and `searchUtils.ts`
-`Pick` from it. Each wants a member or two a slice already names, or one no
+`AbstractSessionModel`, as do the track table (`trackTableModel.ts`) and the
+LGV's `TrackLabelRefNameWarning.tsx`, and the LGV's `afterAttach.ts` and
+`searchUtils.ts` `Pick` from it. Each wants a member or two a slice already names, or one no
 slice has yet (`addHighlight`, `textSearchManager`), so the fix is the same
 retype, and a lint rule refusing the name outside an allow-list is what keeps
 it from leaking again.

@@ -5,9 +5,8 @@ description: The chunk cache keys on URL alone, so two tracks on one URL behind 
 
 # The chunk cache does not know whose credentials fetched a chunk
 
-Moved to ready/ on 2026-09-27: `@gmod/range-cache-filehandle` 1.4.0 exports
-`CachedFilehandle`, so keying by identity in JBrowse (the second option below)
-needs no package change.
+`@gmod/range-cache-filehandle` 2.0.0 exports `CachedFilehandle(inner, key)`, so
+keying by identity in JBrowse (the fix below) needs no package change.
 
 `InternetAccountModel.openLocation` hands each handle its own fetcher:
 
@@ -34,24 +33,17 @@ the idle sweep's window rather than being invalidated when the token is.
 re-derived: `joinRun`/`abortIfUnwanted` reference-count readers, so one reader
 giving up does not abort a run another is still waiting on.
 
-## What a fix has to decide
+## The fix
 
 The cache moved out of this repo — it is `@gmod/range-cache-filehandle`, and
-`packages/core/src/util/io/RemoteFileWithRangeCache.ts` is now a re-export. So
-the choice is between:
-
-- **Key the cache by identity, in the @gmod package.** The honest fix:
-  `CachedFilehandle` already takes a key separate from the URL, so the caller
-  could pass `${accountId}\n${url}` and every downstream function works
-  unchanged. It costs a released package a change to what a key means, and
-  `clearCacheFor`'s prefix behaviour (it clears any key merely *beginning* with
-  the one given — measured, deliberate) has to be re-read against a composite
-  key before it can be trusted.
-- **Key it in JBrowse, by handing `openLocation` a distinct key.** Same effect
-  without touching the package, if the constructor surface allows it.
-- **Invalidate rather than partition.** Call `clearCacheFor(url)` when an
-  account's token changes. Cheaper, and it fixes the stale half only — two
-  tracks with two live accounts on one URL still cross.
+`packages/core/src/util/io/RemoteFileWithRangeCache.ts` is now a re-export.
+Key it in JBrowse: `openLocation` returns a `CachedFilehandle` over a handle
+carrying the account's fetcher, keyed `${accountId}\n${url}`, and every
+downstream function works unchanged.
+`clearCacheFor`'s prefix behaviour (it clears any key merely *beginning* with
+the one given — measured, deliberate) has to be re-read against the composite
+key. Invalidating with `clearCacheFor(url)` on a token change instead would fix
+only the stale half: two tracks with two live accounts on one URL still cross.
 
 ## Reproducing it
 

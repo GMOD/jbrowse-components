@@ -62,7 +62,8 @@ FLAIR GTF against Gencode to show novel isoform calls and junctions
 quantification, past where `rnaseq.md`'s one-paragraph "Short reads vs long
 reads" stops.
 
-**A GenArk page.** All four genomes.jbrowse.org pages are human, and the site's
+**A GenArk page.** The three genomes.jbrowse.org pages center on hg38, and
+GenArk gets one TP53 search on the axolotl in `genomes_basics`, while the site's
 fifty thousand assemblies are its reason to exist. `&hubURL=` against a GenArk
 hub is the fastest path from nothing to a browser for a plant or animal lab.
 Build it to show the long tail — a smaller track set, a genome nobody has a

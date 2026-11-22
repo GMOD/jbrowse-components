@@ -36,7 +36,9 @@ function windowsInReadOrder(regions: Region[]) {
  * even when the read visits another locus between them: the linked-reads pass
  * connects a read in only one of the regions that fetched it, so a second
  * window over the same reads would draw them again with no connector. A merged
- * window sits where its earliest segment does.
+ * window sits where its earliest segment does. Inserting a hop's hidden
+ * windows beside the current ones instead was declined: one more menu item
+ * for a small gain.
  */
 export function viewSplitAlignmentRegionsInCurrentView({
   view,

@@ -29,6 +29,8 @@ the component test's `resolve.mjs` and `register.mjs`. The hook in `resolve.ts`
 stays: its other two rewrites (`builtUrl`, `staleEsmImport`) point a
 from-source run at the workspace packages' built `esm/`, which has nothing to do
 with MUI. Until then the rewrite is load-bearing and won't be backported to v9.
+`10.0.0-alpha.0` still depends on `react-transition-group`, so the bump to
+check is the first v10 whose `dependencies` drop it.
 
 Near-term cleanup, which needs no v10: a shipped `@jbrowse/img/register`
 subpath that the component test (`node --import @jbrowse/img/register run.mjs`)

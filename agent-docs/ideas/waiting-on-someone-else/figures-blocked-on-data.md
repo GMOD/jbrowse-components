@@ -67,7 +67,7 @@ None comes back as written.
 - `readpair_heatmap` (16250c4b58).
 - `introgression` (3be9f8f745): a reviewer could not check its human archaic
   figures, and it had no negative control.
-- `pangenome_chrm` (42d7fe8da6): the caption claimed lineage clusters the matrix
+- `pangenome_chrm` (d26d1d1947): the caption claimed lineage clusters the matrix
   did not show, the legend offered heterozygous dosage on a haploid genome, and
   a band at the chromosome start read as the circular start mishandled.
   Clustering chrM haplotypes against Haplogrep lineages is still a route no

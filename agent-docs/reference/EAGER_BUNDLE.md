@@ -289,6 +289,10 @@ worker, on a build 288 commits behind main). Declined, each measured:
   tree-shaking**, which the registry's namespace imports leave nothing to
   recover.
 - **Deferring `mapStackTrace`** (8 KB, plugin pages only) is safe and small.
+- **Stripping config-slot `description` strings** (about 12 KB). Plot-example
+  and adapter descriptions would have to go too, and "Edit plot", the
+  synchronous `jb.describeSlots` and desktop's MCP read them; jest never runs a
+  babel pass, so a key mismatch would drop helper text with no red test.
 
 **`splitChunks: { chunks: 'all' }` is on for jbrowse-web** (web only; desktop
 shares the base config). Measured 2026-11-18 it took 41 KB gzipped off the empty

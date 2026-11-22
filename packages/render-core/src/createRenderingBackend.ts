@@ -22,8 +22,7 @@ export interface RenderingBackendOptions<TRenderingBackend> {
    * panel hold 109.7 MiB nothing counts (ARCHITECTURAL_LIMITS.md §"The MSAA
    * target is the largest per-display allocation"); 1 allocates none. Whether a
    * display's pixels survive the flip is a look-at-the-pixels decision taken
-   * one display at a time; `ideas/waiting-on-a-number/arc-antialiasing-without-msaa.md` is the
-   * survey and the captures.
+   * one display at a time; ADR-283 records each display's choice.
    */
   sampleCount?: SampleCount
   createGpuBackend: (hal: GpuHal) => TRenderingBackend

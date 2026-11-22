@@ -35,9 +35,9 @@ the opposite of what coalescing was introduced for on the same-chromosome arm
 ("57% of the arcs in that window were exact repeats"), and it lands hardest on the
 mark that is a full-height opaque vertical.
 
-**The blocker is stated in `resolveArcs` and it is answerable**: "merging a
-cluster would have to invent a position for it, which is the thing `arcKey`'s
-exact-coordinate rule exists to refuse". A REPRESENTATIVE member invents nothing —
+**The blocker is stated in `compute.test.ts` and it is answerable**: the
+cluster "is not merged, because merging would have to invent a position for
+it". A REPRESENTATIVE member invents nothing —
 it is one of the reads' own coordinates, which is the rule already in force. So
 the decision is which one:
 
@@ -125,9 +125,10 @@ Two things a tick carries that a parked mark does not, both of which have to be
 answered before moving them:
 
 - **Its hover names the partner chromosome** (`partnerRefNames`, plural for a
-  breakpoint reaching several). That is the whole content of a tick — its own
-  position says only where the breakpoint is — and it is the one thing a tick's
-  hover was worth more than an arc's.
+  breakpoint reaching several), and `partnerLoci` says where on each the reads
+  land, one `{refName, bp, support}` per far-side cluster. That is the whole
+  content of a tick — its own position says only where the breakpoint is — and
+  it is the one thing a tick's hover was worth more than an arc's.
 - **Its width is its read support**, through `arcStrokeScale`, the same curve
   the arcs spend. An endpoint square has no width channel, so a 40-read
   translocation and a single mismapped pair would draw identically. Note the
@@ -159,7 +160,8 @@ A right-click on an arc or a tick falls through to the browser's menu, because
 itself is the right rule — an empty menu is worse — so what is open is whether a
 junction really has nothing, and it does not look that way: `ArcHit`
 carries `x1`/`x2` in absolute genomic bp and the `support` count behind the
-stroke width, and `TickHit` carries `bp` plus `partnerRefNames`, which
+stroke width, and `TickHit` carries `bp` plus `partnerRefNames` and
+`partnerLoci`, which
 is exactly the "where does this reach" a tick's own geometry cannot show. Center
 on the mate, open the far side in a new view, copy the junction — all reachable
 from what the hit already resolved.

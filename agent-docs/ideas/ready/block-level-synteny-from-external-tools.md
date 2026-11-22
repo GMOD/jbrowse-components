@@ -79,17 +79,22 @@ RFC→RPC. `lodTier` selects the tier; it is **distinct** from the renderer fade
 overview; perpendicular fade keeps whatever raw alignments still render at
 intermediate zooms honest.
 
-## Recommendation & open questions
+## Recommendation
 
 Route B first — a `make-pif --blocks` collinear-chaining pass emitting a
 block-level pif tier (no dependency, uses current data, fits `lodTier` tiering;
 A/B against raw alignments on grape/peach and hs1/mm39). ntSynt as the quality
 reference (and a Route-A importer later) for hard cross-species cases. Skip
 SyRI/plotsr for cross-species (a SyRI importer could still be a nice
-same-species/strain feature — separate, narrower). Open: chaining parameters
-(max gap, diagonal tolerance, min block length) exposed vs pixel/data-derived;
-where chaining runs (`make-pif` CLI precompute vs live worker pass — CLI matches
-the multi-tier-on-disk model); block-pif schema (reuse `de:f:` identity? carry a
-member count / syntenic-vs-inverted classification for coloring?); classify
-rearrangements like SyRI or emit collinear blocks + strand only; and multi-genome
-(>2) blocks (ntSynt's strength) vs today's pairwise pif container.
+same-species/strain feature — separate, narrower). Route A's importer is
+[an-ntsynt-blocks-adapter](an-ntsynt-blocks-adapter.md).
+
+The design is settled as the smallest block tier:
+
+- Chaining runs in the `make-pif --blocks` CLI, which matches the
+  multi-tier-on-disk model.
+- Its parameters (max gap, diagonal tolerance, min block length) come from the
+  data, not from flags.
+- A block is a pairwise collinear chain with its strand, in today's pairwise
+  pif container, with no SyRI-style classification; more than two genomes stays
+  ntSynt's.

@@ -22,6 +22,7 @@ over the block's ribbons.
 jb2hubs `PANGENOME_PORTAL.md`) are near-identical, so best-aligned naming has to
 be checked against an alignment before a lane names them.
 
-Genes from per-haplotype annotation, drawn on the graph, are the graph plugin's
-`ideas/waiting-on-a-call/genes-per-haplotype-through-gaf.md`; HPRC r2 has no
+Genes from per-haplotype annotation, drawn on the graph, are an idea doc in the
+graph plugin repo, jbrowse-plugin-graphgenomeviewer
+(`genes-per-haplotype-through-gaf.md`); HPRC r2 has no
 per-haplotype gene GAF (its 15.6 GB `.gaf.gz` maps assemblies to the graph).

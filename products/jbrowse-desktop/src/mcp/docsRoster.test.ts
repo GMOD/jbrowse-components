@@ -172,10 +172,11 @@ it('the guide awaits the adapter probe, which is async', () => {
 // FIRST do not. `viewId` missing from jb.help is the load-bearing case, since
 // that string is the whole contract for a browser agent with no docs tool.
 //
-// agent-docs/ideas/waiting-on-a-call/one-generated-description-of-the-jb-surface.md parks
-// generating all three from one source and names "a signature drifts a second
-// time" as its trigger; this is the cheaper half of that, over the one
-// signature that actually drifts.
+// Declined: generating all three copies from one source. Each is tuned for its
+// reader, so a generated table would replace only the signature lines; this
+// pins the one signature that drifts. Reopen it when a signature drifts a
+// second time, or when the jb roster (`jbApi.test.ts`) admits members faster
+// than the copies get updated.
 describe('getFeatures names the same options everywhere', () => {
   function optionsIn(text: string) {
     const object = /jb\.getFeatures\(\{([^}]*)\}/.exec(text)

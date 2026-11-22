@@ -1,6 +1,6 @@
 ---
 name: row-display-followups
-description: Unbuilt row-display follow-ups (multi-row features, multi-wiggle, MAF, multi-sample variants), among them MAF row separators, a dialog that writes `rows.filter` and row-model loose ends, each with its cost and the parts that already exist.
+description: Unbuilt row-display follow-ups (multi-wiggle, MAF, multi-sample variants), among them MAF row separators, a dialog that writes `rows.filter` and row-model loose ends, each with its cost and the parts that already exist.
 ---
 
 # Row display follow-ups
@@ -21,11 +21,6 @@ only this population"; "cases only, in EUR, over 60" is a predicate over
 `rows.kept` does, so a session keeps the criterion and the chip's "Show all"
 widens it. Nothing writes it but a config or a session: what is missing is a
 dialog over `rows.filter`.
-
-**A multi-row item the 2026-09-01 review left as a product decision.** A jexl
-"Filter by..." on the multi-row painting (LinearBasicDisplay has it on the same
-data) is new UI. ADR-238's predicate list would spell it, and a legend hide
-kept in config with it; the hide is session state until then.
 
 **Row-model loose ends (2026-09-24).** None reached by a shipped config:
 

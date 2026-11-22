@@ -26,7 +26,7 @@ Words of prose per figure-or-video, fences and data/reference sections excluded.
 | Synteny & comparative | 319 | `selection_pressure` 1075 |
 | Cancer genomics | 380 | `tcga_cohort_mutations` 637 |
 | Structural variation | 508 | `dog10k_svs` 752 |
-| Epigenomics & single cell | 596 | `scatac_pseudobulk` 1253 |
+| Epigenomics & single cell | 596 | `scatac_pseudobulk` 1253 (since merged into `scrna_pseudobulk`) |
 | **Population genomics** | **655** | `ld_mosquitoes` 1078 |
 
 `genomes.jbrowse.org` is 2.5x denser in figures than population genomics and is
@@ -46,17 +46,16 @@ the group to copy.
 
 `reference/WEBSITE_WRITING.md` §"Prose, captions, cards" already draws the line:
 
-> **Few numbers in prose, and none that assert a result.** A number that _names_
-> something (a variant's size, a coordinate, a published cohort size) is fine; a
-> number stating an aspect of the data the page could have shown instead is not
-> [...] **Keep specific values out of captions and callouts.**
+> **No numbers that assert a result.** A number that names something (a
+> variant's size, a coordinate, a cohort size) is fine; one stating what the
+> figure could show goes stale unflagged.
 
 Two checkers could hold it and neither reaches the corpus:
 
 - `check-quoted-figures` pulls every `<number><unit>` out of prose and requires
   it in an `agent-docs/` doc the page links, or the JSDoc of a symbol it names.
-  **Scope is self-declaring on `BEGIN GENERATED MEASUREMENT` — three pages carry
-  one, all developer-guide perf pages, no tutorial.** So the half of the corpus
+  **Scope is self-declaring on `BEGIN GENERATED MEASUREMENT` — two pages carry
+  one, `optimizations.md` and `memory.md`, both developer guides, no tutorial.** So the half of the corpus
   whose numbers come from an analysis run sits outside the checker written for
   numbers copied by hand out of a run.
 - Nothing at all reads captions, but **captions are not where the problem is.**
@@ -80,7 +79,7 @@ Two checkers could hold it and neither reaches the corpus:
 
 One hard case:
 
-- `dog10k_selection`'s `"rules": [0.295]` is a result inside a config
+- `dog10k_selection`'s rule `"value": 0.295` is a result inside a config
   block, the one place a result cannot be cut. The page already says the line is
   a quantile of its own windows and that rebinning means re-taking it. Pattern
   to copy.
@@ -89,37 +88,32 @@ One hard case:
 
 ### The prose that should be a figure instead
 
-Both remaining inversion sentences are true, general, and doing a picture's job.
-Neither reads visually.
+The remaining inversion sentence is true, general, and doing a picture's job.
+It does not read visually.
 
-- **Gene flux across an inversion.** One schematic: two arrangements paired in a
-  heterokaryotype, crossover products inviable at the breakpoints, a double
-  crossover in the interior yielding viable recombinants. Replaces the bullet on
-  `ld_mosquitoes` and the equivalent on `population_genomics:73`, both of which
-  currently spend three lines on it.
 - **Fst decaying outside the breakpoints.** Already drawable from the data on
   the page: `population_genomics`' whole-arm figure has the plateau and the
   breakpoints in the same frame. A marked breakpoint pair on that figure retires
-  `:334` entirely.
+  `population_genomics:412-413` entirely.
 
 ### The gap on both scan pages
 
 Neither says that **an outlier window is not a test**. Both read peaks off a
 genome-wide statistic and name genes under them; neither says the top window of a
 scan over tens of thousands is extreme by construction, or that the locus was
-chosen from the literature rather than found by the scan. `dog10k_selection:106`
+chosen from the literature rather than found by the scan. `dog10k_selection:183-186`
 is closest, drawing its line as an explicit quantile of its own windows and
 saying so.
 
 ### What a cleanup pass must not remove
 
-- `dog10k_selection:106-117` — Fst has no p-value; each group is a set of closed
+- `dog10k_selection:183-186` and its `[^drift]` note — Fst has no p-value; each group is a set of closed
   populations, so drift inside one breed scores like differentiation across the
   contrast.
-- `population_genomics:176-189` — `--window-pi` over a variant-sites-only VCF
+- `population_genomics:164-166` — `--window-pi` over a variant-sites-only VCF
   counts missing as invariant, and vcftools counts two chromosomes per inbred
   line; pixy named as the fix.
-- `ld_human:200-210` — the deCODE map is used *because* it is pedigree-based,
+- `ld_human:296-302` and its note at :341-344 — the deCODE map is used *because* it is pedigree-based,
   with the warning that the LD-derived maps in the same hub cannot check a
   triangle independently. This is the built-in control the tutorials' CLAUDE.md
   asks for.
@@ -161,7 +155,7 @@ existing. What should merge is the *guide* material out of both.
 
 ## Order
 
-§4's two figures are unshot. §3 is a scope change to an existing checker plus a rule
+§4's figure is unshot. §3 is a scope change to an existing checker plus a rule
 in `reference/WEBSITE_WRITING.md` §"Tutorials". §5 is
 editorial calls on pages that already work, so it waits on someone deciding to
 take a page apart.

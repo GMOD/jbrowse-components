@@ -44,7 +44,7 @@ groups of these are worth writing:
 - [mobx-state-patterns](../../mechanisms/mobx-state-patterns.md) — the autorun
   plan/installer split and the discriminated lifecycle getter.
 - [green-checks-that-cannot-fail](../../mechanisms/green-checks-that-cannot-fail.md)
-  — seven checks here that passed for structural reasons, and how each was
+  — eight checks here that passed for structural reasons, and how each was
   caught.
 
 ## What makes an extraction finished

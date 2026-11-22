@@ -57,20 +57,18 @@ per [PLUGIN_ABI_STABILITY.md](../../reference/PLUGIN_ABI_STABILITY.md): a defaul
 parameter is additive, but the two newly-published factories ossify.
 
 **Unmeasured, and cheap to measure first.** The one BYO page that swaps product
-— `SyntenyRibbons.tsx`, the only importer of `@jbrowse/react-app2` — is 675 KB
-gzip / 333 chunks against 507-566 for the pages on
-`@jbrowse/react-linear-genome-view2` (`eagerBundleSizes.json`). That is +11
-plugins for ~115 KB, so roughly 10 KB gzipped per plugin, and it is a
-correlation on one page rather than a controlled result: react-app2 also brings
-app chrome. Taken at face value it says a four-plugin subset of the 18 might
-save ~140 KB off a 508 KB page. Get the real number by building the
+— `examples-site/src/examples/Synteny.tsx`, the only importer of
+`@jbrowse/react-app2` — is 697 KB gzip / 414 chunks against 514-559 KB /
+300-334 for the pages on `@jbrowse/react-linear-genome-view2`
+(`eagerBundleSizes.json`). That is +10 plugins (28 against 18 in the two
+`corePlugins.ts`) for ~140-185 KB, so roughly 15-18 KB gzipped per plugin, and
+it is a correlation on one page rather than a controlled result: react-app2
+also brings app chrome. Taken at face value it says a four-plugin subset of the
+18 might save ~200-250 KB off a 514 KB page. Get the real number by building the
 `ultraminimal` page against a hand-cut array and running that site's
 `measureEagerBundle.mjs`, before anyone argues about the ABI.
 
-**This is the lever [reference/EAGER_BUNDLE.md](../../reference/EAGER_BUNDLE.md)
-leaves unexplored, not one it declined.** That doc's closing "not worth chasing"
-is about the ~1.4 MB raw needed to register a *fixed* 18-plugin set — "that is
-the engine, and `createViewState`'s contract is that all of it is registered
-before a session snapshot can be read". Both halves of that sentence hold only
-while the set is fixed. A host choosing four plugins is a different question,
-and its six pins are all spent.
+**This is a lever [reference/EAGER_BUNDLE.md](../../reference/EAGER_BUNDLE.md)
+leaves unexplored, not one it declined.** Its pins and measurements all take
+the 18-plugin set as fixed, and its "not worth chasing" section is about
+building config schemas, not about which plugins ship.

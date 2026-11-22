@@ -21,7 +21,7 @@ errors. Compound hets (two hets in one gene, one from each parent) are analysis
 for an outside tool whose output loads as a track. The parked follow-ups are
 [parent-of-origin coloring](../waiting-on-a-call/parent-of-origin-haplotype-coloring.md)
 and
-[stacking the trio's reads](../waiting-on-a-call/stack-the-trios-reads-under-the-vcf.md).
+[stacking the trio's reads](../ready/stack-the-trios-reads-under-the-vcf.md).
 
 **Local haplotype-block coloring (the mosaic a dendrogram cannot show).** Clustering
 asks for one distance over the whole window, but a haplotype is a mosaic of segments
@@ -47,12 +47,6 @@ The principled version of the whole problem is that there is no one tree, there 
 ARG. A tree-sequence adapter (tsinfer / ARG-Needle `.trees`) supplying the local tree
 at the view centre would let the existing sidebar render it unchanged, updating as you
 pan.
-
-**Unread: [LDZip](https://github.com/23andMe/LDZip)** (23andMe), LD-aware
-genotype compression. Carried over unevaluated from a `search-misc` note; filed
-here because `VariantRPC/genotypeMatrixEncoding.ts` is the encoding it would
-bear on. Nobody has looked at whether it is a wire format, a storage format, or
-neither for us.
 
 **Frequency weighting for the clustering distance.** Every variant contributes equally
 to the genotype-matrix distance, so the largest LD block in the window numerically

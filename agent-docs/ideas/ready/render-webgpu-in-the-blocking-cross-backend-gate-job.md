@@ -36,15 +36,17 @@ worktree:
 - A display. `runWithRenderingBackend` launches Firefox with `headless: false`
   deliberately, so the job needs xvfb or an equivalent — or a measurement saying
   headless Firefox renders WebGPU identically, which would be the cheaper answer
-  if it holds. **This one has a worked precedent in the same file**:
-  `linux_electron_e2e` in `push.yml` installs xvfb for exactly this reason, its
-  step comment saying the runner "has no X server, and the app is a real window
-  even in --headless". Copy that step rather than re-deriving it; the other two
-  blockers have no such precedent.
+  if it holds. **This one has a worked precedent in the same file**: the
+  runner image ships xvfb, and `linux_electron_e2e` in `push.yml` wraps its run
+  in it (`test:e2e:headless` calls `xvfb-run`) because "the app is a real
+  window even in --headless". Wrap the gate the same way; nothing needs
+  installing.
 - A WebGPU adapter on a GPU-less runner. `--swiftshader` only ever spoke for
   Chrome's WebGL; Firefox needs its own software path (lavapipe, or whatever
   `dom.webgpu.*` accepts) and a blank adapter fails every webgpu capture rather
-  than drifting.
+  than drifting. A partial precedent: the `shaders` job installs
+  `mesa-vulkan-drivers` and draws on `--adapter=llvmpipe`, but through Dawn
+  (the `webgpu` npm package), not Firefox. Firefox Nightly has no precedent.
 
 First move: prove it on a branch with the job actually running, and read the
 job's own output — a green `cross_backend_gate` that skipped a backend looks

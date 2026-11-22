@@ -99,11 +99,8 @@ BigWig assumptions:
 - `getRegionByteSize` sums the members that estimate, as
   `MultiWiggleAdapter`'s does; `getZoomRange` intersects.
 - `listRowSources` lists every member with its label, color and attributes,
-  plus a `warnings` member, which `RowSourceListing` lacks
-  (`rowSources.ts`). Today's listing strips everything but label and color
-  (`MultiWiggleAdapter.ts`), so a samples-TSV column never reaches
-  `rows.color` or `facet`, and the table's warnings are dropped
-  there too.
+  plus the table's `warnings`, as `MultiWiggleAdapter`'s listing already does
+  (`rowSources.ts`).
 - It declares `READS_REFERENCE`, as `MultiWiggleAdapter` does:
   `getSubAdapter` hands each member its parent's `keyedSequence`
   (`dataAdapterCache.ts`), so without it a sequence-search or CRAM member
@@ -167,8 +164,8 @@ inherits and which must tolerate running twice) for the track's adapter, and
 beside it; beside it, every region would carry two answers to one question and
 members would ignore the first. `getRefNameMapForAdapter` survives for its
 main-thread readers — synteny's `renameRegionsForAdapter`, GWAS's `ldJoinFor`
-and the mismatch record. The repo `CLAUDE.md`'s "Worker side: don't" rule under
-Names changes with it. A member none of whose names the assembly knows gets a
+and the mismatch record. The repo `CLAUDE.md`'s "Worker side, use `regions[]`
+as given" rule under Names changes with it. A member none of whose names the assembly knows gets a
 warning on the listing, shown on its row; `detectRefNameMismatch` cannot see
 it, because it fires only when no name at all matches.
 
@@ -218,7 +215,7 @@ them the pasted-JSON subadapter form: rename is in the table, color is
 `rows.colors` (ADR-160, ADR-257), and a hand-written subadapter list is a config file.
 
 `jbrowse text-index` indexes by adapter type (`indexableAdapters`,
-`text-index/command.ts`) and skips a stack of BEDs without a word; it walks
+`packages/add-track-core/src/indexableAdapters.ts`) and skips a stack of BEDs without a word; it walks
 `subadapters` and indexes each member under the stacked track.
 
 ### Which display
@@ -237,10 +234,11 @@ into one. The one-row model's two levels answer it: the member is the band and
 the inner value is the row. A row's `name` is the qualified `member/inner`, the
 qualification `disambiguateSources` already writes, its `label` is the inner
 value, and `facet: 'source'` bands by member. `bandRows` keys rows by name
-alone (`arrangeRows.ts`), so an unqualified `m` under two bedMethyls
+alone (`packages/tree-sidebar/src/rows/bandRows.ts`), so an unqualified `m` under two bedMethyls
 would collide; the qualified name fits ADR-160's `name` keyspace and ADR-189's
-listing. Wiggle's `checkRowsField`, which admits `source` alone, widens to the
-inner field. A single-row member keeps the member as its row and draws no band.
+listing. Wiggle already groups by a source attribute (`rowsField`,
+`groupsSources`, ADR-270), so the inner field needs only to reach the listing
+as an attribute. A single-row member keeps the member as its row and draws no band.
 
 ## Order of work
 
@@ -248,8 +246,8 @@ Each step is one branch that leaves main green, gated by its own tests; figures
 move only where a display's row source changes.
 
 1. **Rows are members: the ADR and the adapter.** `MultiFileAdapter`,
-   `getMembers`, the delegating feature, the listing with attributes and
-   warnings, `MultiWiggleAdapter` as its second name. Wiggle's executors move
+   `getMembers`, the delegating feature, `MultiWiggleAdapter` as its second
+   name. Wiggle's executors move
    onto `getMembers` with per-member errors. Until step 4 `getMembers` passes
    regions through unrespelled, and until step 5 the generated track-type map
    files `MultiFileAdapter` under `FeatureTrack`; the old workflow keeps writing
@@ -268,8 +266,8 @@ move only where a display's row source changes.
    `tutorials/scrna_pseudobulk.md` (§Building the track from a list of BigWigs),
    `developer_guides/creating_addtrack_workflow.md` and
    `developer_guides/extension_points.md`.
-6. **Members with rows of their own.** The qualified name, the member band and
-   the widened `checkRowsField`, on both displays.
+6. **Members with rows of their own.** The qualified name and the member band,
+   on both displays.
 
 ## Open inside the work
 

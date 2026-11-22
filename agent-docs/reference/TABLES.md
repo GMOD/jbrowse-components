@@ -816,6 +816,22 @@ function it changed; the parity suites in `src/parity/` catch one that does
 not. Nothing else runs these hosts: drawing SVG from them was built and removed
 ([ADR-262](../architecture-decision-records/adr-262-jb2export-stays-on-the-session-path.md)).
 
+Where a table answers differently from the view, the view's answer needs a
+viewport, a gutter or a session, and the difference stays:
+
+- A lane pair the file lacks fails the multi-way export, where the view fails
+  that one gutter with a Retry: an export has no gutter-level error state, and
+  a table of failed gutters ggjbrowse does not read would drop it silently.
+- The synteny tables decide the `auto` thin-ribbon fade from one level with no
+  latch, where the view latches against flicker while zooming
+  (`SyntenyFadeMixin.ts`); a static export has no zoom history.
+- The alignments tables key reads and arcs apart (`legend`, `arcLegend`), where
+  the display's legend box merges a shared color (`getAlignmentsColorScales`).
+  Merging in the export was built and reverted: ggjbrowse draws reads and arcs
+  as separate layers with their own guides, so an arcs-only plot lost its key.
+- Variants categorical slots start empty in a table, where the view holds them
+  session-wide (`display-kit/src/heldColorSlots.ts`).
+
 ## The bare-host bundle
 
 `pnpm build:bundle` writes `dist/jbrowse-tables.js`, one IIFE with no imports.

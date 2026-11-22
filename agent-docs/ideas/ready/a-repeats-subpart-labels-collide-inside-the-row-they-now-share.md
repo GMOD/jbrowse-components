@@ -1,6 +1,6 @@
 ---
 name: a-repeats-subpart-labels-collide-inside-the-row-they-now-share
-description: four of a retrotransposon's five subpart labels sit at one y and overprint each other inside the row the reservation now buys — legibility inside the row rather than overflow past it, and closing it means deciding whether the one-row repeat glyph survives at all
+description: four of a retrotransposon's five subpart labels sit at one y and overprint each other inside the row the reservation now buys. The one-row repeat glyph stays, so the fix drops a subpart label whose box overlaps a sibling's.
 ---
 
 # A repeat's subpart labels collide inside the row they now share
@@ -24,13 +24,12 @@ on top of "LTR-left" (x=105, y=10). Side-by-side subparts are fine by
 construction; the internal span, which *contains* the LTRs, is the one that
 cannot share a row with them.
 
-**First move: decide whether the one-row design survives.** The repeat glyph puts
-every subpart on one row deliberately — that is what makes a repeat one row tall
-instead of five. Horizontal collision resolution among one feature's subparts
-keeps that and is mechanical (drop a label whose box overlaps a sibling's, the
-way the display already drops labels that do not fit a block). Stacking
-non-adjacent subparts onto their own rows reads better and gives the design up,
-so it is the call, not the implementation, that is open.
+**The one-row design stays.** The repeat glyph puts every subpart on one row
+deliberately — that is what makes a repeat one row tall instead of five. So the
+fix is horizontal collision resolution among one feature's subparts: drop a
+label whose box overlaps a sibling's, the way the display already drops labels
+that do not fit a block. Stacking non-adjacent subparts onto rows of their own
+would read better and give up the one-row repeat, which is why it is not taken.
 
 Not an overflow bug and not a regression: all of it stays inside the row the
 reservation buys, and `belowLabelRows.test.ts` pins that boundary.

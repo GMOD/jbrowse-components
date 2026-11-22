@@ -19,8 +19,9 @@ Wiggle packs one instance record per rendering (`packFillInstances`,
 as each region arrives. The single `pack` they replaced **measured ~98ms**,
 landing mid-frame; re-measure the split packers before quoting it. A zoom
 across a BigWig tier
-already refetches (ADR-125), so a worker-side pack rides along free there;
-`MafUploadPayload` is the payload shape to copy.
+already refetches (ADR-125), so a worker-side pack rides along free there.
+MAF went the other way: eaad8cd6a6 moved its GPU encode to the main thread,
+where `createEncodeMemo` now builds `MafUploadPayload` (`mafEncodeViews.ts`).
 
 **"Move the packers" understates the move, and `origin` is how you see it.**
 Each packer takes `SourceRenderData[]`, which is what `buildSourceRenderData` returns

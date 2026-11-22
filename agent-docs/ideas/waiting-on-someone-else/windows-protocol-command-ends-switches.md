@@ -16,7 +16,11 @@ Windows build: browsers percent-encode `"` in a url they hand to a protocol
 handler, and Electron is understood to refuse to start when a switch follows a
 url argument.
 
-**Waits on a Windows machine** (or the `windows-desktop.yml` runner) to check:
+**Waits on a Windows machine** to check the list below. Push's
+`windows_electron_e2e` job already packages and runs the app on
+`windows-latest` (`package:win:no-installer`), so a branch run there can launch
+the exe with `-- <link>` and answer the first check; the second needs the
+installer's registered command and a real protocol launch.
 
 - whether Chromium passes the `--` through to `process.argv`, and if so that
   `findLaunchTarget` (`electron/launchTarget.ts`) ignores it rather than

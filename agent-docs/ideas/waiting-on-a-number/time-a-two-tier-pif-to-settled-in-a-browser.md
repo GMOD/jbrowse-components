@@ -23,9 +23,9 @@ UCSC liftOver chain, and the objection was that `ChainAdapter` declares no
 tiering slot while `make-pif` takes PAF — but a chain is a *source format*, not
 the adapter: `chain2paf` then `make-pif` gives a two-tier PIF that loads through
 `PairwiseIndexedPAFAdapter`, which does declare the slot.
-`~/data/hs1ToMm39/hs1ToMm39.over.chain.pif.gz` is one, and
-[reference/HOSTING.md](../../reference/HOSTING.md) has recorded the hosted copy as
-two-tier since 2026-08-02.
+`hs1ToMm39.over.chain.pif.gz` is one; its two tiers' wire bytes and its hosted
+copy at `jbrowse.org/genomes/hs1_vs_mm39/` are in
+[pif-tier-wire-bytes](../../measurements/pif-tier-wire-bytes.json)'s repro.
 
 What is still owed:
 

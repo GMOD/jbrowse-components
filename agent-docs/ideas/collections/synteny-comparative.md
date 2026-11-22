@@ -1,6 +1,6 @@
 ---
 name: synteny-comparative
-description: `syntenyGroupId`, PIF limits, the `featureId` instance ceiling, polyploidy-aware many-to-many synteny, the 2026-07 vendor-format survey, and why Canvas2D's one-number sub-pixel fade is only worth closing for the SVG export.
+description: `syntenyGroupId`, PIF limits, the `featureId` instance ceiling, polyploidy-aware many-to-many synteny, the 2026-07 vendor-format survey's nucmer `.coords` leaf, and why Canvas2D's one-number sub-pixel fade is only worth closing for the SVG export.
 ---
 
 # Synteny / comparative
@@ -114,18 +114,11 @@ One ceiling left in the synteny GPU path, and it is not a coordinate one. It
 does not affect wheat (16 Gbp) or any common genome, and is left unfixed as
 YAGNI until a real dataset hits it.
 
-There used to be a second, coordinate ceiling here — the ~68.7 Gbp cap from the
-4096-aligned hi/lo Float32 corner split. **It no longer exists.** ADR-067
-replaced hi/lo with a single window-relative Float32 against a fetch-time base,
-which cancels the genome-scale magnitude outright, so 100+ Gbp assemblies
-(*Tmesipteris oblanceolata* ~160 Gbp, *Paris japonica* ~148 Gbp, some lungfish
-~130 Gbp) render correctly with no cap to widen. If you find a writeup
-proposing the 2¹²→2¹⁴ bucket widening in `writeHiLo` / `HP_LOW_MASK`, it is
-stale — none of those symbols survive.
-
+The synteny corners carry no genome-scale coordinate ceiling: they are a
+window-relative Float32 against a fetch-time base (ADR-067), not a hi/lo split.
 The **per-reference uint32 cap** (4.29 Gbp per chromosome, on the local
-`starts/ends/mateStarts/mateEnds` arrays) is untouched by that and is still the
-one hard assumption; see `agent-docs/reference/BP_PRECISION.md` §"Genome-size limits".
+`starts/ends/mateStarts/mateEnds` arrays) is the one hard assumption; see
+`agent-docs/reference/BP_PRECISION.md` §"Genome-size limits".
 
 **`featureId` as Float32 → 16.7M-instance cap.** `instanceInterleave.ts` writes
 the per-instance `featureId` through the Float32 view, and the shader compares
@@ -141,20 +134,17 @@ all-vs-all file reaches the cap rather than speculatively.
 
 ### Vendor-format leaf adapters (2026-07 vendor survey)
 
-Surveyed `~/src/vendor/{ntSynt-viz,plotsr,SVbyEye,SafFire,jupiterplot}` against the
-current stack. The overriding conclusion is that **the render/model/color surface is
-already comprehensive** — the `color` object (ADR-139) covers `default·strand·query·target·
-reference·identity·mappingQuality·dnds`, plus `encoding.opacity` (a constant or a
-field such as `identity`), `fadeThinAlignments`, N-way stacked views, `color: { field: 'reference' }` chromosome-painting,
-and `MultiGenomePAFAdapter`. So the remaining wins are **leaf parsers that map a popular
-file onto the EXISTING SyntenyTrack render path**, never new render/color surface. Each
-below reuses the renderer unchanged (the `MCScanBlocksAdapter` / `MultiGenomePAFAdapter`
-template: "one file backs N-1 pairwise tracks, no renderer change").
+A survey of ntSynt-viz, plotsr, SVbyEye, SafFire and jupiterplot found the
+render, model and color surface already covers what they draw, so what remains
+are leaf parsers that map a popular file onto the existing `SyntenyTrack`
+render path with no renderer change, as `MCScanBlocksAdapter` and
+`MultiGenomePAFAdapter` do.
 
-- **nucmer `.coords` (show-coords tabular) leaf adapter.** SVbyEye/SafFire ingest nucmer via
-  `show-coords`-style tabular output (`[S1][E1]|[S2][E2]|[LEN1][LEN2]|[%IDY]|tags`). JBrowse
-  has `DeltaAdapter` (`.delta`) but not the tabular `.coords` form. Small leaf if a real user
-  arrives with `.coords`; low priority (they can run `.delta` today).
+- **nucmer `.coords` (show-coords tabular) leaf adapter.** SVbyEye and SafFire
+  ingest nucmer through `show-coords`-style tabular output
+  (`[S1][E1]|[S2][E2]|[LEN1][LEN2]|[%IDY]|tags`). `DeltaAdapter` reads `.delta`,
+  but nothing reads the tabular `.coords` form. A small leaf if a real user
+  arrives with `.coords`; low priority, since they can load the `.delta` today.
 
 ### Polyploidy-aware many-to-many synteny
 

@@ -7,8 +7,9 @@ description: Each feature-details click on a mark display reruns the clicked lay
 
 Left from ADR-249's multi-row swap.
 
-- `packages/core/src/rpc/methods/CoreGetEncodedFeature.ts` fetches the region
-  again and runs the clicked layer's steps to find the row behind
+- `CoreGetEncodedFeature` delegates to `executeGetEncodedFeature`
+  (`packages/core/src/rpc/methods/executeEncodedLayers.ts`), which fetches the
+  region again and runs the clicked layer's steps to find the row behind
   `featureIndex`. Only that layer runs, and the adapter's caches absorb the
   fetch.
 - **First move:** time a click on a multi-row display over a dense region (a

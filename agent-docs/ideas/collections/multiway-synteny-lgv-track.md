@@ -73,16 +73,15 @@ by the forms the structural-state sidecar groups haplotypes into
 
 1. **A genotype-first picker** over the cohort: the `pgbi.vcf.gz` per-allele
    VCF (462 haplotypes of `GT`, 1.7 s for a 70 kb window remotely,
-   [PANGENOME_GRAPHS.md](../../reference/PANGENOME_GRAPHS.md) "Release 2 files
-   nothing here reads yet") or the wave VCF through
+   [HPRC_RELEASE2.md](../../reference/HPRC_RELEASE2.md) "What opens") or the
+   wave VCF through
    `LinearVariantDisplay`, with `TreeSidebarMixin`'s
    cluster-by-identity ordering; rows at 1-2 px each, 464 or 4,000 of them; a
    click or a lasso yields a haplotype set.
 2. **This display as the locus reading** for that set: the set becomes
-   `rows.kept` (config already), and — once the reader takes a
-   filter — the fetch.
-3. **The graph view** taking the same set: `haplotypes` on `GetSubgraph`
-   (`HAPLOTYPE_WALKS_VISION.md:70-73`), Sample rows drawing the chosen set.
+   `rows.kept` (config already) and the fetch's `haplotypes`.
+3. **The graph view** taking the same set: `GetSubgraph` takes `haplotypes`
+   already, so Sample rows draw the chosen set.
 
 Two smaller things go with that and are worth doing before anyone opens a
 hundred lanes: make a graph source require a lane set — the track's
@@ -94,20 +93,8 @@ join since 2026-09-12. The picker dialog
 (`LaneSelectionDialog`, a flat list) is fine to ~500 and slow at thousands,
 and should not be made to scale further.
 
-The ORDER of whatever set that picks is its own file —
-[ordering-synteny-lanes-by-similarity](../ready/ordering-synteny-lanes-by-similarity.md),
-which reaches the same "not from the alignment at cohort scale" conclusion by
-counting fetches, and adds the two constraints this paragraph does not: a ribbon
-joins only ADJACENT lanes, so the objective is seriation rather than clustering,
-and the shared-group matrix the gene sources need is free where the alignment
-one costs N(N-1)/2 adapter calls. What the 2026-09-06 reading adds is which
-demo is waiting on it: the 44-way E. coli page orders by density, so the K-12
-derivatives lead at the O-antigen locus for sharing the most symbols and the
-reduced Shigella genomes fall toward the bottom with nothing naming them. The
-weighting half of that reading landed — `rowAssembliesOf` sums `group.weight`
-rather than counting placements — and the half still open is step 1 of the
-ordering document, the gene-group seriation, which is main-thread and needs no
-RPC.
+The ORDER of whatever set that picks is its own file,
+[ordering-synteny-lanes-by-similarity](../ready/ordering-synteny-lanes-by-similarity.md).
 
 **Placement and annotation providers beyond the two shipped.** The display's
 contract is source-agnostic in two places: placements (features-with-mates from
@@ -147,8 +134,8 @@ Sample rows in the graph view are the same set question one surface over. Do
 not rebuild that renderer for carriage — drawing a segment once per carrier
 needs per-(node, carrier) positions and a renderer key other than node id, and
 the result is the genotype matrix drawn as tubes, which a matrix display
-already does at cohort scale. Give the cut a sample set (`keepHaplotypes` →
-`GetSubgraph`) so the rows ARE the chosen haplotypes, keep first-visit-wins for
+already does at cohort scale. The cut takes a sample set (`haplotypes` on
+`GetSubgraph`), so the rows ARE the chosen haplotypes; keep first-visit-wins for
 the shared nodes — with the cut holding only the chosen set that is nearly
 attribution-free — and route carriage questions to the matrix.
 

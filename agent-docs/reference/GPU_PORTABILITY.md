@@ -61,7 +61,9 @@ Per scroll pass, 12 views x 3 tracks, Canvas2D is ~25x cheaper than WebGL under
 software rendering and ~2x dearer on a real GPU. The cost is shader compilation
 on a CPU rasterizer, and it holds with no churn: one view, three tracks already
 produces multi-second tasks on WebGL2
-(`node browser-tests/workspaces-freeze-stress.ts --views=1 --tracks=3`).
+(`node browser-tests/workspaces-freeze-stress.ts --views=1 --tracks=3`). Track
+count compounds it: under software rendering, scroll-zoom painted frames fell
+from 435 to 107 going from 8 to 28 tracks, with 18 context losses.
 
 So `createGpuHal` steps over the WebGL2 rung when the rasterizer is software and
 nothing was pinned; the comment there has the numbers. It is not a

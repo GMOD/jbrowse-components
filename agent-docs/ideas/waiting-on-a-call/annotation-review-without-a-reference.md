@@ -135,5 +135,4 @@ which `make-portal.mjs --measurement` writes from the run itself. Nothing here
 is typed in, which is the point: the first version of this doc would have said
 21 structure conflicts.
 
-Related: `reference/REJECTED_IDEAS.md` for what has been tried and declined,
-the portal repo's own `README.md` for what the comparison does today.
+Related: the portal repo's own `README.md` for what the comparison does today.

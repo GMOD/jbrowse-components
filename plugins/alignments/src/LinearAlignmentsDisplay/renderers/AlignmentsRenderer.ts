@@ -11,8 +11,7 @@ import type { AlignmentsRenderingBackend } from './rendererTypes.ts'
 // One sample, though most pileup and coverage passes draw hard edges: the
 // multisampled target held 340 MiB on a tall track at dpr 2
 // (ARCHITECTURAL_LIMITS.md). What one sample costs, the coverage band's
-// sub-pixel segments drawing whole or not at all among them:
-// agent-docs/ideas/waiting-on-a-number/arc-antialiasing-without-msaa.md.
+// sub-pixel segments drawing whole or not at all among them: ADR-283.
 export function AlignmentsRenderer(canvas: HTMLCanvasElement) {
   return createRenderingBackend<AlignmentsRenderingBackend>(canvas, {
     passes: ALIGNMENTS_PASSES,

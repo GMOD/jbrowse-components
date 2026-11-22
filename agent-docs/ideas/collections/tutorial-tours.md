@@ -102,18 +102,17 @@ cascade teaches a reader nothing new about the app.
   a Submit that unlocks on three conditions), and it is on the wrong page: the
   section is one of three the page declares interchangeable, its home is
   `user_guides/quantitative_track.md`, and `ui/bulk_add_tracks` is its near
-  twin. **It belongs on the user-guide list.**
+  twin. **It belongs on the user-guide list.** The only other thing on it
+  that MOVES (the UMAP filtering the rows, a gene selection recoloring the
+  cells) lives in the react-LGV examples site, which the harness cannot reach.
 
 **The harness cannot reach it.**
 
-- **`cli_desktop.md`** and `quickstart_desktop.md` — desktop cannot be filmed at
-  all; the handoff carries why, so nobody re-derives it.
+- **`cli_desktop.md`** and `quickstart_desktop.md` — desktop cannot be filmed
+  with this harness; §"Tours that start near scratch" carries why.
 - **`embed_linear_genome_view.md`** — no route (four code fences and a
   `<details>`), and no way to film one if there were: `VideoSpec` carries only a
   `url` and the generator serves the jbrowse-web build. Gap 9.
-- **`scrna_pseudobulk.md`** — the only thing on it that MOVES (the UMAP
-  filtering the rows, a gene selection recoloring the cells) lives in the
-  react-LGV examples site.
 
 **The page has to be restructured first.** Filming a page whose sections are
 reorderable just films the confusion.
@@ -201,8 +200,8 @@ it would let its page delete, since a tour that only adds is the weaker kind.
    **zero figures**. Opens on `hg38_only.json` (`"tracks": []`), so everything on
    screen at the end came from the hub. Films the behaviour the page asserts and
    cannot picture: expanding a category is what fetches.
-6. **`ui/spreadsheet_row_launch`** — `user_guides/spreadsheet_view.md`, 41 lines,
-   **zero figures**, two thirds bulleted clicks. Half the steps are already
+6. **`ui/spreadsheet_row_launch`** — `user_guides/spreadsheet_view.md`, 47 lines,
+   **one figure**, two thirds bulleted clicks. Half the steps are already
    proven in `videos/sv.ts`.
 7. **`synteny/launch_from_lgv`** — `user_guides/linear_synteny_view.md`. The
    densest unfigured passage in the guides: a dataset field that refetches, a
