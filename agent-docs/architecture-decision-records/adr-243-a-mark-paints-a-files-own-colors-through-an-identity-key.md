@@ -46,8 +46,8 @@ of the multi-row worker against 0.46-0.50x for a key over the column.
   `domain` and `names`. From 2026-11-21 an identity naming no field shows as
   identity, the one scale offered until a field is typed; typing one keeps
   the scale with its `domain` and `names`. The key's name for no value is
-  neither offered nor kept under identity, since its key lists `domain`
-  alone.
+  dropped on a switch to identity, since its key lists `domain` alone, and
+  shown under identity only while a value is held, so it can be cleared.
 
 ## Consequences
 

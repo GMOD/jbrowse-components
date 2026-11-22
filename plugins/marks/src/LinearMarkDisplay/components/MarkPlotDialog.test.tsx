@@ -339,6 +339,33 @@ describe('a scale beside its field', () => {
     })
   })
 
+  it("shows an identity key's held name for no value, so it can be cleared", () => {
+    const { apply, written } = setup({
+      marks: [
+        {
+          mark: 'rect',
+          encoding: {
+            color: {
+              field: 'color',
+              scale: { type: 'identity', domain: ['#d73027'] },
+              legend: { missingLabel: 'none' },
+            },
+          },
+        },
+      ],
+    })
+    expect(screen.getByTestId('missingLabel-color')).toHaveValue('none')
+    fireEvent.change(screen.getByTestId('missingLabel-color'), {
+      target: { value: '' },
+    })
+    expect(screen.queryByTestId('missingLabel-color')).toBeNull()
+    fireEvent.click(apply())
+    expect(written.mock.calls[0]![0].marks[0].encoding.color).toEqual({
+      field: 'color',
+      scale: { type: 'identity', domain: ['#d73027'] },
+    })
+  })
+
   it('names a ramp its stops and pins its ends', () => {
     const { channel, apply, written } = setup(RAMP)
     fireEvent.change(screen.getByTestId('scheme-color'), {

@@ -275,7 +275,8 @@ const MarkScaleRow = observer(function MarkScaleRow({
         </>
       ) : null}
       {(channel === 'color' || channel === 'shape') &&
-      scale !== IDENTITY_SCALE ? (
+      (scale !== IDENTITY_SCALE ||
+        scaleMember(mark, channel, 'missingLabel') !== '') ? (
         <MemberField
           mark={mark}
           channel={channel}
