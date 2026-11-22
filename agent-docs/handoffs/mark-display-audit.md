@@ -1,20 +1,21 @@
 ---
 name: mark-display-audit
-description: "A read-only audit of LinearMarkDisplay (plugins/marks, the worker encoder, Edit plot, hover, legend, export) on 2026-11-21: one unmeasured interval-bin cost and one hover finding not yet rechecked."
+description: "An audit of LinearMarkDisplay (plugins/marks, the worker encoder, Edit plot, hover, legend, export) on 2026-11-21, its checked items fixed: one unmeasured interval-bin cost and two traced hover findings left open."
 ---
 
 # Mark display audit
 
-A read-only pass over `plugins/marks/src/LinearMarkDisplay`, the worker side in
+A pass over `plugins/marks/src/LinearMarkDisplay`, the worker side in
 `packages/core/src/util` (`markEncoding.ts`, `featureTransforms.ts`,
-`stepTables.ts`) and the hover, legend and export path. Nothing was changed and
-no test was run. Three Opus readers took a slice each; the main session read
-`model.ts`, `markConfigViews.ts`, `markResolveViews.ts`, `markRequest.ts`,
-`markList.ts` and the default-plot scan, and found those sound.
+`stepTables.ts`) and the hover, legend and export path. Three Opus readers took
+a slice each; the main session read `model.ts`, `markConfigViews.ts`,
+`markResolveViews.ts`, `markRequest.ts`, `markList.ts` and the default-plot
+scan, and found those sound. The items it checked were fixed on this stack,
+each with a test; what is below is left.
 
 Each item says how far it was checked. "Checked" means the main session read
-the cited code after the reader reported it. "Reader only" means one reader
-traced it and nobody reread it; reread before fixing.
+the cited code after the reader reported it; "traced" means a reviewer followed
+it through the code.
 
 ## Needs a measurement before anything is built
 
@@ -32,13 +33,17 @@ traced it and nobody reread it; reread before fixing.
     reopening it; the fix the reader names is clamping `first` and `last` to
     the fetched region's bins, which `binnedFetchRegions` already aligns.
 
-## Reader only: hover, legend and menus
+## Traced, not fixed: hover
 
 - **A point or rect sharing the flatten root with a cross-sequence link
   still hovers a span mixing the two sequences.** `featureInstances.ts`
   `featureSpan` takes min and max over every instance of the root, the
   link's far `x2` included. The link's own hit reads its two feet
   (`findMarkHit.ts`); the other marks of that feature do not.
+- **A link between two assemblies' same-named contigs (hg38 chr1 to hs1
+  chr1) hovers as one sequence.** `findMarkHit.ts` compares the far foot's
+  refName with the near one's and no assembly, so `x2RefName` drops and the
+  locus spans both genomes' coordinates. Pre-existing.
 
 ## Read and left alone
 
