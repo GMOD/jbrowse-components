@@ -19,24 +19,41 @@ const QUALIFIER_INDENT = ' '.repeat(21)
 const LINE_WIDTH = 79
 const DATE = '10-JAN-1970'
 
-// Where a line past `width` breaks: after the last space that fits, else the
-// next one, since a reader rejoins qualifier text with a space and a break
-// inside a word would put one there; after the last comma in a location; and
-// anywhere in a /translation, which is rejoined with none.
-function breakAt(text: string, width: number, breakAfter: string) {
-  const fits = text.lastIndexOf(
-    breakAfter,
-    width - (breakAfter === ' ' ? 0 : 1),
+// A space a reader rejoins as the one it was: not after a quote, which
+// Biopython reads as the end of the value, not before a slash, which starts a
+// qualifier, and not in a run of spaces, which loses one of them
+const LONE_SPACE = /(?<=[^ "]) (?=[^ /])/g
+const RUN_START = /(?<=[^ "]) (?= *[^ /])/g
+
+function spaces(text: string, pattern: RegExp) {
+  return [...text.matchAll(pattern)].map(({ index }) => index)
+}
+
+// the last such space that fits, else the start of a run that fits, else the
+// next of either, since a break inside a word would put a space there
+function spaceBreak(text: string, width: number) {
+  const lone = spaces(text, LONE_SPACE)
+  const runs = spaces(text, RUN_START)
+  return (
+    lone.findLast(i => i <= width) ??
+    runs.findLast(i => i <= width) ??
+    lone.find(i => i > width) ??
+    runs.find(i => i > width) ??
+    -1
   )
+}
+
+// Where a line past `width` breaks: at a space in qualifier text; after the
+// last comma in a location; and anywhere in a /translation, which is rejoined
+// with none.
+function breakAt(text: string, width: number, breakAfter: string) {
   return text.length <= width
     ? -1
     : breakAfter === ''
       ? width
       : breakAfter === ' '
-        ? fits > 0
-          ? fits
-          : text.indexOf(' ', width)
-        : fits + 1 || width
+        ? spaceBreak(text, width)
+        : text.lastIndexOf(breakAfter, width - 1) + 1 || width
 }
 
 function wrapped(lead: string, text: string, breakAfter = ' ') {

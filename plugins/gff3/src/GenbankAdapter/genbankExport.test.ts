@@ -462,4 +462,100 @@ describe('GenBank export line width', () => {
         .toSorted((a, b) => a.start - b.start),
     ).toEqual(exons.map(e => ({ start: e.start, end: e.end, strand: -1 })))
   })
+
+  it('ends every location line but the last after a comma, since GenbankAdapter rejoins them with nothing and would hide a break inside a span', async () => {
+    const lines = (await exportedRecord()).split('\n')
+    const start = lines.findIndex(line => line.startsWith('     mRNA'))
+    const location = lines.slice(
+      start,
+      lines.findIndex((line, i) => i > start && !/^ {21}[^ /]/.test(line)),
+    )
+    expect(location.length).toBeGreaterThan(1)
+    expect(location.slice(0, -1).filter(line => !line.endsWith(','))).toEqual(
+      [],
+    )
+  })
+
+  async function exportedNote(text: string) {
+    const exported = await stringifyGBK({
+      features: [
+        new SimpleFeature({
+          uniqueId: 'noted',
+          refName,
+          start: 0,
+          end: 900,
+          type: 'gene',
+          note: text,
+        }),
+      ],
+      sourceRecords: new Map(),
+      circularLengths: new Map<string, number>(),
+      regions: [],
+      assemblyName: 'test',
+      session,
+    })
+    const lines = exported.split('\n')
+    const noteLines = lines.slice(
+      lines.findIndex(line => line.trimStart().startsWith('/note=')),
+      lines.indexOf('ORIGIN'),
+    )
+    const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'genbank-note-'))
+    const file = path.join(dir, 'note.gbk')
+    fs.writeFileSync(file, exported)
+    const read = await fetch(
+      new GenbankAdapter(
+        configSchema.create({ genbankLocation: { localPath: file } }),
+      ),
+      refName,
+      0,
+      5000,
+    ).finally(() => {
+      fs.rmSync(dir, { recursive: true, force: true })
+    })
+    return {
+      noteLines,
+      readBack: read.find(f => f.get('type') === 'gene')?.get('note'),
+    }
+  }
+
+  it.each([
+    `${'x'.repeat(45)} "q" /usr/local/bin and then a lot more words to wrap here`,
+    `${'x'.repeat(40)} a "q" said "hello" /usr/local/bin and then a lot more words to wrap here`,
+    `${'x'.repeat(48)} ab /path/to/something and more words follow after the slash`,
+    ` ${'y'.repeat(70)} tail`,
+  ])(
+    'breaks %j where Biopython reads it whole too: no line but the last ends in a quote, and none after the first starts with a slash',
+    async text => {
+      const { noteLines, readBack } = await exportedNote(text)
+      expect(noteLines.length).toBeGreaterThan(1)
+      expect(readBack).toBe(text)
+      expect(noteLines.slice(0, -1).filter(line => line.endsWith('"'))).toEqual(
+        [],
+      )
+      expect(
+        noteLines.slice(1).filter(line => line.trimStart().startsWith('/')),
+      ).toEqual([])
+    },
+  )
+
+  it('breaks at a single space over one in a run, which both readers rejoin as one', async () => {
+    const text = `${'x'.repeat(46)} end.  Next words follow to wrap the line here`
+    const { noteLines, readBack } = await exportedNote(text)
+    expect(noteLines.length).toBeGreaterThan(1)
+    expect(readBack).toBe(text)
+  })
+
+  it('still wraps text whose every space is in a run, giving up one space at each break', async () => {
+    const text = `${'x'.repeat(48)}  two  spaces  here  and  more  words  following  to  wrap`
+    const { noteLines, readBack } = await exportedNote(text)
+    expect(noteLines.filter(line => line.length > 79)).toEqual([])
+    expect(readBack).toBe(text.replace('  two', ' two'))
+  })
+
+  it('breaks at a run that fits over a single space past the line', async () => {
+    const text = `${'x'.repeat(40)}  aa  bb  cc  dd  ee  ff  gg  hh  ii then the rest`
+    const { noteLines } = await exportedNote(text)
+    expect(noteLines.length).toBeGreaterThan(1)
+    expect(noteLines.filter(line => line.length > 79)).toEqual([])
+  })
 })
