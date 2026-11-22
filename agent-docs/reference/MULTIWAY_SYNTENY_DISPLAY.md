@@ -45,9 +45,10 @@ every cost is linear in lanes.
   An MCScan `.anchors` pair states its block's reach on both sides and its
   direction, and each gutter beside the anchor draws one ribbon per block in a
   layer before every gene ribbon, at half their alpha. The band is one
-  anchor-facing record per block, painted and filtered by its own `strand`,
-  `block` and `blockSpan` and never by one pair's fields, and keyed as a
-  lane-pair link, so hover, click and `multiwayTables` read it as any ribbon. Zoomed inside a block the band fills
+  anchor-facing record per block, painted by its own `strand`, `block` and
+  `blockSpan` and never by one pair's fields, drawn where one of its pairs
+  passes the filter, and keyed as a lane-pair link, so hover, click and
+  `multiwayTables` read it as any ribbon. Zoomed inside a block the band fills
   the gutter, which Colin accepted over hiding it.
 - **Copy lanes read against the anchor alone** (`rows.field: 'refName'`,
   `copyLane.ts`), whatever the source: a pairwise `.anchors` file states

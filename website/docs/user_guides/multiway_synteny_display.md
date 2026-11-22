@@ -65,8 +65,9 @@ The view's gridlines stop at the anchor, the one lane they fit.
   each other.
 - **Blocks:** an MCScan `.anchors` track draws each block of gene pairs as a
   pale band behind their ribbons, from one end of the block to the other on both
-  lanes. A band is colored and filtered by the block's own direction, `block`
-  and `blockSpan`, and hovers and clicks as a ribbon does.
+  lanes. A band is colored by the block's own direction, `block` or `blockSpan`,
+  draws wherever the filter leaves one of its gene pairs, and hovers and clicks
+  as a ribbon does.
 - **Skipped lanes:** a ribbon joins a gene to the next lane that places it when
   the lane between places nothing, so a sparse lane mid-stack cuts no chain.
 

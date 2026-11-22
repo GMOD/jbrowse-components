@@ -1940,6 +1940,83 @@ describe("a source's block under the pairs it chains", () => {
     expect(ribbonData(cells, 'ribbons:0').instanceCount).toBe(2)
   })
 
+  // the block record has no `ks` and runs one way; its pairs decide
+  test('a block draws where one of its pairs passes a filter it could not', () => {
+    const kept = (filter: FieldPredicate[]) => {
+      const { cells } = buildRibbonGeometry({
+        stack: stack({
+          features: [
+            pairIn('g1', 100, 200, { ...forward, ks: 0.2 }),
+            pairIn('g2', 300, 400, { ...forward, ks: 0.8, strand: -1 }),
+          ],
+        }),
+        laneLinks: undefined,
+        ribbonColor: 'grey',
+        attributeRanges: { ks: { min: 0, max: 1 } },
+        filter,
+        drawCurves: false,
+      })
+      return [
+        ribbonData(cells, 'ribbons:0').instanceCount,
+        cells.has('underlay:0') ? 1 : 0,
+      ]
+    }
+    expect(kept([{ field: 'ks', gte: 0.5 }])).toEqual([1, 1])
+    expect(kept([{ field: 'strand', equal: -1 }])).toEqual([1, 1])
+    expect(kept([{ field: 'ks', gte: 0.9 }])).toEqual([0, 0])
+  })
+
+  // the pair skips the lane between, and a block spans one gutter
+  test('a pair bridged across a lane draws no block', () => {
+    const { cells, layers } = buildRibbonGeometry({
+      stack: stack({
+        features: [
+          new SimpleFeature({
+            ...pairFeature('g1', 100, 200, {
+              mate: 'cacao',
+              mateRef: 'Tc1',
+            }).toJSON(),
+            ...forward,
+          }),
+          pairFeature('g2', 300, 400),
+        ],
+        assemblyNames: ['grape', 'peach', 'cacao'],
+      }),
+      laneLinks: undefined,
+      ribbonColor: 'grey',
+      drawCurves: false,
+    })
+    expect(ribbonData(cells, 'ribbons:0>2').instanceCount).toBe(1)
+    expect(layers.map(layer => layer.key)).toEqual([
+      'ribbons:0',
+      'ribbons:0>2',
+      'ribbons:1',
+    ])
+  })
+
+  test('color by block paints each band its pairs’ color', () => {
+    const { cells } = buildRibbonGeometry({
+      stack: blocked(),
+      laneLinks: undefined,
+      ribbonColor: 'grey',
+      ribbonColorField: 'block',
+      attributeRanges: { block: { labels: ['block0', 'block1'], colors: {} } },
+      drawCurves: false,
+    })
+    const opaque = (packed: number | undefined) =>
+      withAbgrAlpha(packed ?? 0, 255)
+    const under = ribbonData(cells, 'underlay:0')
+    const pairs = ribbonData(cells, 'ribbons:0')
+    expect(opaque(under.colors[0])).toBe(opaque(pairs.colors[0]))
+    expect(opaque(under.colors[1])).toBe(opaque(pairs.colors[2]))
+    expect(opaque(under.colors[0])).not.toBe(opaque(under.colors[1]))
+  })
+
+  test('the cells list in the order the layers draw', () => {
+    const { cells, layers } = geometryOf()
+    expect([...cells.keys()]).toEqual(layers.map(layer => layer.key))
+  })
+
   test('pairs naming no block draw no layer under them', () => {
     const { layers } = buildRibbonGeometry({
       stack: stack({ features: [pairFeature('g1', 100, 200)] }),

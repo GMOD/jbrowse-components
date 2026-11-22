@@ -342,8 +342,8 @@ export function ribbonFeatureId(
  * `.anchors` pair states its own: one record per block, spanning the block on
  * the pairs' side with its mate on the other and `strand` -1 where the block
  * runs against that side, and each pair's way to it. A block is painted,
- * filtered, hovered and clicked as this record, so it reads the block's own
- * fields and none of one pair's.
+ * hovered and clicked as this record, so it reads the block's own fields and
+ * none of one pair's.
  */
 function sourceBlocksOf(records: Iterable<Feature>) {
   const byKey = new Map<string, Feature>()
@@ -583,21 +583,24 @@ export function buildRibbonGeometry({
 }): RibbonGeometry {
   const { lanes, glyphHeight } = stack
   const sourceBlocks = sourceBlocksOf(ribbonRecords(lanes, laneLinks))
-  const paintOf = ribbonPaintOf({
-    records: (function* () {
-      yield* ribbonRecords(lanes, laneLinks)
-      yield* sourceBlocks.values()
-    })(),
+  const painting = {
     field: ribbonColorField,
     ribbonColor,
     attributeRanges,
     opacity,
-    filter,
     paint,
+  }
+  const paintOf = ribbonPaintOf({
+    ...painting,
+    records: ribbonRecords(lanes, laneLinks),
+    filter,
   })
+  // a block draws where one of its pairs passes the filter, so it runs none
+  let paintBlockOf: ReturnType<typeof ribbonPaintOf> | undefined
   const mismatch = mismatchColor(ribbonColorField)
   const cells = new Map<string, MultiWayCell>()
   const layers: RibbonLayer[] = []
+  const underlayCells = new Map<string, MultiWayCell>()
   const underlayLayers: RibbonLayer[] = []
   const targets: RibbonTarget[] = []
   const groupTarget = new Map<string, number>()
@@ -687,7 +690,12 @@ export function buildRibbonGeometry({
           if (block && blockMate && !underlaid.has(block)) {
             underlaid.add(block)
             const reversed = block.get('strand') === -1
-            const fill = paintOf(block, reversed ? -1 : 1)
+            paintBlockOf ??= ribbonPaintOf({
+              ...painting,
+              records: new Set(sourceBlocks.values()),
+              filter: [],
+            })
+            const fill = paintBlockOf(block, reversed ? -1 : 1)
             if (fill !== undefined) {
               const own = {
                 refName: block.get('refName'),
@@ -827,7 +835,7 @@ export function buildRibbonGeometry({
       }
     }
     if (underlay.count > 0) {
-      cells.set(underlayKey(row), underlay.build())
+      underlayCells.set(underlayKey(row), underlay.build())
       underlayLayers.push({
         kind: 'ribbons',
         key: underlayKey(row),
@@ -867,7 +875,7 @@ export function buildRibbonGeometry({
     }
   }
   return {
-    cells,
+    cells: new Map([...underlayCells, ...cells]),
     layers: [...underlayLayers, ...layers],
     targets,
     groupTarget,

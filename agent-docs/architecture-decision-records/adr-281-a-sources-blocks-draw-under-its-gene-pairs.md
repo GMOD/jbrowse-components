@@ -59,13 +59,15 @@ draw, measured on 2026-11-21 against the hosted grape and peach files
   least one of the block's pairs draws.
 - **A band is a record of its own**: one feature per block, spanning the block
   on the anchor's side with its mate on the lane's, `strand` its direction,
-  holding `block` and `blockSpan`. The ribbons' color function and filter read
-  that record, so Color by block colors the bands, a `blockSpan` filter drops
-  them with their pairs, and a field only the pairs hold reads as missing on
-  the band, where painting from one pair took whichever pair drew first. A
-  strand filter tests the block's direction, so a block running against the
-  anchor draws no band under a forward-only filter though some of its pairs
-  pass.
+  holding `block` and `blockSpan`. The ribbons' color function reads that
+  record, so Color by block colors the bands, and a field only the pairs hold
+  reads as missing on the band, where painting from one pair took whichever
+  pair drew first.
+- **The filter reads the pairs, never the band.** A band draws where one of
+  its pairs passes, so a `blockSpan` filter drops a band with its pairs, and a
+  filter on a field only the pairs hold (`syntenicDepth`, a score) keeps the
+  band of every block it leaves a pair in. Filtering the band's own record
+  dropped every band under such a filter, the block having no value to test.
 - **The record is keyed as a lane-pair link**, so hover, click, the outline
   and `multiwayTables` read it as they read any ribbon, and an R rebuild of the
   figure draws the bands.
