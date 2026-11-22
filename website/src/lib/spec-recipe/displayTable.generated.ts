@@ -197,7 +197,8 @@ export const displayTable: DisplayTable = {
     "PlinkLDTabixAdapter": [],
     "StarFusionAdapter": [],
     "MultiWiggleAdapter": [
-      "hasResolution"
+      "hasResolution",
+      "readsReference"
     ],
     "BigWigAdapter": [
       "hasResolution"

@@ -1,6 +1,6 @@
 ---
 name: tables-callers-with-two-alias-tables-over-one-fasta
-description: Two @jbrowse/tables-only bugs when one FASTA config is read under different alias tables, which the app never does — CRAM decoding against another request's spelling, and render-side reference reads skipping CRAM's spelling check. Read if a tables user reports a CRAM decoding wrong or missing a contig.
+description: Two @jbrowse/tables-only bugs when one FASTA config is read under different alias tables, which the app never does — CRAM decoding against another request's spelling, and render-side reference reads skipping CRAM's spelling check. Read if a tables user reports a CRAM decoding wrong.
 ---
 
 # Tables callers with two alias tables over one FASTA

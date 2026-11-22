@@ -2034,7 +2034,9 @@ keyed on it as well as on its config, so one config shown on two genomes is
 two instances, each reading the reference of its genome, and an instance
 never changes reference for its life. Every other adapter keys on its config
 alone: a synteny adapter is fetched from each of its assemblies and reads no
-reference.
+reference. A sub-adapter is built with the reference its parent was built
+with, so a wrapper whose members can be any type (`MultiWiggleAdapter`)
+declares this too, or a reference-reading member gets none.
 
 ```ts
 import { READS_REFERENCE } from '@jbrowse/core/data_adapters/dataAdapterCache'
