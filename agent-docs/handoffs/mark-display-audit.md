@@ -26,9 +26,10 @@ it through the code.
   - an unfused interval `bin`;
   - a `bin` in the display's shared steps with its `aggregate` in a mark's
     list (`lastBinEdges(sharedSteps)`, `markRequest.ts`), which never fuses;
-  - a fused pair followed by a step that reads across rows, a `window` or an
-    `aggregate`, in its list, the facet's or a layer's (`clipThrough`,
-    `featureTransforms.ts`).
+  - a fused pair in the display's shared steps or ahead of a facet split,
+    which never clips so a click's one-layer rerun matches the draw;
+  - a fused pair in a layer's own steps followed by any step `isRowwise`
+    (`stepOutputs.ts`) says is not row-wise, or a pair right after `cells`.
 
 ## Traced, not fixed: hover
 
