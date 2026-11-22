@@ -1,6 +1,6 @@
 ---
 name: a-multiway-track-draws-another-synteny-track-as-a-ribbon-layer
-description: MultiWaySyntenyDisplay reads one synteny source, where a LinearSyntenyView level overlays several. A `ribbonLayers` entry would draw another track's ribbons into its lanes, MCScan's chained `.anchors.simple` first. Read before overlaying sources on the multiway display or chaining its ribbons.
+description: MultiWaySyntenyDisplay reads one synteny source, where a LinearSyntenyView level overlays several. A `ribbonLayers` entry would draw another track's ribbons into its lanes, for a source that states no blocks of its own but has a chained track beside it. Read before overlaying sources on the multiway display or chaining its ribbons.
 ---
 
 # A multiway track draws another synteny track as a ribbon layer
@@ -12,6 +12,12 @@ when drawn from MCScan's `.anchors.simple` (one record per collinear block),
 and as hundreds of crossing hairlines from `.anchors` (one per gene pair).
 Colin asked whether the display should overlay synteny tracks the way a
 LinearSyntenyView level does.
+
+MCScan no longer needs it: an `.anchors` pair states its block, and the display
+draws each block under its gene pairs
+([ADR-281](../../architecture-decision-records/adr-281-a-sources-blocks-draw-under-its-gene-pairs.md)).
+What is left is a source that states no blocks and has a chained track beside
+it, such as a PAF with a block file another tool wrote.
 
 ## Why a plain overlay does not fit
 
@@ -32,7 +38,7 @@ through each lane's frame:
 ```js
 {
   type: 'MultiWaySyntenyDisplay',
-  ribbonLayers: [{ track: 'grape_peach_anchors_simple' }],
+  ribbonLayers: [{ track: 'chained_blocks' }],
 }
 ```
 

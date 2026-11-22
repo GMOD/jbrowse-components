@@ -187,7 +187,11 @@ same direction). Most ribbons are individually thin and
 collectively collinear, and one band per run would cut both the clutter and the
 svg node count. It is parked because it changes what a ribbon IS: hover reads
 one ortholog group today, and a run either becomes the hover unit or has to
-carry its members. Drawing blocks only below a zoom threshold was declined
+carry its members. A source that states its own blocks, an MCScan `.anchors`
+file, draws them under its ribbons already
+([ADR-281](../../architecture-decision-records/adr-281-a-sources-blocks-draw-under-its-gene-pairs.md)),
+with the gene ribbons still the hover unit; this is for the sources that state
+none. Drawing blocks only below a zoom threshold was declined
 on 2026-09-21: ribbons switching between blocks and genes at the threshold read
 as flicker now that lane moves animate. Lane ordering could also use it — seed with the densest lane,
 then append whichever unused lane shares the most collinear runs with the last

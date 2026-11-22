@@ -40,6 +40,15 @@ export interface BlockRow {
   // so a colorBy mode or the detail panel can read them; the format itself is
   // only gene ids, so a table with none is the ordinary case.
   attrs?: Record<string, number | string> | undefined
+  blockExtent?: BlockExtent
+}
+
+// Where a pair's `###` block reaches on each side, and the way it runs: -1
+// where gene order on one side falls as it rises on the other.
+interface BlockExtent {
+  a: readonly [number, number]
+  b: readonly [number, number]
+  strand: number
 }
 
 // How many distinct genes each gene links to over `links` (gene name pairs
@@ -151,6 +160,31 @@ function rankSpan(ranks: Map<string, number>, names: string[]) {
   return max - min + 1
 }
 
+function reach(genes: BareFeature[]) {
+  let start = Number.POSITIVE_INFINITY
+  let end = Number.NEGATIVE_INFINITY
+  for (const gene of genes) {
+    start = Math.min(start, gene.start)
+    end = Math.max(end, gene.end)
+  }
+  return [start, end] as const
+}
+
+function runsAgainst(
+  ranksA: Map<string, number>,
+  ranksB: Map<string, number>,
+  rows: BlockRow[],
+) {
+  const pairs = rows.flatMap(row => {
+    const a = ranksA.get(row.a.name)
+    const b = ranksB.get(row.b.name)
+    return a === undefined || b === undefined ? [] : [[a, b] as const]
+  })
+  const meanA = pairs.reduce((sum, [a]) => sum + a, 0) / pairs.length
+  const meanB = pairs.reduce((sum, [, b]) => sum + b, 0) / pairs.length
+  return pairs.reduce((sum, [a, b]) => sum + (a - meanA) * (b - meanB), 0) < 0
+}
+
 // `block` is text, which paints a color per value; `blockSpan` is the measure
 // jcvi's `screen --minspan` keeps a block by.
 function withBlockFields(
@@ -171,9 +205,15 @@ function withBlockFields(
         rows.map(row => row.b.name),
       ),
     )
+    const blockExtent = {
+      a: reach(rows.map(row => row.a)),
+      b: reach(rows.map(row => row.b)),
+      strand: runsAgainst(ranksA, ranksB, rows) ? -1 : 1,
+    }
     return rows.map(row => ({
       ...row,
       attrs: { ...row.attrs, block: `block${index}`, blockSpan },
+      blockExtent,
     }))
   })
 }
@@ -320,8 +360,21 @@ export function makeBlockFeatures(
     const first = side === 0
     const assemblyName = assemblyNames[side]!
     const mateAssemblyName = assemblyNames[first ? 1 : 0]!
-    for (const { a, b, rowNum, strand, score, syntenicDepth, attrs } of rows) {
+    for (const {
+      a,
+      b,
+      rowNum,
+      strand,
+      score,
+      syntenicDepth,
+      attrs,
+      blockExtent,
+    } of rows) {
       const f1 = first ? a : b
+      const [blockStart, blockEnd] =
+        (first ? blockExtent?.a : blockExtent?.b) ?? []
+      const [blockMateStart, blockMateEnd] =
+        (first ? blockExtent?.b : blockExtent?.a) ?? []
       if (doesIntersect2(region.start, region.end, f1.start, f1.end)) {
         out.push(
           new SimpleFeature({
@@ -336,6 +389,15 @@ export function makeBlockFeatures(
             assemblyName,
             ...(score === undefined ? undefined : { score }),
             ...(syntenicDepth === undefined ? undefined : { syntenicDepth }),
+            ...(blockExtent === undefined
+              ? undefined
+              : {
+                  blockStart,
+                  blockEnd,
+                  blockMateStart,
+                  blockMateEnd,
+                  blockStrand: blockExtent.strand,
+                }),
             mate: {
               ...(first ? b : a),
               assemblyName: mateAssemblyName,

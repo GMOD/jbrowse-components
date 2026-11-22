@@ -22,7 +22,9 @@ export function normalizeSnapshot(snap: Record<string, unknown>) {
  * configure: `block`, the collinear block its `###` section puts it in
  * (`block0` is the file's first), and `blockSpan`, how many genes that block
  * spans on its shorter side, the measure `jcvi.compara.synteny screen
- * --minspan` keeps a block by. A file with no `###` lines has neither.
+ * --minspan` keeps a block by. A file with no `###` lines has neither. The
+ * multi-way synteny display draws each block as a pale band behind its gene
+ * pairs.
  *
  * #gotcha The anchors file has no coordinates: the adapter places a gene by
  * matching its id against column 4 of a BED, byte for byte. A row naming a

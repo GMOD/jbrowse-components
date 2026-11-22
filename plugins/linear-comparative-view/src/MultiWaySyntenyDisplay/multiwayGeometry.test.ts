@@ -42,6 +42,7 @@ import {
   buildTickGeometry,
   glyphHitAt,
   ribbonEnds,
+  ribbonFeatureId,
   ribbonSides,
   ribbonTooltip,
 } from './multiwayGeometry.ts'
@@ -135,9 +136,11 @@ function stack({
   splitStrands = false,
   geneLabelPx = 0,
   layerPx = 0,
+  anchorRow = 0,
 }: {
   features: Feature[]
   assemblyNames?: string[]
+  anchorRow?: number
   peach?: RowFrame
   cacao?: RowFrame
   contigOf?: BuildLanesOpts['contigOf']
@@ -167,6 +170,7 @@ function stack({
     },
     anchorBpPerPx: 1,
     anchorRegionSpans: [axisSpanOf('chr1', 0, 1000)!],
+    anchorRow,
     contigOf,
     refNameAliasOf: () => undefined,
     width: WIDTH,
@@ -1856,4 +1860,184 @@ test("a ribbon with no value under a field takes every display's no-value grey, 
     paintedRibbonColor({ field: 'group', scale: { invalid: 'red' } }).value,
   ).toBe('red')
   expect(paintedRibbonColor({ value: 'blue' }).value).toBe('blue')
+})
+
+// An MCScan `.anchors` pair states the block its source chained it into: the
+// block's reach on each side and the way it runs.
+describe("a source's block under the pairs it chains", () => {
+  const forward = {
+    block: 'block0',
+    blockSpan: 40,
+    blockStart: 100,
+    blockEnd: 400,
+    blockMateStart: 1100,
+    blockMateEnd: 1400,
+    blockStrand: 1,
+  }
+  const against = {
+    block: 'block1',
+    blockSpan: 10,
+    blockStart: 500,
+    blockEnd: 700,
+    blockMateStart: 1500,
+    blockMateEnd: 1700,
+    blockStrand: -1,
+  }
+  const pairIn = (
+    name: string,
+    start: number,
+    end: number,
+    block: Record<string, unknown>,
+  ) =>
+    new SimpleFeature({ ...pairFeature(name, start, end).toJSON(), ...block })
+  const blocked = () =>
+    stack({
+      features: [
+        pairIn('g1', 100, 200, forward),
+        pairIn('g2', 300, 400, forward),
+        pairIn('g3', 500, 600, against),
+        pairFeature('g4', 800, 900),
+      ],
+    })
+  const geometryOf = (filter: FieldPredicate[] = []) =>
+    buildRibbonGeometry({
+      stack: blocked(),
+      laneLinks: undefined,
+      ribbonColor: 'rgb(130,130,130)',
+      filter,
+      drawCurves: false,
+    })
+
+  test('each block draws once, behind its gutter and at half its pairs’ alpha', () => {
+    const [grape, peach] = blocked().lanes
+    const { cells, layers } = geometryOf()
+    expect(layers.map(layer => layer.key)).toEqual(['underlay:0', 'ribbons:0'])
+    const under = ribbonData(cells, 'underlay:0')
+    const pairs = ribbonData(cells, 'ribbons:0')
+    expect(pairs.instanceCount).toBe(4)
+    expect(under.instanceCount).toBe(2)
+    expect([under.bp1[0], under.bp2[0]]).toEqual(
+      grape!.spanOf('chr1', 100, 400),
+    )
+    expect([under.bp4[0], under.bp3[0]]).toEqual(
+      peach!.spanOf('Pp1', 1100, 1400),
+    )
+    expect([under.bp1[1], under.bp2[1]]).toEqual(
+      grape!.spanOf('chr1', 500, 700),
+    )
+    expect([under.bp4[1], under.bp3[1]]).toEqual(
+      peach!.spanOf('Pp1', 1700, 1500),
+    )
+    expect(under.bp4[1]).toBeGreaterThan(under.bp3[1]!)
+    expect(abgrAlpha(under.colors[0]!)).toBe(
+      Math.round(abgrAlpha(pairs.colors[0]!) * 0.5),
+    )
+  })
+
+  test('a block whose pairs the filter drops draws nothing', () => {
+    const { cells } = geometryOf([{ field: 'blockSpan', gte: 30 }])
+    expect(ribbonData(cells, 'underlay:0').instanceCount).toBe(1)
+    expect(ribbonData(cells, 'ribbons:0').instanceCount).toBe(2)
+  })
+
+  test('pairs naming no block draw no layer under them', () => {
+    const { layers } = buildRibbonGeometry({
+      stack: stack({ features: [pairFeature('g1', 100, 200)] }),
+      laneLinks: undefined,
+      ribbonColor: 'grey',
+      drawCurves: false,
+    })
+    expect(layers.map(layer => layer.key)).toEqual(['ribbons:0'])
+  })
+
+  test('a hovered block names its reach on both lanes, its direction and its span', () => {
+    const [grape, peach] = blocked().lanes
+    const geometry = geometryOf()
+    const under = ribbonData(geometry.cells, 'underlay:0')
+    const target = geometry.targets[under.instanceFeatureIdx[1]!]!
+    expect(ribbonFeatureId(geometry, target)).toBe(
+      under.instanceFeatureIdx[1]! + 1,
+    )
+    const ranges = {
+      block: { labels: ['block0', 'block1'], colors: {} },
+      blockSpan: { min: 10, max: 40 },
+    }
+    expect(
+      ribbonTooltip(
+        target.label,
+        ribbonSides(grape!, peach!, target, target.feature),
+        target.feature,
+        ranges,
+      ).split('\n'),
+    ).toEqual([
+      'grape chr1:501-700 (200bp)',
+      'peach Pp1:1,501-1,700 (200bp)',
+      'Inverted',
+      'block: block1',
+      'blockSpan: 10',
+    ])
+  })
+
+  // a block has no `ks` of its own, so it takes the color a missing value
+  // paints, whichever of its pairs the lane places first
+  test('a color field the pairs each hold paints the block none of their colors', () => {
+    const bandColor = (ks: number[]) => {
+      const { cells } = buildRibbonGeometry({
+        stack: stack({
+          features: [
+            pairIn('g1', 100, 200, { ...forward, ks: ks[0] }),
+            pairIn('g2', 300, 400, { ...forward, ks: ks[1] }),
+          ],
+        }),
+        laneLinks: undefined,
+        ribbonColor: 'rgb(130,130,130)',
+        ribbonColorField: 'ks',
+        attributeRanges: { ks: { min: 0, max: 1 } },
+        drawCurves: false,
+      })
+      const opaque = (packed: number | undefined) =>
+        withAbgrAlpha(packed ?? 0, 255)
+      const pairs = ribbonData(cells, 'ribbons:0')
+      const band = opaque(ribbonData(cells, 'underlay:0').colors[0])
+      expect(opaque(pairs.colors[0])).not.toBe(opaque(pairs.colors[1]))
+      expect([opaque(pairs.colors[0]), opaque(pairs.colors[1])]).not.toContain(
+        band,
+      )
+      return band
+    }
+    expect(bandColor([0.1, 0.9])).toBe(bandColor([0.9, 0.1]))
+  })
+
+  // a copy lane stacked over the anchor: the block's mate side is the upper
+  // lane, and the record a click opens still faces the anchor
+  test('a lane above the anchor draws the block mate side up', () => {
+    const s = stack({
+      features: [pairIn('g3', 500, 600, against)],
+      assemblyNames: ['peach', 'grape'],
+      anchorRow: 1,
+    })
+    const [peach, grape] = s.lanes
+    const geometry = buildRibbonGeometry({
+      stack: s,
+      laneLinks: undefined,
+      ribbonColor: 'grey',
+      drawCurves: false,
+      rowsVsAnchor: true,
+    })
+    const under = ribbonData(geometry.cells, 'underlay:0')
+    expect([under.bp1[0], under.bp2[0]]).toEqual(
+      peach!.spanOf('Pp1', 1500, 1700),
+    )
+    expect([under.bp4[0], under.bp3[0]]).toEqual(
+      grape!.spanOf('chr1', 700, 500),
+    )
+    const target = geometry.targets[under.instanceFeatureIdx[0]!]!
+    expect(target.feature.get('assemblyName')).toBe('grape')
+    expect(
+      ribbonEnds(ribbonSides(peach!, grape!, target, target.feature)),
+    ).toMatchObject([
+      { assemblyName: 'peach', refName: 'Pp1', start: 1500, end: 1700 },
+      { assemblyName: 'grape', refName: 'chr1', start: 500, end: 700 },
+    ])
+  })
 })

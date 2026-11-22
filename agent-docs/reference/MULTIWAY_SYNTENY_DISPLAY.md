@@ -39,6 +39,16 @@ every cost is linear in lanes.
   (`anchorRuleY`), and each lane label opens with a `vs <anchor>` badge. A source
   answering lane pairs draws neighbour against neighbour, and a pair it has not
   answered draws nothing.
+- **A source's own blocks draw under its pairs** (`sourceBlocksOf`,
+  `underlayKey` in `multiwayGeometry.ts`,
+  [ADR-281](../architecture-decision-records/adr-281-a-sources-blocks-draw-under-its-gene-pairs.md)).
+  An MCScan `.anchors` pair states its block's reach on both sides and its
+  direction, and each gutter beside the anchor draws one ribbon per block in a
+  layer before every gene ribbon, at half their alpha. The band is one
+  anchor-facing record per block, painted and filtered by its own `strand`,
+  `block` and `blockSpan` and never by one pair's fields, and keyed as a
+  lane-pair link, so hover, click and `multiwayTables` read it as any ribbon. Zoomed inside a block the band fills
+  the gutter, which Colin accepted over hiding it.
 - **Copy lanes read against the anchor alone** (`rows.field: 'refName'`,
   `copyLane.ts`), whatever the source: a pairwise `.anchors` file states
   anchor–copy pairs only, and grouping by anchor gene joined two copies

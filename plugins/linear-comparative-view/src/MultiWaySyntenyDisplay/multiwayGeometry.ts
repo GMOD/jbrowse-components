@@ -8,7 +8,11 @@ import {
   CIGAR_X,
   visitCigarRenderedSegments,
 } from '@jbrowse/cigar-utils'
-import { assembleLocStringRaw, getBpRangeDisplayStr } from '@jbrowse/core/util'
+import {
+  SimpleFeature,
+  assembleLocStringRaw,
+  getBpRangeDisplayStr,
+} from '@jbrowse/core/util'
 import { cssColorToABGR, withAbgrAlpha } from '@jbrowse/core/util/colorBits'
 import { RECT_FLAG_INSET, getFeatureName } from '@jbrowse/plugin-features'
 import {
@@ -16,6 +20,7 @@ import {
   colorSchemes,
   isAttributeLabels,
   parseAttributeValue,
+  readAttribute,
   readChannelValue,
   syntenyBlockLines,
 } from '@jbrowse/synteny-core'
@@ -67,6 +72,12 @@ import type {
 const BOX_ALPHA = 64
 // a bridge crosses the skipped lane's genes, so it draws under adjacent ribbons
 const BRIDGE_ALPHA = 0.4
+// a source's block, under the ribbons of the pairs it chains
+const UNDERLAY_ALPHA = 0.5
+
+function underlayKey(row: number) {
+  return `underlay:${row}`
+}
 
 export function ribbonsKey(row: number, toRow = row + 1) {
   return toRow === row + 1 ? `ribbons:${row}` : `ribbons:${row}>${toRow}`
@@ -326,6 +337,57 @@ export function ribbonFeatureId(
   return idx === undefined ? 0 : idx + 1
 }
 
+/**
+ * The collinear blocks the pairs' source chains them into, as an MCScan
+ * `.anchors` pair states its own: one record per block, spanning the block on
+ * the pairs' side with its mate on the other and `strand` -1 where the block
+ * runs against that side, and each pair's way to it. A block is painted,
+ * filtered, hovered and clicked as this record, so it reads the block's own
+ * fields and none of one pair's.
+ */
+function sourceBlocksOf(records: Iterable<Feature>) {
+  const byKey = new Map<string, Feature>()
+  const ofPair = new Map<Feature, Feature>()
+  for (const record of records) {
+    const name = record.get('block')
+    const mate = getMate(record)
+    const start = readAttribute(record, 'blockStart')
+    const end = readAttribute(record, 'blockEnd')
+    const mateStart = readAttribute(record, 'blockMateStart')
+    const mateEnd = readAttribute(record, 'blockMateEnd')
+    if (
+      typeof name === 'string' &&
+      mate &&
+      [start, end, mateStart, mateEnd].every(Number.isFinite)
+    ) {
+      const refName = record.get('refName')
+      const key = `block:${mate.assemblyName}:${mate.refName}:${refName}:${name}`
+      let block = byKey.get(key)
+      if (!block) {
+        block = new SimpleFeature({
+          uniqueId: key,
+          assemblyName: record.get('assemblyName'),
+          refName,
+          start,
+          end,
+          strand: record.get('blockStrand') === -1 ? -1 : 1,
+          block: name,
+          blockSpan: record.get('blockSpan'),
+          mate: {
+            assemblyName: mate.assemblyName,
+            refName: mate.refName,
+            start: mateStart,
+            end: mateEnd,
+          },
+        })
+        byKey.set(key, block)
+      }
+      ofPair.set(record, block)
+    }
+  }
+  return ofPair
+}
+
 interface LinkMate {
   refName: string
   start: number
@@ -520,8 +582,12 @@ export function buildRibbonGeometry({
   rowsVsAnchor?: boolean
 }): RibbonGeometry {
   const { lanes, glyphHeight } = stack
+  const sourceBlocks = sourceBlocksOf(ribbonRecords(lanes, laneLinks))
   const paintOf = ribbonPaintOf({
-    records: ribbonRecords(lanes, laneLinks),
+    records: (function* () {
+      yield* ribbonRecords(lanes, laneLinks)
+      yield* sourceBlocks.values()
+    })(),
     field: ribbonColorField,
     ribbonColor,
     attributeRanges,
@@ -532,6 +598,7 @@ export function buildRibbonGeometry({
   const mismatch = mismatchColor(ribbonColorField)
   const cells = new Map<string, MultiWayCell>()
   const layers: RibbonLayer[] = []
+  const underlayLayers: RibbonLayer[] = []
   const targets: RibbonTarget[] = []
   const groupTarget = new Map<string, number>()
   const linkTarget = new Map<string, number>()
@@ -576,6 +643,8 @@ export function buildRibbonGeometry({
     const y2 = aboveAnchor ? anchorRuleAboveY(pair.lower) : pair.y2
     const ribbons = new RibbonBuilder()
     const bridges = new Map<number, RibbonBuilder>()
+    const underlay = new RibbonBuilder()
+    const underlaid = new Set<Feature>()
     for (const [
       key,
       { group, spans, orientations, intervals, features },
@@ -608,6 +677,54 @@ export function buildRibbonGeometry({
           const painted = statedTogether(intervals[i], far.intervals[j])
             ? paintOf(record, orientations[i]! * far.orientations[j]!)
             : undefined
+          const block =
+            painted !== undefined &&
+            !bridged &&
+            (upper.isAnchor || farLane.isAnchor)
+              ? sourceBlocks.get(record)
+              : undefined
+          const blockMate = block && getMate(block)
+          if (block && blockMate && !underlaid.has(block)) {
+            underlaid.add(block)
+            const reversed = block.get('strand') === -1
+            const fill = paintOf(block, reversed ? -1 : 1)
+            if (fill !== undefined) {
+              const own = {
+                refName: block.get('refName'),
+                start: block.get('start'),
+                end: block.get('end'),
+              }
+              const [top, bottom] = upper.isAnchor
+                ? [own, blockMate]
+                : [blockMate, own]
+              const idx = targets.length
+              linkTarget.set(block.id(), idx)
+              targets.push({
+                feature: block,
+                linkId: block.id(),
+                get label() {
+                  return [
+                    locOn(upper, top.refName, top.start, top.end),
+                    locOn(farLane, bottom.refName, bottom.start, bottom.end),
+                  ].join('\n')
+                },
+              })
+              addAcrossHoles(
+                underlay,
+                upper,
+                top.refName,
+                top.start,
+                top.end,
+                farLane,
+                bottom.refName,
+                reversed ? bottom.end : bottom.start,
+                reversed ? bottom.start : bottom.end,
+                KIND_BASE,
+                idx,
+                withAbgrAlpha(fill, Math.round((fill >>> 24) * UNDERLAY_ALPHA)),
+              )
+            }
+          }
           if (painted !== undefined) {
             const target = targetOfGroup(key, group)
             const fill = bridged
@@ -709,6 +826,17 @@ export function buildRibbonGeometry({
         }
       }
     }
+    if (underlay.count > 0) {
+      cells.set(underlayKey(row), underlay.build())
+      underlayLayers.push({
+        kind: 'ribbons',
+        key: underlayKey(row),
+        yTop: y1,
+        height: y2 - y1,
+        curves: drawCurves,
+        rows: [belowAnchor ? anchorRow : row, lowerRow],
+      })
+    }
     const key = ribbonsKey(row)
     cells.set(key, ribbons.build())
     if (ribbons.records.size > 0) {
@@ -738,7 +866,14 @@ export function buildRibbonGeometry({
       })
     }
   }
-  return { cells, layers, targets, groupTarget, linkTarget, records }
+  return {
+    cells,
+    layers: [...underlayLayers, ...layers],
+    targets,
+    groupTarget,
+    linkTarget,
+    records,
+  }
 }
 
 export interface TickGeometry {
@@ -1264,7 +1399,8 @@ export interface RibbonSide {
 
 /**
  * Where a ribbon between `upper` and `lower` sits on each lane's genome: a
- * lane-pair record and its mate, or the group's placement on each lane. A
+ * lane-pair record and its mate, the record's own side on the anchor where
+ * the gutter has it, or the group's placement on each lane. A
  * lane placing the group more than once names the placement only where the
  * ribbon's own record picks it.
  */
@@ -1276,23 +1412,22 @@ export function ribbonSides(
 ): RibbonSide[] {
   if (target.linkId !== undefined) {
     const mate = getMate(record)
+    const own = {
+      refName: record.get('refName'),
+      start: record.get('start'),
+      end: record.get('end'),
+    }
+    const orientation = record.get('strand') === -1 ? -1 : 1
     return mate
-      ? [
-          {
-            lane: upper,
-            placement: {
-              refName: record.get('refName'),
-              start: record.get('start'),
-              end: record.get('end'),
-            },
-            orientation: 1,
-          },
-          {
-            lane: lower,
-            placement: mate,
-            orientation: record.get('strand') === -1 ? -1 : 1,
-          },
-        ]
+      ? lower.isAnchor
+        ? [
+            { lane: upper, placement: mate, orientation },
+            { lane: lower, placement: own, orientation: 1 },
+          ]
+        : [
+            { lane: upper, placement: own, orientation: 1 },
+            { lane: lower, placement: mate, orientation },
+          ]
       : []
   }
   const key = target.groupKey

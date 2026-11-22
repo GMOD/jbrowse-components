@@ -329,6 +329,47 @@ test('### lines move no ids, and a file without them carries no block', async ()
   ])
 })
 
+// a1..a3 against b4..b1: gene order falls on peach as it rises on grape, and
+// neither side's reach starts on the block's first row
+test("each pair has its block's reach on both sides and its direction", async () => {
+  const adapter = inlineAdapter({
+    ...sixAgainstFour,
+    anchors: [
+      '###',
+      'a2\tb2\t10',
+      'a1\tb4\t10',
+      'a3\tb1\t10',
+      '###',
+      'a5\tb3\t10',
+    ],
+  })
+  const reach = (f: Awaited<ReturnType<typeof gets>>[number]) => [
+    f.get('blockStart'),
+    f.get('blockEnd'),
+    f.get('blockMateStart'),
+    f.get('blockMateEnd'),
+    f.get('blockStrand'),
+  ]
+  const grape = await gets(adapter)
+  expect(grape.map(reach)).toEqual([
+    [100, 350, 100, 450, -1],
+    [100, 350, 100, 450, -1],
+    [100, 350, 100, 450, -1],
+    [500, 550, 300, 350, 1],
+  ])
+  const peach = await firstValueFrom(
+    adapter
+      .getFeatures({
+        refName: 'ctgA',
+        start: 0,
+        end: 10000,
+        assemblyName: 'peach',
+      })
+      .pipe(toArray()),
+  )
+  expect(reach(peach[0]!)).toEqual([100, 450, 100, 350, -1])
+})
+
 // The 17 blocks touching peach chrG7 (NC_034015.1) 17-20 Mb in
 // jbrowse.org/demos/grape_peach_cacao, each BED cut to the genes inside those
 // blocks. The `.simple` rows are jcvi's own `screen --minspan=30` of them.

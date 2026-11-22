@@ -289,7 +289,9 @@ turn on the .anchors track:
 <Figure caption="A 370 kb stretch of peach chrG7 between an older grape copy on chr9 (above) and its grape ortholog on chr11 (below), one lane per copy, each gutter joining peach genes to one copy's." src="/img/mcscan_synteny/gamma_copies.png" />
 
 The older copy shares far fewer genes with the peach stretch, and the gene
-tracks in each lane show the genes a copy kept and lost.
+tracks in each lane show the genes a copy kept and lost. The pale tint behind
+the ribbons is the MCScan block this window sits inside, which the display draws
+as a band under its gene pairs.
 
 ## Coloring gene pairs by block {#blocks}
 
@@ -301,12 +303,13 @@ where several blocks join peach to grape chr8:
 
 - In **Lanes → Choose lanes...**, untick every grape chromosome but chr8.
 - Pick **Color by → Color by value → block**, under **Ribbons** in the track
-  menu. Each block takes one color, and hovering a ribbon names its block.
+  menu. Each block takes one color, its band included, and hovering a ribbon or
+  a band names the block.
 
-<Figure src="/img/mcscan_synteny/blocks.png" links="By strand=mcscan_synteny/blocks_by_strand,By block=mcscan_synteny/blocks_by_block" caption="Peach chrG7 against grape chr8 in the .anchors track. Top: gene pairs colored by strand. Bottom: the same pairs colored by block." />
+<Figure src="/img/mcscan_synteny/blocks.png" links="By strand=mcscan_synteny/blocks_by_strand,By block=mcscan_synteny/blocks_by_block" caption="Peach chrG7 against grape chr8 in the .anchors track, each block a pale band under its gene pairs. Top: colored by strand. Bottom: colored by block." />
 
 A block holds gene pairs on both strands, so the strand colors mix inside one
-block.
+block, whose band takes the color of the block's own direction.
 
 `blockSpan` is the size `screen --minspan=30` tested when it wrote
 `.anchors.simple`, so a `filter` on it leaves the gene pairs of the blocks that
