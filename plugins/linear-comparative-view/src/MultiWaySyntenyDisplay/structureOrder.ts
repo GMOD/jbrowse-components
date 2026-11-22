@@ -130,16 +130,20 @@ export function laneProfiles(
           }
         })
         .sort((a, b) => a.lane.start - b.lane.start)
-      forEachLaneGap(sorted, (left, _right, laneGap, anchorGap) => {
-        const excess =
-          anchorGap === undefined ? 0 : laneGap - Math.max(0, anchorGap)
-        if (excess > 0) {
-          const at =
-            left.lane.orientation < 0 ? left.anchor.start : left.anchor.end
-          profile[2 * BINS + axis.binOf(left.anchor.refName, at)]! +=
-            excess / axis.binBp
-        }
-      })
+      for (const orientation of [1, -1]) {
+        forEachLaneGap(
+          sorted.filter(p => p.lane.orientation === orientation),
+          (left, _right, laneGap, anchorGap) => {
+            const excess =
+              anchorGap === undefined ? 0 : laneGap - Math.max(0, anchorGap)
+            if (excess > 0) {
+              const at = orientation < 0 ? left.anchor.start : left.anchor.end
+              profile[2 * BINS + axis.binOf(left.anchor.refName, at)]! +=
+                excess / axis.binBp
+            }
+          },
+        )
+      }
     }
   }
   for (const profile of profiles.values()) {

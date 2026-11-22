@@ -94,6 +94,40 @@ test('an insertion that split its record weighs what one inside a record does', 
   expect([...split]).toEqual([...whole])
 })
 
+test('a reversed piece inside an insertion leaves it weighing what it does without one', () => {
+  const piece = (
+    id: string,
+    start: number,
+    end: number,
+    mate: [number, number],
+    strand = 1,
+  ) =>
+    new SimpleFeature({
+      uniqueId: id,
+      refName: 'chr1',
+      start,
+      end,
+      strand,
+      mate: {
+        assemblyName: 'lane',
+        refName: 'c',
+        start: mate[0],
+        end: mate[1],
+      },
+    })
+  const insertionOf = (features: SimpleFeature[]) => {
+    const profile = laneProfiles(features, new Map()).get('lane')!
+    return [...profile.slice((2 * profile.length) / 3)]
+  }
+  const flanks = [
+    piece('l', 0, 6000, [0, 6000]),
+    piece('r', 6000, 12_000, [26_000, 32_000]),
+  ]
+  expect(
+    insertionOf([...flanks, piece('copy', 0, 2000, [10_000, 12_000], -1)]),
+  ).toEqual(insertionOf(flanks))
+})
+
 test('a lane gap the anchor spans alike carries nothing the anchor lacks', () => {
   const piece = (id: string, start: number, end: number) =>
     new SimpleFeature({
