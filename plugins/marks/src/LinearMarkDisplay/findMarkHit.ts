@@ -256,12 +256,15 @@ export function findMarkHit(
   const x = layer.x[hit.index]!
   const x2 = layer.x2[hit.index]!
   const { refName } = displayedRegions[regionIndex]!
-  const farRefName = farRefNameOf(layer, hit.index, displayedRegions)
-  const x2RefName = farRefName === refName ? undefined : farRefName
+  const elsewhereOf = (l: StoredLayer, i: number) => {
+    const far = farRefNameOf(l, i, displayedRegions)
+    return far === refName ? undefined : far
+  }
+  const x2RefName = elsewhereOf(layer, hit.index)
   const { start, end } =
     root === undefined || x2RefName !== undefined
       ? { start: x, end: x2 }
-      : featureSpan(hit.region, root)
+      : featureSpan(hit.region, root, (l, i) => elsewhereOf(l, i) !== undefined)
   const lo = Math.min(x, x2)
   const hi = Math.max(x, x2)
   const tooltip = layer.tooltip?.[hit.index]

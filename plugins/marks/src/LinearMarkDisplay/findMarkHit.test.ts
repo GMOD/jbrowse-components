@@ -617,6 +617,38 @@ test('a link to another sequence keeps its two feet under a flatten root', () =>
   expect(hitLocString(hit!)).toBe('ctgA:101 → ctgB:51')
 })
 
+test("a rect sharing a flatten root with a link to another sequence spans its own sequence's feet alone", () => {
+  const rect: StoredLayer = {
+    count: 1,
+    skipped: 0,
+    x: Uint32Array.of(600),
+    x2: Uint32Array.of(700),
+    row: new Uint32Array(1),
+    root: Uint32Array.of(0),
+    color: 0xff0000ff,
+    yMin: Infinity,
+    yMax: -Infinity,
+  }
+  const link = (x2Region: number) =>
+    linkLayer(['ctgB'], {
+      x2: Uint32Array.of(900),
+      x2Region: Uint32Array.of(x2Region),
+      root: Uint32Array.of(0),
+    })
+  const hover = (x2Region: number) =>
+    findMarkHit(
+      650 / STATE.bpPerPx,
+      15,
+      [BLOCK],
+      new Map([[0, { layers: [rect, link(x2Region)] }]]),
+      buildMarkList(entries('rect')),
+      STATE,
+      [{ refName: 'ctgA' }, { refName: 'ctgB' }],
+    )
+  expect(hover(1)).toMatchObject({ root: 0, start: 100, end: 700 })
+  expect(hover(0)).toMatchObject({ root: 0, start: 100, end: 900 })
+})
+
 test("a link's hit carries the raw value its strokeWidth reads", () => {
   const layer = linkLayer(['ctgA'], {
     x2Region: Uint32Array.of(0),

@@ -1,6 +1,6 @@
 import { NO_ROOT } from '@jbrowse/core/util/markEncoding'
 
-import type { MarkRegionData } from './markList.ts'
+import type { MarkRegionData, StoredLayer } from './markList.ts'
 
 export interface FeatureInstance {
   markIndex: number
@@ -40,14 +40,21 @@ export function instancesOfFeature(region: MarkRegionData, root: number) {
   return rootIndex(region).get(root) ?? []
 }
 
-/** The bp those instances cover, from the lowest end to the highest. */
-export function featureSpan(region: MarkRegionData, root: number) {
+/**
+ * The bp those instances cover, from the lowest end to the highest, a far
+ * foot on another sequence left out.
+ */
+export function featureSpan(
+  region: MarkRegionData,
+  root: number,
+  farElsewhere: (layer: StoredLayer, index: number) => boolean,
+) {
   let start = Infinity
   let end = -Infinity
   for (const { markIndex, index } of instancesOfFeature(region, root)) {
     const layer = region.layers[markIndex]!
     const a = layer.x[index]!
-    const b = layer.x2[index]!
+    const b = farElsewhere(layer, index) ? a : layer.x2[index]!
     start = Math.min(start, a, b)
     end = Math.max(end, a, b)
   }
