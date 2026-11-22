@@ -923,7 +923,9 @@ row, the answer the unfaceted encoder gives it.
 
 The split is a counting sort into section order rather than a list per
 section: every step runs once over the ordered rows, keeping section order,
-and one that groups rows groups within a section.
+and one that groups rows groups within a section. A `clip` is the fetched
+region a fused interval bin in a layer's own steps keeps the bins of, as in
+layerTables.
 
 ```ts
 import { facetLayers } from '@jbrowse/core/util/featureTransforms'
@@ -933,6 +935,7 @@ function facetLayers(
   facet: FacetSpec,
   layers: readonly { transform?: readonly TransformStep[]; row?: FieldRef }[],
   jexl?: JexlInstance,
+  clip?: BinClip,
 ): { layers: FacetedLayer[]; sections: FacetSection[] }
 ```
 
@@ -1449,6 +1452,15 @@ in — the field it names, or under a facet each row's stacked row. The split
 comes as early as it can: after the last shared step that must see every
 row, so the steps that follow it read the rows already in section order.
 
+`clip` names the fetched region: an interval bin fused with its aggregate
+in a layer's own steps, where every later step of that layer reads one row
+at a time and leaves its position alone, makes no bin outside it for a row
+on its `refName`, so a feature far longer than the view is cut only where
+it is fetched. A bin it keeps gathers the pieces it did unclipped; one it
+drops lies wholly outside the fetch. A pair in the shared steps, the
+facet's steps or ahead of a facet split never clips, so a layer's rows never
+rest on its neighbours' steps.
+
 ```ts
 import { layerTables } from '@jbrowse/core/util/featureTransforms'
 
@@ -1458,6 +1470,7 @@ function layerTables(
     transform?: readonly TransformStep[]
     facet?: FacetSpec
     layers: readonly { transform?: readonly TransformStep[]; row?: FieldRef }[]
+    clip?: BinClip
   },
   jexl?: JexlInstance,
 ): {

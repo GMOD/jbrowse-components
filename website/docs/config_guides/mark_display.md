@@ -963,7 +963,7 @@ each reported under its id:
 | `unwritten-y` | error | A `y` naming a field that no `aggregate` or `coverage` step before it writes. |
 | `unread-channel` | warning | A channel the mark's type does not read, such as `y` on a `rect`, a `size` on a rule, whose width is `strokeWidth`, or a size field on a point. |
 | `unread-size` | warning | An `encoding.size` or `encoding.strokeWidth` on a mark that draws no point, rule or line and strokes no link. |
-| `unread-mark-member` | warning | A `mark` member its type does not read: an `interpolate` off a line or a link, a `height` off a rect, a `gapBp` off a line. |
+| `unread-mark-member` | warning | A `mark` member its type does not read: an `interpolate` off a line or a link, a `height` off a rect, a `gapBp` off a `linear` line. |
 | `mark-interpolate` | warning | An `interpolate` the mark's type does not draw, such as `dome` on a line, which then draws its default. |
 | `threshold-cuts` | warning | Threshold cuts that repeat, leaving an interval no value falls in. |
 | `threshold-no-cuts` | warning | A threshold color naming no cut, so every value paints one color. |

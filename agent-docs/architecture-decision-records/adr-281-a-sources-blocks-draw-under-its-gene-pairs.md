@@ -1,6 +1,6 @@
 ---
 status: Accepted
-summary: "An MCScan `.anchors` pair has its `###` block, and MultiWaySyntenyDisplay draws each block as a pale ribbon under its gene pairs, on by default. A second track as a ribbon layer, a combined adapter, hiding a band that fills the window and an opt-in slot were declined"
+summary: "An MCScan `.anchors` pair has its `###` block, and MultiWaySyntenyDisplay draws each block as a pale ribbon under its gene pairs, on by default. A second track, a combined adapter, hiding a window-filling band and an opt-in slot were declined"
 ---
 
 # ADR-281: A source's blocks draw under its gene pairs

@@ -68,7 +68,7 @@ From [SyntenyFilterMixin](../syntenyfiltermixin): <span id="getter-predicates">[
 | --- | --- |
 | <span id="method-syntenytracks">**syntenyTracks**</span><br><code>() =&gt; ComparativeTrackModel[]</code> | Overridable hook: every synteny track in the view, in paint order. |
 | <span id="method-colorabletrackconfigs">**colorableTrackConfigs**</span><br><code>() =&gt; { trackId: string; name: string; }[]</code> |  |
-| <span id="method-colorableattributenames">**colorableAttributeNames**</span><br><code>() =&gt; string[]</code> | The columns the tracks declare in their adapter's `attributeColumns` (the ortholog-table adapter's slot), one color mode each. |
+| <span id="method-colorableattributenames">**colorableAttributeNames**</span><br><code>() =&gt; string[]</code> | The columns the tracks' adapters declare (`declaredAttributes`), one color mode each. |
 | <span id="method-legendalpha">**legendAlpha**</span><br><code>() =&gt; number</code> | The plot's opacity composites the key's chips, as it does the alignments. |
 
 <details class="inherited-members" data-pagefind-ignore>

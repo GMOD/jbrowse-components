@@ -13,6 +13,14 @@ BED files that place its genes.
 See the [MCScan anchors tutorial](/docs/tutorials/mcscan_synteny_grape_peach), which
 also covers converting an MCScanX run into these files.
 
+Each pair has two fields a display can color and filter by, with nothing to
+configure: `block`, the collinear block its `###` section puts it in
+(`block0` is the file's first), and `blockSpan`, how many genes that block
+spans on its shorter side, the measure `jcvi.compara.synteny screen
+--minspan` keeps a block by. A file with no `###` lines has neither. The
+multi-way synteny display draws each block as a pale band behind its gene
+pairs.
+
 ## Example usage
 
 ```js
