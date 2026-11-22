@@ -203,7 +203,8 @@ export function laneIndelViews(self: ReturnType<typeof laneGroupListViews>) {
     /**
      * #getter
      * each lane's deletions, insertions, stretches replaced and inversions
-     * as its records state them on the strand it is drawn on, for the header
+     * as its records state them, read first on the strand it is drawn on,
+     * for the header
      */
     get laneChanges() {
       return self.laneIndels.changes

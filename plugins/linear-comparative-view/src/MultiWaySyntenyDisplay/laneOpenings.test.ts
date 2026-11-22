@@ -7,7 +7,7 @@ import {
   frameFromDecision,
   nudgeDecision,
 } from './laneDecision.ts'
-import { laneRegion } from './laneHeader.ts'
+import { changeLabel, laneRegion } from './laneHeader.ts'
 import { buildLanes, laneGeometry } from './laneStack.ts'
 import {
   frameSegments,
@@ -874,6 +874,141 @@ describe('an inversion the lane carries against the anchor', () => {
     expect(
       named([run('l', 0, 0, 40_000, 1), run('m', 40_000, 40_000, 900_000, -1)]),
     ).toEqual([])
+  })
+})
+
+describe('a lane with pieces on both strands', () => {
+  const rows = (
+    assemblyName: string,
+    refName: string,
+    anchorRef: string,
+    list: [number, number, number, number, number][],
+  ) =>
+    groupFeatures(
+      list.map(
+        ([start, end, mateStart, mateEnd, strand], i) =>
+          new SimpleFeature({
+            uniqueId: `${assemblyName}-${i}`,
+            refName: anchorRef,
+            start,
+            end,
+            strand,
+            assemblyName: 'hg38',
+            mate: { assemblyName, refName, start: mateStart, end: mateEnd },
+          }),
+      ),
+    )
+  const labelsOf = (
+    groups: MultiWayGroup[],
+    assemblyName: string,
+    refName: string,
+    reversed: boolean,
+  ) => laneIndelsOf(groups).changes(assemblyName, refName, reversed)
+
+  // HG02055#1 at SMN, as hprc_multiway_gfa.pif.gz states it
+  const smn = rows('HG02055.1', 'CM092207.1', 'chr5', [
+    [70_781_567, 71_093_996, 72_789_865, 73_098_254, -1],
+    [70_664_312, 70_781_567, 73_138_329, 73_257_316, -1],
+    [70_640_778, 70_776_477, 73_257_316, 73_394_181, 1],
+    [70_776_477, 70_791_365, 73_414_643, 73_429_536, 1],
+    [69_988_503, 70_115_221, 73_501_729, 73_628_825, 1],
+    [70_115_221, 70_129_603, 73_753_740, 73_768_079, 1],
+  ])
+
+  test('states the insertions of both strands whichever way it is drawn, and opens nothing', () => {
+    for (const reversed of [false, true]) {
+      expect(
+        labelsOf(smn, 'HG02055.1', 'CM092207.1', reversed)
+          .filter(c => c.kind === 'insertion')
+          .map(c => c.laneBp)
+          .toSorted((a, b) => a - b),
+      ).toEqual([20_462, 40_075, 124_915])
+      expect(
+        laneIndelsOf(smn).openings('HG02055.1', 'CM092207.1', reversed),
+      ).toEqual([])
+    }
+  })
+
+  // HG00128#1 at TBC1D3: the forward gap holds the reversed pieces, and the
+  // reversed gap between them is the same stretch read the other way
+  const sameStretch = rows('HG00128.1', 'JBHIKS010000051.1', 'chr17', [
+    [38_044_769, 38_070_363, 13_612_391, 13_637_971, 1],
+    [38_088_871, 38_126_163, 13_638_005, 13_675_312, -1],
+    [38_070_382, 38_075_454, 13_707_213, 13_712_303, -1],
+    [38_126_166, 38_141_006, 13_712_306, 13_727_115, 1],
+  ])
+
+  test('states a change read on both strands once, beside the inversion', () => {
+    for (const reversed of [false, true]) {
+      expect(
+        labelsOf(sameStretch, 'HG00128.1', 'JBHIKS010000051.1', reversed)
+          .map(changeLabel)
+          .toSorted(),
+      ).toEqual(['13 kb replaced by 32 kb', '42 kb inversion'])
+    }
+  })
+
+  // HG01960#1 at TBC1D3: the forward pieces' anchor runs backwards, so only
+  // the reversed pieces state a gap
+  const otherStrand = rows('HG01960.1', 'JBHIHM010000033.1', 'chr17', [
+    [38_088_871, 38_126_163, 12_822_791, 12_860_061, 1],
+    [38_044_769, 38_070_363, 12_860_095, 12_885_663, -1],
+    [37_944_212, 37_990_833, 12_922_903, 12_969_514, -1],
+    [38_054_281, 38_141_006, 12_974_424, 13_061_695, 1],
+  ])
+
+  test('states a change of the strand it is not drawn on without opening a hole for it', () => {
+    expect(
+      labelsOf(otherStrand, 'HG01960.1', 'JBHIHM010000033.1', false).map(
+        changeLabel,
+      ),
+    ).toContain('54 kb replaced by 37 kb')
+    expect(
+      laneIndelsOf(otherStrand).openings(
+        'HG01960.1',
+        'JBHIHM010000033.1',
+        false,
+      ),
+    ).toEqual([])
+  })
+
+  test('names tandem inverted copies of one stretch as one inversion', () => {
+    const [ref, at] = CARRIERS['HG01123.1']
+    const run = (
+      id: string,
+      lane: number,
+      anchor: number,
+      length: number,
+      orientation: number,
+    ) =>
+      piece(
+        id,
+        WINDOW_START + anchor,
+        WINDOW_START + anchor + length,
+        [{ assemblyName: 'HG01123.1', refName: ref, start: at + lane }],
+        orientation,
+      )
+    const inversions = laneIndelsOf(
+      groupFeatures([
+        run('l', 0, 0, 40_000, 1),
+        run('m1', 40_000, 40_000, 900_000, -1),
+        run('c1', 940_000, 940_000, 40_000, 1),
+        run('c2', 980_000, 0, 40_000, 1),
+        run('m2', 1_020_000, 40_000, 900_000, -1),
+        run('r', 1_920_000, 940_000, 40_000, 1),
+      ]),
+    )
+      .changes('HG01123.1', ref)
+      .filter(c => c.kind === 'inversion')
+      .map(withoutAnchor)
+    expect(inversions).toEqual([
+      {
+        at: at + 40_000,
+        laneBp: 900_000,
+        anchorBp: 900_000,
+        kind: 'inversion',
+      },
+    ])
   })
 })
 

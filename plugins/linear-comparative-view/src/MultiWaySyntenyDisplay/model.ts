@@ -1808,9 +1808,10 @@ export function stateModelFactory(
     .views(self => ({
       /**
        * #method
-       * the changes a lane states read on the strand it is drawn on
+       * the changes a lane's header states, led by those read on the strand
+       * it is drawn on
        */
-      drawnLaneChanges(assemblyName: string, refName: string) {
+      statedLaneChanges(assemblyName: string, refName: string) {
         return self.laneChanges(
           assemblyName,
           refName,
@@ -1839,7 +1840,7 @@ export function stateModelFactory(
           self.inlineLaneNames ? self.laneStack.glyphHeight : undefined,
           self.againstAnchor,
           (assemblyName, refName) =>
-            self.drawnLaneChanges(assemblyName, refName),
+            self.statedLaneChanges(assemblyName, refName),
           assemblyName => self.placelessOf(assemblyName),
           assemblyName => self.laneColor(assemblyName),
         )
@@ -1852,7 +1853,7 @@ export function stateModelFactory(
         return lane.frame
           ? shownLaneChanges(
               lane,
-              self.drawnLaneChanges(lane.assemblyName, lane.frame.refName),
+              self.statedLaneChanges(lane.assemblyName, lane.frame.refName),
             )
           : []
       },

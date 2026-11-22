@@ -158,6 +158,13 @@ describe('a lane read from its PIF rows or its walk record alike', () => {
     }
   }
 
+  test('states the same changes read on the reversed strand', () => {
+    const { changes } = laneIndelsOf(groupFeatures(HG00133_PIF))
+    expect(changes('HG00133.1', 'CM090045.1', true).map(changeLabel)).toEqual(
+      changes('HG00133.1', 'CM090045.1').map(changeLabel),
+    )
+  })
+
   test('opens the same hole and states the same changes, a shared piece keeping them two', () => {
     expect(read(HG00133_PIF)).toEqual(read(HG00133_WALK))
     expect(read(HG00133_WALK)).toEqual({
