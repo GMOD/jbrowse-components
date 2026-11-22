@@ -1,6 +1,6 @@
 ---
 name: mark-display-audit
-description: "An audit of LinearMarkDisplay (plugins/marks, the worker encoder, Edit plot, hover, legend, export) on 2026-11-21, its checked items fixed: two traced hover findings left open."
+description: "An audit of LinearMarkDisplay (plugins/marks, the worker encoder, Edit plot, hover, legend, export) on 2026-11-21, its checked items fixed: the interval bins the fused kernel leaves unclipped and two traced hover findings left open."
 ---
 
 # Mark display audit
@@ -16,6 +16,19 @@ each with a test; what is below is left.
 Each item says how far it was checked. "Checked" means the main session read
 the cited code after the reader reported it; "traced" means a reviewer followed
 it through the code.
+
+## Open
+
+- **An interval `bin` the fused kernel does not clip still cuts a row along
+  its whole length.** A fused bin and aggregate keeps only the fetched
+  region's bins (ADR-197); these still make length over step pieces at any
+  zoom, and a mark's `maxBpPerPx` does not bound them:
+  - an unfused interval `bin`;
+  - a `bin` in the display's shared steps with its `aggregate` in a mark's
+    list (`lastBinEdges(sharedSteps)`, `markRequest.ts`), which never fuses;
+  - a fused pair followed by a step that reads across rows, a `window` or an
+    `aggregate`, in its list, the facet's or a layer's (`clipThrough`,
+    `featureTransforms.ts`).
 
 ## Traced, not fixed: hover
 

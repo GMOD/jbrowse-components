@@ -95,20 +95,34 @@ for the interval case as an explicit spelling.
   to the last starting before its end; the edge bins stay whole and each
   piece's overlap is what it was. Clipped, the same feature makes 800 groups
   in 0.05 ms and 0.02 MB (against 42.8 ms and 10.56 MB unclipped, one ada
-  run). No in-region answer moves: fusion groups by exactly the bin edges, so
-  a kept bin gathers the pieces it gathered before, and the display widens
-  the fetch to bin edges (`binnedFetchRegions`), so a kept edge bin is
-  complete; a dropped bin lies wholly outside the fetch and held only the rows
-  that reach into the region, a partial count. Where the kernel
-  hands a sparse section back to the steps as written, that `bin` takes the
-  same clip, so the answer never rests on the density heuristic.
-- **Only the fused path clips.** On the unfused path a piece outside the
-  region still changes a correct answer: an aggregate by name sums each row's
-  overlap across every bin, a `window` running total adds the bins before the
-  region, and a row wholly off the region would vanish. So an unfused interval
-  `bin`, and a `bin` in the display's or the facet's steps with its
-  `aggregate` in a mark's list, still cut a row along its whole length; a
-  mark's `maxBpPerPx` is what bounds those.
+  run). No kept bin moves: fusion groups by exactly the bin edges, so a kept
+  bin gathers exactly the pieces it gathered unclipped, and an edge bin is as
+  partial as it was before (the fetch widens only to the widest bin step,
+  `toBinEdges` caps at the displayed region, and the matrix's and the
+  multi-way synteny lanes' regions are not widened). Where the kernel hands a
+  sparse section back to the steps as written, that `bin` takes the same
+  clip, so the answer never rests on the density heuristic.
+- **A fused pair clips only where nothing after it reads across rows.** A
+  dropped bin still changes an answer a later cross-row step gives inside the
+  region: a `window` mean at the region's edge averages its neighbours off
+  it, an `aggregate` with no groupby sums every bin, a running total adds the
+  bins before the region. So `runSteps` passes the clip to a pair only where
+  every later step in its list, the facet's list and each layer's list is a
+  `filter`, `formula`, `flatten` or `bin` (`clipThrough`); a `window`,
+  `aggregate`, `coverage`, `pileup`, `mate` or `cells` after it leaves it
+  unclipped, as does a `cells` straight before it, so the `cells` walk, which
+  takes no clip, and the steps it hands back answer alike.
+- **Only a fused pair clips.** On the unfused path a piece outside the region
+  still changes a correct answer: an aggregate by name sums each row's overlap
+  across every bin, and a row wholly off the region would vanish. So an
+  unfused interval `bin`, a `bin` in the display's or the facet's steps with
+  its `aggregate` in a mark's list, and a fused pair a cross-row step follows
+  still cut a row along its whole length, into length over step pieces at any
+  zoom: a mark's `maxBpPerPx` bounds only how far out the view goes, not a
+  long feature at a close zoom. These stay open in
+  [mark-display-audit](../handoffs/mark-display-audit.md), and the warning
+  for a fine `step` stays declined for them too; no rule guesses which
+  feature is long.
 - The `marks_maf_identity` track in the volvox marks config declares the
   identity heatmap: `cells`, then a span over `bin: auto` by `fields` and the
   weighted mean of `match`.
@@ -170,10 +184,10 @@ a screen.
   count of the features overlapping each bin (`count` alone over the pieces)
   are declarable over any feature adapter, which `coverage` answered only as
   runs of depth.
-- The fused kernel makes no bin past the fetched region. On the unfused path
-  pieces past it still hold only the rows that reach into it, as a start bin
+- A clipped fused pair makes no bin past the fetched region. Elsewhere pieces
+  past it still hold only the rows that reach into it, as a start bin
   before the region holds only the rows the fetch returned; the display's
-  bin-edge widening covers the region's own bins.
+  bin-edge widening fills an edge bin only within the displayed region.
 - The kernel fuses only within one step list: a `bin` in the display's or the
   facet's steps and the `aggregate` in a mark's run apart, correctly and with
   the piece table, and unclipped, so such a pair still cuts a long feature
