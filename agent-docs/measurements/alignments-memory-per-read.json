@@ -1,0 +1,133 @@
+{
+  "id": "alignments-memory-per-read",
+  "published": false,
+  "measured": "2026-11-22",
+  "source": {
+    "kind": "hand",
+    "repro": "The `amplicon-depth-gate` files and build. A probe copied from `products/jbrowse-web/browser-tests/probe-amplicon-depth.ts` force-loads the 5,000x BAM with a BAI at the whole genome (1,000,080 reads), attaches CDP to the RPC worker and the page, and reads `Runtime.getHeapUsage` (`usedSize`, `backingStorageSize`) at baseline, every 200 to 600 ms through the load, and again after the display is drawn, 2.5 s, `HeapProfiler.collectGarbage` on every isolate and 4 s more. Buckets come from a heap snapshot of each isolate after that GC, aggregated by object shape and dominator, and from `HeapProfiler` sampling profiles mapped through the build's source maps. The probe, the aggregation scripts, every result and the two reviews' scripts are in `ada:~/data/amplicon-depth/memprof/memprof-scripts-and-results.tgz`.",
+    "notes": "ada, headless Chrome 157, software rendering; the GPU process grew 4 to 8 MiB, so none of this is the renderer's. Bytes per read above baseline. The kept column sums to the measured deltas: worker heap 107.0, worker buffers 379.1, page heap 45.9, page buffers 70.8. The peak worker heap is 276 per read, of which the three uncached rows are what a live-object sample attributes and the rest is garbage not yet collected. Peak worker buffers are 451 per read: the kept 379 plus the 71 of typed arrays before they transfer. The simulated reads carry no MD tag, so each gets the region-bound wrapper, and one constant quality. At 50,000x (10,000,080 reads, one run) the peak is 303 of heap and 536 of buffers per read in the worker and 8.5 GiB of renderer Pss. The CRAM of the 5,000x reads keeps 76 of worker heap and 317 of worker buffers per read, the decoded slices its slice cache holds."
+  },
+  "columns": [
+    {
+      "key": "where",
+      "label": "where"
+    },
+    {
+      "key": "what",
+      "label": "what"
+    },
+    {
+      "key": "peak",
+      "label": "at peak"
+    },
+    {
+      "key": "kept",
+      "label": "kept after drawing"
+    },
+    {
+      "key": "held",
+      "label": "held by"
+    }
+  ],
+  "rows": [
+    {
+      "values": {
+        "where": "worker buffers",
+        "what": "decompressed BGZF chunks",
+        "peak": 357,
+        "kept": 357,
+        "held": "`@gmod/bam` chunk cache, which the records point into"
+      }
+    },
+    {
+      "values": {
+        "where": "worker buffers",
+        "what": "compressed ranges",
+        "peak": 22,
+        "kept": 22,
+        "held": "range cache"
+      }
+    },
+    {
+      "values": {
+        "where": "worker heap",
+        "what": "BAM record objects",
+        "peak": 64,
+        "kept": 64,
+        "held": "chunk cache"
+      }
+    },
+    {
+      "values": {
+        "where": "worker heap",
+        "what": "cached `NUMERIC_CIGAR` arrays",
+        "peak": 28,
+        "kept": 28,
+        "held": "the records"
+      }
+    },
+    {
+      "values": {
+        "where": "worker heap",
+        "what": "`fileOffset` heap numbers",
+        "peak": 10,
+        "kept": 10,
+        "held": "the records"
+      }
+    },
+    {
+      "values": {
+        "where": "worker heap",
+        "what": "chunk record arrays",
+        "peak": 5,
+        "kept": 5,
+        "held": "chunk cache"
+      }
+    },
+    {
+      "values": {
+        "where": "worker heap",
+        "what": "per-read feature objects and arrays",
+        "peak": 71,
+        "kept": 0,
+        "held": "nothing"
+      }
+    },
+    {
+      "values": {
+        "where": "worker heap",
+        "what": "mismatch entries",
+        "peak": 28,
+        "kept": 0,
+        "held": "nothing"
+      }
+    },
+    {
+      "values": {
+        "where": "worker heap",
+        "what": "region-bound wrappers",
+        "peak": 26,
+        "kept": 0,
+        "held": "nothing"
+      }
+    },
+    {
+      "values": {
+        "where": "page buffers",
+        "what": "typed arrays for drawing, transferred",
+        "peak": 71,
+        "kept": 71,
+        "held": "the display"
+      }
+    },
+    {
+      "values": {
+        "where": "page heap",
+        "what": "read-name block, copied",
+        "peak": 46,
+        "kept": 46,
+        "held": "the display"
+      }
+    }
+  ]
+}

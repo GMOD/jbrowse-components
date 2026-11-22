@@ -59,13 +59,18 @@ what is left is a UI save format beside the bedGraph, built over that table.
 **Per-record allocation may be the CRAM lever.** The slice workers are starved
 and the RPC worker spends 12% (724 ms) in GC on a 1000x short-read render
 ([CRAM_STACK_INTEGRATION.md](../../reference/CRAM_STACK_INTEGRATION.md)
-§"Slice-decode parallelism is not the lever"). The hypothesis it is consistent with — *not* a measured finding, and it
-needs an allocation profile before anyone acts on it — is that we allocate one
+§"Slice-decode parallelism is not the lever"). The hypothesis it is consistent
+with (*not* a measured finding, and it needs a CRAM allocation profile before
+anyone acts on it) is that we allocate one
 `CramSlightlyLazyFeature` per record (153,677 of them for that fixture) and then
 serialize the lot out of the worker. That is the same problem `@gmod/cram`
 already solved *inside* itself with the read-feature arena and the tag/quality
 columns, stopping one layer short of us. If it holds, the fix is columnar all
-the way to the renderer rather than a wrapper per read.
+the way to the renderer rather than a wrapper per read. The BAM analogue is
+profiled as `alignments-memory-per-read`
+([BAM_STACK_INTEGRATION.md](../../reference/BAM_STACK_INTEGRATION.md) §"What a
+read costs in memory"): per-read feature objects, mismatch entries and wrappers
+are 125 of 276 peak worker heap bytes per read, and none is kept.
 
 **Read downsampling for a force-loaded dense region.** Past the byte gate a
 BAM shows the banner
