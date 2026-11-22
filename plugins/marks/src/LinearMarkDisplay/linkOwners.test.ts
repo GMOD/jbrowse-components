@@ -1,6 +1,6 @@
 import { LINK_ELSEWHERE, LINK_NO_REGION } from '@jbrowse/render-core/marks'
 
-import { createLinkOwners } from './linkOwners.ts'
+import { createLinkOwners, withMateRegions } from './linkOwners.ts'
 
 import type { MarkRegionData } from './markList.ts'
 
@@ -134,4 +134,44 @@ test('the same feet in two rows are two curves, and both draw', () => {
   data.layers[0]!.row = Uint32Array.of(0, 1, 1)
   const out = createLinkOwners()(new Map([[0, data]]), [A])
   expect(lane(out, 0)).toEqual([0, 0, LINK_ELSEWHERE])
+})
+
+test('raw aliased feet read through withMateRegions pair across two regions and draw once inside one', () => {
+  const regions = [
+    { ...A, index: 0 },
+    { ...B, index: 1 },
+  ]
+  const raw = (
+    links: { x: number; x2: number; ref: string }[],
+    index: number,
+  ) => {
+    const { x2CanonicalRefNames: _names, ...layer } = payload(
+      links.map(l => ({ ...l, region: 0 })),
+    ).layers[0]!
+    return withMateRegions({ layers: [layer] }, regions, canonical, index)
+  }
+  const across = createLinkOwners()(
+    new Map([
+      [0, raw([{ x: 100, x2: 200, ref: 'chrB' }], 0)],
+      [1, raw([{ x: 200, x2: 100, ref: 'chrA' }], 1)],
+    ]),
+    [A, B],
+  )
+  expect([lane(across, 0), lane(across, 1)]).toEqual([[1], [LINK_ELSEWHERE]])
+  const inside = createLinkOwners()(
+    new Map([
+      [
+        0,
+        raw(
+          [
+            { x: 100, x2: 200, ref: 'chrA' },
+            { x: 200, x2: 100, ref: 'ctgA' },
+          ],
+          0,
+        ),
+      ],
+    ]),
+    [A],
+  )
+  expect(lane(inside, 0)).toEqual([0, LINK_ELSEWHERE])
 })
