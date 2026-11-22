@@ -1,6 +1,7 @@
 import {
   applyClassifiedFiles,
   applyPrimaryFile,
+  applySequenceFile,
   applyTwoBitFile,
   buildAssemblyConf,
   classifyAssemblyFiles,
@@ -177,6 +178,7 @@ describe('getAdapterConfig', () => {
     faiLocation: blank,
     gziLocation: blank,
     twoBitLocation: blank,
+    genbankLocation: blank,
     chromSizesLocation: blank,
   }
 
@@ -1190,5 +1192,100 @@ describe('ChromSizesAdapter', () => {
       type: 'ChromSizesAdapter',
       chromSizesLocation: chromSizes,
     })
+  })
+})
+
+// The config `jbrowse add-assembly x.gbk` writes, so a genome opened in the
+// form and one added on the command line are the same assembly
+describe('a GenBank file', () => {
+  const names = [
+    'NC_045512.gb',
+    'NC_045512.gbk',
+    'NC_045512.gbff',
+    'NC_045512.gbk.gz',
+    'NC_045512.GBFF.GZ',
+  ]
+  const genbankAssembly = (genbankLocation: FileLocation) => ({
+    name: 'NC_045512',
+    sequence: {
+      type: 'ReferenceSequenceTrack',
+      trackId: expect.stringMatching(/^NC_045512-/),
+      adapter: { type: 'GenbankSequenceAdapter', genbankLocation },
+    },
+  })
+  const noFastaIndex = () => {
+    throw new Error('should not need a fasta index')
+  }
+
+  test.each(names)('%s picked by URL builds the CLI config', async name => {
+    const location: FileLocation = {
+      uri: `https://example.com/${name}`,
+      locationType: 'UriLocation',
+    }
+    const form = applyPrimaryFile(initialFormState(), location)
+    expect(form.adapterSelection).toBe('GenbankSequenceAdapter')
+    expect(await buildAssemblyConf(form, noFastaIndex)).toEqual(
+      genbankAssembly(location),
+    )
+  })
+
+  test.each(names)(
+    '%s dropped from local disk on desktop builds the CLI config',
+    async name => {
+      const location: FileLocation = {
+        localPath: `/data/${name}`,
+        locationType: 'LocalPathLocation',
+      }
+      const form = applyClassifiedFiles(initialFormState(), [location], noEdits)
+      expect(form.adapterSelection).toBe('GenbankSequenceAdapter')
+      expect(await buildAssemblyConf(form, noFastaIndex)).toEqual(
+        genbankAssembly(location),
+      )
+    },
+  )
+
+  test('is one genome among the sequence roles', () => {
+    expect(classifyFilename('sakai.gbk')).toBe('genbank')
+    expect(isSequenceRole('genbank')).toBe(true)
+  })
+
+  test('the GenBank slot takes a link with no extension, like an efetch', () => {
+    const efetch: FileLocation = {
+      uri: 'https://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi?db=nuccore&id=NC_045512&rettype=gbwithparts',
+      locationType: 'UriLocation',
+    }
+    const form = applySequenceFile(
+      { ...initialFormState(), adapterSelection: 'GenbankSequenceAdapter' },
+      'genbankLocation',
+      efetch,
+    )
+    expect(isFormReady({ ...form, assemblyName: 'NC_045512' })).toBe(true)
+    expect(getAdapterConfig(form)).toEqual({
+      kind: 'ready',
+      adapter: { type: 'GenbankSequenceAdapter', genbankLocation: efetch },
+    })
+  })
+
+  test('changing the file clears it', () => {
+    const genbank: FileLocation = {
+      uri: 'https://example.com/NC_045512.gbk',
+      locationType: 'UriLocation',
+    }
+    const form = applyPrimaryFile(initialFormState(), genbank)
+    expect(formHasSequence(clearSequenceFiles(form))).toBe(false)
+  })
+
+  test('reports a chrom.sizes beside it as unused', () => {
+    const genbank: FileLocation = {
+      uri: 'https://example.com/NC_045512.gbk',
+      locationType: 'UriLocation',
+    }
+    const form = applyClassifiedFiles(
+      initialFormState(),
+      [genbank, chromSizes],
+      noEdits,
+    )
+    expect(form.adapterSelection).toBe('GenbankSequenceAdapter')
+    expect(partitionExtraLocations(form).unused).toEqual([chromSizes])
   })
 })

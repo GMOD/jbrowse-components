@@ -118,8 +118,8 @@ We'll run the JBrowse commands from the `annotation` folder, beside `sakai.gbk`.
 The GenBank file is the genome, and `circularRefNames` lists the contigs that
 are rings, here the chromosome and both plasmids, since Prokka writes every
 record as linear. On your own assembly, Flye's `assembly_info.txt` marks each
-circular contig `Y`. The add-genome form has no field for `circularRefNames` or
-a GenBank file, so in JBrowse Desktop the assembly loads from a
+circular contig `Y`. The add-genome form has no field for `circularRefNames`, so
+in JBrowse Desktop the assembly loads from a
 [CLI-built config.json](/docs/tutorials/cli_desktop#open-the-cli-built-folder-in-jbrowse-desktop):
 
 ```json addassembly

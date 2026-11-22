@@ -52,16 +52,17 @@ it becomes a new session on that assembly.
 
 <Figure src="/img/desktop-open-genome-steps.png" caption="Open your own genome (1) brings up the dialog, and the sequence file goes onto its drop area (2)."/>
 
-- Drop the sequence file (FASTA, bgzip-compressed FASTA or 2bit, with any `.fai`
-  or `.gzi` beside it) onto the drop area, or click it to browse. **Open from a
-  URL** takes file URLs, one per line.
+- Drop the sequence file (FASTA, bgzip-compressed FASTA, 2bit or GenBank, with
+  any `.fai` or `.gzi` beside it) onto the drop area, or click it to browse.
+  **Open from a URL** takes file URLs, one per line. A GenBank file opens as the
+  genome only; [adding it as a track](#adding-tracks) too draws its features.
 - JBrowse classifies each file. Once it recognizes a sequence it shows a
   confirmation card with a **Genome name** field, and the drop area stays put,
   so a forgotten `.fai` can go in afterwards.
 - **Enter details manually** opens a form with a **Format** dropdown for a file
   whose name does not match the conventions: indexed FASTA, compressed FASTA,
   plain FASTA (indexed on open, reading the whole file, so supply a `.fai` for a
-  large genome), 2bit, or `.chrom.sizes`.
+  large genome), 2bit, GenBank, or `.chrom.sizes`.
 - A `.chrom.sizes` gives the assembly its reference names and lengths and no
   bases, a fraction of the size and enough for whole-genome and synteny views.
   The dialog warns that the sequence track and GC content then draw nothing,

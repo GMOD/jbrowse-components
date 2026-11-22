@@ -31,6 +31,13 @@ const samples: Partial<Record<AdapterType, string[]>> = {
   BgzipFastaAdapter: ['hg38.fa.gz', 'hg38.fasta.bgz', 'hg38.fna.gz'],
   TwoBitAdapter: ['hg38.2bit'],
   ChromSizesAdapter: ['hg38.chrom.sizes'],
+  GenbankSequenceAdapter: [
+    'NC_045512.gb',
+    'sakai.gbk',
+    'NC_012920.gbff',
+    'sakai.gbk.gz',
+    'NC_012920.GBFF.GZ',
+  ],
 }
 
 const cases = Object.entries(samples).flatMap(([adapterType, names]) =>
@@ -55,16 +62,26 @@ function fileSet(name: string) {
   ].map(uri)
 }
 
+// The config the table says an assembly opens this file with: the entry's own
+// adapter, or the sequence half of a format that is a genome and a track at once.
+function tableAdapter(name: string, file: FileLocation) {
+  const { spec, sequence } = matchFormat(name)!
+  return sequence
+    ? { type: sequence.adapterType, [sequence.locField]: file }
+    : adapterConfigFromSpec(spec, file)
+}
+
 // A sequence format added to the table and not to the pane is the divergence
 // with no symptom: the file opens as a track and the genome it names cannot be
 // added. `#trackType` is what says a format carries an assembly's bases.
 test("the pane offers the table's sequence formats and no others", () => {
-  const sequenceFormats = formats.flatMap(f =>
-    'adapterType' in f.spec &&
+  const sequenceFormats = formats.flatMap(f => [
+    ...('adapterType' in f.spec &&
     adapterTypesToTrackTypeMap[f.spec.adapterType] === 'ReferenceSequenceTrack'
       ? [f.spec.adapterType]
-      : [],
-  )
+      : []),
+    ...(f.sequence ? [f.sequence.adapterType] : []),
+  ])
   expect(sequenceFormats.sort()).toEqual([...tableTypes].sort())
 })
 
@@ -87,7 +104,7 @@ test.each(cases)(
     expect(formHasSequence(form)).toBe(true)
     expect(getAdapterConfig(form)).toEqual({
       kind: 'ready',
-      adapter: adapterConfigFromSpec(matchFormat(name)!.spec, primary!),
+      adapter: tableAdapter(name, primary!),
     })
   },
 )
@@ -103,7 +120,7 @@ test.each(cases)(
     expect(form.adapterSelection).toBe(adapterType)
     expect(getAdapterConfig(form)).toEqual({
       kind: 'ready',
-      adapter: adapterConfigFromSpec(matchFormat(name)!.spec, primary!),
+      adapter: tableAdapter(name, primary!),
     })
   },
 )

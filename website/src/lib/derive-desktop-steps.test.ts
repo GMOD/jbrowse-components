@@ -41,6 +41,12 @@ test('a 2bit carries its own names, so the paste is one line', () => {
   ).toContain('and paste:\nvolvox.2bit\n')
 })
 
+test('a GenBank file is a one-line paste too', () => {
+  expect(
+    flatten(desktopAssemblyNodes({ name: 'phiX174', uri: 'phiX174.gbk' })),
+  ).toContain('and paste:\nphiX174.gbk\n')
+})
+
 test('a refName aliases file becomes a More options field', () => {
   expect(
     flatten(

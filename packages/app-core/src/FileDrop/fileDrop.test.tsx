@@ -15,6 +15,7 @@ test.each([
   [['volvox.jbrowse'], ['.json'], 'tracks'],
   [['hg19.fa', 'hg19.fa.fai'], desktopExtensions, 'genome'],
   [['hg19.2bit', 'reads.bam'], desktopExtensions, 'genome'],
+  [['sakai.gbk'], desktopExtensions, 'genome'],
   [['x.bed.gz', 'x.bed.gz.tbi'], desktopExtensions, 'tracks'],
   [['a.json', 'b.json'], desktopExtensions, 'tracks'],
   [['reads.bam', 'reads.bam.bai'], desktopExtensions, 'tracks'],

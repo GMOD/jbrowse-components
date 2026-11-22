@@ -14,6 +14,7 @@ import type {
   AdapterType,
   FormState,
   LocationField,
+  SequenceFileField,
 } from '../util/assemblyConfigUtils.ts'
 import type { AbstractRootModel, FileLocation } from '../util/types/index.ts'
 
@@ -80,6 +81,7 @@ const fileInputs: Record<AdapterType, FileInput[]> = {
       description: 'Can speed up loading 2bit files with many contigs.',
     },
   ],
+  GenbankSequenceAdapter: [{ field: 'genbankLocation', name: 'GenBank file' }],
   ChromSizesAdapter: [
     {
       field: 'chromSizesLocation',
@@ -90,23 +92,23 @@ const fileInputs: Record<AdapterType, FileInput[]> = {
   ],
 }
 
-// The per-adapter file selectors (FASTA/.fai/.gzi/2bit/.chrom.sizes) driven by
-// the chosen format. Shared by the jbrowse-desktop Open genome(s) guided form
-// and the in-app Assembly manager add form. The primary-file setters are passed
-// in so each surface controls how picking a file updates state (e.g. desktop's
-// applyPrimaryFile auto-detects the adapter and prefills sidecars).
+// The per-adapter file selectors (FASTA/.fai/.gzi/2bit/GenBank/.chrom.sizes)
+// driven by the chosen format. Shared by the jbrowse-desktop Open genome(s)
+// guided form and the in-app Assembly manager add form. The primary-file setters
+// are passed in so each surface controls how picking a file updates state (e.g.
+// desktop's applyPrimaryFile auto-detects the adapter and prefills sidecars).
 const SequenceAdapterInputs = observer(function SequenceAdapterInputs({
   form,
   setForm,
   rootModel,
   setPrimaryFile,
-  setTwoBitFile,
+  setSequenceFile,
 }: {
   form: FormState
   setForm: (update: (prev: FormState) => FormState) => void
   rootModel: AbstractRootModel | undefined
   setPrimaryFile: (location: FileLocation) => void
-  setTwoBitFile: (location: FileLocation) => void
+  setSequenceFile: (field: SequenceFileField, location: FileLocation) => void
 }) {
   const { classes } = useStyles()
   const setField = makeSetField(setForm)
@@ -114,8 +116,10 @@ const SequenceAdapterInputs = observer(function SequenceAdapterInputs({
   const setterFor = (field: LocationField) =>
     field === 'fastaLocation'
       ? setPrimaryFile
-      : field === 'twoBitLocation'
-        ? setTwoBitFile
+      : field === 'twoBitLocation' || field === 'genbankLocation'
+        ? (location: FileLocation) => {
+            setSequenceFile(field, location)
+          }
         : setField(field)
   return (
     <>

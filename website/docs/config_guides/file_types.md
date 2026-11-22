@@ -180,8 +180,7 @@ Each `LOCUS` record is one sequence, named by its `VERSION` accession or, with
 none, by its `LOCUS` name, and a record whose `LOCUS` line says `circular` is a
 circular sequence. A `gene` holds the transcripts and CDS that share its
 `/locus_tag` (else its `/gene`), and each feature's qualifiers are its
-attributes. The add-genome form takes no GenBank file, so add the assembly from
-its config or with `jbrowse add-assembly`.
+attributes.
 
 ## Quantitative / signal
 

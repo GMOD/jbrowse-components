@@ -1,3 +1,5 @@
+import { genbankExtension } from '@jbrowse/add-track-core'
+
 import { deepEqual } from './deepEqual.ts'
 import { getFileName } from './getFileName.ts'
 import { isLocalPathLocation, isUriLocation } from './types/data.ts'
@@ -16,6 +18,7 @@ export const adapterTypes = [
   'BgzipFastaAdapter',
   'FastaAdapter',
   'TwoBitAdapter',
+  'GenbankSequenceAdapter',
   'ChromSizesAdapter',
 ] as const
 
@@ -26,6 +29,7 @@ export const adapterLabels: Record<AdapterType, string> = {
   BgzipFastaAdapter: 'Compressed FASTA (.fa.gz + .fai + .gzi)',
   FastaAdapter: 'FASTA (automatically indexed)',
   TwoBitAdapter: '2bit file (.2bit)',
+  GenbankSequenceAdapter: 'GenBank (.gb, .gbk, .gbff)',
   ChromSizesAdapter: 'Chromosome sizes, no sequence (.chrom.sizes)',
 }
 
@@ -47,6 +51,7 @@ export interface FormState {
   faiLocation: FileLocation
   gziLocation: FileLocation
   twoBitLocation: FileLocation
+  genbankLocation: FileLocation
   chromSizesLocation: FileLocation
   refNameAliasesLocation: FileLocation
   cytobandsLocation: FileLocation
@@ -88,6 +93,7 @@ const requiredSidecars: Record<AdapterType, SidecarRole[]> = {
   BgzipFastaAdapter: ['fai', 'gzi'],
   FastaAdapter: [],
   TwoBitAdapter: [],
+  GenbankSequenceAdapter: [],
   ChromSizesAdapter: [],
 }
 
@@ -100,6 +106,7 @@ const primaryFields = {
   BgzipFastaAdapter: 'fastaLocation',
   FastaAdapter: 'fastaLocation',
   TwoBitAdapter: 'twoBitLocation',
+  GenbankSequenceAdapter: 'genbankLocation',
   ChromSizesAdapter: 'chromSizesLocation',
 } as const satisfies Record<AdapterType, LocationField>
 
@@ -127,6 +134,7 @@ export function initialFormState(): FormState {
     faiLocation: blank,
     gziLocation: blank,
     twoBitLocation: blank,
+    genbankLocation: blank,
     chromSizesLocation: blank,
     refNameAliasesLocation: blank,
     cytobandsLocation: blank,
@@ -162,7 +170,7 @@ export function applyPrimaryFile(
     state[primaryFields[state.adapterSelection]],
     location,
   )
-  if (detected === 'TwoBitAdapter' || detected === 'ChromSizesAdapter') {
+  if (detected && primaryFields[detected] !== 'fastaLocation') {
     return {
       ...state,
       [primaryFields[detected]]: location,
@@ -216,15 +224,22 @@ function sidecar(
   return undefined
 }
 
-export function applyTwoBitFile(
+export type SequenceFileField = 'twoBitLocation' | 'genbankLocation'
+
+export function applySequenceFile(
   state: FormState,
+  field: SequenceFileField,
   location: FileLocation,
 ): FormState {
   return {
     ...state,
-    twoBitLocation: location,
-    assemblyName: nextAssemblyName(state, state.twoBitLocation, location),
+    [field]: location,
+    assemblyName: nextAssemblyName(state, state[field], location),
   }
+}
+
+export function applyTwoBitFile(state: FormState, location: FileLocation) {
+  return applySequenceFile(state, 'twoBitLocation', location)
 }
 
 // Everything about the genome just staged, gone, so the next one starts clean.
@@ -245,6 +260,7 @@ export function clearSequenceFiles(state: FormState): FormState {
     faiLocation: blank,
     gziLocation: blank,
     twoBitLocation: blank,
+    genbankLocation: blank,
     chromSizesLocation: blank,
   }
 }
@@ -304,6 +320,10 @@ export type AssemblyAdapter =
       chromSizesLocation?: FileLocation
     }
   | {
+      type: 'GenbankSequenceAdapter'
+      genbankLocation: FileLocation
+    }
+  | {
       type: 'ChromSizesAdapter'
       chromSizesLocation: FileLocation
     }
@@ -322,8 +342,12 @@ export function isBlank(location: FileLocation) {
 
 // The form can be opened only once the chosen format's primary file is there.
 // Secondary files (.fai/.gzi) are validated later in getAdapterConfig.
+export function primaryLocation(form: FormState) {
+  return form[primaryFields[form.adapterSelection]]
+}
+
 export function formHasSequence(form: FormState) {
-  return !isBlank(form[primaryFields[form.adapterSelection]])
+  return !isBlank(primaryLocation(form))
 }
 
 // The name the assembly is saved under. Trimmed because surrounding whitespace
@@ -407,6 +431,7 @@ export function getAssemblyNameFromFilename(filename: string) {
     .replace(FASTA_GZ_EXT, '')
     .replace(FASTA_EXT, '')
     .replace(TWOBIT_EXT, '')
+    .replace(genbankExtension, '')
     .replace(CHROM_SIZES_EXT, '')
 }
 
@@ -415,9 +440,11 @@ export function detectAdapterType(filename: string): AdapterType | undefined {
     ? 'BgzipFastaAdapter'
     : TWOBIT_EXT.test(filename)
       ? 'TwoBitAdapter'
-      : CHROM_SIZES_EXT.test(filename)
-        ? 'ChromSizesAdapter'
-        : undefined
+      : genbankExtension.test(filename)
+        ? 'GenbankSequenceAdapter'
+        : CHROM_SIZES_EXT.test(filename)
+          ? 'ChromSizesAdapter'
+          : undefined
 }
 
 export type FileRole =
@@ -426,6 +453,7 @@ export type FileRole =
   | 'fai'
   | 'gzi'
   | 'twoBit'
+  | 'genbank'
   | 'chromSizes'
   | 'cytobands'
   | 'refNameAliases'
@@ -441,17 +469,19 @@ export function classifyFilename(filename: string): FileRole | undefined {
       ? 'gzi'
       : TWOBIT_EXT.test(filename)
         ? 'twoBit'
-        : FASTA_GZ_EXT.test(filename)
-          ? 'fastaGz'
-          : FASTA_EXT.test(filename)
-            ? 'fasta'
-            : /\.chrom\.sizes$/i.test(filename)
-              ? 'chromSizes'
-              : /cytoband/i.test(filename)
-                ? 'cytobands'
-                : /alias/i.test(filename)
-                  ? 'refNameAliases'
-                  : undefined
+        : genbankExtension.test(filename)
+          ? 'genbank'
+          : FASTA_GZ_EXT.test(filename)
+            ? 'fastaGz'
+            : FASTA_EXT.test(filename)
+              ? 'fasta'
+              : /\.chrom\.sizes$/i.test(filename)
+                ? 'chromSizes'
+                : /cytoband/i.test(filename)
+                  ? 'cytobands'
+                  : /alias/i.test(filename)
+                    ? 'refNameAliases'
+                    : undefined
 }
 
 // Sort a dropped/pasted set of files into the assembly form fields, picking the
@@ -495,6 +525,9 @@ export function classifyAssemblyFiles(
     if (primary.role === 'twoBit') {
       result.twoBitLocation = primary.location
       result.adapterSelection = 'TwoBitAdapter'
+    } else if (primary.role === 'genbank') {
+      result.genbankLocation = primary.location
+      result.adapterSelection = 'GenbankSequenceAdapter'
     } else {
       result.fastaLocation = primary.location
       result.adapterSelection =
@@ -516,6 +549,7 @@ const sequenceRoles: ReadonlySet<FileRole> = new Set([
   'fasta',
   'fastaGz',
   'twoBit',
+  'genbank',
 ])
 
 export function isSequenceRole(role: FileRole | undefined) {
@@ -534,6 +568,7 @@ const extraFields: Record<FileRole, LocationField | undefined> = {
   fasta: undefined,
   fastaGz: undefined,
   twoBit: undefined,
+  genbank: undefined,
 }
 
 export interface ClassifiedLocation {
@@ -582,6 +617,7 @@ export function applyClassifiedFiles(
     faiLocation: pick('faiLocation', blank),
     gziLocation: pick('gziLocation', blank),
     twoBitLocation: pick('twoBitLocation', blank),
+    genbankLocation: pick('genbankLocation', blank),
     chromSizesLocation: pick('chromSizesLocation', blank),
     refNameAliasesLocation: pick(
       'refNameAliasesLocation',
@@ -642,6 +678,7 @@ export function getAdapterConfig({
   faiLocation,
   gziLocation,
   twoBitLocation,
+  genbankLocation,
   chromSizesLocation,
 }: {
   adapterSelection: AdapterType
@@ -649,6 +686,7 @@ export function getAdapterConfig({
   faiLocation: FileLocation
   gziLocation: FileLocation
   twoBitLocation: FileLocation
+  genbankLocation: FileLocation
   chromSizesLocation: FileLocation
 }): AdapterConfigResult {
   if (adapterSelection === 'FastaAdapter') {
@@ -682,6 +720,15 @@ export function getAdapterConfig({
         faiLocation,
         gziLocation,
       },
+    }
+  }
+  if (adapterSelection === 'GenbankSequenceAdapter') {
+    if (isBlank(genbankLocation)) {
+      throw new Error('GenBank location is required')
+    }
+    return {
+      kind: 'ready',
+      adapter: { type: 'GenbankSequenceAdapter', genbankLocation },
     }
   }
   if (adapterSelection === 'ChromSizesAdapter') {

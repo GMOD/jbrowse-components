@@ -8,15 +8,15 @@ import {
   adapterHasSequence,
   applyClassifiedFiles,
   applyPrimaryFile,
-  applyTwoBitFile,
+  applySequenceFile,
   classifyLocations,
   clearSequenceFiles,
   formHasSequence,
   getMissingSidecars,
-  isBlank,
   isFormReady,
   isSequenceRole,
   partitionExtraLocations,
+  primaryLocation,
   urlTextToLocations,
 } from '../util/assemblyConfigUtils.ts'
 import { getFileName } from '../util/getFileName.ts'
@@ -39,6 +39,7 @@ const shortAdapterLabels: Record<AdapterType, string> = {
   BgzipFastaAdapter: 'Compressed FASTA',
   FastaAdapter: 'FASTA',
   TwoBitAdapter: '2bit',
+  GenbankSequenceAdapter: 'GenBank',
   ChromSizesAdapter: 'chrom.sizes, no sequence',
 }
 
@@ -166,9 +167,6 @@ const RecognitionCard = observer(function RecognitionCard({
   setShowMore: (arg: boolean) => void
 }) {
   const { classes } = useStyles()
-  const primaryLoc = isBlank(form.twoBitLocation)
-    ? form.fastaLocation
-    : form.twoBitLocation
   const { used, unused } = partitionExtraLocations(form)
   const autoIndex = form.adapterSelection === 'FastaAdapter'
   return (
@@ -176,7 +174,7 @@ const RecognitionCard = observer(function RecognitionCard({
       <div className={classes.recognizedRow}>
         <CheckCircleIcon fontSize="small" className={classes.check} />
         <Typography variant="body2" className={classes.filename}>
-          <b>{getFileName(primaryLoc)}</b>
+          <b>{getFileName(primaryLocation(form))}</b>
           <span className={classes.muted}>
             {' · '}
             {shortAdapterLabels[form.adapterSelection]}
@@ -299,8 +297,8 @@ const ManualEntry = observer(function ManualEntry({
         setPrimaryFile={(loc: FileLocation) => {
           setForm(f => applyPrimaryFile(f, loc))
         }}
-        setTwoBitFile={(loc: FileLocation) => {
-          setForm(f => applyTwoBitFile(f, loc))
+        setSequenceFile={(field, loc) => {
+          setForm(f => applySequenceFile(f, field, loc))
         }}
       />
       <MoreOptions
@@ -354,15 +352,15 @@ const SourceInput = observer(function SourceInput({
           message={
             hasSequence
               ? 'Drop any other files for this genome here — index, refName aliases, cytobands'
-              : 'Drop your genome files here — FASTA, .fa.gz, or .2bit, plus any .fai/.gzi index — or click to browse'
+              : 'Drop your genome files here — FASTA, .fa.gz, .2bit, or GenBank, plus any .fai/.gzi index — or click to browse'
           }
           onDrop={onDropFiles}
         />
       ) : (
         <>
           <Typography variant="body2" className={classes.intro}>
-            Paste a URL to a sequence file (FASTA, .fa.gz, or .2bit) or a
-            .chrom.sizes, plus any index files, one per line. We fill in the
+            Paste a URL to a sequence file (FASTA, .fa.gz, .2bit, or GenBank) or
+            a .chrom.sizes, plus any index files, one per line. We fill in the
             rest.
           </Typography>
           <TextField
@@ -449,7 +447,7 @@ const FileNotices = observer(function FileNotices({
       {!hasSequence && placed.length ? (
         <Alert severity="info" className={classes.intro}>
           Got {placed.map(loc => getFileName(loc)).join(', ')}. Add the sequence
-          itself — a FASTA, .fa.gz, or .2bit — to go with it.
+          itself — a FASTA, .fa.gz, .2bit, or GenBank — to go with it.
         </Alert>
       ) : null}
     </>

@@ -269,6 +269,15 @@ test('a chrom.sizes beside a 2bit warns about nothing', async () => {
   expect(screen.queryByText(/will have no sequence/i)).not.toBeInTheDocument()
 })
 
+test('a GenBank url is recognized under its own filename', async () => {
+  const { user, form } = setup()
+  await pasteUrls(user, 'https://example.com/NC_045512.gbk')
+  expect(form().adapterSelection).toBe('GenbankSequenceAdapter')
+  expect(form().assemblyName).toBe('NC_045512')
+  expect(screen.getByText('NC_045512.gbk')).toBeInTheDocument()
+  expect(screen.getByText(/GenBank/, { selector: 'span' })).toBeInTheDocument()
+})
+
 // The genome form's selectors never got the app's accounts, so a sequence or
 // index on Dropbox or Drive could only be pasted, never picked
 test('the index inputs offer the app accounts', async () => {

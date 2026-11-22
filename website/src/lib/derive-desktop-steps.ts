@@ -13,6 +13,7 @@
 // of its own in the GraphGenomeView plugin, and the tab walks that. Any other
 // track walks the default add-track form (DefaultAddTrackWorkflow.tsx) exactly
 // when the form has an input for every key the config carries.
+import { genbankExtension } from '../../../packages/add-track-core/src/index.ts'
 import { addRelativeUris } from '../../../packages/core/src/util/addRelativeUris.ts'
 import { defaultConfigUrl } from './default-configs.ts'
 import { aliasesUri } from './derive-add-assembly.ts'
@@ -351,6 +352,7 @@ const SIDECAR_EXTENSIONS: [RegExp, string[]][] = [
   [/\.(fa|fas|fna|fasta|mfa)\.b?gz$/i, ['.fai', '.gzi']],
   [/\.(fa|fas|fna|fasta|mfa)$/i, ['.fai']],
   [/\.2bit$/i, []],
+  [genbankExtension, []],
   [/\.chrom\.sizes$/i, []],
 ]
 
