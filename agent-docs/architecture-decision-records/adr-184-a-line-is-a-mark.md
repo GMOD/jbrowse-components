@@ -82,3 +82,9 @@ two-color line is one mark.
   instance, 12 of them the fields the other variant reads.
 - **Waiting for the port to land the shape with it.** The port is several
   landings, and a mark display that can draw a line is useful on its own.
+- **Taking a written `gapBp` off the worker request, so editing it refetches
+  nothing** (the 2026-11-21 mark display audit). The packer reads it in
+  `linksBefore` (`lineMark.ts`), so a render-only `gapBp` would still re-pack
+  and re-upload every line on a change, and the worker derives one from a
+  `window` frame where none is written (`pathSeries.ts`). Riding the payload
+  keeps one source both backends break a run by.

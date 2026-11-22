@@ -1,6 +1,6 @@
 ---
 name: mark-display-audit
-description: "A read-only audit of LinearMarkDisplay (plugins/marks, the worker encoder, Edit plot, hover, legend, export) on 2026-11-21: one unmeasured interval-bin cost, hover and menu findings not yet rechecked, and the simplifications the readers named."
+description: "A read-only audit of LinearMarkDisplay (plugins/marks, the worker encoder, Edit plot, hover, legend, export) on 2026-11-21: one unmeasured interval-bin cost and one hover finding not yet rechecked."
 ---
 
 # Mark display audit
@@ -39,15 +39,6 @@ traced it and nobody reread it; reread before fixing.
   `featureSpan` takes min and max over every instance of the root, the
   link's far `x2` included. The link's own hit reads its two feet
   (`findMarkHit.ts`); the other marks of that feature do not.
-
-## Simplifications
-
-Ranked by how much each removes. None was prototyped.
-
-- **Two chunked scans.** `keyOnScreen.ts` and `drawnScales.ts` differ only in
-  which instances count; one scan taking a kept test.
-- **A written `gapBp` rides the request and comes back unchanged**
-  (`markRequest.ts` `pathOf`, `pathSeries.ts`), so editing it refetches.
 
 ## Read and left alone
 

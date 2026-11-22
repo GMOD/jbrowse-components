@@ -144,3 +144,13 @@ boundary did the hiding.**
   refetches.** The per-gene expansion is still the worker's
   (`expandedGeneIds` is an RPC cache key), which is exactly what ADR-092 left in
   the worker. The badge is what reaches it.
+
+## Rejected alternatives
+
+- **One chunked scan for the mark display's key and its drawn scales**, with
+  a kept test choosing the instances (the 2026-11-21 mark display audit).
+  `keyOnScreen.ts` and `drawnScales.ts` differ beyond that test:
+  `drawnScales` measures the y, ramp and size extents, a log or quantile ramp
+  through `scaleExtent`, over every drawn instance, while `keyOnScreen` reads
+  only colors and glyphs and stops once every key row is found, the early
+  stop behind the 2 ms over 1M instances above.
