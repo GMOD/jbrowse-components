@@ -173,17 +173,24 @@ export async function encodeSessionParam(
   }
 }
 
+function notStoredError() {
+  return new Error(
+    'No session is stored under this link, which is how a link cut short or altered in transit arrives.',
+  )
+}
+
 async function fetchCiphertext(url: string, signal?: AbortSignal) {
   const response = await (takePrefetchedSharedSession(url) ??
     fetch(url, { signal }))
+  if (response.status === 404) {
+    throw notStoredError()
+  }
   if (!response.ok) {
     throw new Error(getErrorMsg(await response.text()))
   }
   const json = (await response.json()) as { session?: string }
   if (typeof json.session !== 'string') {
-    throw new Error(
-      'Shared session not found — the link may be cut short, or have expired',
-    )
+    throw notStoredError()
   }
   return json.session
 }

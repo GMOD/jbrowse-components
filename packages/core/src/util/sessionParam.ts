@@ -4,6 +4,20 @@
 import { sha256, toBase64Url } from './crypto.ts'
 
 /**
+ * Whether a JBrowse page URL keeps its params in the hash fragment, which a
+ * browser never sends to a server, rather than in the query string. A URL keeps
+ * them in one or the other, never both.
+ */
+export function paramsInHash(url: { hash: string }) {
+  return url.hash.includes('=')
+}
+
+/** The params a JBrowse page URL carries, from wherever it keeps them */
+export function pageUrlParams(url: { hash: string; search: string }) {
+  return new URLSearchParams(paramsInHash(url) ? url.hash.slice(1) : url.search)
+}
+
+/**
  * The kinds of `?session=` value, each written `<kind>-<payload>`: a session
  * uploaded behind the link (`share`), carried whole in it (`encoded`, `json`), a
  * session spec to build one from (`spec`), or one saved in this browser

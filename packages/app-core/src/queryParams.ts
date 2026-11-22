@@ -1,5 +1,7 @@
 import { useCallback, useSyncExternalStore } from 'react'
 
+import { paramsInHash } from '@jbrowse/core/util/sessionParam'
+
 // URL params for the two products that own their page — jbrowse-web and
 // jbrowse-desktop. NOT for an embedded product: react-app and the single-view
 // products are mounted into somebody else's page, and rewriting that page's URL
@@ -27,7 +29,7 @@ type ParamLocation = 'hash' | 'search'
 // The single decision of where this URL keeps its params. Computed once per
 // operation and threaded through read+write so the two can't disagree.
 function paramLocation(url: URL | Location = window.location): ParamLocation {
-  return url.hash.includes('=') ? 'hash' : 'search'
+  return paramsInHash(url) ? 'hash' : 'search'
 }
 
 function readParams(loc: ParamLocation, url: URL | Location = window.location) {

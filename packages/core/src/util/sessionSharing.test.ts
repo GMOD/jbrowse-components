@@ -260,7 +260,16 @@ describe('readSessionFromDynamo', () => {
       fetchMock.mockResponse(JSON.stringify({}))
       await expect(
         readSessionFromDynamo('https://api.example.com/', 'share-gone', 'pass'),
-      ).rejects.toThrow(/cut short, or have expired/)
+      ).rejects.toThrow(/No session is stored under this link/)
+    })
+
+    it('says no session is stored when the service answers 404', async () => {
+      fetchMock.mockResponse(JSON.stringify({ message: 'Session not found' }), {
+        status: 404,
+      })
+      await expect(
+        readSessionFromDynamo('https://api.example.com/', 'share-gone', 'pass'),
+      ).rejects.toThrow(/No session is stored under this link/)
     })
   })
 
@@ -287,12 +296,12 @@ describe('readSessionFromDynamo', () => {
 
   describe('error message extraction', () => {
     it('uses message field from JSON error body', async () => {
-      fetchMock.mockResponse(JSON.stringify({ message: 'session not found' }), {
-        status: 404,
+      fetchMock.mockResponse(JSON.stringify({ message: 'table throttled' }), {
+        status: 500,
       })
       await expect(
         readSessionFromDynamo('https://api.example.com/', 'share-xyz', 'pass'),
-      ).rejects.toThrow('session not found')
+      ).rejects.toThrow('table throttled')
     })
 
     it('uses raw body when JSON has no message field', async () => {

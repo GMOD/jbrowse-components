@@ -10,6 +10,7 @@ import {
   describeSession,
   tallyTypes,
 } from './sessionActivity.ts'
+import { pageUrlParams } from './sessionParam.ts'
 import { getConfAssemblyNamesOrNone } from './tracks.ts'
 
 import type {
@@ -67,12 +68,14 @@ const knownUrlParams = [
   'tracklist',
   'tracks',
 ]
-export function urlParamNames(search: string) {
+export function urlParamNames(search: string | URLSearchParams) {
   const params = new URLSearchParams(search)
   return knownUrlParams.filter(name => params.has(name)).join(',')
 }
 const initialUrlParams =
-  typeof window === 'undefined' ? '' : urlParamNames(window.location.search)
+  typeof window === 'undefined'
+    ? ''
+    : urlParamNames(pageUrlParams(window.location))
 
 function sessionTrackTypeCounts(session: ActivitySession | undefined) {
   const counts: Record<string, number> = {}
