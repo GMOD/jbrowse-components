@@ -527,3 +527,33 @@ test('a fused bin whose later steps read one row at a time still clips, across l
     ),
   ).toEqual([[[480], [490], [500]]])
 })
+
+test('an interval bin that does not fuse is not clipped', () => {
+  const clip = { refName: 'ctgA', start: 500, end: 600 }
+  const byName: TransformStep[] = [
+    INTERVAL_BIN,
+    {
+      type: 'aggregate',
+      groupby: ['name'],
+      ops: [{ op: 'sum', field: 'overlap', as: 'bases' }],
+    },
+  ]
+  const named = (request: Parameters<typeof layerTables>[1]) =>
+    rows(
+      layerTables(
+        [feature(0, 1000, { name: 'a' }), feature(2000, 2035, { name: 'b' })],
+        request,
+      ).layers[0]!.table,
+      'name',
+      'bases',
+    )
+  const clipped = named({ layers: [{ transform: byName }], clip })
+  expect(clipped).toEqual(named({ layers: [{ transform: byName }] }))
+  expect(clipped).toEqual([
+    ['a', 1000],
+    ['b', 35],
+  ])
+  expect(
+    layered({ layers: [{ transform: [INTERVAL_BIN] }], clip }, 'start')[0],
+  ).toHaveLength(104)
+})
