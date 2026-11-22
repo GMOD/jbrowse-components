@@ -99,8 +99,8 @@ lipoprotein(a) levels, a heart-disease risk factor (Schmidt et al. 2016). We'll
 open it from the HPRC page:
 
 - Open the [HPRC page](https://genomes.jbrowse.org/pangenomes/hprc), click the
-  **LPA** example, and click **Graph** under **More about this window**. JBrowse
-  opens on `chr6:160,525,000-160,655,000`.
+  **LPA** example, and press **Open in JBrowse**. JBrowse opens on
+  `chr6:160,525,000-160,655,000`.
 - Tick **Show → Show bubble halos** in the graph track's menu.
 
 The track draws each reference segment in a strip along its top, at the
@@ -419,7 +419,7 @@ draw haplotypes' routes through the salivary amylase array as walk rows, one per
 structure:
 
 - On the [HPRC page](https://genomes.jbrowse.org/pangenomes/hprc), click the
-  **AMY1** example, then **Haplotypes** under **More about this window**.
+  **AMY1** example, then **Haplotypes** beside **Open in JBrowse**.
 - **Display types → Graph** in the track menu.
 - Enter `HG01361.1`, `HG00133.2`, `HG00133.1`, `NA18608.2` and `HG00232.1` in
   **Graph settings... → Haplotypes**.

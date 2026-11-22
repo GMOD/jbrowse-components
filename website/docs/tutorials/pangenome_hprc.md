@@ -78,19 +78,19 @@ Open the [HPRC page](https://genomes.jbrowse.org/pangenomes/hprc), which opens
 on its first example, **CFH / CFHR**. Pick another **Examples** entry, or type a
 gene symbol or a region such as `chr6:32,510,001-32,600,000` into the **Gene or
 region** box and press **Show**. The page draws a map of the window: GRCh38's
-genes, then one row per structural form the haplotypes fall into, commonest
-first, each with its share of the haplotypes aligned there.
+genes, a row for GRCh38's own structure, then one row per structural form the
+haplotypes fall into, commonest first, each with its share of the haplotypes
+aligned there. Forms that differ only by small changes share a row.
 
 <Figure caption="The HPRC page's map of its HLA / MHC example. The boxed button opens the window in JBrowse." src="/img/pangenome/genomes_hprc_loci.png" />
 
-**Open in JBrowse** opens the window in a JBrowse tab. Clicking a row draws that
-form's largest change as a graph under the map, cut from the graph's haplotype
-walks, and the button then opens that form's haplotype as a lane. **More about
-this window** unfolds a table of each change with the haplotypes that have it,
-and every launch:
+**Open in JBrowse** opens the window in a JBrowse tab: the region drawn as a
+graph, with the structural variants each haplotype has under it. Under the map
+the page draws one row's largest change as a graph, cut from the graph's
+haplotype walks, where that cut is small. Clicking a row draws that row's
+instead, and the button then opens its haplotype as a lane. The links beside the
+button open the window other ways:
 
-- **Graph**: the region drawn as a graph, with the structural variants each
-  haplotype has under it
 - **Variants**: the structural variants each haplotype has, over the genes
 - **Haplotypes**: a lane for each structural form, commonest first, and more
   lanes for the forms more haplotypes have

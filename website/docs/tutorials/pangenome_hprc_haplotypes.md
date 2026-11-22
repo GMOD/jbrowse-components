@@ -84,7 +84,7 @@ genes (hg38), **Known alleles** and **GWAS Catalog (NHGRI-EBI)** tracks:
 
 GRCh38's chromosome 22 has the common _GSTT1_ deletion, so the gene sits on an
 alternate contig and no chr22 track draws it. Click the **GSTT1** example on the
-HPRC page, then **Haplotypes** under **More about this window**:
+HPRC page, then **Haplotypes** beside **Open in JBrowse**:
 
 - **The lanes stack by structure**, each beside the one whose deletions and
   insertions against GRCh38 are most alike, so the lanes of one form sit
