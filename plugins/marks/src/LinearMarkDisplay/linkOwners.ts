@@ -19,7 +19,8 @@ export interface MateRegion extends OwnerRegion {
  * refName read through the assembly's aliases. The block's own region when it
  * holds the foot, else any displayed region that does, else the block's own
  * region when the foot is on its contig past its edge, else none. Beside it,
- * `x2CanonicalRefNames`, the far refNames read through the block's own
+ * `x2CanonicalRefNames`, each far refName as a displayed region names it,
+ * the block's own assembly's first, else read through the block's own
  * assembly. Once per fetch or region change, so a pan places through the
  * shader's table alone.
  */
@@ -67,10 +68,14 @@ export function withMateRegions(
         const region = own && holds(own) ? own : (onRef.find(holds) ?? own)
         x2Region[i] = region ? region.index : LINK_NO_REGION
       }
-      const x2CanonicalRefNames =
-        ownAssembly === undefined
-          ? x2RefNames
-          : x2RefNames.map(name => canonical(ownAssembly, name))
+      const x2CanonicalRefNames = x2RefNames.map((name, ref) => {
+        const found = candidates[ref] ?? []
+        return (
+          (found.find(r => r.assemblyName === ownAssembly) ?? found[0])
+            ?.refName ??
+          (ownAssembly === undefined ? name : canonical(ownAssembly, name))
+        )
+      })
       return { ...layer, x2Region, x2CanonicalRefNames }
     }),
   }

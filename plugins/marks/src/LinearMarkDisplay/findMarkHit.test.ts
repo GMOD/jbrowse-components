@@ -661,6 +661,25 @@ test("a far foot on another assembly's displayed region places there", () => {
   expect(hit).toMatchObject({ refName: 'ctgA', x2RefName: 'scaffold1' })
 })
 
+test("a far foot off screen on another assembly's displayed contig prints that assembly's refName", () => {
+  const data = withMateRegions(
+    { layers: [linkLayer(['s1'])] },
+    [
+      mateRegion(0, 'ctgA', 'volvox'),
+      { ...mateRegion(1, 'scaffold1', 'other'), start: 500 },
+    ],
+    canonical,
+    0,
+  )
+  const hit = linkHit(
+    data,
+    [{ ...BLOCK, screenEndPx: 400 }],
+    [{ refName: 'ctgA' }, { refName: 'scaffold1' }],
+  )
+  expect(data.layers[0]!.x2Region).toEqual(Uint32Array.of(LINK_NO_REGION))
+  expect(hit).toMatchObject({ refName: 'ctgA', x2RefName: 'scaffold1' })
+})
+
 test('a block of a spliced feature answers as the feature, the same hit across its blocks', () => {
   const span = (x: number[], x2: number[], root: number[]): StoredLayer => ({
     count: x.length,
