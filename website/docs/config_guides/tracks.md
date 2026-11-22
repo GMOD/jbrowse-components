@@ -226,6 +226,36 @@ takes priority over the display's, so for those formats set it on the adapter:
 }
 ```
 
+### Deep reads over a small genome
+
+Amplicon sequencing of a virus puts thousands of reads over every base of a
+genome a few tens of kilobases long. A BAM's `.bai` index has nothing finer than
+a 16 kb bin, so on a 30 kb genome the estimate stays the same at every zoom and
+the message never clears. Three changes help:
+
+- Use CRAM, or index the BAM with `samtools index -c -m 10`. Both estimate a
+  small window from what that window holds, so zooming in clears the message. A
+  `.csi` built with the default `-m 14` estimates as a `.bai` does.
+- Raise `fetchSizeLimit` on that track's adapter. The limit belongs to the one
+  track, and an assembly this small has no larger window to ask for.
+- Load a coverage bigWig from `mosdepth` or deepTools `bamCoverage` as a
+  `QuantitativeTrack` for the whole-genome picture, and keep the reads for
+  zoomed-in windows.
+
+```json addtrack
+{
+  "type": "AlignmentsTrack",
+  "trackId": "amplicon_reads",
+  "name": "Amplicon reads",
+  "assemblyNames": ["SARS-CoV-2"],
+  "adapter": {
+    "type": "CramAdapter",
+    "uri": "amplicon.cram",
+    "fetchSizeLimit": 60000000
+  }
+}
+```
+
 ## See also
 
 - [](/docs/config_guides/file_types)

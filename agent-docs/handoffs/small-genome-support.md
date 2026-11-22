@@ -1,6 +1,6 @@
 ---
 name: small-genome-support
-description: "Bacterial, viral and mitochondrial genomes after the GenBank reader, the open-genome form and the export fixes landed: the deep amplicon BAM measurement, a feature track beside a GenBank genome, and a ruling on a search hit that crosses a circular origin."
+description: "Bacterial, viral and mitochondrial genomes after the GenBank reader, the open-genome form and the export fixes landed and deep amplicon BAMs were measured: a feature track beside a GenBank genome, and a ruling on a search hit that crosses a circular origin."
 ---
 
 # Small-genome support
@@ -13,23 +13,10 @@ locstring).
 
 ## Next
 
-- **Deep viral amplicon BAMs: measure, then document.** With a BAI, a
-  1,000–100,000× BAM over 30 kb stays bannered at every zoom: the index estimate
-  stops shrinking at one 16 kb bin, so the 20 kb sub-floor doubling never clears
-  it (`reference/REGION_TOO_LARGE.md` § "The sub-floor budget tier").
-  Downsampling cannot lift the banner, since the gate refuses on the index
-  estimate before any read is decoded. Coverage-only stays parked
-  (`ideas/collections/alignments.md`, read downsampling).
-  - **Measure first:** force-load a 5,000× and a 50,000× SARS-CoV-2 BAM and
-    record worker heap, time to first paint and whether the worker survives.
-    Also check whether a CRAM of the same reads clears the gate by zooming.
-  - **Then write a short passage** in `website/docs/tutorials/genomes_basics.md`
-    and the BAM/CRAM adapter config docs, stating the depth the measurement
-    supports:
-    - a mosdepth or bamCoverage bigWig for the whole-genome picture;
-    - `fetchSizeLimit` raised on the viral track only, which is safe because a
-      30 kb assembly cannot spill onto a human chromosome;
-    - CRAM preferred.
+- **Deep amplicon reads: the passage is in `config_guides/tracks.md` only.**
+  `website/docs/tutorials/genomes_basics.md` and the BAM and CRAM adapter docs
+  (their `configSchema.ts` `#config` blocks) still need a pointer to its "Deep
+  reads over a small genome" section.
 - **A GenBank genome opened through the form gets no feature track.** The
   form writes the `GenbankSequenceAdapter` assembly alone, since it has no way
   to return a track with an assembly. The desktop start screen builds the new

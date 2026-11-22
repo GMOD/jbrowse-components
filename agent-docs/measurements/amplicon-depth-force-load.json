@@ -5,31 +5,168 @@
   "source": {
     "kind": "hand",
     "repro": "The `amplicon-depth-gate` files and `probe-amplicon-depth.ts`, `force` steps: a fresh browser per run opens the track at the window, waits for the banner, calls `display.forceLoad()`, and a MutationObserver times the first `[data-display-drawn=\"true\"]` from that call. Runtime.getHeapUsage on every attached worker target and the Pss of every Chrome process (`/proc/<pid>/smaps_rollup`) are sampled every 250 ms. Three runs per row, interleaved round-robin across the rows.",
-    "notes": "ada (24 cores, 125 GB, load average 1 to 4), headless Chrome 157 with default flags, which here is SwiftShader (ANGLE Vulkan) under the app's default renderer: software rendering, so paint is slower than on a GPU, and the worker's share is what this measures. Each page attached one RPC worker. Sizes are MiB. The heap column is that worker's JS heap and leaves out ArrayBuffer backing stores; the renderer column is the largest renderer process's Pss, which holds them and the main thread. Every surviving run ended `displayPhase` ready and drawn. The third 50,000x CRAM whole-genome run lost its renderer (`Page crashed!`, the worker target detached); its cause was not captured. At 2 kb the 5,000x CSI and CRAM drew with no banner, so there was nothing to force."
+    "notes": "ada (24 cores, 125 GB, load average 1 to 4), headless Chrome 157 with default flags, which here is SwiftShader (ANGLE Vulkan) under the app's default renderer: software rendering, so paint is slower than on a GPU, and the worker's share is what this measures. Each page attached one RPC worker. Sizes are MiB. The heap column is that worker's JS heap and leaves out ArrayBuffer backing stores; the renderer column is the largest renderer process's Pss, which holds them and the main thread. Every surviving run ended `displayPhase` ready and drawn. The third 50,000x CRAM whole-genome run lost its renderer (`Page crashed!`, the worker target detached); its cause was not captured. At 2 kb the 5,000x CSI and CRAM drew with no banner, so there was nothing to force. Three further whole-genome 50,000x runs per file all drew (first paint 20.9 to 21.1 s on the BAI, 18.1 s on the CSI, 16.6 to 16.7 s on the CRAM), so the CRAM loss is one run in six."
   },
   "columns": [
-    { "key": "file", "label": "file" },
-    { "key": "depth", "label": "depth" },
-    { "key": "zoom", "label": "window" },
-    { "key": "firstPaintMs", "label": "first paint, median", "format": "ms" },
-    { "key": "range", "label": "range" },
-    { "key": "heapMB", "label": "peak worker heap", "format": "MB" },
-    { "key": "rendererMB", "label": "peak renderer", "format": "MB" },
-    { "key": "survived", "label": "drawn" }
+    {
+      "key": "file",
+      "label": "file"
+    },
+    {
+      "key": "depth",
+      "label": "depth"
+    },
+    {
+      "key": "zoom",
+      "label": "window"
+    },
+    {
+      "key": "firstPaintMs",
+      "label": "first paint, median",
+      "format": "ms"
+    },
+    {
+      "key": "range",
+      "label": "range"
+    },
+    {
+      "key": "heapMB",
+      "label": "peak worker heap",
+      "format": "MB"
+    },
+    {
+      "key": "rendererMB",
+      "label": "peak renderer",
+      "format": "MB"
+    },
+    {
+      "key": "survived",
+      "label": "drawn"
+    }
   ],
   "rows": [
-    { "values": { "file": "BAM + BAI", "depth": "5,000x", "zoom": "whole genome", "firstPaintMs": 2235, "range": "2198–2427ms", "heapMB": 321, "rendererMB": 1053, "survived": "3/3" } },
-    { "values": { "file": "BAM + CSI", "depth": "5,000x", "zoom": "whole genome", "firstPaintMs": 2095, "range": "2026–2120ms", "heapMB": 308, "rendererMB": 1205, "survived": "3/3" } },
-    { "values": { "file": "CRAM", "depth": "5,000x", "zoom": "whole genome", "firstPaintMs": 1933, "range": "1831–2113ms", "heapMB": 314, "rendererMB": 1244, "survived": "3/3" } },
-    { "values": { "file": "BAM + BAI", "depth": "50,000x", "zoom": "whole genome", "firstPaintMs": 21823, "range": "21740–22459ms", "heapMB": 2912, "rendererMB": 8672, "survived": "3/3" } },
-    { "values": { "file": "BAM + CSI", "depth": "50,000x", "zoom": "whole genome", "firstPaintMs": 19179, "range": "18485–19275ms", "heapMB": 2879, "rendererMB": 8779, "survived": "3/3" } },
     {
-      "values": { "file": "CRAM", "depth": "50,000x", "zoom": "whole genome", "firstPaintMs": 17913, "range": "17905–17920ms", "heapMB": 3088, "rendererMB": 8354, "survived": "2/3" },
-      "emphasize": ["survived"]
+      "values": {
+        "file": "BAM + BAI",
+        "depth": "5,000x",
+        "zoom": "whole genome",
+        "firstPaintMs": 2235,
+        "range": "2198–2427ms",
+        "heapMB": 321,
+        "rendererMB": 1053,
+        "survived": "3/3"
+      }
     },
-    { "values": { "file": "BAM + BAI", "depth": "5,000x", "zoom": "2 kb", "firstPaintMs": 863, "range": "853–972ms", "heapMB": 86, "rendererMB": 597, "survived": "3/3" } },
-    { "values": { "file": "BAM + BAI", "depth": "50,000x", "zoom": "2 kb", "firstPaintMs": 4850, "range": "4640–4909ms", "heapMB": 884, "rendererMB": 3572, "survived": "3/3" } },
-    { "values": { "file": "BAM + CSI", "depth": "50,000x", "zoom": "2 kb", "firstPaintMs": 2916, "range": "2841–2977ms", "heapMB": 479, "rendererMB": 1780, "survived": "3/3" } },
-    { "values": { "file": "CRAM", "depth": "50,000x", "zoom": "2 kb", "firstPaintMs": 2620, "range": "2550–2738ms", "heapMB": 526, "rendererMB": 1670, "survived": "3/3" } }
+    {
+      "values": {
+        "file": "BAM + CSI",
+        "depth": "5,000x",
+        "zoom": "whole genome",
+        "firstPaintMs": 2095,
+        "range": "2026–2120ms",
+        "heapMB": 308,
+        "rendererMB": 1205,
+        "survived": "3/3"
+      }
+    },
+    {
+      "values": {
+        "file": "CRAM",
+        "depth": "5,000x",
+        "zoom": "whole genome",
+        "firstPaintMs": 1933,
+        "range": "1831–2113ms",
+        "heapMB": 314,
+        "rendererMB": 1244,
+        "survived": "3/3"
+      }
+    },
+    {
+      "values": {
+        "file": "BAM + BAI",
+        "depth": "50,000x",
+        "zoom": "whole genome",
+        "firstPaintMs": 21823,
+        "range": "21740–22459ms",
+        "heapMB": 2912,
+        "rendererMB": 8672,
+        "survived": "3/3"
+      }
+    },
+    {
+      "values": {
+        "file": "BAM + CSI",
+        "depth": "50,000x",
+        "zoom": "whole genome",
+        "firstPaintMs": 19179,
+        "range": "18485–19275ms",
+        "heapMB": 2879,
+        "rendererMB": 8779,
+        "survived": "3/3"
+      }
+    },
+    {
+      "values": {
+        "file": "CRAM",
+        "depth": "50,000x",
+        "zoom": "whole genome",
+        "firstPaintMs": 17913,
+        "range": "17905–17920ms",
+        "heapMB": 3088,
+        "rendererMB": 8354,
+        "survived": "2/3"
+      },
+      "emphasize": [
+        "survived"
+      ]
+    },
+    {
+      "values": {
+        "file": "BAM + BAI",
+        "depth": "5,000x",
+        "zoom": "2 kb",
+        "firstPaintMs": 863,
+        "range": "853–972ms",
+        "heapMB": 86,
+        "rendererMB": 597,
+        "survived": "3/3"
+      }
+    },
+    {
+      "values": {
+        "file": "BAM + BAI",
+        "depth": "50,000x",
+        "zoom": "2 kb",
+        "firstPaintMs": 4850,
+        "range": "4640–4909ms",
+        "heapMB": 884,
+        "rendererMB": 3572,
+        "survived": "3/3"
+      }
+    },
+    {
+      "values": {
+        "file": "BAM + CSI",
+        "depth": "50,000x",
+        "zoom": "2 kb",
+        "firstPaintMs": 2916,
+        "range": "2841–2977ms",
+        "heapMB": 479,
+        "rendererMB": 1780,
+        "survived": "3/3"
+      }
+    },
+    {
+      "values": {
+        "file": "CRAM",
+        "depth": "50,000x",
+        "zoom": "2 kb",
+        "firstPaintMs": 2620,
+        "range": "2550–2738ms",
+        "heapMB": 526,
+        "rendererMB": 1670,
+        "survived": "3/3"
+      }
+    }
   ]
 }

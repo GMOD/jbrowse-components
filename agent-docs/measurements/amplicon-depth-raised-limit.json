@@ -1,0 +1,99 @@
+{
+  "id": "amplicon-depth-raised-limit",
+  "published": false,
+  "measured": "2026-11-22",
+  "source": {
+    "kind": "hand",
+    "repro": "The `amplicon-depth-gate` files and probe, on tracks whose adapter sets `fetchSizeLimit: 60000000` (the adapter's slot takes priority over the display's): `gate` steps at each window read `displayPhase`, and the time is from navigation to `[data-app-phase=\"ready\"]`, one run per cell. The 50,000x cells that drew at 2 kb and the CRAM's 10 kb cell were run three more times as `force` steps with nothing to force, which is where the heap figures in the notes come from.",
+    "notes": "Same machine, build and software renderer as `amplicon-depth-force-load`. The budget is the 60 MB set at the whole genome and twice that, 120 MB, under the 20 kb floor, so each cell follows from the `amplicon-depth-gate` estimate for its window. Peak worker JS heap over three runs: about 320 MiB for a whole-genome 5,000x load, 860 to 900 MiB for the 50,000x BAM with a BAI at 2 kb, 450 to 520 MiB for the 50,000x CSI and CRAM at 2 kb, and 1.8 to 2.2 GiB for the 50,000x CRAM at 10 kb. Every run that drew ended ready and drawn."
+  },
+  "columns": [
+    {
+      "key": "file",
+      "label": "file"
+    },
+    {
+      "key": "depth",
+      "label": "mean depth"
+    },
+    {
+      "key": "whole",
+      "label": "whole genome"
+    },
+    {
+      "key": "kb10",
+      "label": "10 kb"
+    },
+    {
+      "key": "kb2",
+      "label": "2 kb"
+    },
+    {
+      "key": "bp500",
+      "label": "500 bp"
+    }
+  ],
+  "rows": [
+    {
+      "values": {
+        "file": "BAM + BAI",
+        "depth": "5,000x",
+        "whole": "draws, 2.1 s",
+        "kb10": "draws, 1.6 s",
+        "kb2": "draws, 0.9 s",
+        "bp500": "draws, 0.8 s"
+      }
+    },
+    {
+      "values": {
+        "file": "CRAM + CRAI",
+        "depth": "5,000x",
+        "whole": "draws, 1.9 s",
+        "kb10": "draws, 1.4 s",
+        "kb2": "draws, 0.8 s",
+        "bp500": "draws, 0.6 s"
+      }
+    },
+    {
+      "values": {
+        "file": "BAM + BAI",
+        "depth": "50,000x",
+        "whole": "banner",
+        "kb10": "banner",
+        "kb2": "draws, 4.4 s",
+        "bp500": "draws, 3.1 s"
+      },
+      "emphasize": [
+        "whole",
+        "kb10"
+      ]
+    },
+    {
+      "values": {
+        "file": "BAM + CSI `-m 10`",
+        "depth": "50,000x",
+        "whole": "banner",
+        "kb10": "banner",
+        "kb2": "draws, 2.8 s",
+        "bp500": "draws, 1.4 s"
+      },
+      "emphasize": [
+        "whole",
+        "kb10"
+      ]
+    },
+    {
+      "values": {
+        "file": "CRAM + CRAI",
+        "depth": "50,000x",
+        "whole": "banner",
+        "kb10": "draws, 8.9 s",
+        "kb2": "draws, 2.4 s",
+        "bp500": "draws, 1.1 s"
+      },
+      "emphasize": [
+        "whole"
+      ]
+    }
+  ]
+}
