@@ -48,12 +48,6 @@ Ranked by how much each removes. None was prototyped.
   which instances count; one scan taking a kept test.
 - **A written `gapBp` rides the request and comes back unchanged**
   (`markRequest.ts` `pathOf`, `pathSeries.ts`), so editing it refetches.
-- Smaller: the px channels listed in four places (`markProblems.ts`,
-  `markEdit.ts`, `markSpecs.ts`); `'subfeature'` in `plotEdit.ts` against
-  `DEFAULT_FLATTEN_FIELD` `'subfeatures'`; `stepsOf` repeating the ops mapping
-  for `aggregate` and `window`; dead `x` and `x2` branches in `markProblems.ts`
-  `atDefault`; the `MARK_SPECS` docstring naming `layerRequests` in `model.ts`,
-  which moved to `markConfigViews.ts`.
 
 ## Read and left alone
 

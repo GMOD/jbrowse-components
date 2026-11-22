@@ -8,7 +8,7 @@ import { isCssColor } from '@jbrowse/core/util/cssColorParse'
 import { isJexl } from '@jbrowse/core/util/jexlStrings'
 import { SHAPE_NAMES } from '@jbrowse/core/util/shapeNames'
 
-import { MARK_SPECS } from './markSpecs.ts'
+import { MARK_SPECS, isPxChannel } from './markSpecs.ts'
 import {
   MARK_COLOR_SCALES,
   SIZE_SCALES,
@@ -17,7 +17,7 @@ import {
 } from './markVocabulary.ts'
 
 import type { MarkSnapshot } from './markProblems.ts'
-import type { MarkChannel, MarkSpec, PxChannel } from './markSpecs.ts'
+import type { MarkChannel, MarkSpec } from './markSpecs.ts'
 import type { LineInterpolation, MarkType } from './markVocabulary.ts'
 import type { PlotFields } from './scanPlotFields.ts'
 
@@ -45,11 +45,6 @@ export function editChannels(type: MarkType): EditChannel[] {
     ...(px && !(spec.channels as readonly string[]).includes(px) ? [px] : []),
     ...POSITIONAL,
   ]
-}
-
-/** Whether a channel holds a width in px, a point's `size` or a `strokeWidth`. */
-function isPxChannel(channel: EditChannel): channel is PxChannel {
-  return channel === 'size' || channel === 'strokeWidth'
 }
 
 /** What a control shows for one channel, and whether it may write it back. */

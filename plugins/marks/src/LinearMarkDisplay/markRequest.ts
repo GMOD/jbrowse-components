@@ -191,6 +191,26 @@ export function lastBinEdges(steps: readonly MarkTransformStepConfig[]) {
   return bin?.type === 'bin' ? binEdgesOf(bin) : undefined
 }
 
+// An aggregate's or a window's ops as the worker's: an emptied field or
+// weight left off, and each named as the channel reader named it.
+function opsOf(
+  ops: readonly {
+    op: AggregateOp['op']
+    field: string
+    weight: string
+    as: string
+  }[],
+) {
+  return ops.map((o): AggregateOp => {
+    const op = {
+      op: o.op,
+      field: o.field || undefined,
+      weight: o.weight || undefined,
+    }
+    return { ...op, as: o.as || aggregateFieldName(op) }
+  })
+}
+
 /**
  * A step list as the worker's, with an `auto` bin resolved at `bpPerPx` and
  * an emptied name written as the default the channel reader assumed for it.
@@ -230,28 +250,14 @@ export function stepsOf(
           type: 'aggregate',
           groupby:
             step.groupby.length > 0 ? [...step.groupby] : (binEdges ?? []),
-          ops: step.ops.map((o): AggregateOp => {
-            const op = {
-              op: o.op,
-              field: o.field || undefined,
-              weight: o.weight || undefined,
-            }
-            return { ...op, as: o.as || aggregateFieldName(op) }
-          }),
+          ops: opsOf(step.ops),
         }
       case 'window':
         return {
           type: 'window',
           groupby: [...step.groupby],
           frame: frameOf(step.frame),
-          ops: step.ops.map((o): AggregateOp => {
-            const op = {
-              op: o.op,
-              field: o.field || undefined,
-              weight: o.weight || undefined,
-            }
-            return { ...op, as: o.as || aggregateFieldName(op) }
-          }),
+          ops: opsOf(step.ops),
         }
       case 'coverage':
         return { type: 'coverage', as: step.as || DEFAULT_COVERAGE_AS }

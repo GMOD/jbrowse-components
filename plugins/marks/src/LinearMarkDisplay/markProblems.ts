@@ -12,7 +12,13 @@ import {
   stepsOutput,
   universalPresetOf,
 } from './markRuleFacts.ts'
-import { MARK_SPECS, interpolationOf, readsValue } from './markSpecs.ts'
+import {
+  MARK_SPECS,
+  PX_CHANNELS,
+  isPxChannel,
+  interpolationOf,
+  readsValue,
+} from './markSpecs.ts'
 import {
   DEFAULT_AGGREGATE_OP,
   DEFAULT_BIN_AS,
@@ -21,7 +27,6 @@ import {
   DEFAULT_PILEUP_FIELDS,
   DEFAULT_TEXT_FIELD,
   DEFAULT_WINDOW_FRAME,
-  DEFAULT_X2,
   isWindowFrame,
   MAX_THRESHOLD_CUTS,
   MARK_MEMBERS,
@@ -259,23 +264,7 @@ function unwritten(value: unknown): boolean {
 // leaves off and a file may spell out: the two read alike, so a slot at its
 // default is no channel for a rule to find unread.
 function atDefault(channel: string, value: unknown) {
-  switch (channel) {
-    case 'x':
-      return value === DEFAULT_BIN_AS[0]
-    case 'x2':
-      return (
-        value === DEFAULT_X2 ||
-        (typeof value === 'object' &&
-          value !== null &&
-          unwritten((value as { refName?: unknown }).refName) &&
-          ((value as { pos?: unknown }).pos === DEFAULT_X2 ||
-            unwritten((value as { pos?: unknown }).pos)))
-      )
-    case 'text':
-      return value === DEFAULT_TEXT_FIELD
-    default:
-      return false
-  }
+  return channel === 'text' && value === DEFAULT_TEXT_FIELD
 }
 
 /** The channels a mark's encoding writes, less those at their default. */
@@ -297,8 +286,6 @@ function colorScaleOf({ scale, field = '' }: ColorSlots) {
     fieldScaleOf(FEATURE_FIELD_PRESETS, field),
   )
 }
-
-const PX_CHANNELS = ['size', 'strokeWidth'] as const
 
 function sizeFieldOf(size: WidthSnapshot | undefined) {
   return typeof size === 'string'
@@ -713,11 +700,10 @@ function ownProblems(
     ...spec.channels,
     ...(px ? [px] : []),
   ])
-  const pxChannels: readonly string[] = PX_CHANNELS
   for (const channel of writtenChannels(mark.encoding)) {
     if (!channels.has(channel)) {
       problems.push(
-        !pxChannels.includes(channel)
+        !isPxChannel(channel)
           ? found(
               'unread-channel',
               `encoding.${channel}`,

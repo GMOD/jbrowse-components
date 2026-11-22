@@ -13,6 +13,7 @@ import {
   AGGREGATE_OPS,
   DEFAULT_AGGREGATE_OP,
   DEFAULT_CELLS_FIELD,
+  DEFAULT_FLATTEN_FIELD,
   DEFAULT_COVERAGE_AS,
   DEFAULT_FORMULA_AS,
   DEFAULT_PILEUP_AS,
@@ -352,7 +353,7 @@ export function stepSummary(step: StepSnapshot): string {
       return `pileup into ${step.as || DEFAULT_PILEUP_AS}`
     }
     case 'flatten': {
-      return `one per ${step.field || 'subfeature'}`
+      return `one per ${step.field || DEFAULT_FLATTEN_FIELD}`
     }
     case 'cells': {
       return `cells of ${step.field || DEFAULT_CELLS_FIELD}`
