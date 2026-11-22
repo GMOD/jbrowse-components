@@ -3,11 +3,14 @@ import {
   attributeOf,
   createAttributeChannels,
   createComparativeColorFunction,
+  noStrandLevel,
   opacityFadeOf,
   opacityLevel,
   SYNTENY_VIEW_FIELDS,
   writeFeatureChannels,
 } from '@jbrowse/synteny-core'
+
+import { isArrayRecord } from '../syntenyMate.ts'
 
 import type { Feature } from '@jbrowse/core/util'
 import type { FieldPredicate } from '@jbrowse/core/util/fieldPredicate'
@@ -41,7 +44,9 @@ function paintedField(field: string | undefined) {
  * A paint and filter reading no attribute share one slot, and `records` go
  * unread. Undefined is a ribbon core paints at zero alpha, one the `filter`
  * drops or the fade clears, which draws nothing and offers no hover target,
- * as in two-way synteny. The opacity level scales what is left.
+ * as in two-way synteny. The opacity level scales what is left. Painted by
+ * strand, an array record takes the strand scale's no-strand color, since
+ * its strand is only a vote of its bases.
  */
 export function ribbonPaintOf({
   records,
@@ -107,6 +112,10 @@ export function ribbonPaintOf({
     },
   })
   const level = opacityLevel(opacity, RIBBON_OPACITY, attributeRanges)
+  const repeat =
+    paintedField(field) === 'strand'
+      ? cssColorToABGR(noStrandLevel(paint).color)
+      : undefined
   return (record, strand) => {
     const i = index.get(record) ?? 0
     current = record
@@ -115,6 +124,9 @@ export function ribbonPaintOf({
     const alpha = painted >>> 24
     return alpha === 0
       ? undefined
-      : withAbgrAlpha(painted, Math.round(alpha * level))
+      : withAbgrAlpha(
+          repeat !== undefined && isArrayRecord(record) ? repeat : painted,
+          Math.round(alpha * level),
+        )
   }
 }

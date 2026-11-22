@@ -25,6 +25,10 @@ export function isNamedRecord(feature: Feature) {
   return getRecordName(feature) !== undefined
 }
 
+export function isArrayRecord(feature: Feature) {
+  return feature.get('type') === 'array'
+}
+
 // One entry of a grouped feature's `mates`: a mate placement plus the
 // orientation of ITS pair with the anchor, which a pairwise feature carries as
 // its own top-level `strand` and so has nowhere else to go once several mates

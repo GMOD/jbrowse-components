@@ -268,6 +268,7 @@ export {
   dnDsRatio,
   isAttributeLabels,
   isMeasureField,
+  noStrandLevel,
   rampNorm,
   resolveCategoricalMode,
   resolveNumericMode,

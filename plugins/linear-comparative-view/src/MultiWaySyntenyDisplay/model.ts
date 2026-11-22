@@ -94,6 +94,7 @@ import {
 } from '../LaunchSyntenyView/regionLaunchMenuItems.ts'
 import { createSyntenyPicker } from '../LinearSyntenyDisplay/syntenyPickEngine.ts'
 import { captureStackViewports } from '../SyntenyFollow/stackMove.ts'
+import { isArrayRecord } from '../syntenyMate.ts'
 import { NO_OPS } from './alignmentOps.ts'
 import { axisSpan, axisTickXs } from './anchorAxis.ts'
 import LaneSelectionDialog from './components/LaneSelectionDialog.tsx'
@@ -1843,6 +1844,7 @@ export function stateModelFactory(
             self.statedLaneChanges(assemblyName, refName),
           assemblyName => self.placelessOf(assemblyName),
           assemblyName => self.laneColor(assemblyName),
+          (assemblyName, refName) => self.laneRepeats(assemblyName, refName),
         )
       },
       /**
@@ -2396,6 +2398,7 @@ export function stateModelFactory(
               ]),
               paint: self.ribbonPaint,
               against: self.againstAnchor,
+              repeats: self.features.some(isArrayRecord),
             },
           ),
         ]

@@ -350,8 +350,28 @@ const STRANDS = ['1', '-1'] as const
  * them, and the name `names` gives it, if any.
  */
 export function strandLevels(
-  { domain = [], range = [] }: SyntenyColorPaint,
+  paint: SyntenyColorPaint,
   names: readonly string[] = [],
+) {
+  return levelsOf(STRANDS, paint, names)
+}
+
+/**
+ * #api
+ * The color under `paint` of a record with no one strand, the strand scale's
+ * `0` level, and the name `names` gives it, if any.
+ */
+export function noStrandLevel(
+  paint: SyntenyColorPaint,
+  names: readonly string[] = [],
+) {
+  return levelsOf(['0'], paint, names)[0]!
+}
+
+function levelsOf(
+  values: readonly string[],
+  { domain = [], range = [] }: SyntenyColorPaint,
+  names: readonly string[],
 ) {
   const { scale } = withPreset(
     { field: 'strand', scale: { type: 'ordinal', domain, range } },
@@ -359,7 +379,7 @@ export function strandLevels(
   )
   const color = categoricalColorScale(scale.domain, scale.range)
   const named = keyNames(scale.domain, names)
-  return STRANDS.map(value => ({
+  return values.map(value => ({
     value,
     color: color(value),
     label: named.get(value),

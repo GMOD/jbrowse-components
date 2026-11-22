@@ -210,6 +210,14 @@ export function laneIndelViews(self: ReturnType<typeof laneGroupListViews>) {
     get laneChanges() {
       return self.laneIndels.changes
     },
+    /**
+     * #getter
+     * each lane's array records, stretches whose copies its records pair
+     * with none of the anchor's, for the header
+     */
+    get laneRepeats() {
+      return self.laneIndels.repeats
+    },
   }
 }
 

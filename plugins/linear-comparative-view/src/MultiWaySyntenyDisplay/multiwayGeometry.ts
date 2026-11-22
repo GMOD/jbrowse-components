@@ -30,7 +30,7 @@ import {
   KIND_BASE_TILE,
   KIND_MARKER,
 } from '../LinearSyntenyRPC/syntenyKinds.ts'
-import { getMate, isNamedRecord } from '../syntenyMate.ts'
+import { getMate, isArrayRecord, isNamedRecord } from '../syntenyMate.ts'
 import { lanePairKey } from './alignmentOps.ts'
 import { laneGenome } from './copyLane.ts'
 import { annotatedSpans, geneGlyphGeometry } from './geneGlyph.ts'
@@ -227,6 +227,10 @@ function* lanePairs(lanes: Lane[], glyphHeight: number) {
   }
 }
 
+function ascending([a, b]: Span): Span {
+  return a <= b ? [a, b] : [b, a]
+}
+
 /**
  * `bp1`→`bp4` is one edge and `bp2`→`bp3` the other, so a reversed span draws
  * the crossed parallelogram of an inversion.
@@ -275,7 +279,8 @@ class RibbonBuilder {
 /**
  * A hovered ribbon's tooltip in the lines the synteny views print a block in:
  * the two lanes it joins, `Inverted`, then the channels its record carries.
- * A ribbon whose lanes do not each name one placement keeps `label`.
+ * A ribbon whose lanes do not each name one placement keeps `label`. An
+ * array record's ribbon is never inverted and says it pairs no copies.
  */
 export function ribbonTooltip(
   label: string,
@@ -305,11 +310,15 @@ export function ribbonTooltip(
             start: Math.round(placement.start),
             end: Math.round(placement.end),
           })),
-          inverted: sides[0]!.orientation * sides[1]!.orientation < 0,
+          inverted:
+            !isArrayRecord(record) &&
+            sides[0]!.orientation * sides[1]!.orientation < 0,
           attributes,
         })
       : [label, ...attributeTooltipLines(attributes)]
-  ).join('\n')
+  )
+    .concat(isArrayRecord(record) ? ['Repeat, copies not paired'] : [])
+    .join('\n')
 }
 
 export interface RibbonGeometry {
@@ -756,7 +765,9 @@ export function buildRibbonGeometry({
                 mismatch,
                 farLane.isAnchor,
               )
-            if (!tiled) {
+            if (!tiled && isArrayRecord(record)) {
+              builder.add(ascending(s1), ascending(s2), KIND_BASE, target, fill)
+            } else if (!tiled) {
               builder.add(s1, s2, KIND_BASE, target, fill)
             }
             if (record !== group.feature) {

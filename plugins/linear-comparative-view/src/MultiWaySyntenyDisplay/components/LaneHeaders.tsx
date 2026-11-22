@@ -136,6 +136,38 @@ const LoadFailure = observer(function LoadFailure({
   )
 })
 
+const HeaderChip = observer(function HeaderChip({
+  testId,
+  title,
+  text,
+  leading,
+}: {
+  testId: string
+  title: string
+  text: string
+  leading: boolean
+}) {
+  return (
+    <span
+      data-testid={testId}
+      title={title}
+      style={{
+        marginLeft: leading ? 'auto' : undefined,
+        padding: `0 ${INLINE_CHIP_PAD_PX}px`,
+        border: `${CHIP_BORDER_PX}px solid ${bandPalette.text.secondary}`,
+        borderRadius: 2,
+        background: bandGroundColor(),
+        color: bandInk().text,
+        textShadow: 'none',
+        pointerEvents: 'all',
+        flex: '0 0 auto',
+      }}
+    >
+      {text}
+    </span>
+  )
+})
+
 const LaneHeaders = observer(function LaneHeaders({
   model,
 }: {
@@ -463,28 +495,25 @@ const LaneHeaders = observer(function LaneHeaders({
             />
           ) : null}
           {row.changes ? (
-            <span
-              data-testid={`multiway-lane-changes-${row.assemblyName}`}
+            <HeaderChip
+              testId={`multiway-lane-changes-${row.assemblyName}`}
               title={`against ${row.changes.anchor}`}
-              style={{
-                marginLeft: 'auto',
-                padding: `0 ${INLINE_CHIP_PAD_PX}px`,
-                border: `${CHIP_BORDER_PX}px solid ${bandPalette.text.secondary}`,
-                borderRadius: 2,
-                background: bandGroundColor(),
-                color: bandInk().text,
-                textShadow: 'none',
-                pointerEvents: 'all',
-                flex: '0 0 auto',
-              }}
-            >
-              {row.changes.text}
-            </span>
+              text={row.changes.text}
+              leading
+            />
+          ) : null}
+          {row.repeats ? (
+            <HeaderChip
+              testId={`multiway-lane-repeats-${row.assemblyName}`}
+              title={row.repeats.title}
+              text={row.repeats.text}
+              leading={!row.changes}
+            />
           ) : null}
           <span
             title={row.scaleTitle}
             style={{
-              marginLeft: row.changes ? undefined : 'auto',
+              marginLeft: row.changes || row.repeats ? undefined : 'auto',
               color: bandPalette.text.secondary,
               flex: '0 0 auto',
               pointerEvents: row.scaleTitle ? 'all' : undefined,

@@ -7,6 +7,7 @@ import {
   colorByScales,
   colorByShortLabel,
   getColorBySwatch,
+  noStrandLevel,
   resolveCategoricalMode,
   resolveNumericMode,
   strandLevels,
@@ -106,10 +107,12 @@ export function ribbonColorKey(
     names,
     against = 'lane above',
     paint = {},
+    repeats = false,
   }: RibbonKeyOptions = {},
 ): CategoricalEntry[] {
   if (field === 'strand') {
     const [same, inverted] = strandLevels(paint, names)
+    const repeat = noStrandLevel(paint, names)
     return [
       {
         value: 'same',
@@ -121,6 +124,15 @@ export function ribbonColorKey(
         label: inverted!.label ?? `Inverted vs ${against}`,
         color: inverted!.color,
       },
+      ...(repeats
+        ? [
+            {
+              value: 'repeat',
+              label: repeat.label ?? 'Repeat, copies not paired',
+              color: repeat.color,
+            },
+          ]
+        : []),
     ]
   }
   if (!resolveCategoricalMode(field, attributeRanges, paint)) {
@@ -152,6 +164,8 @@ interface RibbonKeyOptions {
   against?: string
   /** what `ribbons.encoding.color.scale` declares over a field's own scale */
   paint?: SyntenyColorPaint
+  /** whether a ribbon draws an array record, which pairs no copy and is keyed apart */
+  repeats?: boolean
 }
 
 /** `title` unset keeps the ribbons' own heading; `''` draws none. */

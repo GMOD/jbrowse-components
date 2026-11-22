@@ -2,14 +2,18 @@ import { clamp, doesIntersect2 } from '@jbrowse/core/util'
 
 import { cutAlignment } from '../mateBpAt.ts'
 import { voteEvidence } from '../syntenyHysteresis.ts'
-import { getMate, getMates, isNamedRecord } from '../syntenyMate.ts'
+import {
+  getMate,
+  getMates,
+  isArrayRecord,
+  isNamedRecord,
+} from '../syntenyMate.ts'
 import { NO_OPS } from './alignmentOps.ts'
 import { isCopyLane, laneGenome } from './copyLane.ts'
 import { forEachLaneGap } from './laneGaps.ts'
 
 import type { SyntenyGroupedMate } from '../syntenyMate.ts'
 import type { AlignmentOpsById } from './alignmentOps.ts'
-import type { LanePiece } from './laneGaps.ts'
 import type { Feature } from '@jbrowse/core/util'
 
 export type Span = readonly [number, number]
@@ -122,6 +126,25 @@ interface AnchorStretch {
   end: number
 }
 
+/**
+ * An array record over lane bp `at` to `at + laneBp`: the lane walks the
+ * sequence it holds about `laneWalks` times and the anchor about
+ * `anchorWalks`, over `anchorBp` of anchor, and no copy is paired with one
+ */
+export interface LaneRepeat {
+  at: number
+  laneBp: number
+  anchorBp: number
+  laneWalks: number
+  anchorWalks: number
+  anchor: AnchorStretch
+}
+
+function walksOf(feature: Feature, field: string) {
+  const walks: unknown = feature.get(field)
+  return typeof walks === 'number' ? walks : 0
+}
+
 interface LaneRun {
   orientation: number
   refName: string
@@ -135,13 +158,18 @@ interface LaneRun {
 /**
  * A lane contig's pieces as runs of one strand, a piece nested inside a
  * longer one set aside as `forEachLaneGap` does, so a paralog hit inside a
- * segdup splits no run
+ * segdup splits no run. An array record is no run and parts the runs either
+ * side of it into separate stretches, since it pairs no copy with the anchor.
  */
-function laneRunsOf(sorted: readonly LanePiece[]) {
-  const runs: LaneRun[] = []
+function laneRunsOf(sorted: readonly PlacedPiece[]) {
+  const stretches: LaneRun[][] = [[]]
   let reach = Number.NEGATIVE_INFINITY
   for (const { lane, anchor } of sorted) {
-    if (lane.end > reach) {
+    const runs = stretches.at(-1)!
+    if (lane.end > reach && isArrayRecord(lane.feature)) {
+      reach = lane.end
+      stretches.push([])
+    } else if (lane.end > reach) {
       reach = lane.end
       const last = runs.at(-1)
       if (
@@ -165,7 +193,7 @@ function laneRunsOf(sorted: readonly LanePiece[]) {
       }
     }
   }
-  return runs
+  return stretches
 }
 
 function mergedSpans(pieces: readonly { start: number; end: number }[]) {
@@ -212,46 +240,52 @@ function coveredBp(
  * test reads their outer ends. A reverse hit elsewhere on the anchor, or an
  * inverted copy of a flank, is no inversion; neither the vote nor the drawn
  * direction enters. Inversions whose runs hold a shared anchor base are one,
- * the one holding the most anchor, the earlier in the lane on a tie.
+ * the one holding the most anchor, the earlier in the lane on a tie. A run
+ * and its neighbours lie in one stretch between array records.
  */
-function laneInversionsOf(sorted: readonly LanePiece[]) {
-  const runs = laneRunsOf(sorted)
+function laneInversionsOf(sorted: readonly PlacedPiece[]) {
   const found: { change: LaneChange; anchors: LaneRun['anchors'] }[] = []
-  for (let i = 1; i < runs.length - 1; i++) {
-    const left = runs[i - 1]!
-    const run = runs[i]!
-    const right = runs[i + 1]!
-    const held = coveredBp(run.anchors, run.anchors)
-    if (
-      left.orientation === right.orientation &&
-      run.orientation !== left.orientation &&
-      left.refName === run.refName &&
-      right.refName === run.refName &&
-      held >= SPLIT_AT_GAP_BP
-    ) {
-      const [lo, hi] =
-        left.orientation > 0
-          ? [left.anchorStart, right.anchorEnd]
-          : [right.anchorStart, left.anchorEnd]
-      const flanked = coveredBp(
-        [...left.anchors, ...right.anchors],
-        run.anchors,
-      )
-      if (run.anchorStart >= lo && run.anchorEnd <= hi && flanked < held / 2) {
-        found.push({
-          change: {
-            at: run.laneStart,
-            laneBp: run.laneEnd - run.laneStart,
-            anchorBp: held,
-            kind: 'inversion',
-            anchor: {
-              refName: run.refName,
-              start: run.anchorStart,
-              end: run.anchorEnd,
+  for (const runs of laneRunsOf(sorted)) {
+    for (let i = 1; i < runs.length - 1; i++) {
+      const left = runs[i - 1]!
+      const run = runs[i]!
+      const right = runs[i + 1]!
+      const held = coveredBp(run.anchors, run.anchors)
+      if (
+        left.orientation === right.orientation &&
+        run.orientation !== left.orientation &&
+        left.refName === run.refName &&
+        right.refName === run.refName &&
+        held >= SPLIT_AT_GAP_BP
+      ) {
+        const [lo, hi] =
+          left.orientation > 0
+            ? [left.anchorStart, right.anchorEnd]
+            : [right.anchorStart, left.anchorEnd]
+        const flanked = coveredBp(
+          [...left.anchors, ...right.anchors],
+          run.anchors,
+        )
+        if (
+          run.anchorStart >= lo &&
+          run.anchorEnd <= hi &&
+          flanked < held / 2
+        ) {
+          found.push({
+            change: {
+              at: run.laneStart,
+              laneBp: run.laneEnd - run.laneStart,
+              anchorBp: held,
+              kind: 'inversion',
+              anchor: {
+                refName: run.refName,
+                start: run.anchorStart,
+                end: run.anchorEnd,
+              },
             },
-          },
-          anchors: run.anchors,
-        })
+            anchors: run.anchors,
+          })
+        }
       }
     }
   }
@@ -275,6 +309,7 @@ function laneInversionsOf(sorted: readonly LanePiece[]) {
 
 const NO_OPENINGS: readonly LaneOpening[] = []
 const NO_CHANGES: readonly LaneChange[] = []
+const NO_REPEATS: readonly LaneRepeat[] = []
 
 /** a stretch of a lane's contig, in lane bp */
 export interface LaneBlock {
@@ -458,15 +493,22 @@ function uncoveredSpans(
  * pieces less the lane bp between them, so each piece of the drawn strand
  * sits under its own anchor stretch; between two fetch windows lies anchor
  * the fetch never read, which opens and states nothing. Named records are
- * genes, whose spacing says nothing.
+ * genes, whose spacing says nothing. An array record, of either strand,
+ * bounds gaps as a piece of the drawn strand does, and a gap it bounds opens
+ * and states nothing, since its anchor stretch is only where its copies lie.
  */
 function laneGapsOf(
   list: readonly PlacedPiece[],
   orientation: number,
   placedElsewhere: (refName: string, lo: number, hi: number) => boolean,
 ) {
-  const drawn = list.filter(p => p.lane.orientation === orientation)
-  const turned = list.filter(p => p.lane.orientation !== orientation)
+  const arrayPiece = (p: PlacedPiece) => isArrayRecord(p.lane.feature)
+  const drawn = list.filter(
+    p => arrayPiece(p) || p.lane.orientation === orientation,
+  )
+  const turned = list.filter(
+    p => !arrayPiece(p) && p.lane.orientation !== orientation,
+  )
   const openings: LaneOpening[] = []
   const gaps: StatedGap[] = []
   forEachLaneGap(drawn, (left, right, laneGap, anchorGap) => {
@@ -482,6 +524,8 @@ function laneGapsOf(
     )
     if (
       anchorGap !== undefined &&
+      !arrayPiece(left) &&
+      !arrayPiece(right) &&
       oneWindow(left.lane, right.lane) &&
       (oneRecord(left.lane, right.lane) ||
         !uncoveredSpans(
@@ -553,7 +597,8 @@ function sameGap(a: StatedGap, b: StatedGap) {
  * its changes are that strand's gaps, then each gap of the other strand
  * sharing no anchor base and no lane base with one of them, kept or dropped
  * whole, then the inversions among its runs (`laneInversionsOf`), which read
- * the same whichever way the lane is drawn
+ * the same whichever way the lane is drawn; and its array records, which
+ * state neither and are read on no strand
  */
 export function laneIndelsOf(groups: MultiWayGroup[]) {
   const pieces = new Map<string, PlacedPiece[]>()
@@ -575,9 +620,27 @@ export function laneIndelsOf(groups: MultiWayGroup[]) {
   const placedAnchor = placedAnchorOf(groups)
   const openingsByLane = new Map<string, LaneOpening[]>()
   const changesByLane = new Map<string, LaneChange[]>()
+  const repeatsByLane = new Map<string, LaneRepeat[]>()
   for (const [key, list] of pieces) {
     const assemblyName = key.slice(0, key.indexOf('\u0000'))
     list.sort((a, b) => a.lane.start - b.lane.start)
+    const repeats = list
+      .filter(p => isArrayRecord(p.lane.feature))
+      .map(({ lane, anchor }) => ({
+        at: lane.start,
+        laneBp: lane.end - lane.start,
+        anchorBp: anchor.end - anchor.start,
+        laneWalks: walksOf(lane.feature, 'hapWalks'),
+        anchorWalks: walksOf(lane.feature, 'refWalks'),
+        anchor: {
+          refName: anchor.refName,
+          start: anchor.start,
+          end: anchor.end,
+        },
+      }))
+    if (repeats.length) {
+      repeatsByLane.set(key, repeats)
+    }
     const inversions = laneInversionsOf(list)
     const strands = [1, -1].map(orientation => ({
       orientation,
@@ -618,6 +681,8 @@ export function laneIndelsOf(groups: MultiWayGroup[]) {
       reversed = false,
     ): readonly LaneChange[] =>
       changesByLane.get(keyOf(assemblyName, refName, reversed)) ?? NO_CHANGES,
+    repeats: (assemblyName: string, refName: string): readonly LaneRepeat[] =>
+      repeatsByLane.get(`${assemblyName}\u0000${refName}`) ?? NO_REPEATS,
   }
 }
 

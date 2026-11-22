@@ -75,22 +75,24 @@ function SvgColorChip({
   )
 }
 
-function SvgChangesChip({
+function SvgHeaderChip({
   text,
-  anchor,
+  title,
   right,
   width,
   y,
+  testId,
 }: {
   text: string
-  anchor: string
+  title: string
   right: number
   width: number
   y: number
+  testId: string
 }) {
   return (
-    <g data-testid="multiway-lane-changes">
-      <title>{`against ${anchor}`}</title>
+    <g data-testid={testId}>
+      <title>{title}</title>
       <rect
         x={right - width}
         y={labelBoxTop(y) - 0.5}
@@ -139,9 +141,15 @@ export function SvgLaneHeaders({
           ? barX + LANE_COLOR_SWATCH_PX + HEADER_GAP_PX + INLINE_CHIP_PAD_PX
           : barX
         const scaleRight = width - HEADER_INSET_PX
-        const changesRight = row.scale
+        const repeatsRight = row.scale
           ? scaleRight - measureText(row.scale, LABEL_FONT_SIZE) - HEADER_GAP_PX
           : scaleRight
+        const repeatsWidth = row.repeats
+          ? changesChipWidth(row.repeats.text)
+          : 0
+        const changesRight = row.repeats
+          ? repeatsRight - repeatsWidth - HEADER_GAP_PX
+          : repeatsRight
         const changesWidth = row.changes
           ? changesChipWidth(row.changes.text)
           : 0
@@ -209,12 +217,23 @@ export function SvgLaneHeaders({
               {label}
             </SvgHaloText>
             {row.changes ? (
-              <SvgChangesChip
+              <SvgHeaderChip
                 text={row.changes.text}
-                anchor={row.changes.anchor}
+                title={`against ${row.changes.anchor}`}
                 right={changesRight}
                 width={changesWidth}
                 y={row.y}
+                testId="multiway-lane-changes"
+              />
+            ) : null}
+            {row.repeats ? (
+              <SvgHeaderChip
+                text={row.repeats.text}
+                title={row.repeats.title}
+                right={repeatsRight}
+                width={repeatsWidth}
+                y={row.y}
+                testId="multiway-lane-repeats"
               />
             ) : null}
             {row.scale ? (

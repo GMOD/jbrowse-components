@@ -5,7 +5,7 @@ import { laneOf } from './copyLane.ts'
 import { frameOpenings, laneBpOfOpened } from './layoutMultiWay.ts'
 
 import type { Lane } from './laneStack.ts'
-import type { LaneBlock, LaneChange } from './layoutMultiWay.ts'
+import type { LaneBlock, LaneChange, LaneRepeat } from './layoutMultiWay.ts'
 
 export const LABEL_FONT_SIZE = 10
 export const LABEL_BASELINE_OFFSET = 3
@@ -60,6 +60,8 @@ export interface LaneHeaderRow {
   against?: string
   /** the deletions, insertions and inversions against the anchor the shown frame meets */
   changes?: { text: string; anchor: string }
+  /** the stretches the shown frame meets whose copies no ribbon pairs, the largest named and its walks as a hover title */
+  repeats?: { text: string; title: string }
   /** the swatch beside the label and its tint: the lane's `rows.colors` entry, else its source's color */
   color?: string
 }
@@ -123,6 +125,39 @@ export function changeWindow(change: LaneChange) {
     start: Math.max(0, anchor.start - pad),
     end: anchor.end + pad,
   }
+}
+
+function walkTimes(walks: number) {
+  const times = walks >= 10 ? Math.round(walks) : Number(walks.toFixed(1))
+  return times === 1 ? 'once' : times === 2 ? 'twice' : `${times} times`
+}
+
+/**
+ * The chip naming a lane's array records the shown frame meets: the one
+ * holding the most lane bp, the rest counted, and how often each side walks
+ * its sequence as a hover title
+ */
+export function repeatsChip(
+  lane: Pick<Lane, 'frame' | 'canon' | 'label'>,
+  stated: readonly LaneRepeat[],
+  anchor: string,
+) {
+  const region = laneRegion(lane)
+  const shown = region
+    ? stated
+        .filter(
+          ({ at, laneBp }) => at <= region.end && at + laneBp >= region.start,
+        )
+        .toSorted((a, b) => b.laneBp - a.laneBp || b.anchorBp - a.anchorBp)
+    : []
+  const largest = shown[0]
+  const more = shown.length - 1
+  return largest
+    ? {
+        text: `${bpText(largest.laneBp)} repeat over ${bpText(largest.anchorBp)}${more ? `, ${more} more` : ''}`,
+        title: `This stretch repeats: ${lane.label} passes its sequence about ${walkTimes(largest.laneWalks)} and ${anchor} about ${walkTimes(largest.anchorWalks)}, so no single ribbon is drawn.`,
+      }
+    : undefined
 }
 
 function laneChanges(
@@ -222,6 +257,10 @@ export function laneHeaderRows(
   placelessOf: (assemblyName: string) => Placeless | undefined = () =>
     undefined,
   colorOf: (assemblyName: string) => string | undefined = () => undefined,
+  repeatsOf: (
+    assemblyName: string,
+    refName: string,
+  ) => readonly LaneRepeat[] = () => [],
 ): LaneHeaderRow[] {
   const inline = inlineGlyphHeight !== undefined
   const anchor = lanes.find(lane => lane.isAnchor)?.label
@@ -251,6 +290,10 @@ export function laneHeaderRows(
     const changes = frame
       ? laneChanges(lane, changesOf(lane.assemblyName, frame.refName))
       : placeless && placelessText(placeless)
+    const repeats =
+      frame && anchor !== undefined
+        ? repeatsChip(lane, repeatsOf(lane.assemblyName, frame.refName), anchor)
+        : undefined
     const scale = scaleOf(lane, visibleBpSpan)
     return {
       assemblyName: lane.assemblyName,
@@ -268,6 +311,7 @@ export function laneHeaderRows(
       against: lane.isAnchor ? undefined : against,
       changes:
         changes && anchor !== undefined ? { text: changes, anchor } : undefined,
+      ...(repeats ? { repeats } : {}),
       color: colorOf(lane.assemblyName),
     }
   })

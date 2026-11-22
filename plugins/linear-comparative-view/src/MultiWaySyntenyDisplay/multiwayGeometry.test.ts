@@ -251,6 +251,47 @@ describe('the ribbons', () => {
     expect(layer!.height).toBe(s.lanes[1]!.glyphTop - layer!.yTop)
   })
 
+  test('draw an array record of either strand untwisted, in the no-strand color, and never call it inverted', () => {
+    const array = (name: string, start: number, end: number, strand: number) =>
+      new SimpleFeature({
+        ...pairFeature(name, start, end, { strand }).toJSON(),
+        type: 'array',
+      })
+    const s = stack({
+      features: [array('g1', 100, 200, 1), array('g2', 300, 400, -1)],
+    })
+    const { cells } = buildRibbonGeometry({
+      stack: s,
+      laneLinks: undefined,
+      ribbonColor: 'rgb(130,130,130)',
+      ribbonColorField: 'strand',
+      drawCurves: false,
+    })
+    const data = ribbonData(cells, 'ribbons:0')
+    expect([data.bp1[1], data.bp2[1], data.bp4[1], data.bp3[1]]).toEqual([
+      240, 320, 240, 320,
+    ])
+    const none = withAbgrAlpha(
+      cssColorToABGR(UNIVERSAL_FIELD_PRESETS.strand.scale.range[2]),
+      Math.round(0.3 * 255),
+    )
+    expect([...data.colors]).toEqual([none, none])
+    const placement = s.lanes[1]!.placements.get('g2')!
+    expect(
+      ribbonTooltip(
+        'g2',
+        ribbonSides(
+          s.lanes[0]!,
+          s.lanes[1]!,
+          { groupKey: 'g2' },
+          placement.features[0]!,
+        ),
+        placement.features[0]!,
+        {},
+      ),
+    ).not.toContain('Inverted')
+  })
+
   test('share one target per group across every gutter, so a hover lights the group in all of them', () => {
     const s = stack({
       features: [
