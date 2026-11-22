@@ -54,7 +54,7 @@ export function getDotplotTooltipLines({
   cigarOp?: { op: string; length: number }
   segment?: { x1: number; x2: number; y1: number; y2: number }
 }) {
-  const { p11, p12, p21, p22, strands, attributes } = rpcData
+  const { p11, p12, p21, p22, strands, attributes, attributeRanges } = rpcData
   const { nameDict, nameIds, mateNameDict, mateNameIds } = rpcData
   const x = {
     ...axisSpan(p11[featureIdx]!, p12[featureIdx]!, hview),
@@ -71,10 +71,14 @@ export function getDotplotTooltipLines({
         { ...y, ...axisSpan(segment.y1, segment.y2, vview) },
       ]
     : undefined
-  const blockAttributes = featureAttributes(attributes, featureIdx)
+  const blockAttributes = featureAttributes(
+    attributes,
+    featureIdx,
+    attributeRanges,
+  )
   const depth = blockAttributes.syntenicDepth
   const sharedBy =
-    depth !== undefined && depth > 1
+    typeof depth === 'number' && depth > 1
       ? genesSharing(
           {
             lanes: rpcData,

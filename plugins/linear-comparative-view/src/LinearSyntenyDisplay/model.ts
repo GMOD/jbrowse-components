@@ -123,7 +123,7 @@ export interface FeatPos {
   // name — not `identity` alone, which is what the tooltip and the feature
   // panel used to show while the fetch carried mapping quality, dN/dS and any
   // column the track declared. `featureAttributes` drops the NaN sentinel.
-  attributes: Record<string, number>
+  attributes: Record<string, number | string>
 }
 
 // The feature an INSTANCE draws, which is what the pick, the hover and the
@@ -165,7 +165,7 @@ export function getFeatureAtIndex(
       assemblyName: data.mateAssemblyNameDict[data.mateAssemblyNameIds[i]!]!,
       name: data.mateNameDict[data.mateNameIds[i]!]!,
     },
-    attributes: featureAttributes(data.attributes, i),
+    attributes: featureAttributes(data.attributes, i, data.attributeRanges),
   }
 }
 
@@ -813,7 +813,7 @@ function stateModelFactory(configSchema: LinearSyntenyDisplayConfigSchema) {
             ? getCigarOpsAt(instanceData, hoveredInstanceIdx, hoveredWithin)
             : undefined,
           sharedBy:
-            featureData && depth !== undefined && depth > 1
+            featureData && typeof depth === 'number' && depth > 1
               ? sharedByOf(featureData, feat)
               : undefined,
           segment:

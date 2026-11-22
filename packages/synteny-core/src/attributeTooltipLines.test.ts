@@ -11,31 +11,31 @@ const attributes = {
 }
 
 test('reads one feature, dropping the NaN missing sentinel', () => {
-  expect(featureAttributes(attributes, 0)).toEqual({
+  expect(featureAttributes(attributes, 0, {})).toEqual({
     identity: 0.9876000285148621,
     mappingQual: 60,
     ka_ks: 1.5,
   })
-  expect(featureAttributes(attributes, 1)).toEqual({
+  expect(featureAttributes(attributes, 1, {})).toEqual({
     meanIdentity: 0.5,
     mappingQual: 60,
   })
 })
 
 test('an index past the end carries nothing', () => {
-  expect(featureAttributes(attributes, 9)).toEqual({})
+  expect(featureAttributes(attributes, 9, {})).toEqual({})
 })
 
 // The labels the legend uses for the modes that paint these channels, so the
 // two can't name the same number differently. A declared column keeps the name
 // its author gave it.
 test('labels the presets and leaves a declared column alone', () => {
-  expect(attributeTooltipLines(featureAttributes(attributes, 0))).toEqual([
+  expect(attributeTooltipLines(featureAttributes(attributes, 0, {}))).toEqual([
     'Identity: 98.8%',
     'Mapping quality: 60',
     'ka_ks: 1.5',
   ])
-  expect(attributeTooltipLines(featureAttributes(attributes, 1))).toEqual([
+  expect(attributeTooltipLines(featureAttributes(attributes, 1, {}))).toEqual([
     'Mean query identity: 50%',
     'Mapping quality: 60',
   ])
@@ -48,4 +48,25 @@ test('formats a ratio by precision and an integer unabbreviated', () => {
   expect(attributeTooltipLines({ mappingQual: 12345 })).toEqual([
     'Mapping quality: 12,345',
   ])
+})
+
+// a text column's channel holds each feature's index into the fetch's labels,
+// which a hover printed as the value
+test("a text column reads as the fetch's label, not its index", () => {
+  const channels = {
+    block: new Float32Array([1, 0, Number.NaN]),
+    blockSpan: new Float32Array([45, 12, 12]),
+  }
+  const ranges = {
+    block: { labels: ['block7', 'block12'], colors: {} },
+    blockSpan: { min: 12, max: 45 },
+  }
+  expect(featureAttributes(channels, 0, ranges)).toEqual({
+    block: 'block12',
+    blockSpan: 45,
+  })
+  expect(attributeTooltipLines(featureAttributes(channels, 1, ranges))).toEqual(
+    ['block: block7', 'blockSpan: 12'],
+  )
+  expect(featureAttributes(channels, 2, ranges)).toEqual({ blockSpan: 12 })
 })

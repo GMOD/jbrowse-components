@@ -835,7 +835,7 @@ describe('the ribbons', () => {
     ])
   })
 
-  test('a hovered ribbon names the two lanes it joins, then its record’s numeric channels', () => {
+  test('a hovered ribbon names the two lanes it joins, then its record’s channels', () => {
     const record = new SimpleFeature({
       ...pairFeature('g1', 100, 200, { strand: -1 }).toJSON(),
       identity: 0.98712,
@@ -860,6 +860,7 @@ describe('the ribbons', () => {
       'peach Pp1:1,101-1,200 (100bp)',
       'Inverted',
       ...attributeTooltipLines({ identity: 0.98712, mappingQual: 60 }),
+      'group: A1a',
     ])
     expect(
       ribbonTooltip('g1\ngrape chr1:101-200', [], record, ranges).split('\n'),
@@ -867,6 +868,7 @@ describe('the ribbons', () => {
       'g1',
       'grape chr1:101-200',
       ...attributeTooltipLines({ identity: 0.98712, mappingQual: 60 }),
+      'group: A1a',
     ])
   })
 

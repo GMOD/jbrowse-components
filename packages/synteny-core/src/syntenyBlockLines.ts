@@ -85,7 +85,7 @@ export function syntenyBlockLines({
   sides: readonly SyntenyBlockSide[]
   segment?: readonly SyntenyBlockSide[]
   inverted: boolean
-  attributes: Record<string, number>
+  attributes: Record<string, number | string>
   sharedBy?: readonly string[]
 }) {
   return [
@@ -94,7 +94,7 @@ export function syntenyBlockLines({
       : sides.map(sideLine)),
     ...(inverted ? ['Inverted'] : []),
     ...attributeTooltipLines(attributes),
-    ...(syntenicDepth !== undefined && syntenicDepth > 1
+    ...(typeof syntenicDepth === 'number' && syntenicDepth > 1
       ? [sharedLine(syntenicDepth, sharedBy)]
       : []),
   ]

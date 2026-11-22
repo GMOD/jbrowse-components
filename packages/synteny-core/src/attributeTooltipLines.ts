@@ -1,7 +1,13 @@
 import { toLocale } from '@jbrowse/core/util'
 
 import { colorByShortLabel } from './colorLegend.ts'
-import { SYNTENY_FIELD_PRESETS, attributeOf } from './colorRamps.ts'
+import {
+  SYNTENY_FIELD_PRESETS,
+  attributeOf,
+  isAttributeLabels,
+} from './colorRamps.ts'
+
+import type { AttributeRange } from './colorRamps.ts'
 
 // Channel name -> the label the legend uses for the field that paints it, so a
 // tooltip and a legend cannot name the same number two ways. The PAF adapter's
@@ -28,35 +34,45 @@ function formatAttribute(name: string, value: number) {
 }
 
 /**
- * The numeric channels one feature actually carries, keyed by channel name, in
- * the order the fetch allocated them. NaN is the worker's missing sentinel (see
+ * The channels one feature actually carries, keyed by channel name, in the
+ * order the fetch allocated them: a number as itself, and a text column's
+ * value as its label, which the channel holds as an index into the fetch's own
+ * `attributeRanges` labels. NaN is the worker's missing sentinel (see
  * `createAttributeChannels`), so a channel this feature has no value for is
  * absent.
  */
 export function featureAttributes(
   attributes: Record<string, ArrayLike<number>>,
   index: number,
+  attributeRanges: Record<string, AttributeRange>,
 ) {
-  const out: Record<string, number> = {}
+  const out: Record<string, number | string> = {}
   for (const [name, values] of Object.entries(attributes)) {
     const value = values[index]
-    if (value !== undefined && !Number.isNaN(value)) {
-      out[name] = value
+    const range = attributeRanges[name]
+    const read =
+      value === undefined || Number.isNaN(value)
+        ? undefined
+        : range && isAttributeLabels(range)
+          ? range.labels[value]
+          : value
+    if (read !== undefined) {
+      out[name] = read
     }
   }
   return out
 }
 
 /**
- * A feature's numeric channels as tooltip lines, shared by both comparative
+ * A feature's channels as tooltip lines, shared by both comparative
  * views because they had drifted: the dotplot listed every channel, while the
  * synteny tooltip hand-wrote one `Identity:` line at a different precision and
  * omitted mapping quality, dN/dS, mean identity and every column the
  * track declared.
  */
-export function attributeTooltipLines(values: Record<string, number>) {
+export function attributeTooltipLines(values: Record<string, number | string>) {
   return Object.entries(values).map(
     ([name, value]) =>
-      `${CHANNEL_LABELS.get(name) ?? name}: ${formatAttribute(name, value)}`,
+      `${CHANNEL_LABELS.get(name) ?? name}: ${typeof value === 'string' ? value : formatAttribute(name, value)}`,
   )
 }

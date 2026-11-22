@@ -15,6 +15,7 @@ import {
   attributeTooltipLines,
   colorSchemes,
   isAttributeLabels,
+  parseAttributeValue,
   readChannelValue,
   syntenyBlockLines,
 } from '@jbrowse/synteny-core'
@@ -262,8 +263,8 @@ class RibbonBuilder {
 
 /**
  * A hovered ribbon's tooltip in the lines the synteny views print a block in:
- * the two lanes it joins, `Inverted`, then the numeric channels its record
- * carries. A ribbon whose lanes do not each name one placement keeps `label`.
+ * the two lanes it joins, `Inverted`, then the channels its record carries.
+ * A ribbon whose lanes do not each name one placement keeps `label`.
  */
 export function ribbonTooltip(
   label: string,
@@ -271,12 +272,15 @@ export function ribbonTooltip(
   record: Feature,
   attributeRanges: Record<string, AttributeRange>,
 ) {
-  const attributes: Record<string, number> = {}
+  const attributes: Record<string, number | string> = {}
   for (const [name, range] of Object.entries(attributeRanges)) {
     const value = isAttributeLabels(range)
-      ? Number.NaN
+      ? parseAttributeValue(record.get(name))
       : readChannelValue(record, name)
-    if (Number.isFinite(value)) {
+    if (
+      typeof value === 'string' ||
+      (typeof value === 'number' && Number.isFinite(value))
+    ) {
       attributes[name] = value
     }
   }
