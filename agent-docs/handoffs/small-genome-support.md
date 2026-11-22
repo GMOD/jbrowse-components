@@ -1,6 +1,6 @@
 ---
 name: small-genome-support
-description: "Bacterial, viral and mitochondrial genomes after the GenBank reader, the density-10 default and the origin-export fix landed: the deep amplicon BAM docs and measurement and GenBank in the open-genome form."
+description: "Bacterial, viral and mitochondrial genomes after the GenBank reader, the open-genome form and the export fixes landed: the deep amplicon BAM measurement, a feature track beside a GenBank genome, and a ruling on a search hit that crosses a circular origin."
 ---
 
 # Small-genome support
@@ -30,37 +30,39 @@ locstring).
     - `fetchSizeLimit` raised on the viral track only, which is safe because a
       30 kb assembly cannot spill onto a human chromosome;
     - CRAM preferred.
-- **Add GenBank to the web/desktop open-genome form.** One extension maps to two
-  adapters (`GenbankSequenceAdapter` for the assembly, `GenbankAdapter` for the
-  track), and a test requires the form to offer every sequence format in
-  `packages/add-track-core/src/formats.ts`. That means a new form field and
-  about 10 call sites in `packages/core/src/util/assemblyConfigUtils.ts`. Config and
-  `jbrowse add-assembly` already work.
-- **GenBank export writes NCBI GFF3's `gb-synonym` on `source`.** A GFF3
-  track's `gbkey=Src` region becomes the record's `source` (`sourceQualifiers`
-  in `packages/core/src/pluggableElementTypes/models/saveTrackFileTypes/genbank.ts`);
-  `Dbxref`, `substr` and the hyphenated ASN.1 names (`nat-host`,
-  `collection-date`, ...) are respelled, an organelle `genome` becomes
-  `/organelle` and any other `genome` is dropped, but a qualifier INSDC has no
-  key for, such as `gb-synonym`, `gb-acronym` or `old-name`, is written as is.
-  No qualifier line is wrapped at 80 columns; Biopython 1.86 reads the output
-  either way.
-- **A mark display opens an origin-crossing feature's details on one piece.**
-  `GetBasicFeatureDetails` reads a record whole across the origin of a sequence
-  its file declares circular and stamps the `circularLength` details wraps by
-  (a session snapshot keeps it). `LinearMarkDisplay` opens details through
-  `selectEncodedFeature` and `CoreGetEncodedFeature` instead, which read the
-  adapter without `wholeAcrossOrigin` and stamp nothing, so a click opens the
-  piece of the feature on the side of the origin it hit. Read from
-  `packages/core/src/rpc/methods/executeEncodedLayers.ts`, not run.
+- **A GenBank genome opened through the form gets no feature track.** The
+  form writes the `GenbankSequenceAdapter` assembly alone, since it has no way
+  to return a track with an assembly. The desktop start screen builds the new
+  session's config with an empty `tracks` list
+  (`products/jbrowse-desktop/src/components/StartScreen/StartScreenDialogs.tsx`),
+  so the `GenbankAdapter` track could be added there cheaply; in-session Open
+  genome and the web assembly manager form would need to return a companion
+  track, a new contract across both callers. Dropping the file on an open view
+  stages it as that track.
 - **A text-index hit across a circular origin navigates to its first piece
-  only.** The GenBank indexer writes `join(92000..92721,1..500)` on a
-  `LOCUS circular` record as `NC_002128:92000..93221`, where the adapter draws
-  it, but `locStringsToRegions` clamps an end past the contig, so choosing the
-  hit shows 92000..92721. Any circular record with a feature joined across its
-  origin hits it, whichever program wrote it; Prokka writes every record
-  linear, so its files do not. Read from
-  `packages/text-indexing-core/src/types/genbankAdapter.ts`, not run.
+  only; needs a ruling.** Reproduced: `ctgB` 5999..6500 shows as
+  `ctgB:6,000..6,079`. The clamp is in `navToLocations`
+  (`plugins/linear-genome-view/src/LinearGenomeView/model.ts`), reached through
+  `navToOption` and `parseLocStrings`, not in `locStringsToRegions`. The GFF3
+  indexer (`packages/text-indexing-core/src/types/gff3Adapter.ts`) writes an
+  over-length end too. Two routes:
+  - navigation splits an over-length end on a circular contig in two, which is
+    the wrapping locstring `originCut.ts` declines (2026-10-14);
+  - the indexer writes both pieces (`NC_002128:92000..92721 NC_002128:1..500`,
+    which `navToLocations` accepts), but `landsInAssembly` in
+    `packages/core/src/TextSearch/places.ts` parses one locstring and drops the
+    hit from the dropdown, so it also touches `groupByPlace`'s `spanOf`,
+    `highlightSearchResultFeature`, `RefNameAutocomplete/util.ts` and
+    `products/jbrowse-img/src/renderRegion.ts`.
+- **A mark details click costs one more adapter read**, the origin lookup in
+  `executeGetEncodedFeature`, on every sequence, since nothing on a row says
+  its sequence is circular; a row a step computed fields on loses them when the
+  whole record replaces it. Read, not run.
+- **GenBank export respells into qualifiers INSDC has retired for new
+  entries** (`clone_lib`, `pop_variant`, `sub_strain`), which older records
+  still carry and a new-submission validator flags. With both `gb-synonym` and
+  `gb-acronym` on a source the second becomes a `/note`, and the reader ignores
+  SOURCE, so a synonym does not survive a re-import.
 
 ## Open questions, unverified
 

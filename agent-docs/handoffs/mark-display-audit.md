@@ -1,6 +1,6 @@
 ---
 name: mark-display-audit
-description: "An audit of LinearMarkDisplay (plugins/marks, the worker encoder, Edit plot, hover, legend, export) on 2026-11-21, its checked items fixed: the interval bins the fused kernel leaves unclipped and two traced hover findings left open."
+description: "An audit of LinearMarkDisplay (plugins/marks, the worker encoder, Edit plot, hover, legend, export) on 2026-11-21, its checked and hover items fixed: the interval bins the fused kernel leaves unclipped await a ruling, and two link-identity pointers are unread."
 ---
 
 # Mark display audit
@@ -33,17 +33,15 @@ it through the code.
     (`stepOutputs.ts`) says is not row-wise or that writes `refName`, `start`
     or `end`, or a pair right after `cells`.
 
-## Traced, not fixed: hover
+## Pointers from the hover fix, read, not run
 
-- **A point or rect sharing the flatten root with a cross-sequence link
-  still hovers a span mixing the two sequences.** `featureInstances.ts`
-  `featureSpan` takes min and max over every instance of the root, the
-  link's far `x2` included. The link's own hit reads its two feet
-  (`findMarkHit.ts`); the other marks of that feature do not.
-- **A link between two assemblies' same-named contigs (hg38 chr1 to hs1
-  chr1) hovers as one sequence.** `findMarkHit.ts` compares the far foot's
-  refName with the near one's and no assembly, so `x2RefName` drops and the
-  locus spans both genomes' coordinates. Pre-existing.
+- **`linkOwners.ts` keys a link's feet by refName and bp with no assembly**
+  (`footKey`, `linkKeys`), so two identical-looking links on hg38 chr1 and hs1
+  chr1 regions in one row would merge into one curve.
+- **A far foot on no displayed region hovers with no assembly.** In
+  `withMateRegions`, when the track's own assembly has no region of that name,
+  `x2CanonicalRefNames` takes another assembly's spelling and which one is not
+  recorded. It cannot mix spans, since the refName differs.
 
 ## Read and left alone
 
