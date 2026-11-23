@@ -2203,9 +2203,6 @@ importers:
       serve-handler:
         specifier: ^6.1.8
         version: 6.1.8
-      tmp:
-        specifier: ^0.2.7
-        version: 0.2.7
 
   products/jbrowse-desktop:
     dependencies:
