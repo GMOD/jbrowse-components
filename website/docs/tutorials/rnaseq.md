@@ -20,6 +20,7 @@ two BAM fields, with no extra files or configuration. We:
 - draw a circular RNA's back-splice from split reads, set RNase R-treated reads
   beside untreated ones, and follow nanopore reads around a circle
 - load STAR, regtools and portcullis junction tables as arc tracks
+- align your own reads with STAR and load them the same way
 
 ## Prerequisites
 
@@ -44,8 +45,9 @@ conda install -c bioconda -c conda-forge samtools
 The hg19 alignments, gene models and junction table behind the figures, hosted
 on jbrowse.org's demo bucket.
 
-Nothing to download: the track configs below read these files by URL. _Loading
-your own RNA-seq data_ covers reads of your own.
+Nothing to download: the track configs below read these files by URL.
+[Load your own RNA-seq reads the same way](#load-your-own-rna-seq-reads-the-same-way)
+covers reads of your own.
 
 <details>
 <summary>The files</summary>
@@ -56,7 +58,7 @@ your own RNA-seq data_ covers reads of your own.
 
 </details>
 
-## Loading hg19, the stranded reads and RefSeq genes
+## Load hg19, the stranded reads and RefSeq genes
 
 The alignments are against hg19, so we load that assembly with an alias file
 that maps the chromosome names in the BAM and the gene models to the assembly's.
@@ -92,41 +94,7 @@ its index beside it:
 }
 ```
 
-## Loading your own RNA-seq data
-
-STAR aligns reads of your own into a sorted BAM.
-`--outSAMstrandField intronMotif` writes the `XS` strand tag that colors the
-splice arcs further down:
-
-```bash
-STAR --genomeDir star_index --readFilesIn R1.fq.gz R2.fq.gz \
-  --readFilesCommand gzip -dc --outSAMtype BAM SortedByCoordinate \
-  --outSAMstrandField intronMotif
-samtools index Aligned.sortedByCoord.out.bam
-```
-
-The sorted, indexed BAM or CRAM loads as an `AlignmentsTrack` from one `uri`,
-and JBrowse finds the `.bai` or `.crai` beside the file:
-
-```json addtrack
-{
-  "trackId": "my_rnaseq",
-  "name": "My RNA-seq",
-  "uri": "https://yourhost/rnaseq.bam",
-  "assemblyNames": ["hg38"]
-}
-```
-
-Two more things apply to your own reads:
-
-- **Assembly.** `assemblyNames` must name an assembly already configured in
-  JBrowse, the one the reads were aligned to; see the
-  [assemblies configuration guide](/docs/config_guides/assemblies).
-- **Coverage signal.** A precomputed signal, such as a strand-specific BigWig
-  from the aligner, loads separately as a
-  [quantitative track](/docs/user_guides/quantitative_track).
-
-## Spliced reads over ACTB
+## Read the splice arcs over ACTB
 
 Type `chr7:5,567,000-5,570,000` into the location box. The gene there is _ACTB_,
 a compact gene with deep read coverage.
@@ -135,16 +103,6 @@ The thin teal lines spanning a gap are spliced alignments, where a read maps
 partly to one exon and partly to the next, skipping the intron between them.
 
 <Figure caption="RNA-seq reads over ACTB: coverage with strand-colored splice arcs, then the spliced pileup." src="/img/rnaseq/basic.png" />
-
-## Read coverage and read height
-
-A deeply covered gene has more reads than the track shows at once. The histogram
-above the pileup counts the reads at each position, and **Read height →
-Compact** in the track menu packs the full stack into view:
-
-<Figure caption="ACTB at compact read height, the whole stack fitting the track." src="/img/rnaseq/compact_stacked.png" />
-
-## Spliced reads, CIGAR strings, and splice arcs
 
 A spliced aligner like [STAR](https://github.com/alexdobin/STAR) split-maps a
 read that crosses an intron and encodes the skip in its CIGAR string, the
@@ -173,7 +131,15 @@ It finds the strand two ways:
   motif is none of GT-AG, GC-AG and AT-AC. Hovering an arc shows the motif
   beside the read count.
 
-## Picking out spliced reads in a deep pileup
+## Pack the ACTB stack at compact read height
+
+A deeply covered gene has more reads than the track shows at once. The histogram
+above the pileup counts the reads at each position, and **Read height →
+Compact** in the track menu packs the full stack into view:
+
+<Figure caption="ACTB at compact read height, the whole stack fitting the track." src="/img/rnaseq/compact_stacked.png" />
+
+## Pick out spliced reads in a deep pileup
 
 In the compact _ACTB_ stack, reads with a skip sit among many more that have
 none. Three track-menu settings separate the splicing evidence from the rest.
@@ -197,7 +163,7 @@ support.
 
 <Figure caption="Every junction above, only the canonical ones below." src="/img/rnaseq/hide_non_canonical.png" links="All junctions=rnaseq/junctions_all,Canonical only=rnaseq/junctions_canonical_only" />
 
-## Long-read splicing: IsoSeq over ACTB
+## Follow whole transcripts in IsoSeq reads over ACTB
 
 A short read crosses at most one or two junctions, so the arcs alone do not show
 which exons sit together in one transcript. A long read (PacBio IsoSeq,
@@ -216,7 +182,7 @@ skips. The IsoSeq alignments are a second BAM on the same assembly:
 
 <Figure caption="IsoSeq isoforms over ACTB." src="/img/rnaseq/longread_isoseq.png" />
 
-## Strand-specific RNA-seq
+## Color and group reads by strand {#strand-specific-rna-seq}
 
 The arc colors give the transcript strand of the spliced reads, and an unspliced
 read has none. In a _strand-specific_ library, whether a read is the first or
@@ -243,7 +209,7 @@ On chr6, _NELFE_ and _SKIV2L_ sit back to back on opposite strands. Type
 
 <Figure caption="NELFE and SKIV2L grouped by first-of-pair strand." src="/img/rnaseq/strand_split_coverage.png" />
 
-## Circular RNA: back-splice junctions
+## Draw a circular RNA's back-splice from split reads
 
 Every junction so far joins an exon to a downstream one. A circular RNA joins
 the end of an exon back to the start of an upstream one. A short read across
@@ -395,7 +361,7 @@ pileup shows the pieces of each read stacked over the one exon:
 
 <Figure caption="CDR1as in HEK293 isoCirc reads: one back-splice spanning the exon, counted once per lap." src="/img/circrna/cdr1as_isocirc.png" links="Open this view=circrna/cdr1as_isocirc" />
 
-## Loading STAR, regtools and portcullis junction tables
+## Load STAR, regtools and portcullis junction tables
 
 The read counts on a reads track's junction arcs come from the reads in view. A
 junction table from an RNA-seq pipeline adds whole-library read counts, an
@@ -550,6 +516,40 @@ To load the other tables:
 
 The `filter` looks columns up by name, and a column the file lacks is empty, so
 the config's `splice_site` test would hide every junction in either file.
+
+## Load your own RNA-seq reads the same way
+
+STAR aligns reads of your own into a sorted BAM.
+`--outSAMstrandField intronMotif` writes the `XS` strand tag that colors the
+splice arcs above:
+
+```bash
+STAR --genomeDir star_index --readFilesIn R1.fq.gz R2.fq.gz \
+  --readFilesCommand gzip -dc --outSAMtype BAM SortedByCoordinate \
+  --outSAMstrandField intronMotif
+samtools index Aligned.sortedByCoord.out.bam
+```
+
+The sorted, indexed BAM or CRAM loads as an `AlignmentsTrack` from one `uri`,
+and JBrowse finds the `.bai` or `.crai` beside the file:
+
+```json addtrack
+{
+  "trackId": "my_rnaseq",
+  "name": "My RNA-seq",
+  "uri": "https://yourhost/rnaseq.bam",
+  "assemblyNames": ["hg38"]
+}
+```
+
+Two more things apply to your own reads:
+
+- **Assembly.** `assemblyNames` must name an assembly already configured in
+  JBrowse, the one the reads were aligned to; see the
+  [assemblies configuration guide](/docs/config_guides/assemblies).
+- **Coverage signal.** A precomputed signal, such as a strand-specific BigWig
+  from the aligner, loads separately as a
+  [quantitative track](/docs/user_guides/quantitative_track).
 
 ## See also
 
