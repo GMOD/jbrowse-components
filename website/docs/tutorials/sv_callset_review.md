@@ -16,8 +16,8 @@ We:
 
 - render every junction as a breakpoint image with `jb2export batch`, from the
   tumor reads and from the matched normal's
-- sort the calls by split-read support in the batch manifest
-- review the calls as a queue of cards, with a verdict on each
+- review the calls as a queue of cards, grouped by split-read support, with a
+  verdict on each
 - render a three-chromosome rearrangement with `jb2export breakpoint`
 - open a call in JBrowse from its manifest row
 
@@ -59,7 +59,7 @@ command downloads the VCF, and every command streams the reads by URL.
 
 </details>
 
-## Rendering every tumor junction with jb2export batch
+## Render every tumor junction with jb2export batch
 
 We'll start with `jb2export batch`, which renders one image per record: a linear
 view with the record's windows side by side in one row, whether its ends are on
@@ -93,7 +93,7 @@ jb2export batch --sites calls.vcf.gz \
   --outDir out --passOnly --limit 20
 ```
 
-## Rendering the matched normal as the control
+## Render the matched normal as the control
 
 Next we'll render the matched normal into a second directory. Each call keeps
 its file name across `tumor/` and `normal/`:
@@ -110,24 +110,7 @@ jb2export batch --sites COLO829.somatic-sv.vcf.gz \
 The caller filed `009_chr1_168055349-chr19_23850381` as somatic, but the normal
 has split reads joining the same two ends, so the junction is germline.
 
-## Sorting the calls with the manifest
-
-Each `manifest.tsv` row holds the fields of one image:
-
-- **`links`** counts the split reads with pieces in more than one window. Sort
-  `tumor/manifest.tsv` on it to put the unsupported calls first; re-render one
-  with a wider `--flank` before calling it false.
-- **`alt`** holds, for an SNV, indel, `<DEL>` or `<INS>`, the reads with the ALT
-  over the reads covering it (`17/41`). A deletion within a single alignment has
-  its reads counted here and a `links` of zero.
-- **`spec`** is the view as a [session spec](/docs/urlparams#session-spec) that
-  opens the same windows in JBrowse.
-- **`line`** is the record's line in the VCF, to join a row back to the callset.
-
-A dense fan in a region of ragged coverage is usually a repeat, since the view
-draws an arc for a read mismapped there as for any other.
-
-## Reviewing the calls as a queue
+## Review the calls as a queue
 
 Next we'll build a review page from the two directories with
 variant-review-portal. Each call becomes a card with its tumor and normal
@@ -158,11 +141,26 @@ or an artifact, and **Export** writes the verdicts to a TSV with each record's
 position and ID. A callset that records no read counts takes
 `--support jb2export`, which groups the queue on the manifest's counts.
 
+Each `manifest.tsv` row holds the fields of one image:
+
+- **`links`** counts the split reads with pieces in more than one window. Sort
+  `tumor/manifest.tsv` on it to put the unsupported calls first; re-render one
+  with a wider `--flank` before calling it false.
+- **`alt`** holds, for an SNV, indel, `<DEL>` or `<INS>`, the reads with the ALT
+  over the reads covering it (`17/41`). A deletion within a single alignment has
+  its reads counted here and a `links` of zero.
+- **`spec`** is the view as a [session spec](/docs/urlparams#session-spec) that
+  opens the same windows in JBrowse.
+- **`line`** is the record's line in the VCF, to join a row back to the callset.
+
+A dense fan in a region of ragged coverage is usually a repeat, since the view
+draws an arc for a read mismapped there as for any other.
+
 The [COLO829 review page](https://jbrowse.org/demos/colo829_review/) is this
 callset built the same way, from one `batch` run that draws the genes, the
 callset, both samples' reads and the repeats into each image.
 
-## Rendering a three-chromosome rearrangement
+## Render a three-chromosome rearrangement
 
 COLO829's der(3) contains pieces of chr3, chr10 and chr12, and its reads align
 to all three. We'll render it with `jb2export breakpoint`, one `--loc` per
@@ -184,7 +182,7 @@ jb2export breakpoint \
 The [complex rearrangements tutorial](/docs/tutorials/cancer_sv) builds the
 reconstructed contig on the right.
 
-## Opening a call in the browser
+## Open a call in the browser {#opening-a-call-in-the-browser}
 
 To look closer at a call, open it in JBrowse from its manifest row. The row's
 `spec` column is a [session spec](/docs/urlparams#session-spec): add it,
@@ -194,7 +192,7 @@ the config you rendered from. Or open the
 through to the breakpoint split view, where the gene track and each read's
 details are a click away.
 
-## Rendering calls from other SV callers
+## Render calls from other SV callers
 
 `jb2export batch` and `jb2export breakpoint` read the VCF of any caller that
 writes breakends or symbolic SVs (such as `<DEL>`):
