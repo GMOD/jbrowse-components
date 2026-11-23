@@ -297,7 +297,7 @@ Type `chr23:27,508,000-27,536,000` to draw the graph around _HSPA1A_. Then:
   to **Compress lengths**, which pulls the longest and shortest nodes towards
   the mean so a cut spanning kb and bp nodes fits one pane.
 
-<Figure caption="HSPA1A with the deconstructed callset, one row per assembly, over the graph track. The graph draws the insertion as the charcoal loop." src="/img/pangenome/bovine_bola.png" />
+<Figure caption="HSPA1A with the deconstructed callset, one row per assembly, over the graph track. The graph draws the insertion as the charcoal loop. At its record, bison's cell is red and gaur's dark green, two more alleles of the insertion, which the key names with their lengths." src="/img/pangenome/bovine_bola.png" />
 
 ## Published variants in the callset
 
@@ -344,7 +344,7 @@ Then open `chr1:2,428,800-2,429,800`. The figure shades
 `chr1:2,429,109-2,429,320`, the stretch OMIA records as duplicated by the
 allele.
 
-<Figure caption="The POLLED locus with OMIA's record of the Celtic polled allele above the callset." src="/img/pangenome/bovine_polled.png" />
+<Figure caption="The POLLED locus with OMIA's record of the Celtic polled allele above the callset, in which Angus alone has the 202 bp insertion." src="/img/pangenome/bovine_polled.png" />
 
 ### A repeat upstream of KIT in white-headed cattle
 
@@ -356,8 +356,9 @@ reference holds one collapsed copy. Open `chr6:70,080,000-70,180,000`.
 <Figure caption="Upstream of KIT with the callset and the graph track, which draws the deletion as a dashed arc." src="/img/pangenome/bovine_kit.png" />
 
 Every other assembly has the record's deletion, in blue. Simmental's row is red
-for the record's second allele, which is longer than the Hereford reference's,
-so Simmental has more copies of the repeat than the reference.
+for the record's second allele, which the key names with its length, 16,923 bp
+longer than the Hereford reference's, so Simmental has more copies of the repeat
+than the reference.
 
 ### A deletion of TAS2R46 in gaur
 
