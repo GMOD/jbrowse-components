@@ -189,8 +189,13 @@ export function chromSizesLines(chromSizes: Map<string, number>) {
 function parseChromSizes(text: string, source: string) {
   const sizes = new Map<string, number>()
   for (const line of text.split('\n')) {
-    const [refName, length] = line.split('\t')
-    if (refName && length !== undefined && Number.isFinite(+length)) {
+    const [refName, length] = line.trim().split(/\s+/)
+    if (
+      refName &&
+      length !== undefined &&
+      /^\d+$/.test(length) &&
+      +length > 0
+    ) {
       sizes.set(refName, +length)
     }
   }

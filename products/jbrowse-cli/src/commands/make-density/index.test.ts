@@ -4,6 +4,7 @@
 
 import { execFileSync } from 'node:child_process'
 import fs from 'node:fs'
+import os from 'node:os'
 import path from 'node:path'
 
 import { runCommand, runInTmpDir } from '../../testUtils.ts'
@@ -121,6 +122,36 @@ test('reads reference lengths from the .fai beside an assembly', async () => {
     assembly: path.join(base, 'simple.fasta'),
   })
   expect(sizes.get('SEQUENCE_1')).toBe(233)
+})
+
+describe('a --chrom-sizes file', () => {
+  const sizesOf = (text: string) => {
+    const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'chrom-sizes-'))
+    try {
+      const file = path.join(dir, 'x.chrom.sizes')
+      fs.writeFileSync(file, text)
+      return [...resolveChromSizes({ chromSizes: file })]
+    } finally {
+      fs.rmSync(dir, { recursive: true, force: true })
+    }
+  }
+
+  test('may separate columns with spaces, as a hand-edited file often does', () => {
+    expect(sizesOf('ctgA 50001\nctgB   6079\r\n')).toEqual([
+      ['ctgA', 50001],
+      ['ctgB', 6079],
+    ])
+  })
+
+  test('leaves out a line with no length or a non-numeric one rather than sizing it 0', () => {
+    expect(sizesOf('ctgA\t\nctgB\tabc\nctgC\t6079\n')).toEqual([['ctgC', 6079]])
+  })
+
+  test('fails when no line has a usable length', () => {
+    expect(() => sizesOf('ctgA\t\nctgB\n')).toThrow(
+      'No reference sequences found',
+    )
+  })
 })
 
 test('rejects an alignment file', async () => {
