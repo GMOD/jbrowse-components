@@ -175,9 +175,9 @@ lane instead, one block each. As a graph:
 - **Links:** each line is one graph link, drawn only when both endpoints are
   inside the cut, so an allele near the window's edge draws only the link that
   stays inside it
-- **Legible width:** a minigraph graph records structural variation and merges
-  everything smaller, so a legible window is hundreds of kb; a pggb graph puts a
-  node at every SNP, so a legible window is hundreds of bp
+- **Legible width:** a minigraph graph has nodes for structural variation and
+  merges everything smaller, so a legible window is hundreds of kb; a pggb graph
+  puts a node at every SNP, so a legible window is hundreds of bp
 - **Whole chromosome as a lane:** load the tier's prefix as a separate track
   too; its lane draws a whole chromosome, where the segments lane does not draw
 
@@ -265,8 +265,8 @@ start screen with the graph as long as the files stay where they were.
 
 ## Layouts {#three-layouts}
 
-The track menu's **Layout** submenu draws the same subgraph each of these ways,
-and the axes mean something different in each:
+The track menu's **Layout** submenu picks one of these ways to draw the same
+subgraph, and the axes mean something different in each:
 
 | Layout                | x                                        | y                       |
 | --------------------- | ---------------------------------------- | ----------------------- |
@@ -279,8 +279,8 @@ and the axes mean something different in each:
 | **Force-directed**    | nothing (FMMM), reference order (stress) | nothing                 |
 
 - **Force-directed (FMMM):** the layout the track opens in, and the one a graph
-  opened from a file starts in. It is Bandage's own layout, which draws each
-  allele as a loop or a bubble and can turn the drawing between cuts
+  opened from a file starts in. It is Bandage's layout, which draws each allele
+  as a loop or a bubble and can turn the drawing between cuts
 - **Force-directed (stress):** the stress engine lays the backbone out straight
   in reference order, with each allele as a loop off it, and keeps the drawing
   in place when the view moves to a new cut. A track config picks it with
@@ -327,9 +327,9 @@ reference.
 <Figure caption="90 bp of the pggb graph in Sample rows, under the genes and MAF lanes for the same window." src="/img/pangenome/pggb_locus_sample_rows.png" />
 
 The assembly an allele "came from" depends on the format. On rGFA it is the
-strain that _first contributed_ the sequence, the one assembly the file records.
-A path GFA lists every path that visits a segment, so a row shows which
-haplotypes have it and the node popup lists the rest.
+strain that _first contributed_ the sequence, the only assembly the file lists
+for the segment. A path GFA lists every path that visits a segment, so a row
+shows which haplotypes have it and the node popup lists the rest.
 
 Anchored and Sample rows both draw an allele across **the reference it
 replaces**. An insertion replaces no reference, so it draws as a mark where it
@@ -376,8 +376,8 @@ A graph with walks, such as a GBZ cut or a GFA with P or W lines, adds:
   <!-- menu-path-ok --> sets what each thread's color follows: progress along
   the walk, one color, reference position, or each pass through repeated nodes
 
-[Following haplotypes through C4](/docs/tutorials/pangenome_hprc#haplotype-threads)
-reads three haplotypes' threads at one locus.
+For three haplotypes' threads at one locus, see
+[Following haplotypes through C4](/docs/tutorials/pangenome_hprc#haplotype-threads).
 
 A gbz-base track draws one lane per haplotype, and **Display types → Graph** in
 its track menu draws the same track as a graph of the haplotypes' walks:
@@ -389,8 +389,8 @@ its track menu draws the same track as a graph of the haplotypes' walks:
   asks you to zoom in. A variant track over the graph's VCF covers a wider
   window
 
-[Repeat lengths across HPRC haplotypes](/docs/tutorials/pangenome_hprc_repeats#one-haplotypes-copies)
-reads a repeat array this way.
+For a repeat array read this way, see
+[Repeat lengths across HPRC haplotypes](/docs/tutorials/pangenome_hprc_repeats#one-haplotypes-copies).
 
 ## Bubble spread and graph context {#two-settings-that-decide-what-is-drawn}
 
@@ -507,8 +507,8 @@ jexl:feature.rank==0 ? 'rgb(52,152,219)' : 'rgb(237,137,44)'
 Hover a node, and the lanes above it highlight the reference interval the node
 occupies; above a force-directed or ordered drawing, the reference strip boxes
 the same interval and draws a line to the node. Hovering a bubble's label does
-the same for the bubble's span. It is the only way to locate a rank>0 allele,
-because those alleles have no reference coordinates.
+the same for the bubble's span. Hovering is the only way to locate a rank>0
+allele, because those alleles have no reference coordinates.
 
 **Show → Hover highlight → Everything** turns on the reverse direction, a lane's
 pointer lighting the segment under it, along with edge hover. It is off by

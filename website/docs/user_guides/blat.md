@@ -10,7 +10,7 @@ the genome, **BLAT search** and **In-silico PCR**. Both query UCSC-style
 sequence-search servers and turn the hits into a track built on the fly, with
 every hit listed so you can go to the one you want.
 
-## Where it is set up
+## Hosted genomes and setup
 
 BLAT search and In-silico PCR come pre-installed on the hosted genomes, with
 nothing to set up:
@@ -23,11 +23,10 @@ nothing to set up:
 There, a search goes to UCSC's own BLAT and In-silico PCR servers, through a
 [shared jbrowse.org server](#the-shared-server) that needs no UCSC account.
 
-Anywhere else takes setup. Neither JBrowse Web nor JBrowse Desktop bundles the
-plugin, so a genome opened from your own files or config lacks the two items
-until:
+JBrowse Web and JBrowse Desktop leave the plugin out of their bundles, so a
+genome opened from your own files or config gets the two items once:
 
-- **The plugin:** the config's `plugins` names it.
+- **The plugin:** the config's `plugins` lists it.
 
   ```json
   {
@@ -54,7 +53,7 @@ until:
 Choose **Tools → BLAT search...**, paste a DNA sequence or FASTA, pick the
 assembly, and submit.
 
-What comes back is a new track named after the query, holding the hits, and a
+The search adds a new track named after the query, holding the hits, and a
 **Search results** panel listing them, ranked by UCSC's `pslScore`. Each
 location is a link that takes the view there, labelled with the percent identity
 and the fraction of the query the hit covers.
@@ -87,8 +86,8 @@ Pasting FASTA searches each record separately:
   attributable in the track. The server names a bare sequence with no header
   `YourSeq`.
 - **Results:** the **Search results** panel lists the hits under the record they
-  came from, in the order the records were pasted, and names any record that
-  found nothing.
+  came from, in the order the records were pasted, and names any record with no
+  hits.
 
 ### Starting from a read or a selection
 
@@ -134,8 +133,8 @@ so a search needs no account, and every user of that server shares its budget:
 
 - **Queue:** a search made while another holds the slot waits its turn, with a
   line in the dialog saying how long.
-- **Quota:** each network gets a share of the budget per hour and per day, and a
-  search past it says when the share renews.
+- **Quota:** each network gets a share of the budget per hour and per day, and
+  for a search past it the dialog says when the share renews.
 - **Your own server:** **Show advanced settings** has the server field, for
   pointing the dialogs at a mirror or a proxy of your own. The jbrowse.org one
   is

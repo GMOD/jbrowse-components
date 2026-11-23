@@ -148,8 +148,8 @@ The blocks take the first of these that names a color:
   is no color here.
 - Otherwise the default feature color.
 
-A file states its colors but not what they mean, so the file's own colors draw
-no key until the config names them: `encoding.color.scale.type: "identity"` with
+A file holds colors with no meaning attached, so the file's colors draw no key
+until the config names them: `encoding.color.scale.type: "identity"` with
 `scale.domain` listing the colors and `scale.names` naming each, as
 [](/docs/tutorials/chromhmm) writes the chromatin states. An identity scale
 written this way also reads `0,0,0` as black, as UCSC's `itemRgb on` does, and a

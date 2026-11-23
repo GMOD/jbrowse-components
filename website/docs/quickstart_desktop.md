@@ -42,7 +42,7 @@ chmod a+x jbrowse-desktop-*-linux.AppImage   # once
   "Add a track" form aimed at the view they land on.
 - **Tools → Factory reset...** deletes your autosaves, the recent sessions list,
   your global plugins and the indexes JBrowse built. Session files you saved
-  stay on disk, but one that opened a FASTA without its own `.fai` no longer
+  stay on disk, but one that opened a FASTA with no `.fai` beside it no longer
   loads that genome.
 
 ## Opening a genome
@@ -178,7 +178,7 @@ the **Quickstart list** on the left panel.
 
 ## Launching from the command line
 
-No installer puts JBrowse Desktop on the `PATH`, so the commands below write
+The installers leave JBrowse Desktop off the `PATH`, so the commands below write
 `jbrowse-desktop` for the binary's full path:
 
 - **Linux:** the AppImage you downloaded, `./jbrowse-desktop-*-linux.AppImage`

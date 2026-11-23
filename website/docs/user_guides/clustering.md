@@ -40,11 +40,11 @@ phylogeny:
   an `.nh` file, with no locus caption beside it
 
 On genotype data a haplotype is a mosaic of segments with different histories,
-so past the first recombination breakpoint a window-averaged distance describes
-no position in particular. **Sort rows by genotype here**, from a variant's
-right-click menu on a multi-sample variant track, orders rows by their allele at
-that variant and then by how far they agree outward, so the shared block reads
-as a solid rectangle and frays where recombination ends it.
+so past the first recombination breakpoint a window-averaged distance averages
+over segments with different histories. **Sort rows by genotype here**, from a
+variant's right-click menu on a multi-sample variant track, orders rows by their
+allele at that variant and then by how far they agree outward, so the shared
+block reads as a solid rectangle and breaks up where recombination ends it.
 
 ## Auto and manual modes
 
@@ -62,7 +62,7 @@ UPGMA), so manual mode reproduces auto mode.
 
 The multi-row feature display clusters on what colors its blocks, binned across
 the window: the color's field, or each feature's own color. A numeric field is
-averaged per bin and rows with similar values land closer together; any other
+averaged per bin and rows with similar values sort closer together; any other
 color is categorical, compared bin by bin. Under one color for everything, the
 display clusters on which bins each row covers at all.
 
@@ -88,9 +88,8 @@ display clusters on which bins each row covers at all.
 
 ## Encoding a clustering result in a session URL
 
-A finished clustering can be embedded in a session snapshot, which is how a
-pre-computed result travels through a shared link. Where it goes depends on the
-display.
+A finished clustering can be embedded in a session snapshot, so a shared link
+can hold a pre-computed result. The field that holds it depends on the display.
 
 On a quantitative track the order, tree and focus are the display's
 [`rows`](/docs/config/linearwiggledisplay/#slot-rows) setting, written on the
@@ -111,8 +110,8 @@ describes. `rows` replaces the display's setting whole, so name `field` too:
 
 Two more members pick which rows show:
 
-- **`kept`** opens on one clade, by the rows' own names. A `kept` naming no
-  current row shows none, and the track's notice lists the names it missed
+- **`kept`** opens on one clade, by row name. A `kept` naming no current row
+  shows none, and the track's notice lists the names it missed
 - **`filter`** keeps rows by an attribute instead, a samples file's column or a
   subtrack's `group`:
   `"filter": [{ "field": "population", "oneOf": ["EUR", "AFR"] }]`

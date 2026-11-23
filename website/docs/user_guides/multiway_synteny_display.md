@@ -16,7 +16,7 @@ A synteny track over several genomes draws this way from its track menu:
 has a config for each kind of input, from an ortholog table or alignment files
 of your own.
 
-## What a ribbon joins
+## Ribbon endpoints by source
 
 Which two lanes a ribbon connects depends on the track's source:
 
@@ -33,16 +33,16 @@ genomes in tree order makes the second kind read as a walk down the tree.
 
 ## Reading a lane header
 
-Each lane has its own scale, printed in its header:
+Each lane has a separate scale, printed in its header:
 
 - **Left end:** where the lane starts, with `[rev]` where the lane runs against
   the anchor
 - **Right end:** the anchor prints its window's span. A lane that holds more
   sequence across the window than the anchor, such as one with insertions, is
-  squeezed to fit and prints how much of its own sequence it draws, the range
-  its left end names, and how many times it is squeezed
-  (`114Kbp, squeezed 1.5×`). A stretch of the anchor the lane lacks is left open
-  as a gap and takes room too. A lane at the anchor's scale prints nothing
+  squeezed to fit and prints how much of its sequence it draws, the range its
+  left end names, and how many times it is squeezed (`114Kbp, squeezed 1.5×`). A
+  stretch of the anchor the lane lacks is left open as a gap and takes room too.
+  A lane at the anchor's scale prints nothing
 - **Ticks** fall at one interval shared by every lane
 - **`also at`** names a second stretch the window aligns to, a window or more
   away from the one the lane draws
@@ -67,7 +67,7 @@ The view's gridlines stop at the anchor, the one lane they fit.
   each other.
 - **Blocks:** an MCScan `.anchors` track draws each block of gene pairs as a
   pale band behind their ribbons, from one end of the block to the other on both
-  lanes. A band is colored by the block's own direction, `block` or `blockSpan`,
+  lanes. A band is colored by the block's direction, `block` or `blockSpan`,
   draws wherever the filter leaves one of its gene pairs, and hovers and clicks
   as a ribbon does.
 - **Skipped lanes:** a ribbon joins a gene to the next lane that places it when
@@ -93,7 +93,7 @@ rest follow densest-first, or each beside the lane most alike where the source
 joins neighbouring lanes
 ([grouping and ordering](/docs/config_guides/grouping_and_ordering#multiway-synteny)).
 
-## Where a lane draws
+## Moving a lane to another stretch
 
 A lane draws one stretch of one chromosome at a time, the stretch holding most
 of the window. Where the window aligns somewhere else too, the lane header menu
@@ -105,8 +105,8 @@ offers it:
   names after `also at`.
 - **Flip lane** turns the lane the other way on the same chromosome, for a lane
   whose blocks split about evenly between the two orientations.
-- **Unpin ⟨chromosome⟩** undoes either **Show** item, so the lane chooses where
-  it draws again.
+- **Unpin ⟨chromosome⟩** undoes either **Show** item, so the display chooses
+  where the lane draws again.
 - **Unpin orientation on ⟨chromosome⟩** undoes a flip.
 
 ## The lane header menu

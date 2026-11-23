@@ -67,12 +67,12 @@ Each hub appears in the track selector as a separate category.
 
 Each hub URL becomes a UCSC track hub
 [connection](/docs/user_guides/connections) in the session, the same as one
-added by hand. It loads lazily, gets its own track selector category, and the
+added by hand. It loads lazily, gets a separate track selector category, and the
 session stores only the tracks you open from it.
 
 Hub tracks match assemblies by genome ID, against the hub's own assemblies plus
 any a combined `?config=` defines, so a hub opened with `config=none` shows only
-the tracks its own assemblies cover.
+the tracks on the hub's assemblies.
 
 ## See also
 

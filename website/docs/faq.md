@@ -4,8 +4,8 @@ description:
   Common questions about running, configuring, and troubleshooting JBrowse 2
 ---
 
-Short answers, each pointing at the page that covers it properly. If something
-is broken rather than unclear, start at [](/docs/troubleshooting).
+Each answer is short and links the page that covers the topic in full. If
+something is broken rather than unclear, start at [](/docs/troubleshooting).
 
 ## General
 
@@ -80,9 +80,8 @@ The release contains no config.json, so `upgrade` leaves yours in place.
 
 ### How do I install or update the @jbrowse/cli tool
 
-`npm install -g @jbrowse/cli`, and the same command updates it. The CLI only
-prepares your config.json — it **does not run server-side code**.
-[CLI reference](/docs/cli)
+`npm install -g @jbrowse/cli`, and the same command updates it. The CLI prepares
+your config.json and **runs no server-side code**. [CLI reference](/docs/cli)
 
 ### What does my web server need to do
 
@@ -132,8 +131,8 @@ happy to help migrate it, so [contact us](/contact).
 
 Edit the index.html that ships with jbrowse-web to add content outside the `div`
 the app renders into. To make the header part of a larger app instead, use
-[`@jbrowse/react-app2`](/docs/embedded_components) — jbrowse-web itself is not
-published as an npm package.
+[`@jbrowse/react-app2`](/docs/embedded_components), since jbrowse-web itself is
+not published as an npm package.
 
 ### How do I add a plugin
 
@@ -155,8 +154,8 @@ config, set `encoding.color` in the track's `displayDefaults`; in a URL, in its
 
 Set `encoding.color` to the attribute's name, `"encoding": { "color": "type" }`,
 which paints each value a different color and draws a key saying which is which.
-[](/docs/cookbook#colors) has the chosen-color, binned and gradient forms. Logic
-no single field states takes a [Jexl](https://github.com/TomFrost/Jexl)
+[](/docs/cookbook#colors) has the chosen-color, binned and gradient forms. For a
+rule no single field holds, use a [Jexl](https://github.com/TomFrost/Jexl)
 expression as the `value`,
 `"color": { "value": "jexl:feature.score > 500 && feature.type == 'exon' ? 'red' : 'grey'" }`;
 see [](/docs/config_guides/jexl), and
@@ -185,9 +184,9 @@ does not have. Use the Share button, or build a self-contained link with
 
 ### When does JBrowse show "Zoom in to see more features"
 
-When either of two limits would be exceeded — the bytes the fetch would
-download, or the features that would be drawn on screen. The banner's **Force
-load** button loads the region anyway, and
+JBrowse shows it when the region would exceed one of two limits: the bytes the
+fetch would download, or the features that would be drawn on screen. The
+banner's **Force load** button loads the region anyway, and
 [](/docs/config_guides/tracks#the-zoom-in-to-see-more-features-limits) covers
 raising each.
 

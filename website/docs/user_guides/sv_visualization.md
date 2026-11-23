@@ -7,11 +7,11 @@ guide_category: Analysis
 Triage structural variant (SV) candidates in the
 [SV inspector](/docs/user_guides/sv_inspector_view), then open the
 [alignments](/docs/user_guides/alignments_track) at each breakpoint for the
-read-level evidence. The sections below say what those read patterns mean: which
-color scheme makes each pattern stand out in the pileup, what each SV type looks
-like in short and long reads, and which view to open once a breakpoint is found.
-The [alignments track guide](/docs/user_guides/alignments_track) covers what
-each control does.
+read-level evidence. The sections below describe what those read patterns mean:
+which color scheme makes each pattern stand out in the pileup, what each SV type
+looks like in short and long reads, and which view to open once a breakpoint is
+found. The [alignments track guide](/docs/user_guides/alignments_track) covers
+what each control does.
 
 End-to-end walkthroughs: [](/docs/tutorials/sv_visualization_cgiab),
 [](/docs/tutorials/cancer_sv), [](/docs/tutorials/sv_multisamples). How the SAM
@@ -19,7 +19,7 @@ format itself encodes SV evidence, in split alignments, the `SA` tag, pair
 orientation, `TLEN` and clipping, is in
 [Structural variants and the SAM format](https://cmdcolin.github.io/posts/2022-02-06-sv-sam/).
 
-## Where the evidence is
+## SV evidence in an alignments track
 
 A structural variant leaves three kinds of mark in an alignments track:
 
@@ -38,8 +38,8 @@ A structural variant leaves three kinds of mark in an alignments track:
 
 <Figure caption="Soft-clipped reads at a breakpoint, their clipped overhang drawn as colored bases." src="/img/alignments_soft_clipped.png" />
 
-The rest of this page takes the third kind in turn, paired-end reads then long
-reads, then the views that show both sides of a breakpoint at once.
+The sections below cover the third kind, paired-end reads then long reads, then
+the views that show both sides of a breakpoint at once.
 
 ## Paired-end reads
 
@@ -160,9 +160,10 @@ its insert's, red for the classic deletion and pink for an insertion.
 With
 [**Read connections → Read arcs**](/docs/user_guides/alignments_track#read-arcs)
 on, concordant pairs make short local arcs, so a deletion reads as a bundle of
-long red arcs standing on the same two breakpoints. An arc's thickness counts
-the reads behind it, so the arcs count the support as well as locate it;
-[](/docs/tutorials/k562_fusions) counts a fusion's support that way.
+long red arcs standing on the same two breakpoints. An arc's thickness scales
+with the reads behind it, so the arcs show how much support a junction has as
+well as where it is; [](/docs/tutorials/k562_fusions) counts a fusion's support
+that way.
 
 <Figure caption="Read arcs over a deletion in a trio, with the SV call on top. Red arcs are pairs with a larger-than-expected insert." src="/img/multi-sv-trio.png" />
 
@@ -200,11 +201,11 @@ their arcs, and drops the junction arcs over coverage:
   the last band draws its coverage alone and the others draw only their evidence
   reads. **Filter by → SV evidence → All reads** draws every read in the bands,
   with the color scheme untouched.
-- **Reading it:** the band that fills identifies the rearrangement, and a band
-  that stays empty under a call is a call with no read evidence behind it. The
-  partner band is never empty on short reads: at every locus some mates land on
-  another chromosome, and an insertion longer than the fragment adds mates that
-  do not map.
+- **Reading the bands:** the band that fills identifies the rearrangement, and a
+  band that stays empty under a call is a call with no read evidence behind it.
+  The partner band is never empty on short reads: at every locus some mates land
+  on another chromosome, and an insertion longer than the fragment adds mates
+  that do not map.
 
 <Figure caption="The INVdup call's reads, one band per kind of SV evidence. Reads whose mate is on another chromosome draw as inter-chromosomal ticks." src="/img/sv_channels.png" />
 
@@ -333,13 +334,13 @@ synteny view. [](/docs/tutorials/cancer_sv) does that with COLO829's der(3).
 
 ## Signatures by SV type
 
-| SV type            | Read pairs                                 | Coverage                                                 | Clipping and arcs                                                                                               |
-| ------------------ | ------------------------------------------ | -------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------- |
-| Deletion           | red, insert larger than expected           | drops between the breakpoints, halves for a heterozygote | clipped reads at both edges, unusually long arcs, gold split-read arcs                                          |
-| Insertion          | pink, insert smaller than expected         | unchanged                                                | clipped reads at one site, a purple insertion indicator, mates unmapped once the insertion outruns the fragment |
-| Inversion          | green LL and dark blue RR at the junctions | unchanged                                                | clipped reads at both breakpoints, green and navy split-read arcs                                               |
-| Tandem duplication | teal RL                                    | elevated over the duplicated segment                     | teal split-read arcs jumping back upstream across the junction                                                  |
-| Translocation      | rust, mate on another chromosome           | unchanged                                                | a cluster of rust reads at one end, arcs drawn as verticals at the view edge                                    |
+| SV type            | Read pairs                            | Coverage                                                 | Clipping and arcs                                                                                               |
+| ------------------ | ------------------------------------- | -------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------- |
+| Deletion           | red, insert larger than expected      | drops between the breakpoints, halves for a heterozygote | clipped reads at both edges, unusually long arcs, gold split-read arcs                                          |
+| Insertion          | pink, insert smaller than expected    | unchanged                                                | clipped reads at one site, a purple insertion indicator, mates unmapped once the insertion outruns the fragment |
+| Inversion          | green LL and navy RR at the junctions | unchanged                                                | clipped reads at both breakpoints, green and navy split-read arcs                                               |
+| Tandem duplication | teal RL                               | elevated over the duplicated segment                     | teal split-read arcs jumping back upstream across the junction                                                  |
+| Translocation      | rust, mate on another chromosome      | unchanged                                                | a cluster of rust reads at one end, arcs drawn as verticals at the view edge                                    |
 
 Any one column has artifacts that produce it, and in segmental duplications and
 repeats all of them are common, so combine several before calling. Zoomed inside
@@ -371,7 +372,7 @@ panel where it aligns, and every other spline of the same read thickens
 alongside it. Untick **Allow clicking connections** in the view menu to turn the
 overlay, read splines and variant curves alike, back into a static picture.
 
-### Launching it
+### Launching the breakpoint split view
 
 - **From the SV inspector**: click a feature in the circular overview, or the
   triangle dropdown on a table row. See the
@@ -390,7 +391,7 @@ overlay, read splines and variant curves alike, back into a static picture.
 ### Multi-hop events
 
 A read with several supplementary alignments aligns to more than two loci, and
-the view grows a panel per locus. The COLO829 tutorial follows one such chain
+the view adds a panel per locus. The COLO829 tutorial follows one such chain
 across three chromosomes and
 [opens this view from a callset record](/docs/tutorials/cancer_sv#following-the-chain-across-panels).
 

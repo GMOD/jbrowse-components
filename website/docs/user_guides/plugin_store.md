@@ -17,7 +17,8 @@ The full catalog, each plugin with its config snippet, is on the
 ## Where are you running JBrowse?
 
 - **A page someone else hosts**, such as genomes.jbrowse.org or a tutorial's
-  link: [check whether it is already loaded](#is-it-already-loaded).
+  link:
+  [check whether the plugin is already loaded](#checking-whether-a-plugin-is-already-loaded).
 - **JBrowse Web in your browser**, for yourself:
   [the plugin store](#the-plugin-store).
 - **A JBrowse Web site you run**, for every visitor:
@@ -26,7 +27,7 @@ The full catalog, each plugin with its config snippet, is on the
 - **A JBrowse component inside your own page**:
   [embedded components](#embedded-components).
 
-## Is it already loaded?
+## Checking whether a plugin is already loaded
 
 A hosted config often loads the plugins its tutorials need. Open **Tools →
 Plugin store**; **Installed plugins** at the top lists what this session loaded.
@@ -47,8 +48,8 @@ Some plugins (e.g. CIVIC) add their data when installed. Others register a new
 track type or adapter, which needs a matching track config before it draws
 anything.
 
-**How long it lasts:** this session. A share link includes the plugin, but a new
-session starts without it. For every visit,
+**How long the install lasts:** this session. A share link includes the plugin,
+but a new session starts without it. For every visit,
 [keep it](#keeping-a-plugin-for-every-visit).
 
 Not in the store? [Load it by URL](#a-plugin-not-in-the-store).
@@ -87,8 +88,8 @@ load would crash the app on every visit. To recover:
 Desktop has two routes:
 
 - **Tools → Plugin store** inside a session works as in
-  [JBrowse Web](#the-plugin-store). **How long it lasts:** as long as that
-  session file; other sessions don't load it.
+  [JBrowse Web](#the-plugin-store). **How long the install lasts:** as long as
+  that session file; other sessions don't load it.
 - **Global plugins...**, in the start screen's Tools menu, installs a plugin for
   every session on this machine, from the next session you open.
 
@@ -130,7 +131,7 @@ file by hand (the `jbrowse` CLI has no plugin command), or install from the
 plugin store on the [admin server](/docs/quickstart_adminserver), which writes
 the entry for you.
 
-**How long it lasts:** until someone removes the entry.
+**How long the install lasts:** until someone removes the entry.
 
 ## Embedded components
 

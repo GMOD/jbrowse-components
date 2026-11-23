@@ -10,7 +10,7 @@ saves it, so a shared link contains it. The highlight list, opened from **Tools
 → Highlights** or **Highlights → Open highlight list** in an LGV's menu, holds
 every highlight with a link back to it.
 
-<Figure caption="Three labeled highlights over the beta-globin cluster, each band its own color." src="/img/highlights_beta_globin.png"/>
+<Figure caption="Three labeled highlights over the beta-globin cluster, each band a different color." src="/img/highlights_beta_globin.png"/>
 
 ## Making a highlight
 

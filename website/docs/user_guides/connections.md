@@ -25,7 +25,8 @@ listed below your regular tracks and named after the connection.
 
 A connection is loaded **lazily**: expanding its category fetches the hub's
 track list, and its tracks open with their checkboxes like any other track.
-JBrowse fetches nothing for a collapsed connection, so adding several is cheap.
+JBrowse fetches nothing for a collapsed connection, so adding several makes no
+requests until you expand them.
 
 ## Opening a connection
 
@@ -48,7 +49,7 @@ expand it again to browse the rest.
 
 ## Removing a connection
 
-**Delete connection...** in the menu on the connection's own row of the track
+**Delete connection...** in the menu on the connection's row of the track
 selector removes it. On a JBrowse website an admin can remove any connection and
 a visitor the ones they added. JBrowse Desktop and the embedded components keep
 connections in the one config they opened, so there anyone can remove any of
@@ -56,14 +57,14 @@ them.
 
 ## When a hub loads in part
 
-A hub that loads some of its tracks says what it left behind:
+When a hub loads only some of its tracks, JBrowse names what it skipped:
 
 - **Left out tracks of a type this JBrowse has no plugin for**: the message
   names each track type. Install the plugin that provides it from the
   [plugin store](/docs/user_guides/plugin_store) and reload.
 - **Could not read the tracks of these assemblies**: the hub's track list for
-  that genome (its `trackDb` file) did not download. The hub's other genomes
-  loaded.
+  that genome (its `trackDb` file) did not download, though the hub's other
+  genomes loaded.
 - **Skipped data from these assemblies**: a track hub names a genome this
   JBrowse does not have. Add the assembly, then expand the connection again.
 

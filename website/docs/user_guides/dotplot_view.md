@@ -81,9 +81,9 @@ differ.
 
 <Figure caption="Top: the boxed span replotted at a 100 kb minimum length. Bottom: one crossing in a linear synteny view, colored by strand." src="/img/synteny_self_chry_palindromes.png" />
 
-Use the plot to find the structures and a synteny view on one of them: ribbons
-span the full height of the strip and stack, so the whole 4.8 Mb box draws as a
-solid block in a synteny view.
+Use the plot to find the structures and a synteny view to look at one of them.
+In a synteny view, ribbons span the full height of the strip and stack, so the
+whole 4.8 Mb box draws as a solid block.
 
 Align the sequence to itself with one extra minimap2 flag:
 

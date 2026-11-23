@@ -48,9 +48,9 @@ in a guide's details are flags:
 - **`softMasked`:** the reference lower-cased this protospacer, which marks it
   as repetitive.
 
-Both describe the protospacer's own sequence; a guide's specificity takes a
-genome-wide search, and this mode scans the region in view. A protospacer that
-reaches into an assembly gap is skipped.
+Both flags describe the protospacer's sequence. Judging a guide's specificity
+takes a genome-wide search, but this mode scans only the region in view. A
+protospacer that reaches into an assembly gap is skipped.
 
 To order oligos from a search, use **Save track data...** on the track's menu.
 The GFF3 export contains the guide sequence, PAM, cut positions, and flags as

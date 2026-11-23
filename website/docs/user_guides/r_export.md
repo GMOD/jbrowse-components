@@ -47,14 +47,14 @@ Each reader returns the tables its track draws, and every band is an ordinary
 - **Labels:** a feature track exports at the height the view gives it, so it
   drops the labels the view drops; change `"fit"` to `"grow"` to draw them all
 
-## What it draws
+## Supported tracks
 
-Feature tracks (GFF3, GTF, BED, BigBed), variant tracks and multi-sample variant
-matrices (VCF), quantitative tracks (BigWig, multi-BigWig) and alignments tracks
-(BAM, CRAM). Several regions on screen draw end to end, as the view lays them
-out.
+The script draws feature tracks (GFF3, GTF, BED, BigBed), variant tracks and
+multi-sample variant matrices (VCF), quantitative tracks (BigWig, multi-BigWig)
+and alignments tracks (BAM, CRAM). Several regions on screen draw end to end, as
+the view lays them out.
 
-## What it leaves out
+## Tracks and settings left out
 
 A track ggjbrowse cannot read yet, such as an arc or GWAS track, and a setting
 it cannot draw, such as facets on a feature track, go in a comment block at the
@@ -82,7 +82,7 @@ script is tested against. It brings `ggplot2`, `patchwork` and `V8`; no
 Bioconductor packages are needed. The script stops with that install line if the
 installed ggjbrowse is older.
 
-## How close to the view it is
+## Differences from the view
 
 The data, rows, colors and keys are the browser's own, computed by the same
 engine. The text, antialiasing and panel spacing are ggplot2's.

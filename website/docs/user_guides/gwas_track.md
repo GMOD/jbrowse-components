@@ -79,9 +79,9 @@ Generate it from:
 ## Clumping the peak
 
 A peak is one signal smeared across every variant in LD with the causal one.
-`plink2 --clump` writes that down: each clump is an index variant plus the
-variants whose signal it accounts for, which loads as an interval track under
-the Manhattan lane.
+`plink2 --clump` groups the variants by signal into clumps, each an index
+variant plus the variants whose signal it accounts for. The clumps load as an
+interval track under the Manhattan lane.
 
 The reference panel is a region of 1000 Genomes, fetched over HTTP without
 downloading the file:

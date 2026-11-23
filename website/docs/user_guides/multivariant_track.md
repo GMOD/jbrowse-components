@@ -267,7 +267,7 @@ JBrowse does not check genotypes against the pedigree. bcftools'
 [`+mendelian2`](https://samtools.github.io/bcftools/bcftools.html#plugin) plugin
 does, with built-in rules for the sex chromosomes, the pseudoautosomal regions
 and chrM, and `-m a` writes `INFO/MERR`, the number of trios with a Mendelian
-error at each site. This VCF carries it, so coloring by `INFO.MERR` with a
+error at each site. This VCF has it, so coloring by `INFO.MERR` with a
 `threshold` scale cut at 1 marks the error sites, as the
 [phased trio tutorial](/docs/tutorials/analyze_trio#coloring-the-trios-calls-by-mendelian-errors)
 does.

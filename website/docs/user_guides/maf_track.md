@@ -39,7 +39,7 @@ there instead:
 - **Bars:** one per species per aligned region, shaded by the summary's score
 - **Hover** names the species, the aligned block and its score, which is how to
   identify a row once the labels are too small to read
-- **No bands:** the coverage and conservation bands are not drawn on this tier
+- **No bands:** this tier leaves out the coverage and conservation bands
 - **Zooming back in** swaps the bars for the alignment itself
 
 <Figure src="/img/maf_summary_tier.png" caption="The hg38 470-way narrowed to ~30 mammals over GAPDH. At 180 kb (top) the track reads its summary file; at 200 bp (bottom) it draws the alignment."/>
@@ -162,10 +162,10 @@ codon columns legible.
 
 Hovering a cell names the species, its base and the location in that species'
 own genome, plus the alignment status of the neighboring blocks (e.g. a bridged
-gap and its size). Insertions, deletions, and bridged e-line gaps each get their
-own tooltip. With the CDS-frames strip or codon layer on, the hover adds the
-gene name; with the codon layer, the species' codon and amino acid beside the
-reference's, labelled synonymous or nonsynonymous.
+gap and its size). Insertions, deletions, and bridged e-line gaps each get a
+separate tooltip. With the CDS-frames strip or codon layer on, the hover adds
+the gene name; with the codon layer, the species' codon and amino acid beside
+the reference's, labelled synonymous or nonsynonymous.
 
 <Figure src="/img/maf_codon_tooltip.png" caption="The codon-view tooltip, naming the substitution against the reference."/>
 

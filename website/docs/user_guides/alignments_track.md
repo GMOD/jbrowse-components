@@ -4,24 +4,25 @@ description: Learn how to show BAM and CRAM files
 guide_category: Track types
 ---
 
-An alignments track shows BAM/CRAM reads two ways at once: a coverage histogram
-on top (read depth at each position) and a pileup below (one box per read). Zoom
-to base level and most of what you need is already on screen. Almost everything
-else is a track-menu option that changes how reads are sorted, colored, grouped,
-sized, or filtered.
+An alignments track shows BAM/CRAM reads as a coverage histogram on top (read
+depth at each position) and a pileup below (one box per read). The track menu's
+options change how reads are sorted, colored, grouped, sized, or filtered.
 
 <Figure caption="An alignments track: coverage on top, pileup below. Mismatches show as colored ticks in the pileup and colored segments in the coverage bars." src="/img/volvox_alignments.png" />
 
 A coverage bar that is part red means that fraction of reads have a mismatch
 there. The track menu's **Show → Show coverage** and **Show → Show pileup**
-toggles turn either panel off independently: pileup-only gives the reads the
-vertical space, and coverage-only fills the track's height with the coverage
-band, split evenly between the sections when the reads are grouped, so it never
-scrolls. A track configured with its pileup hidden opens at 100 px rather than
-250; the toggles keep whatever height the track has. Drag the track's bottom
-edge to resize it. A read-connections or junctions strip drawn above or below
-the coverage keeps its own height, and the coverage takes the rest; drag the
-edge the strip shares with the coverage to resize it.
+toggles turn either panel off independently:
+
+- **Pileup only** gives the reads the vertical space.
+- **Coverage only** fills the track's height with the coverage band, split
+  evenly between the sections when the reads are grouped, so it never scrolls.
+- **Height:** a track configured with its pileup hidden opens at 100 px rather
+  than 250; the toggles keep whatever height the track has. Drag the track's
+  bottom edge to resize it.
+- **Strips:** a read-connections or junctions strip drawn above or below the
+  coverage keeps a fixed height, and the coverage takes the rest; drag the edge
+  the strip shares with the coverage to resize it.
 
 ## Sorting reads
 
@@ -108,9 +109,9 @@ modified-base workflow.
 
 <Figure caption="Nanopore reads over a CpG island colored by type (top) and 2-color (bottom)." src="/img/alignments/modifications2.png" />
 
-Any type in the MM tag paints, so fiber-seq's N6-methyladenine (`A+a`) draws
-like any other modification, and since the assay adds 6mA to accessible DNA the
-call density doubles as a chromatin-accessibility readout.
+JBrowse paints any modification type in the MM tag, so fiber-seq's
+N6-methyladenine (`A+a`) draws like any other modification. The assay adds 6mA
+to accessible DNA, so the call density is a chromatin-accessibility readout.
 
 <Figure caption="Fiber-seq reads at the GAPDH promoter in modifications mode, purple marking 6mA calls. Treated sample above, no-enzyme control below." src="/img/methylation/chromatin_accessibility_6ma.png" />
 
@@ -234,7 +235,7 @@ which makes grouping a check on the reads:
 
 **Presets → SV channels** in the track menu groups by **SV kind**, draws only
 the evidence reads, and swaps the junction arcs for read arcs, so each kind of
-SV evidence gets its own coverage band, reads and arcs.
+SV evidence gets a separate coverage band, reads and arcs.
 [SV channels](/docs/user_guides/sv_visualization#sv-channels) says how to read
 it.
 
@@ -282,11 +283,11 @@ colored triangle where they are a large enough share of a deep enough column
 
 <Figure caption="Clip indicators above the coverage track: blue marks soft clips, red marks hard clips." src="/img/alignment_clipping_indicators.png" />
 
-Insertions larger than 10bp also draw a purple rectangle in the pileup. A long
-read spanning the insertion shows the mark. A short read ends at the insertion's
-edge, and [**Show → Show soft clipping**](#soft-clipping) draws its unaligned
-bases past that edge, as on the Illumina track below (GIAB HG002 reads at
-`1:55,705,770-55,706,090` on hg19).
+JBrowse also draws a purple rectangle in the pileup for insertions larger than
+10bp. A long read spanning the insertion shows the mark. A short read ends at
+the insertion's edge, and [**Show → Show soft clipping**](#soft-clipping) draws
+its unaligned bases past that edge, as on the Illumina track below (GIAB HG002
+reads at `1:55,705,770-55,706,090` on hg19).
 
 <Figure caption="A large insertion across GIAB HG002 nanopore, PacBio and Illumina reads, drawn as purple insertion marks." src="/img/insertion.png" />
 
@@ -359,13 +360,11 @@ draw:
   - **Over coverage** (`overlay`, the default) draws them on the coverage
     histogram.
   - **Above coverage** (`above`) and **Below coverage** (`below`) give them a
-    strip of their own, `junctions.height` px tall, so the histogram stays
-    clear.
+    separate strip, `junctions.height` px tall, so the histogram stays clear.
   - **Auto (minimize overlap)** (`auto`) keeps the arcs over coverage and sends
     a junction below where it would cross another.
 
-  With coverage hidden there is nothing to draw over, so the arcs take a strip
-  of their own.
+  With coverage hidden, the arcs always take a separate strip.
 
 - **Advanced → Coverage axis... → Scale → Log** keeps the shallower junctions
   visible when one junction peak dominates the coverage histogram.
@@ -395,12 +394,12 @@ what each pattern means.
   them, so a second region either side of a breakpoint shows the connection as
   one curve.
 - **Thickness:** reads describing the same connection draw as one arc, thickened
-  on a log scale by how many there are, so the arcs rank the evidence. A
-  single-read connection draws at
+  on a log scale by how many there are, so a thicker arc has more supporting
+  reads. A single-read connection draws at
   [`readConnections.encoding.strokeWidth`](/docs/config/readconnectionsencoding/#slot-strokewidth).
 - **Placement:** **Advanced → Read connections placement** puts the band **Below
-  coverage** (the default) or **Above coverage**, in a strip of its own, or
-  **Over coverage**, on the histogram
+  coverage** (the default) or **Above coverage**, in a separate strip, or **Over
+  coverage**, on the histogram
   ([`readConnections.placement`](/docs/config/readconnections/#slot-placement):
   `below`, `above`, `overlay`). The read cloud follows the same setting.
 - **Hover:** the location, the distance between the ends, the supporting read

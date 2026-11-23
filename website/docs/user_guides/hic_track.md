@@ -87,7 +87,7 @@ track's config:
 Raw contact counts have coverage biases from restriction-site density,
 mappability, and GC content. `.hic` files ship precomputed matrix-balancing
 vectors, and the track menu's **Normalization** submenu lists only the schemes
-the file actually contains:
+the file contains:
 
 - **KR** - Knight-Ruiz, the recommended default
 - **SCALE** - a faster approximation to KR
@@ -180,8 +180,9 @@ the expected count. Where the file has no expected values at the binsize on
 screen, the track draws the counts and the key says **Contacts**.
 
 At a fine binsize far from the diagonal, a bin pair expects less than one
-contact, so most cells list none and draw as the page while the listed ones read
-high. A coarser [resolution](#adjusting-resolution) shows the compartments.
+contact, so most cells list none and draw in the background color while the
+listed ones read high. A coarser [resolution](#adjusting-resolution) shows the
+compartments.
 
 <Figure src="/img/hic/observed_expected.png" caption="Observed/expected over hg19 chr8, red where two regions contact more than their distance predicts." links="Open this view=hic/observed_expected" />
 

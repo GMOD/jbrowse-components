@@ -6,8 +6,8 @@ guide_category: General usage
 
 Navigate with the location search box (a gene name or `chr:start-end`) plus
 drag-to-pan and scroll-to-zoom. Add your own data through the open-track form,
-or preconfigure it in `config.json`. The controls below are shared by JBrowse
-Web and Desktop.
+or preconfigure it in `config.json`. JBrowse Web and Desktop share the controls
+below.
 
 ## Linear genome view
 
@@ -20,7 +20,7 @@ buttons in the LGV header.
 
 ### Zooming
 
-The zoom buttons and slider in the LGV header, or:
+Zoom with the buttons and slider in the LGV header, or with:
 
 - `Ctrl` + mousewheel (on Mac, trackpad pinch-to-zoom also works)
 - `Shift` + click-and-drag for a rubberband selection
@@ -91,9 +91,9 @@ appears only when the hits point at different places.
 
 ## Opening tracks
 
-Menu bar: **File → Open track...**. For a whole track hub (UCSC track hub or
-JBrowse 1 data directory), **File → Open connection...**; see
-[](/docs/user_guides/connections).
+Open a track from **File → Open track...** in the menu bar. For a whole track
+hub (UCSC track hub or JBrowse 1 data directory), use **File → Open
+connection...**; see [](/docs/user_guides/connections).
 
 <Figure caption="File → Open track... opens the Add a track form as a drawer widget." src="/img/add_track_form.png" />
 
@@ -102,7 +102,7 @@ form.
 
 <Figure caption="(1) The Available tracks widget. (2) Its plus button opens the Add a track form." src="/img/add_track_tracklist.png" />
 
-The form takes a URL or a local file. Which formats need an index:
+The form takes a URL or a local file. Each format needs this index:
 
 - **BAM** - BAI or CSI
 - **CRAM** - CRAI
@@ -125,7 +125,7 @@ machine. The browser reads the bytes and uploads nothing.
   permission.
 - **Firefox:** a local file lasts for the life of the tab, and after a refresh
   the track shows "(need to reload)".
-- **Share links** never include a local file, and its index has to be picked by
+- **Share links** leave out local files, and you pick a local file's index by
   hand.
 - **[JBrowse Desktop](/docs/quickstart_desktop)** stores the path, so it has
   none of these limits.
@@ -164,7 +164,7 @@ Administrators can add tracks with the
 
 ## Undo and redo
 
-Tools → Undo/Redo, or `ctrl+z`/`cmd+z` (undo) and
+Use **Tools → Undo/Redo**, or `ctrl+z`/`cmd+z` (undo) and
 `ctrl+shift+z`/`ctrl+y`/`cmd+shift+z` (redo).
 
 Undo is app-wide, so it reaches things like reopening a view you just closed.
@@ -246,12 +246,13 @@ Clicking a feature opens its details panel in the drawer. The Attributes section
 lists the fields as they came out of the file: a GFF3 attribute, a BED extra
 column, or a VCF INFO key appears under its name in the file.
 
-Two things happen to values on the way in, with no configuration:
+JBrowse changes two kinds of value as it loads them, with no configuration:
 
 - **A value that is just a URL becomes a link**, so a GFF3 attribute like
   `url=https://www.uniprot.org/uniprotkb/P12345` is clickable
-- **HTML renders after passing through a sanitizer.** Text that only looks like
-  a tag is left alone, so a VCF `<TRA>` allele still reads as `<TRA>`
+- **HTML renders after JBrowse passes it through a sanitizer.** Text that only
+  looks like a tag stays as typed, so a VCF `<TRA>` allele still reads as
+  `<TRA>`
 
 A table in the panel, such as a VCF's samples, has a search box that reads words
 as [the track filter box](#filtering-tracks) does, `"quoted words"` and `-word`
@@ -271,8 +272,8 @@ The track menu opens this dialog.
 On a **reference sequence track** the dialog also has an "Assembly" section: the
 assembly's config (name, aliases, and the alias, cytoband and genetic-code files
 it loads), a "Copy assembly config" button, and "Show ref name aliases", which
-lists every reference name next to its aliases. That listing has a filter box,
-so it is how to look up what one contig is called elsewhere.
+lists every reference name next to its aliases. That listing has a filter box
+for looking up what one contig is called elsewhere.
 
 ## Editing track configs
 
@@ -317,10 +318,10 @@ range**, **Highlight region** ([](/docs/user_guides/highlights)), then a
   on
 - [](/docs/user_guides/consensus_sequence): when an alignments track is open
 
-Each of these has a track-menu twin that takes the visible window instead of a
-selection: **Get sequence (visible region)...** on the reference sequence track,
-**Consensus sequence (visible region)...** on an alignments track, and the
-synteny launch's own
+**Get sequence...**, the consensus sequence and the synteny launch also have a
+track-menu entry that takes the visible window instead of a selection: **Get
+sequence (visible region)...** on the reference sequence track, **Consensus
+sequence (visible region)...** on an alignments track, and the synteny launch's
 [visible-region entry](/docs/user_guides/linear_synteny_view#from-a-locus-you-are-already-looking-at).
 
 Clicking the scale bar without dragging names a single base. Its menu holds
@@ -330,7 +331,7 @@ The [synteny](/docs/user_guides/linear_synteny_view) and
 [breakpoint split](/docs/user_guides/sv_visualization#breakpoint-split-view)
 views have one scale bar for the whole stack. A drag there leads with **Zoom to
 region(s)**, which zooms every row at once; below it, one entry per genome opens
-that genome's own selection menu.
+the selection menu for that genome.
 
 ## Scalebar chromosome name menu
 
@@ -346,7 +347,7 @@ The chromosome names along the scale bar are clickable. The menu holds:
 
 ## View and layout controls
 
-These layout controls sit in the view's hamburger menu and the header bar.
+The controls below sit in the view's hamburger menu and the header bar.
 
 ### Ideogram
 
@@ -356,8 +357,8 @@ overview bar draws the chromosome as a banded ideogram with the centromere
 marked. **Show → Show ideogram** toggles it, on by default and remembered for
 later sessions.
 
-The entry is absent unless the view shows a whole chromosome, since a sub-region
-gives an arbitrary slice of bands.
+The entry appears only when the view shows a whole chromosome, since a
+sub-region gives an arbitrary slice of bands.
 
 ### Track label positioning
 
@@ -375,8 +376,8 @@ Triangles in the overview bar show the current orientation.
 
 ### Drawer widget position
 
-The header bar dropdown moves the drawer widget to the left or right side. It
-starts on the right.
+The header bar dropdown moves the drawer widget, which starts on the right, to
+the left or right side.
 
 <Figure caption="Toggling the drawer widget to the left side of the screen." src="/img/drawer_widget_toggle.png" />
 

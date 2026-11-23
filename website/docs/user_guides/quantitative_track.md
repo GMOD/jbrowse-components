@@ -87,8 +87,8 @@ reads a mappability track with **Minimum**, the worst position in each bin.
 above the baseline and one below; a flat plot uses one color for both.
 
 - **Subtracks** are listed beneath. **Color rows by → Each row** picks a
-  subtrack's color there, and on overlapping plots gives each subtrack its own
-  palette entry.
+  subtrack's color there, and on overlapping plots gives each subtrack a
+  separate palette entry.
 - **Edit plot...** in that dialog sets the rest: a ramp
   (`{ "field": "score", "scale": "linear", "scheme": "viridis" }`), the colors a
   heatmap fades through, or several cut points with a color per band.
@@ -102,11 +102,11 @@ guide writes the same object into a config file.
 A `MultiQuantitativeTrack` combines several quantitative signals (typically
 BigWig files) into one track on a shared Y axis, and opens with one row per
 signal. **Plot type** lists the plot styles under **Multi-row** and again under
-**Overlapping**, so one click picks how a signal is drawn and whether it gets
-its own row. Where the subtracks carry a `group`, or the config sets
+**Overlapping**, so one click picks how a signal is drawn and whether it gets a
+separate row. Where the subtracks have a `group`, or the config sets
 [`rows.field`](/docs/config/quantitativerows/#slot-field) to another subtrack
 attribute, a third layout, **Rows by group**, draws one row per value with that
-row's subtracks overlaid in their own colors
+row's subtracks overlaid in their configured colors
 ([config](/docs/config_guides/quantitative_track/#a-row-per-group-its-subtracks-overlaid)).
 
 <Figure caption="The track menu lists the available plot types." src="/img/multiwig/multi_renderer_types.png" />
@@ -149,9 +149,9 @@ on the alignments track.
 
 **Clustering → Cluster rows by score...** in the track menu reorders rows by
 signal similarity over the visible region. A sample with patchy coverage
-clusters by the values it has, and a log or signed log axis compares values as
-it draws them. See [](/docs/user_guides/clustering) for the modes, the
-dendrogram, and how to share a result in a session URL. The
+clusters by the values it has, and under a log or signed log axis clustering
+compares values as the axis draws them. See [](/docs/user_guides/clustering) for
+the modes, the dendrogram, and how to share a result in a session URL. The
 [population CNV tutorial](/docs/tutorials/population_cnv#a-deletion-nested-inside-another-on-chr3-sorted-by-clustering)
 clusters a copy-number panel.
 
@@ -186,7 +186,8 @@ For a chromosome-scale view of copy-number changes:
 <Figure caption="A whole-genome coverage BigWig, each chromosome a region." src="/img/bigwig/whole_genome_coverage.png" />
 
 For tumor vs normal on one Y axis, put both signals in one track; for a whole
-cohort, the [TCGA cohort copy number tutorial](/docs/tutorials/tcga_cohort_cnv).
+cohort, see the
+[TCGA cohort copy number tutorial](/docs/tutorials/tcga_cohort_cnv).
 
 Coverage is also shaped by GC content, mappability, repeats and PCR bias, so not
 every dip or spike is a copy-number change.

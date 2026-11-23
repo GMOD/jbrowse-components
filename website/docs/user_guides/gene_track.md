@@ -39,7 +39,7 @@ While the display leaves transcripts out:
 
 - **+N more** beside a gene's name, wherever the gene is wide enough on screen
   to hold it, opens that one gene, and then reads **show fewer**. The **Gene
-  glyph** submenu grows a row to re-collapse every gene opened this way
+  glyph** submenu then has a row to re-collapse every gene opened this way
 - **A chip** in the track's bottom-right corner names the rule:
   `Isoforms trimmed` where the track's height is the constraint, otherwise the
   tag responsible for most genes on screen (`RefSeq Select`, `MANE Select`, or
@@ -75,8 +75,8 @@ Track-menu toggles:
   _Below_ or _Overlay_, or _Off_
 - **Show → Show chevrons:** strand chevrons along the intron lines (on by
   default)
-- **Filter by → Genes:** _Only genes_ hides non-gene features, _Hide genes_ the
-  genes
+- **Filter by → Genes:** _Only genes_ hides non-gene features, and _Hide genes_
+  hides the genes
 - **Group by:** _Strand_ packs the forward-strand features into one labelled
   section above the reverse-strand ones, unstranded features last.
   _Attribute..._ opens a dialog for a feature attribute, `biotype` or `source`
@@ -129,7 +129,7 @@ choice by hand.
 **Advanced → Edit plot...** in the track menu, also a button at the foot of the
 Group by and Color by attribute dialogs, opens the track's grouping, color and
 filter as text ([](/docs/user_guides/edit_plot)), as the display's settings in
-the shape a config file takes them:
+config-file format:
 
 - **`facet`** stacks a section per value of a field, in the order its `sort`
   lists
@@ -285,7 +285,7 @@ entry, or a file of your own) linked to the genome view: hovering a position
 highlights the residue, and vice versa. The tutorial covers launch routes and
 installation.
 
-## A whole chromosome of genes
+## Gene density across a chromosome
 
 Zoomed out far enough, a gene track stops fetching and shows a "region too
 large" message with a **Force load** button. A bigWig of feature counts per

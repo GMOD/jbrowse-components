@@ -86,7 +86,7 @@ npx serve -S .                # http://localhost:3000
   to a config file.
 - `--load copy` puts the data file next to `config.json` so one server serves
   both; `--load symlink` links it instead. For data your lab already hosts, pass
-  the URL in place of a path and the track records that URL:
+  the URL in place of a path and the track config stores that URL:
   `jbrowse add-track https://data.myuniversity.edu/rnaseq/sample1.bam`.
 - The track type and adapter come from the file's extension.
   [](/docs/config_guides/file_types) lists every format and the adapter it maps
@@ -128,7 +128,7 @@ jbrowse add-track file.vcf.gz --load copy
 
 ### BigWig / BigBed
 
-No index needed: `jbrowse add-track file.bw --load copy`.
+BigWig and BigBed need no index: `jbrowse add-track file.bw --load copy`.
 
 ### GFF3 and GTF
 
@@ -169,9 +169,9 @@ either produces no error message, just a track that looks broken:
   gzip corrupts the byte offsets the index depends on
   ([](/docs/config_guides/serving_data#configure-gzip-for-text-never-for-bgzf)).
 
-Object storage satisfies both, which is why S3 and GCS are common homes for the
-data even when the app is served elsewhere. Data on a different domain than the
-app needs a
+Object storage satisfies both, which is why S3 and GCS commonly host the data
+even when the app is served elsewhere. Data on a different domain than the app
+needs a
 [CORS policy](/docs/config_guides/serving_data#cors-errors-on-remote-files), and
 data that cannot be public needs
 [authentication](/docs/config_guides/authentication).
@@ -182,10 +182,11 @@ data that cannot be public needs
 jbrowse text-index
 ```
 
-Indexes the GFF3, GTF, VCF and GenBank tracks in the config so names can be
-typed into the location box. Every other track is skipped with no message; name
-one with `--tracks` and it explains why. [](/docs/config_guides/text_searching)
-covers which attributes are indexed and how to narrow the set.
+`text-index` indexes the GFF3, GTF, VCF and GenBank tracks in the config so
+names can be typed into the location box. Every other track is skipped with no
+message; name one with `--tracks` and it explains why.
+[](/docs/config_guides/text_searching) covers which attributes are indexed and
+how to narrow the set.
 
 ## Tips
 

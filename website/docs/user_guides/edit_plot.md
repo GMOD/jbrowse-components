@@ -9,13 +9,13 @@ guide_category: General usage
 
 Every track whose display has color, grouping, rows, axis or filter settings has
 **Advanced → Edit plot...** in its track menu. It opens those settings as text,
-in the shape a config file writes them, so you can write what the menus and
-dialogs cannot express (a ramp, several threshold cuts, a typed section order, a
-filter expression). The Group by, Color by attribute and color dialogs also open
-it from a button, filled in with the choice you have made there but not yet
+in the format of a config file, so you can write what the menus and dialogs
+cannot express (a ramp, several threshold cuts, a typed section order, a filter
+expression). The Group by, Color by attribute and color dialogs also open it
+from a button, filled in with the choice you have made there but not yet
 applied.
 
-## What the box shows
+## Contents of the text box
 
 <Figure src="/img/edit_plot/dialog.png" caption="Edit plot on a gene track with the help open: each setting linked to the config reference, the example buttons, and the plot as text." />
 

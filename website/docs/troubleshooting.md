@@ -50,16 +50,16 @@ contexts.
 ## Why is my track slow
 
 For an indexed file, the time goes into fetching and decoding the region in
-view. Deep alignment tracks at wide zoom dominate, and CRAM costs more CPU than
-BAM to decode. The
+view. Deep alignment tracks at wide zoom dominate, and CRAM takes more CPU time
+than BAM to decode. The
 [region size gate](/docs/config_guides/tracks#the-zoom-in-to-see-more-features-limits)
 keeps a wide view from attempting this by accident.
 
 Some adapters read a plain text file with no index (`Gff3Adapter`, `VcfAdapter`,
 `BedAdapter`, `PAFAdapter`) and parse the whole file each time the track loads.
 Converting to the bgzip and tabix indexed equivalent, or to
-[PIF](/docs/developer_guides/pif_format) (`jbrowse make-pif`) for PAF, makes the
-cost per-region. The cookbook's
+[PIF](/docs/developer_guides/pif_format) (`jbrowse make-pif`) for PAF, makes
+each load read only the region in view. The cookbook's
 [large alignments](/docs/cookbook#synteny-large-alignments) recipe covers the
 synteny case.
 

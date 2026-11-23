@@ -45,7 +45,7 @@ ring: open it from the view's track selector, or name it in the view's `tracks`.
   the first chromosome
 - **Settings and hover:** every setting the display has on a linear view (a
   wiggle's plot type and color, a mark display's `marks`) applies on the ring,
-  and the tooltip and feature details are the display's own
+  and the tooltip and feature details match the linear display's
 
 <!-- include: products/jbrowse-web/src/tests/CircularViewRing.test.tsx#ringView -->
 
@@ -83,7 +83,7 @@ other, and give each subtrack a `color` in the adapter to tell them apart.
 
 A `SyntenyTrack` draws each alignment as a ribbon between the span it covers on
 one side and the span its mate covers on the other, so an inversion reads as a
-twist. Worked through in [](/docs/tutorials/circular_synteny).
+twist. See [](/docs/tutorials/circular_synteny) for a worked example.
 
 - **Two genomes:** a track aligning two genomes needs both on the circle, set
   with `assembly: ['hg38', 'mm39']`; each lays its chromosomes out in turn

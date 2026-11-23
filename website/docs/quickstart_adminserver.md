@@ -91,8 +91,8 @@ Add track... in the track selector's ☰ menu opens the same form:
 
 <Figure caption="The Add track form launched from the track selector's ☰ menu." src="/img/add_track_tracklist.png"/>
 
-Provide a URL or select a local file. Supported formats and index types:
-[](/docs/config_guides/file_types). Plugins add further formats; see the
+Provide a URL or select a local file. [](/docs/config_guides/file_types) lists
+the supported formats and index types. Plugins add further formats; see the
 [plugin store](/docs/user_guides/plugin_store).
 
 ### Editing a track

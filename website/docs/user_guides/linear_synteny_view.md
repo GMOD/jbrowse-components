@@ -69,7 +69,8 @@ configured but closed.
   **Linear synteny view (visible region)...** under **Launch**.
 - **Right-click an alignment** in a synteny track and pick **Launch → Linear
   synteny view with \<assembly\>** <!-- menu-path-ok --> to open the pair that
-  alignment describes. Worked through in [](/docs/tutorials/genomes_synteny).
+  alignment describes. See [](/docs/tutorials/genomes_synteny) for a worked
+  example.
   - **Use CIGAR to map the current visible region to the target** frames the
     panels on the interval matching your window; without it they frame on the
     whole block. The dialog prints where each panel will open.
@@ -99,7 +100,7 @@ independently:
 - scroll, zoom, and pan either panel independently; ribbons redraw to follow
 - type a region or gene name into a panel's search box to jump it there
 - add tracks (genes, alignments, coverage) to either side from its track
-  selector, useful for reading what a syntenic block actually contains
+  selector, useful for reading what a syntenic block contains
 
 ### Making the panels move together
 
@@ -234,15 +235,15 @@ in a dense view.
 
 <Figure caption="Human against chimp across an RB1 intron, from a liftOver chain with RepeatMasker on both. A missing L1HS is a gap in the ribbon." src="/img/synteny_human_chimp_cigar_modes.png" />
 
-The same human/chimp chain resolves an insertion an order of magnitude smaller
-than that L1HS, still a gap in the alignment with the element named at the
-indel:
+With the same human/chimp chain, the view draws an insertion an order of
+magnitude smaller than that L1HS as a gap in the alignment, with the element
+named at the indel:
 
 <Figure caption="A human-specific AluYb8 in PICALM, drawn as an indel in the ribbon." src="/img/synteny_te_picalm_alu.png" />
 
 ## Zoom and layout
 
-The ⋮ menu in the view's header holds what acts on the rows now:
+The ⋮ menu in the view's header holds the actions that change the rows:
 
 - **Show whole genome** zooms every row out to its whole genome (its
   chromosomes, where the assembly's sequence report names them), each scaled to
@@ -265,10 +266,9 @@ The ⋮ menu in the view's header holds what acts on the rows now:
   - **Reverse row order** flips the stack top to bottom, each band keeping its
     tracks
 
-Each row's own ⋮ opens that row's menu, a collapsed row's included. The view
-menu in the title bar holds **Tracks**, with each synteny track's own menu,
-**Export image...**, **Open in circular synteny view** and **Return to import
-form**.
+Each row's ⋮ opens that row's menu, a collapsed row's included. The view menu in
+the title bar holds **Tracks**, with each synteny track's menu, **Export
+image...**, **Open in circular synteny view** and **Return to import form**.
 
 ## Off-screen mates
 

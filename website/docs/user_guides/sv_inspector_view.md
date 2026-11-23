@@ -14,7 +14,7 @@ for your SV data.
 
 <Figure caption="Launching the SV inspector from the Add menu." src="/img/sv_cgiab/translocation_sv_inspector_start.png" />
 
-The following formats are supported:
+The import form reads these formats:
 
 - VCF or VCF.gz (plain text or (b)gzipped)
 - BED, BEDPE
@@ -77,7 +77,7 @@ table to its row.
 
 ## Rearrangement events
 
-A complex rearrangement is several junctions, and some callers say which ones
+A complex rearrangement is several junctions, and some callers list which ones
 belong together in VCF 4.4's `EVENT` key; the C-GIAB benchmark and DRAGEN both
 write it. When the file has it, a **Filter by event** dropdown appears beside
 **Filter by SV type**, listing each event with its record count and the
@@ -89,13 +89,13 @@ With no event chosen, selecting a row or chord of an event dims every chord
 outside that event, so its other junctions stand out against the whole callset.
 
 The dropdown lists a value only when its records describe more than one
-junction. A breakend callset writes each junction twice, once from either end,
+junction. A breakend callset lists each junction twice, once from either end,
 and GRIDSS gives that pair a distinct `EVENT`, so a list of every value would
 name every breakpoint in the file.
 
-JBrowse reads the grouping and does not compute one, and it reads the standard
-key only. A caller that files the same grouping under a different key needs the
-key renamed before import. [Severus](https://github.com/KolmogorovLab/Severus)
+JBrowse reads the grouping from the standard `EVENT` key rather than computing
+one. A caller that files the same grouping under a different key needs the key
+renamed before import. [Severus](https://github.com/KolmogorovLab/Severus)
 writes `CLUSTERID`, and `MATE_ID` where the specification has `MATEID`:
 
 ```bash

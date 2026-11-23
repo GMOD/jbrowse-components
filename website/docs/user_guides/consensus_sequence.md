@@ -22,8 +22,8 @@ The panel opens two ways, which differ in the region it opens on:
   track to call from. That last step is there even with a single track open, and
   the dialog title repeats the track name.
 
-Regions are limited to 500kb. The panel refuses a larger one and waits for a
-smaller one typed into the **Region** field.
+The panel accepts regions up to 500kb, and for a larger one waits for a smaller
+one typed into the **Region** field.
 
 ## How a position is called
 
