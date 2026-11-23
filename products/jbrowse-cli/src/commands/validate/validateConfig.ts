@@ -55,13 +55,24 @@ import type {
 class Report {
   problems: Problem[] = []
   notes: string[] = []
+  private seen = new Set<string>()
+
+  // A problem two checks both reach, such as the y axis's ends on a mark
+  // display, or a defaults key two displays judge alike, is reported once.
+  add(problem: Problem) {
+    const key = `${problem.where}\n${problem.rule ?? ''}\n${problem.message}`
+    if (!this.seen.has(key)) {
+      this.seen.add(key)
+      this.problems.push(problem)
+    }
+  }
 
   error(where: string, message: string) {
-    this.problems.push({ level: 'error', where, message })
+    this.add({ level: 'error', where, message })
   }
 
   warn(where: string, message: string) {
-    this.problems.push({ level: 'warning', where, message })
+    this.add({ level: 'warning', where, message })
   }
 
   note(message: string) {
@@ -409,7 +420,6 @@ function warnDisplayDefaults(
   if (!trackType || !isRecord(defaults)) {
     return
   }
-  const found = new Report()
   for (const display of displaysTaking(trackType, defaults, manifest)) {
     const entry = manifest.displays[display]
     if (entry) {
@@ -417,17 +427,9 @@ function warnDisplayDefaults(
         displayDefaultsReaching(display, defaults, schema),
         entry,
         `${where}.displayDefaults`,
-        found,
+        report,
         manifest,
       )
-    }
-  }
-  const said = new Set<string>()
-  for (const problem of found.problems) {
-    const key = `${problem.where}\n${problem.message}`
-    if (!said.has(key)) {
-      said.add(key)
-      report.problems.push(problem)
     }
   }
 }
@@ -822,7 +824,7 @@ function checkMarkDisplay(
       ends: scaleEndsOf(name => axis.ends[name], axis.fence),
     },
   })) {
-    pushOnce(report, {
+    report.add({
       level,
       where: `${where}${mark === undefined ? '' : `.marks[${mark}]`}.${slotPath(slot)}`,
       message,
@@ -906,16 +908,7 @@ function checkAlignmentsFilters(
       )
       const at = `${where}.${path.join('.')}`
       for (const message of problems(filterEntriesOf(written))) {
-        if (
-          !report.problems.some(p => p.where === at && p.message === message)
-        ) {
-          report.problems.push({
-            level: 'warning',
-            where: at,
-            message,
-            rule,
-          })
-        }
+        report.add({ level: 'warning', where: at, message, rule })
       }
     }
   }
@@ -965,11 +958,8 @@ function checkRowFilters(
     const rowFilter = isRecord(record.rows) ? record.rows.filter : undefined
     filterEntriesOf(rowFilter).forEach((entry, i) => {
       const at = `${where}.rows.filter[${i}].field`
-      if (
-        entry.field.startsWith('jexl:') &&
-        !report.problems.some(p => p.where === at && p.rule === 'row-filter')
-      ) {
-        report.problems.push({
+      if (entry.field.startsWith('jexl:')) {
+        report.add({
           level: 'error',
           where: at,
           message: rowExpressionProblem(entry.field),
@@ -980,11 +970,8 @@ function checkRowFilters(
     const topLevel = declaresSlot(slots, ['filter']) ? record.filter : []
     filterEntriesOf(topLevel).forEach((entry, i) => {
       const at = `${where}.filter[${i}]`
-      if (
-        attributes.has(entry.field) &&
-        !report.problems.some(p => p.where === at && p.rule === 'row-filter')
-      ) {
-        report.problems.push({
+      if (attributes.has(entry.field)) {
+        report.add({
           level: 'warning',
           where: at,
           message: `"${entry.field}" is a row attribute, and the top-level filter tests records: rows.filter keeps rows by their attributes`,
@@ -1024,7 +1011,7 @@ function checkRowAnnotations(
       const message =
         typeof entry === 'string' ? ROW_ANNOTATION_REFUSALS[entry] : undefined
       if (message) {
-        pushOnce(report, {
+        report.add({
           level: 'error',
           where: `${where}.rows.annotations[${i}]`,
           message,
@@ -1032,18 +1019,6 @@ function checkRowAnnotations(
         })
       }
     })
-  }
-}
-
-// A problem the color and scale rules and the mark rule list both reach, such
-// as the y axis's ends on a mark display, is reported once.
-function pushOnce(report: Report, problem: Problem) {
-  if (
-    !report.problems.some(
-      p => p.where === problem.where && p.rule === problem.rule,
-    )
-  ) {
-    report.problems.push(problem)
   }
 }
 
@@ -1191,7 +1166,7 @@ function checkScaleSlots(
     return
   }
   const warn = (at: string, { rule, slot, message }: ChannelProblem) => {
-    pushOnce(report, {
+    report.add({
       level: 'warning',
       where: `${at}.${slot}`,
       message,
@@ -1471,20 +1446,20 @@ export function validateConfig(
   const coreKeys = Object.fromEntries(
     Object.entries(config).filter(([k]) => !pluginRootKeys.includes(k)),
   )
-  report.problems.push(
-    ...schema.schemaProblems(
-      pluginSlots.length && isRecord(configuration)
-        ? {
-            ...coreKeys,
-            configuration: Object.fromEntries(
-              Object.entries(configuration).filter(
-                ([k]) => !pluginSlots.includes(k),
-              ),
+  for (const problem of schema.schemaProblems(
+    pluginSlots.length && isRecord(configuration)
+      ? {
+          ...coreKeys,
+          configuration: Object.fromEntries(
+            Object.entries(configuration).filter(
+              ([k]) => !pluginSlots.includes(k),
             ),
-          }
-        : coreKeys,
-    ),
-  )
+          ),
+        }
+      : coreKeys,
+  )) {
+    report.add(problem)
+  }
 
   const assemblies = (
     Array.isArray(config.assemblies) ? config.assemblies : []
