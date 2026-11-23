@@ -51,7 +51,7 @@ below read these files by URL. _Your own gene_ covers a gene of your own.
 
 </details>
 
-## Opening HBB on the sickle cell codon
+## Open HBB on the sickle cell codon
 
 The protein browser opens a gene, a structure and an alignment as one linked
 session ([](/docs/tutorials/genomes_proteins) walks through its page). Open it
@@ -82,7 +82,7 @@ glutamate in the transcript and valine in the crystal.
 
 <Figure src="/img/protein/hbb_codon_hover.png" caption="HBB at codon 7 with its ortholog alignment and 2HBS. The codon band, the alignment column and Val6 mark the same position." />
 
-## The GWAS Catalog at rs334
+## Add the GWAS Catalog at rs334
 
 The hosted hg38 config already has the GWAS Catalog, one record per study and
 trait:
@@ -133,7 +133,7 @@ the track menu.
 
 <Figure src="/img/protein/hbb_gwas_catalog.png" caption="The GWAS Catalog under HBB, and the copy filtered to rs334's strongest record for each trait, labeled with its trait." />
 
-## Sickle allele in 1000 Genomes
+## Sort the 1000 Genomes genotypes at rs334
 
 The 1000 Genomes callset is a VCF with a column per genome, which JBrowse draws
 as one row per genome:
@@ -177,7 +177,7 @@ it:
 
 <Figure src="/img/protein/hbb_1000_genomes.png" caption="1000 Genomes genotypes under HBB, one row per genome, sorted by genotype at rs334." />
 
-## The domains across all three views
+## Color all three views by the alignment's domains {#the-domains-across-all-three-views}
 
 The alignment view fills its rows with NCBI's conserved domains and sites. The
 genome view and the structure read them from the alignment, so each domain keeps
@@ -218,7 +218,7 @@ The figure's callouts cover one view at a time:
     sits inside the globin fold; the bar's start marks where cd08925's model
     begins.
 
-## Your own gene
+## Run the same steps on your own gene
 
 Each step on this page works on any gene the protein browser opens:
 

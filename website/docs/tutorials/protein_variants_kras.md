@@ -46,7 +46,7 @@ read these files by URL.
 
 </details>
 
-## Opening KRAS on codons 12 and 13
+## Open KRAS on codons 12 and 13
 
 [Part 1](/docs/tutorials/protein_variants_sickle_cell) walks through the protein
 browser's linked session. Open it on _KRAS_ with structure 6OIM:
@@ -82,7 +82,7 @@ ClinVar has records of several base changes at each of codons 12 and 13. Click a
 box to open its record, which names the protein change, its classification and
 the conditions submitters reported.
 
-## The hotspots in the conserved sites
+## Color the three views by the conserved sites
 
 The alignment view fills its rows with NCBI's conserved domains and sites, and
 the genome view and the structure read them from the alignment, the same steps
@@ -103,7 +103,7 @@ Codon 12 sits inside three of NCBI's sites, the G1 box (the P-loop), the
 GTP/Mg2+ binding site and the putative GDI interaction site, and codon 13 inside
 the first two. Codon 61 sits outside all three, in the Switch II region.
 
-## Your own gene
+## Run the same steps on your own gene
 
 - the same steps work on any gene the protein browser opens
 - add `residue=N` to the link to open on the seed alignment of the Pfam family
