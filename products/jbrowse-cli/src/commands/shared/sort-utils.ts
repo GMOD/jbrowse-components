@@ -50,34 +50,39 @@ export const GFF_CONFIG: SortConfig = {
   endOfData: '##FASTA',
 }
 
-const getMinimalEnvironment = () => ({ ...process.env, LC_ALL: 'C' })
-
-const NEWLINE = 0x0a
+const NEWLINE = Buffer.from('\n')
 const HASH = 0x23
 
-// bytes, not decoded text, so a line leaves exactly as it came in (a CRLF
-// file keeps its CR) and a file that is not UTF-8 is not rewritten
-async function* splitLines(input: AsyncIterable<Buffer | string>) {
+// Lines as bytes, not decoded text, so a line leaves exactly as it came in (a
+// CRLF file keeps its CR) and a file that is not UTF-8 is not rewritten. One
+// batch per input chunk keeps the per-line cost to a subarray.
+async function* lineBatches(input: AsyncIterable<Buffer | string>) {
   let tail = Buffer.alloc(0)
   for await (const chunk of input) {
     const data = Buffer.concat([tail, Buffer.from(chunk)])
+    const lines = []
     let start = 0
     for (
       let end = data.indexOf(NEWLINE);
       end !== -1;
       end = data.indexOf(NEWLINE, start)
     ) {
-      yield data.subarray(start, end)
+      lines.push(data.subarray(start, end))
       start = end + 1
     }
     tail = data.subarray(start)
+    yield lines
   }
   if (tail.length > 0) {
-    yield tail
+    yield [tail]
   }
 }
 
-const isBlank = (line: Buffer) => line.toString('latin1').trim() === ''
+const isBlank = (line: Buffer) =>
+  line.every(b => b === 0x20 || (b >= 0x09 && b <= 0x0d))
+
+const withNewlines = (lines: Buffer[]) =>
+  Buffer.concat(lines.flatMap(line => [line, NEWLINE]))
 
 // One pass over the input: `#` lines go straight to stdout, in input order,
 // and every other non-blank line goes to sort, whose output follows once its
@@ -90,7 +95,10 @@ async function sortInput(
   const sort = spawn(
     'sort',
     ['-t', '\t', '-k1,1', `-k${sortColumn},${sortColumn}n`],
-    { env: getMinimalEnvironment(), stdio: ['pipe', 'pipe', 'inherit'] },
+    {
+      env: { ...process.env, LC_ALL: 'C' },
+      stdio: ['pipe', 'pipe', 'inherit'],
+    },
   )
   const closed = waitForProcessClose(sort)
   const state = { sortStopped: false, consumerGone: false }
@@ -107,24 +115,33 @@ async function sortInput(
 
   const endMarker = endOfData ? Buffer.from(endOfData) : undefined
   let dataEnded = false
-  for await (const line of splitLines(input)) {
+  for await (const lines of lineBatches(input)) {
     if (state.sortStopped || state.consumerGone) {
       break
     }
-    dataEnded =
-      dataEnded ||
-      (endMarker !== undefined &&
-        line.subarray(0, endMarker.length).equals(endMarker))
-    if (!dataEnded) {
-      if (line[0] === HASH) {
-        process.stdout.write(Buffer.concat([line, Buffer.from('\n')]))
-      } else if (!isBlank(line)) {
-        if (!sort.stdin.write(Buffer.concat([line, Buffer.from('\n')]))) {
-          await Promise.race([once(sort.stdin, 'drain'), closed]).catch(
-            stopFeeding,
-          )
+    const headers = []
+    const data = []
+    for (const line of lines) {
+      dataEnded =
+        dataEnded ||
+        (endMarker !== undefined &&
+          line.subarray(0, endMarker.length).equals(endMarker))
+      if (!dataEnded) {
+        if (line[0] === HASH) {
+          headers.push(line)
+        } else if (!isBlank(line)) {
+          data.push(line)
         }
       }
+    }
+    if (headers.length > 0) {
+      process.stdout.write(withNewlines(headers))
+    }
+    if (data.length > 0 && !sort.stdin.write(withNewlines(data))) {
+      await Promise.race([
+        once(sort.stdin, 'drain'),
+        closed.then(stopFeeding),
+      ]).catch(stopFeeding)
     }
   }
   sort.stdin.end()
