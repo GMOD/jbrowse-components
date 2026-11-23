@@ -93,6 +93,15 @@ export interface ComputedArc {
   // The `arcKey` this arc was deduped under, unique across the array; the paint
   // sort's tie-break, independent of read arrival order.
   key: string
+  // The genomic direction (+1 toward higher coordinates, -1 lower) of the arm
+  // this junction keeps, from each foot: the breakend orientation the feet
+  // draw (`buildArcBandFeeds`). It is the arm, not the segment's own aligned
+  // body: the two coincide for a split junction (`connectionEndpointBps`'
+  // `dir1`/`dir2`) and are opposite for a mate link, whose endpoint is the
+  // fragment's outer edge (`pairOuterDir`). A property of the junction, so
+  // safe on a coalesced arc (`readTrailingBodyDir`).
+  p1Dir: number
+  p2Dir: number
 }
 
 /**
@@ -112,18 +121,6 @@ export interface ComputedArc {
 export interface CrossRegionArc extends ComputedArc {
   p1RegionIndex: number
   p2RegionIndex: number
-  // The genomic direction (+1 toward higher coordinates, -1 lower) of the arm
-  // this junction keeps, from each foot: the breakend orientation, the only
-  // thing still saying it once `ARC_COLOR_INTERCHROM` has replaced the color.
-  // It is the arm, not the segment's own aligned body: the two coincide for a
-  // split junction (`connectionEndpointBps`' `dir1`/`dir2`) and are opposite
-  // for a mate link, whose endpoint is the fragment's outer edge
-  // (`pairOuterDir`). Only an interchromosomal mark draws it
-  // (`buildArcBandFeeds`), so it lives here and on `ComputedLine`, not on
-  // `ComputedArc`. A property of the junction, so safe on a coalesced arc
-  // (`readTrailingBodyDir`).
-  p1Dir: number
-  p2Dir: number
 }
 
 // One far-side landing site of a tick's reads: the position the first read of

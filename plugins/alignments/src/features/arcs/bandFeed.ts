@@ -6,8 +6,12 @@ import { LINK_NO_REGION, linkFeet } from '@jbrowse/render-core/marks'
 import { GLYPH_SQUARE } from '@jbrowse/render-core/shaders/pointMarkConsts'
 
 import { buildArcColorPalette } from '../../shaders/palettes.ts'
-import { ARC_COLOR_INTERCHROM, arcColorSlot } from './arcColors.ts'
-import { isFlatArcShape } from './shapes.ts'
+import {
+  ARC_COLOR_INTERCHROM,
+  arcColorSlot,
+  arcPaintRank,
+} from './arcColors.ts'
+import { ARC_SHAPE_ARC, isFlatArcShape } from './shapes.ts'
 
 import type { ColorPalette } from '../../shaders/colors.ts'
 import type { CrossRegionArc, PartnerLocus, RegionInfo } from './arcTypes.ts'
@@ -160,6 +164,17 @@ class RegionLanes {
   }
 }
 
+/**
+ * Whether an arc draws its breakend feet: a curved arc that says something
+ * (`arcPaintRank`). The feet show the junction's type by shape, outward a
+ * deletion, inward a duplication, parallel an inversion or foldback; a grey
+ * concordant pair would only repeat outward feet, and a read-cloud bar plots
+ * a size, not a junction.
+ */
+function drawsFeet(shapeType: number, colorType: number) {
+  return shapeType === ARC_SHAPE_ARC && arcPaintRank(colorType) === 1
+}
+
 function contains(region: RegionInfo | undefined, bp: number) {
   return region !== undefined && bp >= region.start && bp <= region.end
 }
@@ -281,6 +296,8 @@ export function buildArcBandFeeds({
           ? farRegionOf(index, own.refName, far)
           : LINK_NO_REGION
       const clipped = farRegion === LINK_NO_REGION
+      const nearDir = swap ? data.arcX2Dirs[i]! : data.arcX1Dirs[i]!
+      const farDir = swap ? data.arcX1Dirs[i]! : data.arcX2Dirs[i]!
       pushArc(
         index,
         near,
@@ -291,7 +308,9 @@ export function buildArcBandFeeds({
         data.arcShapeTypes[i]!,
         data.arcColorTypes[i]!,
         data.arcSupport[i]!,
-        0,
+        drawsFeet(data.arcShapeTypes[i]!, data.arcColorTypes[i]!)
+          ? linkFeet(nearDir, farDir)
+          : 0,
         {
           kind: 'arc',
           x1,
@@ -317,7 +336,9 @@ export function buildArcBandFeeds({
       arc.shapeType,
       arc.colorType,
       arc.support,
-      crossesChromosomes ? linkFeet(arc.p1Dir, arc.p2Dir) : 0,
+      crossesChromosomes || drawsFeet(arc.shapeType, arc.colorType)
+        ? linkFeet(arc.p1Dir, arc.p2Dir)
+        : 0,
       {
         kind: 'arc',
         x1: arc.p1.bp,

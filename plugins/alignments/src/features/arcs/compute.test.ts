@@ -2924,6 +2924,8 @@ describe('groupArcsByRef', () => {
         spanBp: 200,
         support: 1,
         key: 'chr1\u00001100\u0000chr1\u00001500\u00000\u00000',
+        p1Dir: -1,
+        p2Dir: 1,
       },
       {
         p1: { refName: 'chr2', bp: 5000 },
@@ -2934,6 +2936,8 @@ describe('groupArcsByRef', () => {
         spanBp: 500,
         support: 1,
         key: 'chr2\u00005000\u0000chr2\u00006000\u00001\u00001',
+        p1Dir: -1,
+        p2Dir: 1,
       },
     ]
     const lines = [tick('chr1', 1200, 'chr2'), tick('chr2', 5500, 'chr1')]
@@ -2989,6 +2993,8 @@ describe('arcsToRegionResult', () => {
         spanBp: 200,
         support: 1,
         key: 'chr1\u00001100\u0000chr1\u00001500\u00000\u00000',
+        p1Dir: -1,
+        p2Dir: 1,
       },
     ]
     const regionLines = [tick('chr1', 1200, 'chr2')]
@@ -3033,6 +3039,8 @@ describe('arcsToRegionResult', () => {
       spanBp,
       support: 1,
       key: `k${spanBp}`,
+      p1Dir: -1,
+      p2Dir: 1,
     })
     // The widest pair jitters DOWN and a narrower one jitters UP, so the two
     // maxima disagree in both directions at once: 10000 is the answer, 10500 is
@@ -3059,6 +3067,8 @@ describe('arcsToRegionResult', () => {
           spanBp: 44500,
           support: 1,
           key: 'curve',
+          p1Dir: -1,
+          p2Dir: 1,
         },
       ],
       [],

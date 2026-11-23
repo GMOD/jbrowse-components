@@ -35,6 +35,8 @@ function clampedDomeInk(down: boolean, width: number) {
               spanBp: 800,
               support: 1000,
               key: 'wide',
+              p1Dir: -1,
+              p2Dir: 1,
             },
           ],
           [],

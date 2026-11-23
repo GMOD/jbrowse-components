@@ -170,11 +170,13 @@ real pair into the top third of the axis.
 
 ## Breakend feet
 
-**A connection between two chromosomes draws breakend feet, and no other arc
-does**, a same-chromosome link painted inter-chromosomal included. A short
-horizontal tick at each foot lies over the arm that foot's junction keeps:
-outward feet are a deletion-type junction, inward a duplication-type, parallel an
-inversion. A tick draws the one foot at its own end, so a tick is a breakend,
+**A curved arc that says something draws breakend feet** (`drawsFeet`,
+ADR-286): an interchromosomal arc, and any same-chromosome curve with a category
+(`arcPaintRank` 1). A grey concordant pair and a read-cloud bar draw none. The
+junctions band's split junctions draw them too, from their class
+(`junctionFeet`). A short horizontal tick at each foot lies over the arm that
+foot's junction keeps: outward feet are a deletion-type junction, inward a
+duplication-type, parallel an inversion. A tick draws the one foot at its own end, so a tick is a breakend,
 keyed on position and kept side (`pushLine`): two junctions on one base keeping
 opposite sides draw two ticks, each with its own foot and support. A tick's foot
 (`ARC_TICK_FOOT_PX`) is shorter than an arc's, so neighbouring ticks' feet do

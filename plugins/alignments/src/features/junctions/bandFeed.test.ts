@@ -1,4 +1,5 @@
 import { normalizedRgbToABGR } from '@jbrowse/core/util/colorBits'
+import { linkFeet } from '@jbrowse/render-core/marks'
 
 import { makeTestPalette } from '../../LinearAlignmentsDisplay/testUtils.ts'
 import { arcCategoryColor } from '../../shaders/palettes.ts'
@@ -48,4 +49,28 @@ test('a split junction paints its read arc color, a splice junction its strand',
   expect(arcCategoryColor(colors, 'splitBack')).toEqual(
     colors.readCategoryColors.pairRL,
   )
+})
+
+test('a split junction draws the feet its class names, a splice junction none', () => {
+  const feeds = buildJunctionsBandFeeds({
+    junctions: [
+      junction(100, 500),
+      junction(200, 900, 'splitForward'),
+      junction(300, 400, 'splitBack'),
+      junction(400, 800, 'splitInvLL'),
+      junction(500, 600, 'splitInvRR'),
+    ],
+    downJunctionKeys: new Set(),
+    displayed: [
+      { refName: 'chr1', start: 0, end: 10_000, displayedRegionIndex: 0 },
+    ],
+    colors: makeTestPalette(),
+  })
+  expect([...feeds.get(0)!.up.feet!]).toEqual([
+    0,
+    linkFeet(-1, 1),
+    linkFeet(1, -1),
+    linkFeet(-1, -1),
+    linkFeet(1, 1),
+  ])
 })

@@ -1,0 +1,54 @@
+---
+status: Accepted
+summary: "A curved arc that says something draws its breakend feet, in the read-connections band and the junctions band alike: outward for a deletion-type junction, inward for a duplication-type, parallel for an inversion. Grey concordant pairs, read-cloud bars, splice junctions and split insertions draw none. Amends ADR-170, which kept feet to interchromosomal arcs"
+---
+
+# ADR-286: A junction arc draws its breakend feet
+
+## Status
+
+Accepted (2026-11-23), Colin's call on the COLO829 foldback at
+chr3:26,622,430. Amends
+[ADR-170](adr-170-the-read-connections-band-is-a-marks-list.md), whose
+"Breakend feet stay on interchromosomal arcs" this replaces.
+
+## Context
+
+ADR-170 kept breakend feet to interchromosomal arcs: a same-chromosome arc read
+its type from its color, and feet on every arc of a fan over a well-supported
+junction would crowd it. On the COLO829 ONT cards the arc over the coverage is
+one junction, coalesced from every read that crosses it, so there is no fan to
+crowd. Its color names the type only through the key, while two feet pointing
+the same way show a foldback without it, the way the breakpoint split view
+already draws one.
+
+The arc over the coverage in chain mode is the junctions band's split junction
+(ADR-222), not the read-connections band, so the rule has to hold in both.
+
+## Decision
+
+- **A curved arc with a category draws its feet.** In the read-connections band
+  that is `ARC_SHAPE_ARC` with `arcPaintRank` 1 (`drawsFeet` in
+  `features/arcs/bandFeed.ts`); in the junctions band, a split junction of a
+  class other than an insertion (`junctionFeet`).
+- **Each foot lies over the arm its junction keeps.** The read-connections band
+  takes the first coalesced connection's `p1Dir`/`p2Dir`, now on every
+  `ComputedArc` and packed as `arcX1Dirs`/`arcX2Dirs`, safe because the arc's
+  color class fixes its orientation. The junctions band reads them off the
+  class: deletion-type outward, duplication-type inward, LL both left, RR both
+  right.
+- **Interchromosomal arcs keep their feet,** as before.
+
+## Rejected
+
+| Option | Why |
+| ------ | --- |
+| Feet on every arc, concordant pairs included | A short-read pileup is about 50 concordant pairs to one categorized arc (`arcPaintRank`), and each would add two outward feet that say nothing |
+| Feet on read-cloud bars | A bar plots a fragment size, not a junction, and already ends in squares |
+| Feet on split insertions | Both feet sit on about one base, so they would draw as a bar through the junction |
+
+## Consequences
+
+- A foldback's arc over the coverage ends in two feet pointing the same way,
+  checked in a jb2export of COLO829 at chr3:26,621,800-26,623,600.
+- `ArcsUploadData` carries two more `Int8Array` lanes per region.

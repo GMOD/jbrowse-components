@@ -44,6 +44,8 @@ function arc(p1: number, p2: number, over: Partial<ComputedArc> = {}) {
     spanBp: Math.abs(p2 - p1) / 2,
     support: 5,
     key: `${p1}-${p2}`,
+    p1Dir: -1,
+    p2Dir: 1,
     ...over,
   }
 }

@@ -9,7 +9,12 @@ import {
   ARC_SLOT_CATEGORY,
   buildArcColorPalette,
 } from '../../shaders/palettes.ts'
-import { ARC_COLOR_INTERCHROM, ARC_COLOR_LONG_INSERT } from './arcColors.ts'
+import {
+  ARC_COLOR_DEFAULT,
+  ARC_COLOR_INTERCHROM,
+  ARC_COLOR_LONG_INSERT,
+  ARC_COLOR_SPLIT_INV_LL,
+} from './arcColors.ts'
 import { arcsToRegionMap } from './arcRegions.ts'
 import { CLOUD_LINE_ALPHA, buildArcBandFeeds } from './bandFeed.ts'
 import {
@@ -51,6 +56,8 @@ function arc(
     spanBp: 310,
     support: 4,
     key: `${p1}-${p2}-${shapeType}`,
+    p1Dir: -1,
+    p2Dir: 1,
     ...over,
   }
 }
@@ -191,7 +198,7 @@ test('an interchromosomal cross-region arc draws from its first foot in its own 
 // A translocated mate's supplementary beside its partner paints
 // inter-chromosomal, but both feet share a chromosome, so it plots on the
 // band's axis like any pair: a read cloud bar at its span, not on the floor.
-test('a same-chromosome link in the inter-chromosomal color keeps the valued lane and no feet', () => {
+test('a same-chromosome link in the inter-chromosomal color keeps the valued lane, feet on its curve only', () => {
   const within = arc(100, 400, ARC_SHAPE_FLAT, {
     colorType: ARC_COLOR_INTERCHROM,
   })
@@ -206,6 +213,28 @@ test('a same-chromosome link in the inter-chromosomal color keeps the valued lan
   expect(crossLinks.count).toBe(0)
   expect([...links.x]).toEqual([100, 900])
   expect([...links.y!]).toEqual([300, 300])
+  expect([...links.feet!]).toEqual([0, linkFeet(1, -1)])
+})
+
+test('a curve that says something draws its breakend feet, the near one first', () => {
+  const inversion = arc(100, 400, ARC_SHAPE_ARC, {
+    colorType: ARC_COLOR_SPLIT_INV_LL,
+    p1Dir: -1,
+    p2Dir: -1,
+  })
+  const { links } = feeds([arc(500, 700), inversion]).get(0)!
+  expect([...links.feet!]).toEqual([linkFeet(-1, 1), linkFeet(-1, -1)])
+  const { clippedLinks } = feeds([
+    arc(3000, 5100, ARC_SHAPE_ARC, { p1Dir: 1, p2Dir: -1 }),
+  ]).get(1)!
+  expect([...clippedLinks.feet!]).toEqual([linkFeet(-1, 1)])
+})
+
+test('a grey concordant pair and a read cloud bar draw no feet', () => {
+  const { links } = feeds([
+    arc(100, 400, ARC_SHAPE_ARC, { colorType: ARC_COLOR_DEFAULT }),
+    arc(500, 700, ARC_SHAPE_FLAT),
+  ]).get(0)!
   expect([...links.feet!]).toEqual([0, 0])
 })
 

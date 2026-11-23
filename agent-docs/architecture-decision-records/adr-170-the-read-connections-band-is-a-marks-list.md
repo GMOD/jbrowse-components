@@ -9,7 +9,9 @@ summary: "The alignments read-connections band's private shapes become grammar m
 
 Accepted (2026-09-25), Colin's calls of 2026-09-25 on the second of the three
 decisions the arc band geometry round left, and his answers on the
-connector's color and the breakend feet.
+connector's color and the breakend feet. Amended by
+[ADR-286](adr-286-a-junction-arc-draws-its-breakend-feet.md), which gives every
+curved arc with a category its feet; the rest stands.
 [GRAMMAR_OF_GRAPHICS.md](../reference/GRAMMAR_OF_GRAPHICS.md) and
 [MARK_ENCODING.md](../reference/MARK_ENCODING.md) carry the operational
 description. Continues

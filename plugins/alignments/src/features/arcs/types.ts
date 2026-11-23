@@ -20,6 +20,10 @@ export interface ArcsUploadData {
   // folded into it, always >= 1. The three draw paths turn it into stroke width
   // through `arcStrokeScale` — none of them may re-derive that curve.
   arcSupport: Uint32Array
+  // The side each arc's junction keeps at `arcX1` and at `arcX2`
+  // (`ComputedArc.p1Dir`), its breakend feet.
+  arcX1Dirs: Int8Array
+  arcX2Dirs: Int8Array
   numArcs: number
   // The largest insert size among the flat (read-cloud) shapes, precomputed so
   // the `arcsYDomainBp` view reduces over regions rather than over every arc.
@@ -80,6 +84,8 @@ export function emptyArcsUploadData(): ArcsUploadData {
     arcYBp: new Uint32Array(0),
     arcSpanBp: new Uint32Array(0),
     arcSupport: new Uint32Array(0),
+    arcX1Dirs: new Int8Array(0),
+    arcX2Dirs: new Int8Array(0),
     numArcs: 0,
     maxFlatArcSpanBp: 0,
     arcLinePositions: new Uint32Array(0),

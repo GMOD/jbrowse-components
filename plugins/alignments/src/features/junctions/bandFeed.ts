@@ -1,4 +1,5 @@
 import { normalizedRgbToABGR } from '@jbrowse/core/util/colorBits'
+import { linkFeet } from '@jbrowse/render-core/marks'
 
 import { arcCategoryColor } from '../../shaders/palettes.ts'
 
@@ -65,6 +66,7 @@ class SideLanes {
   y: number[] = []
   size: number[] = []
   color: number[] = []
+  feet: number[] = []
   hits: MergedJunction[] = []
 
   channels(): LinkChannels {
@@ -75,6 +77,7 @@ class SideLanes {
       y: Float32Array.from(this.y),
       size: Float32Array.from(this.size),
       color: Uint32Array.from(this.color),
+      feet: Uint8Array.from(this.feet),
       count: this.x.length,
     }
   }
@@ -137,6 +140,24 @@ export function junctionColor(
   )
 }
 
+/**
+ * A split junction's breakend feet, from its class: the side each foot's
+ * junction keeps, outward for a deletion-type, inward for a duplication-type,
+ * both left or both right for an inversion. A splice junction and a split
+ * insertion, whose feet share a base, draw none.
+ */
+export function junctionFeet(j: Pick<MergedJunction, 'split'>) {
+  return j.split === 'splitForward'
+    ? linkFeet(-1, 1)
+    : j.split === 'splitBack'
+      ? linkFeet(1, -1)
+      : j.split === 'splitInvLL'
+        ? linkFeet(-1, -1)
+        : j.split === 'splitInvRR'
+          ? linkFeet(1, 1)
+          : 0
+}
+
 export interface JunctionsBandFeedInput {
   junctions: readonly MergedJunction[]
   /** By `junctionKey`: the junctions that hang in the strip below coverage, on the `down` mark. */
@@ -178,6 +199,7 @@ export function buildJunctionsBandFeeds({
       side.y.push(junctionArcHeightFraction(Math.abs(j.end - j.start)))
       side.size.push(junctionStrokeWidth(j.count))
       side.color.push(junctionColor(j, colors))
+      side.feet.push(junctionFeet(j))
       side.hits.push(j)
     }
   }

@@ -108,6 +108,8 @@ export function arcsToRegionResult(
   const arcYBp = new Uint32Array(regionArcs.length)
   const arcSpanBp = new Uint32Array(regionArcs.length)
   const arcSupport = new Uint32Array(regionArcs.length)
+  const arcX1Dirs = new Int8Array(regionArcs.length)
+  const arcX2Dirs = new Int8Array(regionArcs.length)
 
   // The reported span, not the jittered `yBp`: the cloud's Y axis autoscales to
   // and labels its top tick with this.
@@ -121,6 +123,8 @@ export function arcsToRegionResult(
     arcYBp[i] = arc.yBp
     arcSpanBp[i] = arc.spanBp
     arcSupport[i] = arc.support
+    arcX1Dirs[i] = arc.p1Dir
+    arcX2Dirs[i] = arc.p2Dir
     // Not `isFlatArcShape`: an unplaced bar is drawn at the anchor because its
     // span has no place on the axis (reference/LINEAR_ALIGNMENTS_DISPLAY.md).
     if (plotsOnInsertSizeAxis(arc.shapeType) && arc.spanBp > maxFlatArcSpanBp) {
@@ -150,6 +154,8 @@ export function arcsToRegionResult(
     arcYBp,
     arcSpanBp,
     arcSupport,
+    arcX1Dirs,
+    arcX2Dirs,
     numArcs: regionArcs.length,
     maxFlatArcSpanBp,
     arcLinePositions,

@@ -268,11 +268,11 @@ function resolveArcs(
   // connection's two region indices. Two refNames cannot share a displayed
   // region, so an interchromosomal arc can only take the cross-region branch.
   function pushArc(
-    arc: Omit<ComputedArc, 'support' | 'key'>,
+    arc: Omit<ComputedArc, 'support' | 'key' | 'p1Dir' | 'p2Dir'>,
     p1RegionIndex: number | undefined,
     p2RegionIndex: number | undefined,
     // The connection's index in `pendingArcs`, for its arm directions
-    // (`CrossRegionArc.p1Dir`) and the fragment it counts as.
+    // (`ComputedArc.p1Dir`) and the fragment it counts as.
     pendingIndex: number,
     // The reads this connection already stands for when its family is
     // clustered (`ComputedArc.support`); absent means count one per fragment.
@@ -306,6 +306,8 @@ function resolveArcs(
       ...arc,
       support: clusterSupport ?? 1,
       key,
+      p1Dir: pendingArcs[pendingIndex]!.p1Dir,
+      p2Dir: pendingArcs[pendingIndex]!.p2Dir,
     }
     byKey.set(key, computed)
     // An arc with either foot in no displayed region is not cross-region: it
@@ -318,12 +320,7 @@ function resolveArcs(
       // `Object.assign`, not a spread: the identity has to be the one in
       // `byKey`, or a later `support++` lands on an arc nothing draws.
       crossRegion.push(
-        Object.assign(computed, {
-          p1RegionIndex,
-          p2RegionIndex,
-          p1Dir: pendingArcs[pendingIndex]!.p1Dir,
-          p2Dir: pendingArcs[pendingIndex]!.p2Dir,
-        }),
+        Object.assign(computed, { p1RegionIndex, p2RegionIndex }),
       )
     } else {
       arcs.push(computed)

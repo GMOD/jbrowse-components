@@ -129,9 +129,16 @@ $ jbrowse create --listVersions
 Add an assembly to a JBrowse 2 configuration
 
 Usage: jbrowse add-assembly <sequence> [options]
+       jbrowse add-assembly --genome <name> [options]
 
 Options:
   -h, --help                 Show help
+
+      --genome               A genome hosted on genomes.jbrowse.org, named by
+                             its UCSC database name (e.g. hg38) or GenArk
+                             accession (e.g. GCF_000001405.40), whose assembly
+                             is copied in place of a sequence file; its files
+                             stay on their servers, so it takes no --load
 
   -t, --type                 type of sequence, by default inferred from sequence
                              file
@@ -218,6 +225,9 @@ rather than replacing it, e.g. --config
 assembly's About dialog.
 
 Examples:
+
+# add the hg38 assembly genomes.jbrowse.org hosts, with no reference download
+$ jbrowse add-assembly --genome hg38
 
 # add assembly to installation in current directory, copying GRCh38.fa and GRCh38.fa.fai there; with no GRCh38.fa.fai, one is generated
 $ jbrowse add-assembly GRCh38.fa --load copy
