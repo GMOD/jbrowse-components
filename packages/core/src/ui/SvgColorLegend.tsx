@@ -22,6 +22,9 @@ const SWATCH_GAP = 2
 export const LEGEND_ROW_HEIGHT = 14
 export const LEGEND_SWATCH = 10
 
+// a bold label runs wider than the regular face `measureLegendText` sizes
+const HEADING_WIDTH_RATIO = 1.08
+
 const GRADIENT_BAR_WIDTH = 100
 const GRADIENT_BAR_HEIGHT = 10
 // the bar plus the row of domain labels under it
@@ -34,6 +37,7 @@ function useLegendInks() {
     paper: alpha(palette.background.paper, 0.95),
     text: palette.text.primary,
     faint: palette.text.secondary,
+    rule: palette.divider,
   }
 }
 
@@ -177,10 +181,14 @@ function legendBox(
               GRADIENT_BAR_WIDTH,
               measureLegendText(entry.label, FONT_SIZE, fontFamily),
             )
-        : Math.max(
-            textLeft + measureLegendText(entry.label, FONT_SIZE, fontFamily),
-            SWATCH_LEFT + swatchesWidth(legendSwatches(entry).length),
-          ),
+        : entry.role === 'heading'
+          ? SWATCH_LEFT +
+            measureLegendText(entry.label, FONT_SIZE, fontFamily) *
+              HEADING_WIDTH_RATIO
+          : Math.max(
+              textLeft + measureLegendText(entry.label, FONT_SIZE, fontFamily),
+              SWATCH_LEFT + swatchesWidth(legendSwatches(entry).length),
+            ),
     )
   }
   if (overflowLabel !== undefined) {
@@ -274,6 +282,34 @@ export default function SvgColorLegend({
               width={totalWidth}
               gradientId={svgSafeId(`${legendId}-${entry.key}`)}
             />
+          ) : entry.role === 'heading' ? (
+            <>
+              <rect
+                x={0}
+                y={0}
+                width={totalWidth}
+                height={LEGEND_ROW_HEIGHT}
+                fill={inks.paper}
+              />
+              {idx > 0 && shown[idx - 1]!.role !== 'heading' ? (
+                <line
+                  x1={0}
+                  x2={totalWidth}
+                  y1={0.5}
+                  y2={0.5}
+                  stroke={inks.rule}
+                />
+              ) : null}
+              <text
+                x={SWATCH_LEFT}
+                y={11}
+                fontSize={FONT_SIZE}
+                fontWeight="bold"
+                fill={inks.text}
+              >
+                {entry.label}
+              </text>
+            </>
           ) : (
             <>
               <rect
@@ -301,7 +337,7 @@ export default function SvgColorLegend({
                   x={textLeft}
                   y={(stacks(entry, columns) ? LEGEND_ROW_HEIGHT : 0) + 11}
                   fontSize={FONT_SIZE}
-                  fill={inks.text}
+                  fill={entry.role === 'note' ? inks.faint : inks.text}
                   textDecoration={entry.hidden ? 'line-through' : undefined}
                 >
                   {entry.label}

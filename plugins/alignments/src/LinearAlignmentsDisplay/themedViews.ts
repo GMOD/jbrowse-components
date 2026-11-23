@@ -9,6 +9,7 @@ import {
   getAlignmentsColorScales,
   junctionLegend,
 } from '../shared/legendUtils.ts'
+import { pileupRowsOnScreen } from './components/sectionScreen.ts'
 
 import type { ArcBandFeed } from '../features/arcs/bandFeed.ts'
 import type { ArcsByGroupResult } from '../features/arcs/compute.ts'
@@ -18,6 +19,7 @@ import type { ConnectorStyler } from '../features/linkedReads/connectorStyle.ts'
 import type { ColorPalette } from '../shaders/colors.ts'
 import type { DeclaredReadLabels } from '../shared/alignmentsColor.ts'
 import type { alignmentsColorViews } from './alignmentsColorViews.ts'
+import type { ScrollModel } from './components/sectionScreen.ts'
 import type { connectionKeyViews } from './connectionKeyViews.ts'
 import type { JunctionsPlacement } from './constants.ts'
 import type { junctionViews } from './junctionViews.ts'
@@ -74,6 +76,8 @@ export interface ThemedHost extends IStateTreeNode {
   featureSpacing: number
   declaredReadLabels: DeclaredReadLabels
   renderSections: readonly LaneSection[]
+  rowHeight: number
+  scrollModel: ScrollModel
   colorRamps: ColorViews['colorRamps']
   colorKeyTitle: string | undefined
   paintsPlainFill: boolean
@@ -231,6 +235,19 @@ export function themedViews(self: ThemedHost) {
     },
 
     /**
+     * #getter
+     * Each lane's pileup rows on screen, the only ones the key may name.
+     */
+    get keyRows() {
+      return new Map(
+        self.renderSections.map(sec => [
+          sec.groupKey,
+          pileupRowsOnScreen(sec, self.rowHeight, self.scrollModel),
+        ]),
+      )
+    },
+
+    /**
      * #method
      * `colorScales` in another theme: the SVG export's, whose theme need
      * not be the session's.
@@ -241,7 +258,7 @@ export function themedViews(self: ThemedHost) {
         ramps: self.colorRamps,
         colorTitle: self.colorKeyTitle,
         plainFill: self.paintsPlainFill,
-        legendItems: () => self.legendItems(palette),
+        legendItems: () => self.legendItems(palette, this.keyRows),
         arcLegendTitle: self.arcLegendTitle,
         arcLegendItems: () => self.connectionLegendItems(palette),
         junctionLegend: junctionLegend(

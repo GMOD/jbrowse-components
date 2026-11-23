@@ -130,13 +130,12 @@ re-checking every neighbour its entry names. The constants live in
   (`#ffc0cb`) reads as a faded red. As a read fill its C\* stays in the band of
   `colorPairLL` (52.0) and `colorSupplementary` (42.1).
 - **`colorUnmappedMate`** is `#000000` on white and `colorUnmappedMateDark`
-  `#4a4a4a` on `#121212`. It is a neutral for the reason `readOverlap` is one:
-  nothing about the pair's geometry is answerable, and a hue reads as one more
-  category beside the LL and RR fills. It does not invert as `readOverlap`
-  does, because it fills a whole read, which reads as a dim read where a dark
-  span inside a read reads as a cut. On white, black is ΔE 36.1 from
-  `readOverlap` `#555555`, and anything lighter crowds it (`#2e2e2e` 17.2,
-  `#3d3d3d` 10.4). On `#121212`, everything up to `#1e1e1e` is 1.12 against the
+  `#4a4a4a` on `#121212`. It is a neutral because nothing about the pair's
+  geometry is answerable, and a hue reads as one more category beside the LL
+  and RR fills. It stays dark on dark rather than inverting, because it fills a
+  whole read, which reads as a dim read. On white, black is the one fill past
+  every read grey, and anything lighter crowds `readThroughHidden` (`#2e2e2e`)
+  and the deletion box. On `#121212`, everything up to `#1e1e1e` is 1.12 against the
   ground and paints a hole, so the value climbs only as far as reading as a
   block in a 4 px row: L\* 31.5, contrast 2.11, still the darkest fill by 9.7
   L\* (`colorPairRR` next). `#3a3a3a` clears the ground as a swatch (1.65) but
@@ -145,15 +144,22 @@ re-checking every neighbour its entry names. The constants live in
   leaves an unmapped mate the default read color (its pair-orientation code
   requires `mate.isMapped()`); a mark stays here because under insert size its
   TLEN of 0 would otherwise paint `colorShortInsert`.
-- **`readOverlap`** (`#555555`, dark `#e4e4e4`) marks a span where two
+- **`readOverlap`** (`#f2e66b`, dark `#d6c752`) marks a span where two
   segments of one molecule both align, and has one job: read as neither
   segment. A shade of either segment's color says "more of that one" (on a
-  foldback, extra-inverted). It is a neutral outside the read greys, past the
-  dark end on white and past the light end on `#121212`, clear of
-  `colorPairLRDark` `#b0b0b0`. It inverts rather than dimming because a
-  charcoal span on a dark track reads as the ground showing through.
-- **`readMateOverlap`** (`#b4b4b4`, dark `#c8c8c8`) makes the same statement one
-  step from the read fill: a short-fragment library (exome, cfDNA) overlaps
+  foldback, extra-inverted). It was the neutral `#555555` until the COLO829 ONT
+  cards: a charcoal box on a grey read is a deletion's shape and nearly its
+  shade (`#808080`), so a reader took deletions for overlaps, and on a foldback
+  (chr3:26,622,430) the charcoal blacked out the left arm of 13 rows and every
+  mismatch in it. A pale yellow is lighter than the read, so it cannot read as a
+  deletion, and the read's own marks stay visible through a long span. Against
+  every read color it is ΔE00 ≥ 19 (nearest `colorSupplementary`), and it stays
+  ≥ 8.8 under simulated deutan, protan and tritan vision; amber `#e9b949` came
+  to 4.8 from the G mismatch for deutans, and crimson `#c20a57` flooded the
+  foldback. On `#121212` it drops to L\* 79.5, as far over `colorPairLRDark`
+  as `readMateOverlap` sits, since the light value glared.
+- **`readMateOverlap`** (`#b4b4b4`, dark `#c8c8c8`) makes the same statement,
+  as a grey one step from the read fill: a short-fragment library (exome, cfDNA) overlaps
   nearly every pair, and the strong neutral turned its pileup into dark blocks.
   Chosen on NA12878 exome and 30x WGS captures at BRCA1. On white it is L\*
   73.3 against the read's 84.6; `#a0a0a0` (65.9) weighed down every exome row
@@ -162,6 +168,5 @@ re-checking every neighbour its entry names. The constants live in
   vanished into the reads.
 - **`readThroughHidden`** (`#2e2e2e`, dark `#ffffff`) is a neutral because the
   connector is no junction of the read, so no junction class color applies. It
-  sits past `readOverlap` on the same side, so the connector stays apart from
-  the overlap box it often starts at; on dark, `#f0f0f0` was 4 L\* from
-  `readOverlap` and the two key rows could not be told apart.
+  sits past the read greys, dark on white and white on dark, so the connector
+  stays apart from the pale yellow overlap box it often starts at.

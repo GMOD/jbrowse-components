@@ -2,6 +2,7 @@ import {
   bandScreenTop,
   contentScreenY,
   onPileupBand,
+  pileupRowsOnScreen,
   sectionBandBottom,
 } from './sectionScreen.ts'
 
@@ -51,5 +52,27 @@ describe('onPileupBand', () => {
     expect(onPileupBand({ pileupTop: 90, pileupHeight: 0 }, 90, grouped)).toBe(
       false,
     )
+  })
+})
+
+describe('pileupRowsOnScreen', () => {
+  it('runs from the row under the clip ceiling to the one the canvas cuts', () => {
+    // ungrouped: rows scroll 40 px under a ceiling at 100, the canvas ends at 600
+    expect(
+      pileupRowsOnScreen({ pileupTop: 100, pileupHeight: 2000 }, 10, ungrouped),
+    ).toEqual({ first: 4, last: 53 })
+  })
+  it('ends at the band bottom when the rows run out first', () => {
+    expect(
+      pileupRowsOnScreen({ pileupTop: 100, pileupHeight: 95 }, 10, grouped),
+    ).toEqual({ first: 0, last: 9 })
+  })
+  it('is empty for a collapsed lane', () => {
+    const { first, last } = pileupRowsOnScreen(
+      { pileupTop: 100, pileupHeight: 0 },
+      10,
+      grouped,
+    )
+    expect(last).toBeLessThan(first)
   })
 })

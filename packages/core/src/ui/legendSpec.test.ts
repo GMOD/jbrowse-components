@@ -36,7 +36,7 @@ test('a box title shows even as the only section', () => {
       sections: [{ id: 'r2', items: [{ label: '1.0', color: 'red' }] }],
     }),
   ).toEqual([
-    { key: 'legend-title', label: 'r² to index SNP' },
+    { key: 'legend-title', label: 'r² to index SNP', role: 'heading' },
     { key: 'r2-0', label: '1.0', color: 'red' },
   ])
 })

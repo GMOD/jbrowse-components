@@ -1,12 +1,17 @@
 import { keyWindowsOf } from '@jbrowse/display-kit/keyWindows'
 
 import { ARC_COLOR_INTERCHROM } from '../features/arcs/arcColors.ts'
+import {
+  OVERLAP_MATES,
+  OVERLAP_SEGMENTS,
+} from '../shaders/slang/overlap.consts.generated.ts'
 import { READ_COLOR_CATEGORY } from './colorUtils.ts'
 import {
   arcSlotsInWindows,
   connectorKeyInWindows,
   insertSizeBandInWindows,
   junctionInWindows,
+  overlapKindsInWindows,
   readCategoriesInWindows,
   readMapqsInWindows,
 } from './keyWindows.ts'
@@ -180,4 +185,39 @@ test('a key states the insert-size band only where every region in view shares o
   expect(
     insertSizeBandInWindows(regions(band, { lower: 100, upper: 600 }), window),
   ).toEqual(band)
+})
+
+test('an overlap keys only on a row the track draws, when it is cut at its height', () => {
+  const overlaps = new Map([
+    [
+      '',
+      new Map([
+        [
+          0,
+          {
+            overlapPositions: new Uint32Array([1100, 1200, 1300, 1400]),
+            overlapYs: new Uint16Array([2, 25]),
+            overlapKinds: new Uint8Array([OVERLAP_MATES, OVERLAP_SEGMENTS]),
+          },
+        ],
+      ]),
+    ],
+  ])
+  expect(overlapKindsInWindows(overlaps, window)).toEqual(
+    new Set([OVERLAP_MATES, OVERLAP_SEGMENTS]),
+  )
+  expect(
+    overlapKindsInWindows(
+      overlaps,
+      window,
+      new Map([['', { first: 0, last: 11 }]]),
+    ),
+  ).toEqual(new Set([OVERLAP_MATES]))
+  expect(
+    overlapKindsInWindows(
+      overlaps,
+      window,
+      new Map([['other', { first: 0, last: 99 }]]),
+    ),
+  ).toEqual(new Set())
 })

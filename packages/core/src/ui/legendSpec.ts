@@ -29,6 +29,8 @@ export interface ColorLegendEntry {
   hidden?: boolean
   // a ramp row: the bar draws under `label`, which may be empty
   gradient?: LegendGradient
+  // a text row over the swatches: a section's title, or the sentence under it
+  role?: 'heading' | 'note'
 }
 
 // One swatch of a color vocabulary. `color` is omitted for a row that is text
@@ -137,16 +139,30 @@ export function legendEntries(spec: LegendSpec): ColorLegendEntry[] {
   const sections = nonEmptyLegendSections(spec.sections)
   const titled = sections.length > 1
   return [
-    ...(spec.title ? [{ key: 'legend-title', label: spec.title }] : []),
+    ...(spec.title
+      ? [{ key: 'legend-title', label: spec.title, role: 'heading' as const }]
+      : []),
     ...sections.flatMap(section => [
       ...(section.summary !== undefined
         ? [{ key: `${section.id}-summary`, label: section.summary }]
         : titled && section.title
-          ? [{ key: `${section.id}-title`, label: section.title }]
+          ? [
+              {
+                key: `${section.id}-title`,
+                label: section.title,
+                role: 'heading' as const,
+              },
+            ]
           : []),
       ...(section.note === undefined
         ? []
-        : [{ key: `${section.id}-note`, label: section.note }]),
+        : [
+            {
+              key: `${section.id}-note`,
+              label: section.note,
+              role: 'note' as const,
+            },
+          ]),
       ...(section.summary === undefined ? section.items : []).map(
         (item, idx) => ({
           key: `${section.id}-${idx}`,

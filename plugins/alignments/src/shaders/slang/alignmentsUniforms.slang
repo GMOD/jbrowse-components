@@ -101,7 +101,7 @@ public struct Uniforms {
   // The chain-layout overlap span (overlap.slang), which two segments of one
   // molecule cover, so no read color fits it. The span is an opaque fill
   // between two read fills, so colors.ts gives it its own theme slot
-  // (`readOverlap`).
+  // (`readOverlap`, a pale yellow).
   public uint colorOverlap;
   // The same span where only the two mates of a pair overlap
   // (`readMateOverlap`), one step from the read fill.

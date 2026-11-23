@@ -26,6 +26,39 @@ test('renders a labeled swatch row per entry', () => {
   expect(container.querySelectorAll('rect')).toHaveLength(4)
 })
 
+test('a section heading is bold at the left edge, ruled off from the section above', () => {
+  const { getByText, container } = renderSvg(
+    <SvgColorLegend
+      canvasWidth={500}
+      entries={[
+        { key: 'reads-title', label: 'Read colors', role: 'heading' },
+        { key: 'reads-0', label: 'Reads', color: 'grey' },
+        { key: 'arcs-title', label: 'Connector colors', role: 'heading' },
+        { key: 'arcs-0', label: 'Inter-chromosomal', color: 'brown' },
+      ]}
+    />,
+  )
+  expect(getByText('Read colors').getAttribute('font-weight')).toBe('bold')
+  expect(getByText('Read colors').getAttribute('x')).toBe('2')
+  expect(getByText('Reads').getAttribute('font-weight')).toBeNull()
+  expect(container.querySelectorAll('line')).toHaveLength(1)
+})
+
+test('a note row draws in the faint ink', () => {
+  const { getByText } = renderSvg(
+    <SvgColorLegend
+      canvasWidth={500}
+      entries={[
+        { key: 'n', label: 'read this', role: 'note' },
+        { key: 'a', label: 'TssA', color: 'red' },
+      ]}
+    />,
+  )
+  expect(getByText('read this').getAttribute('fill')).not.toBe(
+    getByText('TssA').getAttribute('fill'),
+  )
+})
+
 test('hidden entries dim and strike through', () => {
   const { getByText, container } = renderSvg(
     <SvgColorLegend

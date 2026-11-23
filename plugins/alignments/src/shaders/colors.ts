@@ -44,10 +44,9 @@ export interface PaletteColors {
   colorUnmappedMate: RGBColor
   colorInterchrom: RGBColor
   // The span where two segments of one molecule both align, in chain
-  // (view-as-pairs / linked-supplementary) layout. A theme neutral rather than
-  // a category: no read color is the honest answer there, which is the whole
-  // reason the span is marked. `palette.readOverlap` states why it inverts
-  // between themes instead of dimming.
+  // (view-as-pairs / linked-supplementary) layout. A color no read category
+  // uses: no read color is the honest answer there, which is the whole reason
+  // the span is marked. `palette.readOverlap` states why it is a pale yellow.
   colorOverlap: RGBColor
   // The same span when it is only the two mates of a pair overlapping, which a
   // short-fragment library does on nearly every pair: one step from the read
@@ -56,7 +55,7 @@ export interface PaletteColors {
   // The collapsed-group-row overlap tint, which STACKS: several unrelated reads
   // share a row on purpose there and depth is meant to read as weight. So it is
   // the foreground rather than `colorOverlap` (the chain-mode fill, an opaque
-  // theme neutral between two read fills) — a tint that composes toward the
+  // color between two read fills) — a tint that composes toward the
   // ground it sits on adds nothing, whichever theme is in force.
   colorOverlapTint: RGBColor
   // A split-read connector across a segment the view never fetched, in place

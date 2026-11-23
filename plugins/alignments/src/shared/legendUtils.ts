@@ -768,9 +768,9 @@ export function overlapLegendRows(chain: boolean, kinds: ReadonlySet<number>) {
  *
  * **Chain (view-as-pairs / linked supplementary): one swatch per kind, the
  * color itself.** Two segments of one molecule cover that span, so no read
- * color is the honest answer there and `overlap.slang` fills it with a theme
- * neutral that is no category: the strong one where a split segment is
- * involved, the faint one where only two mates are. Each swatch is read from
+ * color is the honest answer there and `overlap.slang` fills it with a color
+ * that is no category: pale yellow where a split segment is involved, a faint
+ * grey where only two mates are. Each swatch is read from
  * the same palette entry the pass paints from, never derived from the ink.
  *
  * **Collapsed group rows: two swatches, "this but tinted".** There the mark IS

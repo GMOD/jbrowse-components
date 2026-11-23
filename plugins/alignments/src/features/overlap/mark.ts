@@ -49,11 +49,11 @@ function packOverlaps(c: PileupChannels) {
 // full-row bar. Twin of overlap.slang, whose `chainMode` branch says what the
 // span MEANS in each of the two layouts that put more than one feature on a row
 // — and the branch is only the paint, which is why the geometry here has none:
-// chain mode fills the span with a theme neutral that is no read color (both
+// chain mode fills the span with a color that is no read color (both
 // segments of one molecule are there, so neither segment's color is honest),
 // collapsed rows keep the stacking dark tint that makes depth readable. In
-// chain mode the instance's kind picks which neutral: a split segment's span
-// takes the strong one, two mates' the faint one.
+// chain mode the instance's kind picks which color: a split segment's span
+// takes the pale yellow, two mates' the faint grey.
 //
 // `Fade.overlap` reaches 0 at FADE_LO_PX, which is what makes the shape's
 // sub-pixel widening unreachable here: a bar narrow enough to be widened has

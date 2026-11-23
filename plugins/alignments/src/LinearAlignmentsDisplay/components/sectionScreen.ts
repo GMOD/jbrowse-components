@@ -79,6 +79,23 @@ export function sectionBandBottom(
   return Math.min(m.canvasHeight, contentScreenY(pileupTop + pileupHeight, m))
 }
 
+// The rows of a section's pileup that are drawn, first to last, a row the clip
+// cuts through included: the ones a key listing what is drawn may name.
+export function pileupRowsOnScreen(
+  section: { pileupTop: number; pileupHeight: number },
+  rowHeight: number,
+  m: ScrollModel,
+) {
+  const rowAt = (y: number) => (y + m.scrollTop - section.pileupTop) / rowHeight
+  return {
+    first: Math.floor(rowAt(bandScreenTop(section.pileupTop, m))),
+    last:
+      Math.ceil(
+        rowAt(sectionBandBottom(section.pileupTop, section.pileupHeight, m)),
+      ) - 1,
+  }
+}
+
 // Whether screen-Y `y` falls on the part of a section's pileup that is drawn:
 // below the clip ceiling, where ungrouped rows scroll under the sticky bands,
 // and above the band bottom.

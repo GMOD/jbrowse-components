@@ -8,15 +8,15 @@
 // The span is the junction between them, and the junction is a SPAN rather than
 // a point — which is exactly what the pileup cannot show on its own, since the
 // two segments paint over each other and leave a clean edge at whichever one
-// drew last. So the span is filled with a theme neutral (`u.colorOverlap`) that
-// is no read category: "both segments are here, neither color is the answer".
+// drew last. So the span is filled with a color (`u.colorOverlap`, a pale
+// yellow) that is no read category: "both segments are here, neither color is the answer".
 // Tinting instead was the older behaviour and says the opposite — on a foldback
 // the arms are opposite-strand red and blue, and a 40% wash over whichever drew
 // last reads as a stronger version of that one arm.
 //
 // A chain span is one of two kinds (`inst.kind`): OVERLAP_SEGMENTS, where a
 // split or supplementary segment is one of the two and the span is a
-// breakpoint's, keeps that neutral; OVERLAP_MATES, the two reads of a pair, is
+// breakpoint's, keeps that color; OVERLAP_MATES, the two reads of a pair, is
 // only a fragment shorter than two reads, which a short-fragment library shows
 // on nearly every pair, so it takes `u.colorMateOverlap`, one step from the
 // read fill.

@@ -227,6 +227,7 @@ test("a note carries into the section and the export's rows", () => {
   expect(legendEntries({ sections })[0]).toEqual({
     key: 'svType-note',
     label: 'read this',
+    role: 'note',
   })
 })
 

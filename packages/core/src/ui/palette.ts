@@ -402,7 +402,7 @@ export const colorShortInsert = '#f582c0'
  * #color alignments-pair-orientation | Mate unmapped | Mate aligned nowhere
  * #color alignments-insert-size | Mate unmapped | Mate aligned nowhere
  */
-// A neutral clear of readOverlap on white and of the ground on dark (ALIGNMENTS_COLOR_PARITY.md)
+// A neutral past the read greys: darkest on white, clear of the ground on dark (ALIGNMENTS_COLOR_PARITY.md)
 export const colorUnmappedMate = '#000000'
 export const colorUnmappedMateDark = '#4a4a4a'
 export const colorLongreadInv = '#7755bb'
@@ -560,19 +560,19 @@ const skip = '#009a8a'
 /**
  * #color alignments-indicators | Split segments overlap | Two segments of one molecule, at least one of them a split or supplementary alignment, both align here — so the breakpoint between them is this span rather than a point
  *
- * A neutral past the read greys: dark on white, light on dark (ALIGNMENTS_COLOR_PARITY.md)
+ * A pale yellow lighter than the read, so it never reads as a grey deletion box (ALIGNMENTS_COLOR_PARITY.md)
  */
-const readOverlap = '#555555'
+const readOverlap = '#f2e66b'
 /**
  * #color alignments-indicators | Mates overlap | The two reads of a pair both align here: the fragment is shorter than two reads, and these bases are read twice from one molecule
  *
- * One step from colorPairLR toward readOverlap (ALIGNMENTS_COLOR_PARITY.md)
+ * One step darker than colorPairLR (ALIGNMENTS_COLOR_PARITY.md)
  */
 const readMateOverlap = '#b4b4b4'
 /**
  * #color alignments-pair-orientation | Split read (skips parts aligned outside this view) | A connector joining two parts of a split read whose other parts, between them, align outside the view, so it is no junction of the read; its hover names the skipped parts and states how its two ends relate
  *
- * A neutral past readOverlap on the same side (ALIGNMENTS_COLOR_PARITY.md)
+ * A neutral past the read greys: dark on white, light on dark (ALIGNMENTS_COLOR_PARITY.md)
  */
 const readThroughHidden = '#2e2e2e'
 /** #color theme-colors | Base modification (fwd) | Base modifications on the forward strand */
@@ -658,11 +658,11 @@ const darkStringColors: Partial<StringColors> = {
   // MAF gap cells sit beside match cells painted `action.disabledBackground`,
   // which is dark here, so the gap is the lighter of the two
   mafGap: '#c8c8c8',
-  // clear of colorPairLRDark at the light end
-  readOverlap: '#e4e4e4',
-  // between colorPairLRDark and readOverlap
+  // as far above colorPairLRDark as readMateOverlap, so it does not glare
+  readOverlap: '#d6c752',
+  // one step lighter than colorPairLRDark
   readMateOverlap: '#c8c8c8',
-  // as far past readOverlap as the scale goes
+  // as far past the read greys as the scale goes
   readThroughHidden: '#ffffff',
   // the pale yellow glares across whole MAF rows; this keeps its hue and, as
   // the light value does, sits nearer the ground than the match cells

@@ -152,23 +152,36 @@ export function modificationTypesInWindows(
   return present
 }
 
-/** The kinds of the chain or collapsed-row overlap intervals touching a window. */
+/**
+ * The kinds of the chain or collapsed-row overlap intervals touching a window,
+ * and, given each lane's `rows` on screen, lying on one of them: a track cut
+ * at its height fetched rows it never draws.
+ */
 export function overlapKindsInWindows(
   byGroup: ByGroup<
-    Pick<PileupLayoutArrays, 'overlapPositions' | 'overlapKinds'>
+    Pick<PileupLayoutArrays, 'overlapPositions' | 'overlapYs' | 'overlapKinds'>
   >,
   windows: readonly KeyWindow[],
+  rows?: ReadonlyMap<string, { first: number; last: number }>,
 ) {
   const regions = windowsByRegion(windows)
   const present = new Set<number>()
-  for (const map of byGroup.values()) {
-    for (const [regionIndex, d] of map) {
-      const ranges = regions.get(regionIndex)
-      if (ranges) {
-        const pos = d.overlapPositions
-        for (let i = 0; i < pos.length; i += 2) {
-          if (touchesAny(ranges, pos[i]!, pos[i + 1]!)) {
-            present.add(d.overlapKinds[i / 2]!)
+  for (const [groupKey, map] of byGroup) {
+    const span = rows ? rows.get(groupKey) : { first: 0, last: Infinity }
+    if (span) {
+      for (const [regionIndex, d] of map) {
+        const ranges = regions.get(regionIndex)
+        if (ranges) {
+          const pos = d.overlapPositions
+          for (let i = 0; i < pos.length; i += 2) {
+            const y = d.overlapYs[i / 2]!
+            if (
+              y >= span.first &&
+              y <= span.last &&
+              touchesAny(ranges, pos[i]!, pos[i + 1]!)
+            ) {
+              present.add(d.overlapKinds[i / 2]!)
+            }
           }
         }
       }

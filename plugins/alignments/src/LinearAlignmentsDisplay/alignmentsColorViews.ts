@@ -329,14 +329,17 @@ export function alignmentsColorViews(self: AlignmentsColorHost) {
     },
 
     /**
-     * #getter
+     * #method
      * The overlap rows the legend names: a chain's split-segment and
      * mate overlaps, or the collapsed rows' tint. A row needs the pass to
      * be DRAWING (`shouldDrawOverlaps`, shared with both renderers) and
-     * some region to hold an interval of its kind, so no row explains an
-     * off-screen mark. O(regions).
+     * some region to hold an interval of its kind, on one of each lane's
+     * `rows` on screen when given, so no row explains an off-screen mark.
+     * O(overlaps).
      */
-    get overlapLegendRows(): readonly OverlapLegendRow[] {
+    overlapLegendRows(
+      rows?: ReadonlyMap<string, { first: number; last: number }>,
+    ): readonly OverlapLegendRow[] {
       return shouldDrawOverlaps({
         unit: self.unit,
         collapseSections: self.collapseSections,
@@ -344,7 +347,11 @@ export function alignmentsColorViews(self: AlignmentsColorHost) {
       })
         ? overlapLegendRows(
             self.unit === 'chain',
-            overlapKindsInWindows(self.laidOutByGroupFramed, self.keyWindows),
+            overlapKindsInWindows(
+              self.laidOutByGroupFramed,
+              self.keyWindows,
+              rows,
+            ),
           )
         : []
     },
@@ -405,10 +412,13 @@ export function alignmentsColorViews(self: AlignmentsColorHost) {
     /**
      * #method
      */
-    legendItems(palette: ColorPalette) {
+    legendItems(
+      palette: ColorPalette,
+      rows?: ReadonlyMap<string, { first: number; last: number }>,
+    ) {
       return this.drawsReadRows
         ? getReadDisplayLegendItems({
-            overlaps: this.overlapLegendRows,
+            overlaps: this.overlapLegendRows(rows),
             colorField: self.colorField,
             baseLayer: self.baseLayer,
             presentCategories: this.colorLegendCategories,
