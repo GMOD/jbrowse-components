@@ -6,11 +6,11 @@
 // the strand of its first step. The cut reads each walk the file abridged in
 // full from its detail records.
 //
-//   npm install @jbrowse/graph-walks@6 generic-filehandle2@2
+//   npm install @jbrowse/graph-walks@9 generic-filehandle2@2
 //   node walk_spans.mjs <prefix>.<sample>.walks.gz GRCh38#0#chr1 103540000 103541000
 //
-// The file is a path or a URL, with its .idx directory beside it. graph-walks 6
-// reads walk format 7, which gfa-to-tabix 4.0 and later write.
+// The file is a path or a URL, with its .idx directory beside it. graph-walks 9
+// reads walk format 8, which gfa-to-tabix 5.0 and later write.
 import { WalkReader } from '@jbrowse/graph-walks'
 import { LocalFile } from 'generic-filehandle2'
 

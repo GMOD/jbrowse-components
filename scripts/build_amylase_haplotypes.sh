@@ -48,7 +48,7 @@ WALKS=https://jbrowse.org/demos/hprc/hprc-v2.1-mc-grch38.GRCh38.walks.gz
 echo "== every haplotype's span across the locus, from the walk file"
 [ -s walk_spans.mjs ] || curl -fsSLO https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/walk_spans.mjs
 [ -d node_modules/@jbrowse/graph-walks ] ||
-  npm install --no-save --silent @jbrowse/graph-walks@6.0.0 generic-filehandle2@2
+  npm install --no-save --silent @jbrowse/graph-walks@9.1.0 generic-filehandle2@2
 # One window inside RNPC3 and one past AMY1C, both single-copy, so each
 # haplotype crosses each exactly once
 for side in left:103540000:103541000 right:103800000:103801000; do
