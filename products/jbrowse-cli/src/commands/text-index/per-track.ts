@@ -15,7 +15,6 @@ import {
   validateTrackConfigs,
 } from './validators.ts'
 
-import type { SearchIndexEntry } from '../../base.ts'
 import type { PlacedTrack } from './config-utils.ts'
 import type { TextIndexFlags } from './index.ts'
 
@@ -80,7 +79,7 @@ export async function perTrackIndex(flags: TextIndexFlags): Promise<void> {
         prefixSize,
       }),
     })
-    indexed.push(trackConfig)
+    indexed.push({ ...trackConfig, assemblyNames })
   }
 
   // a track keeps an adapter that already names the files just written, however
@@ -90,13 +89,10 @@ export async function perTrackIndex(flags: TextIndexFlags): Promise<void> {
   // somewhere in configTracks.
   const newAdapters = new Map(
     indexed.flatMap(({ trackId, assemblyNames, textSearching }) => {
-      const adapter = createTrixAdapter(trackId, assemblyNames.map(canonical))
-      const existing = textSearching?.textSearchAdapter as
-        | SearchIndexEntry
-        | undefined
+      const existing = textSearching?.textSearchAdapter
       return existing && indexFileOf(existing) === trixFileUris(trackId).ix
         ? []
-        : [[trackId, adapter] as const]
+        : [[trackId, createTrixAdapter(trackId, assemblyNames)] as const]
     }),
   )
   const updatedTracks = configTracks.map(track => {

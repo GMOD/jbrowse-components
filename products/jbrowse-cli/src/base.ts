@@ -2,11 +2,9 @@
 // since text-index reads the same objects add-track wrote.
 import type {
   LocalPathLocation,
-  Track,
+  Track as IndexerTrack,
   UriLocation,
 } from '@jbrowse/text-indexing-core'
-
-export type { Track } from '@jbrowse/text-indexing-core'
 
 export interface AdapterConfig {
   type: string
@@ -47,6 +45,12 @@ export type SearchIndexEntry =
       ixFilePath?: UriLocation | LocalPathLocation
       assemblyNames?: string[]
     }
+
+export type Track = Omit<IndexerTrack, 'textSearching'> & {
+  textSearching?: NonNullable<IndexerTrack['textSearching']> & {
+    textSearchAdapter?: SearchIndexEntry
+  }
+}
 
 // only connectionId is fixed; the location fields and anything from --config
 // vary by connection type, so they ride along in the index signature rather than
