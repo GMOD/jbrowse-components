@@ -198,16 +198,15 @@ test('a plugin manifest declares the top-level key its rootConfigurationSchema a
 
 test("a plugin's mark step is judged by the mark rules once its schema declares it", () => {
   const { $defs } = configJsonSchema
-  const bin = isRecord($defs) ? $defs['MarkTransform.bin'] : undefined
+  const declared = isRecord($defs) ? $defs['MarkTransform.bin'] : undefined
+  const bin = isRecord(declared) ? declared : {}
   const plugin: PluginManifest = {
     schema: {
       $defs: {
         'MarkTransform.bin': {
           ...bin,
           properties: {
-            ...(isRecord(bin) && isRecord(bin.properties)
-              ? bin.properties
-              : {}),
+            ...(isRecord(bin.properties) ? bin.properties : {}),
             fooWeight: { type: 'number' },
           },
         },

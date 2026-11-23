@@ -32,8 +32,10 @@ export const sequenceTypes = [
 
 export type SequenceType = (typeof sequenceTypes)[number]
 
+const sequenceTypeNames = new Set<string>(sequenceTypes)
+
 function isSequenceType(t: string): t is SequenceType {
-  return sequenceTypes.some(s => s === t)
+  return sequenceTypeNames.has(t)
 }
 
 // parseArgs does not enforce the `choices` declared on --type, so an
