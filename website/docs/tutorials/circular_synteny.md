@@ -15,10 +15,12 @@ hg38-to-mm39 liftOver chain as ribbons between them, so one picture shows where
 the autosomes have been shuffled and where the X has not. We:
 
 - declare both assemblies and load the chain as an indexed alignment track
-- open both on a circular view and order the mouse arc to follow the human one
+- open both on a circular view, the mouse arc ordered to follow the human one
+- hover a mouse chromosome to list the human chromosomes aligned to it
 - color the ribbons by strand
 - add a gene density ring over both genomes
-- hover a ribbon for its span in each genome
+- check the X chromosome as the control, and hover a ribbon for its span in
+  each genome
 
 ## Prerequisites
 
@@ -71,7 +73,7 @@ pair of your own needs.
 
 </details>
 
-## Declaring the human and mouse assemblies
+## Declare the human and mouse assemblies
 
 The ribbons join chromosomes of the two genomes, so the circle needs both
 genomes declared. Each alias table is the hub's with the build's genome-prefixed
@@ -98,7 +100,7 @@ names added, so `1`, `chr1` and `hg38.chr1` in a track all resolve to `chr1`:
 }
 ```
 
-## The chain as an indexed alignment
+## Load the chain as an indexed alignment
 
 jbrowse.org keeps every liftOver chain UCSC publishes as an indexed PAF, one row
 per chain, the same files the
@@ -138,7 +140,7 @@ ones, mostly repeats and gene copies. **Min length** in the view's menu drops
 the short ones, and the sessions below set it to 100 kb with a `length`
 predicate in `filter`.
 
-## Opening both genomes on one circle
+## Open both genomes on one circle
 
 **Add → Circular view** opens the import form, whose Quick start builds the
 circle once you pick the chain track. As a session, two keys on the view set it
@@ -204,8 +206,6 @@ the same labels. To read the circle:
 
 <Figure src="/img/circular_synteny/ribbons.png" caption="Human and mouse chromosomes around the circle, every liftOver row of 100 kb and over as a ribbon in the color of its human chromosome." />
 
-## Ordering the mouse arc to follow human
-
 In native contig order, a mouse chromosome sits wherever its number falls, so
 ribbons cross the middle of the circle to reach their human partners. On open,
 the circle reorders the mouse arc as the
@@ -221,7 +221,7 @@ to the human chromosome it shares the most aligned bases with.
   `"autoDiagonalize": false` on the view keeps each genome in its native contig
   order.
 
-## Mouse ideograms painted by human chromosome
+## Hover a mouse chromosome for its human partners
 
 Each stretch of a mouse chromosome's ideogram is painted the color of the human
 chromosome aligned to it, and grey where nothing is. A mouse chromosome that
@@ -234,7 +234,7 @@ it covers.
 
 <Figure src="/img/circular_synteny/band_hover.png" caption="Hovering mouse chr11 dims every ribbon that does not touch it, and the tooltip lists the human chromosomes aligned to it." />
 
-## Coloring the ribbons by strand
+## Color the ribbons by strand
 
 The chromosome colors show where each piece went, and strand shows which way
 round it lies. In [grammar-of-graphics](/docs/config_guides/mark_display) terms,
@@ -248,7 +248,7 @@ chromosomes, human here. To color by strand instead:
 
 <Figure src="/img/circular_synteny/color_by_strand.png" caption="The human and mouse circle colored by strand." />
 
-## Gene density as a ring
+## Add a gene density ring over both genomes
 
 A track type drawn in the linear genome view is also drawn on the circle, as a
 ring inside the ideogram, so asking whether the conserved blocks are the
@@ -364,7 +364,7 @@ before the synteny track:
 
 <Figure src="/img/circular_synteny/rings.png" caption="The human and mouse circle with a gene density ring inside the ideogram, dark where a stretch is gene-rich." />
 
-## The X chromosome as the control
+## Check the X chromosome as the control
 
 The X chromosome has stayed whole across the two lineages, so at the 100 kb cut
 the X ribbons should stay between human and mouse X. Open the ring session above
@@ -377,7 +377,7 @@ Below the 100 kb **Min length** cut, the PIF holds short rows between human chrX
 and mouse autosomes, mostly a few hundred bases long, and lowering **Min
 length** brings them back.
 
-## Hovering a ribbon
+## Hover a ribbon for its span in each genome
 
 Hover the widest ribbon on the same three-chromosome circle, the X block that
 runs reverse between the two genomes and so twists. A tooltip gives its span in
@@ -385,26 +385,18 @@ each genome and its strand.
 
 <Figure src="/img/circular_synteny/ribbon_hover.png" caption="The widest X ribbon hovered, filled grey and crossing itself because it is on the reverse strand. The tooltip names its span in each genome." />
 
-## Your own pair of genomes
-
-The script takes any UCSC pair by name. A pair with no hosted chain goes through
-the `make-pif` commands under
-[The chain as an indexed alignment](#the-chain-as-an-indexed-alignment), and
-each ring takes one bigWig per assembly, or one bigWig with prefixed contigs and
-an alias per assembly as in [Gene density as a ring](#gene-density-as-a-ring).
-
 ## Reproduce it end to end
 
 The script works in four steps:
 
-1. Fetch the hg38 and mm39 hub configs, chromosome sizes and alias tables, and
-   both RefSeq curated gene sets.
-2. Prefix every contig with its genome and add the prefixed name to each alias
-   table, so one bigWig can hold both genomes' counts.
-3. Count genes per 100 kb into that bigWig with `jbrowse make-density`, one
-   count per gene however many transcripts it has.
-4. Write the config with the chain track pointing at jbrowse.org's indexed copy,
-   which the view reads for both the ribbons and the reorder.
+- fetch the hg38 and mm39 hub configs, chromosome sizes and alias tables, and
+  both RefSeq curated gene sets
+- prefix every contig with its genome and add the prefixed name to each alias
+  table, so one bigWig can hold both genomes' counts
+- count genes per 100 kb into that bigWig with `jbrowse make-density`, one count
+  per gene however many transcripts it has
+- write the config with the chain track pointing at jbrowse.org's indexed copy,
+  which the view reads for both the ribbons and the reorder
 
 The script reads four settings, and the tools it runs are in
 [Prerequisites](#prerequisites):
@@ -413,6 +405,12 @@ The script reads four settings, and the tools it runs are in
 - `PIF` points the track at a chain indexed elsewhere.
 - `MIN_LENGTH` moves the cut.
 - `BASE_URL` is the prefix the finished files will be served under.
+
+A pair with no hosted chain goes through the `make-pif` commands under
+[Load the chain as an indexed alignment](#load-the-chain-as-an-indexed-alignment),
+and each ring takes one bigWig per assembly, or one bigWig with prefixed contigs
+and an alias per assembly as in
+[Add a gene density ring](#add-a-gene-density-ring-over-both-genomes).
 
 ```bash
 curl -fO https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/build_circular_synteny.sh
