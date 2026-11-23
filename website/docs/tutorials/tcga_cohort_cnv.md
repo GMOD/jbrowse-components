@@ -54,22 +54,6 @@ own calls.
 | Primary-tumor segment calls for 1104 tumors, queried and downloaded through the GDC API | [files](https://api.gdc.cancer.gov/files) |
 | Per-tumor clinical annotation, from harmonized case fields and each case's clinical XML | [cases](https://api.gdc.cancer.gov/cases) |
 
-## The segment BED format, one call per line
-
-The segment BED holds one copy-number call per line, with a `#`-prefixed header
-naming the columns past `end`.
-[Reproduce it end to end](#reproduce-it-end-to-end) builds it from the GDC.
-
-```text
-#chrom  start     end        name    sample             segmean
-chr1    3301764   30796057   +0.15   TCGA-3C-AAAU-01A   0.1480
-chr1    3301764   7589655    -0.98   TCGA-3C-AALI-01A   -0.9761
-```
-
-`sample` is a TCGA barcode, and the display gives each barcode a row; `segmean`
-is the caller's log2 tumor/normal ratio, and the display colors the segments by
-it.
-
 ## Load the segments into JBrowse
 
 Add the assembly first. The hosted FASTA names its contigs `1`, `2`, ... and the
@@ -100,6 +84,20 @@ gene, labelled by gene symbol:
   }
 }
 ```
+
+The segment BED holds one copy-number call per line, with a `#`-prefixed header
+naming the columns past `end`.
+[Reproduce it end to end](#reproduce-it-end-to-end) builds it from the GDC.
+
+```text
+#chrom  start     end        name    sample             segmean
+chr1    3301764   30796057   +0.15   TCGA-3C-AAAU-01A   0.1480
+chr1    3301764   7589655    -0.98   TCGA-3C-AALI-01A   -0.9761
+```
+
+`sample` is a TCGA barcode, and the display gives each barcode a row; `segmean`
+is the caller's log2 tumor/normal ratio, and the display colors the segments by
+it.
 
 The segments themselves are a `FeatureTrack` whose
 `LinearMultiRowFeatureDisplay` holds the row and color settings:
