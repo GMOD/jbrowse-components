@@ -55,14 +55,44 @@ export async function loadConfigForIndexing(
   return { config, configPath, outLocation: path.dirname(configPath) }
 }
 
+// an assembly's name for each name or alias it goes by, so a track naming an
+// assembly by an alias still belongs to it
+function assemblyNamesByAlias(config: Config) {
+  const byName = new Map<string, string>()
+  for (const { name, aliases = [] } of config.assemblies ??
+    (config.assembly ? [config.assembly] : [])) {
+    for (const n of [name, ...aliases]) {
+      byName.set(n, name)
+    }
+  }
+  return byName
+}
+
+export function canonicalAssemblyName(config: Config) {
+  const byName = assemblyNamesByAlias(config)
+  return (name: string) => byName.get(name) ?? name
+}
+
 export function getAssemblyNames(
   config: Config,
   assemblies?: string,
 ): string[] {
+  const byName = assemblyNamesByAlias(config)
   const asms = assemblies
-    ? parseCommaSeparatedString(assemblies)
-    : (config.assemblies?.map(a => a.name) ??
-      (config.assembly ? [config.assembly.name] : []))
+    ? [
+        ...new Set(
+          parseCommaSeparatedString(assemblies).map(name => {
+            const canonical = byName.get(name)
+            if (canonical === undefined) {
+              throw new Error(
+                `Assembly "${name}" is not in the config (${[...new Set(byName.values())].join(', ') || 'it has no assemblies'})`,
+              )
+            }
+            return canonical
+          }),
+        ),
+      ]
+    : [...new Set(byName.values())]
 
   if (!asms.length) {
     throw new Error('No assemblies found')
@@ -73,19 +103,6 @@ export function getAssemblyNames(
 
 export function formatDryRun(trackConfigs: Track[]): string {
   return trackConfigs.map(t => `${t.trackId}\t${t.adapter?.type}`).join('\n')
-}
-
-// an assembly's name for each name or alias it goes by, so a track naming an
-// assembly by an alias still belongs to it
-function canonicalAssemblyName(config: Config) {
-  const byName = new Map<string, string>()
-  for (const { name, aliases = [] } of config.assemblies ??
-    (config.assembly ? [config.assembly] : [])) {
-    for (const n of [name, ...aliases]) {
-      byName.set(n, name)
-    }
-  }
-  return (name: string) => byName.get(name) ?? name
 }
 
 // a track the index can name an assembly for

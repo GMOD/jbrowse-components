@@ -608,3 +608,78 @@ test('--force points a track at the files it just wrote', async () => {
     })
   })
 })
+
+function writeAliasedConfig(dir: string, trackAssembly: string) {
+  fs.copyFileSync(
+    dataDir('volvox.sort.gff3.gz'),
+    path.join(dir, 'volvox.sort.gff3.gz'),
+  )
+  fs.writeFileSync(
+    path.join(dir, 'config.json'),
+    JSON.stringify({
+      assemblies: [{ name: 'volvox', aliases: ['vv'] }],
+      tracks: [
+        {
+          type: 'FeatureTrack',
+          trackId: 'genes',
+          assemblyNames: [trackAssembly],
+          adapter: {
+            type: 'Gff3TabixAdapter',
+            gffGzLocation: {
+              uri: 'volvox.sort.gff3.gz',
+              locationType: 'UriLocation',
+            },
+          },
+        },
+      ],
+    }),
+  )
+}
+
+test('-a names an assembly by its alias and the index is written under its name', async () => {
+  await runInTmpDir(async ctx => {
+    writeAliasedConfig(ctx.dir, 'volvox')
+    const { error } = await runCommand([
+      'text-index',
+      '--target=config.json',
+      '-a',
+      'vv',
+    ])
+    expect(error).toBeUndefined()
+    expect(fs.existsSync(ixLoc(ctx.dir))).toBe(true)
+    expect(
+      readJSON(path.join(ctx.dir, 'config.json')).aggregateTextSearchAdapters[0]
+        .assemblyNames,
+    ).toEqual(['volvox'])
+  })
+})
+
+test('-a with an assembly the config does not have fails instead of indexing nothing', async () => {
+  await runInTmpDir(async ctx => {
+    writeAliasedConfig(ctx.dir, 'volvox')
+    const { error } = await runCommand([
+      'text-index',
+      '--target=config.json',
+      '-a',
+      'volvx',
+    ])
+    expect(error?.message).toMatch('Assembly "volvx" is not in the config')
+    expect(fs.existsSync(path.join(ctx.dir, 'trix'))).toBe(false)
+  })
+})
+
+test('--perTrack writes the assembly name where the track spelled it by an alias', async () => {
+  await runInTmpDir(async ctx => {
+    writeAliasedConfig(ctx.dir, 'vv')
+    const { error } = await runCommand([
+      'text-index',
+      '--perTrack',
+      '--target=config.json',
+    ])
+    expect(error).toBeUndefined()
+    expect(
+      readJSON(path.join(ctx.dir, 'config.json')).tracks[0].textSearching
+        .textSearchAdapter.assemblyNames,
+    ).toEqual(['volvox'])
+  })
+})

@@ -3,6 +3,7 @@ import { trixFileUris } from '@jbrowse/text-indexing-core'
 import { parseCommaSeparatedString, writeJsonFile } from '../../utils.ts'
 import { createTrixAdapter, indexFileOf } from './adapter-utils.ts'
 import {
+  canonicalAssemblyName,
   formatDryRun,
   getTrackConfigs,
   loadConfigForIndexing,
@@ -53,9 +54,11 @@ export async function perTrackIndex(flags: TextIndexFlags): Promise<void> {
 
   // sequential, not Promise.all: each track's indexer owns the progress bar and
   // streams a whole file through ixIxx
+  const canonical = canonicalAssemblyName(config)
   const indexed: PlacedTrack[] = []
   for (const trackConfig of confs) {
-    const { textSearching, trackId, assemblyNames } = trackConfig
+    const { textSearching, trackId } = trackConfig
+    const assemblyNames = trackConfig.assemblyNames.map(canonical)
     if (textSearching?.textSearchAdapter && !force) {
       console.log(
         `Note: ${trackId} has already been indexed with this configuration, use --force to overwrite this track. Skipping for now`,
@@ -87,7 +90,7 @@ export async function perTrackIndex(flags: TextIndexFlags): Promise<void> {
   // somewhere in configTracks.
   const newAdapters = new Map(
     indexed.flatMap(({ trackId, assemblyNames, textSearching }) => {
-      const adapter = createTrixAdapter(trackId, assemblyNames)
+      const adapter = createTrixAdapter(trackId, assemblyNames.map(canonical))
       const existing = textSearching?.textSearchAdapter as
         | SearchIndexEntry
         | undefined

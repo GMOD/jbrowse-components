@@ -166,14 +166,27 @@ describe('getAssemblyNames', () => {
     expect(getAssemblyNames(config)).toEqual(['single_asm'])
   })
 
-  test('uses provided assemblies string over config', () => {
+  test('uses the provided assemblies over the config list', () => {
+    const config: Config = {
+      assemblies: [{ name: 'asm1' } as Assembly, { name: 'asm2' } as Assembly],
+    }
+    expect(getAssemblyNames(config, 'asm2')).toEqual(['asm2'])
+  })
+
+  test('maps an alias to its assembly name, once however many names reach it', () => {
+    const config: Config = {
+      assemblies: [{ name: 'GRCh38', aliases: ['hg38'] } as Assembly],
+    }
+    expect(getAssemblyNames(config, 'hg38,GRCh38')).toEqual(['GRCh38'])
+  })
+
+  test('throws on an assembly the config does not have', () => {
     const config: Config = {
       assemblies: [{ name: 'asm1' } as Assembly],
     }
-    expect(getAssemblyNames(config, 'custom1,custom2')).toEqual([
-      'custom1',
-      'custom2',
-    ])
+    expect(() => getAssemblyNames(config, 'asm1,custom1')).toThrow(
+      'Assembly "custom1" is not in the config (asm1)',
+    )
   })
 
   test('throws when no assemblies found', () => {
