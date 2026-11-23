@@ -470,6 +470,9 @@
           },
           "records": {
             "labels": {
+              "name": {
+                "show": false
+              },
               "description": "jexl:feature.INFO.ALEN + ' bp'"
             }
           }
@@ -555,6 +558,9 @@
           },
           "records": {
             "labels": {
+              "name": {
+                "show": false
+              },
               "description": "jexl:feature.INFO.ALEN + ' bp'"
             }
           }
