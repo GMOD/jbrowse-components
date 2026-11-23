@@ -144,7 +144,8 @@ fit's pitch already holds every lane whole), `'ceiling'`
 - `'budget'` and `'collapse'` offer the chip's expand, which banks an override OF
   `pileup.maxLayoutHeight` — and an override opts the lane out of both.
 - `'ceiling'` draws `PileupTruncationRule`, deliberately inert and not an alert
-  — reads collapsing onto the bottom row is the cap working. Read that one as the
+  — reads parked one row past the bottom, outside the pileup's scissor
+  (`placeRectCapped`), is the cap working. Read that one as the
   lane's `ceilingClipped`, which folds in the two display-wide suppressions
   (`showPileup`, `fitHeightToDisplay`) so the overlay never asks by key.
 - `'override'` fires neither: what a user's own cap hides is their own doing.

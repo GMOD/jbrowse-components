@@ -15,8 +15,8 @@ import type { LinearAlignmentsDisplayModel } from '../model.ts'
 // only way back was a dialog in the track menu. Reported as having been
 // dismissed by someone who did not expect a click to do anything irreversible.
 //
-// The alert tone was the other half. Reads collapsing onto the bottom row is
-// the cap doing its job at a depth the cap was written for, not a fault, and an
+// The alert tone was the other half. Reads parked past the bottom row, out of
+// view, is the cap doing its job at a depth the cap was written for, not a fault, and an
 // alert-toned mark says a fault. (An earlier draft of this comment claimed the
 // 6000px default is reached at essentially every locus at 300x, which is simply
 // false — measured on HG002 300x at 1:2,000,000, the pileup lays out 431 rows
@@ -46,8 +46,8 @@ const useStyles = makeStyles()(theme => ({
     position: 'absolute',
     left: 0,
     right: 0,
-    // Reads collapse ONTO the last row rather than after it, so the boundary is
-    // the row's own bottom edge. Drawn as a border on a zero-height box so the
+    // Reads past the cap sit one row below the last, outside the pileup's
+    // scissor, so the boundary is the last row's own bottom edge. Drawn as a border on a zero-height box so the
     // caption below can sit outside it without the two disagreeing about where
     // the line is.
     height: 0,
