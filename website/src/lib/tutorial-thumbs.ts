@@ -35,10 +35,10 @@ export const TUTORIAL_THUMB_SPECS: Record<string, ThumbSpec> = {
     position: 'center',
   },
   alphagenome2_singlecell: {
-    // The seven cell-type rows over ETS2, two myeloid rows dipping below zero
-    // above five flat lymphoid rows.
+    // The seven cell-type sections over ETS2, red in the two myeloid ones and
+    // white in the five lymphoid ones.
     src: 'alphagenome2/ets2_expression_effects.png',
-    band: [0.4, 0.72],
+    band: [0.34, 0.56],
     position: 'left',
   },
   display_settings: {
