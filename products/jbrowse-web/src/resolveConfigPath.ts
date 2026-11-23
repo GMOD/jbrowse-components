@@ -18,6 +18,20 @@ export function configBaseUri(configPath: string) {
 }
 
 /**
+ * The url a config was served from: the response's own after a redirect to
+ * another file, else the requested one, so a cache-buster query or a response
+ * with no url leaves the base the admin save strips unchanged
+ */
+export function servedConfigUri(configPath: string, responseUrl?: string) {
+  const requested = configBaseUri(configPath)
+  const served = responseUrl ? new URL(responseUrl) : requested
+  return served.origin === requested.origin &&
+    served.pathname === requested.pathname
+    ? requested
+    : served
+}
+
+/**
  * The config as the admin server should write it back: without the baseUris
  * fetchRemoteConfig stamped, but keeping any its author wrote, or that came in
  * with something added from elsewhere.

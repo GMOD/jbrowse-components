@@ -30,12 +30,6 @@ import { checkPlugins } from './util.ts'
 import type { SessionSource } from './types.ts'
 
 // Mock dependencies
-jest.mock('@jbrowse/core/util/io', () => ({
-  openLocation: jest.fn().mockReturnValue({
-    readFile: jest.fn().mockResolvedValue('{}'),
-  }),
-}))
-
 jest.mock('./util', () => ({
   addRelativeUris: jest.fn(),
   checkPlugins: jest.fn().mockResolvedValue(true),
@@ -65,6 +59,7 @@ describe('SessionLoader', () => {
     sessionStorage.clear()
     forgetTrustedPlugins()
     clearPermanentPlugins()
+    fetchMock.mockResponse('{}')
     jest.spyOn(console, 'error').mockImplementation(() => {})
     jest.spyOn(console, 'warn').mockImplementation(() => {})
   })
@@ -795,15 +790,12 @@ describe('SessionLoader', () => {
     // overwrite the config triage, leaving the config uncommitted and `ready`
     // stuck forever. applyTriagedConfig resolves both on accept.
     it('config triage defers session loading until applyTriagedConfig', async () => {
-      const { openLocation } = jest.requireMock('@jbrowse/core/util/io')
       const { checkPlugins } = jest.requireMock('./util')
-      openLocation.mockReturnValueOnce({
-        readFile: jest.fn().mockResolvedValue(
-          JSON.stringify({
-            plugins: [{ name: 'Custom', url: 'https://example.com/custom.js' }],
-          }),
-        ),
-      })
+      fetchMock.mockResponseOnce(
+        JSON.stringify({
+          plugins: [{ name: 'Custom', url: 'https://example.com/custom.js' }],
+        }),
+      )
       checkPlugins.mockResolvedValueOnce(false)
       const loader = createAndInit({
         configPath: 'http://example.com/config.json',
@@ -826,14 +818,9 @@ describe('SessionLoader', () => {
     // already accepted on this origin must be settled locally, before the
     // network is ever consulted.
     it('a remembered config plugin loads without consulting the plugin store', async () => {
-      const { openLocation } = jest.requireMock('@jbrowse/core/util/io')
       const { checkPlugins } = jest.requireMock('./util')
       const plugin = { name: 'Custom', url: 'https://example.com/custom.js' }
-      openLocation.mockReturnValueOnce({
-        readFile: jest
-          .fn()
-          .mockResolvedValue(JSON.stringify({ plugins: [plugin] })),
-      })
+      fetchMock.mockResponseOnce(JSON.stringify({ plugins: [plugin] }))
       checkPlugins.mockRejectedValueOnce(new Error('plugin store unreachable'))
       rememberPlugins([plugin])
 
@@ -851,10 +838,7 @@ describe('SessionLoader', () => {
     })
 
     it('sets configError and skips session loading when config fetch fails', async () => {
-      const { openLocation } = jest.requireMock('@jbrowse/core/util/io')
-      openLocation.mockReturnValueOnce({
-        readFile: jest.fn().mockRejectedValue(new Error('Network error')),
-      })
+      fetchMock.mockRejectOnce(new Error('Network error'))
       const loader = createAndInit({ initialTimestamp: Date.now() })
       await when(() => !!loader.configError, { timeout: 5000 })
       expect(loader.configError).toBeDefined()

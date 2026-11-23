@@ -201,7 +201,8 @@
           if (configPath === 'none' || window.__jbrowseCacheBuster) {
             return
           }
-          var config = fetch(configPath)
+          var response = fetch(configPath)
+          var config = response
             .then(function (r) {
               return r.ok ? r.json() : undefined
             })
@@ -209,6 +210,11 @@
           window.__jbrowseEarlyConfig = {
             configPath: configPath,
             config: config,
+            url: response
+              .then(function (r) {
+                return r.url
+              })
+              .catch(function () {}),
           }
           config.then(function (c) {
             var list = document.getElementById('plugin-registry-chunks')

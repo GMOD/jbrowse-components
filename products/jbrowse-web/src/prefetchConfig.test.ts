@@ -48,8 +48,29 @@ test.each([
   runHtmlScript()
   prefetchConfig()
   expect(fetchMock.mock.calls).toEqual([[expected]])
-  expect(await takePrefetchedConfig(expected)).toEqual(config)
+  expect(await takePrefetchedConfig(expected)).toEqual({ config })
 })
+
+test.each([
+  ['the HTML', runHtmlScript],
+  ['main.js', () => {}],
+])(
+  '%s prefetch hands over the url a redirect served it from',
+  async (_, run) => {
+    fetchMock.mockImplementation(async () => ({
+      ok: true,
+      url: 'https://elsewhere.example/config.json',
+      json: async () => config,
+    }))
+    load('/')
+    run()
+    prefetchConfig()
+    expect(await takePrefetchedConfig('config.json')).toEqual({
+      config,
+      url: 'https://elsewhere.example/config.json',
+    })
+  },
+)
 
 test('the host page global names the config', async () => {
   load('/')
@@ -68,7 +89,7 @@ test('a host page setting its config path after the script costs one more fetch'
     'config.json',
     'late.json',
   ])
-  expect(await takePrefetchedConfig('late.json')).toEqual(config)
+  expect(await takePrefetchedConfig('late.json')).toEqual({ config })
 })
 
 test('config=none fetches nothing', () => {

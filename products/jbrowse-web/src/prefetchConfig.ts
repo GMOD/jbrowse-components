@@ -2,7 +2,7 @@ import { readQueryParams } from '@jbrowse/app-core'
 
 import { resolveConfigPath } from './resolveConfigPath.ts'
 
-let early: { configPath: string; config: Promise<unknown> } | undefined
+let early: Window['__jbrowseEarlyConfig']
 
 /**
  * Take the config `index.html` requested as it parsed, or request it from
@@ -19,17 +19,20 @@ export function prefetchConfig() {
     return
   }
   early =
-    fromHtml?.configPath === configPath
-      ? fromHtml
-      : {
-          configPath,
-          config: fetch(
-            configPath +
-              (window.__jbrowseCacheBuster ? `?rand=${Math.random()}` : ''),
-          )
-            .then(r => (r.ok ? r.json() : undefined))
-            .catch(() => undefined),
-        }
+    fromHtml?.configPath === configPath ? fromHtml : fetchEarly(configPath)
+}
+
+function fetchEarly(configPath: string) {
+  const response = fetch(
+    configPath + (window.__jbrowseCacheBuster ? `?rand=${Math.random()}` : ''),
+  )
+  return {
+    configPath,
+    config: response
+      .then(r => (r.ok ? r.json() : undefined))
+      .catch(() => undefined),
+    url: response.then(r => r.url).catch(() => undefined),
+  }
 }
 
 /** The prefetched config, without taking it from the loader */
@@ -37,9 +40,15 @@ export function prefetchedConfig() {
   return early?.config
 }
 
-/** The prefetched config for `configPath`, once; a plugin reload fetches anew */
+/**
+ * The prefetched config for `configPath` and the url it was served from, once;
+ * a plugin reload fetches anew
+ */
 export async function takePrefetchedConfig(configPath: string) {
-  const entry = early
+  const entry = early?.configPath === configPath ? early : undefined
   early = undefined
-  return entry?.configPath === configPath ? entry.config : undefined
+  const config: unknown = await entry?.config
+  return entry && config !== undefined
+    ? { config, url: await entry.url }
+    : undefined
 }

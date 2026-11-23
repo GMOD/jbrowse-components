@@ -2,12 +2,11 @@ import { buildLgvInit as buildSharedLgvInit } from '@jbrowse/app-core'
 import PluginLoader from '@jbrowse/core/PluginLoader'
 import { dropVendoredPlugins } from '@jbrowse/core/pluginDefinitions'
 import { isObject, resolveStorePluginRefs } from '@jbrowse/core/util'
-import { openLocation } from '@jbrowse/core/util/io'
 
 import packageJSON from '../package.json' with { type: 'json' }
 import { takePrefetchedConfig } from './prefetchConfig.ts'
 import { hintPrewarmedWorker } from './prewarmedWorker.ts'
-import { configBaseUri } from './resolveConfigPath.ts'
+import { servedConfigUri } from './resolveConfigPath.ts'
 import { getSessionDB } from './sessionDB.ts'
 import { upsertSessionRows } from './sessionDbOps.ts'
 import { addRelativeUris } from './util.ts'
@@ -124,20 +123,41 @@ export async function writeSessionToIDB(snap: Snap, configPath: string) {
   }
 }
 
+async function fetchConfigJson(configPath: string) {
+  const uri =
+    configPath + (window.__jbrowseCacheBuster ? `?rand=${Math.random()}` : '')
+  const response = await fetch(uri)
+  if (!response.ok) {
+    throw new Error(`HTTP ${response.status} fetching ${uri}`)
+  }
+  const config: unknown = await response.json()
+  return { config, url: response.url }
+}
+
+/**
+ * Fetch the config and resolve its relative uris against the url it was
+ * served from, after any redirect, which is also the origin the plugin trust
+ * prompt judges it by
+ */
 export async function fetchRemoteConfig(configPath: string) {
-  const config =
+  const { config, url } =
     (await takePrefetchedConfig(configPath)) ??
-    JSON.parse(
-      await openLocation({
-        uri:
-          configPath +
-          (window.__jbrowseCacheBuster ? `?rand=${Math.random()}` : ''),
-        locationType: 'UriLocation',
-      }).readFile('utf8'),
-    )
-  const configUri = configBaseUri(configPath)
+    (await fetchConfigJson(configPath))
+  if (!isConfigSnap(config)) {
+    throw new Error(`${configPath} is not a JBrowse config`)
+  }
+  const configUri = servedConfigUri(configPath, url)
   addRelativeUris(config, configUri)
   return { config, configUri }
+}
+
+function isConfigSnap(
+  value: unknown,
+): value is Snap & { plugins?: PluginDefinition[] } {
+  return (
+    isObject(value) &&
+    (value.plugins === undefined || Array.isArray(value.plugins))
+  )
 }
 
 // The loc/tracks/assembly/... shorthand normalizer, which now lives in app-core
