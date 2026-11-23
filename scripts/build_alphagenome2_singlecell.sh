@@ -9,10 +9,11 @@
 # (colabs/v2/finemapping_ets2.ipynb in google-deepmind/alphagenome): the seven
 # SuSiE credible-set SNPs of the IBD association at chr21q22 (Stankey et al.
 # 2024, GWAS GCST004133), each scored for its effect on single-cell expression in
-# seven ileum immune cell types, and rs2836882 predicted base by base for scATAC
-# with each allele. A score is per gene and a BigWig holds a value per base, so
-# each cell type's row paints every gene's span with that gene's score; where
-# two genes overlap, the larger effect is drawn.
+# seven ileum immune cell types, one row per gene, SNP and cell type in a tidy
+# BED. rs2836882 is then predicted base by base for scATAC with each allele,
+# every base of the 64 around it is mutated to each other base (in silico
+# mutagenesis, ISM) and scored on ETS2 in macrophages, and the input gradient
+# of macrophage ETS2 expression is taken over the 1 Mb around its TSS.
 #
 # PBMC predicts scATAC at six marker loci for the twelve cell types of the
 # hosted 10x 5k PBMC scATAC track (build_scatac_pseudobulk.sh). Each label maps
@@ -25,10 +26,12 @@
 # Requires: python3 (>=3.10), curl, and an AlphaGenome API key in
 #           ALPHAGENOME_API_KEY (free for non-commercial use,
 #           https://www.alphagenomedocs.com/installation.html)
-# Output:   ets2/*.bw, ets2/credible_set.vcf.gz(.tbi), pbmc/<Cell_Type>.bw,
-#           pbmc/sources.json (the subadapter list for the measured track's
-#           config), config.json wiring them over hg38 with RefSeq genes
-# Runtime:  about a minute: 121 predictions, then the BigWig writing
+# Output:   ets2/expression_effects.bed.gz(.tbi), ets2/credible_set.vcf.gz(.tbi),
+#           ets2/*.bw, pbmc/<Cell_Type>.bw, pbmc/sources.json (the subadapter
+#           list for the measured track's config), config.json wiring them
+#           over hg38 with RefSeq genes and opening on ETS2
+# Runtime:  a few minutes: 121 predictions and 192 ISM variants, then the
+#           BigWig writing
 #
 # Usage: ALPHAGENOME_API_KEY=... bash scripts/build_alphagenome2_singlecell.sh [outdir]
 #
@@ -56,13 +59,6 @@ DEMO_CONFIG="${DEMO_CONFIG:-https://jbrowse.org/code/jb2/main/test_data/config_d
 
 : "${ALPHAGENOME_API_KEY:?set ALPHAGENOME_API_KEY to an AlphaGenome API key}"
 
-for tool in curl python3; do
-  command -v "$tool" >/dev/null 2>&1 || {
-    echo "error: '$tool' not found on PATH" >&2
-    exit 1
-  }
-done
-
 # pyBigWig reads the measured PBMC BigWigs over HTTPS with its own libcurl,
 # which on many Linux distributions cannot find the system CA bundle alone.
 if [ -z "${CURL_CA_BUNDLE:-}" ] && [ -f /etc/ssl/certs/ca-certificates.crt ]; then
@@ -82,9 +78,11 @@ python3 "$SCRIPT_DIR/hosted_assembly.py" config.json hg38 hg38-ncbiRefSeqCurated
 import json
 import os
 import sys
+import time
 import urllib.request
 from pathlib import Path
 
+import grpc
 import numpy as np
 import pandas as pd
 import pyBigWig
@@ -93,7 +91,31 @@ from alphagenome.data import genome
 from alphagenome.models.v2 import dna_client, variant_scorers
 
 base, demo_config = sys.argv[1:3]
-model = dna_client.create(os.environ['ALPHAGENOME_API_KEY'])
+
+
+class WaitOutQuota:
+    """The API answers RESOURCE_EXHAUSTED past its per-minute request quota."""
+
+    def __init__(self, client):
+        self.client = client
+
+    def __getattr__(self, name):
+        method = getattr(self.client, name)
+
+        def call(*args, **kwargs):
+            for attempt in range(5):
+                try:
+                    return method(*args, **kwargs)
+                except grpc.RpcError as e:
+                    if e.code() != grpc.StatusCode.RESOURCE_EXHAUSTED or attempt == 4:
+                        raise
+                    print(f'{name}: request quota reached, waiting a minute')
+                    time.sleep(65)
+
+        return call
+
+
+model = WaitOutQuota(dna_client.create(os.environ['ALPHAGENOME_API_KEY']))
 conditions = model.supported_conditions()
 by_name = conditions.set_index('biosample_name')
 by_curie = conditions.set_index('condition')
@@ -217,34 +239,43 @@ predicted = model.predict_variants(
         dna_client.OutputType.SC_GENE_EXPRESSION,
     ],
 )
-genes = predicted[0].reference.sc_gene_expression.gene_metadata.set_index('gene_name')
+genes = (
+    predicted[0].reference.sc_gene_expression.gene_metadata
+    .drop_duplicates('gene_name')
+    .set_index('gene_name')
+)
 
-
-def paint_genes(frame):
-    per_gene = frame.groupby('gene_name')['raw_score'].mean()
-    per_gene = per_gene[per_gene.index.isin(genes.index)]
-    painted = np.zeros(window.end - window.start)
-    # where two genes overlap, the larger effect is painted last and shows
-    for gene in per_gene.abs().sort_values().index:
-        lo = max(int(genes.at[gene, 'Start']) - window.start, 0)
-        hi = min(int(genes.at[gene, 'End']) - window.start, len(painted))
-        painted[lo:hi] = per_gene[gene]
-    return [(window.chromosome, window.start, painted)]
-
-
-for biosample, label, _, _ in ILEUM:
-    rows = expression[(expression['variant_id'] == CAUSAL) & (expression['biosample_name'] == biosample)]
-    write_bigwig(f'ets2/expression_effect_{slug(label)}.bw', paint_genes(rows))
-
-for rsid, v, _, _ in CREDIBLE_SET:
-    rows = expression[(expression['variant_id'] == v) & (expression['biosample_name'] == 'ileum macrophage')]
-    write_bigwig(f'ets2/macrophage_effect_{rsid}.bw', paint_genes(rows))
+# One row per gene, SNP and cell type, the gene's span from the model's own
+# GENCODE annotation (0-based starts)
+label_of = {biosample: label for biosample, label, _, _ in ILEUM}
+rsid_of = {v: rsid for rsid, v, _, _ in CREDIBLE_SET}
+effects = (
+    expression[expression['gene_name'].isin(genes.index)]
+    .groupby(['variant_id', 'biosample_name', 'gene_name'])['raw_score']
+    .mean()
+    .reset_index()
+)
+bed_rows = sorted(
+    (int(genes.at[g, 'Start']), int(genes.at[g, 'End']), g, score, genes.at[g, 'strand'], label_of[b], rsid_of[v])
+    for v, b, g, score in effects.itertuples(index=False)
+)
+bed = Path('ets2/expression_effects.bed')
+bed.write_text(
+    '#chrom\tchromStart\tchromEnd\tname\tscore\tstrand\tcell_type\tsnp\n'
+    + ''.join(
+        f'{window.chromosome}\t{s}\t{e}\t{g}\t{score:.4f}\t{strand}\t{cell}\t{rsid}\n'
+        for s, e, g, score, strand, cell, rsid in bed_rows
+    )
+)
+pysam.tabix_index(str(bed), preset='bed', force=True)
 
 lo = causal.position - ATAC_FLANK - window.start
 hi = causal.position + ATAC_FLANK - window.start
+atac_limit = 0
 for (biosample, label, _, _), output in zip(ILEUM, predicted):
     ref, alt = output.reference.sc_atac, output.alternate.sc_atac
     assert ref.metadata['biosample_name'].iloc[0] == biosample
+    assert ref.resolution == 1
     # One protocol per row, as in the notebook: 10x scATAC through Cell Ranger
     tenx = (
         (ref.metadata['Assay title'] == 'scATAC-seq 10X')
@@ -254,17 +285,52 @@ for (biosample, label, _, _), output in zip(ILEUM, predicted):
     a = alt.values[lo:hi, tenx].mean(axis=1)
     write_bigwig(f'ets2/atac_reference_{slug(label)}.bw', [(window.chromosome, window.start + lo, r)], 2)
     write_bigwig(f'ets2/atac_change_{slug(label)}.bw', [(window.chromosome, window.start + lo, a - r)], 2)
+    atac_limit = max(atac_limit, float(np.ceil(np.abs(a - r).max())))
 
-atac_mode = sorted({by_name.at[b, 'sc_atac'] for b, _, _, _ in ILEUM})
-# The track names say whether the model saw these cell types' scATAC in
-# training; for the ileum it did not, and the rows are imputed
-atac_note = 'observed' if atac_mode == ['observed'] else 'imputed'
+# The track names carry supported_conditions()' mode for these cell types'
+# scATAC verbatim: for the ileum the model saw none in training
+atac_modes = {by_name.at[b, 'sc_atac'] for b, _, _, _ in ILEUM}
+assert len(atac_modes) == 1, atac_modes
+atac_mode = atac_modes.pop()
+
+ISM_WIDTH = 64
+ism_interval = causal.reference_interval.resize(ISM_WIDTH)
+ism = model.score_ism_variants(
+    interval=window,
+    ism_interval=ism_interval,
+    condition=ileum['Macrophage'],
+    variant_scorers=[variant_scorers.RECOMMENDED_VARIANT_SCORERS['SC_GENE_EXPRESSION']],
+)
+# A row per base mutated to, each base's score its effect on ETS2; the
+# reference base's own cell is zero and draws empty
+ism_by_base = {allele: np.zeros(ism_interval.width) for allele in 'ACGT'}
+for [scored] in ism:
+    variant = scored.uns['variant']
+    gene = (scored.obs['gene_name'] == 'ETS2').to_numpy()
+    track = ((scored.var['Assay title'] == 'scRNA-seq 10X 3') & (scored.var['imputation_mode'] == 'observed')).to_numpy()
+    ism_by_base[variant.alternate_bases][variant.start - ism_interval.start] = scored.X[gene][:, track].item()
+for allele, values in ism_by_base.items():
+    write_bigwig(f'ets2/ism_{allele}.bw', [(ism_interval.chromosome, ism_interval.start, values)], 3)
+ism_limit = np.ceil(float(max(np.abs(v).max() for v in ism_by_base.values())) * 20) / 20
+
+# Gradient times input: one value per base, positive where the reference base
+# raises the predicted expression
+gradient = model.predict_interval_gradients(
+    genes.at['ETS2', 'gene_id'],
+    requested_output=dna_client.OutputType.SC_GENE_EXPRESSION,
+    condition=ileum['Macrophage'],
+)
+per_base = gradient.gradients.sum(axis=1)
+write_bigwig('ets2/gradient_ETS2_Macrophage.bw', [(gradient.interval.chromosome, gradient.interval.start, per_base)])
+gradient_limit = np.ceil(float(np.abs(per_base).max()) * 20) / 20
+
 print('ETS2 rs2836882 expression effect by cell type:')
 print(
     expression[(expression['variant_id'] == CAUSAL) & expression['gene_name'].isin(['ETS2', 'PSMG1', 'BRWD1'])]
     .groupby(['gene_name', 'biosample_name'])['raw_score'].mean().unstack().round(3).to_string()
 )
 print('ileum scATAC imputation mode:', atac_mode)
+print(f'largest ETS2 input gradient at {gradient.interval.start + int(np.abs(per_base).argmax()) + 1:,} (1-based)')
 
 # ── PBMC ─────────────────────────────────────────────────────────────────────
 # Each SnapATAC2 label and the blood condition of the same cell type
@@ -315,6 +381,7 @@ for chrom, center in LOCI.values():
     obs = np.zeros((len(PBMC), n_bins))
     for i, (sub, output) in enumerate(zip(measured, outputs)):
         td = output.sc_atac
+        assert td.resolution == 1
         tenx = (
             (td.metadata['Assay title'] == 'scATAC-seq 10X')
             & (td.metadata['data_pipeline'] == 'cellranger')
@@ -354,9 +421,9 @@ r = z(P) @ z(O).T / P.shape[1]
 names = list(PBMC)
 print('\nPBMC scATAC, predicted (rows) against measured (columns), cell-type-specific r:')
 print(pd.DataFrame(r, index=names, columns=names).round(2).to_string())
-same = np.diag(r).mean()
-other = r[~np.eye(len(names), dtype=bool)].mean()
-print(f'mean r, matching cell type {same:.2f}; other cell types {other:.2f}')
+# Only the diagonal is a measure: the centring makes every bin sum to zero over
+# the measured rows, which holds the off-diagonal mean near -diagonal/11
+print(f'mean r, matching cell type {np.diag(r).mean():.2f}')
 
 # ── config ───────────────────────────────────────────────────────────────────
 def multi(track_id, name, prefix, rows, display):
@@ -383,16 +450,46 @@ def multi(track_id, name, prefix, rows, display):
     }
 
 
-def signed(limit, title):
+def signed(limit, title, height=240):
     return {
         'mark': 'bar',
-        'height': 240,
+        'height': height,
         'encoding': {'y': {'scale': {'domainMin': -limit, 'domainMax': limit}, 'axis': {'title': title}}},
     }
 
 
+# The notebook's heatmap laid along the genome: one section per facet value,
+# each gene a rect in the score's color, overlapping genes packed into lanes
+def effects_track(track_id, name, keep, facet, sort):
+    return {
+        'type': 'FeatureTrack',
+        'trackId': track_id,
+        'name': name,
+        'category': ['AlphaGenome 2'],
+        'assemblyNames': ['hg38'],
+        'adapter': {'type': 'BedTabixAdapter', 'uri': f'{base}/ets2/expression_effects.bed.gz'},
+        'displays': [
+            {
+                'type': 'LinearMarkDisplay',
+                'displayId': f'{track_id}-LinearMarkDisplay',
+                'height': 300,
+                'filter': [keep],
+                'facet': {'field': facet, 'sort': sort, 'transform': [{'type': 'pileup'}]},
+                'encoding': {
+                    'color': {
+                        'field': 'score',
+                        'scale': {'type': 'linear', 'scheme': 'redblue', 'domainMin': -0.3, 'domainMax': 0.3, 'domainMid': 0},
+                        'legend': {'title': 'log fold change'},
+                    }
+                },
+                'marks': [{'mark': 'rect'}, {'mark': 'text', 'encoding': {'text': 'name', 'color': {'value': '#222222'}}}],
+                'tooltip': 'name',
+            }
+        ],
+    }
+
+
 cell_rows = [(label, group, color) for _, label, group, color in ILEUM]
-snp_rows = [(rsid, 'Credible set', '#d62728' if v == CAUSAL else '#7f7f7f') for rsid, v, _, _ in CREDIBLE_SET]
 config = json.load(open('config.json'))
 config['tracks'] += [
     {**measured_track, 'category': ['Single cell']},
@@ -403,33 +500,64 @@ config['tracks'] += [
         'assemblyNames': ['hg38'],
         'adapter': {'type': 'VcfTabixAdapter', 'uri': f'{base}/ets2/credible_set.vcf.gz'},
     },
-    multi(
+    effects_track(
         'ag2_ets2_expression_by_cell_type',
-        'rs2836882 effect on expression, by ileum cell type',
-        'expression_effect',
-        cell_rows,
-        signed(0.3, 'log fold change'),
+        'rs2836882 predicted expression effect per gene, by ileum cell type',
+        {'field': 'snp', 'equal': 'rs2836882'},
+        'cell_type',
+        [label for _, label, _, _ in ILEUM],
     ),
-    multi(
+    effects_track(
         'ag2_ets2_macrophage_by_snp',
-        'Macrophage expression effect, by credible-set SNP',
-        'macrophage_effect',
-        snp_rows,
-        signed(0.3, 'log fold change'),
+        'Macrophage predicted expression effect per gene, by credible-set SNP',
+        {'field': 'cell_type', 'equal': 'Macrophage'},
+        'snp',
+        [rsid for rsid, _, _, _ in CREDIBLE_SET],
     ),
+    {
+        'type': 'QuantitativeTrack',
+        'trackId': 'ag2_ets2_gradient',
+        'name': 'Input gradient of ETS2 expression in ileum macrophage',
+        'category': ['AlphaGenome 2'],
+        'assemblyNames': ['hg38'],
+        'adapter': {'type': 'BigWigAdapter', 'uri': f'{base}/ets2/gradient_ETS2_Macrophage.bw'},
+        'displayDefaults': signed(gradient_limit, 'gradient × input', 100),
+    },
+    {
+        'type': 'MultiQuantitativeTrack',
+        'trackId': 'ag2_ets2_ism',
+        'name': 'rs2836882 ISM, ETS2 expression in ileum macrophage, by base mutated to',
+        'category': ['AlphaGenome 2'],
+        'assemblyNames': ['hg38'],
+        'adapter': {
+            'type': 'MultiWiggleAdapter',
+            'subadapters': [
+                {'type': 'BigWigAdapter', 'name': base_to, 'uri': f'{base}/ets2/ism_{base_to}.bw'}
+                for base_to in 'ACGT'
+            ],
+        },
+        'displayDefaults': {
+            'mark': 'rect',
+            'height': 80,
+            'encoding': {
+                'y': {'scale': {'domainMin': -ism_limit, 'domainMax': ism_limit}},
+                'color': {'scale': {'type': 'linear', 'scheme': 'redblue', 'domainMid': 0}},
+            },
+        },
+    },
     multi(
         'ag2_ets2_atac_reference',
-        f'Predicted scATAC, risk allele ({atac_note})',
+        f'Predicted scATAC, risk allele ({atac_mode})',
         'atac_reference',
         cell_rows,
         {'mark': 'bar', 'height': 240},
     ),
     multi(
         'ag2_ets2_atac_change',
-        f'Predicted scATAC change, protective minus risk ({atac_note})',
+        f'Predicted scATAC change, protective minus risk ({atac_mode})',
         'atac_change',
         cell_rows,
-        {'mark': 'bar', 'height': 240},
+        signed(atac_limit, 'scATAC change'),
     ),
     {
         'type': 'MultiQuantitativeTrack',
@@ -441,6 +569,35 @@ config['tracks'] += [
         'displayDefaults': {'mark': 'bar', 'height': 300},
     },
 ]
+# ETS2 to the GET1-SH3BGR readthrough, then the enhancer with the measured
+# blood monocyte rows of the PBMC track under the predicted change
+config['defaultSession'] = {
+    'name': 'ETS2',
+    'views': [
+        {
+            'type': 'LinearGenomeView',
+            'assembly': 'hg38',
+            'loc': 'chr21:38,700,000-39,600,000',
+            'tracks': [
+                {'trackId': 'hg38-ncbiRefSeqCurated', 'displayMode': 'compact', 'height': 70},
+                {'trackId': 'ets2_ibd_credible_set', 'height': 40},
+                'ag2_ets2_expression_by_cell_type',
+                'ag2_ets2_gradient',
+            ],
+        },
+        {
+            'type': 'LinearGenomeView',
+            'assembly': 'hg38',
+            'loc': 'chr21:39,094,144-39,095,144',
+            'tracks': [
+                {'trackId': 'ets2_ibd_credible_set', 'height': 40},
+                'ag2_ets2_atac_change',
+                {'trackId': 'pbmc5k_scatac_pseudobulk_hg38', 'height': 100, 'rows': {'kept': ['CD14 Mono', 'CD16 Mono']}},
+                'ag2_ets2_ism',
+            ],
+        },
+    ],
+}
 Path('config.json').write_text(json.dumps(config, indent=2) + '\n')
 PY
 

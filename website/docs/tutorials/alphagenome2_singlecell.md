@@ -16,11 +16,14 @@ gene, and in which cell types, following DeepMind's own worked example. At
 _ETS2_ and the enhancer between _ETS2_ and _PSMG1_, we:
 
 - load the credible set as a variant track
-- load each SNP's predicted effect on expression as a multi-wiggle track, one
-  row per ileum immune cell type
-- compare the seven SNPs in macrophages in a second multi-wiggle track
-- open the enhancer and load predicted single-cell ATAC (scATAC) per cell type,
-  for the risk allele and for the change the protective allele makes
+- load each SNP's predicted effect on each gene from one BED, faceted into a
+  section per ileum immune cell type
+- facet the same BED by SNP to compare the seven SNPs in macrophages
+- load the input gradient of _ETS2_ expression along the megabase around it
+- open the enhancer and load predicted single-cell ATAC (scATAC) per cell type
+  for the change the protective allele makes, over the measured blood monocyte
+  rows
+- load the predicted effect of every base change at the enhancer as a heatmap
 
 :::caution Predictions
 
@@ -36,7 +39,7 @@ for this locus.
 - nothing beyond a web browser to follow the page
 - to make the tracks for your own variants, an
   [AlphaGenome API key](https://www.alphagenomedocs.com/installation.html) and
-  Python 3.10 or later with `pip install alphagenome pyBigWig`
+  Python 3.10 or later with `pip install "alphagenome==2.0.*" pyBigWig pysam`
 
 ## The data
 
@@ -48,7 +51,7 @@ et al. (2024).
 
 ## Loading GRCh38
 
-AlphaGenome 2 predicts from GRCh38 sequence, and the BigWigs below use its
+AlphaGenome 2 predicts from GRCh38 sequence, and the files below use its
 `chr21`-style chromosome names:
 
 ```json addassembly
@@ -79,7 +82,7 @@ The genes are NCBI's curated RefSeq set from the
 
 The credible set is a VCF with each SNP's posterior inclusion probability (PIP)
 and GWAS effect in `INFO`, so clicking a SNP shows both. The reference allele is
-the common risk allele at every SNP, and the alternate is protective:
+the risk allele at every SNP, and the alternate is protective:
 
 ```json addtrack loc=chr21:39,093,000..39,095,400
 {
@@ -90,7 +93,7 @@ the common risk allele at every SNP, and the alternate is protective:
 }
 ```
 
-## Predicted expression effects as BigWigs
+## Predicted expression effects as a BED
 
 `score_variants` predicts each SNP's effect on every gene within half a
 megabase, once per cell type. The ileum conditions are the seven immune cell
@@ -111,94 +114,148 @@ scores = variant_scorers.tidy_scores(
 )
 ```
 
-A score is one log fold change per gene, and a BigWig holds a value per base, so
-the script paints each gene's span with that gene's score. One BigWig per cell
-type then draws as one row:
+A score is one log fold change per gene, so the script writes one BED line per
+gene, SNP and cell type, over the gene's span in the model's own annotation. A
+`#` header names the columns, and every column becomes a field JBrowse can
+filter, facet and color by (tab-separated, shown space-aligned):
 
-<!-- from: scripts/build_alphagenome2_singlecell.sh -->
-
-```python
-def paint_genes(frame):
-    per_gene = frame.groupby('gene_name')['raw_score'].mean()
-    per_gene = per_gene[per_gene.index.isin(genes.index)]
-    painted = np.zeros(window.end - window.start)
-    # where two genes overlap, the larger effect is painted last and shows
-    for gene in per_gene.abs().sort_values().index:
-        lo = max(int(genes.at[gene, 'Start']) - window.start, 0)
-        hi = min(int(genes.at[gene, 'End']) - window.start, len(painted))
-        painted[lo:hi] = per_gene[gene]
-    return [(window.chromosome, window.start, painted)]
+```text
+#chrom  chromStart  chromEnd  name   score    strand  cell_type   snp
+chr21   38805182    38824955  ETS2   -0.2327  +       Macrophage  rs2836882
+chr21   38805182    38824955  ETS2   -0.2830  +       Monocyte    rs2836882
+chr21   38805182    38824955  ETS2   -0.0023  +       B cell      rs2836882
 ```
 
 ## rs2836882's effect on expression in each cell type
 
-One `MultiQuantitativeTrack` holds the seven cell types, myeloid rows first. The
-fence lists three; the hosted config,
-https://jbrowse.org/demos/alphagenome2_singlecell/config.json, has all seven as
-`ag2_ets2_expression_by_cell_type`:
+The track draws the notebook's heatmap along the chromosome: a section per cell
+type, each gene a rectangle colored by its score. `filter` keeps rs2836882's
+lines, `facet` makes the sections, and the facet's `pileup` packs overlapping
+genes such as _GET1_ and the _GET1-SH3BGR_ readthrough into separate lanes:
 
 ```json addtrack loc=chr21:38,790,000..39,330,000
 {
-  "type": "MultiQuantitativeTrack",
+  "type": "FeatureTrack",
   "trackId": "ag2_ets2_expression_by_cell_type",
-  "name": "rs2836882 effect on expression, by ileum cell type",
+  "name": "rs2836882 predicted expression effect per gene, by ileum cell type",
   "assemblyNames": ["hg38"],
   "adapter": {
-    "type": "MultiWiggleAdapter",
-    "subadapters": [
-      {
-        "type": "BigWigAdapter",
-        "name": "Macrophage",
-        "group": "Myeloid",
-        "color": "#d62728",
-        "uri": "https://jbrowse.org/demos/alphagenome2_singlecell/ets2/expression_effect_Macrophage.bw"
+    "type": "BedTabixAdapter",
+    "uri": "https://jbrowse.org/demos/alphagenome2_singlecell/ets2/expression_effects.bed.gz"
+  },
+  "displays": [
+    {
+      "type": "LinearMarkDisplay",
+      "displayId": "ag2_ets2_expression_by_cell_type-LinearMarkDisplay",
+      "height": 300,
+      "filter": [{ "field": "snp", "equal": "rs2836882" }],
+      "facet": {
+        "field": "cell_type",
+        "sort": [
+          "Macrophage",
+          "Monocyte",
+          "B cell",
+          "CD4 T",
+          "CD8 T",
+          "Treg",
+          "NK"
+        ],
+        "transform": [{ "type": "pileup" }]
       },
-      {
-        "type": "BigWigAdapter",
-        "name": "Monocyte",
-        "group": "Myeloid",
-        "color": "#ff7f0e",
-        "uri": "https://jbrowse.org/demos/alphagenome2_singlecell/ets2/expression_effect_Monocyte.bw"
+      "encoding": {
+        "color": {
+          "field": "score",
+          "scale": {
+            "type": "linear",
+            "scheme": "redblue",
+            "domainMin": -0.3,
+            "domainMax": 0.3,
+            "domainMid": 0
+          },
+          "legend": { "title": "log fold change" }
+        }
       },
-      {
-        "type": "BigWigAdapter",
-        "name": "B cell",
-        "group": "Lymphoid",
-        "color": "#1f77b4",
-        "uri": "https://jbrowse.org/demos/alphagenome2_singlecell/ets2/expression_effect_B_cell.bw"
-      }
-    ]
+      "marks": [
+        { "mark": "rect" },
+        {
+          "mark": "text",
+          "encoding": { "text": "name", "color": { "value": "#222222" } }
+        }
+      ],
+      "tooltip": "name"
+    }
+  ]
+}
+```
+
+The pinned `domainMin`, `domainMax` and `domainMid` put no effect at white in
+every section, as the notebook's color scale does, and the dark labels stay
+readable over it.
+
+The second track, `ag2_ets2_macrophage_by_snp` in the hosted config,
+https://jbrowse.org/demos/alphagenome2_singlecell/config.json, reads the same
+BED with `"filter": [{ "field": "cell_type", "equal": "Macrophage" }]` and
+`"facet": { "field": "snp" }`, a section per credible-set SNP. Open both over
+the span from _ETS2_ to _BRWD1_:
+
+```text
+chr21:38,790,000-39,330,000
+```
+
+<Figure caption="Predicted expression effects from ETS2 to BRWD1: rs2836882 in each ileum cell type, each credible-set SNP in macrophages, and the input gradient of ETS2 in macrophages." src="/img/alphagenome2/ets2_expression_effects.png" />
+
+_ETS2_ is red in the macrophage and monocyte sections and white in the lymphoid
+ones. Of the genes nearer the SNPs, _PSMG1_ is pale in the myeloid sections and
+_BRWD1_ stays white. In the second track only rs2836882 colors _ETS2_, although
+rs2836878 has the higher PIP.
+
+## Which bases the ETS2 prediction reads
+
+`predict_interval_gradients` takes the gradient of one gene's predicted
+expression with respect to each base of the megabase centered on its
+transcription start site, multiplied by the reference sequence, which gives one
+value per base. Positive values mark bases that raise the prediction:
+
+<!-- from: scripts/build_alphagenome2_singlecell.sh -->
+
+```python
+gradient = model.predict_interval_gradients(
+    genes.at['ETS2', 'gene_id'],
+    requested_output=dna_client.OutputType.SC_GENE_EXPRESSION,
+    condition=ileum['Macrophage'],
+)
+per_base = gradient.gradients.sum(axis=1)
+```
+
+The script writes `per_base` as a BigWig, which loads as a quantitative track
+with a symmetric axis:
+
+```json addtrack
+{
+  "type": "QuantitativeTrack",
+  "trackId": "ag2_ets2_gradient",
+  "name": "Input gradient of ETS2 expression in ileum macrophage",
+  "assemblyNames": ["hg38"],
+  "adapter": {
+    "type": "BigWigAdapter",
+    "uri": "https://jbrowse.org/demos/alphagenome2_singlecell/ets2/gradient_ETS2_Macrophage.bw"
   },
   "displayDefaults": {
     "mark": "bar",
-    "height": 240,
+    "height": 100,
     "encoding": {
       "y": {
-        "scale": { "domainMin": -0.3, "domainMax": 0.3 },
-        "axis": { "title": "log fold change" }
+        "scale": { "domainMin": -0.15, "domainMax": 0.15 },
+        "axis": { "title": "gradient × input" }
       }
     }
   }
 }
 ```
 
-A pinned symmetric `domainMin` and `domainMax` keep zero at the middle of every
-row, so a row with no effect draws as a flat line.
-
-The second track, `ag2_ets2_macrophage_by_snp` in the hosted config, has one row
-per credible-set SNP, each the SNP's effect in macrophages. Open both over the
-span from _ETS2_ to _BRWD1_:
-
-```text
-chr21:38,790,000-39,330,000
-```
-
-<Figure caption="Predicted expression effects from ETS2 to BRWD1: rs2836882 in each ileum cell type, then each credible-set SNP in macrophages." src="/img/alphagenome2/ets2_expression_effects.png" />
-
-The macrophage and monocyte rows fall below zero over _ETS2_, and the lymphoid
-rows stay flat. _PSMG1_ and _BRWD1_, the genes nearer the SNPs, barely move. In
-the second track only rs2836882 has an effect, although rs2836878 has the higher
-PIP.
+It is the bottom track of the figure above. Its tallest bar in the whole
+megabase is at rs2836882, 289 kb from _ETS2_, taller than any at the _ETS2_
+promoter.
 
 ## Predicted accessibility at the enhancer
 
@@ -209,25 +266,144 @@ Ranger track, as the notebook does, and writes the reference and the alternate
 minus the reference as two BigWigs per cell type.
 
 AlphaGenome 2 was trained on single-cell expression from these ileum cell types
-but on no scATAC from them, so its scATAC for them is imputed, and the track
-names say so. `supported_conditions()` lists, per cell type and output, whether
-a prediction is `observed` or imputed.
+but on no scATAC from them. `supported_conditions()` lists the mode of each cell
+type's prediction for each output, and for ileum scATAC it is
+`imputed_supported`, which the track names carry. The change track pins a
+symmetric axis so zero sits mid-row; the fence lists three of its seven rows:
 
-Load the two tracks the same way as the expression track, from
-`atac_reference_<Cell_type>.bw` and `atac_change_<Cell_type>.bw`; the hosted
-config has them as `ag2_ets2_atac_reference` and `ag2_ets2_atac_change`. Then
-open the kilobase around rs2836882:
+```json addtrack loc=chr21:39,094,144..39,095,144
+{
+  "type": "MultiQuantitativeTrack",
+  "trackId": "ag2_ets2_atac_change",
+  "name": "Predicted scATAC change, protective minus risk (imputed_supported)",
+  "assemblyNames": ["hg38"],
+  "adapter": {
+    "type": "MultiWiggleAdapter",
+    "subadapters": [
+      {
+        "type": "BigWigAdapter",
+        "name": "Macrophage",
+        "group": "Myeloid",
+        "color": "#d62728",
+        "uri": "https://jbrowse.org/demos/alphagenome2_singlecell/ets2/atac_change_Macrophage.bw"
+      },
+      {
+        "type": "BigWigAdapter",
+        "name": "Monocyte",
+        "group": "Myeloid",
+        "color": "#ff7f0e",
+        "uri": "https://jbrowse.org/demos/alphagenome2_singlecell/ets2/atac_change_Monocyte.bw"
+      },
+      {
+        "type": "BigWigAdapter",
+        "name": "B cell",
+        "group": "Lymphoid",
+        "color": "#1f77b4",
+        "uri": "https://jbrowse.org/demos/alphagenome2_singlecell/ets2/atac_change_B_cell.bw"
+      }
+    ]
+  },
+  "displayDefaults": {
+    "mark": "bar",
+    "height": 240,
+    "encoding": {
+      "y": {
+        "scale": { "domainMin": -14, "domainMax": 14 },
+        "axis": { "title": "scATAC change" }
+      }
+    }
+  }
+}
+```
+
+`ag2_ets2_atac_reference` in the hosted config holds the risk allele's predicted
+scATAC the same way, from `atac_reference_<Cell_type>.bw`. Under both goes
+measured scATAC from blood, the 10x PBMC pseudobulk track of
+[](/docs/tutorials/scrna_pseudobulk), narrowed to its two monocyte rows. Its
+cells are unstimulated blood monocytes, not ileum macrophages, so it shows
+whether monocytes open this enhancer, not whether the ileum predictions are
+right. Open the kilobase around rs2836882:
 
 ```text
 chr21:39,094,144-39,095,144
 ```
 
-<Figure caption="Predicted scATAC around rs2836882 in each ileum cell type, for the risk allele and for the protective allele minus the risk allele." src="/img/alphagenome2/ets2_enhancer_atac.png" />
+<Figure caption="Predicted scATAC around rs2836882 in each ileum cell type for the risk allele and for the protective allele minus the risk allele, over measured scATAC from blood CD14 and CD16 monocytes." src="/img/alphagenome2/ets2_enhancer_atac.png" />
 
 Accessibility is predicted in the macrophage and monocyte rows only, and the
 protective allele lowers it across the enhancer in those rows. Stankey et al.
 measured the same direction in primary macrophages, where the risk allele has
 higher accessibility and PU.1 binding.
+
+## Every base change at the enhancer
+
+In silico mutagenesis (ISM) scores every single-base change in a window, here
+the 64 bases around rs2836882, for its effect on _ETS2_ in macrophages:
+
+<!-- from: scripts/build_alphagenome2_singlecell.sh -->
+
+```python
+ism = model.score_ism_variants(
+    interval=window,
+    ism_interval=ism_interval,
+    condition=ileum['Macrophage'],
+    variant_scorers=[variant_scorers.RECOMMENDED_VARIANT_SCORERS['SC_GENE_EXPRESSION']],
+)
+```
+
+The script writes one BigWig per base mutated to, `ism_A.bw` to `ism_T.bw`, and
+a `MultiQuantitativeTrack` draws them as a heatmap of four rows. A base's own
+row stays empty, since changing a base to itself has no effect:
+
+```json addtrack loc=chr21:39,094,602..39,094,686
+{
+  "type": "MultiQuantitativeTrack",
+  "trackId": "ag2_ets2_ism",
+  "name": "rs2836882 ISM, ETS2 expression in ileum macrophage, by base mutated to",
+  "assemblyNames": ["hg38"],
+  "adapter": {
+    "type": "MultiWiggleAdapter",
+    "subadapters": [
+      {
+        "type": "BigWigAdapter",
+        "name": "A",
+        "uri": "https://jbrowse.org/demos/alphagenome2_singlecell/ets2/ism_A.bw"
+      },
+      {
+        "type": "BigWigAdapter",
+        "name": "C",
+        "uri": "https://jbrowse.org/demos/alphagenome2_singlecell/ets2/ism_C.bw"
+      },
+      {
+        "type": "BigWigAdapter",
+        "name": "G",
+        "uri": "https://jbrowse.org/demos/alphagenome2_singlecell/ets2/ism_G.bw"
+      },
+      {
+        "type": "BigWigAdapter",
+        "name": "T",
+        "uri": "https://jbrowse.org/demos/alphagenome2_singlecell/ets2/ism_T.bw"
+      }
+    ]
+  },
+  "displayDefaults": {
+    "mark": "rect",
+    "height": 80,
+    "encoding": {
+      "y": { "scale": { "domainMin": -0.35, "domainMax": 0.35 } },
+      "color": {
+        "scale": { "type": "linear", "scheme": "redblue", "domainMid": 0 }
+      }
+    }
+  }
+}
+```
+
+<Figure caption="The predicted effect on ETS2 expression in ileum macrophages of each base change in the 64 bases around rs2836882, one row per base mutated to, under the reference sequence." src="/img/alphagenome2/ets2_enhancer_ism.png" />
+
+Every change at the seven bases `TGCGTCA`, rs2836882's G the fourth of them,
+lowers _ETS2_. That is the AP-1-like motif the notebook reads off the same
+scores.
 
 ## Reproduce it end to end
 
@@ -235,11 +411,12 @@ higher accessibility and PU.1 binding.
 writes every track on this page with your API key. It:
 
 1. scores the seven credible-set SNPs against the seven ileum cell types and
-   paints each cell type's gene scores into a BigWig
-2. predicts scATAC around rs2836882 for both alleles in each cell type
+   writes one BED line per gene, SNP and cell type
+2. predicts scATAC around rs2836882 for both alleles in each cell type, every
+   base change around it, and the input gradient of _ETS2_
 3. predicts scATAC at six PBMC marker loci for the cell types of
    [](/docs/tutorials/scrna_pseudobulk), to set beside the measured rows there
-4. writes `config.json` over hg38 and the RefSeq genes
+4. writes `config.json` over hg38 and the RefSeq genes, opening on _ETS2_
 
 ```bash
 curl -fO https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/build_alphagenome2_singlecell.sh

@@ -3,13 +3,14 @@ import { sessionSpec } from '../screenshot-spec-helpers.ts'
 import type { ScreenshotSpec } from '../screenshot-spec-types.ts'
 
 // The hosted output of scripts/build_alphagenome2_singlecell.sh. Every track is
-// a static BigWig, so unlike specs/alphagenome.ts nothing calls the API.
+// a static file, so unlike specs/alphagenome.ts nothing calls the API.
 const CONFIG = 'https://jbrowse.org/demos/alphagenome2_singlecell/config.json'
 
 export const alphagenome2Specs: ScreenshotSpec[] = [
   // ETS2 to BRWD1, so the two nearer genes are in frame as the genes with no
   // effect. At build time rs2836882 scored -0.23 in macrophages and -0.28 in
-  // monocytes on ETS2, and every lymphoid row stayed within 0.005.
+  // monocytes on ETS2, every lymphoid section stayed within 0.008, and the
+  // largest ETS2 input gradient in the megabase sat on rs2836882 itself.
   {
     mode: 'url',
     name: 'alphagenome2/ets2_expression_effects',
@@ -28,12 +29,13 @@ export const alphagenome2Specs: ScreenshotSpec[] = [
             { trackId: 'ets2_ibd_credible_set', height: 40 },
             { trackId: 'ag2_ets2_expression_by_cell_type', height: 240 },
             { trackId: 'ag2_ets2_macrophage_by_snp', height: 240 },
+            { trackId: 'ag2_ets2_gradient', height: 100 },
           ],
         },
       ],
     }),
     readyTimeout: 120000,
-    viewportHeight: 820,
+    viewportHeight: 920,
   },
   {
     mode: 'url',
@@ -48,11 +50,38 @@ export const alphagenome2Specs: ScreenshotSpec[] = [
             { trackId: 'ets2_ibd_credible_set', height: 60 },
             { trackId: 'ag2_ets2_atac_reference', height: 240 },
             { trackId: 'ag2_ets2_atac_change', height: 240 },
+            {
+              trackId: 'pbmc5k_scatac_pseudobulk_hg38',
+              height: 100,
+              rows: { kept: ['CD14 Mono', 'CD16 Mono'] },
+            },
           ],
         },
       ],
     }),
     readyTimeout: 120000,
-    viewportHeight: 760,
+    viewportHeight: 880,
+  },
+  // The 64 bases scored, with ten either side; TGCGTCA at 39,094,641-647
+  // carried the largest effects at build time
+  {
+    mode: 'url',
+    name: 'alphagenome2/ets2_enhancer_ism',
+    url: sessionSpec(CONFIG, {
+      views: [
+        {
+          assembly: 'hg38',
+          loc: 'chr21:39,094,602-39,094,686',
+          type: 'LinearGenomeView',
+          tracks: [
+            { trackId: 'hg38-refseq', height: 40 },
+            { trackId: 'ets2_ibd_credible_set', height: 40 },
+            { trackId: 'ag2_ets2_ism', height: 80 },
+          ],
+        },
+      ],
+    }),
+    readyTimeout: 120000,
+    viewportHeight: 400,
   },
 ]

@@ -231,76 +231,168 @@
       }
     },
     {
-      "type": "MultiQuantitativeTrack",
+      "type": "FeatureTrack",
       "trackId": "ag2_ets2_expression_by_cell_type",
-      "name": "rs2836882 effect on expression, by ileum cell type",
+      "name": "rs2836882 predicted expression effect per gene, by ileum cell type",
       "category": ["AlphaGenome 2"],
       "assemblyNames": ["hg38"],
       "adapter": {
-        "type": "MultiWiggleAdapter",
-        "subadapters": [
-          {
-            "type": "BigWigAdapter",
-            "name": "Macrophage",
-            "group": "Myeloid",
-            "color": "#d62728",
-            "uri": "https://jbrowse.org/demos/alphagenome2_singlecell/ets2/expression_effect_Macrophage.bw"
+        "type": "BedTabixAdapter",
+        "uri": "https://jbrowse.org/demos/alphagenome2_singlecell/ets2/expression_effects.bed.gz"
+      },
+      "displays": [
+        {
+          "type": "LinearMarkDisplay",
+          "displayId": "ag2_ets2_expression_by_cell_type-LinearMarkDisplay",
+          "height": 300,
+          "filter": [
+            {
+              "field": "snp",
+              "equal": "rs2836882"
+            }
+          ],
+          "facet": {
+            "field": "cell_type",
+            "sort": [
+              "Macrophage",
+              "Monocyte",
+              "B cell",
+              "CD4 T",
+              "CD8 T",
+              "Treg",
+              "NK"
+            ],
+            "transform": [
+              {
+                "type": "pileup"
+              }
+            ]
           },
-          {
-            "type": "BigWigAdapter",
-            "name": "Monocyte",
-            "group": "Myeloid",
-            "color": "#ff7f0e",
-            "uri": "https://jbrowse.org/demos/alphagenome2_singlecell/ets2/expression_effect_Monocyte.bw"
+          "encoding": {
+            "color": {
+              "field": "score",
+              "scale": {
+                "type": "linear",
+                "scheme": "redblue",
+                "domainMin": -0.3,
+                "domainMax": 0.3,
+                "domainMid": 0
+              },
+              "legend": {
+                "title": "log fold change"
+              }
+            }
           },
-          {
-            "type": "BigWigAdapter",
-            "name": "B cell",
-            "group": "Lymphoid",
-            "color": "#1f77b4",
-            "uri": "https://jbrowse.org/demos/alphagenome2_singlecell/ets2/expression_effect_B_cell.bw"
+          "marks": [
+            {
+              "mark": "rect"
+            },
+            {
+              "mark": "text",
+              "encoding": {
+                "text": "name",
+                "color": {
+                  "value": "#222222"
+                }
+              }
+            }
+          ],
+          "tooltip": "name"
+        }
+      ]
+    },
+    {
+      "type": "FeatureTrack",
+      "trackId": "ag2_ets2_macrophage_by_snp",
+      "name": "Macrophage predicted expression effect per gene, by credible-set SNP",
+      "category": ["AlphaGenome 2"],
+      "assemblyNames": ["hg38"],
+      "adapter": {
+        "type": "BedTabixAdapter",
+        "uri": "https://jbrowse.org/demos/alphagenome2_singlecell/ets2/expression_effects.bed.gz"
+      },
+      "displays": [
+        {
+          "type": "LinearMarkDisplay",
+          "displayId": "ag2_ets2_macrophage_by_snp-LinearMarkDisplay",
+          "height": 300,
+          "filter": [
+            {
+              "field": "cell_type",
+              "equal": "Macrophage"
+            }
+          ],
+          "facet": {
+            "field": "snp",
+            "sort": [
+              "rs4817986",
+              "rs2836878",
+              "rs4817987",
+              "rs2836881",
+              "rs9808651",
+              "rs2836882",
+              "rs2836883"
+            ],
+            "transform": [
+              {
+                "type": "pileup"
+              }
+            ]
           },
-          {
-            "type": "BigWigAdapter",
-            "name": "CD4 T",
-            "group": "Lymphoid",
-            "color": "#17becf",
-            "uri": "https://jbrowse.org/demos/alphagenome2_singlecell/ets2/expression_effect_CD4_T.bw"
+          "encoding": {
+            "color": {
+              "field": "score",
+              "scale": {
+                "type": "linear",
+                "scheme": "redblue",
+                "domainMin": -0.3,
+                "domainMax": 0.3,
+                "domainMid": 0
+              },
+              "legend": {
+                "title": "log fold change"
+              }
+            }
           },
-          {
-            "type": "BigWigAdapter",
-            "name": "CD8 T",
-            "group": "Lymphoid",
-            "color": "#2ca02c",
-            "uri": "https://jbrowse.org/demos/alphagenome2_singlecell/ets2/expression_effect_CD8_T.bw"
-          },
-          {
-            "type": "BigWigAdapter",
-            "name": "Treg",
-            "group": "Lymphoid",
-            "color": "#9467bd",
-            "uri": "https://jbrowse.org/demos/alphagenome2_singlecell/ets2/expression_effect_Treg.bw"
-          },
-          {
-            "type": "BigWigAdapter",
-            "name": "NK",
-            "group": "Lymphoid",
-            "color": "#8c564b",
-            "uri": "https://jbrowse.org/demos/alphagenome2_singlecell/ets2/expression_effect_NK.bw"
-          }
-        ]
+          "marks": [
+            {
+              "mark": "rect"
+            },
+            {
+              "mark": "text",
+              "encoding": {
+                "text": "name",
+                "color": {
+                  "value": "#222222"
+                }
+              }
+            }
+          ],
+          "tooltip": "name"
+        }
+      ]
+    },
+    {
+      "type": "QuantitativeTrack",
+      "trackId": "ag2_ets2_gradient",
+      "name": "Input gradient of ETS2 expression in ileum macrophage",
+      "category": ["AlphaGenome 2"],
+      "assemblyNames": ["hg38"],
+      "adapter": {
+        "type": "BigWigAdapter",
+        "uri": "https://jbrowse.org/demos/alphagenome2_singlecell/ets2/gradient_ETS2_Macrophage.bw"
       },
       "displayDefaults": {
         "mark": "bar",
-        "height": 240,
+        "height": 100,
         "encoding": {
           "y": {
             "scale": {
-              "domainMin": -0.3,
-              "domainMax": 0.3
+              "domainMin": -0.15,
+              "domainMax": 0.15
             },
             "axis": {
-              "title": "log fold change"
+              "title": "gradient × input"
             }
           }
         }
@@ -308,8 +400,8 @@
     },
     {
       "type": "MultiQuantitativeTrack",
-      "trackId": "ag2_ets2_macrophage_by_snp",
-      "name": "Macrophage expression effect, by credible-set SNP",
+      "trackId": "ag2_ets2_ism",
+      "name": "rs2836882 ISM, ETS2 expression in ileum macrophage, by base mutated to",
       "category": ["AlphaGenome 2"],
       "assemblyNames": ["hg38"],
       "adapter": {
@@ -317,66 +409,41 @@
         "subadapters": [
           {
             "type": "BigWigAdapter",
-            "name": "rs4817986",
-            "group": "Credible set",
-            "color": "#7f7f7f",
-            "uri": "https://jbrowse.org/demos/alphagenome2_singlecell/ets2/macrophage_effect_rs4817986.bw"
+            "name": "A",
+            "uri": "https://jbrowse.org/demos/alphagenome2_singlecell/ets2/ism_A.bw"
           },
           {
             "type": "BigWigAdapter",
-            "name": "rs2836878",
-            "group": "Credible set",
-            "color": "#7f7f7f",
-            "uri": "https://jbrowse.org/demos/alphagenome2_singlecell/ets2/macrophage_effect_rs2836878.bw"
+            "name": "C",
+            "uri": "https://jbrowse.org/demos/alphagenome2_singlecell/ets2/ism_C.bw"
           },
           {
             "type": "BigWigAdapter",
-            "name": "rs4817987",
-            "group": "Credible set",
-            "color": "#7f7f7f",
-            "uri": "https://jbrowse.org/demos/alphagenome2_singlecell/ets2/macrophage_effect_rs4817987.bw"
+            "name": "G",
+            "uri": "https://jbrowse.org/demos/alphagenome2_singlecell/ets2/ism_G.bw"
           },
           {
             "type": "BigWigAdapter",
-            "name": "rs2836881",
-            "group": "Credible set",
-            "color": "#7f7f7f",
-            "uri": "https://jbrowse.org/demos/alphagenome2_singlecell/ets2/macrophage_effect_rs2836881.bw"
-          },
-          {
-            "type": "BigWigAdapter",
-            "name": "rs9808651",
-            "group": "Credible set",
-            "color": "#7f7f7f",
-            "uri": "https://jbrowse.org/demos/alphagenome2_singlecell/ets2/macrophage_effect_rs9808651.bw"
-          },
-          {
-            "type": "BigWigAdapter",
-            "name": "rs2836882",
-            "group": "Credible set",
-            "color": "#d62728",
-            "uri": "https://jbrowse.org/demos/alphagenome2_singlecell/ets2/macrophage_effect_rs2836882.bw"
-          },
-          {
-            "type": "BigWigAdapter",
-            "name": "rs2836883",
-            "group": "Credible set",
-            "color": "#7f7f7f",
-            "uri": "https://jbrowse.org/demos/alphagenome2_singlecell/ets2/macrophage_effect_rs2836883.bw"
+            "name": "T",
+            "uri": "https://jbrowse.org/demos/alphagenome2_singlecell/ets2/ism_T.bw"
           }
         ]
       },
       "displayDefaults": {
-        "mark": "bar",
-        "height": 240,
+        "mark": "rect",
+        "height": 80,
         "encoding": {
           "y": {
             "scale": {
-              "domainMin": -0.3,
-              "domainMax": 0.3
-            },
-            "axis": {
-              "title": "log fold change"
+              "domainMin": -0.35,
+              "domainMax": 0.35
+            }
+          },
+          "color": {
+            "scale": {
+              "type": "linear",
+              "scheme": "redblue",
+              "domainMid": 0
             }
           }
         }
@@ -385,7 +452,7 @@
     {
       "type": "MultiQuantitativeTrack",
       "trackId": "ag2_ets2_atac_reference",
-      "name": "Predicted scATAC, risk allele (imputed)",
+      "name": "Predicted scATAC, risk allele (imputed_supported)",
       "category": ["AlphaGenome 2"],
       "assemblyNames": ["hg38"],
       "adapter": {
@@ -450,7 +517,7 @@
     {
       "type": "MultiQuantitativeTrack",
       "trackId": "ag2_ets2_atac_change",
-      "name": "Predicted scATAC change, protective minus risk (imputed)",
+      "name": "Predicted scATAC change, protective minus risk (imputed_supported)",
       "category": ["AlphaGenome 2"],
       "assemblyNames": ["hg38"],
       "adapter": {
@@ -509,7 +576,18 @@
       },
       "displayDefaults": {
         "mark": "bar",
-        "height": 240
+        "height": 240,
+        "encoding": {
+          "y": {
+            "scale": {
+              "domainMin": -14.0,
+              "domainMax": 14.0
+            },
+            "axis": {
+              "title": "scATAC change"
+            }
+          }
+        }
       }
     },
     {
@@ -612,5 +690,48 @@
         "height": 300
       }
     }
-  ]
+  ],
+  "defaultSession": {
+    "name": "ETS2",
+    "views": [
+      {
+        "type": "LinearGenomeView",
+        "assembly": "hg38",
+        "loc": "chr21:38,700,000-39,600,000",
+        "tracks": [
+          {
+            "trackId": "hg38-ncbiRefSeqCurated",
+            "displayMode": "compact",
+            "height": 70
+          },
+          {
+            "trackId": "ets2_ibd_credible_set",
+            "height": 40
+          },
+          "ag2_ets2_expression_by_cell_type",
+          "ag2_ets2_gradient"
+        ]
+      },
+      {
+        "type": "LinearGenomeView",
+        "assembly": "hg38",
+        "loc": "chr21:39,094,144-39,095,144",
+        "tracks": [
+          {
+            "trackId": "ets2_ibd_credible_set",
+            "height": 40
+          },
+          "ag2_ets2_atac_change",
+          {
+            "trackId": "pbmc5k_scatac_pseudobulk_hg38",
+            "height": 100,
+            "rows": {
+              "kept": ["CD14 Mono", "CD16 Mono"]
+            }
+          },
+          "ag2_ets2_ism"
+        ]
+      }
+    ]
+  }
 }
