@@ -62,7 +62,7 @@ All but the last file come from the ONT COLO829 open-data release and its
 The read and SV call tracks read these files by URL. The derivative-allele
 tracks read local files that the [build script](#reproduce-it-end-to-end)
 writes, so run it first, or swap the `uri` for your own sample's reads and
-follow _The derivative allele_ to assemble a contig from them.
+follow _Assemble the der(3) allele_ to assemble a contig from them.
 
 | What it is                                                                                           | File                                                                                                                                                                                   |
 | ---------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -74,24 +74,7 @@ follow _The derivative allele_ to assemble a contig from them.
 | The GRCh38 build the CRAM decodes against, and the der(3) (derivative chromosome 3) contig aligns to | [GCA_000001405.15_GRCh38_no_alt_analysis_set.fasta](https://ont-open-data.s3.amazonaws.com/colo829_2024.03/wf_somatic_variation/sup/GCA_000001405.15_GRCh38_no_alt_analysis_set.fasta) |
 | The COLO829 somatic SV truth set, lifted to GRCh38                                                   | [content](https://zenodo.org/api/records/4716169/files/truthset_somaticSVs_COLO829_hg38lifted.vcf/content)                                                                             |
 
-## Tumor and normal coverage as bigWigs
-
-The demo config also has tumor and normal coverage tracks, for a chromosome-wide
-look at where the tumor gained and lost. They are the `wf-somatic-variation`
-run's `mosdepth` output in 50 kb windows, converted to bigWig the same way for
-each sample:
-
-<!-- from: scripts/build_cancer_sv_demo.sh -->
-
-```bash
-curl -O https://hgdownload.soe.ucsc.edu/goldenPath/hg38/bigZips/hg38.chrom.sizes
-# awk keeps the contigs in hg38.chrom.sizes; bedGraphToBigWig fails on any other
-gzip -dc COLO829_tumor.regions.bed.gz | sort -k1,1 -k2,2n |
-  awk 'NR==FNR{ok[$1];next} ($1 in ok)' hg38.chrom.sizes - > cov.bg
-bedGraphToBigWig cov.bg hg38.chrom.sizes COLO829_tumor.coverage.bw
-```
-
-## The rearrangement chain across chr3, chr10 and chr12
+## Load tumor and normal reads at the chr3 breakpoints
 
 The chain is COLO829's der(3), a derivative chromosome 3 built from pieces of
 three chromosomes, whose three junctions close a triangle across chr3, chr10 and
@@ -105,8 +88,6 @@ chr10:58,717,662 <-> chr12:72,273,294
 
 The genes at the junctions are _RARB_ (a tumor suppressor) on chr3, _BICC1_ on
 chr10, and _TRHDE_ on chr12.
-
-## Tumor and normal reads at the chr3 breakpoints
 
 The ONT reads are aligned to GRCh38, so we load that assembly and the two read
 tracks. Each read file needs its index beside it, a `.crai` for the CRAM and a
@@ -167,7 +148,7 @@ left unaligned. In each read track's menu:
 
 <Figure caption="Left: COLO829 tumor above its normal at the two chr3 breakpoints, soft clipping shown. Right: the breakpoint split view over every locus the chain visits." src="/img/cancer_sv/multihop_reads.png" />
 
-## Following the chain across breakpoint split view panels {#following-the-chain-across-panels}
+## Follow the chain across split view panels {#following-the-chain-across-panels}
 
 A breakpoint split view stacks the loci a rearrangement visits, one panel per
 locus, and draws the reads that leave one panel and arrive in another. There are
@@ -201,7 +182,7 @@ every locus it touches along the top, the layout Ribbon
 ([Nattestad et al. 2021](https://doi.org/10.1093/bioinformatics/btaa680))
 introduced.
 
-## Assembling the der(3) derivative allele and aligning it to GRCh38 {#the-derivative-allele}
+## Assemble the der(3) allele and align it to GRCh38 {#the-derivative-allele}
 
 The split view shows each read in pieces across three panels. An assembler run
 on the reads that span all three loci produces the der(3) allele as one contig,
@@ -354,7 +335,7 @@ track. The view shows:
 
 <Figure caption="The reconstructed derivative against its three source loci, each junction drawn once as an arc, and the annotation projected onto the allele below." src="/img/cancer_sv/derivative_synteny.png" />
 
-## Checking the der(3) contig against the reads and the truth set
+## Check the der(3) contig against reads and truth set
 
 Zoom the synteny view to the kilobase holding the junctions, where the two
 inserts have separate ribbons:
@@ -380,12 +361,26 @@ inserts have separate ribbons:
 builds everything above from public sources into `./cancer_sv_build/jbrowse2`.
 For COLO829 the script:
 
-1. Converts the coverage to bigWig as above.
-2. Adds the tumor and normal reads as tracks streamed from ONT's bucket.
-3. Downloads the published der(3) contig with its alignment to GRCh38, its
-   segment labels and the spanning reads realigned to it.
+- converts the run's tumor and normal coverage to bigWig
+- adds the tumor and normal reads as tracks streamed from ONT's bucket
+- downloads the published der(3) contig with its alignment to GRCh38, its
+  segment labels and the spanning reads realigned to it
 
-[The derivative allele](#the-derivative-allele) shows how to assemble a contig
+The coverage tracks give a chromosome-wide look at where the tumor gained and
+lost. They are the `wf-somatic-variation` run's `mosdepth` output in 50 kb
+windows, converted to bigWig the same way for each sample:
+
+<!-- from: scripts/build_cancer_sv_demo.sh -->
+
+```bash
+curl -O https://hgdownload.soe.ucsc.edu/goldenPath/hg38/bigZips/hg38.chrom.sizes
+# awk keeps the contigs in hg38.chrom.sizes; bedGraphToBigWig fails on any other
+gzip -dc COLO829_tumor.regions.bed.gz | sort -k1,1 -k2,2n |
+  awk 'NR==FNR{ok[$1];next} ($1 in ok)' hg38.chrom.sizes - > cov.bg
+bedGraphToBigWig cov.bg hg38.chrom.sizes COLO829_tumor.coverage.bw
+```
+
+[Assemble the der(3) allele](#the-derivative-allele) shows how to assemble a contig
 like it from your own reads. The same run builds the K562 half of the demo,
 which [](/docs/tutorials/k562_fusions) walks through.
 
