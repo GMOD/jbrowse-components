@@ -2,6 +2,7 @@ import { parseArgs } from 'node:util'
 
 import {
   debug,
+  isRecord,
   printHelp,
   readInlineOrFileJson,
   readConfigFile,
@@ -13,7 +14,7 @@ import {
   saveConfigAndReport,
 } from './shared/config-operations.ts'
 
-import type { Config, Track } from '../base.ts'
+import type { Config } from '../base.ts'
 
 export async function run(args?: string[]) {
   const options = {
@@ -85,31 +86,36 @@ export async function run(args?: string[]) {
 
   const target = await resolveConfigPath(flags.target, flags.out)
 
-  debug(`Sequence location is: ${track}`)
   const { update } = flags
   const config: Config = await readConfigFile(target)
   debug(`Found existing config file ${target}`)
 
-  const trackConfig = await readInlineOrFileJson<Track>(track)
-  config.tracks ??= []
+  const parsed: unknown = await readInlineOrFileJson(track)
+  if (isRecord(parsed) && typeof parsed.trackId === 'string') {
+    const trackConfig = { ...parsed, trackId: parsed.trackId }
+    const { updatedItems, wasOverwritten } = findAndUpdateOrAdd({
+      items: config.tracks ?? [],
+      newItem: trackConfig,
+      idField: 'trackId',
+      getId: item => item.trackId,
+      force: update ?? false,
+      itemType: 'track',
+    })
 
-  const { updatedItems, wasOverwritten } = findAndUpdateOrAdd({
-    items: config.tracks,
-    newItem: trackConfig,
-    idField: 'trackId',
-    getId: item => item.trackId,
-    force: update ?? false,
-    itemType: 'track',
-  })
-
-  config.tracks = updatedItems
-
-  await saveConfigAndReport({
-    config,
-    target,
-    itemType: 'track',
-    itemName: trackConfig.name ?? trackConfig.trackId,
-    itemId: trackConfig.trackId,
-    wasOverwritten,
-  })
+    await saveConfigAndReport({
+      config: { ...config, tracks: updatedItems },
+      target,
+      itemType: 'track',
+      itemName:
+        typeof trackConfig.name === 'string'
+          ? trackConfig.name
+          : trackConfig.trackId,
+      itemId: trackConfig.trackId,
+      wasOverwritten,
+    })
+  } else {
+    throw new Error(
+      'The track JSON must be an object with a string "trackId", e.g. {"trackId":"genes", ...}',
+    )
+  }
 }
