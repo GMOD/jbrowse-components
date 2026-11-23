@@ -85,8 +85,10 @@ The agent runs this aligner command:
 minimap2 -t 8 -cx asm20 --cs mau.fa.gz sim.fa.gz > sim_vs_mau.paf
 ```
 
-The alignment takes several minutes, so the agent runs it in the background. The
-agent then indexes the PAF, so the browser can read one region without parsing
+The alignment takes several minutes, so the request asks the agent to run it in
+the background and let it finish before opening anything. Otherwise a tool call
+times out, after two minutes for `run_javascript`, and the agent reports a
+failure that did not happen. The agent then indexes the PAF, so the browser can read one region without parsing
 the whole file:
 
 <!-- from: scripts/build_fly_agent_synteny.sh -->
@@ -127,7 +129,9 @@ synteny band is empty.
 Add a dotplot of the same two assemblies underneath.
 ```
 
-With the axes restricted to the chromosome arms, the plot shows one diagonal:
+Restrict the axes to the chromosome arms, or a few hundred unplaced scaffolds
+(not assigned to a chromosome) interleave both axes. With the arms alone, the
+plot shows one diagonal:
 
 ```text
 Restrict both dotplot axes to chr2L, chr2R, chr3L, chr3R, chr4 and chrX.
@@ -146,7 +150,8 @@ alignment file, not from the dotplot, and show me the numbers.
 ```
 
 At whole-genome zoom a reverse-strand block a few hundred kilobases wide is a
-few pixels, so the request asks for numbers from the PAF: aligned bases per arm,
+few pixels, and asked without "from the alignment file" the agent describes the
+dotplot instead. The request asks for numbers from the PAF: aligned bases per arm,
 split by strand, at mapping quality (MAPQ) 30 or better:
 
 ```bash
@@ -172,9 +177,13 @@ END {
 The agent reports 2R and X with far more reverse-strand alignment than the other
 four arms, which are the control. Asked to group the reverse-strand blocks of 5
 kb or more, cutting a group wherever half a megabase passes with none, it names
-one region on 2R and two on X.
+one region on 2R and two on X. Asking for these numbers before navigating lets
+you check the view against them.
 
 ## Ask the agent to open the 2R and X regions
+
+Ask the agent to screenshot what it opens and read the image back, since a wrong
+track id or an empty region still renders as a plausible browser.
 
 ```text
 Close the gene tracks and take the synteny view to the 2R region.
@@ -190,36 +199,17 @@ Then ask for the first of the two X regions, `chrX:8,100,000-8,950,000` over
 
 <Figure caption="The X region, the alignment alone. Two reverse blocks cross in the middle." src="/img/agent_synteny/inversion_x.png" />
 
-## Three instructions to include when prompting the agent
-
-Three instructions each prevent a failure that raises no error:
-
-- **Start long work in the background, and let it finish before opening
-  anything.** Otherwise a tool call times out, after two minutes for
-  `run_javascript`, and the agent reports a failure that did not happen.
-- **Restrict the dotplot axes to the arms.** Otherwise a few hundred unplaced
-  scaffolds (not assigned to a chromosome) interleave both axes.
-- **Ask for answers counted from the alignment file.** Otherwise the agent
-  describes the dotplot.
-
-Two more are worth asking for:
-
-- **Screenshot what you build and read the image back.** A wrong track id or an
-  empty region still renders as a plausible browser.
-- **Ask for the numbers before navigating.** You can then check the view against
-  those numbers.
-
-## Running the whole pipeline as a script
+## Reproduce it end to end
 
 [`build_fly_agent_synteny.sh`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/build_fly_agent_synteny.sh)
 runs the pipeline without the agent. It needs the tools in
 [Prerequisites](#prerequisites), plus `jq` and `curl`. The script:
 
-1. Downloads both genomes from their hosted GenArk configs.
-2. Aligns simulans against mauritiana with minimap2.
-3. Indexes the PAF as PIF.
-4. Merges the two hosted configs and the synteny track into one `config.json` to
-   open in Desktop.
+- downloads both genomes from their hosted GenArk configs
+- aligns simulans against mauritiana with minimap2
+- indexes the PAF as PIF
+- merges the two hosted configs and the synteny track into one `config.json` to
+  open in Desktop
 
 ```bash
 curl -O https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/build_fly_agent_synteny.sh
