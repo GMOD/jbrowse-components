@@ -50,7 +50,7 @@ _Structures of your own gene_ covers a gene of your own.
 
 </details>
 
-## Opening three TP53 structures mapped to one transcript
+## Open three TP53 structures mapped to one transcript
 
 An AlphaFold model is one chain, numbered like the UniProt sequence, and a
 crystal often holds one domain. The protein3d plugin maps both kinds to the gene
@@ -72,7 +72,7 @@ STRUCT row and a ruler in the authors' residue numbering:
 - **1TUP** covers the DNA-binding core alone, and its ruler starts at 94, the
   residue where the crystallised construct begins.
 
-## UniProt annotations on the 1TUP core-domain crystal
+## Find the R248 codon from the crystal
 
 Open the 1TUP panel:
 
@@ -85,9 +85,7 @@ Open the 1TUP panel:
   aligns to the transcript. Hovering any copy in the 3D canvas highlights the
   same residue on the genome.
 
-## Finding the codon of the R248 hotspot from the crystal
-
-Open the 1TUP panel and click the R248 hotspot on its STRUCT row, or
+Click the R248 hotspot on its STRUCT row, or
 [open the same session with R248 selected](https://jbrowse.org/code/jb2/main/?config=test_data/protein3d_config.json&session=spec-%7B%22views%22%3A%5B%7B%22type%22%3A%22ProteinView%22%2C%22structures%22%3A%5B%7B%22uniprotId%22%3A%22P04637%22%7D%2C%7B%22pdbId%22%3A%221TUP%22%2C%22initialResidues%22%3A%7B%22start%22%3A248%2C%22end%22%3A248%7D%7D%2C%7B%22pdbId%22%3A%221YCR%22%7D%5D%2C%22transcriptId%22%3A%22NM_000546.6%22%2C%22zoomToBaseLevel%22%3Afalse%2C%22connectedView%22%3A%7B%22assembly%22%3A%22hg38%22%2C%22loc%22%3A%22chr17%3A7%2C671%2C000-7%2C684%2C500%22%2C%22tracks%22%3A%5B%22hg38-ncbiRefSeq%22%5D%7D%2C%22color%22%3A%7B%22field%22%3A%22mappedChain%22%7D%7D%5D%7D).
 The ruler and the transcript row give the same number, because the 1TUP authors
 numbered their construct the way UniProt numbers the whole protein.
@@ -97,15 +95,13 @@ numbered their construct the way UniProt numbers the whole protein.
 Hovering the codon on the gene highlights the residue on the structures that
 contain it; hovering the intron beside the exon highlights nothing.
 
-## Checking the R248 codon against the reference sequence
-
 To read the codon itself, zoom the genome view into the band the selection drew
 on _TP53_, down to base level, and tick **Reference sequence** in the track
 selector. The transcript is on the minus strand, so the codon under the band
 reads `CCG` left to right on the reference track, which is `CGG`, arginine, on
 the transcript.
 
-## Choosing the mapped chain in the MDM2 complex 1YCR
+## Choose the mapped chain in the MDM2 complex 1YCR
 
 1YCR holds the N-terminal domain of MDM2 and a fifteen-residue peptide from the
 p53 transactivation region, which the transcript encodes. Open the 1YCR panel:
@@ -118,7 +114,7 @@ Switch the picker to Chain A. The plugin realigns against MDM2, which turns
 blue, and the GENOME row becomes a scatter of gapped fragments, because the
 transcript does not encode MDM2.
 
-## The p53 transactivation domain as an NMR ensemble
+## Open the transactivation domain as an NMR ensemble
 
 PDB 2L14 holds residues 13 to 61 of the p53 transactivation domain, the region
 where the AlphaFold pLDDT falls away, bound to the nuclear coactivator binding
@@ -138,7 +134,7 @@ The grey spray on the right is the C-terminal tail of CBP. The first helix lies
 within the stretch the 1YCR peptide covers, and its codons straddle an intron,
 so its band on the gene splits across two exons.
 
-## Structures of your own gene
+## Open structures of your own gene
 
 The protein3d plugin is in the [plugin store](/docs/user_guides/plugin_store):
 install **Protein3d** from the Tools menu, then right-click a gene and choose
