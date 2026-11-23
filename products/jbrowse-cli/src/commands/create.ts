@@ -2,10 +2,10 @@ import { mkdir, readdir } from 'node:fs/promises'
 import { parseArgs } from 'node:util'
 
 import {
-  downloadRelease,
-  extractZip,
+  installRelease,
   printHelp,
   printVersions,
+  releaseOptions,
 } from '../utils.ts'
 
 const description =
@@ -29,40 +29,12 @@ const examples = [
 ]
 
 const options = {
-  help: {
-    type: 'boolean',
-    short: 'h',
-    description: 'Show help',
-  },
+  ...releaseOptions,
   force: {
     type: 'boolean',
     short: 'f',
     description:
       'Overwrites existing JBrowse 2 installation if present in path',
-  },
-  listVersions: {
-    type: 'boolean',
-    short: 'l',
-    description: 'Lists out all versions of JBrowse 2',
-  },
-  branch: {
-    type: 'string',
-    description: 'Download a development build from a named git branch',
-  },
-  nightly: {
-    type: 'boolean',
-    description: 'Download the latest development build from the main branch',
-  },
-  url: {
-    type: 'string',
-    short: 'u',
-    description: 'A direct URL to a JBrowse 2 release',
-  },
-  tag: {
-    type: 'string',
-    short: 't',
-    description:
-      'Version of JBrowse 2 to install. Format is v1.0.0. Defaults to the newest release, or the newest prerelease when this CLI is one',
   },
 } as const
 
@@ -83,8 +55,7 @@ export async function run(args: string[]) {
     return
   }
 
-  const { force, url, listVersions, tag, branch, nightly } = runFlags
-  if (listVersions) {
+  if (runFlags.listVersions) {
     await printVersions()
     return
   }
@@ -99,19 +70,11 @@ export async function run(args: string[]) {
   // mkdir will do nothing if dir exists
   await mkdir(argsPath, { recursive: true })
 
-  if (!force) {
+  if (!runFlags.force) {
     await checkPath(argsPath)
   }
 
-  const { locationUrl, archive } = await downloadRelease({
-    url,
-    nightly,
-    branch,
-    tag,
-  })
-  await extractZip(archive, argsPath)
-
-  console.log(`Unpacked ${locationUrl} at ${argsPath}`)
+  await installRelease(runFlags, argsPath)
 }
 
 async function checkPath(userPath: string) {

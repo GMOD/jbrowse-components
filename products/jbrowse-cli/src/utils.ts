@@ -269,6 +269,37 @@ function getBranch(branch: string) {
   return `https://s3.amazonaws.com/jbrowse.org/code/jb2/${safeBranch}/jbrowse-web-${safeBranch}.zip`
 }
 
+export const releaseOptions = {
+  help: {
+    type: 'boolean',
+    short: 'h',
+  },
+  listVersions: {
+    type: 'boolean',
+    short: 'l',
+    description: 'Lists out all versions of JBrowse 2',
+  },
+  tag: {
+    type: 'string',
+    short: 't',
+    description:
+      'Version of JBrowse 2 to install. Format is v1.0.0. Defaults to the newest release, or the newest prerelease when this CLI is one',
+  },
+  branch: {
+    type: 'string',
+    description: 'Download a development build from a named git branch',
+  },
+  nightly: {
+    type: 'boolean',
+    description: 'Download the latest development build from the main branch',
+  },
+  url: {
+    type: 'string',
+    short: 'u',
+    description: 'A direct URL to a JBrowse 2 release',
+  },
+} as const
+
 interface ReleaseFlags {
   url?: string
   nightly?: boolean
@@ -291,12 +322,21 @@ async function resolveReleaseUrl({ url, nightly, branch, tag }: ReleaseFlags) {
           : getLatest()
 }
 
-// shared by create/upgrade: resolve the release URL then download it. Returns
-// both so the caller can log which URL was unpacked.
-export async function downloadRelease(flags: ReleaseFlags) {
+// shared by create/upgrade: download and parse the release before anything is
+// written, so `beforeWrite` (upgrade --clean) only runs once the archive is
+// known good
+export async function installRelease(
+  flags: ReleaseFlags,
+  destPath: string,
+  beforeWrite?: () => void,
+) {
   const locationUrl = await resolveReleaseUrl(flags)
-  const archive = await fetchReleaseArchive(locationUrl, !!flags.url)
-  return { locationUrl, archive }
+  const files = readZipFiles(
+    await fetchReleaseArchive(locationUrl, !!flags.url),
+  )
+  beforeWrite?.()
+  await writeZipFiles(files, destPath)
+  console.log(`Unpacked ${locationUrl} at ${destPath}`)
 }
 
 export async function printVersions() {
@@ -408,13 +448,6 @@ export async function writeZipFiles(files: ZipFile[], destPath: string) {
       await fsPromises.writeFile(outPath, data)
     }),
   )
-}
-
-// Extracts a ZIP archive (a JBrowse web build) into destPath with the built-in
-// node:zlib. Replaces the `decompress` dependency and its large, unmaintained
-// transitive tree without pulling in a new one.
-export async function extractZip(archive: Buffer, destPath: string) {
-  await writeZipFiles(readZipFiles(archive), destPath)
 }
 
 function zipEntryPath(destPath: string, name: string) {

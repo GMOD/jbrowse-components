@@ -3,11 +3,10 @@ import path from 'node:path'
 import { parseArgs } from 'node:util'
 
 import {
-  downloadRelease,
+  installRelease,
   printHelp,
   printVersions,
-  readZipFiles,
-  writeZipFiles,
+  releaseOptions,
 } from '../utils.ts'
 
 const description =
@@ -34,40 +33,11 @@ const examples = [
 ]
 
 const options = {
-  help: {
-    type: 'boolean',
-    short: 'h',
-    description: 'Display help for command',
-  },
-  // will need to account for pagination once there is a lot of releases
-  listVersions: {
-    type: 'boolean',
-    short: 'l',
-    description: 'Lists out all versions of JBrowse 2',
-  },
-  tag: {
-    type: 'string',
-    short: 't',
-    description:
-      'Version of JBrowse 2 to install. Format is v1.0.0. Defaults to the newest release, or the newest prerelease when this CLI is one',
-  },
-  branch: {
-    type: 'string',
-    description: 'Download a development build from a named git branch',
-  },
-  nightly: {
-    type: 'boolean',
-    description: 'Download the latest development build from the main branch',
-  },
+  ...releaseOptions,
   clean: {
     type: 'boolean',
     description:
       "Removes the installation's static directory and its *worker.js files before unpacking the new release, so files the new release no longer ships do not linger",
-  },
-  url: {
-    type: 'string',
-    short: 'u',
-    description: 'A direct URL to a JBrowse 2 release',
   },
 } as const
 
@@ -87,8 +57,7 @@ export async function run(args: string[]) {
     return
   }
 
-  const { clean, listVersions, tag, url, branch, nightly } = runFlags
-  if (listVersions) {
+  if (runFlags.listVersions) {
     await printVersions()
     return
   }
@@ -104,25 +73,14 @@ export async function run(args: string[]) {
     )
   }
 
-  const { locationUrl, archive } = await downloadRelease({
-    url,
-    nightly,
-    branch,
-    tag,
-  })
-
-  const files = readZipFiles(archive)
-
-  if (clean) {
-    fs.rmSync(path.join(argsPath, 'static'), { recursive: true, force: true })
-    const workerFiles = fs
-      .readdirSync(argsPath)
-      .filter(f => f.includes('worker.js'))
-    for (const f of workerFiles) {
-      fs.unlinkSync(path.join(argsPath, f))
+  await installRelease(runFlags, argsPath, () => {
+    if (runFlags.clean) {
+      fs.rmSync(path.join(argsPath, 'static'), { recursive: true, force: true })
+      for (const f of fs.readdirSync(argsPath)) {
+        if (f.includes('worker.js')) {
+          fs.unlinkSync(path.join(argsPath, f))
+        }
+      }
     }
-  }
-
-  await writeZipFiles(files, argsPath)
-  console.log(`Unpacked ${locationUrl} at ${argsPath}`)
+  })
 }
