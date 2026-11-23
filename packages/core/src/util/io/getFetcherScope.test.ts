@@ -16,6 +16,7 @@ function pluginManagerFor(domains: string[]) {
       domains,
     },
   })
+  account.storeToken('SECRET')
   return {
     rootModel: {
       internetAccounts: [account],
@@ -25,14 +26,7 @@ function pluginManagerFor(domains: string[]) {
 }
 
 function locationFor(uri: string): UriLocation {
-  return {
-    uri,
-    locationType: 'UriLocation',
-    internetAccountPreAuthorization: {
-      internetAccountType: 'InternetAccount',
-      authInfo: { token: 'SECRET', configuration: {} },
-    },
-  }
+  return { uri, locationType: 'UriLocation' }
 }
 
 const sent = jest.fn<Promise<Response>, [RequestInfo, RequestInit?]>()
