@@ -25,6 +25,7 @@ import {
   LABEL_FONT_SIZE,
   LANE_COLOR_SWATCH_PX,
   LANE_COLOR_TINT,
+  changesTitle,
   labelBoxTop,
 } from '../laneHeader.ts'
 import { laneHeaderMenuItems } from '../menus.ts'
@@ -497,7 +498,7 @@ const LaneHeaders = observer(function LaneHeaders({
           {row.changes ? (
             <HeaderChip
               testId={`multiway-lane-changes-${row.assemblyName}`}
-              title={`against ${row.changes.anchor}`}
+              title={changesTitle(row.changes.anchor)}
               text={row.changes.text}
               leading
             />

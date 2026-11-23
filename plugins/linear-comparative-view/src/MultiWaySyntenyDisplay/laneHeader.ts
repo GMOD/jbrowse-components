@@ -1,7 +1,11 @@
 import { assembleLocString, getBpDisplayStr } from '@jbrowse/core/util'
 
 import { laneOf } from './copyLane.ts'
-import { frameOpenings, laneBpOfOpened } from './layoutMultiWay.ts'
+import {
+  SPLIT_AT_GAP_BP,
+  frameOpenings,
+  laneBpOfOpened,
+} from './layoutMultiWay.ts'
 
 import type { Lane } from './laneStack.ts'
 import type { LaneBlock, LaneChange, LaneRepeat } from './layoutMultiWay.ts'
@@ -57,7 +61,7 @@ export interface LaneHeaderRow {
   inline: boolean
   /** the genome this lane's ribbons are read against, where it is not the lane above */
   against?: string
-  /** the deletions, insertions and inversions against the anchor the shown frame meets */
+  /** the deletions, insertions, replacements and inversions against the anchor the shown frame meets */
   changes?: { text: string; anchor: string }
   /** the stretches the shown frame meets whose copies no ribbon pairs, the largest named and its walks as a hover title */
   repeats?: { text: string; title: string }
@@ -69,7 +73,6 @@ const LISTED_CHANGES = 2
 
 const MIN_CHANGE_PAD_BP = 1000
 
-// three figures from 100 kb, where two would round 114 kb to 110
 function bpText(n: number) {
   const figures = n >= 100_000 ? 3 : 2
   return n >= 1_000_000
@@ -173,6 +176,10 @@ function laneChanges(
     : undefined
 }
 
+export function changesTitle(anchor: string) {
+  return `Changes against ${anchor} of ${bpText(SPLIT_AT_GAP_BP)} or more. Not listed: smaller ones, and any gap holding a piece of the other strand, such as an inversion's breakpoints.`
+}
+
 /** Clamps, since a live pan can put the frame's `min` below zero. */
 export function laneRegion(lane: Pick<Lane, 'frame' | 'canon'>) {
   const { frame } = lane
@@ -221,6 +228,17 @@ function scaleOf(lane: Lane, visibleBpSpan: number) {
       : { text: '' }
 }
 
+function allReversed(lane: Lane) {
+  const orientations = [...lane.placements.values()].flatMap(
+    group => group.orientations,
+  )
+  return (
+    !lane.isAnchor &&
+    orientations.length > 0 &&
+    orientations.every(orientation => orientation < 0)
+  )
+}
+
 /** a header's text as the static export draws it, `alsoOn` after the label */
 export function headerText({ label, alsoOn }: LaneHeaderRow) {
   return alsoOn ? `${label}  ${alsoOn}` : label
@@ -247,10 +265,16 @@ export function laneHeaderRows(
   /** the stretch of a lane's contig matched to the window, which the label names */
   matchedOf: (lane: Lane) => { start: number; end: number } | undefined = () =>
     undefined,
+  /** whether a lane is drawn against the anchor's order */
+  drawnFlippedOf: (lane: Lane) => boolean = () => false,
 ): LaneHeaderRow[] {
   const inline = inlineGlyphHeight !== undefined
   const anchor = lanes.find(lane => lane.isAnchor)?.label
-  const reversed = `reversed vs ${anchor ?? 'the anchor'}`
+  const strandOf = (lane: Lane) =>
+    [
+      allReversed(lane) ? `reversed vs ${anchor ?? 'the anchor'}` : undefined,
+      drawnFlippedOf(lane) ? 'drawn flipped' : undefined,
+    ].filter(part => !!part)
   return lanes.map(lane => {
     const matched = lane.frame && matchedOf(lane)
     const region = lane.frame &&
@@ -264,9 +288,7 @@ export function laneHeaderRows(
     const where = lane.isAnchor
       ? anchorWhere
       : lane.frame &&
-        [shownRegion, lane.frame.flipped ? reversed : undefined]
-          .filter(part => !!part)
-          .join(' ')
+        [shownRegion, ...strandOf(lane)].filter(part => !!part).join(' ')
     const more = lane.frame?.alsoOnMore
       ? ` and ${lane.frame.alsoOnMore} more`
       : ''
@@ -290,7 +312,7 @@ export function laneHeaderRows(
     return {
       assemblyName: lane.assemblyName,
       label: inline
-        ? `${lane.label}${lane.frame?.flipped ? ` ${reversed}` : ''}`
+        ? [lane.label, ...(lane.frame ? strandOf(lane) : [])].join(' ')
         : [lane.label, where, alsoAt].filter(part => !!part).join('  '),
       alsoOn: inline ? undefined : alsoOn,
       scale: scale.text,

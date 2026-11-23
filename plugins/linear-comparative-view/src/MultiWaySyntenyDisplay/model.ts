@@ -94,7 +94,7 @@ import {
 } from '../LaunchSyntenyView/regionLaunchMenuItems.ts'
 import { createSyntenyPicker } from '../LinearSyntenyDisplay/syntenyPickEngine.ts'
 import { captureStackViewports } from '../SyntenyFollow/stackMove.ts'
-import { isArrayRecord } from '../syntenyMate.ts'
+import { isArrayRecord, isNamedRecord } from '../syntenyMate.ts'
 import { NO_OPS } from './alignmentOps.ts'
 import { axisSpan, axisTickXs } from './anchorAxis.ts'
 import LaneSelectionDialog from './components/LaneSelectionDialog.tsx'
@@ -1876,25 +1876,35 @@ export function stateModelFactory(
           assemblyName => self.laneColor(assemblyName),
           (assemblyName, refName) => self.laneRepeats(assemblyName, refName),
           lane => this.laneMatchedOf(lane),
+          lane =>
+            lane.frame !== undefined &&
+            lane.frame.flipped !== self.anchorReversed,
         )
       },
       /**
        * #method
        * the stretch of a lane's contig from the first to the last base its
-       * records match to the settled window, inside its frame
+       * records match to the settled window, inside its frame; a gene
+       * lane's frame
        */
-      laneMatchedOf(lane: Pick<Lane, 'frame' | 'canon' | 'assemblyName'>) {
+      laneMatchedOf(lane: Lane) {
         const region = laneRegion(lane)
+        const aligned = self.groups.some(
+          group =>
+            group.mates.has(lane.assemblyName) && !isNamedRecord(group.feature),
+        )
         return lane.frame && region
-          ? laneMatchedInterval(
-              self.groups,
-              lane.assemblyName,
-              lane.frame.refName,
-              self.featureOps,
-              self.lgv.settledDynamicBlocks,
-              region,
-              self.anchorCanon,
-            )
+          ? aligned
+            ? laneMatchedInterval(
+                self.groups,
+                lane.assemblyName,
+                lane.frame.refName,
+                self.featureOps,
+                self.lgv.settledDynamicBlocks,
+                region,
+                self.anchorCanon,
+              )
+            : region
           : undefined
       },
       /**

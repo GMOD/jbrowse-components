@@ -1,5 +1,6 @@
 import {
   LABEL_FONT_SIZE,
+  changesTitle,
   headerText,
   labelBoxTop,
   laneHeaderRows,
@@ -35,6 +36,7 @@ function mateLane(
     glyphTop: 40,
     layerTop: 40,
     canon: (ref: string) => ref,
+    placements: new Map(),
     frame:
       'frame' in overrides && frameOverrides === undefined
         ? undefined
@@ -43,6 +45,15 @@ function mateLane(
   } as Lane
 }
 
+// a lane drawing one run of each orientation given, against the anchor
+const runsOf = (...orientations: number[]) =>
+  new Map(
+    orientations.map((orientation, i) => [
+      `g${i}`,
+      { orientations: [orientation] },
+    ]),
+  ) as Lane['placements']
+
 const anchorLane = {
   assemblyName: 'grape',
   label: 'grape',
@@ -50,6 +61,7 @@ const anchorLane = {
   glyphTop: 12,
   layerTop: 12,
   canon: (ref: string) => ref,
+  placements: new Map(),
   frame: undefined,
 } as Lane
 
@@ -60,6 +72,7 @@ const rowOf = (
   matchedOf: (
     lane: Lane,
   ) => { start: number; end: number } | undefined = laneRegion,
+  drawnFlipped = false,
 ) =>
   laneHeaderRows(
     [anchorLane, lane],
@@ -72,6 +85,7 @@ const rowOf = (
     undefined,
     undefined,
     matchedOf,
+    () => drawnFlipped,
   ).at(-1)!
 
 test('the header never prints a negative coordinate', () => {
@@ -113,10 +127,23 @@ describe('the label', () => {
     )
   })
 
-  test('says the lane is reversed against the anchor where it is drawn flipped', () => {
-    expect(rowOf(mateLane({ frame: { flipped: true } })).label).toBe(
+  test('says a lane is reversed against the anchor where every run it draws is', () => {
+    expect(rowOf(mateLane({ placements: runsOf(-1, -1) })).label).toBe(
       'peach  Pp1:1..1,960 reversed vs grape',
     )
+  })
+
+  test('says nothing of strand where the runs disagree, however the lane is drawn', () => {
+    expect(
+      rowOf(mateLane({ placements: runsOf(-1, 1), frame: { flipped: true } }))
+        .label,
+    ).toBe('peach  Pp1:1..1,960')
+  })
+
+  test('names a lane drawn against the anchor as drawn flipped, which says nothing of its sequence', () => {
+    expect(
+      rowOf(mateLane({ placements: runsOf(1) }), 2000, laneRegion, true).label,
+    ).toBe('peach  Pp1:1..1,960 drawn flipped')
   })
 
   test('names the contigs the lane is not showing', () => {
@@ -220,9 +247,12 @@ describe('a name on the gene row', () => {
   const inlineRow = (lane: Lane, glyphHeight: number) =>
     laneHeaderRows([lane], 2000, 'chr1:1..2,000', glyphHeight)[0]!
 
-  test('prints the genome and its flip, without coordinates', () => {
+  test('prints the genome and its strand, without coordinates', () => {
     expect(inlineRow(mateLane({}), 10).label).toBe('peach')
     expect(inlineRow(mateLane({ frame: { flipped: true } }), 10).label).toBe(
+      'peach',
+    )
+    expect(inlineRow(mateLane({ placements: runsOf(-1) }), 10).label).toBe(
       'peach reversed vs the anchor',
     )
     expect(inlineRow(anchorLane, 10).label).toBe('grape')
@@ -388,6 +418,12 @@ describe('the changes chip', () => {
         },
       ])[1]?.text,
     ).toBe('900 kb inversion')
+  })
+
+  test('says in its hover what it leaves out: changes under 10 kb, and gaps holding a piece of the other strand', () => {
+    expect(changesTitle('hg38')).toBe(
+      "Changes against hg38 of 10 kb or more. Not listed: smaller ones, and any gap holding a piece of the other strand, such as an inversion's breakpoints.",
+    )
   })
 
   test('is absent from the anchor and from a lane whose frame meets no change', () => {

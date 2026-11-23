@@ -11,6 +11,7 @@ import {
   LABEL_FONT_SIZE,
   LANE_COLOR_SWATCH_PX,
   LANE_COLOR_TINT,
+  changesTitle,
   headerText,
   labelBoxTop,
 } from '../laneHeader.ts'
@@ -243,7 +244,7 @@ export function SvgLaneHeaders({
             {row.changes ? (
               <SvgHeaderChip
                 text={row.changes.text}
-                title={`against ${row.changes.anchor}`}
+                title={changesTitle(row.changes.anchor)}
                 right={changesRight}
                 width={changesWidth}
                 y={row.y}

@@ -364,19 +364,36 @@ test('split strands, a flip keeps its rows until halfway and turns them over the
   expectSamePicture(landed, picture(display))
 })
 
-test('a moving lane names the frame it is drawn nearer to', async () => {
+test('a moving lane names the drawing it is nearer to, and Flip lane never calls a collinear lane reversed', async () => {
   const { display } = await settledDisplay()
   const header = () =>
     display.laneHeaderRows.find(r => r.assemblyName === C)!.label
   const before = header()
-  expect(before).not.toContain('reversed vs')
+  expect(before).not.toContain('drawn flipped')
   display.flipLane(C)
   const { startMs } = display.laneTransitions.get(C)!
   expect(header()).toBe(before)
   display.advanceAnimation(startMs + MORPH_DURATION_MS * 0.45)
   expect(header()).toBe(before)
   display.advanceAnimation(startMs + MORPH_DURATION_MS * 0.55)
-  expect(header()).toContain('reversed vs volvox')
+  expect(header()).toContain('drawn flipped')
+  expect(header()).not.toContain('reversed vs')
+})
+
+test('a view flipped horizontally calls no collinear lane reversed or drawn flipped', async () => {
+  const { display } = await settledDisplay()
+  display.lgv.horizontallyFlip()
+  display.setFeatures(groupsOn(A))
+  const row = () =>
+    display.laneHeaderRows.find(r => r.assemblyName === C && r.label !== C)
+  for (let i = 0; i < 200 && !row(); i++) {
+    await new Promise(r => setTimeout(r, 5))
+  }
+  display.endAnimation()
+  expect(display.anchorReversed).toBe(true)
+  const label = row()!.label
+  expect(label).not.toContain('reversed vs')
+  expect(label).not.toContain('drawn flipped')
 })
 
 test('a Flip lane moves the lane rather than snapping it', async () => {
