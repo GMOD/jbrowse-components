@@ -41,7 +41,7 @@ ONT long-read release
 You don't need these files to follow the page: the track configs below read the
 hosted results. The [build script](#reproduce-it-end-to-end) streams them to
 take its counts.
-[Applying the mappability check to another locus](#applying-the-mappability-check-to-another-locus)
+[Applying the mappability check to another locus](#apply-the-mappability-check-to-another-locus)
 runs the same check on your own locus and reads.
 
 | What it is                                                                                                                         | File                                                                                                                                                                                                  |
@@ -66,7 +66,7 @@ runs the same check on your own locus and reads.
 
 </details>
 
-## SMN1 and SMN2: a near-identical gene duplication
+## Load mappability, coverage and reads across SMN1 and SMN2 {#mappability-coverage-and-read-tracks-across-the-smn1-and-smn2-region}
 
 _SMN1_ and _SMN2_ sit about 900 kb apart on chromosome 5 and are roughly 99.9%
 identical across their ~28 kb. Spinal muscular atrophy depends on the copy
@@ -76,8 +76,6 @@ it and reports mapping quality 0 (MAPQ 0). MAPQ is
 `-10 log10 Pr{mapping position is wrong}`
 ([SAM specification](https://samtools.github.io/hts-specs/SAMv1.pdf)), so MAPQ 0
 means the chosen position is about as likely wrong as right.
-
-## Mappability, coverage and read tracks across the SMN1 and SMN2 region
 
 Turn these tracks on from the track selector of the hosted hg38 config at
 [genomes.jbrowse.org](https://genomes.jbrowse.org), or add them with the configs
@@ -237,7 +235,7 @@ config that is a `facet` on the `mapq` field:
 The MAPQ 0 band has depth across the whole window. The MAPQ 30+ band has depth
 only in the islands where the gnomAD track reaches its flank level.
 
-## Does T2T-CHM13 resolve the SMN duplication?
+## Check the SMN duplication against T2T-CHM13
 
 T2T-CHM13, the telomere-to-telomere assembly, is finished on this chromosome.
 UCSC's hg38-to-CHM13 liftOver has several long, overlapping chains over the
@@ -282,7 +280,7 @@ crossing chains join each GRCh38 copy to both CHM13 copies, so CHM13 has the
 same duplication, with the two genes closer together, and a read from either
 copy still has two places to go.
 
-## Applying the mappability check to another locus
+## Apply the mappability check to another locus
 
 The check runs on any hg38 locus and your own reads, against a control window.
 Depth alone can look the same at a duplicated locus and an ordinary one, while
