@@ -430,6 +430,7 @@ const loaders: ReExportLoaders = {
   '@jbrowse/core/util/usePointerDrag': () => import('../util/usePointerDrag.ts'),
   '@jbrowse/core/util/useResizeDrag': () => import('../util/useResizeDrag.ts'),
   '@jbrowse/core/util/useRowVirtualScroll': () => import('../util/useRowVirtualScroll.ts'),
+  '@jbrowse/core/util/viewDisplays': () => import('../util/viewDisplays.ts'),
   '@jbrowse/core/util/viewHighlights': () => import('../util/viewHighlights.ts'),
   '@jbrowse/core/util/viewStatus': () => import('../util/viewStatus.ts'),
   '@jbrowse/core/util/virtualRange': () => import('../util/virtualRange.ts'),

@@ -428,6 +428,7 @@ export default [
   '@jbrowse/core/util/usePointerDrag',
   '@jbrowse/core/util/useResizeDrag',
   '@jbrowse/core/util/useRowVirtualScroll',
+  '@jbrowse/core/util/viewDisplays',
   '@jbrowse/core/util/viewHighlights',
   '@jbrowse/core/util/viewStatus',
   '@jbrowse/core/util/virtualRange',

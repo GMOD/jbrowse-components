@@ -4502,6 +4502,13 @@
       ],
       "worker": "real"
     },
+    "@jbrowse/core/util/viewDisplays": {
+      "package": "@jbrowse/core",
+      "names": [
+        "viewDisplays"
+      ],
+      "worker": "real"
+    },
     "@jbrowse/core/util/viewHighlights": {
       "package": "@jbrowse/core",
       "names": [

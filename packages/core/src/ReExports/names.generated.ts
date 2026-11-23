@@ -428,6 +428,7 @@ const names: Record<string, string[]> = {
   '@jbrowse/core/util/usePointerDrag': ['usePointerDrag'],
   '@jbrowse/core/util/useResizeDrag': ['useResizeDrag'],
   '@jbrowse/core/util/useRowVirtualScroll': ['useRowVirtualScroll'],
+  '@jbrowse/core/util/viewDisplays': ['viewDisplays'],
   '@jbrowse/core/util/viewHighlights': ['highlightsOnAssemblies'],
   '@jbrowse/core/util/viewStatus': ['assemblyErrorMessage', 'computeViewStatus', 'viewLoading'],
   '@jbrowse/core/util/virtualRange': ['virtualRange'],

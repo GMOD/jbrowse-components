@@ -250,12 +250,13 @@ import * as m295 from '../util/usePanZoom.ts'
 import * as m296 from '../util/usePointerDrag.ts'
 import * as m297 from '../util/useResizeDrag.ts'
 import * as m298 from '../util/useRowVirtualScroll.ts'
-import * as m299 from '../util/viewHighlights.ts'
-import * as m300 from '../util/viewStatus.ts'
-import * as m301 from '../util/virtualRange.ts'
-import * as m302 from '../util/wheelZoom.ts'
-import * as m303 from '../util/whenViewSettled.ts'
-import * as m304 from '../util/withLaunchInput.ts'
+import * as m299 from '../util/viewDisplays.ts'
+import * as m300 from '../util/viewHighlights.ts'
+import * as m301 from '../util/viewStatus.ts'
+import * as m302 from '../util/virtualRange.ts'
+import * as m303 from '../util/wheelZoom.ts'
+import * as m304 from '../util/whenViewSettled.ts'
+import * as m305 from '../util/withLaunchInput.ts'
 
 const libs: Record<string, unknown> = {
   '@jbrowse/core/assemblyManager': { ...m0, __esModule: true },
@@ -557,12 +558,13 @@ const libs: Record<string, unknown> = {
   '@jbrowse/core/util/usePointerDrag': m296,
   '@jbrowse/core/util/useResizeDrag': m297,
   '@jbrowse/core/util/useRowVirtualScroll': m298,
-  '@jbrowse/core/util/viewHighlights': m299,
-  '@jbrowse/core/util/viewStatus': m300,
-  '@jbrowse/core/util/virtualRange': m301,
-  '@jbrowse/core/util/wheelZoom': m302,
-  '@jbrowse/core/util/whenViewSettled': m303,
-  '@jbrowse/core/util/withLaunchInput': m304,
+  '@jbrowse/core/util/viewDisplays': m299,
+  '@jbrowse/core/util/viewHighlights': m300,
+  '@jbrowse/core/util/viewStatus': m301,
+  '@jbrowse/core/util/virtualRange': m302,
+  '@jbrowse/core/util/wheelZoom': m303,
+  '@jbrowse/core/util/whenViewSettled': m304,
+  '@jbrowse/core/util/withLaunchInput': m305,
 }
 
 export default libs
