@@ -184,15 +184,19 @@ own build's:
 }
 ```
 
-The callset has one record per bubble and one haploid genotype per assembly. Its
-alleles are symbolic (`<X:1>`, `<X:2>`), and the `ALEN` field lists each
-allele's length, the reference's first. The display config:
+The callset has a record for each bubble where AGIS-1.0's own call is the
+reference allele, and one haploid genotype per assembly. Its alleles are
+symbolic (`<X:1>`, `<X:2>`), and the `ALEN` field lists each allele's length,
+the reference's first. The display config:
 
 - `rows.field: "haplotype"` draws one row per assembly and colors each record's
-  commonest alternate allele blue and every other alternate allele red, so two
-  alternate alleles at a site get different colors
-- `records.labels.description` writes the allele lengths beside each record's ID
-  in the band above the rows
+  commonest alternate allele blue. Every other alternate allele shares one red,
+  so the callouts below, or the `ALEN` in a cell's details, tell those apart
+- `records.labels.name.show: false` hides each record's ID, which names the
+  bubble's end segments
+- `records.labels.description` writes the allele lengths on each record in the
+  band above the rows, followed by the share of the assemblies with an alternate
+  allele
 
 ```json addtrack loc=chr1:39,008,001-39,020,000
 {
@@ -209,7 +213,10 @@ allele's length, the reference's first. The display config:
       "type": "LinearVariantDisplay",
       "rows": { "field": "haplotype" },
       "records": {
-        "labels": { "description": "jexl:feature.INFO.ALEN + ' bp'" }
+        "labels": {
+          "name": { "show": false },
+          "description": "jexl:feature.INFO.ALEN + ' bp'"
+        }
       }
     }
   ]
@@ -233,7 +240,7 @@ callset and the graph:
 - In the graph track's menu, open **Graph settings...** and set **Bubble
   spread** to **Compress lengths**, so the kb and bp segments fit one pane.
 
-<Figure caption="SD1 (LOC4325003) with the callset sorted at the shaded 383 bp record, which runs from exon 1 into exon 2. Its carriers sit at the top; the column at the left is a commoner 237 bp deletion upstream of the gene." src="/img/pangenome/rice_sd1.png" />
+<Figure caption="SD1 (LOC4325003) with the callset sorted at the shaded 383 bp record, which runs from exon 1 into exon 2. Its carriers sit at the top, their blue cells green under the shading; the column at the left is a commoner 237 bp deletion upstream of the gene." src="/img/pangenome/rice_sd1.png" />
 
 IR64 and eight other assemblies have sd1-d. The upstream 237 bp deletion is in
 most assemblies, those with sd1-d among them.
@@ -273,11 +280,11 @@ reference's 39 bp, a second 39 bp sequence, and insertions of 46 to 89 kb.
   the rows by allele.
 - Click a cell to read that assembly's allele and its length.
 
-<Figure caption="Pup1 with the callset sorted at its one record. Blue rows have the commonest allele, 39 bp like the reference's; each red row has an insertion of 46 to 89 kb." src="/img/pangenome/rice_pup1.png" />
+<Figure caption="Pup1 with the callset sorted at its one record. Blue rows have the commonest allele, a 39 bp path other than AGIS-1.0's; the red rows have insertions of 46 to 89 kb, each its own length; Balilla, the grey row at the bottom, has AGIS-1.0's path." src="/img/pangenome/rice_pup1.png" />
 
 Kasalath and SL190 share the 89 kb insertion. Fifteen more assemblies have
-insertions of 46 to 77 kb at the same point, and IR64 and most of the rest have
-the 39 bp allele.
+insertions of 46 to 77 kb at the same point. IR64 and most of the rest have the
+second 39 bp path, and Balilla alone has AGIS-1.0's.
 
 ## Building the rice graph
 
@@ -371,7 +378,9 @@ records where AGIS-1.0's own call is not allele 0.
 [`build_rice_pangenome.sh`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/build_rice_pangenome.sh)
 runs every step on this page. It runs on Linux, since it needs GNU tools, and
 takes most of a day: the graph took 5.5 hours of `minigraph` time on 8 threads,
-and each assembly's call loads the graph's index, 15 to 19 GB. The script:
+and each assembly's call loads the graph's index, 16 to 19 GB of RAM.
+`CALL_MAX_GB` (24 by default) caps each call's memory, so a call that outgrows
+it stops the script with an error. The script:
 
 - downloads AGIS-1.0 and the 47 assemblies from NCBI with their sequence
   reports, and keeps each assembly's twelve chromosomes, renamed to PanSN

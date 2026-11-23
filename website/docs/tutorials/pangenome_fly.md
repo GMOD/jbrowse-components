@@ -172,15 +172,19 @@ own build's:
 }
 ```
 
-The callset has one record per bubble and one haploid genotype per assembly. Its
-alleles are symbolic (`<X:1>`, `<X:2>`), and the `ALEN` field lists each
-allele's length, the reference's first. The display config:
+The callset has a record for each bubble where dm6's own call is the reference
+allele, and one haploid genotype per assembly. Its alleles are symbolic
+(`<X:1>`, `<X:2>`), and the `ALEN` field lists each allele's length, the
+reference's first. The display config:
 
 - `rows.field: "haplotype"` draws one row per assembly and colors each record's
-  commonest alternate allele blue and every other alternate allele red, so two
-  alternate alleles at a site get different colors
-- `records.labels.description` writes the allele lengths beside each record's ID
-  in the band above the rows
+  commonest alternate allele blue. Every other alternate allele shares one red,
+  so the callouts below, or the `ALEN` in a cell's details, tell those apart
+- `records.labels.name.show: false` hides each record's ID, which names the
+  bubble's end segments
+- `records.labels.description` writes the allele lengths on each record in the
+  band above the rows, followed by the share of the assemblies with an alternate
+  allele
 
 ```json addtrack loc=chr2L:5,200,001-5,220,000
 {
@@ -197,7 +201,10 @@ allele's length, the reference's first. The display config:
       "type": "LinearVariantDisplay",
       "rows": { "field": "haplotype" },
       "records": {
-        "labels": { "description": "jexl:feature.INFO.ALEN + ' bp'" }
+        "labels": {
+          "name": { "show": false },
+          "description": "jexl:feature.INFO.ALEN + ' bp'"
+        }
       }
     }
   ]
@@ -212,7 +219,8 @@ different duplications there: A2 has two copies of a 15 kb segment holding both
 genes, B1 has three, and B4 has a 6 kb duplication. A1 has B4's duplication with
 a transposon inside the second _Cyp28d1_ copy. The A2 and B4 alleles resist
 nicotine best and express _Cyp28d1_ most. dm6 has the single-copy allele, and
-the callset has one record over _Cyp28d1_ with six alternate alleles beside it.
+the callset has one record over _Cyp28d1_ with six alternate alleles besides
+dm6's.
 
 - Type `chr2L:5,200,001-5,220,000` into the location box and turn on the gene
   track, the callset and the graph track.
@@ -233,9 +241,11 @@ The Curved (c¹) wing mutation was described a century ago and never placed in
 the genome. Samano et al. (2026) traced it to a 7.5 kb DM412 retrotransposon
 inside an exon of the muscle gene _Strn-Mlck_, which truncates its transcript.
 
-- Type `chr2R:15,940,001-15,966,000` into the location box.
-- Right-click the record at `chr2R:15,953,909` and pick **Sort rows by genotype
-  here**.
+- Type `chr2R:15,953,860-15,953,960` into the location box, where the record at
+  `chr2R:15,953,909` is wide enough to click.
+- Right-click the record and pick **Sort rows by genotype here**.
+- Type `chr2R:15,940,001-15,966,000` to zoom back out; the rows keep their
+  order.
 
 <Figure caption="Strn-Mlck with the callset sorted at the 7,511 bp insertion, which BDSC_156 alone has. The graph track draws it as the 7.5 kb loop." src="/img/pangenome/fly_strn_mlck.png" />
 
@@ -351,8 +361,10 @@ ID, and drops the records where dm6's own call is not allele 0.
 
 [`build_fly_pangenome.sh`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/build_fly_pangenome.sh)
 runs every step on this page. It runs on Linux, since it needs GNU tools, and
-takes about a day: the graph took 19 hours of `minigraph` time on 8 threads. The
-script:
+takes about a day: the graph took 19 hours of `minigraph` time on 8 threads, and
+each assembly's call loads the graph's index, 6 to 10 GB of RAM. `CALL_MAX_GB`
+(16 by default) caps each call's memory, so a call that outgrows it stops the
+script with an error. The script:
 
 - downloads dm6 and the 29 assemblies from NCBI with their sequence reports, and
   keeps each assembly's chromosomes, renamed to PanSN
