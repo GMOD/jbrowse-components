@@ -1,6 +1,6 @@
 ---
 status: Accepted
-summary: "A curved arc that says something draws its breakend feet, in the read-connections band and the junctions band alike: outward for a deletion-type junction, inward for a duplication-type, parallel for an inversion. Grey concordant pairs, read-cloud bars, splice junctions and split insertions draw none. Amends ADR-170, which kept feet to interchromosomal arcs"
+summary: "A curved arc that says something draws its breakend feet, in the read-connections and junctions bands: outward for a deletion-type junction, inward for a duplication-type, parallel for an inversion. Concordant pairs, read clouds, splice junctions and split insertions draw none. Amends ADR-170"
 ---
 
 # ADR-286: A junction arc draws its breakend feet
