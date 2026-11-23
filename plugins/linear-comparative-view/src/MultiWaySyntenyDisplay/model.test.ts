@@ -1558,7 +1558,11 @@ describe('the level-of-detail tier', () => {
     ])
     await until(() => calls.some(c => c.name === 'MultiWayGetFeatures'))
     const { args } = calls.find(c => c.name === 'MultiWayGetFeatures')!
-    expect(args.opts).toEqual({ mateShape: 'grouped', lodTier: 'fine' })
+    expect(args.opts).toEqual({
+      mateShape: 'grouped',
+      lodTier: 'fine',
+      readsLanesAgainstAnchor: true,
+    })
     expect(args.regions).toEqual([
       { assemblyName: 'volvox', refName: 'ctgA', start: 0, end: 1000 },
     ])

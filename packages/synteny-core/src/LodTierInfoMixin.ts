@@ -95,7 +95,12 @@ export function installLodTierInfoFetch(
   {
     alsoWhen = () => false,
     lanes,
-  }: { alsoWhen?: () => boolean; lanes?: () => string[] | undefined } = {},
+    readsLanesAgainstAnchor,
+  }: {
+    alsoWhen?: () => boolean
+    lanes?: () => string[] | undefined
+    readsLanesAgainstAnchor?: true
+  } = {},
 ) {
   installPrerequisiteFetch(self, {
     name: 'LodTierInfo',
@@ -106,6 +111,7 @@ export function installLodTierInfoFetch(
       ctx.callRpc('CoreGetInfo', {
         adapterConfig,
         ...(lanes === undefined ? {} : { haplotypes: lanes() }),
+        ...(readsLanesAgainstAnchor ? { readsLanesAgainstAnchor } : {}),
       }),
     commit: read => {
       self.setAdapterHeader(read)

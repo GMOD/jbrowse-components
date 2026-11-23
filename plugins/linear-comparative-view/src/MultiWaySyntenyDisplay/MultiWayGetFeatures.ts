@@ -57,6 +57,7 @@ declare module '@jbrowse/core/rpc/RpcRegistry' {
           | 'targetAssemblyName'
           | 'queryAssemblyName'
           | 'lanePairs'
+          | 'readsLanesAgainstAnchor'
         >
       }
       return: MultiWayFeatures

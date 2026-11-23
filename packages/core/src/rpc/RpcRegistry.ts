@@ -102,6 +102,7 @@ export interface RpcRegistry {
       adapterConfig: Record<string, unknown>
       haplotypes?: string[]
       assemblyName?: string
+      readsLanesAgainstAnchor?: true
     }
     return: unknown
   }

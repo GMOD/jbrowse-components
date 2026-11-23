@@ -144,6 +144,7 @@ function fetchPhases(
         opts: {
           mateShape: 'grouped',
           lodTier,
+          readsLanesAgainstAnchor: true,
         },
       })
       return { features: dedupe(features, r => r.id()), ops, deletions }
@@ -493,6 +494,7 @@ export function doAfterAttach(self: MultiWaySyntenyDisplayModel) {
   installLodTierInfoFetch(self, {
     alsoWhen: () => self.adapterDeclaresLanes,
     lanes: () => self.fetchLaneSelection,
+    readsLanesAgainstAnchor: true,
   })
   const viewStill = installViewStill(self)
   installGlobalFetchAutorun(self, {

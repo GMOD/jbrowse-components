@@ -417,6 +417,7 @@ export interface ComparativeOptions extends BaseOptions {
   // packed ops in `alignmentOps`, for a display that draws the indels between
   // two lanes.
   keepAlignment?: boolean
+  readsLanesAgainstAnchor?: true
 }
 ```
 
