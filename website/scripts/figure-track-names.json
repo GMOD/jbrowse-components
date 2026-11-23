@@ -8,6 +8,18 @@
     "MANE.GRCh38.v1.4.refseq": "MANE 1.4 (w/ RefSeq IDs)",
     "ncbi_refseq_109_hg38": "NCBI RefSeq analysis set (GFF3Tabix)"
   },
+  "https://jbrowse.org/demos/alphagenome2_singlecell/config.json": {
+    "ag2_ets2_atac_change": "Predicted scATAC change, protective minus risk (imputed_supported)",
+    "ag2_ets2_atac_reference": "Predicted scATAC, risk allele (imputed_supported)",
+    "ag2_ets2_expression_by_cell_type": "rs2836882 predicted expression effect per gene, by ileum cell type",
+    "ag2_ets2_gradient": "Input gradient of ETS2 expression in ileum macrophage",
+    "ag2_ets2_ism": "rs2836882 ISM, ETS2 expression in ileum macrophage, by base mutated to",
+    "ag2_ets2_macrophage_by_snp": "Macrophage predicted expression effect per gene, by credible-set SNP",
+    "ag2_pbmc_scatac_predicted": "AlphaGenome 2 predicted scATAC, PBMC cell types (marker loci)",
+    "ets2_ibd_credible_set": "IBD credible set at chr21q22",
+    "hg38-ncbiRefSeqCurated": "NCBI RefSeq - RefSeq Curated",
+    "pbmc5k_scatac_pseudobulk_hg38": "Single-cell ATAC pseudobulk by cell type (10x 5k PBMC, SnapATAC2)"
+  },
   "https://jbrowse.org/demos/arabidopsis_pangenome/config.json": {
     "arabidopsis_minigraph_paths": "1001G+ minigraph pangenome: each accession's allele at every bubble",
     "syri_regions_on_TAIR10": "SyRI regions on TAIR10, one row per accession",

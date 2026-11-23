@@ -585,7 +585,8 @@ groups:
 The hosted config,
 https://jbrowse.org/demos/alphagenome2_singlecell/config.json, has all twelve
 rows beside the measured track. The BigWigs cover only the marker loci, so the
-rows are empty elsewhere. Open _CD8A_ and _MS4A1_ again:
+rows are empty elsewhere. Open _CD8A_ and _MS4A1_ again, under that config's
+NCBI RefSeq - RefSeq Curated genes:
 
 ```text
 chr2:86,780,000-86,820,000 chr11:60,450,000-60,490,000

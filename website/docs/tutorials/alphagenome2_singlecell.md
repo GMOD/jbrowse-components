@@ -17,8 +17,7 @@ enhancer between _ETS2_ and _PSMG1_, we:
 
 - load the credible set as a variant track
 - load each SNP's predicted effect on each gene from one BED, faceted into a
-  section per ileum immune cell type
-- facet the same BED by SNP to compare the seven SNPs in macrophages
+  section per ileum immune cell type, then per SNP in macrophages
 - load the input gradient of _ETS2_ expression along the megabase around it
 - open the enhancer and load predicted single-cell ATAC (scATAC) per cell type
   for the change the protective allele makes, over the measured blood monocyte
@@ -427,7 +426,8 @@ ism = model.score_ism_variants(
 
 The script writes one BigWig per base mutated to, `ism_A.bw` to `ism_T.bw`, and
 a `MultiQuantitativeTrack` draws them as a heatmap of four rows. A base's own
-row stays empty, since changing a base to itself has no effect:
+row stays empty, since changing a base to itself has no effect. The figure shows
+the forward strand of the Reference sequence track, `hg38-refseq`, above it:
 
 ```json addtrack loc=chr21:39,094,602..39,094,686
 {
