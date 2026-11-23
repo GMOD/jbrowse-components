@@ -190,11 +190,11 @@ test('fails if the fetch does not return the right file', async () => {
   })
 })
 
-test('--clean leaves static in place when the download is not a zip', async () => {
+test('--clean leaves static in place when the download is a corrupt zip', async () => {
   await runInTmpDir(async ctx => {
     mockFetch({
       headers: { 'content-type': 'application/zip' },
-      arrayBuffer: new TextEncoder().encode('not a zip at all').buffer,
+      arrayBuffer: new TextEncoder().encode('PK\x03\x04 then junk').buffer,
     })
     await writeFile('manifest.json', '{"name":"JBrowse"}')
     mkdirSync('static')
@@ -208,7 +208,7 @@ test('--clean leaves static in place when the download is not a zip', async () =
       'https://example.com/JBrowse2-0.0.1.zip',
     ])
 
-    expect(error?.message).toContain('does not seem to be a JBrowse')
+    expect(error?.message).toContain('Corrupt ZIP')
     expect(
       await readFile(path.join(ctx.dir, 'static', 'main.js'), 'utf8'),
     ).toBe('old build')
