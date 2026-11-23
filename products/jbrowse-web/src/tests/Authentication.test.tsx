@@ -34,7 +34,7 @@ test('open a bigwig track that needs oauth authentication and has existing token
         adapter: {
           type: 'BigWigAdapter',
           bigWigLocation: {
-            uri: 'volvox_microarray.bw',
+            uri: 'https://www.dropbox.com/s/96wflrzcbmf7nlj/volvox_microarray.bw?dl=0',
             locationType: 'UriLocation',
             internetAccountId: 'dropboxOAuth',
           },
@@ -50,15 +50,17 @@ test('open a bigwig track that needs oauth authentication and has existing token
   rootModel.internetAccounts[0]!.validateToken = jest
     .fn()
     .mockReturnValue(token)
-  rootModel.internetAccounts[0]!.openLocation = jest
+  const openLocation = jest
     .fn()
     .mockReturnValue(new RemoteFile('volvox_microarray_dropbox.bw'))
+  rootModel.internetAccounts[0]!.openLocation = openLocation
   view.setNewView(5, 0)
   fireEvent.click(
     await findByTestId(hts('volvox_microarray_dropbox'), {}, delay),
   )
   const display = await findAnyDisplayPainted(delay)
   expectCanvasMatch(findCanvasIn(display))
+  expect(openLocation).toHaveBeenCalled()
 }, 25000)
 
 test('opens a bigwig track that needs external token authentication', async () => {
