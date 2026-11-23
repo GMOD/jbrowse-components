@@ -35,17 +35,29 @@ genomes stacked in tree order, the second kind reads as a walk down the tree.
 
 Each lane has a separate scale, printed in its header:
 
-- **Left end:** where the lane starts, with `[rev]` where the lane runs against
-  the anchor
+- **Left end:** the stretch of the lane's contig from the first to the last base
+  matched to the window, then `reversed vs hg38` where every piece the lane
+  draws runs against the anchor, and `drawn flipped` where the lane is drawn
+  against the anchor's order, which says how it is drawn and nothing of its
+  sequence
 - **Right end:** the anchor prints its window's span. A lane that holds more
   sequence across the window than the anchor, such as one with insertions, is
-  squeezed to fit and prints how much of its sequence it draws, the range its
-  left end names, and how many times it is squeezed (`114Kbp, squeezed 1.5×`). A
-  stretch of the anchor the lane lacks is left open as a gap and takes room too.
-  A lane at the anchor's scale prints nothing
+  squeezed to fit and prints how many times (`squeezed 1.5×`). A stretch of the
+  anchor the lane lacks is left open as a hole, which takes room too. A lane at
+  the anchor's scale prints nothing
+- **Changes chip:** deletions, insertions, stretches replaced
+  (`122 kb replaced by 49 kb`) and inversions of 10 kb or more against the
+  anchor. A gap holding a piece of the other strand, such as an inversion's
+  breakpoints, states nothing
 - **Ticks** fall at one interval shared by every lane
 - **`also at`** names a second stretch the window aligns to, a window or more
   away from the one the lane draws
+
+A haplotype lane from a walk file draws every piece of the haplotype the window
+places, each a row of its own under the haplotype's name and contig: one on
+another contig, or a window or more along the same one. A lane placing
+alignments draws its own sequence as a grey bar under its ribbons, and a dashed
+line across a hole, where the bases either side are adjacent in the lane.
 
 A lane with no readable gene track (GFF3, GTF, BigBed or BED) on its assembly
 outlines gene spans from the table where it has them, labeled `no annotation`.
