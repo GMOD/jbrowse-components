@@ -23,8 +23,9 @@ We:
   view, an alignment view and a Mol\* structure as one linked session
 - change what the session opens on: a domain, a residue, a partner, a structure
   or a coloring, and color _VviAGL11_'s AlphaFold model by its confidence
-- launch a structure from the gene's right-click menu with **Launch protein
-  view**, choosing the structure source and the isoform
+- add the protein3d and msaview plugins to your own JBrowse, then launch a
+  structure from the gene's right-click menu with **Launch protein view**,
+  choosing the structure source and the isoform
 - launch an ortholog alignment of _NLRP1_ with **Launch MSA view**, then read
   NCBI's conserved domains on it and UniProt's domains as a genome track
 
@@ -32,13 +33,13 @@ We:
 
 - for the right-click route in your own JBrowse, the protein3d and msaview
   plugins from the plugin store
-  ([Adding the plugins to your own instance](#adding-the-plugins-to-your-own-instance));
+  ([Add the plugins to your own instance](#add-the-plugins-to-your-own-instance));
   genomes.jbrowse.org already loads them
 
 ## The data
 
 Nothing to download: the protein browser and the two plugins fetch from these
-services, per gene, when you open a session. _Adding the plugins to your own
+services, per gene, when you open a session. _Add the plugins to your own
 instance_ covers your own JBrowse.
 
 <details>
@@ -57,7 +58,7 @@ instance_ covers your own JBrowse.
 
 </details>
 
-## Opening TP53 in the protein browser
+## Open TP53 in the protein browser
 
 We'll start on _TP53_'s R248, one of the residues most often mutated in human
 cancer, where the protein contacts DNA. Open the
@@ -84,7 +85,7 @@ The protein browser page also opens a gene of your own:
 - the chips after **TP53** open other organisms on a residue each, such as
   rifampicin resistance in _M. tuberculosis_ _rpoB_
 
-## Reading the TP53 session
+## Read the TP53 session
 
 Open in JBrowse opens a new tab with one session and three views of the same
 transcript:
@@ -104,7 +105,7 @@ UTR or a residue outside the structure highlights nothing.
 
 <Figure caption="TP53 as the protein browser launches it on R248: the coding exons over ClinVar and AlphaMissense, the P53 family alignment on R248's column, and 3KMD colored by AlphaMissense with R248 in magenta." src="/img/protein/protein_browser_tp53.png" />
 
-## Changing what the TP53 session opens on
+## Change what the TP53 session opens on
 
 The page picks the session's alignment and structure from the focus beside the
 launch button. Click **Clear** to drop it, and choose another:
@@ -136,7 +137,7 @@ The page URL holds the gene, the focus and the structure, so
 [?gene=TP53&ref=9606&residue=248&structure=3kmd](https://genomes.jbrowse.org/protein-browser/?gene=TP53&ref=9606&residue=248&structure=3kmd)
 reopens this launch.
 
-### An AlphaFold model colored by pLDDT
+### Color VviAGL11's AlphaFold model by pLDDT {#an-alphafold-model-colored-by-plddt}
 
 Most seedless grapes are seedless because of one missense change in _VviAGL11_,
 a MADS box transcription factor that regulates seed development. Arginine 197
@@ -168,7 +169,27 @@ Arginine fills most rows of the alignment column. Residue 197 falls in
 AlphaFold's low band, where AlphaFold DB advises treating the chain's placement
 with caution, and the DNA-binding MADS domain falls in the very high band.
 
-## Launching from the gene's right-click menu
+## Add the plugins to your own instance
+
+The plugin store lists the two plugins as **Protein3d** and **MSAView**, and
+[](/docs/user_guides/plugin_store) covers each way to install them.
+
+The protein3d and msaview plugins add view types launched from a gene's
+right-click menu, so they appear wherever JBrowse hosts more than one view:
+
+- JBrowse Web and Desktop
+- [](/docs/jbrowser)'s `JBrowseRApp`, which takes both runtime plugins and a
+  `views` list[^session]
+
+The single-view embedded components host only a linear genome view, and
+[anywidget](/docs/jbrowse_anywidget)'s `JBrowseApp` loads no plugins yet, so
+neither view type appears there.
+
+The approach is described in
+[_Proteins in the Genome Browser_](https://doi.org/10.1016/j.jmb.2026.169645)
+(_Journal of Molecular Biology_, 2026).
+
+## Launch from the gene's right-click menu
 
 The protein browser picks the structure and the alignment for you. A gene's
 right-click menu, in any JBrowse with the protein3d and msaview plugins, lets
@@ -210,7 +231,7 @@ which selects its residues and bands their codons on the gene.
 
 <Figure caption="A connected session on TP53, NCBI RefSeq above the AlphaFold structure. A motif clicked on the protein's feature track selects its residues and bands their codons." src="/img/protein/connected.png" />
 
-### Other structure sources and views in the Launch dialog
+### Pick another structure source or view
 
 The dialog's other tabs take a structure from elsewhere:
 
@@ -240,7 +261,7 @@ structure in three columns.
 
 <Video src="/media/proteins/tiled_views.mp4" caption="TP53's gene menu launching an alignment and a structure, then Arrange all views → Side by side. One hover in the genome moves the highlight in both." />
 
-## Choosing the species to align for NLRP1
+## Choose the species to align for NLRP1
 
 **Launch MSA view** builds an alignment from the orthologs NCBI publishes for
 most annotated genes, one per species, with the rows and the aligner yours to
@@ -265,7 +286,7 @@ the zoom at which the domain blocks are readable.
 
 <Figure src="/img/genomes_msa/launch_sequence.png" caption="NLRP1's right-click menu, the Launch MSA view dialog on its Orthologs tab, and the alignment Submit builds." />
 
-### Reading NLRP1's conserved-domain overlay on the MSA
+### Read NLRP1's conserved domains on the MSA
 
 Each colored block is an NCBI conserved domain, drawn in alignment columns. The
 pyrin (PYD) domain sits at the N terminus of human _NLRP1_ and is absent from
@@ -281,7 +302,7 @@ calls for:
   [walkthrough](https://gmod.org/JBrowseMSA/tutorials/protein_family) that also
   covers `interpro`, the route for rows that are UniProt accessions.
 
-### UniProt domains in genome coordinates for NLRP1
+### Load NLRP1's UniProt domains as a genome track
 
 UCSC projects UniProt's annotations onto the genome, so the hosted hg38 config
 holds them as tracks. Turn on **UniProt - Domains** (under Genes and Gene
@@ -300,7 +321,7 @@ For a genome UCSC projects no UniProt record onto, or for your own gene models,
 proteins and place each one on the exons that encode it, as a track of the same
 kind.
 
-## More protein browser sessions
+## Open more protein browser sessions
 
 A protein browser session takes any other JBrowse track beside the codon, and a
 second protein view beside the first. Open a figure's live link to load its
@@ -336,26 +357,6 @@ highlights the residue that codon encodes.[^constructs]
 <Figure src="/img/protein/braf_v600e.png" caption="BRAF with the activation loop and the ATP binding site as domain colors in the genome view, the alignment and 4MNF." />
 
 <Figure src="/img/protein/cftr_f508.png" caption="CFTR with its ortholog alignment and 5UAK colored by ClinVar pathogenic variant count." />
-
-## Adding the plugins to your own instance
-
-The plugin store lists the two plugins as **Protein3d** and **MSAView**, and
-[](/docs/user_guides/plugin_store) covers each way to install them.
-
-The protein3d and msaview plugins add view types launched from a gene's
-right-click menu, so they appear wherever JBrowse hosts more than one view:
-
-- JBrowse Web and Desktop
-- [](/docs/jbrowser)'s `JBrowseRApp`, which takes both runtime plugins and a
-  `views` list[^session]
-
-The single-view embedded components host only a linear genome view, and
-[anywidget](/docs/jbrowse_anywidget)'s `JBrowseApp` loads no plugins yet, so
-neither view type appears there.
-
-The approach is described in
-[_Proteins in the Genome Browser_](https://doi.org/10.1016/j.jmb.2026.169645)
-(_Journal of Molecular Biology_, 2026).
 
 ## See also
 
