@@ -25,8 +25,8 @@ in MHC class II. We:
 
 - launch tracks from the HPRC page, and at CFH find a published deletion in the
   launch's tracks
-- open a whole chromosome as a graph track with one node per bubble, and C4 as a
-  force-directed graph track
+- open a whole chromosome as a graph track with variants under 10 kb folded into
+  the reference, and C4 as a force-directed graph track
 - open the assembly an allele beside _HLA-DRB5_ came from with **Open in**
 - load the phased VCF as a variant track with one row per haplotype, and cluster
   the rows
@@ -62,7 +62,7 @@ index of its graph, by URL.
 same files for a graph of your own.
 
 <details>
-<summary>The files</summary>
+<summary>Read by URL (no download needed)</summary>
 
 | What it is                                                           | File                                                                                                                                                                                         |
 | -------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -126,14 +126,15 @@ Press **Open in JBrowse**. Under **NCBI RefSeq genes (hg38)**:
 
 <Figure caption="The CFH / CFHR Graph launch: the Known alleles and GWAS Catalog rows under the genes, the graph track, and the variant matrix, one row per haplotype. The red block at the foot of the matrix marks the haplotypes with the deletion." src="/img/pangenome/hprc_cfh_graph_launch.png" />
 
-## Overview of chr1 with one node per variant region {#a-chromosome-and-back}
+## Overview of chr1 with small variants folded {#a-chromosome-and-back}
 
 Open
 [chr1 on the HPRC page](https://genomes.jbrowse.org/pangenomes/hprc/?region=chr1)
 and press **Open in JBrowse**. Zoomed out past the graph adapter's `coarse`
-level, JBrowse draws one node per bubble, so the whole chromosome fits. A curve
-of segments per bubble (how many pieces of sequence each bubble holds) shows how
-much the haplotypes disagree at each locus.
+level, JBrowse draws the coarse tier, the graph with every variant under 10 kb
+folded into the reference, so the whole chromosome fits. A curve of segments per
+bubble (how many pieces of sequence each bubble holds) shows how much the
+haplotypes disagree at each locus.
 
 <Figure caption="GRCh38 chr1 with the cytogenetic bands and two tracks built from the graph's bubbles: segments per bubble as a blue curve, and one node per bubble as gold blocks." src="/img/pangenome/hprc_whole_chromosome.png" />
 
@@ -293,6 +294,8 @@ sequence that haplotype lacks. Then:
 - **Clustering → Cluster rows by identity...** on the alignment clusters over
   the window in view, because HPRC's file has no guide tree.
 - **Reset row order** restores the order in the file.
+- To shade CYP21A1P and TNXA, drag across `chr6:32,005,691-32,011,057` on the
+  scale bar and pick **Highlight region**.
 
 <Figure caption="C4 with the RefSeq genes, the VCF, alignment rows and the graph track. The arrow runs from the shaded band to the graph segment holding it." src="/img/maf_hprc_pangenome.png" />
 
@@ -300,7 +303,8 @@ The VCF's widest blue block is one record, a deletion of a whole C4-CYP21-TNX
 module, which is the dashed arc in the C4 graph. Every alignment row in the
 white block has that deletion in the VCF. The narrower blocks are haplotypes
 that lack the 6.4 kb HERV-K (endogenous retrovirus) in a C4 gene's intron, which
-GRCh38 has, the difference between a long and a short C4.
+GRCh38 has, the difference between a long and a short C4. The `<INS> 26.4Kbp`
+label over the block in _C4B_ belongs to a rarer record at the same site.
 
 ## Following haplotypes through C4 {#haplotype-threads}
 
@@ -328,7 +332,8 @@ fades to grey. Read the threads this way:
   threads run together through _C4A_ and most of the window.
 - **A thread that leaves the others takes another allele.** In _C4B_, GRCh38's
   thread runs through the HERV-K insertion and HG00133's takes the link that
-  skips it, the deletion on its row of the variant matrix.
+  skips it. The variant matrix marks that deletion in the rows of both HG00133
+  and HG00128, whose thread leaves at the same place for the loop below.
 - **A loop in one color is sequence only that haplotype has here.** At the same
   place HG00128 alone runs the large loop, a further C4-CYP21-TNX module. The
   genes on it come from the annotation of HG00128's assembly, so each name ends
@@ -423,3 +428,5 @@ through every bubble; see
 - [HPRC release 2](https://doi.org/10.64898/2026.07.21.739710), the release this
   page opens: the Minigraph-Cactus graph, the multiple alignment and the VCFs
   `vg deconstruct` writes from the graph.
+- Hughes et al. (2006).
+  [A common CFH haplotype, with deletion of CFHR1 and CFHR3, is associated with lower risk of age-related macular degeneration](https://doi.org/10.1038/ng1890)
