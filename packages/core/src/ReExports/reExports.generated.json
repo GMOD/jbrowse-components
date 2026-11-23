@@ -2896,6 +2896,7 @@
         "isSequenceRole",
         "makeSetField",
         "partitionExtraLocations",
+        "partitionSequences",
         "primaryLocation",
         "sidecarRoles",
         "sidecars",
