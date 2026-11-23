@@ -75,7 +75,13 @@ export const alphagenome2Specs: ScreenshotSpec[] = [
           loc: 'chr21:39,094,602-39,094,686',
           type: 'LinearGenomeView',
           tracks: [
-            { trackId: 'hg38-refseq', height: 40 },
+            {
+              trackId: 'hg38-refseq',
+              forward: { show: true },
+              reverse: { show: false },
+              translation: { show: false },
+              height: 30,
+            },
             { trackId: 'ets2_ibd_credible_set', height: 40 },
             { trackId: 'ag2_ets2_ism', height: 80 },
           ],
