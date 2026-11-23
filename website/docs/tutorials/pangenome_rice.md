@@ -379,8 +379,6 @@ Two scripts in minigraph's
 bioconda package leaves out, merge the calls into a VCF. We'll fetch them at the
 revision the hosted callset was built with:
 
-<!-- from: scripts/build_rice_pangenome.sh -->
-
 ```bash
 MGUTILS=https://raw.githubusercontent.com/lh3/minigraph/2f569ebe3071fcb242f1bf0eabbb917941b47239/misc
 curl -fsSL -o mgutils.js "$MGUTILS/mgutils.js"
