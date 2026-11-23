@@ -16,6 +16,13 @@ function isRecord(x: unknown): x is Record<string, unknown> {
   return typeof x === 'object' && x !== null
 }
 
+// v4's label text size and colors, which no label slot holds now
+const RETIRED_LABEL_KEYS = new Set([
+  'fontSize',
+  'nameColor',
+  'descriptionColor',
+])
+
 // A label field written as the bare string its schema's shorthand lifts, as
 // the object, so a `showLabels` lift beside it lands next to the field rather
 // than under a string it cannot merge with. A display entry gets this from its
@@ -30,10 +37,12 @@ function withLabelFields(props: Record<string, unknown>) {
   return {
     ...props,
     labels: Object.fromEntries(
-      Object.entries(labels).map(([key, value]) => [
-        key,
-        key === 'name' || key === 'description' ? asPart(value) : value,
-      ]),
+      Object.entries(labels)
+        .filter(([key]) => !RETIRED_LABEL_KEYS.has(key))
+        .map(([key, value]) => [
+          key,
+          key === 'name' || key === 'description' ? asPart(value) : value,
+        ]),
     ),
   }
 }

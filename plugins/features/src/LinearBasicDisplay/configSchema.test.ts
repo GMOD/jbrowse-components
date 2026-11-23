@@ -184,6 +184,32 @@ describe('LinearBasicDisplay configSchema', () => {
       expect(isCallbackValue(config.labels.description.field)).toBe(true)
     })
 
+    it('a v4 renderer’s label font size and colors load with no console notice', () => {
+      const warn = jest.spyOn(console, 'warn').mockImplementation(() => {})
+      try {
+        const config = schema.create(
+          {
+            displayId: 'test',
+            type: 'LinearBasicDisplay',
+            renderer: {
+              type: 'SvgFeatureRenderer',
+              labels: {
+                name: 'gene',
+                fontSize: 13,
+                nameColor: 'black',
+                descriptionColor: 'blue',
+              },
+            },
+          },
+          { pluginManager: pm },
+        )
+        expect(config.labels.name.field).toBe('gene')
+        expect(warn).not.toHaveBeenCalled()
+      } finally {
+        warn.mockRestore()
+      }
+    })
+
     it('display-level props take precedence over renderer props', () => {
       const config = schema.create(
         {
