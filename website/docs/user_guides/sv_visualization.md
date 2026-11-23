@@ -203,8 +203,8 @@ their arcs, and drops the junction arcs over coverage:
   with the color scheme untouched.
 - **Reading the bands:** the band that fills identifies the rearrangement, and a
   band that stays empty under a call is a call with no read evidence behind it.
-  The partner band is never empty on short reads: at every locus some mates land
-  on another chromosome, and an insertion longer than the fragment adds mates
+  The partner band is never empty on short reads: at every locus some mates map
+  to another chromosome, and an insertion longer than the fragment adds mates
   that do not map.
 
 <Figure caption="The INVdup call's reads, one band per kind of SV evidence. Reads whose mate is on another chromosome draw as inter-chromosomal ticks." src="/img/sv_channels.png" />
@@ -421,10 +421,10 @@ For a heterozygous SV, the supporting reads all coming from one haplotype is
 strong evidence for the call. Where the BAM/CRAM has been haplotagged (WhatsHap,
 HiPhase), reads have an `HP` tag, and sorting, coloring or
 [grouping](/docs/user_guides/alignments_track#grouping-reads) by it from the
-track menu clusters each haplotype. Grouping gives each haplotype a separate
-pileup section, and untagged reads one more, so unphased support stays visible.
-The [phased trio tutorial](/docs/tutorials/analyze_trio) covers phased
-haplotypes end to end.
+track menu clusters each haplotype. Grouped this way, each haplotype gets a
+separate pileup section and untagged reads get one more, so unphased support
+stays visible. The [phased trio tutorial](/docs/tutorials/analyze_trio) covers
+phased haplotypes end to end.
 
 The deletion below is at `1:63,005,000-63,008,000` in the
 [hg19 demo](https://jbrowse.org/code/jb2/main/?config=test_data/config_demo.json&assembly=hg19):

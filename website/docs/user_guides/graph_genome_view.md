@@ -89,8 +89,7 @@ rGFA and plain GFA both produce a segment track on the reference and a graph
 that lines up under it. Every feature below except the force layout reads those
 coordinates, so an assembly graph gets no locus cut, neither anchored layout, no
 hover sync and no graph track. Open one in
-[Bandage](https://github.com/rrwick/Bandage), which was built for assembly
-graphs.
+[Bandage](https://github.com/rrwick/Bandage), a viewer for assembly graphs.
 
 ## Route 1: a graph track, browsable by locus
 

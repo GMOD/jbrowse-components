@@ -294,7 +294,7 @@ alignments:
   zoom and scroll. A click on a following row that is not the anchor makes it
   the anchor, and Undo restores the old one
 
-Scrolling the facing panel onto the mate turns the mark into the ribbon.
+Scroll the facing panel onto the mate and the mark becomes the ribbon.
 
 <Figure caption="Peach chr1 over grape chr1 from MCScan blocks. Grey marks along the band's top edge are alignments whose grape end is on a chromosome not shown." src="/img/synteny_offscreen_mates.png" />
 

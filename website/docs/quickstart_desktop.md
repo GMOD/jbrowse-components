@@ -39,7 +39,7 @@ chmod a+x jbrowse-desktop-*-linux.AppImage   # once
 - Drop a `.jbrowse` or `config.json` file anywhere on the start screen, or on an
   open session, to open it. Dropped genome files open the "Open your own genome"
   dialog with them already added, and track files dropped on a session open the
-  "Add a track" form aimed at the view they land on.
+  "Add a track" form aimed at the view they were dropped on.
 - **Tools → Factory reset...** deletes your autosaves, the recent sessions list,
   your global plugins and the indexes JBrowse built. Session files you saved
   stay on disk, but one that opened a FASTA with no `.fai` beside it no longer

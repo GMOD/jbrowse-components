@@ -235,8 +235,8 @@ which makes grouping a check on the reads:
 
 **Presets → SV channels** in the track menu groups by **SV kind**, draws only
 the evidence reads, and swaps the junction arcs for read arcs, so each kind of
-SV evidence gets a separate coverage band, reads and arcs.
-[SV channels](/docs/user_guides/sv_visualization#sv-channels) says how to read
+SV evidence gets a separate coverage band, reads and arcs. See
+[SV channels](/docs/user_guides/sv_visualization#sv-channels) for how to read
 it.
 
 ## Read height and track sizing
@@ -253,7 +253,7 @@ A pileup taller than the track scrolls, unless one of these is on:
   as you drag the track taller or shorter. Reads stay between 1px and the Normal
   preset's height, so a deep enough pileup still overflows. With grouping, the
   expanded sections share what the coverage rows leave, so collapsing one gives
-  the rest more height. Picking a preset leaves fit mode.
+  the rest more height. Fit mode turns off when you pick a preset.
 - **Advanced → Track height → Grow the track** grows the track to hold the
   reads, up to
   [growMaxHeight](/docs/config/linearalignmentsdisplay#slot-growmaxheight), past
@@ -381,8 +381,8 @@ the long-range relationships behind structural variants.
 **Read connections → Read arcs** draws a bezier curve between the ends of each
 pair, so long-range and discordant pairs stand out from the short local arcs.
 The arcs and the read cloud paint insert size and orientation, in the colors
-**Color by → Insert size and orientation** gives the reads.
-[Read arcs](/docs/user_guides/sv_visualization#read-arcs) on the SV page says
+**Color by → Insert size and orientation** gives the reads. See
+[Read arcs](/docs/user_guides/sv_visualization#read-arcs) on the SV page for
 what each pattern means.
 
 - **Mate not loaded:** a large semicircle reaching toward it.

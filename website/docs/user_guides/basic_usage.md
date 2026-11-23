@@ -141,8 +141,8 @@ per line, or a set of local files dropped on it.
 - **Preview table:** rename or remove a row here.
 - **Assembly:** one assembly serves the batch.
 - **Drop on the session:** files dropped anywhere on an open session open this
-  form with them already added, aimed at the view they land on. Genome files
-  open the add-genome form instead.
+  form with them already added, aimed at the view they were dropped on. Genome
+  files open the add-genome form instead.
 
 <Video src="/media/ui/bulk_add_tracks.mp4" caption="Four URLs pasted in one box, and the table pairing each index with its data file." />
 
@@ -218,7 +218,7 @@ shows how many tracks are kept, of how many, such as "6 of 800".
 
 Under the filter box, a chip for each of the first few fields that group tracks
 (and "More filters" for the rest) lists that field's values with their track
-counts. Checking values keeps only the tracks with one of them, in the tree and
+counts. Check values to keep only the tracks with one of them, in the tree and
 the table alike. An active chip names what it keeps, and its × clears it. The
 tree's category headings already sort tracks by category, so its category chip
 shows only in the table.
@@ -386,10 +386,10 @@ the left or right side.
 The Tree | Table toggle at the top of "Available tracks" shows all tracks as a
 filterable table. The rows follow the tree's order, with each track's category
 in the column beside its name, until you click a column header to sort; a search
-lists the tracks whose name matches first. The filter chips carry over between
-the tree and the table. In table mode, the track selector's ☰ menu shows or
-hides any column through Manage columns. Tracks with `metadata` fields get extra
-columns:
+lists the tracks whose name matches first. The filter chips stay set when you
+switch between the tree and the table. In table mode, the track selector's ☰
+menu shows or hides any column through Manage columns. Tracks with `metadata`
+fields get extra columns:
 
 ```json
 {

@@ -28,8 +28,8 @@ Which two lanes a ribbon connects depends on the track's source:
 | Haplotype walks through a pangenome graph (`WalkTabixSyntenyAdapter`)  | the nodes two neighbouring haplotypes share                                                       | [](/docs/tutorials/pangenome_hprc_haplotypes)                                                                                                  |
 
 A blue ribbon means "inverted against the anchor" on a track against one genome
-and "inverted against the lane above" on a neighbour-pair track. Stacking the
-genomes in tree order makes the second kind read as a walk down the tree.
+and "inverted against the lane above" on a neighbour-pair track. With the
+genomes stacked in tree order, the second kind reads as a walk down the tree.
 
 ## Reading a lane header
 
@@ -67,9 +67,9 @@ The view's gridlines stop at the anchor, the one lane they fit.
   each other.
 - **Blocks:** an MCScan `.anchors` track draws each block of gene pairs as a
   pale band behind their ribbons, from one end of the block to the other on both
-  lanes. A band is colored by the block's direction, `block` or `blockSpan`,
-  draws wherever the filter leaves one of its gene pairs, and hovers and clicks
-  as a ribbon does.
+  lanes. A band is colored by the block's direction, `block` or `blockSpan`.
+  JBrowse draws it wherever the filter leaves one of its gene pairs, and it
+  answers hover and click as a ribbon does.
 - **Skipped lanes:** a ribbon joins a gene to the next lane that places it when
   the lane between places nothing, so a sparse lane mid-stack cuts no chain.
 

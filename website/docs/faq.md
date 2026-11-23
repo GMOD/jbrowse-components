@@ -92,7 +92,7 @@ files, and answer CORS if the data is on another host.
 ### How do I put my data behind a login
 
 JBrowse has no server and no accounts, so whatever serves the files decides who
-may read them — leaving a track out of config.json protects nothing, and a
+may read them. Leaving a track out of config.json protects nothing, and a
 password in config.json is public. Put the app and its data on one site behind a
 login: HTTP Basic auth, single sign-on, AWS Cognito or Google Cloud.
 [](/docs/config_guides/behind_a_login)
