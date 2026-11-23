@@ -54,7 +54,7 @@ NCBI, and every step after them runs on those copies.
 | The sequence as FASTA  | [efetch.fcgi](https://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi?db=nuccore&id=NC_012920.1&rettype=fasta) |
 | The annotation as GFF3 | [viewer.cgi](https://www.ncbi.nlm.nih.gov/sviewer/viewer.cgi?db=nuccore&report=gff3&id=NC_012920.1)              |
 
-## Downloading the sequence and its genes
+## Download the sequence and its genes
 
 We'll start from a GenBank accession, which is all NCBI needs to hand back the
 sequence and its annotation. Set it once, so the same commands fetch your own
@@ -96,7 +96,7 @@ read the length off the `Is_circular=true` record and cut such a feature at the
 origin into a piece before it and a piece after, so keep that record in the file
 you load.
 
-## Loading the genome and the genes
+## Load the genome and the genes
 
 We'll load the sequence as an assembly, indexed with samtools first:
 
@@ -175,7 +175,7 @@ by its `gbkey`:
 }
 ```
 
-## Opening the genome as a circle
+## Open the genome as a circle
 
 We'll open the assembly in a circular view with the gene track. A circular view
 of one circular sequence closes at position 1, ticks its bases, and prints the
@@ -210,7 +210,7 @@ names are drawn outside the ruler, each joined to its feature by a line.
 
 <Figure src="/img/organelle_map/mito_ring.png" caption="NC_012920.1 as a circle, the NCBI genes grouped by strand and colored by type." />
 
-## ND6 in a linear view
+## Open ND6 and its neighbours in a linear view
 
 The minus-strand row holds a single protein-coding gene, _ND6_, which sits
 between _ND5_ and _CYTB_. Type `NC_012920.1:12,000-16,569` into a linear view
