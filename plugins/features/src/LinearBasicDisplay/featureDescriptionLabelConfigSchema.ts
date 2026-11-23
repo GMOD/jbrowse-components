@@ -33,7 +33,7 @@ export const featureDescriptionLabelConfigSchema = ConfigurationSchema(
       type: 'featureField',
       defaultValue: FEATURE_DESCRIPTION_FIELD,
       description:
-        'the field the description reads, such as `note`, or a `jexl:` expression over `feature`; the default reads `note`, else `description`, else `function`, and an empty value draws no description',
+        'the field the description reads, such as `note`, or a `jexl:` expression over `feature`; the default reads `note`, else `description`, else `function`, else the `product` of the feature or its line of only children, and an empty value draws no description',
     },
   },
   { shorthand: 'field', writes: 'members', closed: true, plot: true },
