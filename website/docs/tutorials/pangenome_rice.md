@@ -78,8 +78,8 @@ assemblies are NCBI GenBank records, listed with their accessions in the
 [README](https://jbrowse.org/demos/rice_pangenome/README.txt) beside the files.
 
 Nothing to download: the track configs below read the files by URL.
-[Building the rice graph](#building-the-rice-graph) and
-[Making the callset](#making-the-callset) build them from assemblies of your
+[Building the rice graph](#build-the-rice-graph) and
+[Making the callset](#make-the-callset) build them from assemblies of your
 own.
 
 <details>
@@ -223,7 +223,7 @@ the reference's first. The display config:
 }
 ```
 
-## sd1: the Green Revolution's semi-dwarf deletion
+## Sort the callset by genotype at sd1
 
 The semi-dwarf rice varieties of the Green Revolution have defective alleles of
 _SD1_, which encodes an oxidase of gibberellin biosynthesis. Monna et al. (2002)
@@ -245,7 +245,7 @@ callset and the graph:
 IR64 and eight other assemblies have sd1-d. The upstream 237 bp deletion is in
 most assemblies, those with sd1-d among them.
 
-## qSW5: three grain-width alleles
+## Tell three grain-width alleles apart at qSW5
 
 A deletion upstream of the grain-width gene _qSW5_ (_GW5_, LOC4338011) lowers
 its expression and widens the grain. Lee et al. (2015) distinguished three
@@ -265,7 +265,7 @@ Kasalath, IR64 and 9311 have no deletion. The three weedy rices, CX20, YZ-2 and
 PI653432, are among the assemblies with the 950 bp deletion, and Balilla,
 Udai21, Changxianggeng1813 and Wuyunjing8 share the reference's.
 
-## Pup1: a 90 kb insertion the reference lacks
+## Find which assemblies carry the Pup1 insertion
 
 Kasalath's _Pup1_ locus, for tolerance of phosphorus-poor soil, holds the
 protein kinase gene _PSTOL1_. Gamuyao et al. (2012) found that the gene is
@@ -289,7 +289,7 @@ Kasalath and SL190 share the 89 kb insertion. Fifteen more assemblies have
 insertions of 46 to 77 kb at the same point. IR64 and most of the rest have the
 second 39 bp path, and Balilla alone has AGIS-1.0's.
 
-## Building the rice graph
+## Build the rice graph
 
 We'll first rename each assembly's sequences to PanSN,
 `sample#haplotype#contig`, so the graph's segments name the assembly they came
@@ -360,7 +360,7 @@ gfa-to-tabix fold rice.rgfa.gz --below 10000 --layout contig -o rice.fold10000
 [](/docs/tutorials/pangenome_prepare_graph) explains each file and the other
 layouts.
 
-## Making the callset
+## Make the callset
 
 The callset comes from mapping each assembly back onto the graph, whose rGFA
 holds no path lines. `minigraph --call` writes the walk one assembly takes

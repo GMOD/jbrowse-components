@@ -83,8 +83,8 @@ listed with their accessions in the
 [README](https://jbrowse.org/demos/fly_pangenome/README.txt) beside the files.
 
 Nothing to download: the track configs below read the files by URL.
-[Building the fly graph](#building-the-fly-graph) and
-[Making the callset](#making-the-callset) build them from assemblies of your
+[Building the fly graph](#build-the-fly-graph) and
+[Making the callset](#make-the-callset) build them from assemblies of your
 own.
 
 <details>
@@ -211,7 +211,7 @@ reference's first. The display config:
 }
 ```
 
-## Cyp28d1: duplication alleles in one bubble
+## Sort the callset by genotype at Cyp28d1
 
 A nicotine resistance QTL mapped in the DSPR holds two cytochrome P450 genes,
 _Cyp28d1_ and _Cyp28d2_. Chakraborty et al. (2019) found that the founders have
@@ -236,7 +236,7 @@ BOG1_A2's. KSA2 and A4_HiFi, the red rows, have an allele the paper did not
 describe, 5.3 kb longer than dm6's, and SAM_HiFi, the mint row, has another, 3.3
 kb longer.
 
-## Strn-Mlck: the Curved wing mutant
+## Find the Curved wing insertion at Strn-Mlck
 
 The Curved (c¹) wing mutation was described a century ago and never placed in
 the genome. Samano et al. (2026) traced it to a 7.5 kb DM412 retrotransposon
@@ -250,7 +250,7 @@ inside an exon of the muscle gene _Strn-Mlck_, which truncates its transcript.
 
 <Figure caption="Strn-Mlck with the callset sorted at the 7,511 bp insertion, which BDSC_156 alone has. The graph track draws it as the 7.5 kb loop the callout names." src="/img/pangenome/fly_strn_mlck.png" />
 
-## CHKov1: a resistance allele in the reference
+## Find which assemblies lack CHKov1's transposon
 
 Aminetzach et al. (2005) found a Doc transposon in the coding sequence of
 _CHKov1_ that truncates the protein and raises resistance to an organophosphate
@@ -266,7 +266,7 @@ has the Doc, so the assemblies without it have a 4.5 kb deletion in the callset.
 Oregon-R, BOG1_A2, three Bloomington stocks and two of the HiFi strains lack the
 Doc, and the other 22 assemblies have it.
 
-## Building the fly graph
+## Build the fly graph
 
 We'll first rename each assembly's sequences to PanSN,
 `sample#haplotype#contig`, so the graph's segments name the assembly they came
@@ -338,7 +338,7 @@ gfa-to-tabix fold fly.rgfa.gz --below 10000 --layout contig -o fly.fold10000
 [](/docs/tutorials/pangenome_prepare_graph) explains each file and the other
 layouts.
 
-## Making the callset
+## Make the callset
 
 The callset comes from mapping each assembly back onto the graph, whose rGFA
 holds no path lines. `minigraph --call` writes the walk one assembly takes
