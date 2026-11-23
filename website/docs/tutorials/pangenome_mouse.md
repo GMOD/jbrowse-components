@@ -70,7 +70,7 @@ them.
 
 Nothing to download: the track configs below read the index files by URL, and
 the ranking step streams the bubbles file.
-[Building a minigraph graph](#building-a-minigraph-graph-from-the-strain-assemblies)
+[Building a minigraph graph](#build-a-minigraph-graph-from-the-strain-assemblies)
 builds the files for strains of your own.
 
 <details>
@@ -86,7 +86,7 @@ builds the files for strains of your own.
 
 </details>
 
-## Nnt: a C57BL/6J deletion that appears as an insertion
+## Open the C57BL/6J Nnt deletion
 
 C57BL/6J has a multi-exon deletion at _Nnt_ (nicotinamide nucleotide
 transhydrogenase) that abolishes the protein and makes C57BL/6J mice glucose
@@ -122,7 +122,7 @@ same gene:
 
 <Figure caption="mm39 at Nnt over the Mus assemblies the liftOver track holds, the C57BL/6J T2T assembly first." src="/img/genomes_synteny/mouse_strains_nnt.png" />
 
-## Ranking the graph's bubbles to find Dock2 {#finding-the-loci}
+## Rank the graph's bubbles to find Dock2 {#finding-the-loci}
 
 The bubbles file's fourth column holds the number of segments in each bubble.
 Ranked by that count, the bubbles that overlap a gene include the vomeronasal
@@ -151,12 +151,12 @@ To open the _Dock2_ bubble:
 
 <Figure caption="The Dock2 intron bubble in the bubbles track and the graph. Each charcoal loop is sequence the reference lacks." src="/img/pangenome/mouse_dock2.png" />
 
-## Loading the graph in your own JBrowse {#load-the-graph}
+## Load the graph in your own JBrowse {#load-the-graph}
 
 The portal's launches load these tracks for you. In your own JBrowse, we'll load
 the reference, then the graph and its bubbles. The graph track's `uri` is the
 file prefix the indexing commands under
-[Building a minigraph graph](#building-a-minigraph-graph-from-the-strain-assemblies)
+[Building a minigraph graph](#build-a-minigraph-graph-from-the-strain-assemblies)
 write, and the `uri`s below are our hosted copy, so swap the prefix for your own
 build.
 
@@ -210,7 +210,7 @@ The bubbles track reads the same build's bubble index:
 }
 ```
 
-## Building a minigraph graph from the strain assemblies
+## Build a minigraph graph from the strain assemblies
 
 To build a graph like this one, we'll first extract each chromosome from each
 assembly, renamed to PanSN (`sample#haplotype#contig`), since minigraph takes

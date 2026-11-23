@@ -76,7 +76,7 @@ two sample lists.
 | The DGRP freeze-2 genotype calls                                                 | [DGRP2.source_NCSU.dm6.final.SNPs_only.vcf.gz](https://resources.aertslab.org/DGRP2/NCSU/final/dm6/DGRP2.source_NCSU.dm6.final.SNPs_only.vcf.gz) |
 | The `In(2L)t` inversion karyotype for each line, from DGRPool's phenotype record | [download](https://dgrpool.epfl.ch/phenotypes/1520/download)                                                                                     |
 
-## Building Fst, π and Tajima's D bigWigs with vcftools
+## Build Fst, π and Tajima's D bigWigs with vcftools
 
 DGRPool lists each line's `In(2L)t` arrangement
 ([Gardeux et al. 2023](https://doi.org/10.7554/eLife.88981)), harmonizing the
@@ -168,7 +168,7 @@ of Tajima's D, since it removes the rare alleles D is most sensitive to, and
 vcftools counts two chromosomes where an inbred line contributes one. Read D at
 a locus against the genome-wide background of all the lines.
 
-## Loading the scans in JBrowse
+## Load the scans in JBrowse
 
 We load dm6 from UCSC, whose reference names the arms `chr2L`. The alias file
 maps them to the bare `2L` the scans use:
@@ -229,7 +229,7 @@ its aliases.
 }
 ```
 
-## Reading the Cyp6g1 sweep in Tajima's D and π
+## Read the Cyp6g1 sweep in Tajima's D and π
 
 Search `Cyp6g1` in the location box and add three `QuantitativeTrack`s shaped
 like the Fst track above, each over all the lines: Tajima's D, π, and the
@@ -284,7 +284,7 @@ segregates alongside the resistance allele
 ([Schmidt et al. 2010](https://doi.org/10.1371/journal.pgen.1000998)), and the
 duplicated sequence lowers the number of sites called in the window.
 
-## The In(2L)t inversion, genome-wide and within each arrangement {#the-inversion-genome-wide-and-within-each-arrangement}
+## Compare In(2L)t genome-wide and within each arrangement {#the-inversion-genome-wide-and-within-each-arrangement}
 
 Open the assembly with no location to lay the six arms out side by side, with
 the `In(2L)t` Fst track across all of them. A track above Fst marks the
@@ -413,7 +413,7 @@ recombine freely, the ratio sits at zero. Differentiation decays gradually
 outside the breakpoints
 ([Corbett-Detig & Hartl](https://doi.org/10.1371/journal.pgen.1003056)).
 
-### Genotyping the inversion in each line
+### Genotype the inversion in each line
 
 The karyotype that split the lines into two groups also loads as a track, one
 row per line. The inversion is one `<INV>` record spanning the published
