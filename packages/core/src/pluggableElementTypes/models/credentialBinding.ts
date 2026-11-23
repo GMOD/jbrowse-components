@@ -10,7 +10,7 @@ function sortKeysDeep(value: unknown): unknown {
       : value
 }
 
-export function canonicalJson(value: unknown) {
+function canonicalJson(value: unknown) {
   return JSON.stringify(sortKeysDeep(value))
 }
 
