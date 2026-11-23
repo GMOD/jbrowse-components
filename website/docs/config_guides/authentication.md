@@ -120,14 +120,14 @@ Track form's account picker writes:
   `domains` do not cover the URL, JBrowse logs which account and which URL to
   the console and falls back to the `domains` walk, so the file is read with
   whichever account covers it, or unauthenticated.
-- **Files on the app's own origin are the exception.** An account named on a
-  location that resolves to the origin serving JBrowse is used whatever its
-  `domains` say, since a config written with relative paths
-  (`"uri": "data/x.bam"`) has no host to write there. A relative path resolves
-  against the config file's own URL, so in a config loaded from another origin
+- **Files on the app's own origin are the exception.** An account with an empty
+  `domains` list, named on a location that resolves to the origin serving
+  JBrowse, is used for it, since a config written with relative paths
+  (`"uri": "data/x.bam"`) has no host to write there. An account that lists
+  `domains` is used only for those. A relative path resolves against the config
+  file's own URL, so in a config loaded from another origin
   (`?config=https://other.org/config.json`) it resolves to that origin and this
-  exception does not apply. A link cannot move a same-origin file anywhere but
-  the server already serving the page.
+  exception does not apply.
 - **An id the config does not declare** is split at its first `-`, and is
   honoured only when the part before it is an account type, no account's
   `domains` cover the file, and the file is one of two kinds. A file on the

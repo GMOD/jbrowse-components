@@ -26,9 +26,8 @@ function parseEphemeralId(internetAccountId: string) {
  * (`volvox_microarray.bw`) resolves against wherever the app is deployed, which
  * whoever wrote the config does not know — so an account for it has nothing to
  * put in `domains`, and naming the account on the location is the only way to
- * reach it. Safe whatever `domains` says: a link can move a same-origin
- * location nowhere except the server already serving the page and holding the
- * session.
+ * reach it. So it applies only to an account whose `domains` are empty: one
+ * that lists hosts is scoped to them, and the app's origin is not among them.
  *
  * Resolved the way the request will be, against `baseUri` when there is one, so
  * a spec cannot pass a relative uri under an off-origin base and read as local.
@@ -170,7 +169,8 @@ export function InternetAccountsRootModelMixin(pluginManager: PluginManager) {
           if (selectedAccount) {
             if (
               selectedAccount.handlesLocation(location) ||
-              resolvesToAppOrigin(location)
+              (selectedAccount.domains.length === 0 &&
+                resolvesToAppOrigin(location))
             ) {
               return selectedAccount
             }

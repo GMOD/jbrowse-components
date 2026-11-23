@@ -185,6 +185,18 @@ test('an account named for a same-origin location is used with no domains', () =
   ).toBe('localToken')
 })
 
+test('an account that lists domains is not used for a same-origin location', () => {
+  const root = makeRoot(labAccount)
+  const warn = jest.spyOn(console, 'warn').mockImplementation(() => {})
+  const found = root.findAppropriateInternetAccount({
+    locationType: 'UriLocation',
+    uri: 'volvox_microarray.bw',
+    internetAccountId: 'labToken',
+  })
+  warn.mockRestore()
+  expect(found).toBeUndefined()
+})
+
 // The relative form resolves the way the request will. Reading it against the
 // page instead would let a spec pass an off-origin base off as local.
 test('a relative uri under an off-origin baseUri is not same-origin', () => {
