@@ -1,3 +1,5 @@
+import { isWebUrl } from '@jbrowse/core/util/jbrowseProtocol'
+
 // How a jbrowse:// link is described in the dialog that asks whether to open
 // it. Pure, so the wording is unit-testable without an Electron runtime; the
 // dialog itself lives in electron.ts.
@@ -16,6 +18,8 @@ interface LinkDescription {
   configUrl: string | undefined
   // its origin, for the dialog to lead with
   origin: string | undefined
+  // why the link cannot be opened, when its config is not on the web
+  refusal: string | undefined
   // the link, shortened for display
   displayUrl: string
 }
@@ -52,6 +56,17 @@ export function linkConfigUrl(url: URL) {
           : undefined
 }
 
+/**
+ * Why a link's config is not fetched: a link opens only a config served over
+ * http(s), as the link itself is, so a `file:` one cannot reach a local or
+ * network share.
+ */
+export function linkConfigRefusal(configUrl: string) {
+  return isWebUrl(configUrl)
+    ? undefined
+    : `This link's config is at ${configUrl}, and a link opens only a config from the web (http or https).`
+}
+
 function parseUrl(input: string) {
   try {
     return new URL(input)
@@ -70,6 +85,7 @@ export function describeLaunchLink(link: string): LinkDescription {
   return {
     configUrl,
     origin: configUrl ? new URL(configUrl).origin : undefined,
+    refusal: configUrl ? linkConfigRefusal(configUrl) : undefined,
     displayUrl:
       link.length > MAX_DISPLAY_LENGTH
         ? `${link.slice(0, MAX_DISPLAY_LENGTH)}…\n\n(${link.length} characters in all; the rest is the session this link describes)`

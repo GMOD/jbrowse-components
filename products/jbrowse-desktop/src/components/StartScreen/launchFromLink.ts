@@ -12,6 +12,7 @@ import { resolveTrackId } from '@jbrowse/launch-args/trackIds'
 import { getSnapshot } from '@jbrowse/mobx-state-tree'
 import { decodeSessionFromUrl } from '@jbrowse/product-core'
 
+import { linkConfigRefusal } from '../../../electron/linkPrompt.ts'
 import { assertReadsNoLocalFiles, linkData } from './linkData.ts'
 
 import type {
@@ -108,6 +109,10 @@ async function fetchLinkedConfig(
   url: string,
   fetchConfig: LaunchFromLinkDeps['fetchConfig'],
 ) {
+  const refusal = linkConfigRefusal(url)
+  if (refusal) {
+    throw new Error(refusal)
+  }
   const config = await fetchConfig(url)
   assertReadsNoLocalFiles(config)
   return config

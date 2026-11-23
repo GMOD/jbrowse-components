@@ -41,3 +41,18 @@ test('a url that does not parse has no origin, and is still shown', () => {
   expect(origin).toBeUndefined()
   expect(displayUrl).toBe('not a url')
 })
+
+test.each([
+  'file://fileserver/share/config.json',
+  'file:///home/u/config.json',
+  'smb://fileserver/share/config.json',
+])('a link whose config is not on the web is refused: %s', configUrl => {
+  const link = `${page}?config=${encodeURIComponent(configUrl)}&session=${spec}`
+  expect(describeLaunchLink(link).refusal).toContain(configUrl)
+})
+
+test('a link whose config is on the web is not refused', () => {
+  expect(
+    describeLaunchLink(`${page}?config=test_data/volvox/config.json`).refusal,
+  ).toBeUndefined()
+})

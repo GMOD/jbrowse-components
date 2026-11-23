@@ -54,7 +54,7 @@ export function parseProtocolUrl(input: string) {
   return wrapped && isWebUrl(wrapped) ? wrapped : undefined
 }
 
-function isWebUrl(input: string) {
+export function isWebUrl(input: string) {
   const protocol = parseUrl(input)?.protocol
   return protocol === 'http:' || protocol === 'https:'
 }

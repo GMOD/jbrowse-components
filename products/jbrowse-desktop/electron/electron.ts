@@ -127,18 +127,28 @@ function loadTarget(win: BrowserWindow, target: LaunchTarget) {
 // config is its own. The link itself follows, shortened — see
 // describeLaunchLink for why it cannot be shown whole.
 async function confirmOpenLink(url: string, parent: BrowserWindow | null) {
-  const { configUrl, origin, displayUrl } = describeLaunchLink(url)
-  const options = {
-    type: 'question' as const,
-    buttons: ['Open', 'Cancel'],
-    defaultId: 0,
-    cancelId: 1,
-    title: 'Open JBrowse Web link',
-    message: origin
-      ? `Open a new session from ${origin}?`
-      : 'Open a new session from this link?',
-    detail: `${configUrl ? `Config: ${configUrl}\n\n` : ''}${displayUrl}\n\nThis replaces the session you have open.`,
-  }
+  const { configUrl, origin, displayUrl, refusal } = describeLaunchLink(url)
+  const options = refusal
+    ? {
+        type: 'error' as const,
+        buttons: ['OK'],
+        defaultId: 0,
+        cancelId: 0,
+        title: 'Open JBrowse Web link',
+        message: 'This link cannot be opened',
+        detail: `${refusal}\n\n${displayUrl}`,
+      }
+    : {
+        type: 'question' as const,
+        buttons: ['Open', 'Cancel'],
+        defaultId: 0,
+        cancelId: 1,
+        title: 'Open JBrowse Web link',
+        message: origin
+          ? `Open a new session from ${origin}?`
+          : 'Open a new session from this link?',
+        detail: `${configUrl ? `Config: ${configUrl}\n\n` : ''}${displayUrl}\n\nThis replaces the session you have open.`,
+      }
   // a macOS sheet on a minimized window, or a Windows dialog its minimized
   // owner hides, would ask a question nobody can see
   if (parent?.isMinimized()) {
@@ -148,7 +158,7 @@ async function confirmOpenLink(url: string, parent: BrowserWindow | null) {
   const { response } = await (parent
     ? dialog.showMessageBox(parent, options)
     : dialog.showMessageBox(options))
-  return response === 0
+  return !refusal && response === 0
 }
 
 // What a second launch sends the running one about itself. Chromium hands the

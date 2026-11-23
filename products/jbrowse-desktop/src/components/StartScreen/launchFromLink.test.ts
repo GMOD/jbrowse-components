@@ -962,3 +962,21 @@ describe('a command-line plan', () => {
     )
   })
 })
+
+test.each([
+  specLink(
+    `config=${encodeURIComponent('file://fileserver/share/config.json')}`,
+  ),
+  `https://jbrowse.org/code/jb2/main/?config=${encodeURIComponent('file:///home/u/config.json')}`,
+  `https://jbrowse.org/code/jb2/main/?config=${encodeURIComponent('file://fileserver/share/config.json')}&session=json-%7B%7D`,
+])('a config that is not on the web is never fetched: %s', async link => {
+  const fetchConfig = jest.fn().mockResolvedValue(config)
+  const createPluginManager = jest.fn().mockResolvedValue(pluginManager)
+
+  await expect(
+    launchFromLink(link, { fetchConfig, createPluginManager, trustPlugins }),
+  ).rejects.toThrow('a link opens only a config from the web')
+
+  expect(fetchConfig).not.toHaveBeenCalled()
+  expect(createPluginManager).not.toHaveBeenCalled()
+})
