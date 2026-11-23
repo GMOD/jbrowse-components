@@ -244,6 +244,7 @@ class RibbonBuilder {
   featureIdx: number[] = []
   colors: number[] = []
   records = new Map<number, Feature>()
+  mismatchTiles = 0
 
   get count() {
     return this.bp1.length
@@ -330,6 +331,8 @@ export interface RibbonGeometry {
   linkTarget: Map<string, number>
   /** by gutter key and instance, the record a click opens over the target's */
   records: Map<string, ReadonlyMap<number, Feature>>
+  /** whether a ribbon draws a stretch differing from its mate over equal length */
+  mismatches: boolean
 }
 
 /** the 1-based feature id the passes compare for `ref`, or 0 for none */
@@ -404,10 +407,14 @@ interface LinkMate {
   assemblyName?: string
 }
 
-export function mismatchColor(field: string | undefined) {
+export function mismatchCss(field: string | undefined) {
   const { cigarColors } =
     field === 'strand' ? colorSchemes.strand : colorSchemes.default
-  return cssColorToABGR(cigarColors.X)
+  return cigarColors.X
+}
+
+export function mismatchColor(field: string | undefined) {
+  return cssColorToABGR(mismatchCss(field))
 }
 
 /**
@@ -461,6 +468,14 @@ function addAlignmentDetail(
         upperBelow,
       )
     }
+    let match: [number, number, number, number] | undefined
+    const flushMatch = () => {
+      if (match) {
+        const [s1, e1, s2, e2] = match
+        add(s1, e1, s2, e2, KIND_BASE, fill)
+        match = undefined
+      }
+    }
     visitCigarRenderedSegments(
       ops,
       start,
@@ -471,44 +486,24 @@ function addAlignmentDetail(
       dir2,
       (op, bp1Start, bp1End, bp2Start, bp2End) => {
         if (op !== CIGAR_I && op !== CIGAR_D && op !== CIGAR_N) {
-          add(bp1Start, bp1End, bp2Start, bp2End, KIND_BASE, fill)
+          match = match
+            ? [match[0], bp1End, match[2], bp2End]
+            : [bp1Start, bp1End, bp2Start, bp2End]
+        } else {
+          flushMatch()
         }
       },
     )
+    flushMatch()
+    const onePx = Math.min(upper.bpPerPx, lower.bpPerPx)
     let bp1 = start
     let bp2 = start2
-    let markStart1 = 0
-    let markStart2 = 0
-    let markLen = 0
-    const flushMark = () => {
-      if (markLen > 0) {
-        add(
-          markStart1,
-          markStart1 + markLen,
-          markStart2,
-          markStart2 + markLen * dir2,
-          KIND_BASE_TILE,
-          mismatch,
-        )
-        markLen = 0
-      }
-    }
     for (let k = 0; k < ops.length; k++) {
       const len = ops[k]! >>> 4
       const op = ops[k]! & 0xf
-      if (op === CIGAR_X) {
-        if (
-          markLen > 0 &&
-          Math.abs(bp1 + len - markStart1) <= upper.bpPerPx &&
-          Math.abs(bp2 + len * dir2 - markStart2) <= lower.bpPerPx
-        ) {
-          markLen += len
-        } else {
-          flushMark()
-          markStart1 = bp1
-          markStart2 = bp2
-          markLen = len
-        }
+      if (op === CIGAR_X && len >= onePx) {
+        add(bp1, bp1 + len, bp2, bp2 + len * dir2, KIND_BASE_TILE, mismatch)
+        builder.mismatchTiles++
       }
       if (op === CIGAR_RUN) {
         bp1 += len
@@ -522,7 +517,6 @@ function addAlignmentDetail(
         bp2 += len * dir2
       }
     }
-    flushMark()
     return true
   }
   return false
@@ -618,6 +612,7 @@ export function buildRibbonGeometry({
   const anchorRow = anchorRowIn(lanes)
   const anchor = lanes[anchorRow]
   const nextRows = nextPlacedRows(lanes)
+  let mismatches = false
   const targetOfGroup = (key: string, group: PlacedGroup) => {
     let idx = groupTarget.get(key)
     if (idx === undefined) {
@@ -857,6 +852,7 @@ export function buildRibbonGeometry({
       })
     }
     const key = ribbonsKey(row)
+    mismatches ||= ribbons.mismatchTiles > 0
     cells.set(key, ribbons.build())
     if (ribbons.records.size > 0) {
       records.set(key, ribbons.records)
@@ -871,6 +867,7 @@ export function buildRibbonGeometry({
     })
     for (const [toRow, builder] of bridges) {
       const bridgeKey = ribbonsKey(row, toRow)
+      mismatches ||= builder.mismatchTiles > 0
       cells.set(bridgeKey, builder.build())
       if (builder.records.size > 0) {
         records.set(bridgeKey, builder.records)
@@ -892,6 +889,7 @@ export function buildRibbonGeometry({
     groupTarget,
     linkTarget,
     records,
+    mismatches,
   }
 }
 

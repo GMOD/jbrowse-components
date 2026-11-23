@@ -38,9 +38,9 @@ import {
   buildBandCell,
   buildLaneCells,
   buildRibbonGeometry,
-  mismatchColor,
   buildTickGeometry,
   glyphHitAt,
+  mismatchColor,
   ribbonEnds,
   ribbonFeatureId,
   ribbonSides,
@@ -456,7 +456,7 @@ describe('the ribbons', () => {
     ])
   })
 
-  test('a mismatch joins its two bases, however far out the lanes are', () => {
+  test('a mismatch a pixel wide joins its two bases, however far out the lanes are', () => {
     const s = stack({
       features: [
         pairFeature('g1', 100, 200),
@@ -473,7 +473,7 @@ describe('the ribbons', () => {
       assemblyName: 'peach',
       mate: { assemblyName: 'cacao', refName: 'Tc1', start: 1500, end: 1600 },
     })
-    const { cells } = buildRibbonGeometry({
+    const { cells, mismatches } = buildRibbonGeometry({
       stack: s,
       laneLinks: new Map([
         [
@@ -481,7 +481,7 @@ describe('the ribbons', () => {
           {
             links: [link],
             ops: new Map([
-              ['link', ops([50, CIGAR_EQ], [1, CIGAR_X], [49, CIGAR_EQ])],
+              ['link', ops([50, CIGAR_EQ], [2, CIGAR_X], [48, CIGAR_EQ])],
             ]),
           },
         ],
@@ -491,19 +491,20 @@ describe('the ribbons', () => {
     })
     const data = ribbonData(cells, 'ribbons:1')
     const mark = [...data.kinds].indexOf(KIND_BASE_TILE)
-    expect([...data.kinds].filter(k => k === KIND_BASE_TILE)).toHaveLength(1)
-    // Pp1:1550-1551 onto Tc1:1550-1551, a 0.8px quad the renderer widens to 1
+    expect([...data.kinds]).toEqual([KIND_BASE, KIND_BASE_TILE])
+    // Pp1:1550-1552 onto Tc1:1550-1552, 1.6 px at 0.8 px/bp
     expect([
       data.bp1[mark],
       data.bp2[mark],
       data.bp4[mark],
       data.bp3[mark],
-    ]).toEqual([440, 440.8, 440, 440.8].map(Math.fround))
+    ]).toEqual([440, 441.6, 440, 441.6].map(Math.fround))
     expect(data.colors[mark]).toBe(mismatchColor(undefined))
+    expect(mismatches).toBe(true)
   })
 
-  // 25 bp/px on both lanes, so each cluster of three mismatches spans under a pixel
-  test('mismatches sharing a pixel draw as one mark, and a later pixel starts another', () => {
+  // 25 bp/px on both lanes, as a 10 kb window's 7 bp/px leaves a SNP under a pixel
+  test('a mismatch narrower than a pixel draws nothing, and the ribbon around it is one flat band', () => {
     const wide = { min: 1000, max: 21_000 }
     const s = stack({
       features: [
@@ -530,38 +531,38 @@ describe('the ribbons', () => {
       assemblyName: 'peach',
       mate: { assemblyName: 'cacao', refName: 'Tc1', start: 1500, end: 3500 },
     })
-    const { cells } = buildRibbonGeometry({
-      stack: s,
-      laneLinks: new Map([
-        [
-          'peach|cacao',
-          {
-            links: [link],
-            ops: new Map([
-              [
-                'link',
-                ops(...cluster, [979, CIGAR_EQ], ...cluster, [979, CIGAR_EQ]),
-              ],
-            ]),
-          },
-        ],
-      ]),
-      ribbonColor: 'grey',
-      drawCurves: false,
-    })
-    const data = ribbonData(cells, 'ribbons:1')
-    // each mark is its cluster's 3 mismatched bp, not the 21 bp they spread over
-    const marks = [...data.kinds].flatMap((k, i) =>
-      k === KIND_BASE_TILE ? [i] : [],
-    )
-    expect(marks).toHaveLength(2)
-    expect(marks.map(i => data.colors[i])).toEqual([
-      mismatchColor(undefined),
-      mismatchColor(undefined),
+    const build = (...cigar: [number, number][]) =>
+      buildRibbonGeometry({
+        stack: s,
+        laneLinks: new Map([
+          [
+            'peach|cacao',
+            { links: [link], ops: new Map([['link', ops(...cigar)]]) },
+          ],
+        ]),
+        ribbonColor: 'grey',
+        drawCurves: false,
+      })
+    const subPixel = build(...cluster, [979, CIGAR_EQ], ...cluster, [
+      979,
+      CIGAR_EQ,
     ])
-    expect(marks.flatMap(i => [data.bp1[i], data.bp2[i]])).toEqual(
-      [20, 20.12, 60, 60.12].map(Math.fround),
+    expect([...ribbonData(subPixel.cells, 'ribbons:1').kinds]).toEqual([
+      KIND_BASE,
+    ])
+    expect(subPixel.mismatches).toBe(false)
+    const wideOne = build(
+      ...cluster,
+      [949, CIGAR_EQ],
+      [30, CIGAR_X],
+      ...cluster,
+      [979, CIGAR_EQ],
     )
+    const data = ribbonData(wideOne.cells, 'ribbons:1')
+    expect([...data.kinds]).toEqual([KIND_BASE, KIND_BASE_TILE])
+    // Pp1:2470-2500, its own 30 bp, at 0.04 px/bp from Pp1:1000
+    expect([data.bp1[1], data.bp2[1]]).toEqual([58.8, 60].map(Math.fround))
+    expect(wideOne.mismatches).toBe(true)
   })
 
   test('a reverse anchor record’s insertion lands on the mate walked backwards', () => {
@@ -590,41 +591,15 @@ describe('the ribbons', () => {
     expect(Math.abs(data.bp3[0]! - data.bp4[1]!)).toBe(16)
   })
 
-  // peach reaches Pp1:500-2500, so the tile reaching Pp1:300 is cut at Pp1:500
+  // peach reaches Pp1:500-2500, so the band reaching Pp1:300 is cut at Pp1:500,
+  // and two abutting match ops draw as that one band
   test.each([
-    [
-      'forward',
-      1,
-      false,
-      [[80, 720, -800, 200]],
-      [
-        [80, 400, -800, -600],
-        [400, 720, -600, 200],
-      ],
-    ],
-    [
-      'reverse',
-      -1,
-      false,
-      [[80, 720, 200, -800]],
-      [
-        [80, 400, 200, -600],
-        [400, 720, -600, -800],
-      ],
-    ],
-    [
-      'reverse, flipped',
-      -1,
-      true,
-      [[80, 720, 600, 1600]],
-      [
-        [80, 400, 600, 1400],
-        [400, 720, 1400, 1600],
-      ],
-    ],
+    ['forward', 1, false, [[80, 720, -800, 200]]],
+    ['reverse', -1, false, [[80, 720, 200, -800]]],
+    ['reverse, flipped', -1, true, [[80, 720, 600, 1600]]],
   ])(
-    'a %s record crossing the lane’s reach edge clips its tiles there',
-    (_, strand, flipped, whole, split) => {
+    'a %s record crossing the lane’s reach edge clips its band there',
+    (_, strand, flipped, whole) => {
       const tiles = (...cigar: [number, number][]) => {
         const record = new SimpleFeature({
           uniqueId: 'r1',
@@ -661,7 +636,7 @@ describe('the ribbons', () => {
         ])
       }
       expect(tiles([800, CIGAR_M])).toEqual(whole)
-      expect(tiles([400, CIGAR_M], [400, CIGAR_M])).toEqual(split)
+      expect(tiles([400, CIGAR_M], [400, CIGAR_M])).toEqual(whole)
     },
   )
 

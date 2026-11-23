@@ -108,8 +108,18 @@ export function ribbonColorKey(
     against = 'lane above',
     paint = {},
     repeats = false,
+    mismatch,
   }: RibbonKeyOptions = {},
 ): CategoricalEntry[] {
+  const detail = mismatch
+    ? [
+        {
+          value: 'mismatch',
+          label: `Differs from ${against}, same length`,
+          color: mismatch,
+        },
+      ]
+    : []
   if (field === 'strand') {
     const [same, inverted] = strandLevels(paint, names)
     const repeat = noStrandLevel(paint, names)
@@ -133,10 +143,11 @@ export function ribbonColorKey(
             },
           ]
         : []),
+      ...detail,
     ]
   }
   if (!resolveCategoricalMode(field, attributeRanges, paint)) {
-    return []
+    return detail
   }
   const swatch = getColorBySwatch(field, {
     attributeRanges,
@@ -145,14 +156,17 @@ export function ribbonColorKey(
     names,
   })
   return swatch?.kind === 'chips'
-    ? swatch.chips.map(({ color, label, values, missing }) => ({
-        value: color === undefined ? '' : (values?.[0] ?? label),
-        ...(values ? { values } : {}),
-        label,
-        color,
-        ...(missing ? { missing } : {}),
-      }))
-    : []
+    ? [
+        ...swatch.chips.map(({ color, label, values, missing }) => ({
+          value: color === undefined ? '' : (values?.[0] ?? label),
+          ...(values ? { values } : {}),
+          label,
+          color,
+          ...(missing ? { missing } : {}),
+        })),
+        ...detail,
+      ]
+    : detail
 }
 
 interface RibbonKeyOptions {
@@ -166,6 +180,8 @@ interface RibbonKeyOptions {
   paint?: SyntenyColorPaint
   /** whether a ribbon draws an array record, which pairs no copy and is keyed apart */
   repeats?: boolean
+  /** the color of the stretches a ribbon draws differing from its mate over equal length, where one is drawn */
+  mismatch?: string
 }
 
 /** `title` unset keeps the ribbons' own heading; `''` draws none. */
@@ -201,6 +217,22 @@ export function ribbonColorScales(
         title: title ?? `Ribbon ${label[0]!.toLowerCase()}${label.slice(1)}`,
       },
       ...noValue,
+      ...(keyOptions.mismatch
+        ? [
+            {
+              kind: 'categorical' as const,
+              id: 'ribbon-detail',
+              entries: ribbonColorKey(
+                undefined,
+                {},
+                {
+                  mismatch: keyOptions.mismatch,
+                  against: keyOptions.against,
+                },
+              ),
+            },
+          ]
+        : []),
     ]
   }
   const textColumn = resolveCategoricalMode(field, attributeRanges, paint)

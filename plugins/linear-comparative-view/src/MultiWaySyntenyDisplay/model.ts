@@ -210,6 +210,7 @@ import {
   buildTickGeometry,
   glyphHitAt,
   glyphsKey,
+  mismatchCss,
   ribbonEnds,
   ribbonSides,
   outlineKey,
@@ -2451,6 +2452,9 @@ export function stateModelFactory(
               paint: self.ribbonPaint,
               against: self.againstAnchor,
               repeats: self.features.some(isArrayRecord),
+              mismatch: self.ribbonGeometry.mismatches
+                ? mismatchCss(self.ribbonColorField)
+                : undefined,
             },
           ),
         ]

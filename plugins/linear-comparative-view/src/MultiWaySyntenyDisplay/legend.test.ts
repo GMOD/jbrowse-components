@@ -181,6 +181,18 @@ test('the strand key names the genome each lane is read against', () => {
   ).toEqual(['Same orientation as hg38', 'Inverted vs hg38'])
 })
 
+test('the ribbon key names a drawn mismatch, and only while one is drawn', () => {
+  expect(
+    ribbonColorKey('strand', {}, { against: 'hg38', mismatch: 'brown' }).at(-1),
+  ).toEqual({
+    value: 'mismatch',
+    label: 'Differs from hg38, same length',
+    color: 'brown',
+  })
+  expect(ribbonColorKey(undefined, {}, { mismatch: 'brown' })).toHaveLength(1)
+  expect(ribbonColorKey('strand', {}, { against: 'hg38' })).toHaveLength(2)
+})
+
 test('the strand key takes the colors range writes and the names it gives', () => {
   expect(
     ribbonColorKey(

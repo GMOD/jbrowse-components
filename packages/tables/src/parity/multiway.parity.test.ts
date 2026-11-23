@@ -491,13 +491,15 @@ describe('volvox, the export given no lane genomes', () => {
 })
 
 describe('4 kb around the insertion, its CIGAR stating two mismatches', () => {
-  test('the export draws them as mismatch tiles', async () => {
+  // 5 bp/px: the 10 bp run is two px wide, the 3 bp run under one
+  test('the export draws the mismatch a pixel wide as a mismatch tile', async () => {
     const t = await engine.multiway({
       adapterConfig: ALL_VS_ALL_MISMATCHES.adapterConfig,
       anchor: ALL_VS_ALL_MISMATCHES.anchor,
       assemblies: ALL_VS_ALL_MISMATCHES.assemblies,
     })
-    expect(t.ribbons.kind.filter(kind => kind === 'mismatch')).toHaveLength(2)
+    expect(t.ribbons.kind.filter(kind => kind === 'mismatch')).toHaveLength(1)
+    expect(t.legend.label).toContain('Differs from lane above, same length')
   })
   parityCases(multiwayParity(ALL_VS_ALL_MISMATCHES), [
     { name: 'defaults', config: {} },

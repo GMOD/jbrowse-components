@@ -92,7 +92,10 @@ import {
   tickIntervalFor,
 } from './MultiWaySyntenyDisplay/layoutMultiWay.ts'
 import { ribbonColorScales } from './MultiWaySyntenyDisplay/legend.ts'
-import { buildRibbonGeometry } from './MultiWaySyntenyDisplay/multiwayGeometry.ts'
+import {
+  buildRibbonGeometry,
+  mismatchCss,
+} from './MultiWaySyntenyDisplay/multiwayGeometry.ts'
 import { MULTIWAY_FADE_THIN } from './MultiWaySyntenyDisplay/multiwayRenderTypes.ts'
 import { getMate, getRecordName, isArrayRecord } from './syntenyMate.ts'
 
@@ -1077,6 +1080,7 @@ export async function multiwayTables(
         paint: ribbon.paint,
         against,
         repeats: features.some(isArrayRecord),
+        mismatch: geometry.mismatches ? mismatchCss(ribbon.field) : undefined,
       }),
     ),
     height: laneGeom.contentHeight,

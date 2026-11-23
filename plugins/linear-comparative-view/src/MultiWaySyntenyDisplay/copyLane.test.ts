@@ -331,7 +331,7 @@ describe('copy lanes around an anchor in the middle', () => {
     expect(joined(true)).toEqual(onAnchorPx)
   })
 
-  test('a mismatch in the record joins its copy base above to its anchor base below', () => {
+  test('a mismatch a pixel wide in the record joins its copy bases above to its anchor bases below', () => {
     const stack = stackOf(['{grape}chr9', 'peach', '{grape}chr11'])
     const { cells } = buildRibbonGeometry({
       stack,
@@ -341,8 +341,8 @@ describe('copy lanes around an anchor in the middle', () => {
           Uint32Array.from(
             [
               [50, CIGAR_EQ],
-              [1, CIGAR_X],
-              [49, CIGAR_EQ],
+              [2, CIGAR_X],
+              [48, CIGAR_EQ],
             ].map(([len, op]) => (len! << 4) | op!),
           ),
         ],
@@ -355,10 +355,10 @@ describe('copy lanes around an anchor in the middle', () => {
     const cell = cells.get('ribbons:0')
     const data = cell?.kind === 'ribbons' ? cell.data : undefined
     const mark = [...(data?.kinds ?? [])].indexOf(KIND_BASE_TILE)
-    // chr9:1150-1151 at 0.4 px/bp from 0, over chrG7:150-151 at 0.8 px/bp
+    // chr9:1150-1152 at 0.4 px/bp from 0, over chrG7:150-152 at 0.8 px/bp
     expect(
       data && [data.bp1[mark], data.bp2[mark], data.bp4[mark], data.bp3[mark]],
-    ).toEqual([460, 460.4, 120, 120.8].map(Math.fround))
+    ).toEqual([460, 460.8, 120, 121.6].map(Math.fround))
   })
 
   test('the anchor’s rule sits beside each copy away from it', () => {
