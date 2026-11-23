@@ -182,3 +182,34 @@ test('a plugin manifest declares the top-level key its rootConfigurationSchema a
     where(validateWith({ ...config, msa: { dataset: [] } }, [plugin])),
   ).toEqual(['error msa.dataset'])
 })
+
+test("a plugin's mark step is judged by the mark rules once its schema declares it", () => {
+  const { $defs } = configJsonSchema
+  const bin = isRecord($defs) ? $defs['MarkTransform.bin'] : undefined
+  const plugin: PluginManifest = {
+    schema: {
+      $defs: {
+        'MarkTransform.bin': {
+          ...bin,
+          properties: {
+            ...(isRecord(bin) && isRecord(bin.properties)
+              ? bin.properties
+              : {}),
+            fooWeight: { type: 'number' },
+          },
+        },
+      },
+    },
+  }
+  const config = configWith({
+    type: 'LinearMarkDisplay',
+    marks: [{ mark: 'bar', encoding: { y: 'score' } }],
+    transform: [{ type: 'bin', step: -5, fooWeight: 1 }],
+  })
+  expect(where(validateConfig(config))).toEqual([
+    'error tracks[0].displays[0].transform[0].fooWeight',
+  ])
+  expect(where(validateWith(config, [plugin]))).toEqual([
+    'error tracks[0].displays[0].transform[0].step',
+  ])
+})

@@ -42,7 +42,6 @@ import {
 import { markProblems } from './markRules/markProblems.ts'
 import {
   coreSchemaValidator,
-  hasDeclaredShape,
   SEQUENCE_FROM_ASSEMBLY,
 } from './schemaValidate.ts'
 import { didYouMean, didYouMeanKey, suggest } from './suggest.ts'
@@ -711,10 +710,9 @@ const SLOTS_POINTER = `/$defs/${MARK_DISPLAY}Slots/properties`
 // its siblings keep their indices and their own reports. A list the file
 // leaves unwritten is the slot's default entries, a display's default plot.
 function declaredEntries<T>(
-  lifted: Record<string, unknown>,
-  display: Record<string, unknown>,
+  { lifted, written: display, slots }: DisplayNode,
   slot: string,
-  slots: readonly SlotEntry[],
+  schema: SchemaValidator,
 ): (T | undefined)[] {
   const list = lifted[slot]
   const written = display[slot]
@@ -723,7 +721,7 @@ function declaredEntries<T>(
   }
   return Array.isArray(list)
     ? list.map((entry, i) =>
-        hasDeclaredShape([written[i]], `${SLOTS_POINTER}/${slot}`)
+        schema.hasDeclaredShape([written[i]], `${SLOTS_POINTER}/${slot}`)
           ? (entry as T)
           : undefined,
       )
@@ -760,9 +758,11 @@ function holdsMarkRules(
 // the rule list the display shows in its corner notice, copied from the plugin
 // (`markRules/`). A single mark's `requires` is the schema's to report.
 function checkMarkDisplay(
-  { written: display, lifted, slots, where }: DisplayNode,
+  node: DisplayNode,
   report: Report,
+  schema: SchemaValidator,
 ) {
+  const { lifted, slots, where } = node
   const { facet, encoding } = lifted
   const rowsWrites = slots.find(slot => slot.name === 'rows')?.writes
   const rows = isKeyedWrites(rowsWrites)
@@ -772,14 +772,9 @@ function checkMarkDisplay(
     valueAxesOf(lifted[slot.name], slot, slot.name),
   )
   for (const { level, rule, mark, slot, message } of markProblems({
-    marks: declaredEntries<MarkSnapshot>(lifted, display, 'marks', slots),
+    marks: declaredEntries<MarkSnapshot>(node, 'marks', schema),
     facet: isRecord(facet) ? facet : undefined,
-    transform: declaredEntries<StepSnapshot>(
-      lifted,
-      display,
-      'transform',
-      slots,
-    ),
+    transform: declaredEntries<StepSnapshot>(node, 'transform', schema),
     rows: isRecord(rows) ? rows : undefined,
     rowAttributes:
       isRecord(rows) && Array.isArray(rows.groups) && rows.groups.length > 0
@@ -1309,7 +1304,7 @@ function checkMarkDisplays(
         own ??
         displayNodeOf(node, manifest.displays[MARK_DISPLAY]?.slots, where)
       if (marked) {
-        checkMarkDisplay(marked, report)
+        checkMarkDisplay(marked, report, ctx.schema)
       }
     }
     for (const [key, member] of Object.entries(node)) {
