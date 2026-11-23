@@ -4,10 +4,7 @@ import { inkOfInstances } from '@jbrowse/render-core/marks'
 
 import { renderedTextWidth } from '../RenderFeatureDataRPC/constants.ts'
 import { ROOT_CHILD_ORDINAL } from '../RenderFeatureDataRPC/rpcTypes.ts'
-import {
-  labelsReachRegion,
-  placeFeatureLabels,
-} from './components/labelPositioning.ts'
+import { placeFeatureLabels } from './components/labelPositioning.ts'
 import { BASIC_FEATURE_MARKS } from './marks/basicFeatureMarks.ts'
 import { glyphMarkIndex } from './marks/featureGlyphMarks.ts'
 
@@ -141,14 +138,8 @@ function placedLabels(
     return []
   }
   const context = self.renderedLabels
-  const block = blocks.find(b =>
-    labelsReachRegion(
-      labelData,
-      b,
-      context.showLabels,
-      context.showDescriptions,
-      context.fontSize,
-    ),
+  const block = blocks.find(
+    b => labelData.maxX >= b.start && labelData.minX <= b.end,
   )
   return block
     ? placeFeatureLabels(labelData, makeBpMapper(block), block, context)

@@ -13,7 +13,8 @@
 - **`renderedLabelSet` (`LinearBasicDisplay/components/labelPositioning.ts`) is
   the only predicate for which labels render** — the packer's reservation, the
   walker and the positioner all read it. A disagreeing copy fails silently, as
-  reserved whitespace or overhanging text.
+  reserved whitespace or overhanging text. `placeFeatureLabels` then drops a
+  label that would start left of the view, after the packer reserved its room.
 - **Measure label width at `renderedLabels.fontSize`, not `labelFontSize`**;
   they differ on the `bare` rung. What a rung reserved is `FitRung.reserved`;
   nothing re-derives it from the rung's name.

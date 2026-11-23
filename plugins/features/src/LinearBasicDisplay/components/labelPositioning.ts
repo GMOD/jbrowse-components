@@ -135,29 +135,6 @@ function maxRenderedLabelWidth(
   )
 }
 
-/**
- * Whether a feature's labels can reach `vr`: its own span, and the bp its
- * widest label spills over past the edge it pins to — the low end, or the
- * high end in a flipped region. A label wider than its feature stays on screen
- * after the feature has left it.
- */
-export function labelsReachRegion(
-  labelData: FeatureLabelData,
-  vr: BpRegionBounds,
-  showLabels: boolean,
-  showDescriptions: boolean,
-  fontSize: number,
-) {
-  const { minX, maxX } = labelData
-  const reachBp =
-    (maxRenderedLabelWidth(labelData, showLabels, showDescriptions, fontSize) *
-      (vr.end - vr.start)) /
-    (vr.screenEndPx - vr.screenStartPx)
-  const low = vr.reversed ? Math.min(minX, maxX - reachBp) : minX
-  const high = vr.reversed ? maxX : Math.max(maxX, minX + reachBp)
-  return high >= vr.start && low <= vr.end
-}
-
 // A label is left-aligned to its glyph and spills rightward, so every consumer
 // that covers both widens by exactly this. `fontSize` must be the display mode's
 // resolved size: the baked widths are measured at the base size, and a compact
@@ -193,6 +170,8 @@ export interface LabelMetrics {
 // rightward, the overhang the packer reserved. One that fits sits between two
 // clamps: `visibleStart` keeps it from starting off-screen, `rightEdgeLimit`
 // stops its end passing the feature's right edge, and the right-edge limit wins.
+// Either way a label can start left of the view, and `placeFeatureLabels`
+// drops it there rather than draw its tail.
 export function computeLabelLeftPx(
   textWidth: number,
   bounds: Omit<FeatureBoundsPx, 'featureBottomPx'>,
@@ -334,20 +313,26 @@ export function placeFeatureLabels(
     offsetY = 0,
     trailingPx = 0,
   ) => {
-    const placed = {
+    const position = computeLabelPosition(
       label,
-      ...computeLabelPosition(
-        label,
-        offsetY + padding,
-        bounds,
-        size,
-        trailingPx,
-      ),
-      fontSize: size,
-      kind,
-      color: colors && plainLabelColor(label, kind, colors),
+      offsetY + padding,
+      bounds,
+      size,
+      trailingPx,
+    )
+    const placed =
+      position.labelX > bounds.screenStartPx - 0.5
+        ? {
+            label,
+            ...position,
+            fontSize: size,
+            kind,
+            color: colors && plainLabelColor(label, kind, colors),
+          }
+        : undefined
+    if (placed) {
+      out.push(placed)
     }
-    out.push(placed)
     return placed
   }
   if (nameLabel) {
@@ -366,7 +351,7 @@ export function placeFeatureLabels(
       0,
       badgeWidth,
     )
-    if (moreIsoformsLabel) {
+    if (name && moreIsoformsLabel) {
       out.push({
         label: moreIsoformsLabel,
         labelX: name.labelX + nameWidth + LABEL_PADDING_PX,
@@ -419,15 +404,7 @@ export function forEachRenderedLabel(
     if (skip?.has(featureId)) {
       continue
     }
-    if (
-      !labelsReachRegion(
-        labelData,
-        vr,
-        showLabels,
-        showDescriptions,
-        context.fontSize,
-      )
-    ) {
+    if (labelData.maxX < vr.start || labelData.minX > vr.end) {
       continue
     }
     // Labels hang below featureBottomPx, except an overlay label, which sits

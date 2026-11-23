@@ -1,10 +1,7 @@
 import { resolvePalette } from '@jbrowse/core/ui/palette'
 import { measureText } from '@jbrowse/core/util'
 
-import {
-  LABEL_EDGE_GUTTER_PX,
-  LABEL_PADDING_PX,
-} from '../../RenderFeatureDataRPC/constants.ts'
+import { LABEL_EDGE_GUTTER_PX } from '../../RenderFeatureDataRPC/constants.ts'
 import { labelColors } from './labelColors.ts'
 import {
   LABEL_CULL_BUCKET_PX,
@@ -98,19 +95,16 @@ function collect(
   return out
 }
 
-// The packer reserves the name row, name and badge together, from the
-// feature's left edge; a name that slid right on its own width would push the
-// badge past that room and onto the next feature's label.
-test('keeps the isoform badge inside the row the packer reserved when the feature runs off the left edge', () => {
-  const nameWidth = 95
-  const badgeWidth = 38
+// A name wider than its feature sits on the feature's left edge, here 50px off
+// screen, so the name is dropped and its badge with it.
+test('drops the isoform badge with a name that would start left of the view', () => {
   const data = makeData({
     gene: makeLabelData('gene', {
       minX: 100,
       maxX: 220,
-      nameLabel: makeLabel({ textWidth: nameWidth }),
+      nameLabel: makeLabel({ textWidth: 95 }),
       moreIsoformsLabel: {
-        ...makeLabel({ text: '+3 more', textWidth: badgeWidth }),
+        ...makeLabel({ text: '+3 more', textWidth: 38 }),
         hidden: 3,
         expanded: false,
       },
@@ -121,11 +115,7 @@ test('keeps the isoform badge inside the row the packer reserved when the featur
     { start: 150, end: 1150, screenStartPx: 0, screenEndPx: 1000 },
     { showLabels: true, showDescriptions: false },
   )
-  const badge = emitted!.labels.find(l => l.kind === 'more')!
-  const featureLeftPx = -50
-  expect(badge.labelX + badgeWidth).toBeLessThanOrEqual(
-    featureLeftPx + nameWidth + LABEL_PADDING_PX + badgeWidth,
-  )
+  expect(emitted!.labels).toEqual([])
 })
 
 // The slow path and the fast path both emit nothing, so a container that throws
@@ -185,9 +175,9 @@ describe('forEachRenderedLabel', () => {
     expect(result).toHaveLength(0)
   })
 
-  // 1bp per px: the name pins to the feature's left edge and runs 80px on,
-  // over the view though the feature itself has left it.
-  test('emits a name that overhangs into the region after its feature has left it', () => {
+  // 1bp per px: the feature has left the region and its 80px name would start
+  // left of it, so no label shows, forward or flipped.
+  test('draws no label for a feature that has left the region', () => {
     const overhanging = (minX: number, maxX: number) =>
       makeData({
         f1: makeLabelData('f1', {
@@ -202,22 +192,15 @@ describe('forEachRenderedLabel', () => {
         overhanging(90, 95),
         { ...FULL_REGION, start: 96, end: 1096 },
         visibility,
-      ),
-    ).toHaveLength(1)
+      ).flatMap(e => e.labels),
+    ).toEqual([])
     expect(
       collect(
         overhanging(1002, 1007),
         { ...FULL_REGION, reversed: true },
         visibility,
-      ),
-    ).toHaveLength(1)
-    expect(
-      collect(
-        overhanging(90, 95),
-        { ...FULL_REGION, start: 400, end: 1400 },
-        visibility,
-      ),
-    ).toHaveLength(0)
+      ).flatMap(e => e.labels),
+    ).toEqual([])
   })
 
   test('does not emit when no labels would render', () => {
@@ -393,9 +376,9 @@ describe('forEachRenderedLabel', () => {
     expect(emitted!.labels[0]!.labelX).toBe(LABEL_EDGE_GUTTER_PX)
   })
 
-  // A feature whose right edge is within a label's width of the screen left keeps
-  // its label on that right edge, off screen and all.
-  test('the right-edge clamp still wins over the gutter', () => {
+  // The right-edge clamp would start this label 28px left of the view, where
+  // only its tail would show.
+  test('drops a label the visible slice of its feature cannot hold', () => {
     const data = makeData({
       f1: makeLabelData('f1', {
         minX: -400,
@@ -407,7 +390,27 @@ describe('forEachRenderedLabel', () => {
       showLabels: true,
       showDescriptions: true,
     })
-    expect(emitted!.labels[0]!.labelX).toBeLessThan(LABEL_EDGE_GUTTER_PX)
+    expect(emitted!.labels).toEqual([])
+  })
+
+  test('drops only the label that would be cut, keeping a name that fits', () => {
+    const data = makeData({
+      f1: makeLabelData('f1', {
+        minX: -400,
+        maxX: 60,
+        nameLabel: makeLabel({ textWidth: 30 }),
+        descriptionLabel: makeLabel({
+          text: 'uncharacterized protein',
+          textWidth: 120,
+        }),
+      }),
+    })
+    const [emitted] = collect(data, FULL_REGION, {
+      showLabels: true,
+      showDescriptions: true,
+    })
+    expect(emitted!.labels.map(l => l.kind)).toEqual(['name'])
+    expect(emitted!.labels[0]!.labelX).toBe(LABEL_EDGE_GUTTER_PX)
   })
 
   test('culls a feature whose row is outside the cull band', () => {
