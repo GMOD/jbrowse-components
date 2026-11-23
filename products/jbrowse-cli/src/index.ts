@@ -95,6 +95,7 @@ const registry: {
 ]
 
 export async function main(args: string[]) {
+  let commandName: string | undefined
   try {
     const { values: flags, positionals } = parseArgs({
       args,
@@ -125,7 +126,7 @@ export async function main(args: string[]) {
       return
     }
 
-    const commandName = positionals[0]
+    commandName = positionals[0]
     if (!commandName) {
       console.error('Error: Missing command')
       showGlobalHelp()
@@ -161,7 +162,10 @@ export async function main(args: string[]) {
 
     console.error('Error:', message)
 
-    if (code === 'EPIPE' || code === 'ENOSPC' || message.includes('EPIPE')) {
+    if (
+      commandName === 'text-index' &&
+      (code === 'EPIPE' || code === 'ENOSPC' || message.includes('EPIPE'))
+    ) {
       console.error(`
 This error may be caused by running out of space in the temporary directory.
 Try setting a custom TMPDIR with more available space:
