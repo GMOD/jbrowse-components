@@ -8,11 +8,11 @@ guide_category: Tutorials
 tutorial_category: Cancer genomics
 ---
 
-A cancer genome can stitch several distant pieces of the genome into one
-molecule through a chain of junctions. A short read spans one junction at most;
-a long read can cross several, and the reads crossing all of them can be
-assembled into the rearranged chromosome itself. We follow one such chain across
-chr3, chr10 and chr12 in the COLO829 melanoma cell line. We:
+In a cancer genome, a chain of junctions can join several distant pieces of the
+genome into one molecule. A short read spans one junction at most; a long read
+can cross several, and the reads crossing all of them can be assembled into the
+rearranged chromosome itself. We follow one such chain across chr3, chr10 and
+chr12 in the COLO829 melanoma cell line. We:
 
 - load tumor and normal long reads with the somatic SV calls, and sort split
   reads first at the chr3 breakpoints
@@ -203,9 +203,9 @@ introduced.
 
 ## Assembling the der(3) derivative allele and aligning it to GRCh38 {#the-derivative-allele}
 
-The split view shows each read in pieces across three panels. Assembling the
-reads that span all three loci gives the der(3) allele as one contig, every base
-of it from those reads; the cancer SV demo config,
+The split view shows each read in pieces across three panels. An assembler run
+on the reads that span all three loci produces the der(3) allele as one contig,
+every base of it from those reads; the cancer SV demo config,
 https://jbrowse.org/demos/cancer_sv/config.json, includes the published one.
 
 To build one from your own data, pull the reads crossing the loci with
@@ -307,7 +307,7 @@ it:
 }
 ```
 
-On the hg38 row, the figures draw UCSC's RefSeq genes:
+On the hg38 row, the figures show UCSC's RefSeq genes:
 
 ```json addtrack
 {
@@ -330,8 +330,8 @@ On the hg38 row, the figures draw UCSC's RefSeq genes:
 }
 ```
 
-The figures below also draw RefSeq genes projected onto the derivative, a track
-the demo config does not carry.
+The figures below also show RefSeq genes projected onto the derivative, a track
+that is not in the demo config.
 
 Open **Add → Linear synteny view** with hg38 on the top row and
 `der3_RARB_BICC1_TRHDE` below, and pick **der3 contig vs hg38** as the synteny

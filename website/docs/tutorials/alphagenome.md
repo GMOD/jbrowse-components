@@ -38,7 +38,8 @@ tokens, following the AlphaGenome team's
 
 Nothing to download: the plugin reads both stored predictions by URL. To use
 your own variants, swap `uri` for a VCF or BED, as _Asking AlphaGenome for a
-prediction_ shows, and the query panel predicts any hg38 locus you open.
+prediction_ shows, and the query panel requests a prediction for any hg38 locus
+you open.
 
 <details>
 <summary>The files</summary>
@@ -63,7 +64,7 @@ erythroleukemia line, and off in GM12878, a lymphoblastoid line, the control.
 ## The AlphaGenome plugin
 
 The plugin is not in the [plugin store](/docs/user_guides/plugin_store) yet, so
-it loads by URL from the `plugins` array in `config.json` (see
+JBrowse loads it by URL from the `plugins` array in `config.json` (see
 [configuring plugins](/docs/config_guides/plugins)):
 
 ```json
@@ -115,7 +116,7 @@ genes and the oncogenic _TAL1_ variants:
 }
 ```
 
-The variants are a BED whose header names `REF` and `ALT` columns after the
+The variants are a BED whose header lists `REF` and `ALT` columns after the
 usual four, since the right-click prediction item needs those alleles on each
 feature. For your own variants, swap `uri` for a VCF or a BED with the same
 columns:
@@ -182,7 +183,7 @@ untick **Stack on a shared scale**.
 
 <Figure caption="Predicted polyA plus RNA-seq over TAL1 in K562 and GM12878 on one y-axis." src="/img/alphagenome/expression_two_cell_lines.png" />
 
-_STIL_, to the right, is predicted in both lines, which shows the GM12878 row
+_STIL_, to the right, is predicted in both lines, a sign that the GM12878 row
 loaded.
 
 ## Where the chromatin is open
@@ -294,7 +295,7 @@ arrays with fresh URLs.
 [^junctions]:
     AlphaGenome returns tens of thousands of junctions for a megabase. The
     adapter loads them all and draws only those scoring 0.5 or more, which over
-    one gene leaves the few strong arcs. The track colors arcs by strand and
+    one gene leaves the few strong arcs. The display colors arcs by strand and
     strokes them by score.
 
 [^mapping]:

@@ -189,7 +189,7 @@ up:
 }
 ```
 
-The human and mouse assemblies name their chromosomes alike, so the arcs have
+The human and mouse assemblies use the same chromosome names, so the arcs have
 the same labels. To read the circle:
 
 - Human chromosomes run clockwise from the top and mouse chromosomes follow; the
@@ -250,11 +250,11 @@ chromosomes, human here. To color by strand instead:
 
 ## Gene density as a ring
 
-A track that draws in the linear genome view also draws on the circle, as a ring
-inside the ideogram, so asking whether the conserved blocks are the gene-rich
-stretches takes one more track. `jbrowse make-density` counts a GFF3's top-level
-features per bin into a bigWig, so a gene is one count however many transcripts
-it has.
+A track type drawn in the linear genome view is also drawn on the circle, as a
+ring inside the ideogram, so asking whether the conserved blocks are the
+gene-rich stretches takes one more track. `jbrowse make-density` counts a GFF3's
+top-level features per bin into a bigWig, so a gene is one count however many
+transcripts it has.
 
 For one genome, `make-density` takes the GFF3 and its chrom.sizes directly:
 
@@ -280,9 +280,9 @@ bgzip -f hg38ToMm39.genes.gff
 jbrowse make-density hg38ToMm39.genes.gff.gz --chrom-sizes hg38ToMm39.chrom.sizes --bin 100000
 ```
 
-The track names both assemblies. Its display defaults draw a heatmap strip whose
-color is the average over each pixel's bins. `mark` is the shape drawn, and
-`encoding.color` is a `linear` color scale mapping the score across a
+The track names both assemblies, and its display defaults set a heatmap strip
+whose color is the average over each pixel's bins. `mark` is the shape drawn,
+and `encoding.color` is a `linear` color scale mapping the score across a
 `scale.range` from white at the fewest genes in view to orange at the most:
 
 ```json addtrack

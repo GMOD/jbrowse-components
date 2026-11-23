@@ -9,9 +9,9 @@ tutorial_category: Cancer genomics
 ---
 
 A tumor gains and loses whole stretches of chromosome, and the gains and losses
-that cover a cancer gene push the tumor along. HG008-T, the tumor of the C-GIAB
-matched pair, is hypodiploid: 35 chromosomes down from 46, with widespread
-arm-level loss
+that cover a cancer gene drive the tumor's progression. HG008-T, the tumor of
+the C-GIAB matched pair, is hypodiploid: 35 chromosomes down from 46, with
+widespread arm-level loss
 ([Wagner et al. 2026](https://doi.org/10.64898/2026.05.01.722316)). Starting
 from the assembly, reads and benchmark that
 [part 1](/docs/tutorials/sv_visualization_cgiab) loads, we read its copy number
@@ -125,7 +125,7 @@ adds, whose copy numbers are absolute, so CN 2 marks a diploid region.
 
 DRAGEN's CNV calls load as an indexed VCF, one record per segment. Record IDs
 read `DRAGEN:CNLOH:chr9:22631070-22939213` (copy-neutral loss of
-heterozygosity), so the label reads the class from the second field:
+heterozygosity), so the label shows the class from the second field:
 
 ```json addtrack
 {
@@ -392,7 +392,7 @@ In pancreatic ductal adenocarcinoma the recurrently altered genes are _KRAS_,
 _CDKN2A_, _TP53_ and _SMAD4_
 ([Waddell et al. 2015](https://doi.org/10.1038/nature14169),
 [Bailey et al. 2016](https://doi.org/10.1038/nature16965)). Each copy-number
-figure below draws the gene's MANE Select (standard reference) transcript under
+figure below shows the gene's MANE Select (standard reference) transcript under
 the tracks, from NCBI's MANE track labelled by gene symbol:
 
 ```json addtrack
@@ -446,7 +446,7 @@ and **Max** at 0 and 3 stops indexcov's centromere spikes from flattening every
 plateau.
 
 Zoom to a region and open the benchmark CNV BED. Coverage shows where the copy
-number steps and BAF the allelic balance across each step.
+number steps, and BAF shows the allelic balance across each step.
 
 <Video src="/media/sv_cgiab/copy_number_layout.mp4" caption="Plot type → Overlapping → Scatter on the coverage track, drawing the two rows as one band of points." />
 
@@ -541,7 +541,7 @@ Together, depth and BAF separate these states:
 | halved      | split to 0, 1   | single-copy loss with LOH |
 | raised      | 1/3 and 2/3     | allelic gain              |
 
-The benchmark BED's `hap1_copy_number` and `hap2_copy_number` columns give the
+The benchmark BED's `hap1_copy_number` and `hap2_copy_number` columns hold the
 `1+0` and `2+0` splits. Click a CNV feature to see both.
 
 ### KRAS gain and SMAD4 loss

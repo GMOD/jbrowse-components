@@ -129,8 +129,8 @@ tabix -p vcf trio.merr.vcf.gz
 
 A site where the child has an allele neither parent was called with counts as an
 error, as does one where no pair of parental alleles gives the child's genotype,
-such as a hom-alt child of a hom-ref parent. MERR does not tell the two apart;
-the genotypes and the reads below do.
+such as a hom-alt child of a hom-ref parent. MERR counts both kinds the same
+way; the genotypes and the reads below separate them.
 
 ## Loading the trio's phased VCF
 
@@ -160,10 +160,10 @@ infers the adapter and the index but sets no pedigree.
 }
 ```
 
-`pedigreeLocation` reads the 1000 Genomes pedigree, whose line
+`pedigreeLocation` points at the 1000 Genomes pedigree, whose line
 `VN049 HG02024 HG02026 HG02025` names HG02026 as HG02024's father and HG02025 as
-the mother. It gives each sample `family`, `father`, `mother` and `sex`
-attributes, and a `relationship` the row labels show after the name:
+the mother. From it JBrowse gives each sample `family`, `father`, `mother` and
+`sex` attributes, and a `relationship` the row labels show after the name:
 `HG02024 (daughter)`, `HG02025 (mother)` and `HG02026 (father)`. A PLINK `.fam`
 works the same way.
 
@@ -209,7 +209,8 @@ show a parent's het that the low-coverage calls missed. The 1000 Genomes SV
 callset gives the father and the daughter a deletion across CFHR1 (`HGSV_9982`),
 and a sample with one copy of a sequence is called homozygous for that copy's
 allele, which accounts for the run of errors there. Those calls are right for a
-one-copy sample: the errors mark the deletion, not a genotyping error.
+one-copy sample, so the errors there mark the deletion rather than a genotyping
+error.
 
 - **Filter:** the display's `filter` entry `{ "field": "INFO.MERR", "gte": 1 }`
   keeps the sites with an error alone.
@@ -318,9 +319,9 @@ merges them into clean blocks. Per child haplotype it:
 
 The script writes one BED9 line per block, with a `parenthap` label naming one
 of the painted track's four rows (father copy 1 or 2, mother copy 1 or 2) and an
-`itemRgb` that colors the father's copies blue and the mother's red. The
-commands below run it with the child, father and mother sample IDs, then sort,
-compress and index the output:
+`itemRgb` of blue for the father's copies and red for the mother's. The commands
+below run it with the child, father and mother sample IDs, then sort, compress
+and index the output:
 
 <!-- from: scripts/build_khv_trio_hapibd.sh -->
 
@@ -370,8 +371,8 @@ already name the four categories:
 
 ## Reading crossovers off the painted blocks
 
-Open the whole of chr1 with the painted track. It draws each parent's two copies
-as rows, blue for father HG02026 and red for mother HG02025:
+Open the whole of chr1 with the painted track. JBrowse draws each parent's two
+copies as rows, blue for father HG02026 and red for mother HG02025:
 
 <Figure caption="hap-ibd inheritance blocks in the multi-row feature display, the father's haplotypes blue and the mother's red." src="/img/trio-hapibd-painting.png"/>
 
@@ -418,10 +419,11 @@ copies:
 <Figure caption="A maternal crossover, where the painting steps from Mother hap2 to Mother hap1." src="/img/trio-crossover-maternal.png"/>
 
 The 1000 Genomes VCF is statistically phased, so its genotypes switch between
-the two parental copies more often than real crossovers do. hap-ibd's cM-length
-threshold filters most of those switches out of the painting, so the two
-crossovers above are well supported and the finer blocks are approximate. For
-crossover mapping, use a pedigree-aware method such as
+the two parental copies more often than real crossovers do. hap-ibd drops
+segments shorter than its cM-length threshold, which removes most of those
+switches from the painting, so the two crossovers above are well supported and
+the finer blocks are approximate. For crossover mapping, use a pedigree-aware
+method such as
 [duoHMM](https://mathgen.stats.ox.ac.uk/genetics_software/duohmm/duohmm.html).
 
 ## Reproduce it end to end

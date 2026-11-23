@@ -23,8 +23,8 @@ Typed one at a time, the requests ask the agent to:
 
 - JBrowse Desktop, installed and running (see the
   [desktop quickstart](/docs/quickstart_desktop))
-- an MCP client with a shell of its own, for the alignment step: Claude Code, or
-  Claude Desktop, set up as in [](/docs/agents)
+- an MCP client that can run shell commands, for the alignment step: Claude
+  Code, or Claude Desktop, set up as in [](/docs/agents)
 - [minimap2](https://github.com/lh3/minimap2)
 - `node`, for the [JBrowse CLI](/docs/cli)
 
@@ -116,7 +116,8 @@ the order of `assemblyNames` on the track:
 
 In `assemblyNames`, the query (`sim.fa.gz`, the second `minimap2` argument)
 comes first and the target second, the order of the PAF columns. In the other
-order no chromosome name resolves, so the synteny band is empty.
+order JBrowse matches none of the chromosome names to an assembly, so the
+synteny band is empty.
 
 <Figure caption="chr3R on both genomes with RefSeq genes on each row and the minimap2 alignment between them, colored by strand." src="/img/agent_synteny/comparison_built.png" />
 

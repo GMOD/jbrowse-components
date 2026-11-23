@@ -132,15 +132,16 @@ The track opens paired and colored. To select a non-default display type, write
 a `displays` array; [configuring tracks](/docs/config_guides/tracks) covers both
 forms.
 
-## When a session and the track config set the same setting
+## A session setting overrides the track config's
 
 With the CRAM track now set in two places, a session and `config.json`, the
 session wins, one key at a time. The CRAM track in the shipped volvox config has
 no `displayDefaults` to show that against, so this step uses a volvox gene
 track, `gff3tabix_genes_shorthand_jexl`, whose `displayDefaults` set
-`encoding.color`, a jexl expression that draws plus-strand features blue and
-minus-strand ones red, and `labels`, which names each feature with its type in
-brackets. This session sets `encoding.color` on that track and nothing else:
+`encoding.color`, a jexl expression that returns blue for plus-strand features
+and red for minus-strand ones, and `labels`, which names each feature with its
+type in brackets. This session sets `encoding.color` on that track and nothing
+else:
 
 ```json live config=test_data/volvox/config.json
 {
@@ -181,7 +182,7 @@ with the settings encoded in it.
 
 </details>
 
-## Pass the same settings to an embedded component
+## Pass display settings to an embedded component
 
 The embedded React components take the same three keys through the `view` prop,
 written beside the `trackId` in the view's `tracks` list:

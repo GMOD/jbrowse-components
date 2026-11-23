@@ -29,7 +29,8 @@ _CYP1A2_ on chr30, we:
 - the `UU_Cfam_GSD_1.0` dog assembly (UCSC's canFam4) set up in JBrowse. The
   [canFam4 hub on genomes.jbrowse.org](https://genomes.jbrowse.org/ucsc/canFam4/)
   is a config that loads it with its gene and repeat tracks, and the
-  [assemblies guide](/docs/config_guides/assemblies) builds one by hand.
+  [assemblies guide](/docs/config_guides/assemblies) shows how to build one by
+  hand.
 - `bcftools` built with libcurl
 - `curl`
 - `python3`
@@ -262,9 +263,9 @@ and prints the breeds that have the allele.
 ## Copy number at CYP1A2
 
 The Dog10K paper reports half the collection at three or more copies of
-_CYP1A2_. The per-animal estimates are unpublished, but the SNV callset records
-a per-sample read depth (`DP`) at every site, so one slice of it, stripped to
-that field, covers every canid in the collection:
+_CYP1A2_. The per-animal estimates are unpublished, but the SNV callset holds a
+per-sample read depth (`DP`) at every site, so one slice of it, stripped to that
+field, covers every canid in the collection:
 
 <!-- from: scripts/build_dog10k_cyp1a2_cn.sh -->
 
@@ -339,8 +340,8 @@ sort -k1,1 -k2,2n cohort_cn.bed | bgzip > dog10k_cyp1a2_cohort_cn.bed.gz
 tabix -C -p bed dog10k_cyp1a2_cohort_cn.bed.gz
 ```
 
-The callset records depth only where a variant was called, so the build script
-checks it against the 15 CRAMs the Dog10K share publishes. The CRAM-based
+The callset holds depth only at sites where a variant was called, so the build
+script checks it against the 15 CRAMs the Dog10K share publishes. The CRAM-based
 painting is in the config as `dog10k_cyp1a2_cn`.
 
 The output is a BED with the color in `itemRgb` and the rounded call in
@@ -428,14 +429,14 @@ rest on callset depth alone, since none of the dogs with published reads is a
 wolf.
 
 The white stripes through both tracks are windows with no call. A window whose
-median across the whole collection is not two copies measures a quirk of the
-reference, so the build script drops it from every row.[^cpg]
+median across the whole collection is not two copies has a depth set by a quirk
+of the reference, so the build script drops it from every row.[^cpg]
 
 The lower track repeats the estimate for every canid. Clustering groups animals
 whose expansion starts and ends in the same place, and the blocks on either side
 of the gene are deletion polymorphisms.
 
-The depth-based estimate puts far more of the collection at three or more copies
+By the depth-based estimate, far more of the collection has three or more copies
 than the paper reports. The two counts cover different intervals: the paper ran
 QuicK-mer2 over an element whose extent is unpublished, and the build script
 counts the windows whose depth-based estimate is above two copies.
@@ -498,8 +499,8 @@ bash build_dog10k_cyp1a2_cn.sh   # writes ./dog10k_cyp1a2_cn_build/
 
 [^cpg]:
     The widest stripe sits on a CpG island, whose high GC content lowers read
-    depth in every canid, and each 5 kb window spreads that over the blocks
-    around it.
+    depth in every canid, and because each window is 5 kb wide, the dip also
+    lowers the blocks around it.
 
 [^cert]:
     The share's TLS certificate expired in October 2026, so `curl`, `bcftools`

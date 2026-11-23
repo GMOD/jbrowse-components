@@ -88,7 +88,7 @@ npx serve -S .
 
 Open the URL `serve` prints.
 
-The `@next` tag fetches the newest v5 prerelease, which the `assembly` and
+The `@next` tag points at the newest v5 prerelease, which the `assembly` and
 `tracks` shorthand above needs. For production, pin the version you tested
 against in place of `@next` (`@jbrowse/react-linear-genome-view2@<version>`).
 For other view types, a different bundler, or working demo repos, see

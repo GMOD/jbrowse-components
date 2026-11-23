@@ -72,13 +72,12 @@ the BAM, supply your own bisulfite FASTQ and reference.
 | The TAIR10 reference the reads align to, fetched by accession with the `datasets` CLI | [GCF_000001735.4_TAIR10.1/](https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/000/001/735/GCF_000001735.4_TAIR10.1/) |
 | The WGBS run's paired-end reads                                                       | [DRR029742/](https://ftp.sra.ebi.ac.uk/vol1/fastq/DRR029/DRR029742/)                                            |
 
-## What bisulfite data looks like
+## Bisulfite conversion and cytosine contexts
 
 A chemical (sodium bisulfite) or enzymatic (APOBEC, in EM-seq) step converts
 every unmethylated cytosine to uracil, which reads as T, and a methylated
-cytosine still reads as C. Comparing each read to the reference recovers the
-methylation: a C→T change means unmethylated, and a retained C means methylated.
-JBrowse makes that comparison per read as it draws.
+cytosine still reads as C. JBrowse compares each read to the reference as it
+draws: a C→T change means unmethylated, and a retained C means methylated.
 
 Plants methylate in three sequence contexts: CpG, CHG, and CHH (H is A, C, or
 T). JBrowse colors the reads by one context at a time.
@@ -88,7 +87,7 @@ T). JBrowse colors the reads by one context at a time.
 The [reproduce script](#reproduce-it-end-to-end) trims the reads of
 [`DRR029742`](https://www.ebi.ac.uk/ena/browser/view/DRR029742) with Trim Galore
 and aligns them with [bwameth](https://github.com/brentp/bwa-meth), which C→T
-converts reads and reference in silico and runs `bwa mem`. The BAM keeps the
+converts reads and reference in silico and runs `bwa mem`. The BAM holds the
 original read sequences, so the C→T changes are still there for JBrowse to find;
 Bismark BAMs work the same way. Trimming and alignment, on any pair of WGBS or
 EM-seq FASTQs:
@@ -313,8 +312,8 @@ one of each: the expressed gene AT1G12930 on the left, and a transposon on the
 right.
 
 To identify the element on the right, add the RepeatMasker track from the TAIR10
-genome hub. It labels the element `META1_LTR#LTR/Copia`, an LTR retrotransposon.
-No RefSeq transcript overlaps it:
+genome hub. RepeatMasker labels the element `META1_LTR#LTR/Copia`, an LTR
+retrotransposon. No RefSeq transcript overlaps it:
 
 ```json addtrack
 {

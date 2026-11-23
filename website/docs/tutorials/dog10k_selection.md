@@ -29,8 +29,8 @@ on chr15, we:
 - the `UU_Cfam_GSD_1.0` dog assembly (UCSC's canFam4) set up in JBrowse. The
   [canFam4 hub on genomes.jbrowse.org](https://genomes.jbrowse.org/ucsc/canFam4/)
   is a config that loads it with its gene and repeat tracks, and the
-  [assemblies guide](/docs/config_guides/assemblies) builds one by hand. This
-  track reads its `chrom.sizes` alone.
+  [assemblies guide](/docs/config_guides/assemblies) shows how to build one by
+  hand. This track reads its `chrom.sizes` alone.
 - `bcftools` built with libcurl
 - `curl`
 - `python3`
@@ -166,10 +166,10 @@ display lays the autosomes out side by side. The red line is a rule on
 `encoding.y`, the y scale; **Y axis... → Reference lines** adds one to a track
 already open.
 
-Rerunning the same script over one region rebins it, which is the lower half of
-the figure below: the same panel and the same estimator at 20 kb over two
-megabases, where the peak resolves into a sweep. `WINDOW` is the bin width,
-`REGIONS` any `bcftools -r` target, and `OUTBED` the output name:
+For the lower half of the figure below, we reran the same script over one region
+to rebin it: the same panel and the same estimator at 20 kb over two megabases,
+where the peak resolves into a sweep. `WINDOW` is the bin width, `REGIONS` any
+`bcftools -r` target, and `OUTBED` the output name:
 
 ```bash
 curl -fO https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/build_dog10k_size_fst.sh
@@ -339,8 +339,7 @@ Reading the matrix against the Fst track above it:
 ## Scanning for peaks in another trait
 
 The Fst scan and the IGF1 slice take the same two inputs, a pair of groups and a
-region, so any trait the sample table records can substitute. To scan another
-trait:
+region, so any trait in the sample table can substitute. To scan another trait:
 
 - Edit the `SMALL` and `GIANT` breed lists in the script's panel step and rerun
   it to find new peaks.

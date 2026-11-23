@@ -80,7 +80,7 @@ at every marker and GeneNetwork computes the scan over the strains.
 
 ## Painting each strain's B and D blocks
 
-The painting draws one row per strain, each block colored by genotype.
+The painting has one row per strain, each block colored by genotype.
 [`bxd_geno_to_painting_bed.py`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/bxd_geno_to_painting_bed.py)
 reads the markers of each strain in order along every chromosome and writes one
 BED interval per run of consecutive same-genotype markers (run-length encoding),
@@ -351,7 +351,7 @@ With the coat-color sections in place:
 <Figure src="/img/qtl/bxd_tyrp1_locus.png" caption="chr4 with the painting's rows banded by coat color, B in blue and D in red."/>
 
 Under the peak, black and grey strains have B6's copy of _Tyrp1_ and brown and
-dilute brown strains DBA/2's; the rest of chr4 is the control, with no
+dilute brown strains have DBA/2's; the rest of chr4 is the control, with no
 coat-color gene.
 
 ## Myo5a, the dilute locus, under the chr9 peak

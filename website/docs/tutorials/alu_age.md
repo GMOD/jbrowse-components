@@ -9,10 +9,10 @@ tutorial_category: Grammar of graphics
 ---
 
 RepeatMasker annotates Alu, a primate-specific repeat family, and its `milliDiv`
-column records each copy's divergence from its subfamily consensus, in tenths of
-a percent. Divergence grows with time, so the column is an age, and the
-subfamily name (AluJ, AluS, AluY, oldest to youngest) is a coarser one. We ask
-where along chromosome 1 the young copies sit. We:
+column holds each copy's divergence from its subfamily consensus, in tenths of a
+percent. Divergence grows with time, so the column is an age, and the subfamily
+name (AluJ, AluS, AluY, oldest to youngest) is a coarser one. We ask where along
+chromosome 1 the young copies sit. We:
 
 - load the Alu rows of a RepeatMasker BED as a `LinearMarkDisplay`, one bar per
   copy with `milliDiv` as its height and its lineage as its color
@@ -268,8 +268,8 @@ bgzip -f Alu.young_share.bed
 tabix -f -C -p bed Alu.young_share.bed.gz
 ```
 
-**Advanced → Edit plot...** in the track menu applies edits to the cut, colors
-and key names live. The config below sets them in the track:
+**Advanced → Edit plot...** in the track menu opens an editor that applies edits
+to the cut, colors and key names live. The config below sets them in the track:
 
 ```json addtrack
 {

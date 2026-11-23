@@ -250,7 +250,7 @@ wc -l < unmapped.bed   # records the chain could not place
 }
 ```
 
-The label under the bar gives the mode of inheritance, and clicking the bar
+The label under the bar shows the mode of inheritance, and clicking the bar
 opens the rest of the record, including whether the build lifted it from
 CanFam3.1.
 
@@ -307,9 +307,9 @@ so the two tracks line up row for row:
 }
 ```
 
-A samples TSV labels these rows. Its first column is the sample name and every
-other column is an attribute that `rows.color` can name. The _RNASE1_ track is
-the same config with the other slice's `uri`.
+The row labels come from a samples TSV. Its first column is the sample name and
+every other column is an attribute that `rows.color` can name. The _RNASE1_
+track is the same config with the other slice's `uri`.
 
 <Figure caption="Top: a duplication over pancreatic amylase. Bottom: an insertion in pancreatic ribonuclease. The same animals are in the same order in both." src="/img/dog10k-diet-genes.png" />
 
@@ -317,7 +317,7 @@ The grey Czechoslovakian Wolfdog row is CZEC000003, the animal
 [the local-ancestry tutorial](/docs/tutorials/local_ancestry) paints
 wolf-derived blocks on. Every wolf with the insertion is heterozygous.
 
-A genotype records whether an animal has the duplication, so an animal with four
+A genotype marks whether an animal has the duplication, so an animal with four
 copies and one with twenty are both `1/1`.
 [The CYP1A2 tutorial](/docs/tutorials/dog10k_lof#copy-number-at-cyp1a2) measures
 copy number from the SNV callset's per-sample `DP`.
@@ -331,7 +331,7 @@ breed-defining short legs to an expressed _FGF4_ retrogene, a copy of the
 spliced _FGF4_ mRNA reinserted elsewhere in the genome. The copy has no introns,
 so short reads from it map to the parent gene's exons and stop at each splice
 site, and a short-read caller reports each intron as a deletion. The callset
-therefore records the retrogene as intron deletions that look like real ones.
+therefore lists the retrogene as intron deletions that look like real ones.
 
 ### Checking the records against the FGF4 introns
 
@@ -368,9 +368,9 @@ tabix -C -p vcf dog10k_fgf4_svs.vcf.gz
 
 `fgf4.samples` holds whole breeds: three breeds whose short legs are the trait
 Parker et al. mapped, two spaniel breeds, two standard-proportioned breeds, and
-the Greek gray wolves. A samples TSV labels the rows, and `rows.color` paints
-its `group` column, a breed's body proportions. `records.labels` hides the
-record's name and description, as in the synteny figure below.
+the Greek gray wolves. The row labels come from a samples TSV, and `rows.color`
+paints its `group` column, a breed's body proportions. `records.labels` hides
+the record's name and description, as in the synteny figure below.
 
 ```json addtrack
 {

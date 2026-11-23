@@ -148,9 +148,10 @@ the records whose PanSN prefixes match the pair of rows each band joins:
 }
 ```
 
-The config names `MultiGenomePAFAdapter` because a `.paf` extension makes
-JBrowse guess the pairwise `PAFAdapter`, which reads two assembly names. An
-assembly name that differs from its PanSN sample prefix needs a map.[^pansn]
+The config sets the adapter type to `MultiGenomePAFAdapter` because a `.paf`
+extension makes JBrowse guess the pairwise `PAFAdapter`, which reads two
+assembly names. An assembly name that differs from its PanSN sample prefix needs
+a map.[^pansn]
 
 ## Large files: index with make-pif
 
@@ -263,7 +264,7 @@ _stx2B_, the Shiga-toxin subunits, with no alignment to K-12.
 
 The stack shows each strain against its neighbours. To read one strain against
 every other, open it in a linear genome view and turn on the `ecoli_ava` track.
-With no second row naming a target assembly, the track draws the viewed strain
+With no second row naming a target assembly, JBrowse draws the viewed strain
 against every other strain in the file, and clicking an alignment can launch a
 synteny view against its mate, the strain it aligns to.
 
@@ -299,10 +300,10 @@ strain stack:
 
 ### Percent identity per strain
 
-**Display types → Marks** in the track menu draws each `ecoli_ava` alignment as
-a line at its identity, one row per strain, with nothing to configure. The plot
-is the percent identity plot [PipMaker](https://doi.org/10.1101/gr.10.4.577)
-drew for a pair of genomes.
+With **Display types → Marks** in the track menu, JBrowse draws each `ecoli_ava`
+alignment as a line at its identity, one row per strain, with nothing to
+configure. The plot is the percent identity plot
+[PipMaker](https://doi.org/10.1101/gr.10.4.577) drew for a pair of genomes.
 
 In [grammar-of-graphics](/docs/config_guides/mark_display) terms, the config
 below writes the same display out: `rows` assigns one row per
@@ -346,10 +347,10 @@ applies edits live.
 
 <Figure caption="K-12 against each other strain, one row per strain, each alignment a line at its identity." src="/img/multiway_synteny/ecoli_identity_rows.png" />
 
-### Redrawing each lane in the coordinates of the strain it shows
+### Multi-way synteny display
 
-A strain with no alignment to the backbone is a white gap on the K-12 axis.
-**Display types → Multi-way synteny display** redraws each lane in the
+A strain with no alignment to the backbone is a white gap on the K-12 axis. With
+**Display types → Multi-way synteny display**, JBrowse redraws each lane in the
 coordinates of the strain it shows, one ribbon per PAF record
 ([multi-way synteny display](/docs/user_guides/multiway_synteny_display)).
 
@@ -378,7 +379,7 @@ Right-clicking a single alignment offers three routes under **Launch**:
 
 A launched view is a few kilobases wide, so it draws each indel from the CIGAR
 `minimap2 -c` wrote, as see-through gaps. **CIGAR indels** in the settings menu
-paints them instead, or draws each alignment as one block.
+offers to paint them instead, or to draw each alignment as one block.
 
 ## Reproduce it end to end
 

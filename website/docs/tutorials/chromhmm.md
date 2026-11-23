@@ -78,8 +78,8 @@ chr1    10000       10600     15_Repetitive/CNV  0      .       10000       1060
 chr1    10000       10600     15_Repetitive/CNV  0      .       10000       10600     245,245,245  K562
 ```
 
-The `#`-prefixed defline gives the adapter its column names. The merge is one
-pass:
+The adapter reads its column names from the `#`-prefixed defline. The merge is
+one pass:
 
 <!-- from: scripts/build_chromhmm_multirow.sh -->
 
@@ -241,8 +241,8 @@ lineage commits.
 ## Chromatin-state legend, filtering and row order {#the-legend-filtering-and-row-order}
 
 The key lists the identity scale's `scale.domain`, each color under its
-`scale.names` entry. A file states only the color, never what it means, so a
-track whose config names no domain draws no key. States that share a color share
+`scale.names` entry. A BED file holds only each state's color, so JBrowse draws
+no key for a track whose config sets no domain. States that share a color share
 an entry, so in the Broad 15-state model `4_Strong_Enhancer` and
 `5_Strong_Enhancer` are one row, `4-5 Strong enhancer`.
 
@@ -375,9 +375,9 @@ this:
 }
 ```
 
-Both lists come from the `GROUP` and `COLOR` columns of
-`EID_metadata.tab`.[^encode2012] One `jq` call writes them from the `STD_NAME`
-column, escaping the regex metacharacters in the names:
+The `rows.groups` and `rows.color` lists come from the `GROUP` and `COLOR`
+columns of `EID_metadata.tab`.[^encode2012] One `jq` call writes them from the
+`STD_NAME` column, escaping the regex metacharacters in the names:
 
 ```bash
 jq -R -s 'split("\n")[1:-1] | map(split("\t")) | group_by(.[1])
@@ -437,9 +437,9 @@ reproduces [Roadmap Epigenomics 2015](https://doi.org/10.1038/nature14248) Fig.
 
 <Figure src="/img/chromhmm.png" caption="All the Roadmap epigenomes over chr9, banded by tissue group with facet. PAX5 is boxed."/>
 
-Listing epigenome names in `rows.sort` (the order) and `rows.kept` (the subset)
-narrows the same track to lung fibroblasts, foreskin fibroblasts and ES cells
-over HOXA, which reproduces the chromatin domains
+With epigenome names listed in `rows.sort` (the order) and `rows.kept` (the
+subset), the same track narrows to lung fibroblasts, foreskin fibroblasts and ES
+cells over HOXA, which reproduces the chromatin domains
 [Rinn et al. 2007](https://doi.org/10.1016/j.cell.2007.05.022) mapped in
 fibroblasts from different parts of the body:
 
@@ -560,4 +560,4 @@ gigabytes of scratch.
     ENCODE 2012 reference epigenomes (GM12878, K562, HeLa-S3, HepG2, A549,
     HUVEC, NHEK and the rest) into the compendium as one group, which names a
     data source and spans several anatomies. The same file's `ANATOMY` column
-    splits them finer, and `TYPE` records how each sample was collected.
+    has finer categories, and `TYPE` holds how each sample was collected.
