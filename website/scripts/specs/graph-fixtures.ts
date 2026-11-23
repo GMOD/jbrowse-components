@@ -97,10 +97,15 @@ export const local = rewriteFixture
       if (usingLocalDemo) {
         text = text.replaceAll(HOSTED_DEMO, ECOLI_DEMO_BASE)
       }
-      const config = JSON.parse(text) as { plugins: { esmUrl: string }[] }
+      const config = JSON.parse(text) as {
+        plugins: { name: string; esmUrl: string; storePlugin?: string }[]
+      }
       if (process.env.GRAPH_PLUGIN_LOCAL) {
         for (const plugin of config.plugins) {
-          plugin.esmUrl = localEsmUrl
+          if (plugin.name === 'GraphGenomeView') {
+            plugin.esmUrl = localEsmUrl
+            delete plugin.storePlugin
+          }
         }
       }
       writeFileSync(
