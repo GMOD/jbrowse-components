@@ -1530,6 +1530,33 @@ describe('validateConfig', () => {
     })
   })
 
+  it('reports a defaults key two displays read differently once per rule', () => {
+    const config = {
+      ...baseConfig(),
+      tracks: [
+        {
+          type: 'FeatureTrack',
+          trackId: 'genes',
+          assemblyNames: ['hg38'],
+          adapter: { type: 'BedTabixAdapter', uri: 'genes.bed.gz' },
+          displayDefaults: {
+            encoding: {
+              color: {
+                field: 'score',
+                scale: { domain: [1], names: ['x', 'y', 'z'] },
+              },
+            },
+          },
+        },
+      ],
+    }
+    expect(
+      validateConfig(config)
+        .problems.filter(p => p.rule === 'names-domain')
+        .map(p => p.where),
+    ).toEqual(['tracks[0].displayDefaults.encoding.color.scale.names'])
+  })
+
   it('checks every preConfiguredSessions entry, under its own path', () => {
     const config = {
       ...baseConfig(),

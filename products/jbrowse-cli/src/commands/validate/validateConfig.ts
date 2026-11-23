@@ -64,9 +64,11 @@ class Report {
   private seen = new Set<string>()
 
   // A problem two checks both reach, such as the y axis's ends on a mark
-  // display, or a defaults key two displays judge alike, is reported once.
-  add(problem: Problem) {
-    const key = `${problem.where}\n${problem.rule ?? ''}\n${problem.message}`
+  // display, is reported once.
+  add(
+    problem: Problem,
+    key = `${problem.where}\n${problem.rule ?? ''}\n${problem.message}`,
+  ) {
     if (!this.seen.has(key)) {
       this.seen.add(key)
       this.problems.push(problem)
@@ -75,6 +77,12 @@ class Report {
 
   error(where: string, message: string) {
     this.add({ level: 'error', where, message })
+  }
+
+  // A defaults key two displays read differently would get one message per
+  // display at one path; the first display's stands for the rule there.
+  addPerRule(problem: Problem) {
+    this.add(problem, `${problem.where}\n${problem.rule ?? ''}`)
   }
 
   warn(where: string, message: string) {
@@ -259,9 +267,6 @@ interface Ctx {
   // only a plugin could supply is a warning here and an error without one
   declaresPlugins: boolean
   schema: SchemaValidator
-  // per track node, since the defaults a track's displays take cost a schema
-  // check per key and two passes read them
-  reached: Map<Record<string, unknown>, ReachedDefaults[]>
 }
 
 // An assembly's `aliases` are usable wherever its name is.
@@ -775,7 +780,7 @@ function checkMarkDisplay(
       ends: scaleEndsOf(name => axis.ends[name], axis.fence),
     },
   })) {
-    report.add({
+    report.addPerRule({
       level,
       where: `${where}${mark === undefined ? '' : `.marks[${mark}]`}.${slotPath(slot)}`,
       message,
@@ -945,7 +950,7 @@ function checkRowAnnotations(
       const message =
         typeof entry === 'string' ? ROW_ANNOTATION_REFUSALS[entry] : undefined
       if (message) {
-        report.add({
+        report.addPerRule({
           level: 'error',
           where: `${where}.rows.annotations[${i}]`,
           message,
@@ -1094,7 +1099,7 @@ function checkScaleSlots(
   adapterType?: string,
 ) {
   const warn = (at: string, { rule, slot, message }: ChannelProblem) => {
-    report.add({
+    report.addPerRule({
       level: 'warning',
       where: `${at}.${slot}`,
       message,
@@ -1179,11 +1184,6 @@ function displayDefaultsReaching(
   )
 }
 
-interface ReachedDefaults {
-  display: string
-  defaults: Record<string, unknown>
-}
-
 function reachedDefaults(
   track: Record<string, unknown>,
   manifest: ConfigManifest,
@@ -1191,22 +1191,12 @@ function reachedDefaults(
 ) {
   const trackType = trackTypeOf(track)
   const { displayDefaults } = track
-  const reached =
-    trackType && isRecord(displayDefaults)
-      ? (ctx.reached.get(track) ??
-        displaysTaking(trackType, displayDefaults, manifest).map(display => ({
-          display,
-          defaults: displayDefaultsReaching(
-            display,
-            displayDefaults,
-            ctx.schema,
-          ),
-        })))
-      : []
-  if (reached.length > 0) {
-    ctx.reached.set(track, reached)
-  }
-  return reached
+  return trackType && isRecord(displayDefaults)
+    ? displaysTaking(trackType, displayDefaults, manifest).map(display => ({
+        display,
+        defaults: displayDefaultsReaching(display, displayDefaults, ctx.schema),
+      }))
+    : []
 }
 
 // A display's settings, as written and as its schema holds them once loaded
@@ -1429,7 +1419,6 @@ export function validateConfig(
     trackAliases: new Map(),
     declaresPlugins,
     schema,
-    reached: new Map(),
     sequenceTrackIds: new Set(assemblies.flatMap(a => sequenceTrackIdOf(a))),
   }
 
