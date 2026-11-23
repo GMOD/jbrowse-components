@@ -384,7 +384,7 @@ export function getOutputFilename(
   file: string | undefined,
   out?: string,
 ): string {
-  // strip .paf or .paf.gz so a gzipped input doesn't yield input.paf.gz.pif.gz
-  const base = path.basename(file || 'output').replace(/\.paf(\.gz)?$/i, '')
+  // strip .paf, .paf.gz or .paf.bgz so a gzipped input doesn't yield input.paf.gz.pif.gz
+  const base = path.basename(file || 'output').replace(/\.paf(\.b?gz)?$/i, '')
   return out || `${base}.pif.gz`
 }

@@ -8,7 +8,12 @@ import { Writable } from 'node:stream'
 import { gunzipSync, gzipSync } from 'node:zlib'
 
 import { runCommand, runInTmpDir } from '../../testUtils.ts'
-import { PIF_FORMAT_VERSION, createPIF, pifHeader } from './pif-generator.ts'
+import {
+  PIF_FORMAT_VERSION,
+  createPIF,
+  getOutputFilename,
+  pifHeader,
+} from './pif-generator.ts'
 
 const base = path.join(__dirname, '..', '..', '..', 'test', 'data')
 const simplePaf = path.join(base, 'volvox_inv_indels.paf')
@@ -34,6 +39,13 @@ test('make-pif', async () => {
     expect(gunzipSync(fs.readFileSync(fn)).toString()).toMatchSnapshot()
   })
 })
+
+test.each(['in.paf', 'in.paf.gz', 'in.paf.bgz'])(
+  'getOutputFilename names the output of %s in.pif.gz',
+  file => {
+    expect(getOutputFilename(file)).toBe('in.pif.gz')
+  },
+)
 
 test('--format-version prints the generation the header states and reads no input', async () => {
   const { stdout, error } = await runCommand(['make-pif', '--format-version'])
