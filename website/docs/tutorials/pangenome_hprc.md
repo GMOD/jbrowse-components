@@ -136,7 +136,7 @@ folded into the reference, so the whole chromosome fits. A curve of segments per
 bubble (how many pieces of sequence each bubble holds) shows how much the
 haplotypes disagree at each locus.
 
-<Figure caption="GRCh38 chr1 with the cytogenetic bands and two tracks built from the graph's bubbles: segments per bubble as a blue curve, and one node per bubble as gold blocks." src="/img/pangenome/hprc_whole_chromosome.png" />
+<Figure caption="GRCh38 chr1 with the cytogenetic bands, the three chr1 loci this page opens, segments per bubble as a blue curve, and the coarse tier, the graph with variants under 10 kb folded into the reference, as gold segments." src="/img/pangenome/hprc_whole_chromosome.png" />
 
 [Hosting your own graph](/docs/tutorials/pangenome_prepare_graph) builds this
 overview and writes the `coarse` slot.
@@ -332,12 +332,14 @@ fades to grey. Read the threads this way:
   threads run together through _C4A_ and most of the window.
 - **A thread that leaves the others takes another allele.** In _C4B_, GRCh38's
   thread runs through the HERV-K insertion and HG00133's takes the link that
-  skips it. The variant matrix marks that deletion in the rows of both HG00133
-  and HG00128, whose thread leaves at the same place for the loop below.
+  skips it. The variant matrix marks that deletion, at chr6:32,017,423, in
+  HG00133's row.
 - **A loop in one color is sequence only that haplotype has here.** At the same
-  place HG00128 alone runs the large loop, a further C4-CYP21-TNX module. The
-  genes on it come from the annotation of HG00128's assembly, so each name ends
-  with the haplotype.
+  place HG00128 alone runs the large loop, a further C4-CYP21-TNX module. Its
+  block in the matrix is a separate record at chr6:32,017,430, where a 26 kb
+  allele takes the place of 6.4 kb of GRCh38, and only HG00128 has it. The genes
+  on it come from the annotation of HG00128's assembly, so each name ends with
+  the haplotype.
 - **Hover a node**, and the key gives its position on the contig of each
   highlighted haplotype.
 

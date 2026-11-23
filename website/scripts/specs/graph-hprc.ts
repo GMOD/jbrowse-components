@@ -122,16 +122,17 @@ export const hprcClusterFixtures = {
   clustered: '[data-testid="tree_sidebar_dendrogram"]',
 }
 
-// One node per bubble (scripts/build_bubble_tier.sh): 474 for chr1, against
-// ~751k segments.
+// The graph track's `coarse` slot as a track of its own: variants under 10 kb
+// folded into the reference.
 const HPRC_TIER_SESSION_TRACK = {
   type: 'GraphTrack',
   trackId: 'hprc_tier',
-  name: 'HPRC release 2 graph: bubble tier (one node per bubble)',
+  name: 'HPRC release 2 graph: variants under 10 kb folded (coarse tier)',
   assemblyNames: ['hg38'],
   adapter: {
     type: 'RgfaTabixAdapter',
-    uri: 'https://jbrowse.org/demos/hprc/hprc-v2.1-mc-grch38.tier10000',
+    uri: 'https://jbrowse.org/demos/hprc/hprc-v2.1-mc-grch38.fold10000',
+    format: 2,
     assemblyNameToPanSN: { hg38: 'GRCh38' },
   },
 }

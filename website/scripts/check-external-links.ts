@@ -80,8 +80,8 @@ const PREFIXES: [string, string][] = [
   ['https://jbrowse.org/demos/hprc/hprc-v2.1-mc-grch38.GRCh38', '.walks.gz'],
   ['https://jbrowse.org/demos/hprc/hprc-v2.1-mc-chm13.CHM13', '.walks.gz'],
   [
-    'https://jbrowse.org/demos/hprc/hprc-v2.1-mc-grch38.tier10000',
-    '.segs.bed.gz',
+    'https://jbrowse.org/demos/hprc/hprc-v2.1-mc-grch38.fold10000',
+    '.graph.bed.gz',
   ],
   // an HPRC release directory, which S3 does not list — the scripts append a
   // filename to it
