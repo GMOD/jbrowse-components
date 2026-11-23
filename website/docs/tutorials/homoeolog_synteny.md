@@ -54,7 +54,7 @@ release on [GrainGenes](https://graingenes.org/GG3/PanOat).
 You don't need these files to follow the session, which reads a hosted copy. The
 track configs name local files that the [build script](#reproduce-it-end-to-end)
 writes from these, about 3.3 GB of downloads, so run it first, or follow
-[the same steps](#producing-the-homoeolog-table) on the gene models, CDS and
+[the same steps](#produce-the-homoeolog-table) on the gene models, CDS and
 chromosome sizes of a genome of your own.
 
 | What it is                                                    | File                                                                                                                                                                                         |
@@ -62,16 +62,9 @@ chromosome sizes of a genome of your own.
 | The annotation the self-alignment runs on (GFF3 and proteins) | [williams.tgz](https://graingenes.org/ggds/graingenes_downloads/panoat/williams.tgz)                                                                                                         |
 | The genome each CDS and the chromosome lengths are read from  | [230404_williams_pseudomolecules_v1+unanchored_contigs.fasta.gz](https://graingenes.org/GG3/sites/default/files/panoat-fasta/230404_williams_pseudomolecules_v1+unanchored_contigs.fasta.gz) |
 
-## Oat subgenomes and homoeologs
+## Produce the homoeolog table
 
-Oat (_Avena sativa_) is an allohexaploid with 21 chromosomes, seven homoeologous
-groups of three, one per subgenome (A, C and D). Copies across subgenomes are
-homoeologs, so a table of them has oat on both sides and the dotplot puts oat on
-both axes. A segment moved between groups lies off the diagonal.
-
-## Producing the homoeolog table
-
-### Gene models, a proteome, and chromosome sizes
+### Extract gene models, proteins and chromosome sizes
 
 jcvi turns the GFF3 into the BED the adapter also reads, one primary transcript
 per gene:
@@ -97,7 +90,7 @@ per line):
 { "name": "oat", "uri": "oat.chrom.sizes" }
 ```
 
-### Finding homoeolog pairs from a protein self-alignment
+### Find homoeolog pairs from a protein self-alignment
 
 With the same prefix twice (`oat oat`), jcvi makes a self-comparison: it drops
 the gene-against-itself diagonal, then chains the rest into syntenic blocks
@@ -151,7 +144,7 @@ awk 'NR == FNR {chrom[$4] = $1; next}
   }' oat.bed oat.oat.anchors > oat.pairs.tsv
 ```
 
-### Measuring dN and dS on each homoeolog pair
+### Measure dN and dS on each homoeolog pair
 
 `orthologs2jbrowse kaks` measures dN and dS on each pair from its two CDS:
 
@@ -167,7 +160,12 @@ with too few synonymous differences to trust a ratio.
 [Selection pressure](/docs/tutorials/selection_pressure#dn-and-ds) explains the
 method and the filters.
 
-## Loading the homoeolog table as a dotplot track
+## Load the homoeolog table as a dotplot track
+
+Oat (_Avena sativa_) is an allohexaploid with 21 chromosomes, seven homoeologous
+groups of three, one per subgenome (A, C and D). Copies across subgenomes are
+homoeologs, so a table of them has oat on both sides and the dotplot puts oat on
+both axes. A segment moved between groups lies off the diagonal.
 
 `oat.homoeologs.blocks` lists gene pairs, then dN, dS, the synonymous
 substitution count and a Fisher exact p, which is the `.blocks` layout
@@ -199,7 +197,7 @@ uses `dn` and `ds`.
 **Add → Dotplot view** with oat on both axes opens the track as a dotplot, and
 the session [below](#coloring-by-ds) does the same.
 
-## Coloring homoeolog pairs by dS, with A-D pairs as the control {#coloring-by-ds}
+## Color homoeolog pairs by dS {#coloring-by-ds}
 
 **Color by value → ds** <!-- menu-path-ok --> on the palette button paints each
 pair by its dS. Oat's A and D subgenomes descend from closely related diploid
