@@ -116,3 +116,32 @@ describe('ISPCR_ROUTE.rejectReason', () => {
     ).toMatch(/CAPTCHA challenge/)
   })
 })
+
+// What hgBlat and hgPcr relay when UCSC's blat backend refuses the connection:
+// an outage on their side, which says nothing about the apiKey
+describe('rejectReason for a UCSC backend outage', () => {
+  const TCP_REFUSED =
+    '<HTML><BODY>Error in TCP non-blocking connect() 128.114.119.163:17779 - ' +
+    'Connection refused</BODY></HTML>'
+
+  it('names the unavailable backend on both routes, not the apiKey', () => {
+    for (const route of [BLAT_ROUTE, ISPCR_ROUTE]) {
+      const reason = route.rejectReason(TCP_REFUSED)
+      expect(reason).toMatch(/UCSC backend server is unavailable/)
+      expect(reason).not.toMatch(/apiKey/)
+    }
+  })
+
+  it('recognizes the message when it arrives \\x20-escaped inside a script', () => {
+    const escaped =
+      '<html><script>alert("Error\\x20in\\x20TCP\\x20non-blocking\\x20connect()")</script></html>'
+    expect(BLAT_ROUTE.rejectReason(escaped)).toMatch(/backend server/)
+    expect(ISPCR_ROUTE.rejectReason(escaped)).toMatch(/backend server/)
+  })
+
+  it('still blames the apiKey for a challenge page', () => {
+    const challenge = '<html><div class="cf-turnstile"></div></html>'
+    expect(BLAT_ROUTE.rejectReason(challenge)).toMatch(/apiKey may be invalid/)
+    expect(ISPCR_ROUTE.rejectReason(challenge)).toMatch(/apiKey may be invalid/)
+  })
+})

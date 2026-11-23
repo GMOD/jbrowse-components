@@ -235,6 +235,24 @@ describe('serveQuery isPCR route', () => {
     expect(result.body).toBe(AMPLICON)
   })
 
+  // hgPcr's success is HTML too, so this page used to relay as a 200 and sit
+  // in the cache for a day after UCSC came back
+  it('answers a UCSC backend outage with an uncached 502', async () => {
+    stubUpstream(
+      '<HTML>Error in TCP non-blocking connect() 128.114.119.163:17779 - ' +
+        'Connection refused</HTML>',
+    )
+    const { store, cache } = memoryStore()
+
+    const result = structured(await servePcr({ store }))
+
+    expect(result.statusCode).toBe(502)
+    expect(JSON.parse(result.body ?? '').error).toBe(
+      'hgPcr: UCSC backend server is unavailable (connection refused); retry later',
+    )
+    expect(cache.size).toBe(0)
+  })
+
   // the whole reason both routes live on one function: UCSC's cap is on the
   // key across the Genome Browser CGIs, not per CGI
   it('claims from the same budget a blat query does', async () => {
