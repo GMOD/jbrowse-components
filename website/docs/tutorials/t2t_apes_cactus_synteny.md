@@ -69,7 +69,7 @@ rebuild those results, and the chain steps below take your own chains.
 
 </details>
 
-## Chains between neighbours, from one alignment
+## Convert the neighbours' chains into one PIF
 
 For each lane, the display reads two chains from the file. It places the lane
 under the human window by the chain between hg38 and that ape, and draws the
@@ -119,7 +119,7 @@ jbrowse make-pif apes.paf --out apes.pif.gz
 missing ones are the pairs no two neighbouring lanes need, such as chimpanzee
 against the siamang.
 
-## One track over the apes
+## Load the chains as one multi-way synteny track
 
 A `MultiGenomeIndexedPAFAdapter` reads the file and finds each genome by its
 PanSN prefix. `rows.sort` stacks the lanes in tree order, so each lane's
@@ -172,7 +172,7 @@ gene tracks come from each genome's hub unchanged, as in the hosted config.
 }
 ```
 
-## Orientation at ERBB2 down the tree
+## Follow ERBB2's orientation down the tree
 
 We'll open the track on hg38 around _ERBB2_ on 17q12. The track draws a lane per
 ape under human, each in the coordinates of that ape's assembly, and each lane
