@@ -39,7 +39,7 @@ The graph view is a beta plugin. We welcome your [feedback](/contact).
 - the NCBI
   [`datasets`](https://www.ncbi.nlm.nih.gov/datasets/docs/v2/download-and-install/)
   CLI
-- [`gfa-to-tabix`](https://github.com/GMOD/gfa-to-tabix) 4.0.0 or later, for
+- [`gfa-to-tabix`](https://github.com/GMOD/gfa-to-tabix) 5.0.0 or later, for
   [the graph track](#opening-the-graph-in-the-graph-genome-view)
 - the GraphGenomeView plugin, for the same track. In your own JBrowse,
   [install it from the plugin store](/docs/user_guides/plugin_store)
@@ -184,7 +184,7 @@ jbrowse make-pif ecoli_pggb_ava.paf --csi
 Stack the strains with **Add → Linear synteny view**, whose Quick start fills in
 a row per assembly the track lists.
 
-<Figure caption="The wfmash alignment pggb built the graph from, the strains stacked." src="/img/pangenome/pggb_synteny.png" />
+<Figure caption="The wfmash alignment pggb built the graph from, the strains stacked. Red ribbons are aligned blocks, and the yellow and blue wedges inside them are the insertions and deletions in each alignment's CIGAR." src="/img/pangenome/pggb_synteny.png" />
 
 Select a span on K12's ruler and pick **Launch → Linear synteny view...** to
 stack the strains over that span alone. The same selection on another strain's
@@ -369,7 +369,9 @@ python3 odgi_similarity_to_newick.py ecoli_pggb_similarity.tsv ecoli_pggb.nh
 }
 ```
 
-<Figure caption="The graph's alignment projected onto K12 as a MAF, one row per strain, under the variant calls." src="/img/pangenome/maf.png" />
+Open `chr:4,540,000-4,600,000` with the K12 genes and the variant track on.
+
+<Figure caption="The graph's alignment projected onto K12 as a MAF over chr:4,540,000-4,600,000, one row per strain, under the variant calls." src="/img/pangenome/maf.png" />
 
 Drag across the rows, and the menu on release lists each strain the selection
 covers under two submenus:
@@ -552,8 +554,21 @@ gfa-to-tabix build pggb/*.smooth.final.gfa -o ecoli_pggb --reference K12 --snarl
 ```
 
 The command writes the segments and links, a coarse tier with variants under 50
-bp folded into the reference, and `ecoli_pggb.config.json`, all in the contig
-layout. The `uri`s below are our hosted copy.
+bp folded into the reference, the manifest `ecoli_pggb.graph.json` and
+`ecoli_pggb.config.json`, all in the contig layout. The build script then writes
+the fine index and the tier again with the plain index command and `fold`, both
+in the contig layout, and hosts those:
+
+```bash
+# --layout contig: each segment under its coordinate on its strain's contig
+gfa-to-tabix pggb/*.smooth.final.gfa --layout contig --reference K12 -o ecoli_pggb.fine
+# --below 50: fold variants under 50 bp into the reference, in the same layout
+gfa-to-tabix fold pggb/*.smooth.final.gfa --below 50 --reference K12 --layout contig -o ecoli_pggb.fold50
+```
+
+The script copies `ecoli_pggb.fine.graph.bed.gz` and its index to
+`ecoli_pggb.graph.bed.gz`, beside `build`'s manifest. The `uri`s below are our
+hosted copy.
 
 ```json addtrack
 {
@@ -619,7 +634,7 @@ To set the tier beside the strains:
 - Add a second copy of the K12 genes and keep the insertion sequences with
   **Filter by → Edit filters...** and `startsWith(feature.name || '','ins')`.
 
-<Figure caption="K12 around two insertion sequences: the bubble tier, the MAF's strain rows and the graph track. The highlight is insH21." src="/img/pangenome/pggb_bubble_tier.png" />
+<Figure caption="K12 around two insertion sequences: the coarse tier with variants under 50 bp folded into the reference, the MAF's strain rows and the graph track. The highlight is insH21." src="/img/pangenome/pggb_bubble_tier.png" />
 
 A segment K12 lacks has coordinates on the strain that has it, and its
 right-click menu opens that strain's genome there. Type
