@@ -760,9 +760,8 @@ exports[`fails if load flag is not passed in for a localFile 1`] = `
 `;
 
 exports[`fails if no track is specified 1`] = `
-"Error: Missing 1 required arg:
-track  Track file or URL
-See more help with --help"
+"Error: Missing required argument: track
+Usage: jbrowse add-track <track> [options]"
 `;
 
 exports[`fails multiple assemblies exist but no assemblyNames passed 1`] = `"Error: Too many assemblies, cannot default to one. Please specify the assembly with the --assemblyNames flag"`;

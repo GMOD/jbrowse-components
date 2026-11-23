@@ -9,7 +9,7 @@ import {
   resolveConfigPath,
 } from '../../utils.ts'
 import { loadFiles } from '../add-track-utils/file-operations.ts'
-import { validateLoadOption } from '../add-track-utils/validators.ts'
+import { loadModes, validateLoadOption } from '../add-track-utils/validators.ts'
 import { upsertConfigEntry } from '../shared/config-operations.ts'
 import { generateFai } from './generateFai.ts'
 import {
@@ -96,7 +96,7 @@ export async function run(args?: string[]) {
       short: 'l',
       description:
         'Required flag when using a local file. Choose how to manage the data directory. Copy, symlink, or move the data directory to the JBrowse directory. Or use inPlace to modify the config without doing any file operations',
-      choices: ['copy', 'symlink', 'move', 'inPlace'],
+      choices: loadModes,
     },
     force: {
       type: 'boolean',

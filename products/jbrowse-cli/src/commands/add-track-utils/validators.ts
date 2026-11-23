@@ -19,17 +19,17 @@ export function parseJsonFlag(
   throw new Error(`${flagName} must be a JSON object`)
 }
 
-export function validateLoadOption(load?: string): void {
-  if (load && !['copy', 'symlink', 'move', 'inPlace'].includes(load)) {
-    throw new Error('--load must be one of: copy, symlink, move, inPlace')
-  }
-}
+// parseArgs does not enforce an option's `choices`, so --load is checked here
+export const loadModes: readonly string[] = [
+  'copy',
+  'symlink',
+  'move',
+  'inPlace',
+]
 
-export function validateTrackArg(track?: string): asserts track is string {
-  if (!track) {
-    throw new Error(
-      'Missing 1 required arg:\ntrack  Track file or URL\nSee more help with --help',
-    )
+export function validateLoadOption(load?: string): void {
+  if (load && !loadModes.includes(load)) {
+    throw new Error(`--load must be one of: ${loadModes.join(', ')}`)
   }
 }
 

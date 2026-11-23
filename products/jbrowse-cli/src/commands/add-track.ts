@@ -7,7 +7,12 @@ import {
   makeLocationProtocol,
 } from '@jbrowse/launch-args'
 
-import { printHelp, readConfigFile, resolveConfigPath } from '../utils.ts'
+import {
+  printHelp,
+  readConfigFile,
+  requirePositional,
+  resolveConfigPath,
+} from '../utils.ts'
 import { loadFiles } from './add-track-utils/file-operations.ts'
 import { buildMultiWiggle } from './add-track-utils/multiwig.ts'
 import {
@@ -17,19 +22,21 @@ import {
   mergeDisplayDefaults,
 } from './add-track-utils/track-config.ts'
 import {
+  loadModes,
   parseJsonFlag,
   validateAdapterType,
   validateAssemblies,
   validateLoadAndLocation,
   validateLoadOption,
   validateMultiWiggleLoad,
-  validateTrackArg,
   warnUnknownAssemblyNames,
 } from './add-track-utils/validators.ts'
 import { upsertConfigEntry } from './shared/config-operations.ts'
 
 import type { Config } from '../base.ts'
 import type { Adapter, Location } from '@jbrowse/launch-args'
+
+const usage = 'jbrowse add-track <track> [options]'
 
 export async function run(args?: string[]) {
   const options = {
@@ -119,7 +126,7 @@ export async function run(args?: string[]) {
       short: 'l',
       description:
         'How to manage the track file relative to config.json. Required for local files, omit for URLs',
-      choices: ['copy', 'symlink', 'move', 'inPlace'],
+      choices: loadModes,
     },
     force: {
       type: 'boolean',
@@ -212,7 +219,7 @@ export async function run(args?: string[]) {
       description,
       examples,
       notes,
-      usage: 'jbrowse add-track <track> [options]',
+      usage,
       options,
     })
     return
@@ -382,7 +389,7 @@ function buildFileTrack({
   trackType?: string
   trackId?: string
 }): BuiltTrack {
-  validateTrackArg(location)
+  requirePositional(location, 'track', usage)
   validateLoadAndLocation(location, load)
   const { adapter: guessedAdapter, files } = guessTrack({
     location,
