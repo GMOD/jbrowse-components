@@ -1,6 +1,6 @@
 ---
 name: agent-evals
-description: How the agent evals grade the jb surface and the config docs and skills, what selfCheck proves about a grader, the held-out split, and the route report that says which briefed jb members agents reach. Read before changing jb, jb.help or the agent docs, or adding an eval task.
+description: How the agent evals grade the jb surface, the config docs and the skills, what selfCheck proves, the held-out split, and the route report. Read before changing jb, jb.help, the agent docs or the skills, or adding an eval task.
 audience: internal
 kind: operations
 ---
