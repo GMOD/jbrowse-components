@@ -391,7 +391,7 @@ Page: https://jbrowse.org/jb2/docs/tutorials/homoeolog_synteny/
 
 ## Gene fusion calls and the DNA behind them
 
-Triage a fusion caller's short-read calls against long RNA reads from the same cells, then find the DNA breaks the transcript junctions do not sit on
+Triage a fusion caller's short-read calls against long RNA reads from the same cells, then find the DNA breaks in the introns beside the transcript junctions
 
 Page: https://jbrowse.org/jb2/docs/tutorials/k562_fusions/
 
