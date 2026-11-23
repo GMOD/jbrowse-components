@@ -75,6 +75,22 @@ function attach(
   }
 }
 
+// a genome whose trackDb could not be read still gets its assembly, unless that
+// cannot be built either, which is then the genome's error
+function attachOrError(
+  session: Session,
+  genome: RaStanza,
+  genomeName: string,
+  baseUri: string,
+) {
+  try {
+    attach(session, genome, genomeName, baseUri)
+    return undefined
+  } catch (e) {
+    return e
+  }
+}
+
 async function connectSingleFileHub(
   self: Self,
   hubFileText: string,
@@ -170,8 +186,12 @@ async function connectMultiGenomeHub(
           }
         } catch (error) {
           if (isAlive(self)) {
-            attach(session, genome, genomeName, genomesBaseUri)
-            unreadAssemblies.push({ genomeName, error })
+            unreadAssemblies.push({
+              genomeName,
+              error:
+                attachOrError(session, genome, genomeName, genomesBaseUri) ??
+                error,
+            })
           }
         }
       } else {

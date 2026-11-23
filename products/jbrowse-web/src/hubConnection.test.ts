@@ -2,12 +2,14 @@
 // session model: a connection's own connect() against the track union, the
 // session's assemblies and its snackbar.
 import PluginManager from '@jbrowse/core/PluginManager'
+import { readConfObject } from '@jbrowse/core/configuration'
 import { when } from 'mobx'
 
 import corePlugins from './corePlugins.ts'
 import rootModelFactory from './rootModel/rootModel.ts'
 import sessionModelFactory from './sessionModel/index.ts'
 
+import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
 jest.mock('./makeWorkerInstance', () => () => {})
@@ -562,6 +564,63 @@ describe('a UCSC hub', () => {
         message: 'Skipped data from these assemblies: hg38',
         level: 'warning',
       }),
+    ])
+  })
+
+  it('shows a track whose file is not on the web as unsupported and loads the rest', async () => {
+    serveUcscHub(
+      'genome good\ntrackDb good/trackDb.txt\ntwoBitPath good/good.2bit',
+    )
+    files[`${HUB}good/trackDb.txt`] = [
+      trackDb('genes'),
+      'track local\ntype bigBed 12\nbigDataUrl file:///etc/hosts\nshortLabel local',
+      'track ftp\ntype bigWig\nbigDataUrl ftp://example.com/x.bw\nshortLabel ftp',
+    ].join('\n\n')
+    const session = setup()
+
+    session.makeConnection(addUcscHub(session))
+    await settled(session)
+
+    const tracks = session.connectionInstances.flatMap(c =>
+      c.tracks.map((t: AnyConfigurationModel) => ({
+        name: readConfObject(t, 'name'),
+        adapter: readConfObject(t, ['adapter', 'type']),
+        description: readConfObject(t, 'description'),
+      })),
+    )
+    expect(tracks).toEqual([
+      expect.objectContaining({ name: 'genes', adapter: 'BigBedAdapter' }),
+      expect.objectContaining({
+        name: 'local (Unsupported)',
+        description: expect.stringContaining(
+          'can only name files served over http or https',
+        ),
+      }),
+      expect.objectContaining({ name: 'ftp (Unsupported)' }),
+    ])
+  })
+
+  it('loads its other genomes when one names a sequence file not on the web', async () => {
+    jest.spyOn(console, 'error').mockImplementation(() => {})
+    serveUcscHub(
+      [
+        'genome good\ntrackDb good/trackDb.txt\ntwoBitPath good/good.2bit',
+        'genome local\ntrackDb local/trackDb.txt\ntwoBitPath file:///data/local.2bit',
+        'genome after\ntrackDb after/trackDb.txt\ntwoBitPath after/after.2bit',
+      ].join('\n\n'),
+    )
+    files[`${HUB}good/trackDb.txt`] = trackDb('genes')
+    files[`${HUB}local/trackDb.txt`] = trackDb('genes')
+    files[`${HUB}after/trackDb.txt`] = trackDb('genes')
+    const session = setup()
+
+    session.makeConnection(addUcscHub(session))
+    await settled(session)
+
+    expect(sessionAssemblyNames(session)).toEqual(['good', 'after'])
+    expect(trackIds(session)).toHaveLength(2)
+    expect(messages(session)).toEqual([
+      'Loaded data from these assemblies: good (1 track), after (1 track). Could not read the tracks of these assemblies: local',
     ])
   })
 })

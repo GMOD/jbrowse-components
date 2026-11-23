@@ -803,7 +803,7 @@ export function expandLooseTrackConfig<T>(
     : snap
 }
 
-function generateProblemTrackConf(
+export function generateProblemTrackConf(
   trackName: string,
   categories: string[] | undefined,
   label: string,

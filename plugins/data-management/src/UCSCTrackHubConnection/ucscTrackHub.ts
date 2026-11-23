@@ -1,5 +1,8 @@
 import { objectHash } from '@jbrowse/core/util'
-import { generateUnknownTrackConf } from '@jbrowse/core/util/tracks'
+import {
+  generateProblemTrackConf,
+  generateUnknownTrackConf,
+} from '@jbrowse/core/util/tracks'
 
 import { htmlLink, hubBaseUrl, makeLoc } from './util.ts'
 
@@ -301,16 +304,33 @@ function makeTrackConfig({
     baseType = 'cram'
   }
 
-  const config = trackTypeAndAdapter({
-    baseType,
-    data,
-    bigDataUrl,
-    location: makeLoc(bigDataUrl, trackDbLoc),
-    indexLocation: fallback => makeLoc(bigDataIdx, trackDbLoc, fallback),
-    hubLocation: path => makeLoc(path, trackDbLoc),
-    searched,
-  })
-  return config
-    ? { name, description: data.longLabel, ...config }
-    : generateUnknownTrackConf(name, baseType)
+  const { config, refusal } = trackOrRefusal(() =>
+    trackTypeAndAdapter({
+      baseType,
+      data,
+      bigDataUrl,
+      location: makeLoc(bigDataUrl, trackDbLoc),
+      indexLocation: fallback => makeLoc(bigDataIdx, trackDbLoc, fallback),
+      hubLocation: path => makeLoc(path, trackDbLoc),
+      searched,
+    }),
+  )
+  return refusal !== undefined
+    ? generateProblemTrackConf(name, undefined, 'Unsupported', refusal)
+    : config
+      ? { name, description: data.longLabel, ...config }
+      : generateUnknownTrackConf(name, baseType)
+}
+
+// a track whose files cannot be located, such as a non-web url in a hub on the
+// web, is shown as a problem track rather than failing its whole genome
+function trackOrRefusal(make: () => ReturnType<typeof trackTypeAndAdapter>) {
+  try {
+    return { config: make(), refusal: undefined }
+  } catch (e) {
+    return {
+      config: undefined,
+      refusal: e instanceof Error ? e.message : String(e),
+    }
+  }
 }
