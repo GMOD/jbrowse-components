@@ -33,7 +33,7 @@ spread over several. We:
 - `node`, for the [JBrowse CLI](/docs/cli)
 - [odp](https://github.com/conchoecia/odp), with
   [conda](https://conda-forge.org/download/) for its environment, for
-  [your own genomes](#running-odp-on-your-own-genomes) only
+  [your own genomes](#run-odp-on-your-own-genomes) only
 - A running JBrowse instance (the [web quickstart](/docs/quickstart_web) or the
   [desktop quickstart](/docs/quickstart_desktop))
 
@@ -65,7 +65,7 @@ genomes and tables the page uses, and fetches the _Ephydatia_ assembly.
 | Both tarballs, `genomes.tar.gz` and `supplementary_information.tar.gz`                 | [dryad.dncjsxm47](https://datadryad.org/dataset/doi:10.5061/dryad.dncjsxm47)                               |
 | The _Ephydatia_ assembly, which a script in the deposit fetches from the original host | [Emu_genome_v1.fa.gz](https://bitbucket.org/EphydatiaGenome/ephydatiagenome/downloads/Emu_genome_v1.fa.gz) |
 
-## The linkage-group label in the ortholog table
+## Produce the ortholog table with odp
 
 Simakov et al. 2022 named a set of gene families the BCnS linkage groups. A gene
 belongs to one group or to none. odp searches every proteome it is given against
@@ -97,7 +97,7 @@ rbh2way_EMU_RES_964    Em0019g38a    mRNA.RE04286   A1a         EMU19     180964
 rbh2way_EMU_RES_4123   Em0019g57a    mRNA.RE14076   None        EMU19     290216   RES8      13037026  ...  #000000
 ```
 
-### Running odp on your own genomes
+### Run odp on your own genomes
 
 The deposit holds odp's output for the page's genomes. For your own, odp takes a
 protein FASTA, a genome FASTA and a `.chrom` file per genome. A `.chrom` line is
@@ -167,7 +167,7 @@ odp made the deposit, with a database named `BCnS_LGs` and the tables under
 `synteny_analysis/`, and the conversion below reads both layouts. The group
 names are the same, and the palette in `color` differs.
 
-### Converting a table to a `.blocks` file
+### Convert a table to a `.blocks` file
 
 Gene intervals come from odp's `.chrom` files, since the table's position column
 holds one coordinate per gene and would make every feature one base long:
@@ -196,7 +196,7 @@ mRNA.RE04286  Em0019g38a  A1a  #C23D51  4.1411820197020265e-230
 mRNA.RE14076  Em0019g57a  .    #000000  524.9999053847149
 ```
 
-## Loading the jellyfish and sponge assemblies
+## Load the jellyfish and sponge assemblies
 
 <!-- No genomes.jbrowse.org hubs: EMU and BFL match portal assemblies, but the
 Dryad copies rename every sequence, so hub tracks would not line up, and RES
@@ -223,7 +223,7 @@ each.
 }
 ```
 
-## Loading the jellyfish-sponge table as a synteny track
+## Load the jellyfish-sponge table as a synteny track
 
 `attributeColumns` exposes the last three columns of the `.blocks` file:
 
@@ -251,7 +251,7 @@ each.
 
 The build script adds one such track per pair.
 
-## Dotplot of jellyfish against sponge, colored by linkage group
+## Open jellyfish against sponge as a dotplot
 
 We'll open the jellyfish-against-sponge table as a dotplot, then:
 
@@ -293,7 +293,7 @@ axis. In [grammar-of-graphics](/docs/config_guides/mark_display) terms,
 Inside a block the points fill the square, because gene order along each
 chromosome has shuffled while each gene has stayed on its chromosome.
 
-## Two fusions, mixed and unmixed
+## Narrow the dotplot to two fusions
 
 The jellyfish's RES10 has both J1 and Qa, and the sponge's EMU23 has both J2 and
 K. Every other genome on this page has each pair on separate chromosomes, so
@@ -345,7 +345,7 @@ EMU23, J2 holds one end and K holds the rest.
     them mixed, which comb jellies and three unicellular outgroups lack, and so
     place the comb jellies as sister to all other animals.
 
-## Stacking the genomes, ribbons colored by linkage group
+## Stack the genomes, ribbons colored by linkage group
 
 Figure 1d of Schultz et al. 2023 stacks the same tables, one row per genome,
 with ribbons between neighbours colored by group. A linear synteny view does
