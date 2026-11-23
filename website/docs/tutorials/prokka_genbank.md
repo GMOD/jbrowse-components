@@ -65,7 +65,7 @@ runs on that copy; for your own genome, use your assembly's FASTA in its place.
 | ------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------- |
 | The Sakai assembly, a copy of NCBI's FASTA | [GCF_000008865.2_ASM886v2_genomic.fna.gz](https://jbrowse.org/demos/prokka_sakai/GCF_000008865.2_ASM886v2_genomic.fna.gz) |
 
-## Annotating the assembly
+## Annotate the assembly
 
 We'll download the assembly, 1.6 MB compressed:
 
@@ -112,7 +112,7 @@ names in your FASTA and in any reads mapped to it. Prokka refuses a name over 37
 characters, though, and its `--centre` and `--compliant` options get past that
 by renaming the contigs, after which the names match neither.
 
-## Loading the genome and the genes
+## Load the genome and the genes
 
 We'll run the JBrowse commands from the `annotation` folder, beside `sakai.gbk`.
 The GenBank file is the genome, and `circularRefNames` lists the contigs that
@@ -147,7 +147,7 @@ CRISPR array as a `repeat_region`:
 When the genome opens, JBrowse reads the whole file into memory for the assembly
 and again for the track, which suits a genome of a few megabases.[^gff]
 
-## Finding a gene by name
+## Find stxA by name and read its protein
 
 We'll index the gene names, so a name typed into the location box goes to the
 gene. `text-index` reads each record's `/gene` and `/locus_tag`:
@@ -162,8 +162,6 @@ Prokka numbers a name it gives more than once, so typing `stxA` into the
 location box offers `stxA_1` and `stxA_2`, the A subunits of the two Shiga toxin
 operons on the chromosome. Choosing `stxA_1` opens NC_002695.2 at the gene, with
 `stxB_1` beside it.
-
-## Reading a CDS's protein
 
 Clicking a CDS opens its details: the qualifiers Prokka wrote, including its
 `/product`, the `/inference` lines naming the protein it was matched to, and its
@@ -189,7 +187,7 @@ code in the CDS's `/transl_table`:
 
 <Figure src="/img/prokka_genbank/stx_protein.png" caption="stxA_1 and stxB_1 on the Sakai chromosome, with stxA_1's details open and its sequence shown as protein." />
 
-## pO157 as a ring
+## Open pO157 in the circular view
 
 We'll open pO157 in the circular view. A circular view of one circular sequence
 closes at position 1, ticks its bases, and prints the sequence's name and length
@@ -216,7 +214,7 @@ in the middle:
 Prokka names the enterohemolysin operon `hlyC`, `ehxA`, `hlyB` and `hlyD`, the
 four genes in a row on one strand between 16 and 24 kb.
 
-## Saving a plasmid as GenBank
+## Save a plasmid as GenBank
 
 We'll write pO157 and its genes back out as a GenBank file, for a plasmid map
 program or a collaborator. Type `NC_002128.1` into a linear view's location box
