@@ -295,6 +295,16 @@ test('indexes with multiple per-file args', async () => {
   })
 })
 
+test('--file of a format it cannot index names the formats it can', async () => {
+  await runInTmpDir(async ctx => {
+    fs.writeFileSync(path.join(ctx.dir, 'notes.txt'), 'hello\n')
+    const { error } = await runCommand(['text-index', '--file', 'notes.txt'])
+    expect(error?.message).toMatch(
+      'only GFF3, GTF, VCF and GenBank files can be text-indexed',
+    )
+  })
+})
+
 test('indexes with  single per-file arg', async () => {
   await runInTmpDir(async ctx => {
     fs.cpSync(volvoxDir, ctx.dir, { recursive: true, force: true })

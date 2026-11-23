@@ -221,6 +221,8 @@ export function guessAdapterFromFileName(filePath: string): Track {
       },
     }
   } else {
-    throw new Error(`Unsupported file type ${filePath}`)
+    throw new Error(
+      `Unsupported file type ${filePath}: only GFF3, GTF, VCF and GenBank files can be text-indexed`,
+    )
   }
 }
