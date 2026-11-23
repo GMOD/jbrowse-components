@@ -39,7 +39,9 @@ The graph view is a beta plugin. We welcome your [feedback](/contact).
 
 ## Prerequisites
 
-- the GraphGenomeView plugin, for the `GraphTrack` below. In your own JBrowse,
+- the GraphGenomeView plugin, for the `GraphTrack` below, which needs JBrowse 5;
+  until JBrowse 5 ships, that is the
+  [development build](https://jbrowse.org/code/jb2/main/). In your own JBrowse,
   [install it from the plugin store](/docs/user_guides/plugin_store); the
   [portal page](https://genomes.jbrowse.org/pangenomes/bovine) already loads it
 - `python3` and htslib (`bgzip`, `tabix`), to build the
@@ -67,9 +69,7 @@ cargo install gfa-to-tabix
 
 The graph and callset tracks read the hosted files by URL, and the OMIA track
 reads a file you build from OMIA's dump with
-[the script under The Celtic polled allele](#the-celtic-polled-allele). For a
-graph of your own, swap the prefix in `uri` for the one your
-[indexing commands](#building-the-bovine-graph-files) wrote.
+[the script under The Celtic polled allele](#the-celtic-polled-allele).
 
 | What it is                                                    | File                                               |
 | ------------------------------------------------------------- | -------------------------------------------------- |
@@ -172,10 +172,6 @@ genes. The curve of segments per bubble marks where the assemblies differ most.
 
 <Figure caption="Chromosome 23 with RefSeq genes, segments per bubble as a curve, and the graph track, which at this zoom folds variants under 483 kb into the reference." src="/img/pangenome/bovine_whole_chromosome.png" />
 
-BoLA, the cattle major histocompatibility complex (immune genes that vary a lot
-between breeds), contains the heat shock gene _HSPA1A_, the subject of the next
-section.
-
 ## HSPA1A in the graph and the callset
 
 ARS-UCD1.2 lacks an 11 kb segment beside the heat shock gene _HSPA1A_, which
@@ -204,9 +200,8 @@ vg deconstruct -p chr1 -a -t 8 chr1.vg > chr1.vcf
 `vg deconstruct` reads each assembly's path from a P line, which these published
 graphs hold. A minigraph rGFA has no P lines, so for one of your own,
 `minigraph --call` maps each assembly back through the graph and writes its
-allele at every bubble, which
-[the paths section of the graph-hosting tutorial](/docs/tutorials/pangenome_prepare_graph#which-haplotypes-walk-each-segment)
-loads as a track with one row per assembly.
+allele at every bubble, as in
+[the rice tutorial's callset section](/docs/tutorials/pangenome_rice#making-the-callset).
 
 The VCF's CHROM column is the `-p` path name, which has to equal the assembly's
 refName. Its sample names are the three-letter codes on each assembly's path,
@@ -219,16 +214,18 @@ ANG	Angus	taurine
 BIS	Bison	bison
 ```
 
-In [grammar-of-graphics](/docs/config_guides/mark_display) terms, `rows.color`
-in the track config is a color scale on each row's label bar, mapping the sample
-table's `lineage` column through `domain` to `range`. The config also sets:
+The track config:
 
+- `rows.field: "haplotype"` draws one row per assembly, each alternate allele in
+  a color by its frequency: blue for the commonest, then red, then dark green
 - `rows.sort` lists the cattle breeds above the wild species, and `rows.labels`
   writes each breed beside its row
-- With `rows.field: "haplotype"` the track draws one row per assembly (each
-  assembly is one haplotype), with a second alternate allele in a separate
-  color. `rows.sort` and `rows.labels` use each assembly's sample name, which
-  covers all of that assembly's rows
+- `rows.color` is a
+  [grammar-of-graphics color scale](/docs/config_guides/mark_display) on each
+  row's label bar, mapping the sample table's `lineage` column through `domain`
+  to `range`
+- `records.labels.name.show: false` hides each record's ID, which names the
+  bubble's end segments
 
 ```json addtrack loc=chr23:27,508,000-27,536,000
 {
@@ -281,6 +278,11 @@ table's `lineage` column through `domain` to `range`. The config also sets:
             "domain": ["taurine", "indicine", "gaur", "bison", "yak"],
             "range": ["#0072B2", "#E69F00", "#009E73", "#CC79A7", "#D55E00"]
           }
+        }
+      },
+      "records": {
+        "labels": {
+          "name": { "show": false }
         }
       }
     }
@@ -409,13 +411,6 @@ tabix -f -C -p bed bovine-arsucd12-minigraph.bubbles.bed.gz
 # --below: fold variants under 10 kb into the reference, in the same layout
 gfa-to-tabix fold bovine-arsucd12-minigraph.rgfa.gz --below 10000 --layout contig -o bovine-arsucd12-minigraph.fold10000
 ```
-
-Leonard et al. (2023) also built pggb and Minigraph-Cactus graphs of the same
-twelve assemblies, base-level GFAs with path lines. From one of those,
-`gfa-to-tabix build` records the assemblies that pass through each segment,
-which
-[a haplotypes-per-segment track](/docs/tutorials/pangenome_prepare_graph#which-haplotypes-walk-each-segment)
-colors by count.
 
 ## Reproduce it end to end
 

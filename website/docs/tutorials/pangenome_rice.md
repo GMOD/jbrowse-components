@@ -41,7 +41,9 @@ The graph view is a beta plugin. We welcome your [feedback](/contact).
 
 ## Prerequisites
 
-- the GraphGenomeView plugin, for the `GraphTrack` below. In your own JBrowse,
+- the GraphGenomeView plugin, for the `GraphTrack` below, which needs JBrowse 5;
+  until JBrowse 5 ships, that is the
+  [development build](https://jbrowse.org/code/jb2/main/). In your own JBrowse,
   [install it from the plugin store](/docs/user_guides/plugin_store); the
   [portal page](https://genomes.jbrowse.org/pangenomes/rice) already loads it
 - to make the callset and build the graph:
@@ -189,11 +191,7 @@ reference allele, and one haploid genotype per assembly. Its alleles are
 symbolic (`<X:1>`, `<X:2>`), and the `ALEN` field lists each allele's length,
 the reference's first. The display config:
 
-- `rows.field: "haplotype"` draws one row per assembly and colors each record's
-  commonest alternate allele blue, and the other alternate alleles a color each
-  in order of frequency, red for the second. The legend labels a color with its
-  allele and `ALEN` path length while one record on screen paints it, and by
-  rank ("2nd most common") while alleles of several records share it
+- `rows.field: "haplotype"` draws one row per assembly, a color per allele
 - `records.labels.name.show: false` hides each record's ID, which names the
   bubble's end segments
 - `records.labels.description` writes the allele lengths on each record in the
@@ -290,6 +288,21 @@ second 39 bp path, and Balilla alone has AGIS-1.0's.
 
 ## Building the rice graph
 
+We'll first rename each assembly's sequences to PanSN,
+`sample#haplotype#contig`, so the graph's segments name the assembly they came
+from:
+
+```bash
+# prefix every sequence name in IR64.fa with IR64#1#
+sed 's/^>/>IR64#1#/' IR64.fa > IR64.pansn.fa
+```
+
+JBrowse strips the reference's prefix from the graph's sequence names, and so
+does the callset below, so the reference's names left after it (`chr1`) must be
+sequence names or aliases of the JBrowse assembly. The build script renames from
+each assembly's NCBI sequence report, so every assembly's chromosomes read
+`chr1` to `chr12`.
+
 The rice genome is small enough for one `minigraph` run over every chromosome at
 once, reference first so that its segments take rank 0, the earliest build
 order:
@@ -299,7 +312,17 @@ order:
 ```bash
 # -xggs: incremental graph construction, adding each genome in turn
 # -c: base-level alignment, which minigraph recommends for graph generation
-minigraph -cxggs -t 8 Nipponbare.fa SL001.fa SL010.fa ... Wuyunjing8.fa > rice.rgfa
+minigraph -cxggs -t 8 Nipponbare.pansn.fa SL001.pansn.fa ... Wuyunjing8.pansn.fa > rice.rgfa
+```
+
+`gfa-to-tabix` and `minigraph --call` read the graph bgzipped, and `gfatools`
+reads it plain:
+
+<!-- from: scripts/build_rice_pangenome.sh -->
+
+```bash
+# -k: keep rice.rgfa beside rice.rgfa.gz
+bgzip -k rice.rgfa
 ```
 
 Three commands then write the files the tracks read. `gfa-to-tabix` writes the
@@ -339,7 +362,8 @@ layouts.
 
 The callset comes from mapping each assembly back onto the graph, whose rGFA
 holds no path lines. `minigraph --call` writes the walk one assembly takes
-through every bubble:
+through every bubble. Run it once per assembly, the reference included, since
+the merge below reads the reference's own call as allele 0:
 
 <!-- from: scripts/build_rice_pangenome.sh -->
 
@@ -347,33 +371,78 @@ through every bubble:
 # -c: base-level alignment, which --call reads
 # -xasm: the assembly-to-graph preset
 # --call: one line per bubble, in the same order for every assembly
-minigraph -cxasm --call -t 8 rice.rgfa.gz assembly.fa > assembly.call.bed
+minigraph -cxasm --call -t 8 rice.rgfa.gz IR64.pansn.fa > IR64.call.bed
 ```
 
 Two scripts in minigraph's
 [`misc/`](https://github.com/lh3/minigraph/tree/master/misc) folder, which the
-bioconda package leaves out, merge the calls into a VCF. `mgutils.js merge`
-pastes the call files into one row per bubble, and `mgutils-es6.js merge2vcf`
-turns that into the VCF, with the reference's column as allele 0:
+bioconda package leaves out, merge the calls into a VCF. We'll fetch them at the
+revision the hosted callset was built with:
+
+<!-- from: scripts/build_rice_pangenome.sh -->
+
+```bash
+MGUTILS=https://raw.githubusercontent.com/lh3/minigraph/2f569ebe3071fcb242f1bf0eabbb917941b47239/misc
+curl -fsSL -o mgutils.js "$MGUTILS/mgutils.js"
+curl -fsSL -o mgutils-es6.js "$MGUTILS/mgutils-es6.js"
+```
+
+`merge2vcf` copies the `##` lines of its input into the VCF header. Those lines
+go in `header.txt`: a `##contig` line per reference chromosome, and the `END`
+and `AN` tags `merge2vcf` writes without declaring them, which
+`bcftools view -s` otherwise stops on with "Undefined tags in the header".
+`ref.chrom.sizes` lists each reference chromosome's name, as the VCF spells it,
+and its length:
+
+```bash
+# from the reference's FASTA before the PanSN rename
+awk '/^>/ { if (n) print n "\t" len; n = substr($1, 2); len = 0; next }
+  { len += length($0) } END { print n "\t" len }' Nipponbare.fa > ref.chrom.sizes
+```
+
+<!-- from: scripts/build_rice_pangenome.sh -->
+
+```bash
+{
+  awk '{ printf "##contig=<ID=%s,length=%d>\n", $1, $2 }' ref.chrom.sizes
+  echo '##INFO=<ID=END,Number=1,Type=Integer,Description="End of the bubble">'
+  echo '##INFO=<ID=AN,Number=1,Type=Integer,Description="Number of called alleles">'
+} > header.txt
+```
+
+`mgutils.js merge` pastes the call files into one row per bubble, behind the
+header:
+
+<!-- from: scripts/build_rice_pangenome.sh -->
 
 ```bash
 # samples.txt: one name per line, in the order of the call files, the
-#   reference's first. header.txt: a ##contig line per reference chromosome,
-#   which merge2vcf copies into the VCF header
+#   reference's first
 # sed: drop the PanSN prefix on the graph's sequence names, so CHROM is chr1
-paste Nipponbare.call.bed assembly1.call.bed assembly2.call.bed \
+paste Nipponbare.call.bed IR64.call.bed Kasalath.call.bed \
   | k8 mgutils.js merge -s samples.txt - \
   | sed 's/^Nipponbare#1#//' | cat header.txt - > merged.bed
-# -r0: the first column is the reference; -a: the most alternate alleles a
-#   record can list, one per assembly
-# bcftools view -s ^Nipponbare: drop the reference's own column
-k8 mgutils-es6.js merge2vcf -r0 -a 3 merged.bed \
-  | bcftools view -s ^Nipponbare -Oz -o rice.vcf.gz
-tabix -p vcf rice.vcf.gz
 ```
 
-The build script also writes each record's bubble as its ID, and drops the
-records where AGIS-1.0's own call is not allele 0.
+`mgutils-es6.js merge2vcf` turns that into the VCF, with the reference's column
+as allele 0:
+
+<!-- from: scripts/build_rice_pangenome.sh -->
+
+```bash
+# -r0: the first column is the reference
+# -a: the most alternate alleles a record lists, here one per assembly; a
+#   smaller cap merges the rarer alleles into the last one
+# annotate --set-id: the bubble's end segments as the record ID
+# view -i: keep the records where the reference's own call is allele 0
+# view -s ^Nipponbare: drop the reference's own column
+k8 mgutils-es6.js merge2vcf -r0 -a "$(wc -l < samples.txt)" merged.bed \
+  | bcftools annotate --set-id '%INFO/VS%INFO/VE' -Ou \
+  | bcftools view -i 'GT[0]="ref"' -Ou \
+  | bcftools view -s ^Nipponbare -Ou \
+  | bcftools sort -Oz -o rice.vcf.gz
+tabix -p vcf rice.vcf.gz
+```
 
 ## Reproduce it end to end
 
