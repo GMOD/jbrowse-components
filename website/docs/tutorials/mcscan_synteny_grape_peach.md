@@ -76,7 +76,54 @@ your own.
 | Grape      | [GCF_030704535.1_ASM3070453v1/](https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/030/704/535/GCF_030704535.1_ASM3070453v1/)                   |
 | Peach      | [GCF_000346465.2_Prunus_persica_NCBIv2/](https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/000/346/465/GCF_000346465.2_Prunus_persica_NCBIv2/) |
 
-## Contents of `.anchors` and `.anchors.simple`
+## Produce the BEDs and anchor files with jcvi {#producing-the-data}
+
+gffread extracts each genome's CDS from its GFF3 and FASTA, and jcvi writes the
+BED with the same ids:
+
+<!-- from: scripts/build_grape_peach_anchors.sh -->
+
+```bash
+gffread grape.gff3 -g grape.fa -x grape.cds.fa
+# --key=ID writes each mRNA's GFF3 ID into BED column 4, the name gffread gave
+# its CDS; --primary_only keeps one transcript per gene
+python -m jcvi.formats.gff bed --type=mRNA --key=ID --primary_only \
+  grape.gff3 -o grape.bed
+python -m jcvi.formats.fasta format grape.cds.fa grape.cds
+```
+
+The adapters read the BED's first six columns, and column 4 must match the
+anchor gene ids byte for byte:
+
+```text
+NC_081805.1	37288	41411	rna-XM_019221872.2	0	+
+NC_081805.1	53914	63050	rna-XM_010651756.3	0	+
+```
+
+Column 1 must name a sequence in the JBrowse assembly, directly or through its
+alias table: the hub assemblies below resolve `NC_081805.1` to grape `chr1`.
+
+A gene id in the anchors file that is missing from the BEDs breaks the join, and
+some such mismatches load with no error; the
+[synteny track guide](/docs/config_guides/synteny_track#gene-ids-are-the-join-in-the-mcscan-adapters)
+lists which. The mismatch that matters here is jcvi stripping isoform suffixes
+from the ids unless run with `--no_strip_names`, which the ortholog command below
+passes.
+
+Run the same three commands for peach. One ortholog run then writes the gene
+pairs, and `screen --simple` reduces them to blocks:
+
+<!-- from: scripts/build_grape_peach_anchors.sh -->
+
+```bash
+# --no_strip_names keeps the ids matching the BEDs; --no_dotplot skips jcvi's
+# own PDF, which needs LaTeX
+python -m jcvi.compara.catalog ortholog --no_strip_names --no_dotplot grape peach
+# --simple writes grape.peach.anchors.simple; --minspan=30 keeps blocks of 30
+# genes or more
+python -m jcvi.compara.synteny screen --minspan=30 --simple \
+  grape.peach.anchors grape.peach.anchors.new
+```
 
 The run writes two files that JBrowse loads as separate synteny tracks.
 `.anchors`, via `MCScanAnchorsAdapter`, is the gene-pair level: each line is one
@@ -100,63 +147,11 @@ rna-XM_002279913.5	rna-XM_002285264.5	rna-XM_007227461.2	rna-XM_007222578.2	370	
 rna-XM_002281938.5	rna-XM_010652331.3	rna-XM_007222787.2	rna-XM_020562574.1	39	+
 ```
 
-### BED files mapping gene ids to coordinates
-
-Each genome needs one BED, prepared from its GFF3 before the ortholog run. The
-adapters read the first six columns, and column 4 must match the anchor gene ids
-byte for byte:
-
-```text
-NC_081805.1	37288	41411	rna-XM_019221872.2	0	+
-NC_081805.1	53914	63050	rna-XM_010651756.3	0	+
-```
-
-Column 1 must name a sequence in the JBrowse assembly, directly or through its
-alias table: the hub assemblies below resolve `NC_081805.1` to grape `chr1`.
-
-A gene id in the anchors file that is missing from the BEDs breaks the join, and
-some such mismatches load with no error; the
-[synteny track guide](/docs/config_guides/synteny_track#gene-ids-are-the-join-in-the-mcscan-adapters)
-lists which. The mismatch that matters here is jcvi stripping isoform suffixes
-from the ids unless run with `--no_strip_names`, which the command in the next
-section passes.
-
-## Producing the BEDs and anchor files with jcvi {#producing-the-data}
-
-gffread extracts each genome's CDS from its GFF3 and FASTA, and jcvi writes the
-BED with the same ids:
-
-<!-- from: scripts/build_grape_peach_anchors.sh -->
-
-```bash
-gffread grape.gff3 -g grape.fa -x grape.cds.fa
-# --key=ID writes each mRNA's GFF3 ID into BED column 4, the name gffread gave
-# its CDS; --primary_only keeps one transcript per gene
-python -m jcvi.formats.gff bed --type=mRNA --key=ID --primary_only \
-  grape.gff3 -o grape.bed
-python -m jcvi.formats.fasta format grape.cds.fa grape.cds
-```
-
-Run the same three commands for peach. One ortholog run then writes the gene
-pairs, and `screen --simple` reduces them to blocks:
-
-<!-- from: scripts/build_grape_peach_anchors.sh -->
-
-```bash
-# --no_strip_names keeps the ids matching the BEDs; --no_dotplot skips jcvi's
-# own PDF, which needs LaTeX
-python -m jcvi.compara.catalog ortholog --no_strip_names --no_dotplot grape peach
-# --simple writes grape.peach.anchors.simple; --minspan=30 keeps blocks of 30
-# genes or more
-python -m jcvi.compara.synteny screen --minspan=30 --simple \
-  grape.peach.anchors grape.peach.anchors.new
-```
-
 The adapters read anchors and BED files plain or gzipped. The configs below name
 gzipped copies, which `gzip -k` makes of each of the four files; drop `.gz` from
 a `uri` to read the plain file.
 
-## Setting up the grape and peach assemblies
+## Set up the grape and peach assemblies
 
 Grape and peach are each a genome hub on
 [genomes.jbrowse.org](https://genomes.jbrowse.org) under the RefSeq accession
@@ -192,7 +187,7 @@ hub; swap the `uri` for your own GFF3, bgzipped and tabix-indexed
 }
 ```
 
-## Loading the .anchors and .anchors.simple tracks {#loading-both-tracks}
+## Load the .anchors and .anchors.simple tracks {#loading-both-tracks}
 
 Each adapter takes the anchor file plus the two BEDs, and `assemblyNames` lists
 the genomes in the order the anchor columns are in (column 1's genome first,
@@ -236,7 +231,7 @@ swapped:
 `MCScanAnchorsAdapter` and `MCScanSimpleAnchorsAdapter` read the whole file into
 memory, which MCScan output is small enough for.
 
-## Viewing gene pairs and blocks in one synteny view
+## View gene pairs and blocks in one synteny view
 
 We'll start with **Add → Linear synteny view** and pick peach and grape. Then:
 
@@ -252,7 +247,7 @@ in an ordinary row.
 
 <Figure src="/img/mcscan_synteny/anchors_vs_simple.png" links="Gene pairs=mcscan_synteny/anchors,Blocks=mcscan_synteny/anchors_simple" caption="MCScan blocks on grape chr9 against peach chrG3. Top: .anchors alone. Bottom: both files on one band." />
 
-## A single gene pair up close {#what-an-anchor-looks-like-up-close}
+## Zoom to a single gene pair {#what-an-anchor-looks-like-up-close}
 
 Zoom to one block with both gene tracks on and set to **Filter by → Genes → Only
 genes**.
@@ -262,7 +257,7 @@ genes**.
 MCScan anchors only the pairs it could call confidently, so most genes have no
 ribbon.
 
-## Copies sharing one ortholog {#syntenic-depth}
+## Color the gene pairs by syntenic depth {#syntenic-depth}
 
 Pick **Color by value → Syntenic depth** on the palette button in the view
 header. A ribbon stays grey where its two genes pair only with each other, and
@@ -294,7 +289,7 @@ tracks in each lane show the genes a copy kept and lost. The pale tint behind
 the ribbons is the MCScan block this window sits inside, which the display draws
 as a band under its gene pairs.
 
-## Coloring gene pairs by block {#blocks}
+## Color the gene pairs by block {#blocks}
 
 `MCScanAnchorsAdapter` reads the `###` lines too, and puts two fields on every
 gene pair: `block`, the block the pair belongs to (`block0` is the file's
@@ -346,7 +341,7 @@ file holds. This session opens the view with the color and the filter set:
 A linear synteny view and a dotplot list both fields under **Color by value** on
 the palette button.
 
-## Viewing the gene pairs as a dotplot
+## View the gene pairs as a dotplot
 
 **Add → Dotplot view** with peach and grape opens either MCScan track as a
 dotplot, where a gene pair is one point and a block a run of them. The axes
@@ -360,7 +355,7 @@ dotplot header, sorts the vertical axis to follow the horizontal one.
 **Re-order chromosomes** puts each peach chromosome's strongest grape partner on
 the diagonal, and its other partners stay off it.
 
-## Converting an MCScanX run {#coming-from-mcscanx}
+## Convert an MCScanX run {#coming-from-mcscanx}
 
 [MCScanX](https://github.com/wyp1125/MCScanX) is a different program from jcvi's
 MCScan. It writes one `.collinearity` holding every block, self-synteny and
