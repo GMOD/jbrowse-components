@@ -56,7 +56,36 @@ own calls.
 | Primary-tumor **Masked Somatic Mutation** MAFs (mutation annotation format), queried and downloaded through the GDC API | [files](https://api.gdc.cancer.gov/files) |
 | Per-tumor clinical annotation, from harmonized case fields and each case's clinical XML                                 | [cases](https://api.gdc.cancer.gov/cases) |
 
-## The cohort VCF and the clinical table {#what-the-two-files-hold}
+## Load the cohort VCF into JBrowse
+
+Add the assembly first. The hosted FASTA names its contigs bare (`1`) while the
+VCF uses `chr1`, so pass the alias file to map one onto the other.
+
+```json addassembly
+{
+  "name": "hg38",
+  "uri": "https://jbrowse.org/genomes/GRCh38/fasta/hg38.prefix.fa.gz",
+  "refNameAliases": {
+    "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/GRCh38/hg38_aliases.txt"
+  },
+  "cytobands": "https://jbrowse.org/genomes/GRCh38/cytoBand.txt"
+}
+```
+
+The figures put NCBI's MANE transcripts above the matrix, one per gene, labelled
+by gene symbol:
+
+```json addtrack
+{
+  "trackId": "MANE.GRCh38.v1.4.refseq",
+  "name": "MANE 1.4 (w/ RefSeq IDs)",
+  "uri": "https://ftp.ncbi.nlm.nih.gov/refseq/MANE/trackhub/data/release_1.4/MANE.GRCh38.v1.4.refseq.bb",
+  "assemblyNames": ["hg38"],
+  "displayDefaults": {
+    "labels": { "description": "geneSymbol" }
+  }
+}
+```
 
 The VCF is the GDC's per-tumor **Masked Somatic Mutation** calls merged into one
 multi-sample file, one column per tumor:
@@ -94,37 +123,6 @@ Its columns come from three places:
   resolve it stays `unknown`
 
 The table lists more tumors than the mutation track draws.[^unmatched]
-
-## Load the cohort VCF into JBrowse
-
-Add the assembly first. The hosted FASTA names its contigs bare (`1`) while the
-VCF uses `chr1`, so pass the alias file to map one onto the other.
-
-```json addassembly
-{
-  "name": "hg38",
-  "uri": "https://jbrowse.org/genomes/GRCh38/fasta/hg38.prefix.fa.gz",
-  "refNameAliases": {
-    "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/GRCh38/hg38_aliases.txt"
-  },
-  "cytobands": "https://jbrowse.org/genomes/GRCh38/cytoBand.txt"
-}
-```
-
-The figures put NCBI's MANE transcripts above the matrix, one per gene, labelled
-by gene symbol:
-
-```json addtrack
-{
-  "trackId": "MANE.GRCh38.v1.4.refseq",
-  "name": "MANE 1.4 (w/ RefSeq IDs)",
-  "uri": "https://ftp.ncbi.nlm.nih.gov/refseq/MANE/trackhub/data/release_1.4/MANE.GRCh38.v1.4.refseq.bb",
-  "assemblyNames": ["hg38"],
-  "displayDefaults": {
-    "labels": { "description": "geneSymbol" }
-  }
-}
-```
 
 The cohort is a `VariantTrack` whose adapter reads the clinical TSV, shown in
 the multi-sample matrix display:
@@ -170,7 +168,7 @@ The display divides [`height`](/docs/config/linearvariantdisplay/#slot-height)
 among the rows, so each row is about a pixel tall and a band's mutation density
 shows as its darkness.
 
-## Facet the rows by clinical annotation
+## Facet the rows by histology over CDH1's exons {#facet-the-rows-by-clinical-annotation}
 
 In [grammar-of-graphics](/docs/config_guides/mark_display) terms,
 [`facet`](/docs/config/linearvariantdisplay/#slot-facet) splits the display into
@@ -374,7 +372,7 @@ One script builds every file above for any project id,
    rows are named, and reads each deletion's anchor base from the MAF's
    `CONTEXT` column, so it needs no reference FASTA.
 3. [`tcga_clinical_tsv.py`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/tcga_clinical_tsv.py)
-   builds the [clinical table](#what-the-two-files-hold).
+   builds the [clinical table](#load-the-cohort-vcf-into-jbrowse).
 4. [`mutation_recurrence.py`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/mutation_recurrence.py)
    writes, per gene and group, the share of tumors with at least one call in the
    `--impact` tiers. A tumor counts once however many calls it has in the gene.

@@ -234,7 +234,7 @@ python3 cnv_recurrence.py tcga_brca_cnv.bed.gz by_subtype.bedGraph \
 ```
 
 The `--groups` file is the
-[clinical TSV](/docs/tutorials/tcga_cohort_mutations#what-the-two-files-hold)
+[clinical TSV](/docs/tutorials/tcga_cohort_mutations#load-the-cohort-vcf-into-jbrowse)
 the mutation cohort also uses. Four subtypes give eight signals, each named for
 its subtype and direction, with losses below zero. We'll draw them on a
 [mark display](/docs/config_guides/mark_display), where a `mark` is the shape
