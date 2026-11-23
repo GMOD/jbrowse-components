@@ -32,7 +32,15 @@ export function svClassColors(featureInfo: readonly VariantFeatureInfo[]) {
   })
 }
 
-/** The key for the SV classes the band's records hold, in the preset order. */
+// `svClassOf`'s class for a symbolic allele it has no name for, or a record
+// whose alleles disagree
+const UNNAMED_CLASS = 'OTHER'
+
+/**
+ * The key for the SV classes the band's records hold, in the preset order. It
+ * has no entries while none of them is a named class: a key whose one row is
+ * "Other / mixed" tells a reader nothing the black records do not.
+ */
 export function svClassScale(svTypes: Iterable<string>): CategoricalScale {
   const field = svClassField()
   const keys = [...new Set([...svTypes].map(t => field.key(t)))]
@@ -42,10 +50,12 @@ export function svClassScale(svTypes: Iterable<string>): CategoricalScale {
     kind: 'categorical',
     id: 'records',
     title: 'SV type',
-    entries: keys.map(key => ({
-      value: key,
-      label: field.label(key),
-      color: field.color(key),
-    })),
+    entries: keys.some(key => key !== UNNAMED_CLASS)
+      ? keys.map(key => ({
+          value: key,
+          label: field.label(key),
+          color: field.color(key),
+        }))
+      : [],
   }
 }

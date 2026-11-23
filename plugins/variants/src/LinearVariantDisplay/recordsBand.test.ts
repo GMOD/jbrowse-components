@@ -266,6 +266,36 @@ test('under the genotype colors each record takes its SV class color, keyed', ()
   })
 })
 
+// minigraph's `<X:1>` alleles name no class, so `svClassOf` files every record
+// of such a callset under OTHER.
+test('records holding no named SV class key no SV type', () => {
+  const { display } = recordsDisplayAt(
+    [
+      ['sv1', 2000, 9000, '<X:1>', 'OTHER'],
+      ['sv2', 4000, 4001, '<X:1>,<X:2>', 'OTHER'],
+    ],
+    10,
+  )
+  expect(display.recordsColorScales).toEqual([])
+  expect(display.colorScales.map(scale => scale.title)).not.toContain('SV type')
+})
+
+test('an unnamed SV class beside a named one keeps its row', () => {
+  const { display } = recordsDisplayAt(
+    [
+      ['sv1', 2000, 9000, '<DEL> 7Kbp', 'DEL'],
+      ['sv2', 4000, 4001, '<X:1>', 'OTHER'],
+    ],
+    10,
+  )
+  expect(display.recordsColorScales).toMatchObject([
+    {
+      title: 'SV type',
+      entries: [{ label: 'Deletion' }, { label: 'Other / mixed' }],
+    },
+  ])
+})
+
 test('labels off letters nothing and reserves no label rows', () => {
   const labelled = recordsDisplayAt(KIT, 51).display
   const { display } = recordsDisplayAt(KIT, 51, {
