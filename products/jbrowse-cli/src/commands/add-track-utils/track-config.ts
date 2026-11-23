@@ -119,9 +119,7 @@ export function mergeDisplayDefaults({
 
 function encodingOf(settings: Record<string, unknown>) {
   const { encoding } = settings
-  return encoding && typeof encoding === 'object'
-    ? (encoding as Record<string, unknown>)
-    : {}
+  return isRecord(encoding) ? encoding : {}
 }
 
 // An unknown track type accepts everything: it is a plugin's, and this manifest

@@ -21,25 +21,19 @@ import {
 import type { Assembly, Config, Sequence } from '../../base.ts'
 import type { FaiToGenerate } from './generateFai.ts'
 
-export type SequenceType =
-  | 'indexedFasta'
-  | 'bgzipFasta'
-  | 'twoBit'
-  | 'chromSizes'
-  | 'genbank'
-  | 'custom'
-
-const sequenceTypes = new Set<SequenceType>([
+export const sequenceTypes = [
   'indexedFasta',
   'bgzipFasta',
   'twoBit',
   'chromSizes',
   'genbank',
   'custom',
-])
+] as const
 
-function isSequenceType(t: string | undefined): t is SequenceType {
-  return sequenceTypes.has(t as SequenceType)
+export type SequenceType = (typeof sequenceTypes)[number]
+
+function isSequenceType(t: string): t is SequenceType {
+  return sequenceTypes.some(s => s === t)
 }
 
 // parseArgs does not enforce the `choices` declared on --type, so an
@@ -52,7 +46,7 @@ export function parseSequenceType(type?: string): SequenceType | undefined {
     return undefined
   }
   if (!isSequenceType(type)) {
-    throw new Error(`--type must be one of: ${[...sequenceTypes].join(', ')}`)
+    throw new Error(`--type must be one of: ${sequenceTypes.join(', ')}`)
   }
   return type
 }
