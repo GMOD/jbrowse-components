@@ -73,22 +73,7 @@ on load anyway, such as a type registered by a plugin it cannot see.
   lists one type's slots. [](/docs/config) indexes them.
 - [](/docs/config_guides/file_types) picks an adapter from a file.
 
-## Claude Code skills
+## Agent skills
 
-The JBrowse repository keeps Claude Code skills that brief an agent on this
-loop. Claude Code can install them itself; ask it:
-
-```text
-Install the jbrowse-authoring, jbrowse-hosted-data and jbrowse-capture skills
-from https://github.com/GMOD/jbrowse-components/tree/main/.claude/skills
-into ~/.claude/skills
-```
-
-To install by hand, copy each folder into `~/.claude/skills/`:
-
-- [jbrowse-authoring](https://github.com/GMOD/jbrowse-components/tree/main/.claude/skills/jbrowse-authoring):
-  the config shape, the session spec, and the validator
-- [jbrowse-hosted-data](https://github.com/GMOD/jbrowse-components/tree/main/.claude/skills/jbrowse-hosted-data):
-  finding a hosted assembly and its tracks
-- [jbrowse-capture](https://github.com/GMOD/jbrowse-components/tree/main/.claude/skills/jbrowse-capture):
-  rendering a view and knowing when it finished drawing
+[](/docs/agents_skills) lists the skills that brief an agent on this loop and
+how to install them.

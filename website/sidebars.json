@@ -95,6 +95,7 @@
       "label": "AI agents",
       "items": [
         "agents",
+        "agents_skills",
         "agents_live_model",
         "agents_recipes",
         "agents_authoring",

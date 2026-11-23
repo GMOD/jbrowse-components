@@ -22,54 +22,77 @@ const sidebar = buildSiteSidebar(allDocs, baseUrl)
      category opens itself and keeps its heading, and the section heading above
      a surviving row survives with it, so a hit still reads as "MAF track" under
      "Track types" under "User guide". That is what tells apart the several
-     pages the same feature has in different categories. Distinct from the
-     header search, which is full-text over page bodies and leaves the page. */}
+     pages the same feature has in different categories. Pages that only
+     mention the words follow the title matches under "In page text", from the
+     header search's pagefind index. */}
 <div class="sidebar-filter">
   <label class="sr-only" for="sidebar-filter-input">
-    Filter documentation
+    Search documentation
   </label>
   <input
     id="sidebar-filter-input"
     type="search"
-    placeholder="Filter pages..."
+    placeholder="Search docs..."
     autocomplete="off"
     spellcheck="false"
   />
 </div>
-<p
-  class="sidebar-filter-empty"
-  id="sidebar-filter-empty"
-  aria-live="polite"
-  hidden
->
-  No page titles match.{' '}
-  <a href={`${baseUrl}/search/`} id="sidebar-filter-all">
-    Search all docs
-  </a>
-</p>
 <ul id="docs-sidebar-list">
   {sidebar.map(item => (
     <SidebarItem item={item} currentSlug={currentSlug} />
   ))}
 </ul>
+<div
+  class="sidebar-filter-text"
+  id="sidebar-filter-text"
+  data-base={baseUrl}
+  aria-live="polite"
+  hidden
+>
+  <p class="sidebar-filter-text-heading" id="sidebar-filter-text-heading">
+    In page text
+  </p>
+  <ul id="sidebar-filter-text-list"></ul>
+  <a href={`${baseUrl}/search/`} id="sidebar-filter-all">
+    All results
+  </a>
+</div>
 
 <script>
   const inputEl = document.getElementById('sidebar-filter-input')
   const listEl = document.getElementById('docs-sidebar-list')
-  const emptyEl = document.getElementById('sidebar-filter-empty')
+  const textEl = document.getElementById('sidebar-filter-text')
+  const textHeadingEl = document.getElementById('sidebar-filter-text-heading')
+  const textListEl = document.getElementById('sidebar-filter-text-list')
   const allEl = document.getElementById('sidebar-filter-all')
+
+  interface PagefindHit {
+    url: string
+    meta?: { title?: string }
+  }
+  interface Pagefind {
+    search: (
+      query: string,
+    ) => Promise<{ results: { data: () => Promise<PagefindHit> }[] }>
+  }
 
   if (
     inputEl instanceof HTMLInputElement &&
     listEl &&
-    emptyEl &&
+    textEl &&
+    textHeadingEl &&
+    textListEl &&
     allEl instanceof HTMLAnchorElement
   ) {
     const input = inputEl
     const list = listEl
-    const empty = emptyEl
+    const textSection = textEl
+    const textHeading = textHeadingEl
+    const textList = textListEl
     const allLink = allEl
     const searchHref = allLink.href
+    const base = textSection.dataset.base ?? ''
+    const TEXT_HITS = 6
 
     const groups = [...list.querySelectorAll('details')]
 
@@ -200,14 +223,80 @@ const sidebar = buildSiteSidebar(allDocs, baseUrl)
       return anyVisible
     }
 
+    let pagefind: Pagefind | null | undefined
+    let debounce: ReturnType<typeof setTimeout> | undefined
+
+    async function getPagefind() {
+      if (pagefind === undefined) {
+        try {
+          pagefind = (await import(
+            /* @vite-ignore */ `${base}/pagefind/pagefind.js`
+          )) as Pagefind
+        } catch {
+          pagefind = null
+        }
+      }
+      return pagefind
+    }
+
+    function pathOf(url: string) {
+      return new URL(url, location.href).pathname.replace(/\/$/, '')
+    }
+
+    function showTextHits(hits: PagefindHit[], titlesMatched: boolean) {
+      textList.replaceChildren(
+        ...hits.map(hit => {
+          const li = document.createElement('li')
+          const a = document.createElement('a')
+          a.href = hit.url
+          a.textContent = hit.meta?.title ?? pathOf(hit.url)
+          li.append(a)
+          return li
+        }),
+      )
+      textHeading.textContent = hits.length
+        ? 'In page text'
+        : titlesMatched
+          ? ''
+          : 'No matches'
+      textHeading.hidden = !textHeading.textContent
+      textSection.hidden = false
+    }
+
+    async function runTextSearch(query: string, titlesMatched: boolean) {
+      const pf = await getPagefind()
+      const titled = new Set(
+        [...list.querySelectorAll('li:not([hidden]) > a')].map(link =>
+          link instanceof HTMLAnchorElement ? pathOf(link.href) : '',
+        ),
+      )
+      const hits: PagefindHit[] = []
+      if (pf) {
+        const { results } = await pf.search(query)
+        for (const result of results.slice(0, 20)) {
+          const hit = await result.data()
+          if (!titled.has(pathOf(hit.url))) {
+            hits.push(hit)
+          }
+          if (hits.length === TEXT_HITS) {
+            break
+          }
+        }
+      }
+      if (input.value.trim() === query) {
+        showTextHits(hits, titlesMatched)
+      }
+    }
+
     function reset() {
+      clearTimeout(debounce)
       for (const li of list.querySelectorAll('li')) {
         li.hidden = false
       }
       for (const details of groups) {
         details.open = wasOpen.get(details) ?? false
       }
-      empty.hidden = true
+      textSection.hidden = true
     }
 
     function apply() {
@@ -217,8 +306,10 @@ const sidebar = buildSiteSidebar(allDocs, baseUrl)
         return
       }
       const tokens = query.toLowerCase().split(/\s+/)
-      empty.hidden = filterList(list, tokens, false)
+      const titlesMatched = filterList(list, tokens, false)
       allLink.href = `${searchHref}?q=${encodeURIComponent(query)}`
+      clearTimeout(debounce)
+      debounce = setTimeout(() => runTextSearch(query, titlesMatched), 150)
     }
 
     input.addEventListener('input', apply)
@@ -274,19 +365,28 @@ const sidebar = buildSiteSidebar(allDocs, baseUrl)
     outline-offset: -1px;
     background: #fff;
   }
-  .sidebar-filter-empty {
-    margin: 0 0 0.5rem;
+  .sidebar-filter-text {
+    margin-top: 0.5rem;
+    padding-top: 0.5rem;
+    border-top: 1px solid var(--color-border);
+  }
+  .sidebar-filter-text ul {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+  .sidebar-filter-text-heading {
+    margin: 0 0 0.25rem;
     padding: 0 12px;
-    font-size: 0.8rem;
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
     color: var(--color-text-muted);
   }
-  /* The layout styles every sidebar link as a padded block row with a hanging
-     indent (SidebarLayout.astro); this one is inline prose. */
-  .sidebar-filter-empty a {
-    display: inline;
-    padding: 0;
-    text-indent: 0;
-    font-size: inherit;
+  /* The layout styles every sidebar link as a padded block row
+     (SidebarLayout.astro); the footer link reads as an action. */
+  .sidebar-filter-text #sidebar-filter-all {
+    font-size: 0.8rem;
     color: var(--color-accent);
     text-decoration: underline;
   }
