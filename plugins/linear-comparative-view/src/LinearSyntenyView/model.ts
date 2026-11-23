@@ -221,13 +221,6 @@ export default function stateModelFactory(pluginManager: PluginManager) {
         >(),
         /**
          * #property
-         * ignored: the hierarchical selector is the only one. Declared so that
-         * saved sessions and share links include it.
-         * @deprecated
-         */
-        trackSelectorType: types.stripDefault(types.string, 'hierarchical'),
-        /**
-         * #property
          * How a move on one row applies to the others, a
          * [](/docs/config/syntenynavigation) object: `{ follow: true }` has
          * the rows follow the `anchor` row through the alignment.

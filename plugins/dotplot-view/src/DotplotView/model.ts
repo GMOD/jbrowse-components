@@ -241,13 +241,6 @@ export default function stateModelFactory(pm: PluginManager) {
           height: types.stripDefault(types.number, defaultHeight),
           /**
            * #property
-           * ignored: the hierarchical selector is the only one. Declared so that
-           * saved sessions and share links include it.
-           * @deprecated
-           */
-          trackSelectorType: types.stripDefault(types.string, 'hierarchical'),
-          /**
-           * #property
            * the two assemblies being compared, horizontal axis first. A spec
            * normally names these per axis instead, as `views[0].assembly` and
            * `views[1].assembly`.

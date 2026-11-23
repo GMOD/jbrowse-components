@@ -96,6 +96,21 @@ test('an unknown key is reported once', () => {
   expect(warnings()).toHaveLength(1)
 })
 
+test('a saved view carrying the retired trackSelectorType drops it', () => {
+  const view = open({
+    type: 'LinearGenomeView',
+    displayedRegions: [
+      { refName: 'ctgA', start: 0, end: 50001, assemblyName: 'volvox' },
+    ],
+    trackSelectorType: 'hierarchical',
+  })
+  expect(warnings()).toEqual([
+    'LinearGenomeView ignored unknown key(s): trackSelectorType',
+  ])
+  expect(notify).not.toHaveBeenCalled()
+  expect(JSON.stringify(getSnapshot(view))).not.toContain('trackSelectorType')
+})
+
 // A blob holding only what afterAttach reports is not work to do. Read as one,
 // `initialized` waits on the assembly `launch.assembly` does not name, and the
 // view sits on its spinner forever.

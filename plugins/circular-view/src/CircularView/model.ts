@@ -333,13 +333,6 @@ function stateModelFactory(pluginManager: PluginManager) {
         ),
         /**
          * #property
-         * ignored: the hierarchical selector is the only one. Declared so that
-         * saved sessions and share links include it.
-         * @deprecated
-         */
-        trackSelectorType: types.stripDefault(types.string, 'hierarchical'),
-        /**
-         * #property
          * the launch keys still to apply, moved here by `preProcessSnapshot`
          * and cleared once applied; not written by hand
          */
