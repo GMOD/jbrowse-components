@@ -2149,12 +2149,12 @@ steps that follow it read the rows already in section order.
 
 `clip` names the fetched region: an interval bin fused with its aggregate in a
 layer's own steps, where every later step of that layer reads one row at a time
-and leaves its position alone, makes no bin outside it for a row on its
-`refName`, so a feature far longer than the view is cut only where it is
-fetched. A bin it keeps gathers the pieces it did unclipped; one it drops lies
-wholly outside the fetch. A pair in the shared steps, the facet's steps or ahead
-of a facet split never clips, so a layer's rows never rest on its neighbours'
-steps.
+and leaves its position alone and no `cells` right before it fuses with the
+pair, makes no bin outside it for a row on its `refName`, so a feature far
+longer than the view is cut only where it is fetched. A bin it keeps gathers the
+pieces it did unclipped; one it drops lies wholly outside the fetch. A pair in
+the shared steps, the facet's steps or ahead of a facet split never clips, so a
+layer's rows never rest on its neighbours' steps.
 
 ```ts
 import { layerTables } from '@jbrowse/core/util/featureTransforms'

@@ -65,7 +65,6 @@ Each section ends with the members a composed model contributes, linked to the p
 | <span id="property-spacingpx">**spacingPx**</span><br><code>number</code> · default <code>10</code> | the gap drawn between adjacent chromosome arcs |
 | <span id="property-paddingpx">**paddingPx**</span><br><code>number</code> · default <code>80</code> | blank margin between the circle and the edge of the figure |
 | <span id="property-minvisiblewidth">**minVisibleWidth**</span><br><code>number</code> · default <code>6</code> | arcs thinner than this many pixels are elided instead of drawn, so a few thousand unplaced contigs do not become a ring of hairlines |
-| <span id="property-trackselectortype">**trackSelectorType**</span><br><code>string</code> · default <code>'hierarchical'</code> | ignored: the hierarchical selector is the only one. Declared so that saved sessions and share links include it. |
 | <span id="property-launch">**launch**</span><br><code>LaunchInput&lt;CircularViewCommands&gt; &#124; undefined</code> | the launch keys still to apply, moved here by `preProcessSnapshot` and cleared once applied; not written by hand |
 
 <details class="inherited-members" data-pagefind-ignore>

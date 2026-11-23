@@ -12674,7 +12674,6 @@ export const configManifest: ConfigManifest = {
         "zoomOf",
         "hideHeaderOverview",
         "hideNoTracksActive",
-        "trackSelectorType",
         "showCenterLine",
         "showCytobands",
         "trackLabels",
@@ -12728,7 +12727,6 @@ export const configManifest: ConfigManifest = {
         "spacingPx",
         "paddingPx",
         "minVisibleWidth",
-        "trackSelectorType",
         "launch"
       ],
       "launchKeys": [
@@ -12751,7 +12749,6 @@ export const configManifest: ConfigManifest = {
         "legend",
         "type",
         "height",
-        "trackSelectorType",
         "assemblyNames",
         "indels",
         "axis",
@@ -12793,7 +12790,6 @@ export const configManifest: ConfigManifest = {
         "offscreen",
         "overdrawPx",
         "launch",
-        "trackSelectorType",
         "navigation",
         "coord",
         "diagonalizeAnchorRow",

@@ -580,7 +580,7 @@ $ jbrowse text-index --out /path/to/jb2/
 $ jbrowse text-index -a hg19 --force
 
 # create index for some files for use in @jbrowse/react-linear-genome-view2 or similar
-$ jbrowse text-index --file myfile.gff3.gz --file myfile.vcfgz --out indexes
+$ jbrowse text-index --file myfile.gff3.gz --file myfile.vcf.gz --out indexes
 ```
 
 ## jbrowse admin-server
@@ -588,7 +588,7 @@ $ jbrowse text-index --file myfile.gff3.gz --file myfile.vcfgz --out indexes
 ```text
 Start up a small admin server for JBrowse configuration
 
-Usage: jbrowse admin-server [options]
+Usage: jbrowse admin-server [root] [options]
 
 Options:
   -h, --help                 Show help
@@ -599,7 +599,8 @@ Options:
       --host                 Interface to bind to (default: 127.0.0.1). Use
                              0.0.0.0 to accept connections from other machines
 
-      --root                 Path to the root of the JB2 installation
+      --root                 Path to the root of the JB2 installation (same as
+                             the positional root)
 
       --bodySizeLimit        Size limit of the update message (default: 25mb)
 
@@ -620,7 +621,7 @@ $ jbrowse admin-server
 $ jbrowse admin-server -p 8888
 
 # point at a specific JBrowse installation directory
-$ jbrowse admin-server --root /path/to/jb2/
+$ jbrowse admin-server /path/to/jb2/
 
 # raise the body size limit for very large config updates
 $ jbrowse admin-server --bodySizeLimit 100mb
@@ -651,8 +652,10 @@ Options:
       --nightly              Download the latest development build from the main
                              branch
 
-      --clean                Removes old js,map,and LICENSE files in the
-                             installation
+      --clean                Removes the installation's static directory and its
+                             *worker.js files before unpacking the new release,
+                             so files the new release no longer ships do not
+                             linger
 
   -u, --url                  A direct URL to a JBrowse 2 release
 
