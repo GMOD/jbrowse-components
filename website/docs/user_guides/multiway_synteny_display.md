@@ -47,8 +47,8 @@ Each lane has a separate scale, printed in its header:
   the anchor's scale prints nothing
 - **Changes chip:** deletions, insertions, stretches replaced
   (`122 kb replaced by 49 kb`) and inversions of 10 kb or more against the
-  anchor. A gap holding a piece of the other strand, such as an inversion's
-  breakpoints, states nothing
+  anchor. A gap reaching past the window, or holding a piece of the other
+  strand, such as an inversion's breakpoints, states nothing
 - **Ticks** fall at one interval shared by every lane
 - **`also at`** names a second stretch the window aligns to, a window or more
   away from the one the lane draws

@@ -477,9 +477,9 @@ describe('the changes chip', () => {
     ).toBe('900 kb inversion')
   })
 
-  test('says in its hover what it leaves out: changes under 10 kb, and gaps holding a piece of the other strand', () => {
+  test('says in its hover what it leaves out: changes under 10 kb, gaps reaching past the window, and gaps holding a piece of the other strand', () => {
     expect(changesTitle('hg38')).toBe(
-      "Changes against hg38 of 10 kb or more. Not listed: smaller ones, and any gap holding a piece of the other strand, such as an inversion's breakpoints.",
+      "Changes against hg38 of 10 kb or more. Not listed: smaller ones, any gap reaching past the window, and any gap holding a piece of the other strand, such as an inversion's breakpoints.",
     )
   })
 

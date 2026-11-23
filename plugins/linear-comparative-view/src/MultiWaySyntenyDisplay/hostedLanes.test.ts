@@ -11,7 +11,7 @@ import {
   laneOf,
 } from './copyLane.ts'
 import { decideLaneFrames, frameFromDecision } from './laneDecision.ts'
-import { changeLabel } from './laneHeader.ts'
+import { changeLabel, changesInView, shownLaneChanges } from './laneHeader.ts'
 import { buildLanes, laneGeometry } from './laneStack.ts'
 import {
   clipGroupToAnchor,
@@ -165,6 +165,7 @@ function layHosted(
     }
   }
   return {
+    window: { refName, start, end },
     field,
     grouped,
     groups,
@@ -473,6 +474,40 @@ function chipsOf(laid: ReturnType<typeof layHosted>, genome: string) {
       : []
   })
 }
+
+/** each lane of `genome`'s header chips over the window, as the display lists them */
+function chipsInView(laid: ReturnType<typeof layHosted>, genome: string) {
+  return lanesOf(laid, genome).flatMap(lane => {
+    const frame = laid.frames.get(lane)
+    return frame
+      ? shownLaneChanges(
+          { frame, canon: refName => refName },
+          changesInView(
+            laid.changes(lane, frame.refName, frame.flipped),
+            [laid.window],
+            refName => refName,
+          ),
+        ).map(changeLabel)
+      : []
+  })
+}
+
+// HG00099#1's gap from 70.13 Mb runs to records 170 kb past the 1 Mb
+// window's right edge, which only the display's wider fetch reaches
+describe('a gap reaching past the window states nothing', () => {
+  test('H-SMN: HG00099#1 states the same changes however far the fetch reaches', () => {
+    const wide = chipsInView(
+      layHosted(hostedWindow('H-SMN-fetchA')),
+      'HG00099.1',
+    )
+    const tight = chipsInView(
+      layHosted(hostedWindow('H-SMN-window')),
+      'HG00099.1',
+    )
+    expect(wide).toEqual(tight)
+    expect(wide).not.toContain('1.04 Mb replaced by 43 kb')
+  })
+})
 
 // Records cut as jbrowse-components' splitSyntenyFeatureAtGaps cuts them since
 // 48e3d77f08, an indel beside a cut counted in its gap

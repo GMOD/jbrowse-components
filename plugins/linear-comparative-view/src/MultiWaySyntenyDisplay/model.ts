@@ -131,6 +131,7 @@ import {
 } from './laneFetch.ts'
 import {
   LABEL_FONT_SIZE,
+  changesInView,
   laneHeaderRows,
   laneRegion,
   shownLaneChanges,
@@ -1843,10 +1844,14 @@ export function stateModelFactory(
        * it is drawn on
        */
       statedLaneChanges(assemblyName: string, refName: string) {
-        return self.laneChanges(
-          assemblyName,
-          refName,
-          self.laneDecisions.get(assemblyName)?.flipped,
+        return changesInView(
+          self.laneChanges(
+            assemblyName,
+            refName,
+            self.laneDecisions.get(assemblyName)?.flipped,
+          ),
+          self.lgv.settledDynamicBlocks,
+          self.anchorCanon,
         )
       },
     }))

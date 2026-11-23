@@ -113,6 +113,29 @@ export function shownLaneChanges(
     : []
 }
 
+/**
+ * The changes whose anchor side lies inside the view's `blocks`: a gap
+ * reaching past them reaches into the fetch's margin, and what the records
+ * there say of it changes with how far the fetch reaches. An inversion is
+ * its own run's anchor, whichever flanks bound it.
+ */
+export function changesInView(
+  changes: readonly LaneChange[],
+  blocks: readonly { refName: string; start: number; end: number }[],
+  canon: (refName: string) => string,
+) {
+  return changes.filter(
+    ({ kind, anchor }) =>
+      kind === 'inversion' ||
+      blocks.some(
+        block =>
+          block.refName === canon(anchor.refName) &&
+          anchor.start >= block.start &&
+          anchor.end <= block.end,
+      ),
+  )
+}
+
 export function changeLabel(change: LaneChange) {
   const { anchorBp, laneBp, kind } = change
   return kind === 'replacement'
@@ -177,7 +200,7 @@ function laneChanges(
 }
 
 export function changesTitle(anchor: string) {
-  return `Changes against ${anchor} of ${bpText(SPLIT_AT_GAP_BP)} or more. Not listed: smaller ones, and any gap holding a piece of the other strand, such as an inversion's breakpoints.`
+  return `Changes against ${anchor} of ${bpText(SPLIT_AT_GAP_BP)} or more. Not listed: smaller ones, any gap reaching past the window, and any gap holding a piece of the other strand, such as an inversion's breakpoints.`
 }
 
 /** Clamps, since a live pan can put the frame's `min` below zero. */
