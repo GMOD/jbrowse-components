@@ -14,7 +14,11 @@ import {
   saveConfigAndReport,
 } from './shared/config-operations.ts'
 
-import type { Config } from '../base.ts'
+import type { Config, Track } from '../base.ts'
+
+function isTrack(value: unknown): value is Track {
+  return isRecord(value) && typeof value.trackId === 'string'
+}
 
 export async function run(args?: string[]) {
   const options = {
@@ -91,11 +95,10 @@ export async function run(args?: string[]) {
   debug(`Found existing config file ${target}`)
 
   const parsed: unknown = await readInlineOrFileJson(track)
-  if (isRecord(parsed) && typeof parsed.trackId === 'string') {
-    const trackConfig = { ...parsed, trackId: parsed.trackId }
+  if (isTrack(parsed)) {
     const { updatedItems, wasOverwritten } = findAndUpdateOrAdd({
       items: config.tracks ?? [],
-      newItem: trackConfig,
+      newItem: parsed,
       idField: 'trackId',
       getId: item => item.trackId,
       force: update ?? false,
@@ -106,11 +109,8 @@ export async function run(args?: string[]) {
       config: { ...config, tracks: updatedItems },
       target,
       itemType: 'track',
-      itemName:
-        typeof trackConfig.name === 'string'
-          ? trackConfig.name
-          : trackConfig.trackId,
-      itemId: trackConfig.trackId,
+      itemName: parsed.name ?? parsed.trackId,
+      itemId: parsed.trackId,
       wasOverwritten,
     })
   } else {

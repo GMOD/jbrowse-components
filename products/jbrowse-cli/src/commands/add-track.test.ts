@@ -249,7 +249,11 @@ test('two sources with the same file name fail before any file is loaded', async
     ])
     expect(error?.message).toMatch(/both be loaded to/)
     expect(exists(ctxDir(ctx, 'cov.bw'))).toBe(false)
-    expect(readConf(ctx).tracks.some(t => t.trackId === 'multi')).toBe(false)
+    expect(
+      readConf(ctx).tracks.some(
+        (t: { trackId: string }) => t.trackId === 'multi',
+      ),
+    ).toBe(false)
   })
 })
 
