@@ -100,7 +100,6 @@ export async function run(args?: string[]) {
       items: config.tracks ?? [],
       newItem: parsed,
       idField: 'trackId',
-      getId: item => item.trackId,
       force: update ?? false,
       itemType: 'track',
     })

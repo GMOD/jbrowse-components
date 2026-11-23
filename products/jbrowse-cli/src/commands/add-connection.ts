@@ -197,7 +197,6 @@ export async function run(args?: string[]) {
     items: configContents.connections ?? [],
     newItem: connectionConfig,
     idField: 'connectionId',
-    getId: item => item.connectionId,
     force: force ?? false,
     itemType: 'connection',
   })

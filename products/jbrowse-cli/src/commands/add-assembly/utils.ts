@@ -411,7 +411,6 @@ export async function addAssemblyToConfig({
     items: config.assemblies ?? [],
     newItem: assembly,
     idField: 'name',
-    getId: item => item.name,
     force: runFlags.force ?? false,
     itemType: 'assembly',
   })

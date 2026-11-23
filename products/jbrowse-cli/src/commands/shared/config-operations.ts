@@ -2,23 +2,24 @@ import { debug, writeJsonFile } from '../../utils.ts'
 
 import type { Config } from '../../base.ts'
 
-export function findAndUpdateOrAdd<T extends object>({
+export function findAndUpdateOrAdd<
+  I extends string,
+  T extends Record<I, string>,
+>({
   items,
   newItem,
   idField,
-  getId,
   force,
   itemType,
 }: {
   items: T[]
   newItem: T
-  idField: string
-  getId: (item: T) => string
+  idField: I
   force: boolean
   itemType: string
 }): { updatedItems: T[]; wasOverwritten: boolean } {
-  const newId = getId(newItem)
-  const idx = items.findIndex(item => getId(item) === newId)
+  const newId = newItem[idField]
+  const idx = items.findIndex(item => item[idField] === newId)
 
   if (idx !== -1) {
     debug(`Found existing ${itemType} ${newId} in configuration`)

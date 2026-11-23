@@ -311,7 +311,6 @@ export async function run(args?: string[]) {
     items: configContents.tracks ?? [],
     newItem: trackConfig,
     idField: 'trackId',
-    getId: item => item.trackId,
     force: force ?? false,
     itemType: 'track',
   })
