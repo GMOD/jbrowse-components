@@ -79,6 +79,8 @@ Display slots go on a display entry: `"displays": [{ "type": "LinearBasicDisplay
 | <span id="slot-labelsname">**labels.name**</span><br>[FeatureNameLabel](../featurenamelabel) | Each feature's name, a [](/docs/config/featurenamelabel) object. |
 | <span id="slot-labelsdescription">**labels.description**</span><br>[FeatureDescriptionLabel](../featuredescriptionlabel) | The line under each name, a [](/docs/config/featuredescriptionlabel) object. |
 | <span id="slot-labelssubfeatures">**labels.subfeatures**</span><br>[FeatureSubfeatureLabels](../featuresubfeaturelabels) | The names of a feature's parts, a [](/docs/config/featuresubfeaturelabels) object. |
+| <span id="slot-arrows">**arrows**</span><br>[FeatureArrows sub-schema](#slot-arrowsshow) | The arrow past the 3' end of a stranded feature. |
+| <span id="slot-arrowsshow">**arrows.show**</span><br>[`boolean`](/docs/config_guides/slot_types#boolean) = <code>true</code> | draw an arrow past the 3' end of a stranded feature, pointing the way it reads |
 | <span id="slot-chevrons">**chevrons**</span><br>[FeatureChevrons sub-schema](#slot-chevronsshow) | The arrows on a feature's intron lines. |
 | <span id="slot-chevronsshow">**chevrons.show**</span><br>[`boolean`](/docs/config_guides/slot_types#boolean) = <code>true</code> | draw chevrons on intron lines pointing the way the feature reads |
 | <span id="slot-transcripts">**transcripts**</span><br>[FeatureTranscripts](../featuretranscripts) | How a gene's isoforms are read and ranked, a [](/docs/config/featuretranscripts) object. |

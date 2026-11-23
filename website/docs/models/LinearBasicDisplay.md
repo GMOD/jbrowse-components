@@ -92,6 +92,7 @@ From [TrackHeightMixin](../trackheightmixin): <span id="volatile-scrolltop">[`sc
 | <span id="getter-utrcolor">**utrColor**</span><br><code>string</code> |  |
 | <span id="getter-genesfilter">**genesFilter**</span><br><code>"exclude" &#124; "only" &#124; undefined</code> |  |
 | <span id="getter-subfeaturelabels">**subfeatureLabels**</span><br><code>"auto" &#124; "below" &#124; "none" &#124; "overlay"</code> | `labels.subfeatures` as the one mode the worker reads. |
+| <span id="getter-showarrows">**showArrows**</span><br><code>boolean</code> | `arrows.show`. |
 | <span id="getter-showchevrons">**showChevrons**</span><br><code>boolean</code> | `chevrons.show`, over the base's hook. |
 | <span id="getter-geneglyphmode">**geneGlyphMode**</span><br><code>"all" &#124; "auto" &#124; "representative"</code> |  |
 | <span id="getter-effectivesubfeaturelabels">**effectiveSubfeatureLabels**</span><br><code>"auto" &#124; "below" &#124; "none" &#124; "overlay"</code> | The subfeature-label mode the worker bakes: `subfeatureLabels`, but none while collapsed, since the label is baked in the worker. |
@@ -177,6 +178,7 @@ From [BaseDisplay](../basedisplay): <span id="method-renderingprops">[`rendering
 | <span id="action-setgeneglyphmode">**setGeneGlyphMode**</span><br><code>(value: "all" &#124; "auto" &#124; "representative") =&gt; void</code> |  |
 | <span id="action-dismissgeneglyphnotice">**dismissGeneGlyphNotice**</span><br><code>() =&gt; void</code> |  |
 | <span id="action-setgenesfilter">**setGenesFilter**</span><br><code>(value?: "exclude" &#124; "only") =&gt; void</code> |  |
+| <span id="action-setshowarrows">**setShowArrows**</span><br><code>(value: boolean) =&gt; void</code> |  |
 | <span id="action-setshowchevrons">**setShowChevrons**</span><br><code>(value: boolean) =&gt; void</code> |  |
 | <span id="action-setutrcolor">**setUtrColor**</span><br><code>(color?: string) =&gt; void</code> |  |
 

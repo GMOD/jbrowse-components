@@ -48,7 +48,7 @@ Dotplot1DView
 LinearSyntenyViewHelper
 TimeTraveller
 
-# model members with no description (1225)
+# model members with no description (1226)
 # fix: write a sentence under the member’s #property/#volatile/#getter/#method/#action tag
 AddTrackModel.adapterHint
 AddTrackModel.altAssemblyName
@@ -594,6 +594,7 @@ LinearBasicDisplay.geneGlyphTrimmedGenes
 LinearBasicDisplay.genesFilter
 LinearBasicDisplay.setGeneGlyphMode
 LinearBasicDisplay.setGenesFilter
+LinearBasicDisplay.setShowArrows
 LinearBasicDisplay.setShowChevrons
 LinearBasicDisplay.setSubfeatureLabels
 LinearBasicDisplay.setUtrColor
