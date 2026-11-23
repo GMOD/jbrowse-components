@@ -347,7 +347,7 @@ describe('the changes chip', () => {
         },
       ])[1]!.changes,
     ).toEqual({
-      text: '1.2 Mb deletion',
+      text: '1.23 Mb deletion',
       anchor: 'grape',
     })
   })
@@ -372,7 +372,7 @@ describe('the changes chip', () => {
           anchor: ON,
         },
       ])[1]?.text,
-    ).toBe('120 kb replaced by 49 kb, 17 bp replaced by 94 kb')
+    ).toBe('122 kb replaced by 49 kb, 17 bp replaced by 94 kb')
   })
 
   test('names an inversion the shown frame meets by its anchor span', () => {

@@ -253,7 +253,7 @@ describe("the header names a lane's arrays", () => {
         'hg38',
       ),
     ).toEqual({
-      text: '580 kb repeat over 210 kb, 11 more',
+      text: '585 kb repeat over 212 kb, 11 more',
       title:
         'This stretch repeats: HG002#1 passes its sequence about 29 times and hg38 about 8.9 times, so no single ribbon is drawn.',
     })
@@ -274,7 +274,7 @@ describe("the header names a lane's arrays", () => {
         'hg38',
       ),
     ).toEqual({
-      text: '390 kb repeat over 390 kb, 1 more',
+      text: '395 kb repeat over 394 kb, 1 more',
       title:
         'This stretch repeats: HG00126#1 passes its sequence about 1.7 times and hg38 about 1.9 times, so no single ribbon is drawn.',
     })

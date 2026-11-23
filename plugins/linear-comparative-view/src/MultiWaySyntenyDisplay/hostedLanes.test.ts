@@ -11,6 +11,7 @@ import {
   laneOf,
 } from './copyLane.ts'
 import { decideLaneFrames, frameFromDecision } from './laneDecision.ts'
+import { changeLabel } from './laneHeader.ts'
 import {
   clipGroupToAnchor,
   groupFeatures,
@@ -268,6 +269,32 @@ describe('every piece of a haplotype the window places is drawn', () => {
     laid.frames.delete(dropped!)
     expect(undrawnAnchorBp(laid).get('HG01109.1')).toBeGreaterThan(100_000)
     expect(undrawnLaneBp(laid).get('HG01109.1')).toBeGreaterThan(100_000)
+  })
+})
+
+/** each lane of `genome`'s stated changes, as its header words them */
+function chipsOf(laid: ReturnType<typeof layHosted>, genome: string) {
+  return lanesOf(laid, genome).flatMap(lane => {
+    const frame = laid.frames.get(lane)
+    return frame
+      ? laid.changes(lane, frame.refName, frame.flipped).map(changeLabel)
+      : []
+  })
+}
+
+// Records cut as jbrowse-components' splitSyntenyFeatureAtGaps cuts them since
+// 48e3d77f08, an indel beside a cut counted in its gap
+describe('a gap with bases on both sides is worded by both, at its size', () => {
+  test('F2-chr3: HG01960#1 replaces 114 kb of GRCh38 with 8 bp of its own', () => {
+    expect(chipsOf(layHosted(hostedWindow('F2-chr3')), 'HG01960.1')).toEqual([
+      '114 kb replaced by 8 bp',
+    ])
+  })
+
+  test('SV-rep-10k-100k: HG02055#1 replaces 13 kb with 13 bp', () => {
+    expect(
+      chipsOf(layHosted(hostedWindow('SV-rep-10k-100k')), 'HG02055.1'),
+    ).toEqual(['13 kb replaced by 13 bp'])
   })
 })
 

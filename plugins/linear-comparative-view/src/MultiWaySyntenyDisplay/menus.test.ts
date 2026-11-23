@@ -741,7 +741,7 @@ test('a lane menu goes to each change its chip names, largest first', () => {
       item => 'label' in item && item.label === 'Go to',
     ),
   )
-  expect(labelsOf(goTo)).toEqual(['940 kb deletion', '30 kb insertion'])
+  expect(labelsOf(goTo)).toEqual(['935 kb deletion', '30 kb insertion'])
   goTo.forEach(click)
   expect(calls).toEqual([
     'zoom chr1:1532501..3402500',

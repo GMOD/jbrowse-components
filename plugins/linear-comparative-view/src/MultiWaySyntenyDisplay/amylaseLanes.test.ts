@@ -179,6 +179,6 @@ describe('a lane whose walk is in two fragments of one contig', () => {
     const groups = groupFeatures(HG00097_FRAGMENTS)
     expect(
       laneIndelsOf(groups).changes('HG00097.1', 'CM094060.1').map(changeLabel),
-    ).toEqual(['120 kb replaced by 49 kb'])
+    ).toEqual(['122 kb replaced by 49 kb'])
   })
 })

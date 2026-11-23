@@ -69,11 +69,13 @@ const LISTED_CHANGES = 2
 
 const MIN_CHANGE_PAD_BP = 1000
 
+// three figures from 100 kb, where two would round 114 kb to 110
 function bpText(n: number) {
+  const figures = n >= 100_000 ? 3 : 2
   return n >= 1_000_000
-    ? `${Number((n / 1_000_000).toPrecision(2))} Mb`
+    ? `${Number((n / 1_000_000).toPrecision(figures))} Mb`
     : n >= 1000
-      ? `${Number((n / 1000).toPrecision(2))} kb`
+      ? `${Number((n / 1000).toPrecision(figures))} kb`
       : `${n} bp`
 }
 
