@@ -133,6 +133,8 @@ Add an assembly to a JBrowse 2 configuration
 Usage: jbrowse add-assembly <sequence> [options]
 
 Options:
+  -h, --help                 Show help
+
   -t, --type                 type of sequence, by default inferred from sequence
                              file
 
@@ -190,13 +192,11 @@ Options:
                              reference sequence names; will cycle through colors
                              if there are fewer colors than sequences
 
-      --target               path to config file in JB2 installation directory
+      --target               Path to config file in JB2 installation directory
                              to write out to. Creates ./config.json if
                              nonexistent
 
-      --out                  synonym for target
-
-  -h, --help                 Display help for command
+      --out                  Synonym for target
 
   -l, --load                 Required flag when using a local file. Choose how
                              to manage the data directory. Copy, symlink, or
@@ -304,8 +304,8 @@ Options:
                              .json file holding an array of BigWig locations or
                              subadapter objects, each with its own name/color
 
-      --target               Path to config file in JB2 installation to write
-                             out to
+      --target               Path to config file in JB2 installation directory
+                             to write out to
 
       --out                  Synonym for target
 
@@ -400,6 +400,8 @@ accepts without an error
 Usage: jbrowse validate [config.json] [options]
 
 Options:
+  -h, --help                 Show help
+
       --json                 Output the findings as JSON instead of text
 
       --plugin-manifest      A plugin manifest listing the types a plugin
@@ -407,8 +409,6 @@ Options:
                              (repeatable)
 
   -q, --quiet                Only print errors, suppressing warnings and notes
-
-  -h, --help                 Show help
 
 Notes:
 
@@ -481,7 +481,7 @@ Make a text-indexing file for any given track(s).
 Usage: jbrowse text-index [options]
 
 Options:
-  -h, --help                 Show CLI help
+  -h, --help                 Show help
 
       --tracks               Specific tracks to index, formatted as comma
                              separated trackIds. If unspecified, indexes all
@@ -989,6 +989,8 @@ Set a default session with views and tracks
 Usage: jbrowse set-default-session [options]
 
 Options:
+  -h, --help                 Show help
+
   -s, --session              set path to a file containing session in json
                              format, or "-" to read it from stdin (required,
                              unless using delete/currentSession flags)
@@ -999,14 +1001,12 @@ Options:
 
   -c, --currentSession       List out the current default session
 
-      --target               path to config file in JB2 installation directory
+      --target               Path to config file in JB2 installation directory
                              to write out to
 
-      --out                  synonym for target
+      --out                  Synonym for target
 
       --delete               Delete any existing default session.
-
-  -h, --help                 Show help
 
 Examples:
 
