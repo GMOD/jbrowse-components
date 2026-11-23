@@ -583,6 +583,7 @@ Page: https://jbrowse.org/jb2/docs/tutorials/pangenome_cattle/
 - https://jbrowse.org/demos/bovine_pangenome/bovine-arsucd12-minigraph.graph.bed.gz
 - https://jbrowse.org/demos/bovine_pangenome/bovine-arsucd12-minigraph.samples.tsv
 - https://jbrowse.org/demos/bovine_pangenome/bovine-arsucd12-minigraph.vcf.gz
+- https://jbrowse.org/ucsc/bosTau9/ncbiRefSeq.gff.gz
 
 ## Pangenome (pggb)
 
@@ -600,15 +601,17 @@ Page: https://jbrowse.org/jb2/docs/tutorials/pangenome_ecoli/
 
 ## Pangenome (fly)
 
-Open the Drosophila melanogaster pangenome, read six duplication alleles of a nicotine resistance gene in one bubble, find the transposons behind classic visible mutants, then load the graph in your own JBrowse
+Load a Drosophila melanogaster pangenome graph and a callset with one row per assembly, then read the duplication alleles of a nicotine resistance gene, the transposon behind a classic wing mutant and a resistance allele the reference has
 
 Page: https://jbrowse.org/jb2/docs/tutorials/pangenome_fly/
 
 - https://hgdownload.soe.ucsc.edu/goldenPath/dm6/bigZips/dm6.2bit
-- https://hgdownload.soe.ucsc.edu/goldenPath/dm6/bigZips/dm6.fa.gz
+- https://jbrowse.org/code/jb2/main/test_data/graphgenomeview/pangenome_nonhuman.json
 - https://jbrowse.org/demos/fly_pangenome/fly-dm6-minigraph.bubbles.bed.gz
 - https://jbrowse.org/demos/fly_pangenome/fly-dm6-minigraph.fold10000.graph.bed.gz
 - https://jbrowse.org/demos/fly_pangenome/fly-dm6-minigraph.graph.bed.gz
+- https://jbrowse.org/demos/fly_pangenome/fly-dm6-minigraph.vcf.gz
+- https://jbrowse.org/ucsc/dm6/ncbiRefSeq.gff.gz
 
 ## Pangenome (HPRC) part 1: the graph's alleles and the haplotypes that have them
 
@@ -657,6 +660,10 @@ Page: https://jbrowse.org/jb2/docs/tutorials/pangenome_hprc_repeats/
 - https://jbrowse.org/demos/hprc/hprc_kiv2_copies_all.vcf.gz
 - https://jbrowse.org/demos/hprc/lpa_uniprot_domains.bed.gz
 - https://jbrowse.org/pangenome/hprc-grch38/config.json
+- https://s3-us-west-2.amazonaws.com/human-pangenomics/working/HPRC/HG00133/assemblies/release2/HG00133_hap1_hprc_r2_v1.0.1.fa.gz
+- https://s3-us-west-2.amazonaws.com/human-pangenomics/working/HPRC/HG00232/assemblies/release2/HG00232_hap1_hprc_r2_v1.0.1.fa.gz
+- https://s3-us-west-2.amazonaws.com/human-pangenomics/working/HPRC/HG01361/assemblies/release2/HG01361_pat_hprc_r2_v1.0.1.fa.gz
+- https://s3-us-west-2.amazonaws.com/human-pangenomics/working/HPRC/NA18608/assemblies/release2/NA18608_hap2_hprc_r2_v1.0.1.fa.gz
 - https://zenodo.org/records/8329210/files/adotto_repeats.hg38.bed.gz
 
 ## Pangenome (mouse)
@@ -688,14 +695,17 @@ Page: https://jbrowse.org/jb2/docs/tutorials/pangenome_prepare_graph/
 
 ## Pangenome (rice)
 
-Open the rice pangenome, read the Green Revolution semi-dwarf deletion, three grain-width alleles and a 90 kb insertion that the reference lacks, then load the graph in your own JBrowse
+Load a rice pangenome graph and a callset with one row per assembly, then read the Green Revolution semi-dwarf deletion, three grain-width alleles and a 90 kb insertion that the reference lacks
 
 Page: https://jbrowse.org/jb2/docs/tutorials/pangenome_rice/
 
 - https://hgdownload.soe.ucsc.edu/hubs/GCF/034/140/825/GCF_034140825.1/GCF_034140825.1.2bit
+- https://hgdownload.soe.ucsc.edu/hubs/GCF/034/140/825/GCF_034140825.1/bbi/GCF_034140825.1_ASM3414082v1.ncbiRefSeq.bb
+- https://jbrowse.org/code/jb2/main/test_data/graphgenomeview/pangenome_nonhuman.json
 - https://jbrowse.org/demos/rice_pangenome/rice-agis1-minigraph.bubbles.bed.gz
 - https://jbrowse.org/demos/rice_pangenome/rice-agis1-minigraph.fold10000.graph.bed.gz
 - https://jbrowse.org/demos/rice_pangenome/rice-agis1-minigraph.graph.bed.gz
+- https://jbrowse.org/demos/rice_pangenome/rice-agis1-minigraph.vcf.gz
 
 ## CNV across a population (1000 Genomes)
 

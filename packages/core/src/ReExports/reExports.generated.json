@@ -1360,8 +1360,10 @@
     "@jbrowse/core/svg/constants": {
       "package": "@jbrowse/core",
       "names": [
+        "ExportFontFamilyContext",
         "exportFontFamily",
-        "exportMargin"
+        "exportMargin",
+        "useExportFontFamily"
       ],
       "worker": "real"
     },
@@ -3589,6 +3591,8 @@
       "package": "@jbrowse/core",
       "names": [
         "JBROWSE_PROTOCOL",
+        "isWebUrl",
+        "linkConfigRefusal",
         "parseProtocolUrl",
         "toProtocolUrl"
       ],
@@ -4143,6 +4147,7 @@
       "package": "@jbrowse/core",
       "names": [
         "SvgCanvas",
+        "textBaselineShift",
         "withFreshSvgClipIds"
       ],
       "worker": "real"
@@ -4247,6 +4252,7 @@
         "expandLooseTrackConfig",
         "filterTracks",
         "findFileHandleIds",
+        "generateProblemTrackConf",
         "generateUnknownTrackConf",
         "generateUnsupportedTrackConf",
         "getBlob",

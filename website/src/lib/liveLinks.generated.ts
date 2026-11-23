@@ -168,12 +168,6 @@ export const figureLiveRefs: Record<string, string> = {
   "genomes_basics/about_track": "?config=https%3A%2F%2Fjbrowse.org%2Fucsc%2Fhg38%2Fconfig.json&session=spec-%7B%22views%22%3A%5B%7B%22type%22%3A%22LinearGenomeView%22%2C%22assembly%22%3A%22hg38%22%2C%22loc%22%3A%22chr17%3A7%2C668%2C400-7%2C677%2C600%22%2C%22tracks%22%3A%5B%7B%22trackId%22%3A%22hg38-phyloP100way%22%2C%22height%22%3A400%7D%5D%7D%5D%7D&sessionName=Screenshot",
   "genomes_basics/genark_axolotl": "?config=https%3A%2F%2Fjbrowse.org%2Fhubs%2Fgenark%2FGCF%2F040%2F938%2F575%2FGCF_040938575.1%2Fconfig.json&session=spec-%7B%22views%22%3A%5B%7B%22type%22%3A%22LinearGenomeView%22%2C%22assembly%22%3A%22GCF_040938575.1%22%2C%22loc%22%3A%22tp53%22%7D%5D%7D&sessionName=Screenshot",
   "pangenome/genomes_hprc_loci": "https://genomes.jbrowse.org/pangenomes/hprc/?region=chr6%3A32%2C510%2C001-32%2C600%2C000",
-  "pangenome/genomes_fly_cyp28d1": "https://genomes.jbrowse.org/pangenomes/fly/?region=chr2L%3A5%2C200%2C001-5%2C220%2C000",
-  "pangenome/genomes_fly_strn_mlck": "https://genomes.jbrowse.org/pangenomes/fly/?region=chr2R%3A15%2C940%2C001-15%2C966%2C000",
-  "pangenome/genomes_fly_chkov1": "https://genomes.jbrowse.org/pangenomes/fly/?region=chr3R%3A25%2C320%2C001-25%2C335%2C000",
-  "pangenome/genomes_rice_sd1": "https://genomes.jbrowse.org/pangenomes/rice/?region=chr1%3A39%2C008%2C001-39%2C020%2C000",
-  "pangenome/genomes_rice_qsw5": "https://genomes.jbrowse.org/pangenomes/rice/?region=chr5%3A5%2C374%2C001-5%2C390%2C000",
-  "pangenome/genomes_rice_pup1": "https://genomes.jbrowse.org/pangenomes/rice/?region=chr12%3A15%2C866%2C141-15%2C866%2C870",
   "about_track": "?config=test_data%2Fvolvox%2Fconfig.json&session=spec-%7B%22views%22%3A%5B%7B%22type%22%3A%22LinearGenomeView%22%2C%22assembly%22%3A%22volvox%22%2C%22loc%22%3A%22ctgA%3A1-20000%22%2C%22tracks%22%3A%5B%22volvox_cram%22%5D%7D%5D%7D&sessionName=Screenshot",
   "gene_track_color_by_cds": "?config=test_data%2Fconfig_demo.json&session=spec-%7B%22views%22%3A%5B%7B%22type%22%3A%22LinearGenomeView%22%2C%22assembly%22%3A%22hg19%22%2C%22loc%22%3A%22chr17%3A41%2C244%2C000-41%2C244%2C090%22%2C%22trackLabels%22%3A%22offset%22%2C%22tracks%22%3A%5B%22Pd8Wh30ei9R%22%2C%7B%22trackId%22%3A%22ncbi_gff_hg19%22%2C%22geneGlyphMode%22%3A%22representative%22%7D%5D%7D%5D%7D&sessionName=Screenshot",
   "gene_track_selenocysteine": "?config=test_data%2Fconfig_demo.json&session=spec-%7B%22views%22%3A%5B%7B%22type%22%3A%22LinearGenomeView%22%2C%22assembly%22%3A%22hg19%22%2C%22loc%22%3A%22chr3%3A49%2C395%2C505-49%2C395%2C625%22%2C%22colorByFrame%22%3Atrue%2C%22trackLabels%22%3A%22offset%22%2C%22tracks%22%3A%5B%22Pd8Wh30ei9R%22%2C%7B%22trackId%22%3A%22ncbi_gff_hg19%22%2C%22geneGlyphMode%22%3A%22representative%22%7D%5D%7D%5D%7D&sessionName=Screenshot",
@@ -514,6 +508,12 @@ export const figureLiveRefs: Record<string, string> = {
   "pangenome/bovine_tas2r46": "?config=test_data%2Fgraphgenomeview%2Fpangenome_nonhuman.json&session=spec-%7B%22views%22%3A%5B%7B%22type%22%3A%22LinearGenomeView%22%2C%22id%22%3A%22pangenome-bovine_tas2r46-lgv%22%2C%22assembly%22%3A%22bosTau9%22%2C%22loc%22%3A%22chr5%3A98%2C575%2C000-98%2C615%2C000%22%2C%22tracks%22%3A%5B%7B%22trackId%22%3A%22bosTau9_ncbiRefSeq_ucsc%22%2C%22height%22%3A90%7D%2C%7B%22trackId%22%3A%22bovine_pangenome_vcf%22%2C%22height%22%3A300%7D%2C%7B%22trackId%22%3A%22bovine_minigraph_segments%22%2C%22type%22%3A%22LinearGraphDisplay%22%2C%22layoutMode%22%3A%22force%22%2C%22color%22%3A%7B%22field%22%3A%22position%22%7D%2C%22bubbleSpread%22%3A%22compress%22%2C%22maxRegionBp%22%3A44000%2C%22height%22%3A240%7D%5D%7D%5D%7D&sessionName=Screenshot",
   "pangenome/bovine_bola": "?config=test_data%2Fgraphgenomeview%2Fpangenome_nonhuman.json&session=spec-%7B%22views%22%3A%5B%7B%22type%22%3A%22LinearGenomeView%22%2C%22id%22%3A%22pangenome-bovine_bola-lgv%22%2C%22assembly%22%3A%22bosTau9%22%2C%22loc%22%3A%22chr23%3A27%2C508%2C000-27%2C536%2C000%22%2C%22tracks%22%3A%5B%7B%22trackId%22%3A%22bosTau9_ncbiRefSeq_ucsc%22%2C%22height%22%3A90%7D%2C%7B%22trackId%22%3A%22bovine_pangenome_vcf%22%2C%22height%22%3A300%7D%2C%7B%22trackId%22%3A%22bovine_minigraph_segments%22%2C%22type%22%3A%22LinearGraphDisplay%22%2C%22layoutMode%22%3A%22force%22%2C%22bubbleSpread%22%3A%22compress%22%2C%22color%22%3A%7B%22field%22%3A%22position%22%7D%2C%22maxRegionBp%22%3A30801%2C%22height%22%3A420%7D%5D%7D%5D%7D&sessionName=Screenshot",
   "pangenome/bovine_whole_chromosome": "?config=test_data%2Fgraphgenomeview%2Fpangenome_nonhuman.json&session=spec-%7B%22views%22%3A%5B%7B%22type%22%3A%22LinearGenomeView%22%2C%22id%22%3A%22bovine-chr23-lgv%22%2C%22assembly%22%3A%22bosTau9%22%2C%22loc%22%3A%22chr23%22%2C%22tracks%22%3A%5B%22bosTau9_ncbiRefSeq_ucsc%22%2C%22bovine_bubble_score%22%2C%7B%22trackId%22%3A%22bovine_minigraph_segments%22%2C%22type%22%3A%22LinearGraphDisplay%22%2C%22height%22%3A260%7D%5D%7D%5D%7D&sessionName=Screenshot",
+  "pangenome/rice_sd1": "?config=test_data%2Fgraphgenomeview%2Fpangenome_nonhuman.json&session=spec-%7B%22views%22%3A%5B%7B%22type%22%3A%22LinearGenomeView%22%2C%22id%22%3A%22pangenome-rice_sd1-lgv%22%2C%22assembly%22%3A%22GCF_034140825.1%22%2C%22loc%22%3A%22chr1%3A39%2C008%2C001-39%2C020%2C000%22%2C%22tracks%22%3A%5B%7B%22trackId%22%3A%22GCF_034140825.1-ncbiRefSeq%22%2C%22height%22%3A70%7D%2C%7B%22trackId%22%3A%22rice_pangenome_vcf%22%2C%22height%22%3A600%2C%22sortRowsBy%22%3A%7B%22refName%22%3A%22chr1%22%2C%22pos%22%3A39013200%7D%7D%2C%7B%22trackId%22%3A%22rice_minigraph_segments%22%2C%22type%22%3A%22LinearGraphDisplay%22%2C%22layoutMode%22%3A%22force%22%2C%22encoding%22%3A%7B%22color%22%3A%7B%22field%22%3A%22position%22%7D%7D%2C%22bubbleSpread%22%3A%22compress%22%2C%22maxRegionBp%22%3A13201%2C%22height%22%3A260%7D%5D%2C%22highlight%22%3A%5B%7B%22refName%22%3A%22chr1%22%2C%22start%22%3A39013074%2C%22end%22%3A39013458%2C%22label%22%3A%22383%20bp%20deletion%20(sd1-d)%22%2C%22color%22%3A%22rgba(255%2C193%2C7%2C0.30)%22%7D%5D%7D%5D%7D&sessionName=Screenshot",
+  "pangenome/rice_qsw5": "?config=test_data%2Fgraphgenomeview%2Fpangenome_nonhuman.json&session=spec-%7B%22views%22%3A%5B%7B%22type%22%3A%22LinearGenomeView%22%2C%22id%22%3A%22pangenome-rice_qsw5-lgv%22%2C%22assembly%22%3A%22GCF_034140825.1%22%2C%22loc%22%3A%22chr5%3A5%2C374%2C001-5%2C390%2C000%22%2C%22tracks%22%3A%5B%7B%22trackId%22%3A%22GCF_034140825.1-ncbiRefSeq%22%2C%22height%22%3A70%7D%2C%7B%22trackId%22%3A%22rice_pangenome_vcf%22%2C%22height%22%3A600%2C%22sortRowsBy%22%3A%7B%22refName%22%3A%22chr5%22%2C%22pos%22%3A5380000%7D%7D%2C%7B%22trackId%22%3A%22rice_minigraph_segments%22%2C%22type%22%3A%22LinearGraphDisplay%22%2C%22layoutMode%22%3A%22force%22%2C%22encoding%22%3A%7B%22color%22%3A%7B%22field%22%3A%22position%22%7D%7D%2C%22bubbleSpread%22%3A%22compress%22%2C%22maxRegionBp%22%3A17600%2C%22height%22%3A260%7D%5D%7D%5D%7D&sessionName=Screenshot",
+  "pangenome/rice_pup1": "?config=test_data%2Fgraphgenomeview%2Fpangenome_nonhuman.json&session=spec-%7B%22views%22%3A%5B%7B%22type%22%3A%22LinearGenomeView%22%2C%22id%22%3A%22pangenome-rice_pup1-lgv%22%2C%22assembly%22%3A%22GCF_034140825.1%22%2C%22loc%22%3A%22chr12%3A15%2C866%2C141-15%2C866%2C870%22%2C%22tracks%22%3A%5B%7B%22trackId%22%3A%22rice_pangenome_vcf%22%2C%22height%22%3A600%2C%22sortRowsBy%22%3A%7B%22refName%22%3A%22chr12%22%2C%22pos%22%3A15866620%7D%7D%5D%7D%5D%7D&sessionName=Screenshot",
+  "pangenome/fly_cyp28d1": "?config=test_data%2Fgraphgenomeview%2Fpangenome_nonhuman.json&session=spec-%7B%22views%22%3A%5B%7B%22type%22%3A%22LinearGenomeView%22%2C%22id%22%3A%22pangenome-fly_cyp28d1-lgv%22%2C%22assembly%22%3A%22dm6%22%2C%22loc%22%3A%22chr2L%3A5%2C200%2C001-5%2C220%2C000%22%2C%22tracks%22%3A%5B%7B%22trackId%22%3A%22dm6_ncbiRefSeq_ucsc%22%2C%22height%22%3A70%7D%2C%7B%22trackId%22%3A%22fly_pangenome_vcf%22%2C%22height%22%3A560%2C%22sortRowsBy%22%3A%7B%22refName%22%3A%22chr2L%22%2C%22pos%22%3A5210500%7D%7D%2C%7B%22trackId%22%3A%22fly_minigraph_segments%22%2C%22type%22%3A%22LinearGraphDisplay%22%2C%22layoutMode%22%3A%22force%22%2C%22encoding%22%3A%7B%22color%22%3A%7B%22field%22%3A%22position%22%7D%7D%2C%22bubbleSpread%22%3A%22compress%22%2C%22maxRegionBp%22%3A22000%2C%22height%22%3A260%7D%5D%7D%5D%7D&sessionName=Screenshot",
+  "pangenome/fly_strn_mlck": "?config=test_data%2Fgraphgenomeview%2Fpangenome_nonhuman.json&session=spec-%7B%22views%22%3A%5B%7B%22type%22%3A%22LinearGenomeView%22%2C%22id%22%3A%22pangenome-fly_strn_mlck-lgv%22%2C%22assembly%22%3A%22dm6%22%2C%22loc%22%3A%22chr2R%3A15%2C940%2C001-15%2C966%2C000%22%2C%22tracks%22%3A%5B%7B%22trackId%22%3A%22dm6_ncbiRefSeq_ucsc%22%2C%22height%22%3A70%7D%2C%7B%22trackId%22%3A%22fly_pangenome_vcf%22%2C%22height%22%3A560%2C%22sortRowsBy%22%3A%7B%22refName%22%3A%22chr2R%22%2C%22pos%22%3A15953908%7D%7D%2C%7B%22trackId%22%3A%22fly_minigraph_segments%22%2C%22type%22%3A%22LinearGraphDisplay%22%2C%22layoutMode%22%3A%22force%22%2C%22encoding%22%3A%7B%22color%22%3A%7B%22field%22%3A%22position%22%7D%7D%2C%22bubbleSpread%22%3A%22compress%22%2C%22maxRegionBp%22%3A28601%2C%22height%22%3A260%7D%5D%7D%5D%7D&sessionName=Screenshot",
+  "pangenome/fly_chkov1": "?config=test_data%2Fgraphgenomeview%2Fpangenome_nonhuman.json&session=spec-%7B%22views%22%3A%5B%7B%22type%22%3A%22LinearGenomeView%22%2C%22id%22%3A%22pangenome-fly_chkov1-lgv%22%2C%22assembly%22%3A%22dm6%22%2C%22loc%22%3A%22chr3R%3A25%2C320%2C001-25%2C335%2C000%22%2C%22tracks%22%3A%5B%7B%22trackId%22%3A%22dm6_ncbiRefSeq_ucsc%22%2C%22height%22%3A70%7D%2C%7B%22trackId%22%3A%22fly_pangenome_vcf%22%2C%22height%22%3A560%2C%22sortRowsBy%22%3A%7B%22refName%22%3A%22chr3R%22%2C%22pos%22%3A25326000%7D%7D%2C%7B%22trackId%22%3A%22fly_minigraph_segments%22%2C%22type%22%3A%22LinearGraphDisplay%22%2C%22layoutMode%22%3A%22force%22%2C%22encoding%22%3A%7B%22color%22%3A%7B%22field%22%3A%22position%22%7D%7D%2C%22bubbleSpread%22%3A%22compress%22%2C%22maxRegionBp%22%3A16500%2C%22height%22%3A260%7D%5D%7D%5D%7D&sessionName=Screenshot",
   "pangenome/graph_kiv2_walks": "?config=https%3A%2F%2Fjbrowse.org%2Fpangenome%2Fhprc-grch38%2Fconfig.json&session=spec-%7B%22views%22%3A%5B%7B%22type%22%3A%22LinearGenomeView%22%2C%22assembly%22%3A%22hg38%22%2C%22loc%22%3A%22chr6%3A160%2C616%2C002-160%2C646%2C753%22%2C%22tracks%22%3A%5B%7B%22trackId%22%3A%22hg38_ncbiRefSeq_ucsc%22%2C%22geneGlyphMode%22%3A%22representative%22%2C%22displayMode%22%3A%22compact%22%2C%22height%22%3A40%7D%2C%7B%22trackId%22%3A%22hprc_minigraph_bubbles%22%2C%22type%22%3A%22LinearBasicDisplay%22%2C%22height%22%3A50%7D%2C%7B%22trackId%22%3A%22hprc_minigraph_segments%22%2C%22type%22%3A%22LinearBasicDisplay%22%2C%22labels%22%3A%7B%22name%22%3A%7B%22show%22%3Afalse%7D%2C%22description%22%3A%7B%22show%22%3Afalse%7D%7D%2C%22height%22%3A70%2C%22encoding%22%3A%7B%22color%22%3A%7B%22value%22%3A%22jexl%3Aget(feature%2C'rank')%3E0%20%3F%20'rgb(60%2C65%2C72)'%20%3A%20'hsl('%20%2B%20min(300%2C%20max(0%2C%20((get(feature%2C'start')%2Bget(feature%2C'end'))%2F2%20-%20160616002)%20%2F%2030751%20*%20300))%20%2B%20'%2C70%25%2C50%25)'%22%7D%7D%7D%2C%7B%22trackId%22%3A%22hprc_v2_1_walk_lanes%22%2C%22type%22%3A%22LinearGraphDisplay%22%2C%22subgraphHaplotypes%22%3A%5B%22HG00097.1%22%2C%22HG00099.1%22%2C%22HG00128.1%22%2C%22HG00133.1%22%2C%22HG01109.1%22%2C%22HG01123.1%22%2C%22HG01960.1%22%2C%22HG02055.1%22%5D%2C%22layoutMode%22%3A%22force%22%2C%22encoding%22%3A%7B%22color%22%3A%7B%22field%22%3A%22position%22%2C%22scale%22%3A%7B%22domainMin%22%3A160616002%2C%22domainMax%22%3A160646753%7D%7D%7D%2C%22bubbleSpread%22%3A%22compress%22%2C%22layers%22%3A%7B%22bubbles%22%3Afalse%7D%2C%22walks%22%3A%5B%7B%22walk%22%3A%22GRCh38%230%23chr6%22%7D%2C%7B%22walk%22%3A%22HG00097%231%23JBIRDD010000043.1%22%7D%2C%7B%22walk%22%3A%22HG00133%231%23CM090050.1%22%7D%5D%2C%22heightMode%22%3A%22fit%22%2C%22height%22%3A520%7D%5D%7D%5D%7D&sessionName=Screenshot",
   "pangenome/hprc_c4_threads": "?config=https%3A%2F%2Fjbrowse.org%2Fpangenome%2Fhprc-grch38%2Fconfig.json&session=spec-%7B%22views%22%3A%5B%7B%22type%22%3A%22LinearGenomeView%22%2C%22assembly%22%3A%22hg38%22%2C%22loc%22%3A%22chr6%3A31%2C980%2C000-32%2C050%2C000%22%2C%22tracks%22%3A%5B%7B%22trackId%22%3A%22hg38_ncbiRefSeq_ucsc%22%2C%22geneGlyphMode%22%3A%22representative%22%2C%22displayMode%22%3A%22compact%22%2C%22height%22%3A60%7D%2C%7B%22trackId%22%3A%22hprc2_wave_grch38%22%2C%22rows%22%3A%7B%22field%22%3A%22haplotype%22%2C%22kept%22%3A%5B%22HG00128%20HP1%22%2C%22HG00133%20HP1%22%5D%2C%22sort%22%3A%5B%22HG00128%20HP1%22%2C%22HG00133%20HP1%22%5D%7D%2C%22height%22%3A130%7D%2C%7B%22trackId%22%3A%22hprc_v2_1_walk_lanes%22%2C%22type%22%3A%22LinearGraphDisplay%22%2C%22layoutMode%22%3A%22force%22%2C%22walks%22%3A%5B%7B%22walk%22%3A%22GRCh38%230%23chr6%22%7D%2C%7B%22walk%22%3A%22HG00128%231%23CM090080.1%22%7D%2C%7B%22walk%22%3A%22HG00133%231%23CM090050.1%22%7D%5D%2C%22heightMode%22%3A%22fit%22%2C%22height%22%3A480%7D%5D%7D%5D%7D&sessionName=Screenshot",
   "pangenome/hprc_c4_panels": "?config=https%3A%2F%2Fjbrowse.org%2Fpangenome%2Fhprc-grch38%2Fconfig.json&session=spec-%7B%22views%22%3A%5B%7B%22type%22%3A%22LinearGenomeView%22%2C%22assembly%22%3A%22hg38%22%2C%22loc%22%3A%22chr6%3A31%2C980%2C000-32%2C050%2C000%22%2C%22tracks%22%3A%5B%7B%22trackId%22%3A%22hg38_ncbiRefSeq_ucsc%22%2C%22geneGlyphMode%22%3A%22representative%22%2C%22displayMode%22%3A%22compact%22%2C%22height%22%3A60%7D%2C%7B%22trackId%22%3A%22hprc2_wave_grch38%22%2C%22rows%22%3A%7B%22field%22%3A%22haplotype%22%2C%22kept%22%3A%5B%22HG00128%20HP1%22%2C%22HG00133%20HP1%22%5D%2C%22sort%22%3A%5B%22HG00128%20HP1%22%2C%22HG00133%20HP1%22%5D%7D%2C%22height%22%3A130%7D%2C%7B%22trackId%22%3A%22hprc_v2_1_walk_lanes%22%2C%22type%22%3A%22LinearGraphDisplay%22%2C%22layoutMode%22%3A%22force%22%2C%22walks%22%3A%5B%7B%22walk%22%3A%22GRCh38%230%23chr6%22%7D%2C%7B%22walk%22%3A%22HG00128%231%23CM090080.1%22%7D%2C%7B%22walk%22%3A%22HG00133%231%23CM090050.1%22%7D%5D%2C%22facet%22%3A%22walk%22%2C%22height%22%3A540%7D%5D%7D%5D%7D&sessionName=Screenshot",
@@ -535,12 +535,6 @@ export const figureLiveLabels: Record<string, string> = {
   "genomes_basics/site_search": "Open genomes.jbrowse.org",
   "genomes_basics/site_ucsc_list": "Open the UCSC genome list",
   "pangenome/genomes_hprc_loci": "Open the HPRC page",
-  "pangenome/genomes_fly_cyp28d1": "Open the fly page",
-  "pangenome/genomes_fly_strn_mlck": "Open the fly page",
-  "pangenome/genomes_fly_chkov1": "Open the fly page",
-  "pangenome/genomes_rice_sd1": "Open the rice page",
-  "pangenome/genomes_rice_qsw5": "Open the rice page",
-  "pangenome/genomes_rice_pup1": "Open the rice page",
   "protein/protein_browser_page": "Open TP53 in the protein browser"
 }
 
@@ -701,13 +695,10 @@ export const figureSlowSpecs: string[] = [
   "pangenome/bovine_polled",
   "pangenome/bovine_tas2r46",
   "pangenome/bovine_whole_chromosome",
-  "pangenome/genomes_fly_chkov1",
-  "pangenome/genomes_fly_cyp28d1",
-  "pangenome/genomes_fly_strn_mlck",
+  "pangenome/fly_chkov1",
+  "pangenome/fly_cyp28d1",
+  "pangenome/fly_strn_mlck",
   "pangenome/genomes_hprc_loci",
-  "pangenome/genomes_rice_pup1",
-  "pangenome/genomes_rice_qsw5",
-  "pangenome/genomes_rice_sd1",
   "pangenome/graph_context_hop1",
   "pangenome/graph_context_none",
   "pangenome/graph_kiv2_walk_rows",
@@ -744,6 +735,9 @@ export const figureSlowSpecs: string[] = [
   "pangenome/rgfa_launch_out_menu",
   "pangenome/rgfa_paa_bubble",
   "pangenome/rgfa_strain_launch",
+  "pangenome/rice_pup1",
+  "pangenome/rice_qsw5",
+  "pangenome/rice_sd1",
   "pangenome_cactus/reads",
   "pangenome_cactus/synteny",
   "paper/cohort_views",
@@ -1576,30 +1570,6 @@ export const figureFrames: Record<
     "timeout": 180000
   },
   "pangenome/genomes_hprc_loci": {
-    "width": 1100,
-    "height": 850
-  },
-  "pangenome/genomes_fly_cyp28d1": {
-    "width": 1100,
-    "height": 850
-  },
-  "pangenome/genomes_fly_strn_mlck": {
-    "width": 1100,
-    "height": 850
-  },
-  "pangenome/genomes_fly_chkov1": {
-    "width": 1100,
-    "height": 850
-  },
-  "pangenome/genomes_rice_sd1": {
-    "width": 1100,
-    "height": 850
-  },
-  "pangenome/genomes_rice_qsw5": {
-    "width": 1100,
-    "height": 880
-  },
-  "pangenome/genomes_rice_pup1": {
     "width": 1100,
     "height": 850
   },
@@ -3180,6 +3150,36 @@ export const figureFrames: Record<
     "height": 760,
     "timeout": 300000
   },
+  "pangenome/rice_sd1": {
+    "width": 1400,
+    "height": 1250,
+    "timeout": 300000
+  },
+  "pangenome/rice_qsw5": {
+    "width": 1400,
+    "height": 1250,
+    "timeout": 300000
+  },
+  "pangenome/rice_pup1": {
+    "width": 1400,
+    "height": 850,
+    "timeout": 300000
+  },
+  "pangenome/fly_cyp28d1": {
+    "width": 1400,
+    "height": 1210,
+    "timeout": 300000
+  },
+  "pangenome/fly_strn_mlck": {
+    "width": 1400,
+    "height": 1210,
+    "timeout": 300000
+  },
+  "pangenome/fly_chkov1": {
+    "width": 1400,
+    "height": 1210,
+    "timeout": 300000
+  },
   "pangenome/graph_kiv2_walks": {
     "width": 1400,
     "height": 1010,
@@ -3391,6 +3391,11 @@ export const figureCallouts: Record<string, object[]> = {
   "pangenome/mouse_dock2": [{"type":"text","text":"C57BL/6J, the reference","fontSize":18,"leader":true,"anchor":{"graphNode":"s110010685+"},"dx":160,"dy":-110},{"type":"text","text":"sequence C57BL/6J lacks","fontSize":18,"leader":true,"anchor":{"graphNode":"s110050877+"},"dx":-150,"dy":120}],
   "pangenome/bovine_tas2r46": [{"type":"text","text":"deleted in gaur","fontSize":18,"leader":true,"anchor":{"trackId":"bovine_pangenome_vcf","loc":"chr5:98,600,000","row":"Gaur"},"dx":60,"dy":-120}],
   "pangenome/bovine_whole_chromosome": [{"type":"text","text":"BoLA","fontSize":18,"leader":true,"anchor":{"trackId":"bovine_bubble_score","loc":"chr23:25,900,000","fracY":0.15},"dx":-100,"dy":-10}],
+  "pangenome/rice_sd1": [{"type":"text","text":"SD1","fontSize":18,"leader":true,"anchor":{"trackId":"GCF_034140825.1-ncbiRefSeq","feature":"LOC4325003"},"dx":150,"dy":35}],
+  "pangenome/rice_qsw5": [{"type":"text","text":"GW5","fontSize":18,"leader":true,"anchor":{"trackId":"GCF_034140825.1-ncbiRefSeq","feature":"LOC4338011"},"dx":150,"dy":35},{"type":"text","text":"no deletion","fontSize":18,"leader":true,"anchor":{"trackId":"rice_pangenome_vcf","loc":"chr5:5,380,100","row":"Kasalath"},"dx":300,"dy":0},{"type":"text","text":"950 bp deletion","fontSize":18,"leader":true,"anchor":{"trackId":"rice_pangenome_vcf","loc":"chr5:5,380,100","row":"CX20"},"dx":300,"dy":0},{"type":"text","text":"1,212 bp deletion, AGIS-1.0's","fontSize":18,"leader":true,"anchor":{"trackId":"rice_pangenome_vcf","loc":"chr5:5,380,100","row":"Balilla"},"dx":300,"dy":0}],
+  "pangenome/rice_pup1": [{"type":"text","text":"39 bp, no insertion (not AGIS-1.0's path)","fontSize":18,"leader":true,"anchor":{"trackId":"rice_pangenome_vcf","loc":"chr12:15,866,630","row":"IR64"},"dx":-120,"dy":0},{"type":"text","text":"Kasalath, 89 kb","fontSize":18,"leader":true,"anchor":{"trackId":"rice_pangenome_vcf","loc":"chr12:15,866,630","row":"Kasalath"},"dx":-120,"dy":-30},{"type":"text","text":"AGIS-1.0's 39 bp","fontSize":18,"leader":true,"anchor":{"trackId":"rice_pangenome_vcf","loc":"chr12:15,866,630","row":"Balilla"},"dx":-120,"dy":10}],
+  "pangenome/fly_cyp28d1": [{"type":"text","text":"A1, 11 kb longer","fontSize":18,"leader":true,"anchor":{"trackId":"fly_pangenome_vcf","loc":"chr2L:5,211,800","row":"Canton-S_A1"},"dx":260,"dy":-10},{"type":"text","text":"A2, 15 kb longer","fontSize":18,"leader":true,"anchor":{"trackId":"fly_pangenome_vcf","loc":"chr2L:5,211,800","row":"BOG1_A2"},"dx":260,"dy":-10},{"type":"text","text":"B1, 38 kb longer","fontSize":18,"leader":true,"anchor":{"trackId":"fly_pangenome_vcf","loc":"chr2L:5,211,800","row":"BER1_B1"},"dx":260,"dy":40},{"type":"text","text":"B4, 6.1 kb longer","fontSize":18,"leader":true,"anchor":{"trackId":"fly_pangenome_vcf","loc":"chr2L:5,211,800","row":"RVC3_B4"},"dx":260,"dy":90}],
+  "pangenome/fly_strn_mlck": [{"type":"text","text":"7.5 kb insertion (DM412)","fontSize":18,"leader":true,"anchor":{"trackId":"fly_pangenome_vcf","loc":"chr2R:15,953,909","row":"BDSC_156"},"dx":160,"dy":0}],
   "pangenome/graph_kiv2_walks": [{"type":"box","pad":2,"anchor":{"selector":"[data-testid=\"graph-haplotype-switch\"]"}}],
   "pangenome/hprc_c4_threads": [{"type":"box","pad":2,"anchor":{"selector":"[data-testid=\"graph-haplotype-switch\"]"}}],
   "pangenome/graph_kiv2_walk_rows": [{"type":"box","anchor":{"trackId":"hprc_minigraph_bubbles","loc":"chr6:160,616,002-160,646,753"},"pad":3},{"type":"text","text":"the KIV-2 array, which each bar below walks across","fontSize":18,"maxWidth":520,"textAlign":"end","anchor":{"trackId":"hprc_minigraph_bubbles","loc":"chr6:160,616,002-160,646,753","alignX":"right","fracY":0,"dx":-48,"dy":44}}],

@@ -88,10 +88,11 @@ Usage: jbrowse create [localPath] [options]
 Options:
   -h, --help                 Show help
 
-  -f, --force                Overwrites existing JBrowse 2 installation if
-                             present in path
-
   -l, --listVersions         Lists out all versions of JBrowse 2
+
+  -t, --tag                  Version of JBrowse 2 to install. Format is v1.0.0.
+                             Defaults to the newest release, or the newest
+                             prerelease when this CLI is one
 
       --branch               Download a development build from a named git
                              branch
@@ -101,9 +102,8 @@ Options:
 
   -u, --url                  A direct URL to a JBrowse 2 release
 
-  -t, --tag                  Version of JBrowse 2 to install. Format is v1.0.0.
-                             Defaults to the newest release, or the newest
-                             prerelease when this CLI is one
+  -f, --force                Overwrites existing JBrowse 2 installation if
+                             present in path
 
 Examples:
 
@@ -638,7 +638,7 @@ Upgrades JBrowse 2 to the newest release of this CLI's major version
 Usage: jbrowse upgrade [localPath] [options]
 
 Options:
-  -h, --help                 Display help for command
+  -h, --help                 Show help
 
   -l, --listVersions         Lists out all versions of JBrowse 2
 
@@ -652,12 +652,12 @@ Options:
       --nightly              Download the latest development build from the main
                              branch
 
+  -u, --url                  A direct URL to a JBrowse 2 release
+
       --clean                Removes the installation's static directory and its
                              *worker.js files before unpacking the new release,
                              so files the new release no longer ships do not
                              linger
-
-  -u, --url                  A direct URL to a JBrowse 2 release
 
 Examples:
 
