@@ -92,35 +92,23 @@ test('a window inside a contig indexes only the features and transcripts it list
   }
 })
 
-test('a feature listed off the margin keeps the fields its file writes, and a VCF record there reads', async () => {
+test('a feature in the margin is not listed, since its label would start left of the window', async () => {
   const t = await engine.features({
     ...GFF3,
     region: { refName: 'ctgA', start: 1002, end: 1400 },
     bpPerPx: 0.27,
     display: GROW,
   })
-  const snp = t.features.name.indexOf('FakeSNP')
-  expect(t.features.end[snp]).toBeLessThanOrEqual(1002)
-  expect(t.attributes.ID![snp]).toBe('FakeSNP1')
-  expect(t.attributes.Name![snp]).toBe('FakeSNP')
-  expect(t.attributes.source![snp]).toBe('example')
+  expect(t.features.name).not.toContain('FakeSNP')
+  expect(t.labels.text).not.toContain('FakeSNP')
 
-  const { features, vcf, attributes, subfeatureAttributes, attributeFields } =
-    await engine.features({
-      adapterConfig: DOG_VCF.adapterConfig,
-      region: { refName: 'chr30', start: 38258003, end: 38258203 },
-      bpPerPx: 0.14,
-      display: GROW,
-    })
-  const margin = features.start.indexOf(38258001)
-  expect(margin).toBeGreaterThanOrEqual(0)
-  expect(vcf!.records.ref[margin]).toBe('T')
-  expect(vcf!.records.alt[margin]).toBe('G')
-  expect({ attributes, subfeatureAttributes, attributeFields }).toEqual({
-    attributes: {},
-    subfeatureAttributes: {},
-    attributeFields: { key: [], type: [], number: [], description: [] },
+  const { features } = await engine.features({
+    adapterConfig: DOG_VCF.adapterConfig,
+    region: { refName: 'chr30', start: 38258003, end: 38258203 },
+    bpPerPx: 0.14,
+    display: GROW,
   })
+  expect(features.end.every(end => end > 38258003)).toBe(true)
 })
 
 test('a VCF read as features is the variant display with no sample rows: each record in its SV class color, the classes keyed and records.* applied', async () => {

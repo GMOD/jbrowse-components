@@ -353,8 +353,8 @@ const TABLES_ASSEMBLY = ''
  * the track are given up here too, and `grow` places every feature at full
  * size. The layout packs what was fetched over `fetchRegions`, each of
  * `regions` and the view's margin around it, a region apiece, and the tables
- * list the features touching `regions`, or a margin feature whose label
- * reaches into one, each with every mark of its glyph, as the view draws them
+ * list the features touching `regions`, each with every mark of its glyph, as
+ * the view draws them
  * before its edges clip them. A read of the file's own fields for the
  * features listed reads over `fetchRegions`. A feature in view the packer
  * could not place within its 10000 px row ceiling
@@ -564,8 +564,7 @@ function emptyRegionData() {
 
 /**
  * Whether a region's tables list a feature: it touches the window, or the
- * window shows a label of it or of one of its transcripts, which the display
- * draws from a feature in the margin whose text reaches in.
+ * window shows a label of it or of one of its transcripts.
  */
 function shownIn(
   onScreen: ReadonlySet<string>,
