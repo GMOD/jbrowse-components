@@ -127,6 +127,8 @@ function writeRibbonUniforms(
     overdrawPx: p.overdrawPx,
     alpha: track.alpha,
     hoveredFeatureId: track.hoveredFeatureId,
+    hoveredStretch: [...(track.hoveredStretch ?? [0, 0, 0, 0])],
+    hoveredStretchOn: track.hoveredStretch ? 1 : 0,
     clickedFeatureId: track.clickedFeatureId,
     yTop: track.yTop,
     fadeThinAlignments: track.fadeThinAlignments ? 1 : 0,

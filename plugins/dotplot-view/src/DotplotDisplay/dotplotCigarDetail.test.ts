@@ -2,6 +2,7 @@ import {
   MIN_CIGAR_PX_WIDTH,
   cigarWorthParsing,
   matchStretchEnds,
+  matchStretchRange,
   segmentCigarOp,
 } from './dotplotCigarDetail.ts'
 import { buildLineSegments, segmentCapacity } from './dotplotGeometry.ts'
@@ -264,5 +265,11 @@ describe('matchStretchEnds', () => {
 
   it('answers nothing on an indel', () => {
     expect(matchStretchEnds(data, 2)).toBeUndefined()
+  })
+
+  it('gives the segments of the stretch, for the hover to restroke', () => {
+    expect(matchStretchRange(data, 1)).toEqual({ first: 0, last: 1 })
+    expect(matchStretchRange(data, 3)).toEqual({ first: 3, last: 3 })
+    expect(matchStretchRange(data, 2)).toBeUndefined()
   })
 })

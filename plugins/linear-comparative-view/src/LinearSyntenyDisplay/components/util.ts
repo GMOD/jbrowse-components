@@ -15,7 +15,10 @@ import {
 
 import type { SyntenyGeometry } from '../../LinearSyntenyRPC/buildSyntenyGeometry.ts'
 import type { FeatPos, SyntenyFeatureData } from '../model.ts'
-import type { SyntenyPickWithin } from '../syntenyRenderingBackendTypes.ts'
+import type {
+  HoveredStretch,
+  SyntenyPickWithin,
+} from '../syntenyRenderingBackendTypes.ts'
 import type { SpanAxis, SyntenyBlockSide } from '@jbrowse/synteny-core'
 
 export interface ClickCoord {
@@ -98,6 +101,43 @@ function tileStretch(data: SyntenyGeometry, i: number) {
     last++
   }
   return isTile(i) ? { first, last } : undefined
+}
+
+const NO_STRETCH: HoveredStretch = [1, 0, 1, 0]
+
+function stretchBounds(data: SyntenyGeometry, first: number, last: number) {
+  const { bp1, bp2, bp3, bp4 } = data
+  const a1 = bp1[first]!
+  const b1 = bp2[last]!
+  const a2 = bp4[first]!
+  const b2 = bp3[last]!
+  return [
+    Math.min(a1, b1),
+    Math.max(a1, b1),
+    Math.min(a2, b2),
+    Math.max(a2, b2),
+  ] as const
+}
+
+/**
+ * The part of the hovered feature the pointer is on, for the hover shading:
+ * the stretch of matches under a tile, an indel wedge alone, or no part where
+ * the pointer is on a see-through gap or a sub-pixel run, so only the feature
+ * lights. Undefined where the feature is one block, which lights whole.
+ */
+export function getHoveredStretch(
+  data: SyntenyGeometry,
+  i: number,
+  within: SyntenyPickWithin,
+): HoveredStretch | undefined {
+  const stretch = within === 'instance' ? tileStretch(data, i) : undefined
+  return within !== 'instance'
+    ? NO_STRETCH
+    : stretch
+      ? stretchBounds(data, stretch.first, stretch.last)
+      : CIGAR_KIND_LETTER[data.kinds[i]!]
+        ? stretchBounds(data, i, i)
+        : undefined
 }
 
 // A corner lane is a float32 offset from the fetch window's start, so an end

@@ -13,6 +13,7 @@ import { STROKE_ALPHA } from './shaders/syntenyTypes.generated.ts'
 import {
   fillShade,
   hoverDarken,
+  hoverLevel,
   isCigarKind,
   isMarkerKind,
   isTileKind,
@@ -121,13 +122,13 @@ interface ResolvedFill {
 export function resolveInstanceFill(
   packed: number,
   isCigar: boolean,
-  isHovered: boolean,
+  level: number,
   alpha: number,
   ground: [number, number, number],
 ): ResolvedFill {
   const pa = abgrAlpha(packed) / 255
-  const darken = hoverDarken(isHovered)
-  const shade = fillShade(pa, alpha, isHovered)
+  const darken = hoverDarken(level >= 2)
+  const shade = fillShade(pa, alpha, level >= 1)
   const r = abgrRed(packed) * darken
   const g = abgrGreen(packed) * darken
   const b = abgrBlue(packed) * darken
@@ -162,6 +163,7 @@ export function drawSyntenyTrack(
     height,
     alpha,
     hoveredFeatureId,
+    hoveredStretch,
     clickedFeatureId,
     drawCurves,
     fadeThinAlignments,
@@ -208,7 +210,20 @@ export function drawSyntenyTrack(
     }
 
     const featureId = data.instanceFeatureIdx[i]! + 1
-    const isHovered = featureId === hoveredFeatureId
+    const [lo1, hi1, lo2, hi2] = hoveredStretch ?? [0, 0, 0, 0]
+    const level = hoverLevel(
+      featureId,
+      hoveredFeatureId,
+      hoveredStretch ? 1 : 0,
+      data.bp1[i]!,
+      data.bp2[i]!,
+      data.bp3[i]!,
+      data.bp4[i]!,
+      lo1,
+      hi1,
+      lo2,
+      hi2,
+    )
     const isClicked = featureId === clickedFeatureId
     const isCigar = isCigarKind(kind)
     const {
@@ -216,7 +231,7 @@ export function drawSyntenyTrack(
       g,
       b,
       a: fa,
-    } = resolveInstanceFill(packed, isCigar, isHovered, alpha, ground)
+    } = resolveInstanceFill(packed, isCigar, level, alpha, ground)
 
     // Sub-pixel handling keys on the ribbon's PERPENDICULAR (visual) thickness,
     // not horizontal span: a steep diagonal can be several px wide horizontally

@@ -163,6 +163,8 @@ test('the view resolves the tooltip and the highlight off the hovered track', as
   expect(highlight?.path).toBe(
     `M${round(start.x)} ${round(start.y)}L${round(end.x)} ${round(end.y)}`,
   )
+  // an alignment drawn as one stretch is the stretch under the pointer whole
+  expect(highlight?.stretchPath).toBe(highlight?.path)
   expect(highlight?.color).toMatch(/^rgba\(/)
 }, 20000)
 

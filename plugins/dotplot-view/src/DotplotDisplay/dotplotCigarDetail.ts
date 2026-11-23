@@ -68,17 +68,30 @@ export function segmentCigarOp(
 // an alignment with no drawn indel at all is still a line of them. The stretch
 // is the run of match segments meeting end to start, which stops wherever the
 // walk drew an indel, or left one out and the next segment starts elsewhere.
-export function matchStretchEnds(
-  data: {
-    segmentOps: Uint8Array
-    instanceFeatureIdx: Uint32Array
-    x1: Float64Array
-    x2: Float64Array
-    y1: Float64Array
-    y2: Float64Array
-  },
-  segmentIdx: number,
-) {
+interface SegmentData {
+  segmentOps: Uint8Array
+  instanceFeatureIdx: Uint32Array
+  x1: Float64Array
+  x2: Float64Array
+  y1: Float64Array
+  y2: Float64Array
+}
+
+export function matchStretchEnds(data: SegmentData, segmentIdx: number) {
+  const stretch = matchStretchRange(data, segmentIdx)
+  const { x1, x2, y1, y2 } = data
+  return stretch
+    ? {
+        x1: x1[stretch.first]!,
+        y1: y1[stretch.first]!,
+        x2: x2[stretch.last]!,
+        y2: y2[stretch.last]!,
+      }
+    : undefined
+}
+
+// The segment index range of that stretch, or undefined on an indel.
+export function matchStretchRange(data: SegmentData, segmentIdx: number) {
   const { segmentOps, instanceFeatureIdx, x1, x2, y1, y2 } = data
   const isMatch = (i: number) => {
     const op = segmentOps[i]
@@ -98,9 +111,7 @@ export function matchStretchEnds(
   while (meets(last, last + 1)) {
     last++
   }
-  return isMatch(segmentIdx)
-    ? { x1: x1[first]!, y1: y1[first]!, x2: x2[last]!, y2: y2[last]! }
-    : undefined
+  return isMatch(segmentIdx) ? { first, last } : undefined
 }
 
 // The worker decides using the bpPerPx of the fetch, but geometry is rebuilt on

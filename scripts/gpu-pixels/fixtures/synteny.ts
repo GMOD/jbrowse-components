@@ -127,6 +127,8 @@ function fixture(
       devicePixelRatio: dpr,
       ground: [1, 1, 1] as [number, number, number],
       ink: [0, 0, 0] as [number, number, number],
+      hoveredStretch: [0, 0, 0, 0] as [number, number, number, number],
+      hoveredStretchOn: 0,
     }),
     reference: paintOver(ribbons.map(r => shapeOf(r, curve))),
     budget: { max: 0.4, meanErr: 0.012 },

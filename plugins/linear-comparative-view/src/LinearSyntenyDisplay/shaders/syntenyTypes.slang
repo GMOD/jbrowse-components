@@ -20,7 +20,7 @@
 // The two kind predicates are pure scalar decisions the Canvas2D renderer and
 // the CPU pick engine must make identically; both import the generated twins
 // rather than re-spelling the thresholds (adr-051).
-//! js-export: isInstanceInvisible, isCigarKind, isMarkerKind, isTileKind, spanOutsideBand, markerTravelsTooFar, fillShade, hoverDarken, thinWidthFade, sBlend, yCurve
+//! js-export: hoverLevel, isInstanceInvisible, isCigarKind, isMarkerKind, isTileKind, spanOutsideBand, markerTravelsTooFar, fillShade, hoverDarken, thinWidthFade, sBlend, yCurve
 //! export-consts: KIND_CIGAR_MIN, KIND_MARKER, KIND_BASE_TILE, STROKE_ALPHA
 //! js-skip: sBlendDeriv — the ribbon tangent, for extruding an edge normal per fragment; Canvas2D draws one bezierCurveTo and never needs the derivative
 //! js-skip: yCurveDeriv — same as sBlendDeriv, the other half of the tangent
@@ -168,6 +168,11 @@ public struct Uniforms {
   // clicked outline here, and the location ticks through their packed color.
   // `getContrastText(ground)` on the CPU side, so a dark band gets light ink.
   public float3 ink;
+  // The hovered stretch of matches as window-relative bp, (lo, hi) on the top
+  // view's axis then the bottom's; an instance inside both is the one the
+  // pointer is on. `hoveredStretchOn` 0 lights the whole feature as one.
+  public float4 hoveredStretch;
+  public float  hoveredStretchOn;
 };
 
 // The four projected corner X positions in CSS-px screen space, held as a plain
@@ -427,7 +432,7 @@ public float hoverDarken(bool isHovered) { return isHovered ? 0.7 : 1.0; }
 // back toward the base block's color. The cost is that a wedge also covers any
 // earlier ribbon under its own, a pale hole where ribbons overlap; tiling the
 // base around indels, as 'matches' mode does, would let a wedge composite.
-float4 shadeFill(float4 color, float featureId, float coverage, float kind,
+float4 shadeFill(float4 color, float hoverLevel, float coverage, float kind,
                  Uniforms u) {
   float3 rgb = color.rgb;
   // Markers carry their own fixed alpha (0.25) and ignore colorBy, global
@@ -435,10 +440,8 @@ float4 shadeFill(float4 color, float featureId, float coverage, float kind,
   if (isMarkerKind(kind)) {
     return float4(rgb, color.a * coverage);
   }
-  bool isHovered = u.hoveredFeatureId > 0.0
-    && abs(featureId - u.hoveredFeatureId) < 0.5;
-  float shade = fillShade(color.a, u.alpha, isHovered);
-  float darken = hoverDarken(isHovered);
+  float shade = fillShade(color.a, u.alpha, hoverLevel >= 1.0);
+  float darken = hoverDarken(hoverLevel >= 2.0);
   if (isCigarKind(kind)) {
     // Pre-blend with the ground so the indel fades against it regardless of
     // what the base block drew, at the same alpha the BASE branch would have
@@ -519,7 +522,7 @@ public float2 edgeSpan(float4 c, float s) {
 public struct FillVsOut {
   public float4 position : SV_Position;
   public nointerpolation float4 color : COLOR0;
-  public nointerpolation float featureId : COLOR1;
+  public nointerpolation float hoverLevel : COLOR1;
   // Per-instance corner positions in CSS-pixel screen X, exactly as
   // computeCorners produces them: (x, y) belong to the top view, (z, w) to the
   // bottom — i.e. x1..x4 in order.
@@ -541,7 +544,11 @@ public bool fillVsBegin(Instance inst, Uniforms u, out FillVsOut o,
                         out float4 c) {
   o.position = float4(0.0);
   o.color = unpackRGBA(inst.color);
-  o.featureId = inst.featureId;
+  o.hoverLevel = hoverLevel(
+    inst.featureId, u.hoveredFeatureId, u.hoveredStretchOn,
+    inst.bp1, inst.bp2, inst.bp3, inst.bp4,
+    u.hoveredStretch.x, u.hoveredStretch.y,
+    u.hoveredStretch.z, u.hoveredStretch.w);
   o.corners = float4(0.0);
   o.localPos = float2(0.0);
   o.kind = inst.kind;
@@ -583,7 +590,7 @@ public float4 fillFs(FillVsOut i, float s, float sd, float dydt, Uniforms u) {
   if (coverage <= 0.0) {
     discard;
   }
-  return shadeFill(i.color, i.featureId, coverage, i.kind, u);
+  return shadeFill(i.color, i.hoverLevel, coverage, i.kind, u);
 }
 
 // Clicked-feature outline: a 1px antialiased black stroke on BOTH ribbon edges,
@@ -887,4 +894,19 @@ float2 ribbonWidths(float4 c, float s0, float s1) {
 // clicked outline.
 public bool isInstanceInvisible(float colorAlpha, float displayAlpha) {
   return colorAlpha * 255.0 * displayAlpha < 3.0;
+}
+
+// 0 for an instance of another feature, 1 for the hovered feature, 2 for the
+// part the pointer is on: the hovered stretch when there is one, else the whole
+// feature. The feature takes the alpha boost and the pointed-at part adds the
+// darkening, so sweeping along a ribbon never loses which feature it is.
+public float hoverLevel(float featureId, float hoveredFeatureId,
+                        float stretchOn, float bp1, float bp2, float bp3,
+                        float bp4, float lo1, float hi1, float lo2,
+                        float hi2) {
+  bool isFeature = hoveredFeatureId > 0.0
+    && abs(featureId - hoveredFeatureId) < 0.5;
+  bool isInside = min(bp1, bp2) >= lo1 && max(bp1, bp2) <= hi1
+    && min(bp3, bp4) >= lo2 && max(bp3, bp4) <= hi2;
+  return !isFeature ? 0.0 : stretchOn < 0.5 || isInside ? 2.0 : 1.0;
 }

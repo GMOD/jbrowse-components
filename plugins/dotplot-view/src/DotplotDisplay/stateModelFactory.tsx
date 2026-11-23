@@ -15,7 +15,11 @@ import {
   syntenyFetchRegions,
 } from '@jbrowse/synteny-core'
 
-import { matchStretchEnds, segmentCigarOp } from './dotplotCigarDetail.ts'
+import {
+  matchStretchEnds,
+  matchStretchRange,
+  segmentCigarOp,
+} from './dotplotCigarDetail.ts'
 import { computeDotplotColors } from './dotplotColors.ts'
 import { featureSegmentRange } from './dotplotPickEngine.ts'
 import { cumBpToPxH, cumBpToPxV } from './dotplotProject.ts'
@@ -380,17 +384,29 @@ export function stateModelFactory(configSchema: DotplotDisplayConfigSchema) {
         }
         const { viewBpH, viewBpV, bpPerPxHInv, bpPerPxVInv, viewHeight } =
           this.view.plotTransform
-        let path = ''
-        for (let s = start; s < end; s++) {
-          // The shared reconstruction, so the restroke lands on the pixels the
-          // canvas painted.
-          const sx1 = cumBpToPxH(x1[s]!, viewBpH, bpPerPxHInv)
-          const sy1 = cumBpToPxV(y1[s]!, viewBpV, bpPerPxVInv, viewHeight)
-          const sx2 = cumBpToPxH(x2[s]!, viewBpH, bpPerPxHInv)
-          const sy2 = cumBpToPxV(y2[s]!, viewBpV, bpPerPxVInv, viewHeight)
-          path += `M${px(sx1)} ${px(sy1)}L${px(sx2)} ${px(sy2)}`
+        const pathOf = (from: number, to: number) => {
+          let path = ''
+          for (let s = from; s < to; s++) {
+            // The shared reconstruction, so the restroke lands on the pixels
+            // the canvas painted.
+            const sx1 = cumBpToPxH(x1[s]!, viewBpH, bpPerPxHInv)
+            const sy1 = cumBpToPxV(y1[s]!, viewBpV, bpPerPxVInv, viewHeight)
+            const sx2 = cumBpToPxH(x2[s]!, viewBpH, bpPerPxHInv)
+            const sy2 = cumBpToPxV(y2[s]!, viewBpV, bpPerPxVInv, viewHeight)
+            path += `M${px(sx1)} ${px(sy1)}L${px(sx2)} ${px(sy2)}`
+          }
+          return path
         }
-        return { path, color: abgrToCssRgba(colors[start]!) }
+        const hovered = self.hoveredSegmentIdx
+        const stretch = matchStretchRange(instanceData, hovered) ?? {
+          first: hovered,
+          last: hovered,
+        }
+        return {
+          path: pathOf(start, end),
+          stretchPath: pathOf(stretch.first, stretch.last + 1),
+          color: abgrToCssRgba(colors[start]!),
+        }
       },
       /**
        * #getter

@@ -29,6 +29,8 @@ export type DotplotRpcData = Omit<
 // hundred implicit-anys across the plugin). ADR-055.
 export interface DotplotHoverHighlight {
   path: string
+  /** the stretch of matches or the indel under the pointer, drawn heavier */
+  stretchPath: string
   color: string
 }
 

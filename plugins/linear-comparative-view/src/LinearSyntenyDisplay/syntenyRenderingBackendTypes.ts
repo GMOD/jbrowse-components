@@ -17,6 +17,9 @@ export interface SyntenyTrackRenderParams {
   /** Fade sub-pixel-thin ribbons by on-screen width; off keeps full alpha. */
   fadeThinAlignments: boolean
   hoveredFeatureId: number
+  /** The hovered feature's stretch under the pointer, which alone darkens.
+   * Absent, the whole hovered feature darkens. */
+  hoveredStretch?: HoveredStretch
   clickedFeatureId: number
   /** LGV pan offsets (CSS px). Both backends fold these into the same per-axis
    * `panPx = (base - offsetPx * bpPerPx) / bpPerPx` via `computeTransform`
@@ -56,6 +59,9 @@ export interface SyntenyRenderState extends FrameDimensions {
    */
   perTrack: Map<number, SyntenyTrackRenderParams>
 }
+
+/** Window-relative bp bounds (lo, hi) on the top axis, then the bottom. */
+export type HoveredStretch = readonly [number, number, number, number]
 
 /**
  * What of the picked instance the pointer is over. `instance` is the quad

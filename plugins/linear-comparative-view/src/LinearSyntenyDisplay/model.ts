@@ -34,6 +34,7 @@ import { computePresentCigarKinds } from '../LinearSyntenyRPC/presentCigarKinds.
 import { isSyntenyLevel } from '../LinearSyntenyViewHelper/parentViewDuck.ts'
 import {
   getCigarOpsAt,
+  getHoveredStretch,
   getStretchSides,
   getTooltipLines,
   sharedByOf,
@@ -963,6 +964,17 @@ function stateModelFactory(configSchema: LinearSyntenyDisplayConfigSchema) {
       },
       /**
        * #getter
+       * The part of the hovered feature the pointer is on, which the shading
+       * darkens while the rest of the feature only brightens.
+       */
+      get hoveredStretch() {
+        const { instanceData, hoveredInstanceIdx, hoveredWithin } = self
+        return instanceData && hoveredInstanceIdx >= 0
+          ? getHoveredStretch(instanceData, hoveredInstanceIdx, hoveredWithin)
+          : undefined
+      },
+      /**
+       * #getter
        * The clicked twin, re-resolved from the stored name; a payload that
        * dropped the feature answers 0. Its own computed rather than a field of
        * `renderParams`, which moves on every pan frame — the outline cell is
@@ -995,6 +1007,7 @@ function stateModelFactory(configSchema: LinearSyntenyDisplayConfigSchema) {
           alpha: view.opacityLevel,
           fadeThinAlignments: view.fadeThinAlignments,
           hoveredFeatureId: this.hoveredFeatureId,
+          hoveredStretch: this.hoveredStretch,
           clickedFeatureId: this.clickedFeatureId,
           offsetPx0: v0.offsetPx,
           offsetPx1: v1.offsetPx,

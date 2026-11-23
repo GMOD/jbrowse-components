@@ -22,9 +22,11 @@ const useStyles = makeStyles()({
 // The knockout is the wider of the two, so it reads as an outline.
 const HIGHLIGHT_EXTRA_PX = 3
 const KNOCKOUT_EXTRA_PX = 7
+const STRETCH_EXTRA_PX = 7
 
 /**
- * The hovered alignment, restroked opaque and a few px wider over the canvas.
+ * The hovered alignment, restroked opaque and a few px wider over the canvas,
+ * and the stretch of matches or the indel under the pointer wider again.
  *
  * The cue is opacity and width rather than a highlight hue, because every hue is
  * taken: category10 paints the chromosome color-by modes, and red/blue/black are
@@ -59,6 +61,13 @@ const DotplotHoverHighlight = observer(function DotplotHoverHighlight({
         fill="none"
         stroke={hoveredHighlight.color}
         strokeWidth={lineWidth + HIGHLIGHT_EXTRA_PX}
+        strokeLinecap="round"
+      />
+      <path
+        d={hoveredHighlight.stretchPath}
+        fill="none"
+        stroke={hoveredHighlight.color}
+        strokeWidth={lineWidth + STRETCH_EXTRA_PX}
         strokeLinecap="round"
       />
     </svg>

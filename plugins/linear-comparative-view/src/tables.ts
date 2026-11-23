@@ -617,7 +617,7 @@ export async function syntenyTables(
     const { r, g, b, a } = resolveInstanceFill(
       packed,
       isCigarKind(kind),
-      false,
+      0,
       level,
       ground,
     )
