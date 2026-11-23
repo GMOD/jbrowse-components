@@ -732,3 +732,90 @@ describe('SARS-CoV-2 NC_045512.2 ORF1ab, a gene with two CDS and no mRNA', () =>
     expect(shape(matPeptide(reread))).toEqual(shape(matPeptide(found)))
   })
 })
+
+describe('plastid rps12, trans-spliced', () => {
+  const refName = 'NC_001879.2'
+  const length = 155943
+  const text = genbank(
+    'LOCUS       NC_001879             155943 bp    DNA     circular PLN 01-JAN-2024',
+    refName,
+    [
+      entry('source', `1..${length}`, [
+        '/organism="Nicotiana tabacum"',
+        '/organelle="plastid:chloroplast"',
+      ]),
+      entry(
+        'gene',
+        'join(complement(69611..69724),139856..140087,140600..140625)',
+        ['/gene="rps12"', '/locus_tag="rps12_a"', '/trans_splicing'],
+      ),
+      entry(
+        'CDS',
+        'join(complement(69611..69724),139856..140087,140600..140625)',
+        [
+          '/gene="rps12"',
+          '/locus_tag="rps12_a"',
+          '/trans_splicing',
+          '/codon_start=1',
+          '/product="ribosomal protein S12"',
+        ],
+      ),
+      entry(
+        'gene',
+        'join(complement(69611..69724),complement(97400..97631),complement(97000..97025))',
+        ['/gene="rps12"', '/locus_tag="rps12_b"', '/trans_splicing'],
+      ),
+      entry(
+        'CDS',
+        'join(complement(69611..69724),complement(97400..97631),complement(97000..97025))',
+        [
+          '/gene="rps12"',
+          '/locus_tag="rps12_b"',
+          '/trans_splicing',
+          '/codon_start=2',
+          '/product="ribosomal protein S12"',
+        ],
+      ),
+    ],
+  )
+  const codingPieces = (found: SimpleFeature[]) =>
+    found.filter(f => f.get('type') === 'gene').map(g => shape(g).at(-1))
+
+  test('export writes each piece on its own strand in transcription order, with the first piece’s codon_start, and reads back the same', async () => {
+    const found = await readRecord(text, refName, length)
+    expect(codingPieces(found)).toEqual([
+      [
+        ['CDS', 69610, 69724, -1, 0],
+        ['CDS', 139855, 140087, 1, 0],
+        ['CDS', 140599, 140625, 1, 2],
+      ],
+      [
+        ['CDS', 69610, 69724, -1, 1],
+        ['CDS', 97399, 97631, -1, 1],
+        ['CDS', 96999, 97025, -1, 0],
+      ],
+    ])
+    const exported = await exportRecord([
+      ...found,
+      new SimpleFeature({
+        uniqueId: 'start',
+        refName,
+        start: 0,
+        end: 10,
+        type: 'misc_feature',
+      }),
+    ])
+    expect(featureLines(exported, 'CDS')).toEqual([
+      '     CDS             join(complement(69611..69724),139856..140087,',
+      '     CDS             join(complement(69611..69724),complement(97400..97631),',
+    ])
+    expect(exported).toContain(
+      `${qualifierIndent}complement(97000..97025))\n${qualifierIndent}/gene="rps12"`,
+    )
+    expect(exported.match(/(?<=\/codon_start=)\d/g)?.map(Number)).toEqual([
+      1, 2,
+    ])
+    const reread = await readRecord(exported, refName, length)
+    expect(codingPieces(reread)).toEqual(codingPieces(found))
+  })
+})

@@ -103,14 +103,46 @@ function spans(f: Feature, { minPos, circularLength }: RecordFrame) {
       : [`${start + 1}..${circularLength}`, `1..${end - circularLength}`]
 }
 
+function joined(locs: string[]) {
+  return locs.length === 1 ? locs.join(',') : `join(${locs.join(',')})`
+}
+
+// A trans-spliced feature's segments are in transcription order, which need
+// not follow the strand, and may be on both strands
+function isTransSpliced(whole: Feature, feats: Feature[]) {
+  return (
+    whole.get('trans_splicing') !== undefined ||
+    new Set(feats.map(f => f.get('strand') ?? 0)).size > 1
+  )
+}
+
 // Build a (possibly spliced) location expression for a set of segments,
 // e.g. join(1..100,201..300) or complement(join(...)) for the minus strand.
-function joinLoc(feats: Feature[], strand: number, frame: RecordFrame) {
-  const locs = feats
-    .toSorted((a, b) => a.get('start') - b.get('start'))
-    .flatMap(f => spans(f, frame))
-  const expr = locs.length === 1 ? locs.join(',') : `join(${locs.join(',')})`
-  return strand === -1 ? `complement(${expr})` : expr
+// A trans-spliced feature's are written in the order given, each minus one
+// complemented on its own.
+function joinLoc(
+  feats: Feature[],
+  strand: number,
+  frame: RecordFrame,
+  transSpliced: boolean,
+) {
+  const sameStrand = () =>
+    joined(
+      feats
+        .toSorted((a, b) => a.get('start') - b.get('start'))
+        .flatMap(f => spans(f, frame)),
+    )
+  return transSpliced
+    ? joined(
+        feats.map(f =>
+          f.get('strand') === -1
+            ? `complement(${joined(spans(f, frame))})`
+            : joined(spans(f, frame)),
+        ),
+      )
+    : strand === -1
+      ? `complement(${sameStrand()})`
+      : sameStrand()
 }
 
 function featureLine(type: string, location: string) {
@@ -346,15 +378,17 @@ function formatTags({
 }
 
 // the phase of the 5'-most CDS segment, 1-based
-function codonStart(feats: Feature[], strand: number) {
+function codonStart(feats: Feature[], strand: number, transSpliced: boolean) {
   const first = feats.reduce((a, b) =>
-    strand === -1
-      ? b.get('end') > a.get('end')
-        ? b
-        : a
-      : b.get('start') < a.get('start')
-        ? b
-        : a,
+    transSpliced
+      ? a
+      : strand === -1
+        ? b.get('end') > a.get('end')
+          ? b
+          : a
+        : b.get('start') < a.get('start')
+          ? b
+          : a,
   )
   return (first.get('phase') ?? 0) + 1
 }
@@ -376,8 +410,9 @@ function formatCDS({
   frame: RecordFrame
 }) {
   const ownLabel = whole.get('label')
+  const transSpliced = isTransSpliced(whole, feats)
   return [
-    featureLine('CDS', joinLoc(feats, strand, frame)),
+    featureLine('CDS', joinLoc(feats, strand, frame, transSpliced)),
     ...formatTags({
       feature: whole,
       gene,
@@ -387,7 +422,7 @@ function formatCDS({
         gene ??
         whole.get('name') ??
         whole.get('id'),
-      codonStart: codonStart(feats, strand),
+      codonStart: codonStart(feats, strand, transSpliced),
     }),
   ]
 }
@@ -431,7 +466,12 @@ export function formatFeatWithSubfeatures({
   // external tools see the correct structure.
   const segments =
     exons.length > 0 ? exons : pieces.length > 0 ? pieces : [feature]
-  const location = joinLoc(segments, strand, frame)
+  const location = joinLoc(
+    segments,
+    strand,
+    frame,
+    isTransSpliced(feature, segments),
+  )
 
   const cds = subfeatures.filter(
     f => f.get('type') === 'CDS' && !f.get('subfeatures')?.length,
