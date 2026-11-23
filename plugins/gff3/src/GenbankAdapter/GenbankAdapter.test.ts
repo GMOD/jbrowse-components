@@ -1,9 +1,13 @@
-import { readFileSync } from 'node:fs'
+import { mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
+import { tmpdir } from 'node:os'
+import path from 'node:path'
 
 import { parseFeatureTable, parseRecords } from '@jbrowse/add-track-core'
 import { codonTable, revcom } from '@jbrowse/core/util'
 import { originTailId } from '@jbrowse/core/util/originCut'
 
+import GenbankSequenceAdapter from '../GenbankSequenceAdapter/GenbankSequenceAdapter.ts'
+import sequenceConfigSchema from '../GenbankSequenceAdapter/configSchema.ts'
 import { adapters, fetch, protein, shape } from './genbank.fixture.ts'
 
 import type { Feature } from '@jbrowse/core/util'
@@ -384,9 +388,41 @@ describe('a record with no ORIGIN sequence', () => {
   })
 
   test('fails the sequence, naming the record and the format to download', async () => {
-    await expect(sequence.getRegions()).rejects.toThrow(
-      /NZ_CP000001\.1.*no ORIGIN sequence.*rettype=gbwithparts/,
+    expect(await sequence.getRegions()).toEqual([
+      { refName: 'NZ_CP000001.1', start: 0, end: 1000, circular: true },
+    ])
+    await expect(
+      sequence.getSequence({ refName: 'NZ_CP000001.1', start: 0, end: 10 }),
+    ).rejects.toThrow(/NZ_CP000001\.1.*no ORIGIN sequence.*rettype=gbwithparts/)
+  })
+
+  test('fails only its own sequence in a file with other records', async () => {
+    const text = ['contig_only.gb', 'two_records.gbk']
+      .map(name =>
+        readFileSync(require.resolve(`../test_data/${name}`), 'utf8'),
+      )
+      .join('')
+    const dir = mkdtempSync(path.join(tmpdir(), 'genbank-contig-'))
+    const file = path.join(dir, 'mixed.gbk')
+    writeFileSync(file, text)
+    const mixed = new GenbankSequenceAdapter(
+      sequenceConfigSchema.create({ genbankLocation: { localPath: file } }),
     )
+    try {
+      expect(await mixed.getRegions()).toEqual([
+        { refName: 'NZ_CP000001.1', start: 0, end: 1000, circular: true },
+        { refName: 'contig_1', start: 0, end: 120 },
+        { refName: 'pTEST.1', start: 0, end: 60, circular: true },
+      ])
+      expect(
+        await mixed.getSequence({ refName: 'contig_1', start: 0, end: 12 }),
+      ).toBe('GCTAAAGACAAT')
+      await expect(
+        mixed.getSequence({ refName: 'NZ_CP000001.1', start: 0, end: 10 }),
+      ).rejects.toThrow(/NZ_CP000001\.1.*no ORIGIN sequence/)
+    } finally {
+      rmSync(dir, { recursive: true, force: true })
+    }
   })
 })
 

@@ -8,12 +8,23 @@ import { openLocation } from '@jbrowse/core/util/io'
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
 
 import type { GenbankSequenceAdapterConfig } from './configSchema.ts'
+import type { GenbankRecord } from '@jbrowse/add-track-core'
 import type {
   BaseOptions,
   SequenceRegion,
 } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { Feature } from '@jbrowse/core/util'
 import type { NoAssemblyRegion } from '@jbrowse/core/util/types'
+
+// a record that lists CONTIG pieces in place of its ORIGIN fails its own
+// sequence, not every record's
+function readSequence(record: GenbankRecord) {
+  try {
+    return recordSequence(record)
+  } catch (error) {
+    return error instanceof Error ? error : new Error(String(error))
+  }
+}
 
 export default class GenbankSequenceAdapter extends BaseSequenceAdapter<GenbankSequenceAdapterConfig> {
   private setup = cachedSetup({
@@ -26,7 +37,11 @@ export default class GenbankSequenceAdapter extends BaseSequenceAdapter<GenbankS
       return new Map(
         parseRecords(text).map(record => [
           record.refName,
-          { sequence: recordSequence(record), circular: record.circular },
+          {
+            sequence: readSequence(record),
+            length: record.length,
+            circular: record.circular,
+          },
         ]),
       )
     },
@@ -40,10 +55,10 @@ export default class GenbankSequenceAdapter extends BaseSequenceAdapter<GenbankS
   public async getRegions(opts: BaseOptions = {}) {
     const records = await this.setup(opts)
     const regions: SequenceRegion[] = [...records.entries()].map(
-      ([refName, { sequence, circular }]) => ({
+      ([refName, { sequence, length, circular }]) => ({
         refName,
         start: 0,
-        end: sequence.length,
+        end: sequence instanceof Error ? length : sequence.length,
         ...(circular ? { circular } : {}),
       }),
     )
@@ -56,16 +71,21 @@ export default class GenbankSequenceAdapter extends BaseSequenceAdapter<GenbankS
   ) {
     return ObservableCreate<Feature>(async observer => {
       const records = await this.setup(opts)
-      const seq = records.get(refName)?.sequence.slice(start, end)
-      if (seq) {
-        observer.next(
-          new SimpleFeature({
-            id: `${refName}-${start}-${start + seq.length}`,
-            data: { refName, start, end: start + seq.length, seq },
-          }),
-        )
+      const sequence = records.get(refName)?.sequence
+      if (sequence instanceof Error) {
+        throw sequence
+      } else {
+        const seq = sequence?.slice(start, end)
+        if (seq) {
+          observer.next(
+            new SimpleFeature({
+              id: `${refName}-${start}-${start + seq.length}`,
+              data: { refName, start, end: start + seq.length, seq },
+            }),
+          )
+        }
+        observer.complete()
       }
-      observer.complete()
     }, opts.signal)
   }
 }
