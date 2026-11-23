@@ -166,7 +166,7 @@ export const riceFlyGraphSpecs: ScreenshotSpec[] = [
     annotations: [
       geneCallout(rice, 'LOC4325003', 'SD1'),
       rowCallout(rice, SD1_RECORD, 'IR64', 'sd1-d, a 383 bp deletion', 300),
-      graphCallout(rice, 's25454', 'sd1-d: these 383 bp skipped', 200, -60),
+      graphCallout(rice, 's25454', 'sd1-d: these 383 bp skipped', -260, -70),
     ],
   }),
   // ALEN 504 (AGIS-1.0's 1,212 bp deletion, segment s98373), 1715 (no
@@ -189,14 +189,7 @@ export const riceFlyGraphSpecs: ScreenshotSpec[] = [
         "1,212 bp deletion, AGIS-1.0's",
         300,
       ),
-      graphCallout(rice, 's284387', 'no deletion: 1.2 kb more', 200, -60),
-      graphCallout(
-        rice,
-        's284388',
-        'the 950 bp deletion: 260 bp more',
-        200,
-        60,
-      ),
+      graphCallout(rice, 's284388', "the 950 bp deletion's path", 200, 70),
     ],
   }),
   // One record, nine alleles: AGIS-1.0's 39 bp path (Balilla alone), a second
@@ -241,8 +234,8 @@ export const riceFlyGraphSpecs: ScreenshotSpec[] = [
       rowCallout(fly, CYP28D1_RECORD, 'BOG1_A2', 'A2, 15 kb longer', 260, -10),
       rowCallout(fly, CYP28D1_RECORD, 'BER1_B1', 'B1, 38 kb longer', 260, 40),
       rowCallout(fly, CYP28D1_RECORD, 'RVC3_B4', 'B4, 6.1 kb longer', 260, 90),
-      graphCallout(fly, 's81728', "A2's and B1's 15 kb copy", 200, -60),
-      graphCallout(fly, 's78371', 'Canton-S_A1 alone: 4.9 kb', -200, 60),
+      graphCallout(fly, 's81728', "A2's and B1's 15 kb copy", 260, 0),
+      graphCallout(fly, 's78371', 'Canton-S_A1 alone: 4.9 kb', -350, -90),
     ],
   }),
   locusSpec({
@@ -272,8 +265,8 @@ export const riceFlyGraphSpecs: ScreenshotSpec[] = [
         fly,
         's63071',
         'the Doc, 4.5 kb, skipped by 7 strains',
-        200,
-        -60,
+        -320,
+        -20,
       ),
     ],
   }),

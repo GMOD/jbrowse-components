@@ -297,11 +297,10 @@ from:
 sed 's/^>/>IR64#1#/' IR64.fa > IR64.pansn.fa
 ```
 
-JBrowse strips the reference's prefix from the graph's sequence names, and so
-does the callset below, so the reference's names left after it (`chr1`) must be
-sequence names or aliases of the JBrowse assembly. The build script renames from
-each assembly's NCBI sequence report, so every assembly's chromosomes read
-`chr1` to `chr12`.
+JBrowse and the callset below strip the reference's prefix from the graph's
+sequence names, and the names left (`chr1`) must be sequence names or aliases of
+the JBrowse assembly. The build script renames from each assembly's NCBI
+sequence report, so every assembly's chromosomes read `chr1` to `chr12`.
 
 The rice genome is small enough for one `minigraph` run over every chromosome at
 once, reference first so that its segments take rank 0, the earliest build
