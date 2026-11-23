@@ -280,7 +280,7 @@ bgzip -f hg38ToMm39.genes.gff
 jbrowse make-density hg38ToMm39.genes.gff.gz --chrom-sizes hg38ToMm39.chrom.sizes --bin 100000
 ```
 
-The track names both assemblies, and its display defaults set a heatmap strip
+The track names both assemblies, and its display defaults choose a heatmap strip
 whose color is the average over each pixel's bins. `mark` is the shape drawn,
 and `encoding.color` is a `linear` color scale mapping the score across a
 `scale.range` from white at the fewest genes in view to orange at the most:

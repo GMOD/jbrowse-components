@@ -327,13 +327,13 @@ wolf-derived.
 
 Blocks break up towards the end of chr1, tracking the genetic map.
 
-### FLARE calls and allele counts in the held-out wolves
+### Where FLARE calls and allele counts disagree in the held-out wolves
 
 Most held-out wolves come out essentially all wolf. The two Swedish museum
 specimens come out partly dog in FLARE's calls, yet score highest of the
 held-out wolves on a second measure the build script prints, the fraction of
-near-fixed differing sites with the wolf allele. The script scores that measure
-one site at a time, where FLARE matches whole haplotypes against a panel.
+near-fixed differing sites with the wolf allele. That measure looks at one site
+at a time, where FLARE matches whole haplotypes against a panel.
 
 ### How long the Tamaskan's and Shiloh Shepherd's wolf blocks run
 

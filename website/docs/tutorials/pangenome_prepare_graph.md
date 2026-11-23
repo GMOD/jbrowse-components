@@ -294,8 +294,8 @@ seven to nine the segment's contig and span.
 
 - **An empty result** over a tiled reference means the query used the wrong
   name: `chr1` finds nothing where `GRCh38#0#chr1` finds every segment.
-- **Backbone rows with no alleles** mark a place where minigraph collapsed the
-  graph, as it does with near-identical segmental duplications.
+- **Backbone rows with no alleles** mark a place where the graph collapsed, as
+  minigraph does with near-identical segmental duplications.
 
 ## Recording which haplotypes pass through each segment {#which-haplotypes-walk-each-segment}
 
@@ -412,7 +412,8 @@ haplotype lanes read one range at a time:
   of routes it takes
 - a departure record gives each place a walk leaves the reference and rejoins it
   in another piece, and is filed over the whole stretch between, so JBrowse
-  still reads the haplotype that skips a deletion in a window inside it
+  still reads the haplotype that skips a deletion when the window lies inside
+  that deletion
 
 The base-level GFA holds each walk as a W line. Index the GRCh38 graph against
 GRCh38:[^walks-cost]

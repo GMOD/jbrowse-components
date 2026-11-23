@@ -164,8 +164,8 @@ JBrowse computes the arcs on the fly from the skips in the reads in view, and
 colors each arc by transcript strand, salmon for forward and purple for reverse.
 It finds the strand two ways:
 
-- **Tags.** `XS` and `TS` hold the strand. minimap2's `ts` is relative to the
-  read, so JBrowse combines it with the strand the read aligned to.
+- **Tags.** `XS` and `TS` hold the strand directly. minimap2's `ts` is relative
+  to the read, so JBrowse combines it with the strand the read aligned to.
 - **Splice motif.** A BAM from STAR without `--outSAMstrandField intronMotif`
   has no tags, so JBrowse reads the first and last two bases of the intron off
   the reference: GT-AG on the forward strand reads as CT-AC on the reverse.

@@ -102,7 +102,7 @@ form.
 
 <Figure caption="(1) The Available tracks widget. (2) Its plus button opens the Add a track form." src="/img/add_track_tracklist.png" />
 
-The form takes a URL or a local file. Each format needs this index:
+The form takes a URL or a local file. The index each format needs:
 
 - **BAM** - BAI or CSI
 - **CRAM** - CRAI

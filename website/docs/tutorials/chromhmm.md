@@ -241,10 +241,10 @@ lineage commits.
 ## Chromatin-state legend, filtering and row order {#the-legend-filtering-and-row-order}
 
 The key lists the identity scale's `scale.domain`, each color under its
-`scale.names` entry. A BED file holds only each state's color, so JBrowse draws
-no key for a track whose config sets no domain. States that share a color share
-an entry, so in the Broad 15-state model `4_Strong_Enhancer` and
-`5_Strong_Enhancer` are one row, `4-5 Strong enhancer`.
+`scale.names` entry. A BED file holds only each state's color, not what it
+means, so JBrowse draws no key for a track whose config sets no domain. States
+that share a color share an entry, so in the Broad 15-state model
+`4_Strong_Enhancer` and `5_Strong_Enhancer` are one row, `4-5 Strong enhancer`.
 
 Most of any segmentation is quiescent or heterochromatic. The track menu has
 these actions for reading the rest:

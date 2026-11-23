@@ -74,9 +74,9 @@ Three conventions affect how to read the matrix:
 - the GDC's open mutation calls cover the exome only, so the matrix reads at
   gene scale
 
-Read counts are kept in `AD`/`DP`. `INFO/CSQ` holds the VEP columns from the MAF
-(`Consequence`, `IMPACT`, `HGVSp_Short`, SIFT, PolyPhen), so the track can color
-cells by consequence impact without running an annotator.
+Read counts are kept in `AD`/`DP`. `INFO/CSQ` holds the VEP columns from the
+MAF, re-encoded (`Consequence`, `IMPACT`, `HGVSp_Short`, SIFT, PolyPhen), so the
+track can color cells by consequence impact without running an annotator.
 
 The clinical TSV is one row per tumor barcode and one column per attribute:
 
