@@ -132,7 +132,7 @@ The track opens paired and colored. To select a non-default display type, write
 a `displays` array; [configuring tracks](/docs/config_guides/tracks) covers both
 forms.
 
-## A session setting overrides the track config's
+## Check which wins, session or config
 
 With the CRAM track now set in two places, a session and `config.json`, the
 session wins, one key at a time. The CRAM track in the shipped volvox config has
@@ -165,7 +165,8 @@ The session's `encoding.color` replaces the config's, so the features are drawn
 grey, and their labels still read `seg04 [match]` from
 `displayDefaults`.[^snapshot]
 
-## Where each route keeps a setting (link, session file or config)
+Each route keeps the setting in its own place, and reaches a different set of
+people:
 
 | Route                              | Kept in             | Applies to              |
 | ---------------------------------- | ------------------- | ----------------------- |
