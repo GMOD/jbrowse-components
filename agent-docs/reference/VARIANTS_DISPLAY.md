@@ -156,8 +156,10 @@ Each channel carries one variable through one scale.
   own of eight hues, the alts ranked past the palette sharing the last. The
   order is `AlleleSummary.altOrder`, counted over every sample in the file,
   ties in file order and `*` last, so hiding rows recolors nothing. Sample
-  rows keep the one alt hue, where lightness is the dosage. The second hue is
-  the SV preset's deletion red, as the one "other alt" fill was before it.
+  rows keep the one alt hue, where lightness is the dosage. A hue compares
+  only within a site and a file. The second hue is the SV preset's deletion
+  red, as the one "other alt" fill was before it, so the SV key's "Deletion"
+  and a rank-1 cell can share a panel.
 - **Ranks 2 to 7 take no color of the SV type preset**, because the records
   band paints SV classes one band above the rows. `alleleHues.test.ts` holds
   them 20 CIEDE2000 or more from each preset color, from each other and from
@@ -175,13 +177,20 @@ the view's settled window (ADR-093), since the view fetches wider than it shows:
 `paintedDomain`, the values a variant on screen with an alt cell carried. "The
 site is multiallelic" is not the same claim as "a secondary-alt cell is on
 screen", and the legend makes the second one: `featureCategories` holds a bit
-per allele hue past the first, and the key lists a row for each painted. A row
-names its allele (`<X:3>, 53,149 bp path`, the path length from `INFO/ALEN`
-where the record states one; `*` reads "spanning deletion") where every cell in
-that hue is one allele of one record, and otherwise its rank ("2nd most
-common"). A record shown in two displayed regions counts once. The first hue is
-named only where its one record is multiallelic, so a biallelic view keeps "Alt
-allele". The columns layout fetches only
+per allele hue past the first. The key names every one of those hues or none
+(ADR-284). Where one record painted them all, each gets a row naming its
+allele: `ALT 17, 2,391 bp (-28 bp)` for a sequence allele, its ALT index and
+exact length against the reference's, so no two rows read alike; `ALT 2, C`
+for a short substitution; `<X:3>, 53,149 bp path` for a symbolic one, the
+path length from `INFO/ALEN` where the record states one; "spanning deletion"
+for `*`. Otherwise, or where a record folds its rarest alleles into the last
+hue, they share one row of swatches, "Other alt alleles at each site, by
+frequency", which keeps its label as the view pans. Ordinal rows ("2nd most
+common") are declined in ADR-284. A record shown in two displayed regions
+counts once. Blue is named only where that one record is also the only one
+painting it, so biallelic neighbours (rice qSW5) keep "Most common alt
+allele" beside the named hues, and a biallelic view keeps "Alt allele". The
+columns layout fetches only
 the visible span, and the tables their own regions, so both read every variant
 fetched. The records band's "SV type" key reads the records the band placed on
 screen (`keyedRecords.svTypes`, over `recordsPlacedOnScreenIds`), so a hidden `records.facet` section or a record

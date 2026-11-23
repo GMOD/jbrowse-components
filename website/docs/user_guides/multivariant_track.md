@@ -85,11 +85,13 @@ and how each genotype cell is colored.
   site's most frequent alt takes the blue of a homozygous-alt cell in per-sample
   rows. At a multiallelic site the other alts take a color each in order of
   frequency: red for the second, then dark green, lavender, salmon, mint, maroon
-  and navy, which the rarest share past eight. The legend lists the colors on
-  screen. A color that one allele of one site paints is labelled with that
-  allele and its `ALEN` path length where the VCF states one. A color that
-  alleles at several sites on screen share is labelled by rank, such as "2nd
-  most common".
+  and navy, which the rarest share past eight. A color means the same rank only
+  within one site of one file. Where one multiallelic site paints every color
+  past blue on screen, the legend names each allele: a sequence allele by its
+  ALT index and length, such as `ALT 17, 2,391 bp (-28 bp)`, a symbolic one with
+  its `ALEN` path length where the VCF states one. Otherwise the legend shows
+  those colors in one row, "Other alt alleles at each site, by frequency", since
+  each stands for a different allele at each site.
 
 Per-haplotype rows draw what the VCF phases:
 

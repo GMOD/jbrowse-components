@@ -1,13 +1,13 @@
 ---
-status: Proposed
-summary: "In phased mode an alt cell's hue is its allele's frequency rank at the site: alt blue, the old red, then six more, the rarest sharing the last; the key names an allele where one hue stands for it. No setting"
+status: Accepted
+summary: "In phased mode an alt cell's hue is its allele's frequency rank at the site: blue, the old red, six more, the rarest sharing the last; the key names alleles only where one record painted every non-blue hue, else one strip"
 ---
 
 # ADR-284: A phased alt cell takes the hue of its allele's frequency rank
 
 ## Status
 
-Proposed (2026-11-23). Refines the "per-haplotype allele identity" hue of
+Accepted (2026-11-23). Refines the "per-haplotype allele identity" hue of
 `reference/VARIANTS_DISPLAY.md`'s composition rule; leaves
 [ADR-161](adr-161-a-variant-color-preset-is-a-field-and-cells-take-any-record-field.md)'s
 `encoding.color` and
@@ -28,7 +28,7 @@ phase-set hue does.
   row names the allele, and "Sort rows by genotype here" already groups rows
   by it.
 
-## Decision (proposed)
+## Decision
 
 - **The hue is the allele's frequency rank among the site's alts**
   (`shared/alleleHues.ts`). Rank 0 is `ALT_HUE` and rank 1 the old red, so a
@@ -46,14 +46,24 @@ phase-set hue does.
   `mostFrequentAlt`: carried alts by count over every sample in the file,
   ties in file order, `*` last. It does not follow the rows shown, so hiding
   or filtering rows recolors nothing.
-- **The key lists a row per hue painted on screen**, read off
-  `featureCategories` (now 16 bits: a bit per allele slot past the first). A
-  row names its allele, with the path length `INFO/ALEN` states for it ("766
-  bp path", the allele's length through the graph rather than an event size),
-  where every cell in that hue is one allele of one record; otherwise it names
-  the rank. A spanning deletion `*` is named "spanning deletion".
-  The first hue is named only where its one record is multiallelic, so the
-  biallelic key is still "Reference, Alt allele".
+- **The key names every allele past blue, or none of them**, read off
+  `featureCategories` (now 16 bits: a bit per allele slot past the first).
+  - Where one record painted every non-blue hue on screen, as at rice Pup1, each
+    hue gets a row naming its allele. Blue is named too where that record is
+    also the only one painting it.
+  - Otherwise the key reads "Reference", "Most common alt allele", then one row
+    of the painted swatches, "Other alt alleles at each site, by frequency".
+    So does a record whose rarest alleles share the last hue.
+  - Biallelic neighbours painting blue beside one multiallelic record (rice
+    qSW5) keep "Most common alt allele" for blue and name the record's other
+    alleles, since each of those hues stands for one allele.
+  - A sequence allele reads by its ALT index and exact length against the
+    reference's ("ALT 17, 2,391 bp (-28 bp)"), a short substitution by its
+    bases ("ALT 2, C"), so no two rows read alike. A symbolic allele keeps its
+    name and the path length `INFO/ALEN` states ("<X:5>, 67,027 bp path", its
+    length through the graph rather than an event size). A spanning deletion
+    `*` reads "spanning deletion".
+  - A biallelic view's key is still "Reference, Alt allele".
 - **Sample rows are unchanged.** There lightness is the dosage of one alt hue,
   and `1/2` has two alleles for one cell; the per-alt matrix columns carry
   which.
@@ -70,12 +80,16 @@ phase-set hue does.
 - A site with nine or more carried alts still shares one hue among its
   rarest; the hover names those.
 - The tutorial figures' callouts for allele lengths can go once reshot.
-- A name can turn into a rank label as the view pans: once a second
-  multiallelic record painting the same hue comes into view, that hue stands
-  for two alleles and its row reads "2nd most common".
-- The second hue stays the SV preset's deletion red, so a deletion record in
-  the records band and a rank-1 cell below it can share a color one band apart;
-  the key heads each section.
+- A hue is comparable only within a site and a file: red is the second most
+  common alt of whichever site it sits in, and another file's counts deal the
+  same alleles differently.
+- The named rows give way to the strip as a second multiallelic record pans
+  into view, and come back when it leaves; the strip itself does not change
+  label while panning.
+- The second hue stays the SV preset's deletion red, so the SV key's
+  "Deletion" red and a rank-1 cell below it can share a panel, as the single
+  other-alt red always could. That is not a regression; the key heads each
+  section.
 
 ## Alternatives
 
@@ -87,5 +101,7 @@ phase-set hue does.
 | Hash the allele to a hue, as the phase-set wheel does | unbounded hues land on the no-call and reference fills and on each other; rank keeps the commonest on blue |
 | Re-lit laps of the palette past eight | lightness is the dosage channel in sample rows, and sixteen cell fills are not told apart at row height |
 | A dedicated grey for the alts past the palette | grey is the reference and near-black the unphased fill |
-| One legend row with a strip of swatches | says nothing about which allele is which where the view could name them |
+| One legend row with a strip of swatches, always | says nothing about which allele is which where the view could name them; taken only where it cannot |
+| A row per rank past blue ("2nd most common", ...), named where one record painted that hue | on a human multiallelic VCF (HPRC) the rows churned as the view panned, keys ran to ten rows, and one key mixed allele names with rank labels |
 | Name the allele on every row always | with several multiallelic records on screen a hue stands for a different allele at each |
+| Name an allele as the hover spells it (`2.42Kbp -> 2.39Kbp`) | two alleles of one record rounded to the same label |
