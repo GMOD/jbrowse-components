@@ -450,6 +450,25 @@ test('adds bam track with all the custom fields', async () => {
   })
 })
 
+test.each(['"abc"', 'null', '[1]', '7'])(
+  '--config %s is refused because it is not a JSON object',
+  async value => {
+    await runInTmpDir(async ctx => {
+      await initctx(ctx)
+      const { error } = await runCommand([
+        'add-track',
+        simpleBedGz,
+        '--load',
+        'copy',
+        '--config',
+        value,
+      ])
+      expect(error?.message).toContain('--config must be a JSON object')
+      expect(exists(ctxDir(ctx, 'volvox.bed.gz'))).toBe(false)
+    })
+  },
+)
+
 test('--config merges a nested adapter key into the generated adapter', async () => {
   await runInTmpDir(async ctx => {
     await initctx(ctx)

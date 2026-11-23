@@ -8,7 +8,7 @@ import {
   requirePositional,
   resolveConfigPath,
 } from '../utils.ts'
-import { parseConfigFlag } from './add-track-utils/validators.ts'
+import { parseJsonFlag } from './add-track-utils/validators.ts'
 import {
   findAndUpdateOrAdd,
   saveConfigAndReport,
@@ -144,7 +144,7 @@ export async function run(args?: string[]) {
   requirePositional(connectionUrlOrPath, 'connectionUrlOrPath', usage)
 
   const { assemblyNames, type, name, config, connectionId, force } = flags
-  const configObj = config ? parseConfigFlag(config) : undefined
+  const configObj = config ? parseJsonFlag(config, '--config') : undefined
 
   const target = await resolveConfigPath(flags.target, flags.out)
 

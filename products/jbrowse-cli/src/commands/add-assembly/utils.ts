@@ -15,7 +15,7 @@ import {
 } from '../../utils.ts'
 import { mapLocationForFiles } from '../add-track-utils/track-config.ts'
 import {
-  parseConfigFlag,
+  parseJsonFlag,
   validateLoadAndLocation,
 } from '../add-track-utils/validators.ts'
 import { findAndUpdateOrAdd } from '../shared/config-operations.ts'
@@ -321,7 +321,7 @@ function applyExtraConfig(assembly: Assembly, config?: string): Assembly {
   if (config === undefined) {
     return assembly
   }
-  const { sequence, name, ...rest } = parseConfigFlag(config)
+  const { sequence, name, ...rest } = parseJsonFlag(config, '--config')
   if (sequence !== undefined && !isRecord(sequence)) {
     throw new Error('--config "sequence" must be an object')
   }

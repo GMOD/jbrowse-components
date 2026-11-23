@@ -17,7 +17,7 @@ import {
   mergeDisplayDefaults,
 } from './add-track-utils/track-config.ts'
 import {
-  parseConfigFlag,
+  parseJsonFlag,
   validateAdapterType,
   validateAssemblies,
   validateLoadAndLocation,
@@ -273,7 +273,7 @@ export async function run(args?: string[]) {
         trackId: flags.trackId,
       })
 
-  const baseConfigObj = config ? parseConfigFlag(config) : undefined
+  const baseConfigObj = config ? parseJsonFlag(config, '--config') : undefined
   const displayDefaults = mergeDisplayDefaults({
     configObj: baseConfigObj,
     color: flags.color,

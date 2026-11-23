@@ -1,5 +1,5 @@
 import { isURL } from '../../types/common.ts'
-import { parseCommaSeparatedString } from '../../utils.ts'
+import { isRecord, parseCommaSeparatedString } from '../../utils.ts'
 
 import type { Config } from '../../base.ts'
 
@@ -7,15 +7,16 @@ export function parseJsonFlag(
   value: string,
   flagName: string,
 ): Record<string, unknown> {
+  let parsed: unknown
   try {
-    return JSON.parse(value) as Record<string, unknown>
+    parsed = JSON.parse(value)
   } catch {
     throw new Error(`${flagName} is not valid JSON: ${value}`)
   }
-}
-
-export function parseConfigFlag(config: string): Record<string, unknown> {
-  return parseJsonFlag(config, '--config')
+  if (isRecord(parsed)) {
+    return parsed
+  }
+  throw new Error(`${flagName} must be a JSON object`)
 }
 
 export function validateLoadOption(load?: string): void {
