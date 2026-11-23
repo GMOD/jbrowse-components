@@ -11,11 +11,13 @@ tutorial_subcategory: Other species
 The mouse strain pangenome is a `minigraph` alignment of eighteen assemblies of
 seventeen inbred and wild-derived strains onto the GRCm39 reference. GRCm39 is
 itself a strain, C57BL/6J, so the panel's best-known variant, a C57BL/6J
-deletion, appears as an insertion. The strain assemblies are those of
-[Helmy et al. (2026)](https://doi.org/10.1016/j.xgen.2025.101074), who released
-no graph file, so we built this one. To pick a locus from it, we rank the
-graph's bubbles, the regions where the strains' paths split and rejoin, by how
-many segments each holds, and open the densest that fits a window. We:
+deletion, appears as an insertion. Sixteen of the assemblies are from
+[Helmy et al. (2026)](https://doi.org/10.1016/j.xgen.2025.101074), and the other
+two are telomere-to-telomere builds of C57BL/6J and CAST/EiJ from the same
+EMBL-EBI project. No graph of them was published, so we built this one. To pick
+a locus from it, we rank the graph's bubbles, the regions where the strains'
+paths split and rejoin, by how many segments each holds, and open the densest
+that fits a window. We:
 
 - at _Nnt_, open the graph track with bubble halos, then the liftOver lanes that
   show which strains have the gene
@@ -147,7 +149,7 @@ To open the _Dock2_ bubble:
   **Graph**.
 - In the graph track's menu, tick **Show → Show bubble halos**.
 
-<Figure caption="The Dock2 intron bubble in the bubbles track and the graph. Each charcoal loop is sequence the reference lacks, and each dashed arc skips mm39 sequence, a deletion in another strain." src="/img/pangenome/mouse_dock2.png" />
+<Figure caption="The Dock2 intron bubble in the bubbles track and the graph. Each charcoal loop is sequence the reference lacks." src="/img/pangenome/mouse_dock2.png" />
 
 ## Loading the graph in your own JBrowse {#load-the-graph}
 
@@ -231,9 +233,9 @@ that its segments take rank 0, the earliest build order:
 minigraph -cxggs -t 8 mm39.chr13.fa strain1.chr13.fa strain2.chr13.fa > chr13.gfa
 ```
 
-Three commands turn the joined graph into the files above: the segment and link
-index, the bubbles, and the coarse tier, all in the contig layout. The track's
-`uri` is the prefix the first command writes.
+The commands below turn the joined graph into the files above: the segment and
+link index and the coarse tier, in the contig layout, and the bubbles. The
+track's `uri` is the prefix the first command writes.
 [](/docs/tutorials/pangenome_prepare_graph#rgfa-contig-layout) lists how these
 files differ from the ones `gfa-to-tabix build` writes.
 
@@ -242,10 +244,20 @@ files differ from the ones `gfa-to-tabix build` writes.
 ```bash
 # --layout contig: each segment under its coordinate on its source contig
 gfa-to-tabix mouse-mm39-minigraph.rgfa.gz --layout contig -o mouse-mm39-minigraph
+```
+
+<!-- from: scripts/build_mouse_pangenome.sh -->
+
+```bash
 # gfatools bubble writes the bubbles unsorted
 gzip -dc mouse-mm39-minigraph.rgfa.gz | gfatools bubble - | sort -k1,1 -k2,2n |
   bgzip > mouse-mm39-minigraph.bubbles.bed.gz
 tabix -f -C -p bed mouse-mm39-minigraph.bubbles.bed.gz
+```
+
+<!-- from: scripts/build_mouse_pangenome.sh -->
+
+```bash
 # --below: fold variants under 10 kb into the reference, in the same layout
 gfa-to-tabix fold mouse-mm39-minigraph.rgfa.gz --below 10000 --layout contig -o mouse-mm39-minigraph.fold10000
 ```
@@ -281,7 +293,7 @@ build.
 
 - Helmy et al. (2026).
   [High-quality mouse reference genomes reveal the structural complexity of the murine protein-coding landscape](https://doi.org/10.1016/j.xgen.2025.101074),
-  the strain assemblies.
+  sixteen of the strain assemblies.
 - Li et al. (2020).
   [The design and construction of reference pangenome graphs with minigraph](https://doi.org/10.1186/s13059-020-02168-z)
 - Toye et al. (2005).

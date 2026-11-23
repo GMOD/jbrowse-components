@@ -6,9 +6,10 @@
 # JBrowse query a locus without downloading the graph.
 #
 # Unlike the bovine set beside it, no pangenome graph was ever published for
-# these assemblies: the 2025 mouse pangenome paper (Cell Genomics
-# S2666-979X(25)00330-1) released ENA assemblies and an Ensembl browser and no
-# graph or VCF, so this constructs one. The 2022 Minigraph-Cactus mouse graph in
+# these assemblies: Helmy et al. 2026 (Cell Genomics S2666-979X(25)00330-1),
+# the source of 16 of the 18, released ENA assemblies and an Ensembl browser and
+# no graph or VCF, so this constructs one. The other two, C57BL_6J_T2T and
+# CAST_EiJ_T2T, are T2T builds from the same EMBL-EBI/Wellcome Sanger project. The 2022 Minigraph-Cactus mouse graph in
 # cactus's own mc-pangenomes list is a different panel and carries an upstream
 # warning that it is "nearly 40% Ns due, apparently, to gappy input assemblies";
 # it is not what this builds on.
