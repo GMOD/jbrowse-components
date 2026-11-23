@@ -80,7 +80,7 @@ cell-line ID.
 | K562 DNA breakpoints (ENCODE 10X linked-read large-SV calls, hg19, lifted to hg38 by the build script) | [ENCFF863MPP.vcf.gz](https://www.encodeproject.org/files/ENCFF863MPP/@@download/ENCFF863MPP.vcf.gz)           |
 | The hg19-to-hg38 chain the lift uses                                                                   | [hg19ToHg38.over.chain.gz](https://hgdownload.soe.ucsc.edu/goldenPath/hg19/liftOver/hg19ToHg38.over.chain.gz) |
 
-## Cutting K562 out of DepMap and lifting its breakpoints to hg38
+## Cut K562 out of DepMap and lift it to hg38
 
 K562 is a chronic myeloid leukemia line with the Philadelphia chromosome, the
 t(9;22) translocation between chr9 and chr22 that fuses _BCR_ to _ABL1_.
@@ -115,7 +115,7 @@ python3 lift_bnd_vcf.py calls.hg19.vcf.gz hg19ToHg38.over.chain.gz \
 bgzip calls.hg38.vcf && tabix -f -C -p vcf calls.hg38.vcf.gz
 ```
 
-## Loading hg38 and the merged Iso-Seq reads
+## Load hg38 and the merged Iso-Seq reads
 
 The lifted DNA breakpoints and the Iso-Seq molecules are on hg38, so we load
 that assembly first.
@@ -180,7 +180,7 @@ for a BAM aligned to the same assembly, with its `.bai` beside it:
 }
 ```
 
-## Triaging the STAR-Fusion calls in the SV inspector
+## Triage the STAR-Fusion calls in the SV inspector
 
 **Add → SV inspector**, then the file, opens the STAR-Fusion table beside a
 circular view of it, one chord per row. The import form reads the **File Type**
@@ -226,7 +226,7 @@ The build script adds the STAR-Fusion calls as a track:
 }
 ```
 
-## Split RNA reads at BCR-ABL1 across three regions
+## Open BCR-ABL1's split reads across three regions
 
 The transcript reaches _ABL1_ at more than one place, so the view uses three
 regions: the _BCR_ donor, where the transcript starts, and two _ABL1_ acceptor
@@ -255,7 +255,7 @@ in neither window.
 
 <Figure caption="BCR beside two ABL1 windows, showing split reads only, with coverage counting the split reads alone." src="/img/cancer_sv/k562_bcr_abl_split.png" />
 
-## Where the DNA broke under BCR-ABL1 and NUP214-XKR3
+## Load the DNA breakpoints and copy number
 
 A fusion caller reports transcribed junctions, which sit on exon edges. Two DNA
 assays on the same cells measure where the chromosome broke and how much of it
