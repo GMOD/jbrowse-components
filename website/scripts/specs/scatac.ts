@@ -38,8 +38,8 @@ export const scatacSpecs: ScreenshotSpec[] = [
   // The same two loci with AlphaGenome 2's predictions under the measured rows,
   // from scripts/build_alphagenome2_singlecell.sh. Over six marker loci at
   // build time, a predicted row's cell-type-specific signal matched its own
-  // measured row at r 0.69 on average and the other rows at -0.06; MS4A1's T
-  // rows were the weakest match, which this frame shows.
+  // measured row at r 0.69 on average; MS4A1's T rows were the weakest match,
+  // which this frame shows.
   {
     mode: 'url',
     name: 'scatac/pbmc5k_predicted_vs_measured',
@@ -65,6 +65,6 @@ export const scatacSpecs: ScreenshotSpec[] = [
       },
     ),
     readyTimeout: 120000,
-    viewportHeight: 820,
+    viewportHeight: 960,
   },
 ]
