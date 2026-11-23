@@ -69,7 +69,7 @@ cargo install gfa-to-tabix
 
 The graph and callset tracks read the hosted files by URL, and the OMIA track
 reads a file you build from OMIA's dump with
-[the script under The Celtic polled allele](#open-the-celtic-polled-allele-at-polled).
+[the script under the Celtic polled allele](#open-the-celtic-polled-allele-at-polled).
 
 | What it is                                                    | File                                               |
 | ------------------------------------------------------------- | -------------------------------------------------- |

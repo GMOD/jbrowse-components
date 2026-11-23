@@ -65,7 +65,9 @@ canFam4 genetic map published separately.
 
 The tracks below read local files that the
 [build script](#reproduce-it-end-to-end) writes from these, fetching each
-itself, so run it first, or run _The files FLARE reads and writes_ on a phased
+itself, so run it first, or follow
+[Paint each haplotype's ancestry with FLARE](#paint-each-haplotypes-ancestry-with-flare)
+on a phased
 VCF, reference panels and genetic map of your own.
 
 | What it is                                                                                                                            | File                                                                                                                                                            |

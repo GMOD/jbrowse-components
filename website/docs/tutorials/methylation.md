@@ -47,7 +47,9 @@ bucket.
 
 You don't need these files to follow the page: the track configs below read
 slices we host, cut from them. Reads of your own with `MM` and `ML` tags load by
-swapping `uri`, as _Per-read methylation from the alignments_ shows.
+swapping `uri`, as
+[Color each read by its methylation calls](#color-each-read-by-its-methylation-calls)
+shows.
 
 <details>
 <summary>The files</summary>

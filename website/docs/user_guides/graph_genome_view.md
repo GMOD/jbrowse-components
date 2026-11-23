@@ -151,7 +151,7 @@ track:
 }
 ```
 
-[Configuring the graph track](/docs/tutorials/pangenome_prepare_graph#the-two-indexes-a-graph-track-reads)
+[Configure the graph track](/docs/tutorials/pangenome_prepare_graph#the-two-indexes-a-graph-track-reads)
 explains the adapter's keys, including the `assemblyNameToPanSN` mapping that
 HPRC's graph needs because it calls the reference `GRCh38` while the assembly is
 `hg38`. The E. coli graph's stable names are PanSN (`K12#1#chr`), with the
@@ -376,7 +376,7 @@ A graph with walks, such as a GBZ cut or a GFA with P or W lines, adds:
   the walk, one color, reference position, or each pass through repeated nodes
 
 For three haplotypes' threads at one locus, see
-[Following haplotypes through C4](/docs/tutorials/pangenome_hprc#haplotype-threads).
+[Follow haplotypes through C4](/docs/tutorials/pangenome_hprc#haplotype-threads).
 
 A gbz-base track draws one lane per haplotype, and **Display types → Graph** in
 its track menu draws the same track as a graph of the haplotypes' walks:

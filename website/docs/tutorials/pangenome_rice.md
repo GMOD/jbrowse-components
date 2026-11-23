@@ -78,8 +78,8 @@ assemblies are NCBI GenBank records, listed with their accessions in the
 [README](https://jbrowse.org/demos/rice_pangenome/README.txt) beside the files.
 
 Nothing to download: the track configs below read the files by URL.
-[Building the rice graph](#build-the-rice-graph) and
-[Making the callset](#make-the-callset) build them from assemblies of your
+[Build the rice graph](#build-the-rice-graph) and
+[Make the callset](#make-the-callset) build them from assemblies of your
 own.
 
 <details>

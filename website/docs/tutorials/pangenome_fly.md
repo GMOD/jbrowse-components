@@ -83,8 +83,8 @@ listed with their accessions in the
 [README](https://jbrowse.org/demos/fly_pangenome/README.txt) beside the files.
 
 Nothing to download: the track configs below read the files by URL.
-[Building the fly graph](#build-the-fly-graph) and
-[Making the callset](#make-the-callset) build them from assemblies of your
+[Build the fly graph](#build-the-fly-graph) and
+[Make the callset](#make-the-callset) build them from assemblies of your
 own.
 
 <details>

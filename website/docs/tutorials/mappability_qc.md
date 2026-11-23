@@ -41,7 +41,7 @@ ONT long-read release
 You don't need these files to follow the page: the track configs below read the
 hosted results. The [build script](#reproduce-it-end-to-end) streams them to
 take its counts.
-[Applying the mappability check to another locus](#apply-the-mappability-check-to-another-locus)
+[Apply the mappability check to another locus](#apply-the-mappability-check-to-another-locus)
 runs the same check on your own locus and reads.
 
 | What it is                                                                                                                         | File                                                                                                                                                                                                  |

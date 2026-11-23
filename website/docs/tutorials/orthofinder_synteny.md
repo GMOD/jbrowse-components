@@ -612,8 +612,7 @@ rewrites, is in its
 ## Run it on your own genomes {#your-own-genomes}
 
 The [build script](#reproduce-it-end-to-end) maps a set name to the NCBI
-assemblies it downloads. Your own genomes
-need a FASTA and a GFF3 per genome.
+assemblies it downloads. Your own genomes need a FASTA and a GFF3 per genome.
 [gffread](https://github.com/gpertea/gffread) translates each CDS into the
 proteome and prints the transcript-to-gene map and FASTA index alongside.
 

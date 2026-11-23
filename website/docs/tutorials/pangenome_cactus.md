@@ -684,7 +684,7 @@ runs everything above in one shot. It:
 - converts the HAL, VCF, `odgi depth` and `odgi pav` into the projections above,
   and maps the KTa004 reads
 - indexes the base-level graph by following the reference's paths, with the
-  command under [Indexing the graph](#index-the-graph)
+  command under [Index the graph](#index-the-graph)
 - writes a `config.json` with the assemblies, per-strain gene tracks, the
   projection and segments tracks, the plugin declaration and a default session
 

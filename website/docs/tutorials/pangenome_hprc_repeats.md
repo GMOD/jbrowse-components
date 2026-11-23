@@ -596,7 +596,7 @@ duckdb -json -c "
 ```
 
 The amylase build runs the commands under
-[Each haplotype aligned to the next](#amylase-stack) for the haplotypes in that
+[Stack the amylase haplotypes in a synteny view](#amylase-stack) for the haplotypes in that
 session and hg38. It:
 
 1. reads where each haplotype's walk crosses a single-copy window on either side
