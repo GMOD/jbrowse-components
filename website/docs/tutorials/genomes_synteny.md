@@ -22,7 +22,7 @@ inversion. We:
 - turn on a multi-way liftOver track and choose which genomes become its lanes
 - reorder the lanes to put one person's two haplotypes side by side
 
-## Opening a liftOver track
+## Turn on a liftOver track
 
 We'll start on hg38, where the track selector lists one liftOver track per
 genome UCSC aligned hg38 to:
@@ -35,7 +35,7 @@ genome UCSC aligned hg38 to:
 The liftOver track has one feature per chain block. The hg38 config declares one
 assembly, and the site loads the other genome's config when a track names it.
 
-## Launching a synteny view
+## Launch a synteny view
 
 Right-click any chain block and choose **Launch → Linear synteny view with
 \<assembly\>**. <!-- menu-path-ok --> The dialog frames the second panel:
@@ -58,7 +58,7 @@ pick **Launch → Linear synteny view...**, whose dialog offers every assembly t
 session's synteny datasets align to it. See
 [the linear synteny view guide](/docs/user_guides/linear_synteny_view#from-a-locus-you-are-already-looking-at).
 
-## Ribbon display settings
+## Draw the ribbons as curves
 
 The synteny view's settings menu, the sliders button in its header, holds the
 ribbon settings. **Curved lines** draws each ribbon as a curve, easier to follow
@@ -67,7 +67,7 @@ across a gap. Insertions and deletions inside each block are see-through gaps;
 
 <Figure src="/img/genomes_synteny/ribbon_settings.png" links="As it opens=genomes_synteny/ribbons_default,Curved=genomes_synteny/ribbons_curved" caption="The TNNT3 comparison before and after Curved lines, with the menu open on top." />
 
-## The TNNT3 rearrangement by strand
+## Color the TNNT3 rearrangement by strand
 
 _TNNT3_ is the locus of Fig 5C in Aganezov et al. (2022). Against GRCh38 the
 region reads as an inversion plus a deletion. The palette button in the view
@@ -77,7 +77,7 @@ the second color.
 
 <Figure caption="hg38 (top) against hs1 (bottom) at TNNT3, colored by strand, with LINC01150 shaded in each." src="/img/synteny_hg38_hs1_tnnt3.png" />
 
-## Launching hg38 against chimp at an FTO intron
+## Launch hg38 against chimp at an FTO intron
 
 Launching a synteny view from a chain block works from any track under
 **Pairwise alignments** → **liftOver**. We'll repeat it against chimp and add
@@ -88,7 +88,7 @@ tracks to the chimp panel:
 - right-click a chain block and launch a synteny view
 - in the chimp panel's track selector, turn on **NCBI RefSeq - RefSeq All** and
   **RepeatMasker**, which come with the panTro6 hub
-- set curves as [above](#ribbon-display-settings)
+- set curves as [above](#draw-the-ribbons-as-curves)
 
 <Figure caption="Launching from the hg38-to-panTro6 liftOver track: right-click a chain block, confirm the framing, launch, then add the chimp panel's tracks." src="/img/genomes_synteny/launch_sequence.png" />
 
@@ -107,7 +107,7 @@ To start from a gene, the site's
 orthologs among the hosted genomes, with a synteny view per row where an
 alignment exists.
 
-## Stacking many genomes under hg38 in one multi-way track {#many-genomes-at-once}
+## Stack many genomes under hg38 in one track {#many-genomes-at-once}
 
 A liftOver track pairs hg38 with one other genome. To compare many genomes at
 once, hg38's staging config also has **hg38 vs 242 genomes (liftOver,
@@ -141,7 +141,7 @@ covers the lane labels, `[rev]`, the ribbons and the lane menus.
 [Synteny (liftOver lanes, vertebrates)](/docs/tutorials/hg38_vertebrates_synteny)
 shows how to build the same kind of track from chains you choose.
 
-## Choosing which mouse strains become lanes at Nnt
+## Choose which mouse strains become lanes at Nnt
 
 Choosing lanes also compares strains within one species. mm39 is C57BL/6J, the
 strain that lost _Nnt_ exons 7 to 11 (Freeman et al. 2006), and its multi-way
@@ -158,7 +158,7 @@ lanes at that gene:
 
 <Figure src="/img/genomes_synteny/mouse_strains_nnt.png" caption="mm39 at Nnt over the Mus assemblies the track holds, the C57BL/6J T2T assembly first." />
 
-## Comparing one person's two haplotypes at the 17q21.31 inversion
+## Compare one person's two haplotypes at 17q21.31
 
 Dragging a lane's label moves it up or down the stack. hg38's multi-way track
 holds both haplotypes of the H9 T2T assembly, so a stack can put one person's
