@@ -74,6 +74,21 @@ test('uses port 9090 if not specified', async () => {
   })
 })
 
+test('serves the install directory given as a positional argument', async () => {
+  await runInTmpDir(async ctx => {
+    await fs.promises.mkdir(path.join(ctx.dir, 'site'))
+    const { stdout } = await runCommand([
+      'admin-server',
+      'site',
+      '--port',
+      '9110',
+    ])
+    expect(fs.existsSync(path.join(ctx.dir, 'site', 'config.json'))).toBe(true)
+    expect(fs.existsSync(path.join(ctx.dir, 'config.json'))).toBe(false)
+    await killServer({ stdout })
+  })
+})
+
 test('throws an error with a negative port', async () => {
   await runInTmpDir(async () => {
     const { error } = await runCommand(['admin-server', '--port', '-10'])

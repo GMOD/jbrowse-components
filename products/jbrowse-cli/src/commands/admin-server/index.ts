@@ -32,14 +32,15 @@ export async function run(args?: string[]) {
     },
     root: {
       type: 'string',
-      description: 'Path to the root of the JB2 installation',
+      description:
+        'Path to the root of the JB2 installation (same as the positional root)',
     },
     bodySizeLimit: {
       type: 'string',
       description: 'Size limit of the update message (default: 25mb)',
     },
   } as const
-  const { values: flags } = parseArgs({
+  const { values: flags, positionals } = parseArgs({
     args,
     options,
     allowPositionals: true,
@@ -55,7 +56,7 @@ export async function run(args?: string[]) {
     '$ jbrowse admin-server -p 8888',
     '',
     '# point at a specific JBrowse installation directory',
-    '$ jbrowse admin-server --root /path/to/jb2/',
+    '$ jbrowse admin-server /path/to/jb2/',
     '',
     '# raise the body size limit for very large config updates',
     '$ jbrowse admin-server --bodySizeLimit 100mb',
@@ -76,13 +77,14 @@ export async function run(args?: string[]) {
       description,
       examples,
       notes,
-      usage: 'jbrowse admin-server [options]',
+      usage: 'jbrowse admin-server [root] [options]',
       options,
     })
     return
   }
 
-  const { root, host, bodySizeLimit = '25mb' } = flags
+  const { host, bodySizeLimit = '25mb' } = flags
+  const root = flags.root ?? positionals[0]
 
   const { outFile, baseDir } = await setupConfigFile({ root })
   const port = parsePort({ portStr: flags.port })
