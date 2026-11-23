@@ -97,6 +97,7 @@ test('an all-vs-all PAF stacks a lane per genome, with ribbons down each gutter'
   expect(t.legend.label).toEqual([
     'Same orientation as lane above',
     'Inverted vs lane above',
+    'Lane sequence',
   ])
   expect(t.legendAlpha).toBe(1)
 })
@@ -186,14 +187,14 @@ test("a reversed anchor region's segment puts each base where its blocks and rib
   }
 })
 
-test("a lane's genome stops its line at the end of its contig", async () => {
+test("a lane's line stops at what it places, and at the end of its contig where its genome is given", async () => {
   const given = await engine.multiway({
     ...ALL_VS_ALL,
     assemblies: [fasta('volvox_del'), fasta('volvox_ins')],
   })
   const bare = await engine.multiway(ALL_VS_ALL)
   const del = (t: typeof bare) => indexes(t.segments.lane, l => l === 2)
-  expect(del(bare).map(i => bare.segments.end[i])).toEqual([47_571])
+  expect(del(bare).map(i => bare.segments.end[i])).toEqual([45_141])
   expect(del(given).map(i => given.segments.end[i])).toEqual([45_141])
   expect(given.segments.x2[del(given)[0]!]).toBeLessThan(800)
   await expect(
@@ -323,6 +324,7 @@ test('ribbons color by strand, keyed against the lane above', async () => {
   expect(t.legend.label).toEqual([
     'Same orientation as lane above',
     'Inverted vs lane above',
+    'Lane sequence',
   ])
   expect(new Set(t.ribbons.color)).toEqual(new Set([t.legend.color[0]]))
 })
@@ -330,7 +332,13 @@ test('ribbons color by strand, keyed against the lane above', async () => {
 test('SyRI calls color their ribbons, and a lane unaligned on both sides opens no hole', async () => {
   const t = await engine.multiway(SYRI)
   expect(t.lanes.assembly).toEqual(['Col-0', 'Ler', 'Cvi', 'Eri', 'Kyo', 'Sha'])
-  expect(t.legend.label).toEqual(['SYN', 'INV', 'TRANS, INVTR', 'DUP, INVDP'])
+  expect(t.legend.label).toEqual([
+    'SYN',
+    'INV',
+    'TRANS, INVTR',
+    'DUP, INVDP',
+    'Lane sequence',
+  ])
   const syri = t.ribbons.alignment.map(a => column(t.alignments, 'syri')[a])
   const inverted = indexes(syri, s => s === 'INV')
   expect(inverted.length).toBeGreaterThan(0)
@@ -397,7 +405,7 @@ test('a star of pairwise files draws each lane against the anchor', async () => 
   expect(new Set(t.ribbons.gutter)).toEqual(new Set([0, 1]))
 })
 
-test('a lane reading backwards against the anchor flips, and its ribbons run straight', async () => {
+test('a lane reading backwards against the anchor flips, its ribbons run straight, and its line stops at what it places', async () => {
   const dir = mkdtempSync(path.join(tmpdir(), 'multiway-'))
   const file = path.join(dir, 'flip.paf')
   const row = (i: number, strand: string, mate: string, from: number) =>
@@ -440,7 +448,7 @@ test('a lane reading backwards against the anchor flips, and its ribbons run str
   })
   expect(t.lanes.assembly).toEqual(['A', 'B'])
   expect(t.lanes.flipped).toEqual([false, true])
-  expect([t.segments.x1[1], t.segments.x2[1]]).toEqual([800, 0])
+  expect([t.segments.x1[1], t.segments.x2[1]]).toEqual([720, 0])
   expect(t.ribbons.upperX1).toEqual(t.ribbons.lowerX1)
   expect(new Set(t.ribbons.color)).toEqual(new Set([t.legend.color[1]]))
   expect(new Set(t.ribbons.gutter)).toEqual(new Set([0]))

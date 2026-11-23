@@ -144,6 +144,7 @@ function render(gene: SimpleFeature, geneGlyphMode: 'all' | 'representative') {
       spanOf: (_refName: string, start: number, end: number) => [start, end],
       spansOf: (_refName: string, start: number, end: number) => [[start, end]],
       baseline: [[0, 1000]],
+      holes: [],
       canon: (refName: string) => refName,
       placements: new Map(),
     } as unknown as Lane,

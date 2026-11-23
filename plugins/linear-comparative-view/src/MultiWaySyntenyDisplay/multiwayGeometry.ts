@@ -1083,16 +1083,11 @@ export interface LaneGlyphColors {
   sequence: string
 }
 
-/** px thick, an alignment lane's sequence bar */
 export const SEQUENCE_BAR_PX = 3
 const JOIN_DASH_PX = 4
 const JOIN_GAP_PX = 3
 
-/**
- * Whether a lane draws its sequence as a bar: a mate lane placing alignments,
- * whose baseline is its own contig. A gene lane's baseline is its gene row's
- * centre line.
- */
+/** a gene lane's baseline is its gene row's centre line */
 export function drawsSequenceBar(lane: Lane) {
   return (
     !lane.isAnchor &&
@@ -1103,30 +1098,20 @@ export function drawsSequenceBar(lane: Lane) {
   )
 }
 
-/**
- * An alignment lane's baseline: a bar over each stretch of its sequence, and
- * across each hole between two stretches a dashed join, the ends either side
- * being adjacent bases of the lane
- */
 function addSequenceBar(
   glyphs: GlyphBuilder,
-  baseline: readonly Span[],
+  { baseline, holes }: Pick<Lane, 'baseline' | 'holes'>,
   centerY: number,
   bar: number,
   join: number,
 ) {
-  const spans = baseline.toSorted((a, b) => a[0] - b[0])
-  for (const [k, [x1, x2]] of spans.entries()) {
+  for (const [x1, x2] of baseline) {
     glyphs.rect(x1, x2, centerY - SEQUENCE_BAR_PX / 2, SEQUENCE_BAR_PX, bar)
-    const next = spans[k + 1]
-    for (let x = x2; next && x < next[0]; x += JOIN_DASH_PX + JOIN_GAP_PX) {
-      glyphs.rect(
-        x,
-        Math.min(x + JOIN_DASH_PX, next[0]),
-        centerY - 0.5,
-        1,
-        join,
-      )
+  }
+  for (const [a, b] of holes) {
+    const end = Math.max(a, b)
+    for (let x = Math.min(a, b); x < end; x += JOIN_DASH_PX + JOIN_GAP_PX) {
+      glyphs.rect(x, Math.min(x + JOIN_DASH_PX, end), centerY - 0.5, 1, join)
     }
   }
 }
@@ -1304,7 +1289,7 @@ export function buildLaneCells({
   if (genes.length === 0 && drawsSequenceBar(lane)) {
     addSequenceBar(
       glyphs,
-      lane.baseline,
+      lane,
       centerY,
       cssColorToABGR(colors.sequence),
       stroke,

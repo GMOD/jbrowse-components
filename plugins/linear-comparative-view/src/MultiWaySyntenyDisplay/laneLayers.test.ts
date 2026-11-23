@@ -123,6 +123,7 @@ function laneAt(assemblyName: string, overrides: Partial<Lane> = {}): Lane {
     bpPerPx: 1,
     canon: refName => refName,
     baseline: [],
+    holes: [],
     glyphTop: 0,
     bandTop: 0,
     layerTop: 0,

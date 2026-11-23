@@ -525,14 +525,14 @@ function laneTables(
         const r = axis.regions[k]!
         segment(i, r.refName, r.start, r.end, span)
       })
-    } else if (frame) {
+    } else if (frame && l.sequence) {
       const openings = frameOpenings(frame)
       const lo = Math.max(
-        l.contig?.start ?? 0,
+        l.sequence.start,
         Math.ceil(laneBpOfOpened(openings, frame.min)),
       )
       const hi = Math.min(
-        l.contig?.end ?? Number.POSITIVE_INFINITY,
+        l.sequence.end,
         Math.floor(laneBpOfOpened(openings, frame.max)),
       )
       for (const s of frameSegments(frame, lo, hi, width)) {

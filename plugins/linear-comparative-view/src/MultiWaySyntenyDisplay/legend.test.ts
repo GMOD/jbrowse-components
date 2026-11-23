@@ -183,25 +183,17 @@ test('the strand key names the genome each lane is read against', () => {
 })
 
 test('the lane key names the sequence bar, and the dashed join only where a hole is drawn', () => {
-  const labels = (baselines: [number, number][][]) =>
+  const labels = (holes: [number, number][][]) =>
     laneSequenceKey(
-      baselines.map(baseline => ({ baseline })),
+      holes.map(lane => ({ holes: lane })),
       'haplotype',
       'grey',
     ).flatMap(scale =>
       scale.kind === 'categorical' ? scale.entries.map(e => e.label) : [],
     )
   expect(labels([])).toEqual([])
-  expect(labels([[[0, 100]]])).toEqual(['Haplotype sequence'])
-  expect(
-    labels([
-      [[0, 100]],
-      [
-        [0, 40],
-        [60, 100],
-      ],
-    ]),
-  ).toEqual([
+  expect(labels([[]])).toEqual(['Haplotype sequence'])
+  expect(labels([[], [[40, 60]]])).toEqual([
     'Haplotype sequence',
     'Dashed: no haplotype sequence; the ends are adjacent',
   ])

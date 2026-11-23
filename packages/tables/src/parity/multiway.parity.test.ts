@@ -480,12 +480,6 @@ describe('volvox, the export given no lane genomes', () => {
     {
       name: 'defaults',
       config: {},
-      drifts: {
-        segments: {
-          owner: 'multiway lane genomes not given',
-          exported: [[[0, 800]], [[0, 800]], [[38.879, 800]]],
-        },
-      },
     },
   ])
 })

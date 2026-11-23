@@ -5,12 +5,15 @@ import { inlineNameRise } from './laneHeader.ts'
 import { GENE_LABEL_FONT_PX, GENE_LABEL_GAP_PX } from './laneLabels.ts'
 import { shownFrame } from './laneMotion.ts'
 import {
+  frameOpenings,
   frameReachPx,
   frameBpPerPx,
   frameSegments,
   frameSpan,
   frameSpans,
   groupRunSpansOnRow,
+  openedBp,
+  openedX,
 } from './layoutMultiWay.ts'
 
 import type {
@@ -156,6 +159,10 @@ export interface Lane {
   contig?: { start: number; end: number }
   /** px the baseline draws over, a screen either side at most */
   baseline: Span[]
+  /** the stretch of a mate lane's contig its baseline draws, in lane bp */
+  sequence?: { start: number; end: number }
+  /** px of each hole inside `sequence`, which a dashed join crosses */
+  holes: Span[]
   glyphTop: number
   bandTop: number
   layerTop: number
@@ -221,33 +228,52 @@ function clipSpan([a, b]: Span, [lo, hi]: Span): Span[] {
 
 const WHOLE = { start: Number.NEGATIVE_INFINITY, end: Number.POSITIVE_INFINITY }
 
-/**
- * The stretch of a lane's contig its baseline draws: the whole contig where
- * the session holds its assembly; else, on a lane placing alignments, the
- * hull of what it places, since past that the records state nothing of the
- * contig; else the whole frame, a gene row's centre line
- */
+/** past what an alignment lane places, its records state nothing of its contig */
 function sequenceExtent(
   contig: { start: number; end: number } | undefined,
-  placements: ReadonlyMap<string, LaneGroup>,
+  groups: readonly PlacedGroup[],
+  lane: string,
+  refName: string,
 ) {
   let start = Number.POSITIVE_INFINITY
   let end = Number.NEGATIVE_INFINITY
   let aligned = false
-  for (const { group, intervals } of placements.values()) {
-    aligned ||= !isNamedRecord(group.feature)
-    for (const interval of intervals) {
-      start = Math.min(start, interval.start)
-      end = Math.max(end, interval.end)
+  for (const { feature, mates } of groups) {
+    for (const p of mates.get(lane) ?? []) {
+      if (p.refName === refName) {
+        aligned ||= !isNamedRecord(feature)
+        start = Math.min(start, p.start, p.end)
+        end = Math.max(end, p.start, p.end)
+      }
     }
   }
   return contig
-    ? [contig]
+    ? contig
     : !aligned
-      ? [WHOLE]
+      ? WHOLE
       : end > start
-        ? [{ start, end }]
-        : []
+        ? { start, end }
+        : undefined
+}
+
+function holesIn(
+  frame: RowFrame,
+  sequence: { start: number; end: number },
+  width: number,
+  clip: Span,
+) {
+  const openings = frameOpenings(frame)
+  return openings
+    .filter(({ at }) => at > sequence.start && at < sequence.end)
+    .flatMap(({ at }) =>
+      clipSpan(
+        [
+          openedX(frame, openedBp(openings, at), width),
+          openedX(frame, openedBp(openings, at, true), width),
+        ],
+        clip,
+      ),
+    )
 }
 
 export function buildLanes({
@@ -322,6 +348,10 @@ export function buildLanes({
         }
       }
 
+      const sequence =
+        frame && !isAnchor
+          ? sequenceExtent(contig, groups, assemblyName, frame.refName)
+          : undefined
       return {
         assemblyName,
         label: labelOf(assemblyName),
@@ -352,12 +382,17 @@ export function buildLanes({
         baseline: isAnchor
           ? anchorRegionSpans.flatMap(span => clipSpan(span, reach))
           : frame
-            ? sequenceExtent(contig, placements).flatMap(({ start, end }) =>
-                frameSegments(frame, start, end, width).flatMap(({ px }) =>
-                  clipSpan(px, clip),
-                ),
-              )
+            ? sequence
+              ? frameSegments(
+                  frame,
+                  sequence.start,
+                  sequence.end,
+                  width,
+                ).flatMap(({ px }) => clipSpan(px, clip))
+              : []
             : [clip],
+        ...(sequence ? { sequence } : {}),
+        holes: frame && sequence ? holesIn(frame, sequence, width, clip) : [],
         strandRows: !strandRows
           ? undefined
           : frame &&

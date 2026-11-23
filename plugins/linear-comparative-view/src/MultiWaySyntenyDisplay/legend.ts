@@ -252,7 +252,7 @@ export function ribbonColorScales(
  * are, and, where a lane draws one, the dashed join across a hole
  */
 export function laneSequenceKey(
-  barred: readonly { baseline: readonly Span[] }[],
+  barred: readonly { holes: readonly Span[] }[],
   noun: string,
   color: string,
 ): ColorScale[] {
@@ -267,7 +267,7 @@ export function laneSequenceKey(
               label: `${noun[0]!.toUpperCase()}${noun.slice(1)} sequence`,
               color,
             },
-            ...(barred.some(lane => lane.baseline.length > 1)
+            ...(barred.some(lane => lane.holes.length > 0)
               ? [
                   {
                     value: 'join',

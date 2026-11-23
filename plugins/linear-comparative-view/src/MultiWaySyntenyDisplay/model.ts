@@ -2511,7 +2511,11 @@ export function stateModelFactory(
        */
       get laneSequenceScales(): ColorScale[] {
         return laneSequenceKey(
-          self.laneStack.lanes.filter(drawsSequenceBar),
+          self.laneStack.lanes.filter(
+            lane =>
+              drawsSequenceBar(lane) &&
+              !self.laneGenes.held.get(lane.assemblyName)?.genes.length,
+          ),
           headerDeclaresHaplotypeLanes(self.adapterHeader)
             ? 'haplotype'
             : 'lane',

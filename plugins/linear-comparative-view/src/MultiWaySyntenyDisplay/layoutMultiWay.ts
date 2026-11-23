@@ -1434,7 +1434,7 @@ export function frameBpPerPx(frame: RowFrame, width: number) {
   return (frame.max - frame.min) / width
 }
 
-function openedX(frame: RowFrame, opened: number, width: number) {
+export function openedX(frame: RowFrame, opened: number, width: number) {
   const t = (opened - frame.min) / (frame.max - frame.min)
   return frame.flipped ? width * (1 - t) : width * t
 }
