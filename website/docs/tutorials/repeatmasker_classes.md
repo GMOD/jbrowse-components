@@ -56,7 +56,7 @@ Nothing to download: the track configs read their files by URL. The
 [build script](#reproduce-it-end-to-end) takes a genome of your own, as its
 FASTA and RepeatMasker's `.out`.
 
-## Switching hg38's RepeatMasker track to one row per class
+## Switch hg38's RepeatMasker track to one row per class
 
 We'll open hg38 on [genomes.jbrowse.org](https://genomes.jbrowse.org) and switch
 the track:
@@ -80,25 +80,7 @@ each would make, `repFamily` among them. <!-- menu-path-ok -->
 
 <Figure caption="Top: RepeatMasker colored by repClass in one packed row. Bottom: the same track with one row per repClass." src="/img/cookbook_color_by_type_two_ways.png"/>
 
-## Where UCSC and GenArk hubs store the repeat class
-
-The multi-row display's `rows` assigns one row per value of a `field`, and on a
-GenArk genome the switch above needs that field spelled out, because UCSC
-golden-path and GenArk hubs store the repeat class in different places:
-
-- A **UCSC golden-path** assembly ships a BED whose header names its columns,
-  `repClass` among them. That column is a feature attribute, so `rows` is
-  `"repClass"`.
-- A **GenArk** assembly ships a `bigRmskBed`, whose autoSql has no class column.
-  The name contains the class as a suffix, `L1HS#LINE/L1`, so `rows` derives it
-  with a jexl expression, `"jexl:split(split(feature.name,'#')[1],'/')[0]"`;
-  [](/docs/user_guides/multirow_feature_track#when-the-category-is-not-a-column)
-  works through it.
-
-In both cases JBrowse builds the rows from the values in the window, so a window
-with no satellite repeats has no satellite row.
-
-## Pinning row order and colors in a track config
+## Pin row order and colors in a track config
 
 A track config can open the track in the partitioned view, and two settings keep
 the rows stable as the window's class list changes. `rows.sort` lists the
@@ -144,7 +126,21 @@ ones. `rows.colors` pins a color on the label bar of each class it names.
 }
 ```
 
-The rows come from the classes in the file, so a class missing from
+`rows.field` names where the class is stored, and UCSC golden-path and GenArk
+hubs store it in different places, so on a GenArk genome the menu switch above
+needs the field spelled out too:
+
+- A **UCSC golden-path** assembly ships a BED whose header names its columns,
+  `repClass` among them. That column is a feature attribute, so `rows` is
+  `"repClass"`.
+- A **GenArk** assembly ships a `bigRmskBed`, whose autoSql has no class column.
+  The name contains the class as a suffix, `L1HS#LINE/L1`, so `rows` derives it
+  with a jexl expression, `"jexl:split(split(feature.name,'#')[1],'/')[0]"`;
+  [](/docs/user_guides/multirow_feature_track#when-the-category-is-not-a-column)
+  works through it.
+
+In both cases JBrowse builds the rows from the values in the window, so a window
+with no satellite repeats has no satellite row, and a class missing from
 `rows.colors` still gets a row, as `Unknown` does in the figures, painted in the
 default block color. `scale.unknown` in `rows.color` sets one color for every
 unnamed row.
@@ -153,7 +149,7 @@ The track opens with the first display listed, so the multi-row entry makes rows
 the default. A bare `{ "type": "LinearBasicDisplay" }` ahead of it keeps the
 packed form as the default and leaves the rows one menu click away.
 
-## Serving your own RepeatMasker output
+## Serve your own RepeatMasker output {#serving-your-own-repeatmasker-output}
 
 A hub's RepeatMasker BED has the `repClass` column the display partitions on.
 RepeatMasker's `.out` file instead has a single `class/family` field, `LINE/L1`
