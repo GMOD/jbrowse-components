@@ -8,51 +8,15 @@ import type {
 
 export type { Track } from '@jbrowse/text-indexing-core'
 
-export interface IndexedFastaAdapter {
-  type: 'IndexedFastaAdapter'
-  fastaLocation: UriLocation
-  faiLocation: UriLocation
-}
-
-export interface BgzipFastaAdapter {
-  type: 'BgzipFastaAdapter'
-  fastaLocation: UriLocation
-  faiLocation: UriLocation
-  gziLocation: UriLocation
-}
-
-export interface TwoBitAdapter {
-  type: 'TwoBitAdapter'
-  twoBitLocation: UriLocation
-}
-
-export interface ChromeSizesAdapter {
-  type: 'ChromSizesAdapter'
-  chromSizesLocation: UriLocation
-}
-
-export interface CustomSequenceAdapter {
+export interface AdapterConfig {
   type: string
-}
-
-export interface RefNameAliasAdapter {
-  type: 'RefNameAliasAdapter'
-  location: UriLocation
-}
-
-export interface CustomRefNameAliasAdapter {
-  type: string
+  [key: string]: unknown
 }
 
 export interface Sequence {
   type: 'ReferenceSequenceTrack'
   trackId: string
-  adapter:
-    | IndexedFastaAdapter
-    | BgzipFastaAdapter
-    | TwoBitAdapter
-    | ChromeSizesAdapter
-    | CustomSequenceAdapter
+  adapter: AdapterConfig
 }
 
 export interface Assembly {
@@ -61,7 +25,7 @@ export interface Assembly {
   aliases?: string[]
   sequence: Sequence
   refNameAliases?: {
-    adapter: RefNameAliasAdapter | CustomRefNameAliasAdapter
+    adapter: AdapterConfig
   }
   refNameColors?: string[]
 }
