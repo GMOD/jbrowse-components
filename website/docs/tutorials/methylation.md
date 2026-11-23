@@ -60,7 +60,7 @@ swapping `uri`, as _Per-read methylation from the alignments_ shows.
 
 </details>
 
-## Loading GRCh38
+## Load GRCh38
 
 The track's `assemblyNames` has to name the assembly the reads were aligned to,
 GRCh38.
@@ -109,7 +109,7 @@ The figures also show UCSC's CpG islands and the NCBI RefSeq genes:
 }
 ```
 
-## Per-read methylation from the alignments
+## Color each read by its methylation calls
 
 Every view below is at `chr15:24,948,000-24,962,000`, the _SNRPN_ imprinting
 center, until the last section widens it. Load the modBAM as an alignments
@@ -195,7 +195,7 @@ subtrack per type, with a vertical bar per CpG on a percent-methylation axis:
 }
 ```
 
-## Splitting the alleles apart
+## Split the alleles apart
 
 Each long read is one DNA molecule, so reads with an `HP` haplotype tag (from
 WhatsHap, HiPhase or ONT's `wf-human-variation`) separate by allele. In
@@ -269,7 +269,7 @@ whatshap haplotag --reference reference.fa -o haplotagged.bam phased.vcf.gz read
 samtools index haplotagged.bam
 ```
 
-## Smoothing across the imprinted domain
+## Smooth across the imprinted domain
 
 A single CpG's fraction rests on the few reads covering it, so per-site values
 scatter from 0 to 100 and a difference spread over many sites is hard to see. A
