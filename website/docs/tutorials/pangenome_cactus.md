@@ -13,8 +13,8 @@ which lays the other strains onto a backbone from one reference, and turn its
 outputs into tracks on the K12 genome.
 [The pggb tutorial](/docs/tutorials/pangenome_ecoli) builds the same strains
 with no reference and takes them through the same sections, so the two builders
-can be compared at the same loci. One `cactus-pangenome` run writes the graph, a
-VCF, an odgi file, a HAL alignment and short-read indexes. We:
+can be compared section by section. One `cactus-pangenome` run writes the graph,
+a VCF, an odgi file, a HAL alignment and short-read indexes. We:
 
 - load the synteny, variants, whole-genome alignment (MAF), depth and per-strain
   presence as tracks on K12, and set both builders' depth in one track
@@ -39,20 +39,21 @@ The graph view is a beta plugin. We welcome your [feedback](/contact).
   [drawing the graph as a graph](#opening-the-graph-in-the-graph-genome-view).
   In your own JBrowse,
   [install it from the plugin store](/docs/user_guides/plugin_store)
-- [`gfa-to-tabix`](https://github.com/GMOD/gfa-to-tabix) 4.0.0 or later, for
+- [`gfa-to-tabix`](https://github.com/GMOD/gfa-to-tabix) 5.0.0 or later, for
   [indexing the graph](#indexing-the-graph)
 - for the [whole build](#reproduce-it-end-to-end): the NCBI
   [`datasets`](https://www.ncbi.nlm.nih.gov/datasets/docs/v2/download-and-install/)
-  CLI, `bedGraphToBigWig` (UCSC kentUtils), `samtools`, `unzip` and `wget`
+  CLI, `bedGraphToBigWig` (UCSC kentUtils), `samtools`, `unzip`, `wget` and
+  ImageMagick, which the script uses to annotate its graph figure
 
-<!-- BEGIN GENERATED TUTORIAL_INSTALL samtools,htslib,node,jbrowse-cli,bedGraphToBigWig,datasets,gfa-to-tabix,imagemagick -->
+<!-- BEGIN GENERATED TUTORIAL_INSTALL samtools,htslib,node,jbrowse-cli,bedGraphToBigWig,datasets,gfa-to-tabix -->
 
 ```bash
 # Debian/Ubuntu
-sudo apt install samtools tabix nodejs imagemagick
+sudo apt install samtools tabix nodejs
 # or conda, which has every tool above
 conda install -c bioconda -c conda-forge samtools htslib nodejs \
-  ucsc-bedgraphtobigwig ncbi-datasets-cli imagemagick
+  ucsc-bedgraphtobigwig ncbi-datasets-cli
 # or Linux x86_64 binaries for the tools apt lacks
 wget -P ~/.local/bin \
   https://hgdownload.soe.ucsc.edu/admin/exe/linux.x86_64/bedGraphToBigWig \
@@ -64,7 +65,7 @@ cargo install gfa-to-tabix
 npm install -g @jbrowse/cli@next
 ```
 
-<!-- END GENERATED TUTORIAL_INSTALL samtools,htslib,node,jbrowse-cli,bedGraphToBigWig,datasets,gfa-to-tabix,imagemagick -->
+<!-- END GENERATED TUTORIAL_INSTALL samtools,htslib,node,jbrowse-cli,bedGraphToBigWig,datasets,gfa-to-tabix -->
 
 ## The data
 
@@ -337,7 +338,9 @@ writes one line per block, which a
 }
 ```
 
-<Figure caption="The HAL projected onto K12 as a MAF, one row per strain, colored where each differs from K12." src="/img/pangenome_cactus/maf.png" />
+Type `chr:2,554,000-2,570,000`.
+
+<Figure caption="The HAL projected onto K12 as a MAF over chr:2,554,000-2,570,000, one row per strain, colored where each differs from K12." src="/img/pangenome_cactus/maf.png" />
 
 A row with no colored columns shares its sequence with K12, and a row that stops
 has no alignment to K12 there; the coverage band shows which case applies.
@@ -475,6 +478,9 @@ gene copy):
 
 <Figure caption="odgi depth over the rrnC operon against each builder's graph, on one axis." src="/img/pangenome_cactus/builders.png" />
 
+pggb's curve doubles to about 10 over the operon. Minigraph-Cactus's curve sits
+near 4 across the whole window, one path below the strain count.
+
 ## Mapping a new isolate through the graph
 
 We'll map the short reads of a sample outside the graph through the whole
@@ -553,21 +559,23 @@ the two derived files before re-mapping.
 
 The [graph genome view plugin](/docs/user_guides/graph_genome_view) draws the
 graph as a track of the linear view. [](/docs/tutorials/pangenome_prepare_graph)
-covers installing the plugin and the one command that indexes a graph for it.
+covers installing the plugin and the commands that index a graph for it.
 
 ### Indexing the graph
 
-[`gfa-to-tabix build`](https://github.com/GMOD/gfa-to-tabix/blob/main/docs/subcommands.md#build)
-indexes the base-level graph, where every SNP is a bubble. That GFA has no rGFA
-tags, so `--reference` makes the command place segments by following the
-reference's path lines:
+[`gfa-to-tabix`](https://github.com/GMOD/gfa-to-tabix) indexes the base-level
+graph, where every SNP is a bubble. That GFA has no rGFA tags, so `--reference`
+makes the command place segments by following the reference's path lines:
+
+<!-- from: scripts/build_ecoli_pangenome_cactus.sh -->
 
 ```bash
-gfa-to-tabix build mc/ecoli.gfa.gz -o ecoli_cactus --reference K12
+# --layout contig: each segment under its coordinate on its strain's contig
+gfa-to-tabix mc/ecoli.gfa.gz --layout contig --reference K12 -o ecoli_cactus
 ```
 
-Without `--snarls` the command writes no bubble file, and the index is in the
-contig layout; the `uri` below is our hosted copy.
+The command writes the segment and link index alone, with no bubble file or
+coarse tier; the `uri` below is our hosted copy.
 
 ```json addtrack
 {
@@ -677,9 +685,8 @@ runs everything above in one shot. It:
    runs `cactus-pangenome`
 2. converts the HAL, VCF, `odgi depth` and `odgi pav` into the projections
    above, and maps the KTa004 reads
-3. indexes the base-level graph by following the reference's paths, as
-   [the graph-hosting tutorial](/docs/tutorials/pangenome_prepare_graph#reproduce-it-end-to-end)
-   describes
+3. indexes the base-level graph by following the reference's paths, with the
+   command under [Indexing the graph](#indexing-the-graph)
 4. writes a `config.json` with the assemblies, per-strain gene tracks, the
    projection and segments tracks, the plugin declaration and a default session
 
