@@ -148,7 +148,10 @@ test('fails if user selects a directory that has existing files', async () => {
 
 test('fails if the fetch does not return the right file', async () => {
   await runInTmpDir(async () => {
-    mockFetch({ headers: { 'content-type': 'application/json' } })
+    mockFetch({
+      headers: { 'content-type': 'application/zip' },
+      arrayBuffer: new TextEncoder().encode('{}').buffer,
+    })
     const { error } = await runCommand([
       'create',
       'jbrowse',
@@ -231,6 +234,24 @@ test('downloads from a url', async () => {
   await runInTmpDir(async ctx => {
     mockFetch({
       headers: { 'content-type': 'application/zip' },
+      arrayBuffer: readZipAsArrayBuffer(),
+    })
+    await runCommand([
+      'create',
+      'jbrowse',
+      '--url',
+      'https://example.com/jbrowse-web-v0.0.1.zip',
+    ])
+    expect(await readdir(path.join(ctx.dir, 'jbrowse'))).toContain(
+      'manifest.json',
+    )
+  })
+})
+
+test('downloads a zip a server labels application/x-zip-compressed', async () => {
+  await runInTmpDir(async ctx => {
+    mockFetch({
+      headers: { 'content-type': 'application/x-zip-compressed' },
       arrayBuffer: readZipAsArrayBuffer(),
     })
     await runCommand([

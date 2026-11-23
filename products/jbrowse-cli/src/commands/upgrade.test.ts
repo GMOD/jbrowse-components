@@ -176,7 +176,10 @@ test('fails to upgrade if version does not exist', async () => {
 })
 test('fails if the fetch does not return the right file', async () => {
   await runInTmpDir(async () => {
-    mockFetch({ headers: { 'content-type': 'application/json' } })
+    mockFetch({
+      headers: { 'content-type': 'application/zip' },
+      arrayBuffer: new TextEncoder().encode('{}').buffer,
+    })
     await writeFile('manifest.json', '{"name":"JBrowse"}')
     const { stderr } = await runCommand([
       'upgrade',
@@ -205,7 +208,7 @@ test('--clean leaves static in place when the download is not a zip', async () =
       'https://example.com/JBrowse2-0.0.1.zip',
     ])
 
-    expect(error?.message).toContain('Corrupt ZIP')
+    expect(error?.message).toContain('does not seem to be a JBrowse')
     expect(
       await readFile(path.join(ctx.dir, 'static', 'main.js'), 'utf8'),
     ).toBe('old build')

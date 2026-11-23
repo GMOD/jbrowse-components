@@ -331,9 +331,7 @@ export async function installRelease(
   beforeWrite?: () => void,
 ) {
   const locationUrl = await resolveReleaseUrl(flags)
-  const files = readZipFiles(
-    await fetchReleaseArchive(locationUrl, !!flags.url),
-  )
+  const files = readZipFiles(await fetchReleaseArchive(locationUrl))
   beforeWrite?.()
   await writeZipFiles(files, destPath)
   console.log(`Unpacked ${locationUrl} at ${destPath}`)
@@ -344,10 +342,7 @@ export async function printVersions() {
   console.log(`All JBrowse versions:\n${versions.join('\n')}`)
 }
 
-async function fetchReleaseArchive(
-  locationUrl: string,
-  validateZipContentType: boolean,
-) {
+async function fetchReleaseArchive(locationUrl: string) {
   console.log(`Fetching ${locationUrl}...`)
   const response = await fetch(locationUrl)
   if (!response.ok) {
@@ -356,21 +351,18 @@ async function fetchReleaseArchive(
     )
   }
 
-  const type = response.headers.get('content-type')
-  if (
-    validateZipContentType &&
-    type !== 'application/zip' &&
-    type !== 'application/octet-stream'
-  ) {
+  const archive = Buffer.from(await response.arrayBuffer())
+  if (!archive.subarray(0, 4).equals(LOCAL_HEADER_SIG)) {
     throw new Error(
       'The URL provided does not seem to be a JBrowse installation URL',
     )
   }
 
-  return Buffer.from(await response.arrayBuffer())
+  return archive
 }
 
 // ZIP record signatures (little-endian)
+const LOCAL_HEADER_SIG = Buffer.from('PK\x03\x04')
 const EOCD_SIG = 0x06054b50 // end of central directory
 const CDH_SIG = 0x02014b50 // central directory header
 
