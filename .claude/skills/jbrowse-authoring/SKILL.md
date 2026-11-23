@@ -167,6 +167,62 @@ silently, and this is cheaper than a round trip through it.
 3. `https://jbrowse.org/jb2/llms.txt` indexes the rest of the docs if you need
    concepts rather than slots.
 
+## Plotting a file's fields
+
+JBrowse has a grammar of graphics, in the sense of ggplot2 and Vega-Lite, and
+every display speaks part of it with the same names. Reach for it before a
+plugin or a precomputed image whenever the ask is "color by", "split by", "plot
+this column" or "one row per sample".
+
+- **The shared settings** go on any display that declares them, in the track's
+  `displayDefaults` (or a `displays` entry): `encoding.color` (a field through a
+  scale, `{ "field": "strand", "scale": { "type": "ordinal" } }`, or a constant
+  `{ "value": "green" }`), `facet` (a band of rows per value of a field), `rows`
+  (what a row is, its order, labels and colors) and `filter` (a list of
+  predicates or `jexl:` expressions).
+- **A field** is a feature attribute (`score`, a BED `columnNames` column, a GFF
+  attribute), a dotted path (`INFO.SVTYPE`), or a `jexl:` expression over
+  `feature` where no field holds the value.
+- **`LinearMarkDisplay`** is the whole grammar, on a feature, alignments,
+  variant or quantitative track. Its `marks` are layers, each a `bar`, `point`,
+  `rule`, `line`, `rect`, `text` or `link` with an `encoding`; its `transform`
+  steps (`bin`, `aggregate`, `pileup`, `coverage`, `formula`, `filter` and more)
+  compute fields on the way in; and it takes `facet` and `rows` like any
+  display. A BED score as bars colored by strand:
+
+```json
+{
+  "type": "FeatureTrack",
+  "trackId": "scores",
+  "uri": "scores.bed.gz",
+  "assemblyNames": ["hg38"],
+  "displays": [
+    {
+      "type": "LinearMarkDisplay",
+      "displayId": "scores-LinearMarkDisplay",
+      "marks": [
+        {
+          "mark": "bar",
+          "encoding": {
+            "y": "score",
+            "color": { "field": "strand", "scale": { "type": "ordinal" } }
+          }
+        }
+      ]
+    }
+  ]
+}
+```
+
+A `displays` list needs the track's `type`: a track that is only a `uri` takes
+`displayDefaults` and no `displays`. Read
+`https://jbrowse.org/jb2/docs/config_guides/mark_display.md` before writing
+`marks`: it maps each ggplot2 and Vega-Lite idea to this display's spelling, and
+lists the rule ids the validator reports for a mark that cannot draw. A
+display's own page (`config/<type>.md`) says which shared settings it takes. In
+the running app, **Advanced → Edit plot...** in the track menu shows a display's
+plot as text, a quick way to read back a setting you made from a menu.
+
 ## Opening what you authored
 
 **Desktop** takes a config or session path directly, and a second invocation

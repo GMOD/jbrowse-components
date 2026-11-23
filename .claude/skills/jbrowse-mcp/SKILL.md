@@ -1,12 +1,14 @@
 ---
 name: jbrowse-mcp
 description:
-  Use when driving JBrowse Desktop through its MCP server (the "jbrowse" MCP —
-  run_javascript, docs, open, screenshot). Points at the discipline the app
-  itself serves, and carries the repo-only parts.
+  Use when driving a running JBrowse: Desktop through its MCP server (the
+  "jbrowse" MCP — run_javascript, docs, open, screenshot), or a JBrowse Web
+  page through window.jb from Claude in Chrome, Chrome DevTools MCP, Playwright
+  MCP or Puppeteer. Points at the discipline the app itself serves, and carries
+  the repo-only parts.
 ---
 
-# Driving JBrowse Desktop over MCP
+# Driving a running JBrowse
 
 One interface: `run_javascript` executes your code against the live session,
 with `jb` as the standard library; `open`, `screenshot`, and `docs` cover the
@@ -43,6 +45,31 @@ something quietly missing. `screenshot` when the change is visual or the settle
 reports `notReady` or `offscreen`, and actually read the image; for
 show/hide/reorder/navigate/fit the settle plus `jb.sessionSummary()` verifies it
 far cheaper. Verify data claims with `jb.getFeatures`, never from the picture.
+
+## JBrowse Web
+
+Every JBrowse Web page publishes the same `jb` as `window.jb`, beside
+`window.JBrowseSession`, with nothing installed. The discipline above applies
+unchanged; only the way in differs:
+
+- **The user's open tab**: run JavaScript in the page through Claude in Chrome,
+  [Chrome DevTools MCP](https://github.com/ChromeDevTools/chrome-devtools-mcp)
+  or [Playwright MCP](https://github.com/microsoft/playwright-mcp).
+- **A page you launch yourself**: `openJBrowse` from `@jbrowse/capture`, then
+  `page.evaluate` against `jb` (the `jbrowse-capture` skill).
+
+There is no `docs` tool, so:
+
+- After navigating, poll until `window.jb` exists (the app assigns it after its
+  first render), then read `jb.help`.
+- Read the live-model guide as Markdown,
+  `https://jbrowse.org/jb2/docs/agents_live_model.md`, and its **In a browser**
+  section for what differs from Desktop: a track takes a URL, never a local
+  path; the data host must allow CORS; `jb.loadSessionSpec` replaces the stored
+  session; and Claude in Chrome returns the last expression, clips deep results
+  and screenshots with no wait, so `await jb.waitReady()` first.
+- Snippets are at `https://jbrowse.org/jb2/docs/agents_recipes.md`, and the plot
+  vocabulary at `https://jbrowse.org/jb2/docs/config_guides/mark_display.md`.
 
 ## Repo-only
 

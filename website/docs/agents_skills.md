@@ -10,16 +10,16 @@ description:
 The JBrowse repository keeps
 [agent skills](https://github.com/GMOD/jbrowse-components/tree/main/.claude/skills),
 folders with a `SKILL.md` that brief a coding agent before it writes a config,
-picks hosted data, renders a view or drives JBrowse Desktop. The agent loads a
+picks hosted data, renders a view or drives a running JBrowse. The agent loads a
 skill when a task matches its description, so after installing them you ask in
 plain words.
 
-| Skill                                                                                                          | Use it to                                                      |
-| -------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------- |
-| [jbrowse-authoring](https://github.com/GMOD/jbrowse-components/tree/main/.claude/skills/jbrowse-authoring)     | write a config or session spec and check it with the validator |
-| [jbrowse-hosted-data](https://github.com/GMOD/jbrowse-components/tree/main/.claude/skills/jbrowse-hosted-data) | find a hosted assembly and its tracks                          |
-| [jbrowse-capture](https://github.com/GMOD/jbrowse-components/tree/main/.claude/skills/jbrowse-capture)         | render a view to an image and know when it finished drawing    |
-| [jbrowse-mcp](https://github.com/GMOD/jbrowse-components/tree/main/.claude/skills/jbrowse-mcp)                 | drive JBrowse Desktop through its [MCP server](/docs/agents)   |
+| Skill                                                                                                          | Use it to                                                                                                          |
+| -------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------ |
+| [jbrowse-authoring](https://github.com/GMOD/jbrowse-components/tree/main/.claude/skills/jbrowse-authoring)     | write a config or session spec, plot a file's fields with the grammar of graphics, and check it with the validator |
+| [jbrowse-hosted-data](https://github.com/GMOD/jbrowse-components/tree/main/.claude/skills/jbrowse-hosted-data) | find a hosted assembly and its tracks                                                                              |
+| [jbrowse-capture](https://github.com/GMOD/jbrowse-components/tree/main/.claude/skills/jbrowse-capture)         | render a view to an image and know when it finished drawing                                                        |
+| [jbrowse-mcp](https://github.com/GMOD/jbrowse-components/tree/main/.claude/skills/jbrowse-mcp)                 | drive a running JBrowse: Desktop over its [MCP server](/docs/agents), or a JBrowse Web page through `window.jb`    |
 
 ## Install
 
