@@ -855,7 +855,7 @@ $ tabix sorted.bed.gz
 ```text
 Add a connection to a JBrowse 2 configuration
 
-Usage: jbrowse add-connection <connectionUrlOrPath> [options]
+Usage: jbrowse add-connection <connectionUrl> [options]
 
 Options:
   -h, --help                 Show help

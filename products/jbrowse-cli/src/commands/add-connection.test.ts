@@ -27,8 +27,6 @@ async function copyConf(ctx: { dir: string }) {
   )
 }
 
-beforeAll(() => (Date.now = jest.fn(() => 1)))
-
 test('fails if no config file', async () => {
   await runInTmpDir(async () => {
     const { error } = await runCommand([
@@ -116,6 +114,18 @@ test('fails to add a duplicate connection', async () => {
       '{"url":{"uri":"https://mysite.com/custom"},"locationType":"UriLocation"}',
     ])
     expect(error?.message).toMatchSnapshot()
+  })
+})
+
+test('adding the same url twice is a duplicate that --force replaces', async () => {
+  await runInTmpDir(async ctx => {
+    await copyConf(ctx)
+    const args = ['add-connection', 'https://mysite.com/data/hub.txt']
+    await runCommand(args)
+    const { error } = await runCommand(args)
+    expect(error?.message).toMatch(/connection with that connectionId already/)
+    await runCommand([...args, '--force'])
+    expect(readConf(ctx).connections).toHaveLength(1)
   })
 })
 

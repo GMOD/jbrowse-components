@@ -102,7 +102,7 @@ export async function run(args?: string[]) {
 
   const description = 'Add a connection to a JBrowse 2 configuration'
 
-  const usage = 'jbrowse add-connection <connectionUrlOrPath> [options]'
+  const usage = 'jbrowse add-connection <connectionUrl> [options]'
 
   const examples = [
     '# add a JBrowse 1 data directory connection (type inferred from the jbrowse/data path)',
@@ -137,15 +137,15 @@ export async function run(args?: string[]) {
     return
   }
 
-  const connectionUrlOrPath = positionals[0]
-  requirePositional(connectionUrlOrPath, 'connectionUrlOrPath', usage)
+  const connectionUrl = positionals[0]
+  requirePositional(connectionUrl, 'connectionUrl', usage)
 
   const { assemblyNames, type, name, config, connectionId, force } = flags
   const configObj = config ? parseJsonFlag(config, '--config') : undefined
 
   const target = await resolveConfigPath(flags.target, flags.out)
 
-  const url = resolveURL(connectionUrlOrPath)
+  const url = resolveURL(connectionUrl)
   const configContents = await readConfigFile<Config>(target)
   debug(`Using config file ${target}`)
 
@@ -158,7 +158,7 @@ export async function run(args?: string[]) {
   const configType = type || determineConnectionType(url)
   const id =
     connectionId ||
-    [configType, assemblyNames, Date.now()].filter(Boolean).join('-')
+    [configType, assemblyNames, url.href].filter(Boolean).join('-')
 
   // each known connection type stores the URL under its own location slot,
   // written out rather than as the `uri` shorthand so the config also loads on
