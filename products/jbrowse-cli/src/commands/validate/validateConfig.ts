@@ -220,7 +220,7 @@ function checkTrackAliases(
   ctx: Ctx,
 ) {
   for (const [i, track] of tracks.entries()) {
-    const aliases = Array.isArray(track.aliases) ? track.aliases : []
+    const aliases = listOf(track.aliases)
     const trackId = typeof track.trackId === 'string' ? track.trackId : ''
     for (const [j, alias] of aliases.entries()) {
       const where = `tracks[${i}].aliases[${j}]`
@@ -487,15 +487,12 @@ function checkSessionViewTracks(
   where: string,
   report: Report,
 ) {
-  if (!isRecord(view)) {
-    return
-  }
-  if (Array.isArray(view.tracks)) {
-    for (const [i, track] of view.tracks.entries()) {
-      if (!isRecord(track) || !Array.isArray(track.displays)) {
-        continue
-      }
-      for (const [j, display] of track.displays.entries()) {
+  if (isRecord(view)) {
+    for (const [i, track] of listOf(view.tracks).entries()) {
+      for (const [j, display] of (isRecord(track)
+        ? listOf(track.displays)
+        : []
+      ).entries()) {
         if (isRecord(display)) {
           checkSessionDisplay(
             display,
@@ -506,9 +503,7 @@ function checkSessionViewTracks(
         }
       }
     }
-  }
-  if (Array.isArray(view.views)) {
-    for (const [i, sub] of view.views.entries()) {
+    for (const [i, sub] of listOf(view.views).entries()) {
       checkSessionViewTracks(sub, manifest, `${where}.views[${i}]`, report)
     }
   }
@@ -529,12 +524,9 @@ function checkViewReferences(
       `assembly "${assembly}" is not defined in this config${didYouMean(assembly, [...ctx.assemblyNames])}`,
     )
   }
-  if (!Array.isArray(view.tracks)) {
-    return
-  }
   // A LinearSyntenyView's `tracks` is one array per level, so each level's
   // entries keep the level index in their path.
-  const entries = view.tracks.flatMap((t: unknown, level) =>
+  const entries = listOf(view.tracks).flatMap((t, level) =>
     Array.isArray(t)
       ? t.map((entry: unknown, k) => ({ at: `[${level}][${k}]`, entry }))
       : [{ at: `[${level}]`, entry: t }],
@@ -586,8 +578,7 @@ function checkSessionView(
 
   if (
     entry.builtTracksAt &&
-    Array.isArray(view.tracks) &&
-    view.tracks.some(t => isRecord(t) && !('trackId' in t))
+    listOf(view.tracks).some(t => isRecord(t) && !('trackId' in t))
   ) {
     report.warn(
       `${where}.tracks`,
@@ -610,14 +601,12 @@ function checkSessionView(
   // A synteny or breakpoint row is a whole view snapshot of its own. A row
   // written as a recipe names no view type, and which one it becomes is the
   // parent launcher's business.
-  if (Array.isArray(view.views)) {
-    for (const [i, row] of view.views.entries()) {
-      if (isRecord(row)) {
-        if (typeof row.type === 'string') {
-          checkSessionView(row, manifest, `${where}.views[${i}]`, report, ctx)
-        } else {
-          checkViewReferences(row, `${where}.views[${i}]`, report, ctx)
-        }
+  for (const [i, row] of listOf(view.views).entries()) {
+    if (isRecord(row)) {
+      if (typeof row.type === 'string') {
+        checkSessionView(row, manifest, `${where}.views[${i}]`, report, ctx)
+      } else {
+        checkViewReferences(row, `${where}.views[${i}]`, report, ctx)
       }
     }
   }
@@ -662,10 +651,7 @@ function sessionContext(
       ...assemblies.flatMap(a => sequenceTrackIdOf(a)),
     ]),
   }
-  const tracks = Array.isArray(session.sessionTracks)
-    ? session.sessionTracks
-    : []
-  for (const [i, track] of tracks.entries()) {
+  for (const [i, track] of listOf(session.sessionTracks).entries()) {
     if (isRecord(track)) {
       checkTrack(
         track,
@@ -688,14 +674,13 @@ function checkSession(
 ) {
   if (isRecord(session)) {
     const ctx = sessionContext(session, where, manifest, report, configCtx)
-    if (Array.isArray(session.views)) {
-      for (const [i, view] of session.views.entries()) {
-        checkSessionViewTracks(view, manifest, `${where}.views[${i}]`, report)
-      }
-      for (const [i, view] of session.views.entries()) {
-        if (isRecord(view)) {
-          checkSessionView(view, manifest, `${where}.views[${i}]`, report, ctx)
-        }
+    const views = listOf(session.views)
+    for (const [i, view] of views.entries()) {
+      checkSessionViewTracks(view, manifest, `${where}.views[${i}]`, report)
+    }
+    for (const [i, view] of views.entries()) {
+      if (isRecord(view)) {
+        checkSessionView(view, manifest, `${where}.views[${i}]`, report, ctx)
       }
     }
   }
@@ -1335,8 +1320,7 @@ function checkTableColumns(
     isRecord(configuration) && isRecord(configuration.hierarchical)
       ? configuration.hierarchical.table
       : undefined
-  const columns =
-    isRecord(table) && Array.isArray(table.columns) ? table.columns : []
+  const columns = isRecord(table) ? listOf(table.columns) : []
   const metadataKeys = [
     ...new Set(
       tracks.flatMap(t =>
@@ -1433,9 +1417,7 @@ export function validateConfig(
     report.add(problem)
   }
 
-  const assemblies = (
-    Array.isArray(config.assemblies) ? config.assemblies : []
-  ).filter(isRecord)
+  const assemblies = listOf(config.assemblies).filter(isRecord)
   if (assemblies.length === 0) {
     report.error('assemblies', 'no assemblies — a config needs at least one')
   }
@@ -1455,9 +1437,7 @@ export function validateConfig(
     checkAssembly(assembly, i, manifest, report)
   }
 
-  const tracks = Array.isArray(config.tracks)
-    ? config.tracks.filter(isRecord)
-    : []
+  const tracks = listOf(config.tracks).filter(isRecord)
   for (const [i, track] of tracks.entries()) {
     checkTrack(track, `tracks[${i}]`, manifest, report, ctx)
   }
@@ -1479,7 +1459,7 @@ export function validateConfig(
   ]
   for (const { key, group, label } of pluggableLists) {
     const list = config[key]
-    for (const [i, item] of (Array.isArray(list) ? list : []).entries()) {
+    for (const [i, item] of listOf(list).entries()) {
       checkPluggable(item, group, label, `${key}[${i}]`, report, manifest)
     }
   }
@@ -1488,10 +1468,7 @@ export function validateConfig(
   // reference any track in the file regardless of declaration order.
   checkSession(config.defaultSession, 'defaultSession', manifest, report, ctx)
   const preConfigured = config.preConfiguredSessions
-  for (const [i, session] of (Array.isArray(preConfigured)
-    ? preConfigured
-    : []
-  ).entries()) {
+  for (const [i, session] of listOf(preConfigured).entries()) {
     checkSession(session, `preConfiguredSessions[${i}]`, manifest, report, ctx)
   }
   checkMarkDisplays(config, manifest, '', report, ctx)
