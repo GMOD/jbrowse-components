@@ -42,6 +42,10 @@ test('a CRAM and a BAM report into the one shared budget, in bytes', async () =>
   // the per-file ceiling is the library default, the same 1 GB the budget
   // holds, so the budget is what binds from the second file on
   expect(cram.cram.featureCache.maxSize).toBe(1024 * 1024 * 1024)
+
+  cram.clearFeatureCache()
+  bam.clearFeatureCache()
+  expect(decompressedBytesBudget.total).toBe(before)
 })
 
 // What a dropped file would otherwise keep for the three minutes its idle sweep
