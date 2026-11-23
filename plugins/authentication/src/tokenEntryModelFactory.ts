@@ -11,6 +11,7 @@ import type React from 'react'
 
 type TokenEntryForm = React.FC<{
   internetAccountId: string
+  domains: string[]
   handleClose: (token?: string) => void
 }>
 
@@ -69,6 +70,7 @@ export function tokenEntryModelFactory<Type extends string>(
           LoginForm,
           {
             internetAccountId: self.internetAccountId,
+            domains: self.domains,
             handleClose: (token?: string) => {
               if (token) {
                 resolve(token)

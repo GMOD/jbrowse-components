@@ -62,7 +62,7 @@ test('open a bigwig track that needs oauth authentication and has existing token
 }, 25000)
 
 test('opens a bigwig track that needs external token authentication', async () => {
-  const { rootModel, view, findByTestId } = await createView({
+  const { rootModel, view, findByTestId, findByText } = await createView({
     ...config,
     internetAccounts: [
       {
@@ -99,6 +99,7 @@ test('opens a bigwig track that needs external token authentication', async () =
   fireEvent.change(await findByTestId('entry-externalToken'), {
     target: { value: 'testentry' },
   })
+  expect(await findByText('Sent to this site')).toBeTruthy()
   fireEvent.click(await f0.findByText('Add'))
 
   expect(Object.keys(sessionStorage)).toContain('ExternalTokenTest-token')

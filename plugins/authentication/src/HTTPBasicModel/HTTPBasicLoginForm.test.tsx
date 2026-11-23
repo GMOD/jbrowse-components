@@ -7,7 +7,11 @@ import { HTTPBasicLoginForm } from './HTTPBasicLoginForm.tsx'
 test('a credential past Latin-1 is encoded as UTF-8', () => {
   const handleClose = jest.fn()
   const { getByTestId, getByText } = render(
-    <HTTPBasicLoginForm internetAccountId="lab" handleClose={handleClose} />,
+    <HTTPBasicLoginForm
+      internetAccountId="lab"
+      domains={[]}
+      handleClose={handleClose}
+    />,
   )
   fireEvent.change(getByTestId('login-httpbasic-username'), {
     target: { value: 'jürgen' },
@@ -20,4 +24,30 @@ test('a credential past Latin-1 is encoded as UTF-8', () => {
   expect(handleClose).toHaveBeenCalledWith(
     Buffer.from('jürgen:pass€', 'utf8').toString('base64'),
   )
+})
+
+test('the dialog names the domains the credential is sent to', () => {
+  const { getByText } = render(
+    <HTTPBasicLoginForm
+      internetAccountId="lab"
+      domains={['https://data.mylab.org/', 'files.mylab.org']}
+      handleClose={jest.fn()}
+    />,
+  )
+
+  expect(
+    getByText('Sent to https://data.mylab.org/, files.mylab.org'),
+  ).toBeTruthy()
+})
+
+test('an account with no domains says the credential goes to this site', () => {
+  const { getByText } = render(
+    <HTTPBasicLoginForm
+      internetAccountId="lab"
+      domains={[]}
+      handleClose={jest.fn()}
+    />,
+  )
+
+  expect(getByText('Sent to this site')).toBeTruthy()
 })

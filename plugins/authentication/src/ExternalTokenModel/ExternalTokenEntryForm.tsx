@@ -4,11 +4,15 @@ import { SubmitDialog } from '@jbrowse/core/ui'
 import { TextField } from '@mui/material'
 import { observer } from 'mobx-react'
 
+import { CredentialDestination } from '../CredentialDestination.tsx'
+
 export const ExternalTokenEntryForm = observer(function ExternalTokenEntryForm({
   internetAccountId,
+  domains,
   handleClose,
 }: {
   internetAccountId: string
+  domains: string[]
   handleClose: (token?: string) => void
 }) {
   const [token, setToken] = useState('')
@@ -28,6 +32,7 @@ export const ExternalTokenEntryForm = observer(function ExternalTokenEntryForm({
         handleClose(token)
       }}
     >
+      <CredentialDestination domains={domains} />
       <TextField
         required
         label="Enter Token"

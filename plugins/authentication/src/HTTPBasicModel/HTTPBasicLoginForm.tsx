@@ -5,11 +5,15 @@ import { toBase64 } from '@jbrowse/core/util'
 import { TextField } from '@mui/material'
 import { observer } from 'mobx-react'
 
+import { CredentialDestination } from '../CredentialDestination.tsx'
+
 export const HTTPBasicLoginForm = observer(function HTTPBasicLoginForm({
   internetAccountId,
+  domains,
   handleClose,
 }: {
   internetAccountId: string
+  domains: string[]
   handleClose: (arg?: string) => void
 }) {
   const [username, setUsername] = useState('')
@@ -35,6 +39,7 @@ export const HTTPBasicLoginForm = observer(function HTTPBasicLoginForm({
       }}
     >
       <div style={{ display: 'flex', flexDirection: 'column' }}>
+        <CredentialDestination domains={domains} />
         <TextField
           required
           label="Username"

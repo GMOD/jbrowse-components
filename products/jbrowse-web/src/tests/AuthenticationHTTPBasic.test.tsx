@@ -50,6 +50,7 @@ test('opens a bigwig track that needs httpbasic authentication', async () => {
   fireEvent.change(await findByTestId('login-httpbasic-password'), {
     target: { value: 'password' },
   })
+  expect(await findByText(/^Sent to /)).toBeTruthy()
   fireEvent.click(await findByText('Submit'))
 
   expect(Object.keys(sessionStorage)).toContain(
