@@ -7,12 +7,12 @@ import {
   resolveShareUrl,
 } from '@jbrowse/app-core'
 import { shareEndpoint } from '@jbrowse/core/util'
+import { linkConfigRefusal } from '@jbrowse/core/util/jbrowseProtocol'
 import { hostedComparative } from '@jbrowse/launch-args/hostedGenomes'
 import { resolveTrackId } from '@jbrowse/launch-args/trackIds'
 import { getSnapshot } from '@jbrowse/mobx-state-tree'
 import { decodeSessionFromUrl } from '@jbrowse/product-core'
 
-import { linkConfigRefusal } from '../../../electron/linkPrompt.ts'
 import { assertReadsNoLocalFiles, linkData } from './linkData.ts'
 
 import type {

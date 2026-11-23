@@ -1,4 +1,4 @@
-import { isWebUrl } from '@jbrowse/core/util/jbrowseProtocol'
+import { linkConfigRefusal } from '@jbrowse/core/util/jbrowseProtocol'
 
 // How a jbrowse:// link is described in the dialog that asks whether to open
 // it. Pure, so the wording is unit-testable without an Electron runtime; the
@@ -54,17 +54,6 @@ export function linkConfigUrl(url: URL) {
         : !session && url.pathname.endsWith('.json')
           ? url.href
           : undefined
-}
-
-/**
- * Why a link's config is not fetched: a link opens only a config served over
- * http(s), as the link itself is, so a `file:` one cannot reach a local or
- * network share.
- */
-export function linkConfigRefusal(configUrl: string) {
-  return isWebUrl(configUrl)
-    ? undefined
-    : `This link's config is at ${configUrl}, and a link opens only a config from the web (http or https).`
 }
 
 function parseUrl(input: string) {
