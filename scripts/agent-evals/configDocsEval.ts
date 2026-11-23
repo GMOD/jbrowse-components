@@ -6,12 +6,13 @@
 // task asked for. A run scores the docs, not the validator.
 //
 // `--skills` scores .claude/skills instead: the sandbox holds them as project
-// skills and no docs, and the agent may fetch the jbrowse.org pages they name,
-// as an agent outside this repo would.
+// skills and no docs, and the agent may fetch the jbrowse.org pages they name
+// and run a shell, as an agent outside this repo would. `--held-out` runs the
+// tasks phrased apart from the skills' and docs' examples instead of the rest.
 //
 // Usage: node scripts/agent-evals/configDocsEval.ts [--model m] [--runs N]
 //        [--filter name] [--out dir] [--source dir] [--self-check]
-//        [--regrade dir] [--skills]
+//        [--regrade dir] [--skills] [--held-out]
 // --source reads docs and schema from another tree, such as a `git archive`
 // of the baseline commit, so the worktree can change while a run is going.
 import { execFileSync, spawn } from 'node:child_process'
@@ -54,12 +55,26 @@ const outDir = path.resolve(
 
 type Json = Record<string, unknown>
 
-interface Task {
+interface TrackTask {
+  output?: 'track'
   name: string
   prompt: string
+  heldOut?: boolean
   solution: Json
   check: (track: Json) => string[]
 }
+
+// Answered with a JBrowse Web link in ./link.txt rather than a track
+interface LinkTask {
+  output: 'link'
+  name: string
+  prompt: string
+  heldOut?: boolean
+  solution: string
+  check: (link: string) => string[]
+}
+
+type Task = TrackTask | LinkTask
 
 const ALIGNMENTS = `an AlignmentsTrack with trackId "reads", name "Reads", on assembly "volvox", reading volvox-sorted.bam with its .bai index, whose LinearAlignmentsDisplay`
 const VCF = `a VariantTrack with trackId "variants", name "Variants", on assembly "volvox", reading volvox.filtered.vcf.gz with its .tbi index, whose LinearVariantDisplay`
@@ -120,7 +135,7 @@ function expect(problems: string[], ok: boolean, what: string) {
   }
 }
 
-const tasks: Task[] = [
+const trackTasks: TrackTask[] = [
   {
     name: 'hp-tag',
     prompt: `Write ${ALIGNMENTS} colors each read by its HP (haplotype) SAM tag: HP 1 in #d95f02 labelled "Maternal" in the key, HP 2 in #1b9e77 labelled "Paternal", and reads carrying any other HP value in #999999.`,
@@ -522,14 +537,158 @@ const tasks: Task[] = [
       return p
     },
   },
+  {
+    name: 'haplotype-tint',
+    heldOut: true,
+    prompt: `I have volvox-sorted.bam, indexed, on assembly "volvox". Write a track with trackId "reads" and name "Reads" where I can tell at a glance which haplotype each read was phased to.`,
+    solution: {
+      type: 'AlignmentsTrack',
+      trackId: 'reads',
+      name: 'Reads',
+      assemblyNames: ['volvox'],
+      uri: 'volvox-sorted.bam',
+      displays: [
+        {
+          type: 'LinearAlignmentsDisplay',
+          encoding: { color: { field: 'tags.HP' } },
+        },
+      ],
+    },
+    check: track => {
+      const c = color(track, 'LinearAlignmentsDisplay')
+      const p: string[] = []
+      expect(p, c.field === 'tags.HP', `field ${JSON.stringify(c.field)}`)
+      return p
+    },
+  },
+  {
+    name: 'one-population',
+    heldOut: true,
+    prompt: `Write a track with trackId "sv" and name "SVs" on assembly "volvox" for the structural variants in volvox.sv.vcf.gz (indexed). Each sample's metadata is in volvox.sv.samples.tsv, a table whose columns are name, population, sex, phenotype and group. Only the samples from population PopA should be shown.`,
+    solution: {
+      type: 'VariantTrack',
+      trackId: 'sv',
+      name: 'SVs',
+      assemblyNames: ['volvox'],
+      adapter: {
+        type: 'VcfTabixAdapter',
+        uri: 'volvox.sv.vcf.gz',
+        samplesTsvLocation: { uri: 'volvox.sv.samples.tsv' },
+      },
+      displays: [
+        {
+          type: 'LinearVariantDisplay',
+          rows: { filter: [{ field: 'population', oneOf: ['PopA'] }] },
+        },
+      ],
+    },
+    check: track => {
+      const adapter = (track.adapter ?? {}) as Json
+      const tsv = (adapter.samplesTsvLocation ?? {}) as Json
+      const rows = (display(track, 'LinearVariantDisplay').rows ?? {}) as Json
+      const filters = Array.isArray(rows.filter) ? (rows.filter as Json[]) : []
+      const keepsPopA = filters.some(
+        f =>
+          f.field === 'population' &&
+          ((Array.isArray(f.oneOf) && same(f.oneOf, ['PopA'])) ||
+            f.equal === 'PopA'),
+      )
+      const p: string[] = []
+      expect(
+        p,
+        String(tsv.uri ?? '').endsWith('volvox.sv.samples.tsv'),
+        `samplesTsvLocation ${JSON.stringify(tsv)}`,
+      )
+      expect(p, keepsPopA, `rows.filter ${JSON.stringify(rows.filter)}`)
+      return p
+    },
+  },
+  {
+    name: 'score-strip',
+    heldOut: true,
+    prompt: `Write a track with trackId "strip" and name "Score strip" on assembly "volvox" for volvox-bed12.bed.gz (indexed) that opens as a heatmap-like strip: one band, each feature's span filled with a color that follows its score.`,
+    solution: {
+      type: 'FeatureTrack',
+      trackId: 'strip',
+      name: 'Score strip',
+      assemblyNames: ['volvox'],
+      uri: 'volvox-bed12.bed.gz',
+      displays: [
+        {
+          type: 'LinearMarkDisplay',
+          displayId: 'strip-LinearMarkDisplay',
+          marks: [
+            {
+              mark: 'rect',
+              encoding: {
+                color: { field: 'score', scale: { type: 'linear' } },
+              },
+            },
+          ],
+        },
+      ],
+    },
+    check: track => {
+      const [first] = Array.isArray(track.displays)
+        ? (track.displays as Json[])
+        : []
+      const marks = Array.isArray(first?.marks) ? (first.marks as Json[]) : []
+      const rect = marks.find(
+        m => m.mark === 'rect' || (m.mark as Json | undefined)?.type === 'rect',
+      )
+      const c = ((rect?.encoding ?? {}) as Json).color
+      const field = typeof c === 'string' ? c : (c as Json | undefined)?.field
+      const p: string[] = []
+      expect(
+        p,
+        first?.type === 'LinearMarkDisplay',
+        `first display ${JSON.stringify(first?.type)}`,
+      )
+      expect(p, field === 'score', `rect color ${JSON.stringify(c)}`)
+      return p
+    },
+  },
 ]
 
-const WRITE = `Write the one track configuration object the task asks for, as JSON, to ./track.json: the track object itself, not a whole config.json. Do not ask questions; when done, reply with one line.`
+const linkTasks: LinkTask[] = [
+  {
+    output: 'link',
+    name: 'hosted-brca1',
+    prompt: `Write to ./link.txt a JBrowse Web link, on https://jbrowse.org/code/jb2/main/, that opens the human hg38 genome at BRCA1 showing ClinVar's SNV track. Use the genome hosted at jbrowse.org rather than building one.`,
+    solution:
+      'https://jbrowse.org/code/jb2/main/?config=https://jbrowse.org/ucsc/hg38/config.json&assembly=hg38&loc=BRCA1&tracks=hg38-clinvarMain',
+    check: link => {
+      const params = URL.canParse(link) ? new URL(link).searchParams : undefined
+      const tracks = (params?.get('tracks') ?? '').split(',')
+      const p: string[] = []
+      expect(
+        p,
+        params?.get('config') === 'https://jbrowse.org/ucsc/hg38/config.json',
+        `config ${JSON.stringify(params?.get('config'))}`,
+      )
+      expect(
+        p,
+        /brca1/i.test(params?.get('loc') ?? ''),
+        `loc ${JSON.stringify(params?.get('loc'))}`,
+      )
+      expect(
+        p,
+        tracks.includes('hg38-clinvarMain'),
+        `tracks ${tracks.join(',')}`,
+      )
+      return p
+    },
+  },
+]
+
+const tasks: Task[] = [...trackTasks, ...linkTasks]
+
+const WRITE = `Write what the task asks for: a track configuration goes to ./track.json as JSON, the track object itself, not a whole config.json; a link goes to ./link.txt as the bare URL. Do not ask questions; when done, reply with one line.`
 const SYSTEM = skills
   ? `You are configuring JBrowse 2, a genome browser. ${WRITE}`
   : `You are configuring JBrowse 2, a genome browser. Its documentation is in ./docs (the generated config reference is ./docs/config, the guides ./docs/config_guides) and its JSON Schema is ./schema/config.json. Use only these files. ${WRITE}`
 const TOOLS = skills
-  ? 'Read,Grep,Glob,Write,Skill,WebFetch'
+  ? 'Read,Grep,Glob,Write,Skill,WebFetch,Bash'
   : 'Read,Grep,Glob,Write'
 
 function sandbox() {
@@ -640,7 +799,32 @@ function validate(track: Json, dir: string) {
     .map(p => `${p.where}: ${p.message}`)
 }
 
-const selected = tasks.filter(t => !filter || t.name.includes(filter))
+const heldOut = args.includes('--held-out')
+const selected = tasks.filter(
+  t => !!t.heldOut === heldOut && (!filter || t.name.includes(filter)),
+)
+
+// What the run wrote, graded: a track also has to pass `jbrowse validate`.
+function grade(task: Task, written: unknown, dir: string) {
+  if (task.output === 'link') {
+    return typeof written === 'string' ? task.check(written) : ['no link']
+  }
+  return written && typeof written === 'object'
+    ? [...task.check(written as Json), ...validate(written as Json, dir)]
+    : ['no track']
+}
+
+function readOutput(task: Task, dir: string) {
+  try {
+    return task.output === 'link'
+      ? fs.readFileSync(path.join(dir, 'link.txt'), 'utf8').trim()
+      : (JSON.parse(
+          fs.readFileSync(path.join(dir, 'track.json'), 'utf8'),
+        ) as Json)
+  } catch {
+    return undefined
+  }
+}
 
 // Scores a past run's tracks under the graders as they stand now.
 const regrade = flag('regrade', '')
@@ -655,10 +839,8 @@ if (regrade) {
     }
     const { record } = JSON.parse(
       fs.readFileSync(path.join(regrade, file), 'utf8'),
-    ) as { record: { track?: Json } }
-    const problems = record.track
-      ? [...task.check(record.track), ...validate(record.track, dir)]
-      : ['no track']
+    ) as { record: { output?: unknown; track?: Json } }
+    const problems = grade(task, record.output ?? record.track, dir)
     total++
     passed += problems.length ? 0 : 1
     console.log(
@@ -676,11 +858,11 @@ if (args.includes('--self-check')) {
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'config-docs-check-'))
   let bad = 0
   for (const task of selected) {
-    const solved = [
-      ...task.check(task.solution),
-      ...validate(task.solution, dir),
-    ]
-    const unsolved = task.check({ ...task.solution, displays: [] })
+    const solved = grade(task, task.solution, dir)
+    const unsolved =
+      task.output === 'link'
+        ? task.check('')
+        : task.check({ ...task.solution, displays: [] })
     const ok = solved.length === 0 && unsolved.length > 0
     bad += ok ? 0 : 1
     console.log(`${ok ? 'ok ' : 'BAD'} ${task.name}`, solved.join('; '))
@@ -704,28 +886,18 @@ scoring: for (const task of selected) {
       fs.rmSync(dir, { recursive: true, force: true })
       break scoring
     }
-    const trackFile = path.join(dir, 'track.json')
-    let track: Json | undefined
-    let problems: string[] = []
-    let validateErrors: string[] = []
-    try {
-      track = JSON.parse(fs.readFileSync(trackFile, 'utf8')) as Json
-      validateErrors = validate(track, dir)
-      problems = task.check(track)
-    } catch (e) {
-      problems = [`no readable track.json: ${String(e)}`]
-    }
+    const output = readOutput(task, dir)
+    const problems = grade(task, output, dir)
     const record = {
       task: task.name,
       run,
-      pass: problems.length === 0 && validateErrors.length === 0,
+      pass: problems.length === 0,
       problems,
-      validateErrors,
       turns: result?.num_turns ?? 0,
       seconds: Math.round((result?.duration_ms ?? 0) / 1000),
       usd: Number((result?.total_cost_usd ?? 0).toFixed(3)),
       answer: result?.result ?? '',
-      track,
+      output,
     }
     records.push(record)
     fs.writeFileSync(
@@ -734,7 +906,7 @@ scoring: for (const task of selected) {
     )
     console.log(
       `${record.pass ? 'PASS' : 'FAIL'} ${task.name}#${run} turns=${record.turns} $${record.usd}`,
-      [...problems, ...validateErrors].join('; '),
+      problems.join('; '),
     )
     fs.rmSync(dir, { recursive: true, force: true })
   }
@@ -748,7 +920,7 @@ const summary = {
   stopped,
   usd: Number(records.reduce((a, r) => a + r.usd, 0).toFixed(3)),
   turns: records.reduce((a, r) => a + r.turns, 0),
-  records: records.map(({ track: _track, ...r }) => r),
+  records: records.map(({ output: _output, ...r }) => r),
 }
 fs.writeFileSync(
   path.join(outDir, 'summary.json'),
