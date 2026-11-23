@@ -193,7 +193,6 @@ export function laneColorOf(
   )
 }
 
-/** a piece lane's contig, which a piece name the filing no longer holds stands for */
 function contigOfPiece(name: string) {
   const { assemblyName, refName, piece } = laneOf(name)
   return piece === undefined || refName === undefined
@@ -201,10 +200,7 @@ function contigOfPiece(name: string) {
     : copyLaneName(assemblyName, refName)
 }
 
-/**
- * `selection` with each piece lane no row holds read as every row on its
- * contig, since a piece is named afresh by a fetch with no filing before it
- */
+/** a piece no row holds, named by another fetch, stands for its contig's rows */
 function heldPieces(
   selection: readonly string[] | undefined,
   rows: readonly string[],

@@ -189,7 +189,7 @@ export function configSchemaFactory() {
                 ]),
                 defaultValue: 'above',
                 description:
-                  "`above` prints each genome's header on a line over its genes: its name, loci, badges and span; `overlay` prints it over the gene row instead and leaves out the loci, keeping a lane's strand, `reversed vs` the anchor, and `drawn flipped`, which fits 12 px more per lane",
+                  "`above` prints each genome's header on a line over its genes: its name, loci, badges and span; `overlay` prints it over the gene row instead and leaves out the loci, keeping a lane's strand, `reversed vs` the anchor, and `drawn opposite to` the anchor, which fits 12 px more per lane",
               },
             },
             { closed: true, plot: true },

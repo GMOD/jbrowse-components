@@ -113,12 +113,7 @@ export function shownLaneChanges(
     : []
 }
 
-/**
- * The changes whose anchor side lies inside the view's `blocks`: a gap
- * reaching past them reaches into the fetch's margin, and what the records
- * there say of it changes with how far the fetch reaches. An inversion is
- * its own run's anchor, whichever flanks bound it.
- */
+/** past the view, a gap's anchor side depends on how far the fetch reaches */
 export function changesInView(
   changes: readonly LaneChange[],
   blocks: readonly { refName: string; start: number; end: number }[],
@@ -251,7 +246,6 @@ function scaleOf(lane: Lane, visibleBpSpan: number) {
       : { text: '' }
 }
 
-/** every placement the lane draws reads against the anchor, each on its own */
 function allReversed(lane: Lane) {
   const refName = lane.frame?.refName
   const orientations = [...lane.placements.values()].flatMap(({ group }) =>
@@ -302,7 +296,9 @@ export function laneHeaderRows(
   const strandOf = (lane: Lane) =>
     [
       allReversed(lane) ? `reversed vs ${anchor ?? 'the anchor'}` : undefined,
-      drawnFlippedOf(lane) ? 'drawn flipped' : undefined,
+      drawnFlippedOf(lane)
+        ? `drawn opposite to ${anchor ?? 'the anchor'}`
+        : undefined,
     ].filter(part => !!part)
   return lanes.map(lane => {
     const matched = lane.frame && matchedOf(lane)

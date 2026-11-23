@@ -62,8 +62,10 @@ export const laneRowsConfigSchema = ConfigurationSchema(
      * per stretch of a contig the window places, stretches a window apart
      * drawn apart and one record's never, with no floor, so a haplotype in
      * several pieces draws every one; a piece lane is named after its contig
-     * with the first base its piece places, `{HG00097.1}CM094061.1[21912395]`,
-     * and answers to its genome's name as a copy lane does. `auto` draws piece lanes where
+     * with the first base its piece places when it first draws,
+     * `{HG00097.1}CM094061.1[21912395]`, keeps that name while a pan or zoom
+     * moves its ends, and answers to its genome's name as a copy lane does.
+     * A `kept` piece no lane holds stands for its contig's pieces. `auto` draws piece lanes where
      * the source's header declares haplotype lanes, copy lanes where the
      * track's `assemblyNames` name at most one genome besides the anchor, and
      * genome lanes across more.

@@ -157,8 +157,7 @@ export function filedGroupViews(
     /**
      * #getter
      * the groups as `rows.field` files them, in one pass with the copy
-     * lanes the floor drops; a piece keeps the name of the piece it
-     * overlaps in the last filing
+     * lanes the floor drops
      */
     get filedGroups() {
       const filed = groupsOfField(

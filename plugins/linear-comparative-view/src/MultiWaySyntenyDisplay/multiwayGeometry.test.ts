@@ -69,8 +69,12 @@ jest.mock('@jbrowse/core/util', () => {
 
 const WIDTH = 800
 
-function ops(...pairs: [number, number][]) {
+function opsOf(pairs: [number, number][]) {
   return Uint32Array.from(pairs.map(([len, op]) => (len << 4) | op))
+}
+
+function ops(...pairs: [number, number][]) {
+  return opsOf(pairs)
 }
 const HEIGHT = 240
 
@@ -532,33 +536,35 @@ describe('the ribbons', () => {
       assemblyName: 'peach',
       mate: { assemblyName: 'cacao', refName: 'Tc1', start: 1500, end: 3500 },
     })
-    const build = (...cigar: [number, number][]) =>
+    const build = (cigar: [number, number][]) =>
       buildRibbonGeometry({
         stack: s,
         laneLinks: new Map([
           [
             'peach|cacao',
-            { links: [link], ops: new Map([['link', ops(...cigar)]]) },
+            { links: [link], ops: new Map([['link', opsOf(cigar)]]) },
           ],
         ]),
         ribbonColor: 'grey',
         drawCurves: false,
       })
-    const subPixel = build(...cluster, [979, CIGAR_EQ], ...cluster, [
-      979,
-      CIGAR_EQ,
+    const subPixel = build([
+      ...cluster,
+      [979, CIGAR_EQ],
+      ...cluster,
+      [979, CIGAR_EQ],
     ])
     expect([...ribbonData(subPixel.cells, 'ribbons:1').kinds]).toEqual([
       KIND_BASE,
     ])
     expect(subPixel.mismatches).toBe(false)
-    const wideOne = build(
+    const wideOne = build([
       ...cluster,
       [949, CIGAR_EQ],
       [30, CIGAR_X],
       ...cluster,
       [979, CIGAR_EQ],
-    )
+    ])
     const data = ribbonData(wideOne.cells, 'ribbons:1')
     expect([...data.kinds]).toEqual([KIND_BASE, KIND_BASE_TILE])
     // Pp1:2470-2500, its own 30 bp, at 0.04 px/bp from Pp1:1000

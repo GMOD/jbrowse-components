@@ -114,16 +114,11 @@ function mid(p: MultiWayPlacement) {
   return (p.start + p.end) / 2
 }
 
-// the share of the window a piece may overhang each end of a 1× lane
 const ONE_X_OVERHANG = 0.01
 
 const overhangAt = (rung: number) => (rung === 1 ? ONE_X_OVERHANG : 0)
 
-/**
- * `whole`, as a piece lane drawing all of its piece, takes no rung short of
- * `need` but 1×, which may be short by `ONE_X_OVERHANG` of the window at
- * each end; otherwise the ladder's tolerance
- */
+/** `whole` covers exactly, but for a 1× overhang at each end */
 export function pickRung(need: number, incumbent?: number, whole = false) {
   const covers = (rung: number) =>
     whole ? rung * (1 + 2 * overhangAt(rung)) >= need : rungCovers(rung, need)

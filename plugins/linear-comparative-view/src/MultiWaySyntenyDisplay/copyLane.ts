@@ -276,7 +276,6 @@ export function lanesPlacedIn(groups: readonly MultiWayGroup[]) {
   return new Set(groups.flatMap(group => [...group.mates.keys()]))
 }
 
-/** a piece lane as last filed: its name and the lane bp its block spanned */
 export interface FiledPiece {
   lane: string
   lo: number
@@ -284,10 +283,8 @@ export interface FiledPiece {
 }
 
 /**
- * Names for `blocks`, ascending, of one contig: each takes the name of the
- * piece `previous` filed that it overlaps most, if no block overlapping it
- * more has, so a name survives the refetch and the zoom that move a clipped
- * block's ends; else its first base, or its last where that is taken.
+ * Each block takes the name of the previous piece it overlaps most, since a
+ * fetch cuts a block's ends at its own edges; else its first base
  */
 function pieceNames(
   blocks: readonly { lo: number; hi: number }[],
@@ -326,9 +323,7 @@ function pieceNames(
  * block: a contig's placements parted a window apart, `unitBp`, as a lane's
  * frame parts them, a record's pieces never parted (`blocksOf`), and no share
  * floor, so every piece the window places draws. A block no group `inWindow`
- * places draws no lane. A block keeps the name of the piece `previous` filed
- * that it overlaps (`pieceNames`), since the fetch cuts records, and so a
- * block's ends, at its own edges.
+ * places draws no lane.
  */
 export function fileUnderPieces(
   groups: readonly MultiWayGroup[],

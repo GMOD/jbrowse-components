@@ -228,10 +228,7 @@ function clipSpan([a, b]: Span, [lo, hi]: Span): Span[] {
 
 const WHOLE = { start: Number.NEGATIVE_INFINITY, end: Number.POSITIVE_INFINITY }
 
-/**
- * An alignment lane's records state its sequence only over the hull of what
- * they place; a gene lane's baseline runs its contig
- */
+/** an alignment lane's records state its sequence over what they place */
 function sequenceExtent(
   contig: { start: number; end: number } | undefined,
   groups: readonly PlacedGroup[],

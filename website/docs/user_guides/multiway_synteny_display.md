@@ -37,9 +37,9 @@ Each lane has a separate scale, printed in its header:
 
 - **Left end:** the stretch of the lane's contig from the first to the last base
   matched to the window, then `reversed vs hg38` where every piece the lane
-  draws runs against the anchor, and `drawn flipped` where the lane is drawn
-  against the anchor's order, which says how it is drawn and nothing of its
-  sequence
+  draws runs against the anchor, and `drawn opposite to hg38` where the lane is
+  drawn against the anchor's order, which says how it is drawn and nothing of
+  its sequence
 - **Right end:** the anchor prints its window's span. A lane that holds more
   sequence across the window than the anchor, such as one with insertions, is
   squeezed to fit and prints how many times (`squeezed 1.5×`). A stretch of the

@@ -196,11 +196,11 @@ describe('the label', () => {
     ).toBe('peach  Pp1:1..1,960')
   })
 
-  test('names a lane drawn against the anchor as drawn flipped, which says nothing of its sequence', () => {
+  test('names a lane drawn against the anchor as drawn opposite to it, which says nothing of its sequence', () => {
     expect(
       rowOf(mateLane({ placements: runsOf([1]) }), 2000, laneRegion, true)
         .label,
-    ).toBe('peach  Pp1:1..1,960 drawn flipped')
+    ).toBe('peach  Pp1:1..1,960 drawn opposite to grape')
   })
 
   test('names the contigs the lane is not showing', () => {
