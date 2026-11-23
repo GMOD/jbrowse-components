@@ -240,7 +240,7 @@ callset and the graph:
 - In the graph track's menu, open **Graph settings...** and set **Bubble
   spread** to **Compress lengths**, so the kb and bp segments fit one pane.
 
-<Figure caption="SD1 (LOC4325003) with the callset sorted at the shaded 383 bp record, which runs from exon 1 into exon 2. Its carriers sit at the top, their blue cells green under the shading; the column at the left is a commoner 237 bp deletion upstream of the gene." src="/img/pangenome/rice_sd1.png" />
+<Figure caption="SD1 (LOC4325003) with the callset sorted at the 383 bp record, which runs from exon 1 into exon 2, and its carriers at the top; the column at the left is a commoner 237 bp deletion upstream of the gene. On the graph track, the callout marks the 383 bp segment sd1-d skips." src="/img/pangenome/rice_sd1.png" />
 
 IR64 and eight other assemblies have sd1-d. The upstream 237 bp deletion is in
 most assemblies, those with sd1-d among them.
@@ -259,7 +259,7 @@ than the reference has there.
 - Right-click the record at `chr5:5,379,833` and pick **Sort rows by genotype
   here**.
 
-<Figure caption="qSW5 (LOC4338011) with the callset sorted at the record upstream of the gene. Blue rows have the commonest allele, with no deletion; red rows have the 950 bp deletion; grey rows have AGIS-1.0's 1,212 bp deletion." src="/img/pangenome/rice_qsw5.png" />
+<Figure caption="qSW5 (LOC4338011) with the callset sorted at the record upstream of the gene. Blue rows have the commonest allele, with no deletion; red rows have the 950 bp deletion; grey rows have AGIS-1.0's 1,212 bp deletion. On the graph track, the callout marks the 766 bp path the 950 bp deletion takes." src="/img/pangenome/rice_qsw5.png" />
 
 Kasalath, IR64 and 9311 have no deletion. The three weedy rices, CX20, YZ-2 and
 PI653432, are among the assemblies with the 950 bp deletion, and Balilla,
@@ -280,7 +280,7 @@ reference's 39 bp, a second 39 bp sequence, and insertions of 46 to 89 kb.
   the rows by allele.
 - Click a cell to read that assembly's allele and its length.
 
-<Figure caption="Pup1 with the callset sorted at its one record. Blue rows have the commonest allele, a 39 bp path other than AGIS-1.0's. The seven insertions of 46 to 89 kb below them take a color each, and the legend lists each insertion's path length: Kasalath and SL190, the mint rows, have the 88,924 bp path. Balilla, the grey row at the bottom, has AGIS-1.0's path." src="/img/pangenome/rice_pup1.png" />
+<Figure caption="Pup1 with the callset sorted at its one record. Blue rows have the commonest allele, a 39 bp path other than AGIS-1.0's. The seven insertions of 46 to 89 kb below them take a color each, and the legend lists each insertion's path length: Kasalath and SL190, the mint rows, have the 88,924 bp path. Balilla, the grey row at the bottom, has AGIS-1.0's path. The figure leaves out the graph track, whose insertion loops draw off its pane in a 730 bp window." src="/img/pangenome/rice_pup1.png" />
 
 Kasalath and SL190 share the 89 kb insertion. Fifteen more assemblies have
 insertions of 46 to 77 kb at the same point. IR64 and most of the rest have the

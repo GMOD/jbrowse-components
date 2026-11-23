@@ -141,7 +141,7 @@ export const mouseCattleGraphSpecs: ScreenshotSpec[] = [
       ],
     },
   ),
-  // At 260 the extra other-alt and no-call key rows push yak off the lane.
+  // 300 fits the key's SV type, genotype and lineage rows beside the rows.
   {
     ...bovineLocusSpec(
       'pangenome/bovine_kit',
@@ -172,11 +172,11 @@ export const mouseCattleGraphSpecs: ScreenshotSpec[] = [
           layoutMode: 'force',
           encoding: { color: { field: 'position' } },
           bubbleSpread: 'compress',
-          paneHeight: 240,
+          paneHeight: 320,
           maxRegionBp: cutNear(40_000),
         }),
       ],
-      1040,
+      1060,
     ),
     readySelector: GRAPH_DRAWN,
     annotations: [
@@ -206,11 +206,11 @@ export const mouseCattleGraphSpecs: ScreenshotSpec[] = [
           layoutMode: 'force',
           bubbleSpread: 'compress',
           encoding: { color: { field: 'position' } },
-          paneHeight: 420,
+          paneHeight: 600,
           maxRegionBp: cutNear(28_000),
         }),
       ],
-      1150,
+      1330,
     ),
     readySelector: GRAPH_DRAWN,
   },

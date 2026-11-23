@@ -229,7 +229,7 @@ dm6's.
 - In the graph track's menu, open **Graph settings...** and set **Bubble
   spread** to **Compress lengths**, so the kb and bp segments fit one pane.
 
-<Figure caption="Cyp28d1 with the callset sorted at its record over the gene, above the graph track. The six alternate alleles take a color each, and the legend lists the path length of each but the commonest, whose blue other records on screen share. The callouts name each DSPR founder's allele and how much longer it is than dm6's." src="/img/pangenome/fly_cyp28d1.png" />
+<Figure caption="Cyp28d1 with the callset sorted at its record over the gene, above the graph track. The six alternate alleles take a color each. The callouts name each DSPR founder's allele and how much longer it is than dm6's, and on the graph track the 15 kb copy A2 and B1 add and the 4.9 kb Canton-S_A1 alone has." src="/img/pangenome/fly_cyp28d1.png" />
 
 Two Bloomington stocks share Canton-S_A1's allele, and CantonS_Yunnan shares
 BOG1_A2's. KSA2 and A4_HiFi, the red rows, have an allele the paper did not
@@ -248,7 +248,7 @@ inside an exon of the muscle gene _Strn-Mlck_, which truncates its transcript.
 - Type `chr2R:15,940,001-15,966,000` to zoom back out; the rows keep their
   order.
 
-<Figure caption="Strn-Mlck with the callset sorted at the 7,511 bp insertion, which BDSC_156 alone has. The graph track draws it as the 7.5 kb loop." src="/img/pangenome/fly_strn_mlck.png" />
+<Figure caption="Strn-Mlck with the callset sorted at the 7,511 bp insertion, which BDSC_156 alone has. The graph track draws it as the 7.5 kb loop the callout names." src="/img/pangenome/fly_strn_mlck.png" />
 
 ## CHKov1: a resistance allele in the reference
 
@@ -261,7 +261,7 @@ has the Doc, so the assemblies without it have a 4.5 kb deletion in the callset.
 - Type `chr3R:25,320,001-25,335,000` into the location box.
 - Right-click the record over _CHKov1_ and pick **Sort rows by genotype here**.
 
-<Figure caption="CHKov1 with the callset sorted at the 4.5 kb record. Blue rows lack the Doc that dm6 has; the graph track draws the Doc as the arc over the 1 bp path." src="/img/pangenome/fly_chkov1.png" />
+<Figure caption="CHKov1 with the callset sorted at the 4.5 kb record. Blue rows lack the Doc that dm6 has. On the graph track, the callout marks the Doc, the arc over the 1 bp path the seven strains take." src="/img/pangenome/fly_chkov1.png" />
 
 Oregon-R, BOG1_A2, three Bloomington stocks and two of the HiFi strains lack the
 Doc, and the other 22 assemblies have it.
