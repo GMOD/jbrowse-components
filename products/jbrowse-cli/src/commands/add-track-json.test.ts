@@ -46,7 +46,7 @@ test('a file whose name opens with a bracket is still read as a file', async () 
     )
     const { error } = await runCommand(['add-track-json', '[v2]track.json'])
     expect(error).toBeUndefined()
-    expect(readConf(ctx).tracks?.map(t => t.trackId)).toContain('bracketed')
+    expect(readConf(ctx).tracks).toEqual([{ ...track, trackId: 'bracketed' }])
   })
 })
 
