@@ -25,6 +25,7 @@ inversion again with it, then compare four more accessions. We:
   [plotsr](https://github.com/schneebergerlab/plotsr) does
 - draw the accessions as lanes under Columbia, beside a row of SyRI regions per
   accession
+- scale up to the 1001 Genomes Plus accessions on the Arabidopsis pangenome page
 
 ## Prerequisites
 
@@ -73,7 +74,7 @@ The [build script](#reproduce-it-end-to-end) fetches them all.
 | Kyo, GCA_902460305.1   | [GCA_902460305.1_Arabidopsis_thaliana_Kyo/](https://ftp.ncbi.nlm.nih.gov/genomes/all/GCA/902/460/305/GCA_902460305.1_Arabidopsis_thaliana_Kyo/)     |
 | Sha, GCA_902460295.1   | [GCA_902460295.1_Arabidopsis_thaliana_Sha/](https://ftp.ncbi.nlm.nih.gov/genomes/all/GCA/902/460/295/GCA_902460295.1_Arabidopsis_thaliana_Sha/)     |
 
-## Aligning a pair and running SyRI
+## Align a pair and run SyRI
 
 SyRI reads a whole-genome alignment of two chromosome-level assemblies whose
 homologous chromosomes share a name. For each pair:
@@ -93,7 +94,7 @@ syri -c Col-0_Ler.aln.paf -r Col-0.fa -q Ler.fa -F P --prefix Col-0_Ler. --nc 5
 We run it on each accession against the one above it, the pairs plotsr stacks,
 and on each accession against Col-0.
 
-## From SyRI to a JBrowse config
+## Turn SyRI's output into a JBrowse config
 
 syri2jbrowse takes plotsr's inputs: a genomes file listing each FASTA and its
 name in stack order, and one `--sr` per neighbouring pair. Each `--pair` adds an
@@ -219,7 +220,7 @@ Col-0's genes:
 }
 ```
 
-## Columbia against Landsberg on chromosome 4
+## Find the chromosome 4 inversion between Columbia and Landsberg
 
 Open the first 6 Mb of chromosome 4 in both accessions and pick **syri** under
 **Color by value** on the palette button in the view header:
@@ -261,7 +262,7 @@ so a key row names every type on screen in its color.
 
 <Figure caption="Chromosome 4 in Col-0 above and Ler below, SyRI regions colored by type. The crossed ribbon is the inversion." src="/img/syri/col_ler_chr4.png" />
 
-## Stacking the accessions, one SyRI run per band
+## Stack the accessions, one SyRI run per band
 
 The config opens on every accession stacked, each band drawing the SyRI run
 between the two genomes it joins. Like plotsr, `filter` hides regions under 10
@@ -307,7 +308,7 @@ stay as the long ribbons:
 
 <Figure caption="Arabidopsis accessions stacked, each band the SyRI comparison of the two genomes it joins. The crossed ribbon on Chr3 between Kyo and Sha is an inversion." src="/img/syri/six_accessions.png" />
 
-## Every accession in Columbia coordinates
+## Draw every accession as a lane under Columbia {#every-accession-in-columbia-coordinates}
 
 The `--pair` runs place every accession on Col-0. Open a linear genome view on
 Col-0 at `Chr4:1-6,000,000` and turn on **SyRI regions on Col-0, by genome** and
@@ -345,7 +346,7 @@ band between two lanes from the run between those two accessions.
 
 <Figure caption="Col-0 chromosome 4 with a row of SyRI regions per accession above, and the accessions as lanes below." src="/img/syri/col0_lanes.png" />
 
-## Structural forms on the Arabidopsis pangenome page
+## Scale up to the 1001 Genomes Plus accessions
 
 The
 [Arabidopsis pangenome page](https://genomes.jbrowse.org/pangenomes/arabidopsis/)
