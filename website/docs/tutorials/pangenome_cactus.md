@@ -479,7 +479,7 @@ gene copy):
 <Figure caption="odgi depth over the rrnC operon against each builder's graph, on one axis." src="/img/pangenome_cactus/builders.png" />
 
 pggb's curve doubles to about 10 over the operon. Minigraph-Cactus's curve sits
-near 4 across the whole window, one path below the strain count.
+near 4 across the whole window, with no rise over the operon.
 
 ## Mapping a new isolate through the graph
 
@@ -681,14 +681,14 @@ prophage and a second Sakai-only stretch.
 [`build_ecoli_pangenome_cactus.sh`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/build_ecoli_pangenome_cactus.sh)
 runs everything above in one shot. It:
 
-1. downloads the five RefSeq genomes, keeping only each one's chromosome, and
-   runs `cactus-pangenome`
-2. converts the HAL, VCF, `odgi depth` and `odgi pav` into the projections
-   above, and maps the KTa004 reads
-3. indexes the base-level graph by following the reference's paths, with the
-   command under [Indexing the graph](#indexing-the-graph)
-4. writes a `config.json` with the assemblies, per-strain gene tracks, the
-   projection and segments tracks, the plugin declaration and a default session
+- downloads the five RefSeq genomes, keeping only each one's chromosome, and
+  runs `cactus-pangenome`
+- converts the HAL, VCF, `odgi depth` and `odgi pav` into the projections above,
+  and maps the KTa004 reads
+- indexes the base-level graph by following the reference's paths, with the
+  command under [Indexing the graph](#indexing-the-graph)
+- writes a `config.json` with the assemblies, per-strain gene tracks, the
+  projection and segments tracks, the plugin declaration and a default session
 
 ```bash
 curl -fO https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/build_ecoli_pangenome_cactus.sh

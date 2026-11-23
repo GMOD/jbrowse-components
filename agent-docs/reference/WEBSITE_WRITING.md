@@ -152,7 +152,7 @@ no em-dashes.
   accession, sample list or locus belongs in `scripts/build_*.sh` under
   `## Reproduce it end to end`, which curls the script and runs the copy (the
   reader has not cloned the repo).
-- **Above the `curl … | bash` fence, a numbered list** of three or four steps
+- **Above the `curl … | bash` fence, a bulleted list** of three or four steps
   says what the script does and why, in the reader's terms, with no commands.
 - Put `<!-- from: scripts/build_<topic>.sh -->` over a fence showing a real
   command the script runs (`python` and `r` fences too; `dtu` is the example).
