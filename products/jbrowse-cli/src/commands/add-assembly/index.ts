@@ -1,7 +1,13 @@
+import { mkdir } from 'node:fs/promises'
 import path from 'node:path'
 import { parseArgs } from 'node:util'
 
-import { debug, printHelp, requirePositional } from '../../utils.ts'
+import {
+  debug,
+  printHelp,
+  requirePositional,
+  resolveConfigPath,
+} from '../../utils.ts'
 import { loadFiles } from '../add-track-utils/file-operations.ts'
 import { validateLoadOption } from '../add-track-utils/validators.ts'
 import { upsertConfigEntry } from '../shared/config-operations.ts'
@@ -11,7 +17,6 @@ import {
   getAssembly,
   loadOrCreateConfig,
   parseSequenceType,
-  resolveTargetPath,
 } from './utils.ts'
 
 export async function run(args?: string[]) {
@@ -169,12 +174,12 @@ export async function run(args?: string[]) {
 
   const argsSequence = positionals[0]
   requirePositional(argsSequence, 'sequence', usage)
-  const output = runFlags.target || runFlags.out || '.'
   const flags = { ...runFlags, type }
 
   debug(`Sequence location is: ${argsSequence}`)
 
-  const target = await resolveTargetPath(output)
+  const target = await resolveConfigPath(runFlags.target, runFlags.out)
+  await mkdir(path.dirname(target), { recursive: true })
   const destDir = path.dirname(target)
   const {
     assembly: baseAssembly,

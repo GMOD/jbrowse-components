@@ -7,7 +7,6 @@ import { isURL } from '../../types/common.ts'
 import {
   STDIN_ARG,
   debug,
-  ignoreNotFound,
   isRecord,
   parseCommaSeparatedString,
   readInlineOrFileJson,
@@ -270,16 +269,6 @@ function makeSequence(name: string, adapter: Sequence['adapter']): Sequence {
     trackId: `${name}-ReferenceSequenceTrack`,
     adapter,
   }
-}
-
-export async function resolveTargetPath(output: string): Promise<string> {
-  const stat = await ignoreNotFound(fs.promises.stat(output))
-  if (!stat) {
-    const dir = output.endsWith('.json') ? path.dirname(output) : output
-    await fs.promises.mkdir(dir, { recursive: true })
-  }
-  const finalStat = stat ?? (await ignoreNotFound(fs.promises.stat(output)))
-  return finalStat?.isDirectory() ? path.join(output, 'config.json') : output
 }
 
 async function resolveRefNameAliasAdapter(
