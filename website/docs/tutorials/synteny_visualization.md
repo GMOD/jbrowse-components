@@ -13,8 +13,8 @@ Two assemblies of one species share most of their sequence, and an alignment
 between them shows where the order breaks: an inversion, a moved block, a gene
 only one strain has. We align three _Helicobacter pylori_ strains (26695, CHC155
 and J99) with minimap2, one pair at a time, and the steps work the same on any
-pair of assemblies of your own. The other route to a stack of genomes aligns
-every genome against every other in one run, which
+pair of assemblies of your own. The other way to build a stack of genomes is to
+align every genome against every other in one run, which
 [](/docs/tutorials/allvsall_synteny) follows through five _E. coli_ strains. We:
 
 - load the assemblies, and the minimap2 PAF as a synteny track
@@ -154,8 +154,8 @@ indexed needs only its `uri`; swap in your own file.
 }
 ```
 
-A track whose `assemblyNames` are in the wrong order draws an empty band and
-shows a warning in the view header:
+When a track's `assemblyNames` are in the wrong order, JBrowse draws an empty
+band and shows a warning in the view header:
 
 <Figure caption="A synteny track whose assemblyNames are reversed draws an empty band, and the warning icon in its header opens a dialog reporting the reversal." src="/img/sv_synteny/assembly_order_warning.png" />
 
@@ -229,7 +229,7 @@ track's menu:
 
 An ortholog is then one color down all the rows, and a gene with no `gene` value
 (most genes here have only a locus tag) stays grey. Inside the inversion, _rsmA_
-and _rlmN_ trade places in J99.
+and _rlmN_ are in swapped order in J99.
 
 <Figure caption="Left, the Color by attribute dialog on the first gene track. Right, the strains after applying it, a shared symbol one color down all of them." src="/img/sv_synteny/color_by_attribute_steps.png" links="Dialog=sv_synteny/color_by_attribute,Result=sv_synteny/ortholog_colors" />
 

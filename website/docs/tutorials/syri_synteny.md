@@ -118,7 +118,7 @@ syri2jbrowse --genomes genomes.txt -o . \
   --pair Col-0 Kyo Col-0_Kyo.syri.out --pair Col-0 Sha Col-0_Sha.syri.out
 ```
 
-It writes `config.json` with one assembly per accession, read from a
+syri2jbrowse writes `config.json` with one assembly per accession, read from a
 `.chrom.sizes` beside it:
 
 ```json addassembly
@@ -340,8 +340,8 @@ Col-0 at `Chr4:1-6,000,000` and turn on **SyRI regions on Col-0, by genome** and
 }
 ```
 
-Each lane is placed by its run against Col-0, while the band between two lanes
-comes from the run between those two accessions.
+JBrowse places each lane by that accession's run against Col-0, and draws the
+band between two lanes from the run between those two accessions.
 
 <Figure caption="Col-0 chromosome 4 with a row of SyRI regions per accession above, and the accessions as lanes below." src="/img/syri/col0_lanes.png" />
 
@@ -350,9 +350,9 @@ comes from the run between those two accessions.
 The
 [Arabidopsis pangenome page](https://genomes.jbrowse.org/pangenomes/arabidopsis/)
 has SyRI regions for the 1001 Genomes Plus accessions on TAIR10. Type a gene or
-region, and it maps the window with one row per structural form: a group of
-accessions with the same alleles at every structural-variant site in the window,
-called with `minigraph --call`.
+region, and the page maps the window with one row per structural form: a group
+of accessions with the same alleles at every structural-variant site in the
+window, called with `minigraph --call`.
 
 - **Open in JBrowse**, under the map, opens the window with a row of SyRI
   regions per accession beneath the graph

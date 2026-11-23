@@ -9,7 +9,7 @@ tutorial_category: Structural variation
 ---
 
 A structural variant (SV) callset for a cohort gives every person a genotype at
-every call, and each genotype rests on that person's reads. We take one call
+every call, and each genotype is based on that person's reads. We take one call
 from the 1000 Genomes ensemble SV callset, a deletion spanning the whole of
 _RHD_, the RhD blood group gene, whose loss is the usual cause of the
 RhD-negative blood type. The call is common enough to fill all three genotype
@@ -58,8 +58,9 @@ copy-number store_ shows.
 
 ## Loading the callset, the reads and the copy-number store
 
-The CRAMs decode against the assembly's sequence, so it must be the GRCh38
-sequence the reads were aligned to, with the chromosome names the VCF uses.
+JBrowse decodes the CRAMs against the assembly's sequence, so it must be the
+GRCh38 sequence the reads were aligned to, with the chromosome names the VCF
+uses.
 
 ```json addassembly
 {
@@ -164,20 +165,20 @@ wide block, and rows start in the callset's order:
 
 In the genotype rows, dark blue is no copy of _RHD_, light blue one and grey
 two. The olive stripe is `HGSV_1823`, a small copy-number record nested inside
-the deletion. The callset gives most of the cohort a no-call there (no genotype
+the deletion. Most of the cohort has a no-call there in the callset (no genotype
 reported), while QuicK-mer2 measures copy number per bin from the reads, so the
 olive column is a red gain in the copy-number track.
 
 A genotype cell marks some call at that position. The records band above the
-rows draws each call with its id, class and size, and **Color by → SV type**
-names the class in the cells too, as the
+rows shows each call with its id, class and size, and **Color by → SV type**
+shows the class in the cells too, as the
 [multi-variant track guide](/docs/user_guides/multivariant_track) shows. The
 figure has two tracks over NCBI RefSeq genes:
 
 - the callset, one row per sample sorted by genotype at the _RHD_ deletion,
   under its records band with each call labelled by its id
 - QuicK-mer2 copy number for every individual, one row each and clustered on
-  this window, where blue is a copy lost against the diploid white and red a
+  this window, where blue is a copy lost against the diploid white and red is a
   copy gained
 
 <Figure caption="The 1KGP SV callset over RHD with the panel's copy-number calls under it." src="/img/multisv_rhd.png" />
@@ -227,8 +228,8 @@ their arcs:
 
 The call also lists a duplicated copy in `INFO.CPX_INTERVALS`. A copy inserted
 beside its origin leaves pair orientation unchanged, so the bands do not show
-it, and that half of the call rests on coverage, where noise at this size makes
-bumps as wide as the duplication.
+it. That half of the call is based on coverage alone, and at this size the noise
+in coverage makes bumps as wide as the duplication.
 
 ## See also
 

@@ -51,8 +51,8 @@ npm install -g @jbrowse/cli@next
 
 <!-- END GENERATED TUTORIAL_INSTALL prokka,node,jbrowse-cli -->
 
-Installed beside other tools, conda resolves the old Prokka 1.13, so Prokka gets
-an environment of its own.
+When Prokka is installed beside other tools, conda resolves the old Prokka 1.13,
+so the install puts Prokka in a separate environment.
 
 ## The data
 
@@ -144,8 +144,8 @@ CRISPR array as a `repeat_region`:
 }
 ```
 
-The assembly and the track each read the whole file into memory when the genome
-opens, which suits a genome of a few megabases.[^gff]
+When the genome opens, JBrowse reads the whole file into memory for the assembly
+and again for the track, which suits a genome of a few megabases.[^gff]
 
 ## Finding a gene by name
 

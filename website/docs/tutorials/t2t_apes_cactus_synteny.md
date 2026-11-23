@@ -71,10 +71,10 @@ rebuild those results, and the chain steps below take your own chains.
 
 ## Chains between neighbours, from one alignment
 
-For each lane, the display reads two chains from the file: the chain between
-hg38 and that ape places the lane under the human window, and the chain between
-that ape and the one above it supplies the ribbons between them. The pairs cover
-every ape in the stack:
+For each lane, the display reads two chains from the file. It places the lane
+under the human window by the chain between hg38 and that ape, and draws the
+ribbons between that ape and the one above it from the chain between those two.
+The pairs cover every ape in the stack:
 
 - hg38 against each ape
 - chimpanzee against bonobo, bonobo against gorilla, gorilla against the
@@ -174,12 +174,12 @@ gene tracks come from each genome's hub unchanged, as in the hosted config.
 
 ## Orientation at ERBB2 down the tree
 
-We'll open the track on hg38 around _ERBB2_ on 17q12. It draws a lane per ape
-under human, each in the coordinates of that ape's assembly, and each lane
+We'll open the track on hg38 around _ERBB2_ on 17q12. The track draws a lane per
+ape under human, each in the coordinates of that ape's assembly, and each lane
 header names the chromosome and the span the lane shows, with `[rev]` where the
-lane runs against human. The ribbons color by strand (**Color by → Strand**,
-under **Ribbons** in the track menu), blue where a lane runs against the one
-above it:
+lane runs against human. The ribbons are colored by strand (**Color by →
+Strand**, under **Ribbons** in the track menu), blue where a lane runs against
+the one above it:
 
 ```json session config=https://jbrowse.org/demos/t2t_apes_cactus/config.json
 {

@@ -72,7 +72,7 @@ GFF3 and a CDS FASTA per genome of your own.
 | Human, GRCh38.p14            | [GCF_000001405.40](https://www.ncbi.nlm.nih.gov/datasets/genome/GCF_000001405.40/) |
 | Rhesus macaque, T2T-MMU8v2.0 | [GCF_049350105.2](https://www.ncbi.nlm.nih.gov/datasets/genome/GCF_049350105.2/)   |
 
-## What dN/dS measures
+## Synonymous and non-synonymous rates
 
 A coding substitution is synonymous (the codon changes, the amino acid does not)
 or non-synonymous.
@@ -81,8 +81,8 @@ or non-synonymous.
   dS approximates the mutation rate.
 - **dN** is the non-synonymous rate, which reflects the selection acting on
   those changes.
-- **dN/dS below 1** indicates purifying selection, where most genes sit. **Above
-  1** needs positive selection to explain.
+- **dN/dS below 1** indicates purifying selection, where most genes sit, and a
+  ratio **above 1** needs positive selection to explain.
 
 ## Producing the human-rhesus ortholog table and its rates
 
@@ -131,9 +131,9 @@ Two input mistakes leave jcvi with no orthologs:
 ### Measuring dN and dS on each pair {#dn-and-ds}
 
 The pair list is the two gene columns of `human.rhesus.anchors`. The script
-skips `human.rhesus.lifted.anchors`, which recruits extra pairs near an
-established syntenic block. Their median dS is several times that of the chained
-pairs, which marks them as paralogs.
+skips `human.rhesus.lifted.anchors`, where jcvi adds extra pairs recruited near
+an established syntenic block. Their median dS is several times that of the
+chained pairs, which marks them as paralogs.
 
 <!-- from: scripts/build_primate_selection.sh -->
 
@@ -169,8 +169,8 @@ synonymous differences than its value.
 
 Every row also has that count and a two-sided Fisher exact p, the test
 [MEGA](https://www.megasoftware.net/web_help_12/Analysis_Preferences_Fisher_s_Exact_Test.htm)
-prescribes for small substitution counts. The track config below exposes both as
-`attributeColumns`, so clicking a link shows the evidence under its color.
+prescribes for small substitution counts. The track config below lists both in
+`attributeColumns`, so clicking a link shows the evidence behind its color.
 
 ## Loading the human and rhesus genomes and genes
 
@@ -207,7 +207,7 @@ Add the rhesus track the same way, with `rhesus_genes` under `rhesus`.
 ## Loading the ortholog table as a synteny track
 
 `primate.blocks` lists each pair's two gene ids, then dN, dS, the synonymous
-substitution count and the Fisher p, the `.blocks` shape
+substitution count and the Fisher p, the `.blocks` format
 [`MCScanBlocksAdapter`](/docs/config_guides/synteny_track) reads.
 `attributeColumns` names the columns after the two gene columns, and the detail
 panel lists each as a feature attribute:

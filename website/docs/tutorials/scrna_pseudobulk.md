@@ -7,9 +7,9 @@ guide_category: Tutorials
 tutorial_category: Epigenomics & single cell
 ---
 
-Pooled per single-cell cluster (pseudobulking) and placed on the genome, the
-reads show which cell types express a marker gene and where in the gene the
-reads fall. Single-cell ATAC fragments pooled the same way give one chromatin
+Reads pooled per single-cell cluster (pseudobulking) and placed on the genome
+show which cell types express a marker gene and where in the gene the reads
+fall. Single-cell ATAC fragments pooled the same way give one chromatin
 accessibility profile per cell type. With two separate 10x releases of
 peripheral blood cells (PBMC), one RNA and one ATAC, we:
 
@@ -92,10 +92,10 @@ and barcode table.
 ## Loading GRCh38
 
 The RNA reads and the ATAC fragments were both aligned to GRCh38, and the
-BigWigs inherit its `chr1`-style chromosome names, so the tracks go on an hg38
-assembly that spells them the same way. A BigWig whose names differ from the
-assembly's, such as Ensembl's `1` against `chr1`, draws empty unless the
-assembly has a name-alias table.
+BigWigs use its `chr1`-style chromosome names, so the tracks go on an hg38
+assembly that spells them the same way. JBrowse draws a BigWig empty when its
+names differ from the assembly's, such as Ensembl's `1` against `chr1`, unless
+the assembly has a name-alias table.
 
 ```json addassembly
 {
@@ -233,8 +233,8 @@ bedGraphToBigWig CD8_T.all.bg hg38.chrom.sizes bw/CD8_T.bw
 One ATAC cell contributes a few thousand fragments, so a single cell's coverage
 is almost entirely zero, and pooling a cluster's cells gives a profile with
 peaks. Normalization matters as it does for RNA, since groups differ in cell
-count and total fragments. The bin size trades resolution against file size and
-has to stay well inside one peak.
+count and total fragments. A larger bin gives a smaller file at a lower
+resolution, and the bin has to stay well inside one peak.
 
 SnapATAC2's `export_coverage` splits cells by a metadata column and writes one
 normalized BigWig per group in a single call:
@@ -260,8 +260,8 @@ snap.ex.export_coverage(
 # writes bw/<cell_type>.bw, one per group, keyed by group in the returned dict
 ```
 
-Too many `n_jobs` workers exhaust memory and fail the writer partway through the
-groups. `groupby="leiden"` gives one BigWig per cluster instead.
+With too many `n_jobs` workers, the writer runs out of memory and fails partway
+through the groups. `groupby="leiden"` gives one BigWig per cluster instead.
 
 The other ATAC tools write the same files:
 
@@ -341,7 +341,8 @@ readable beside a bright one such as _LYZ_ in monocytes.
 
 Set three things in the `subadapters` list from the single-cell object:
 
-- the order: subadapters draw in the order given, so group them by lineage
+- the order: JBrowse draws the subadapters in the order given, so group them by
+  lineage
 - `color`: copy the cluster color from your analysis, so a cell type matches its
   UMAP color
 - `group`: the sidebar tree branches on it, and [](/docs/user_guides/clustering)
@@ -518,8 +519,8 @@ https://jbrowse.org/code/jb2/main/test_data/config_demo.json, has it as
 }
 ```
 
-At _CD8A_ the CD8 T, MAIT and NK rows carry the peaks and the B rows stay near
-flat, and at _MS4A1_ the B rows carry them and the T rows stay near flat. Paste
+At _CD8A_ the CD8 T, MAIT and NK rows have the peaks and the B rows stay near
+flat, and at _MS4A1_ the B rows have them and the T rows stay near flat. Paste
 both into the location box to open them side by side:
 
 ```text
@@ -595,8 +596,8 @@ chr2:86,780,000-86,820,000 chr11:60,450,000-60,490,000
 <Figure caption="The measured ATAC rows above AlphaGenome 2's predicted rows for the same cell types, over CD8A and MS4A1 side by side." src="/img/scatac/pbmc5k_predicted_vs_measured.png" />
 
 At _CD8A_ the predicted peaks fall in the CD8, MAIT and NK rows, as the measured
-ones do. At _MS4A1_ the B rows lead in both tracks, and the predicted track also
-puts two peaks in the T and NK rows where the measured rows are flat.
+ones do. At _MS4A1_ the B rows are highest in both tracks, and the predicted
+track also has two peaks in the T and NK rows where the measured rows are flat.
 
 ## Reproduce it end to end
 
@@ -629,8 +630,8 @@ beside its `cell_type`. The script:
 1. pools each cell type's fragments into one BigWig, in 25 bp bins and RPKM, as
    above
 2. orders the rows by lineage (T cells, NK, B cells, then myeloid) from a map
-   written into the script, because the label order stored in the object puts
-   the rows of one lineage far apart. To run it on your own experiment, replace
+   written into the script, because in the label order stored in the object the
+   rows of one lineage are far apart. To run it on your own experiment, replace
    that map
 3. gives each row its cluster's color from the same object, so a cell type
    matches its UMAP

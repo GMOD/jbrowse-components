@@ -9,10 +9,10 @@ tutorial_category: genomes.jbrowse.org
 ---
 
 RepeatMasker annotates a genome's repeats and names each copy's class (SINE,
-LINE, LTR, DNA transposon, simple repeat). The classes spread along a genome
-differently: over a window of 17q21, SINE copies fill it end to end while LINE
-copies come in clusters. A RepeatMasker track draws every class in one packed
-row of colored blocks, where that difference is hard to read. We:
+LINE, LTR, DNA transposon, simple repeat). Over a window of 17q21, SINE copies
+fill the window end to end while LINE copies come in clusters. A RepeatMasker
+track draws every class in one packed row of colored blocks, where that
+difference is hard to read. We:
 
 - switch hg38's RepeatMasker track to a
   [multi-row feature display](/docs/user_guides/multirow_feature_track), one
@@ -63,14 +63,15 @@ the track:
 
 - Turn on **RepeatMasker** and type `chr17:45,700,000-45,750,000` into the
   location box.
-- Choose **Display types → Multi-row display** in the track menu. The display
-  rows on the features' `type` unless told otherwise, and RepeatMasker's table
-  has no `type`, so it draws every repeat in one row and opens **One row per**.
-- Pick `repClass` in the box. Dismissed, the picker comes back from the **One
-  row per...** chip at the head of the track, or from **One row per →
+- Choose **Display types → Multi-row display** in the track menu. By default the
+  display makes one row per value of the features' `type`, and RepeatMasker's
+  table has no `type`, so it draws every repeat in one row and opens **One row
+  per**.
+- Pick `repClass` in the box. If you dismiss the picker, reopen it from the
+  **One row per...** chip at the head of the track, or from **One row per →
   Attribute...** in the track menu.
 
-The picker lists every attribute the features in view carry, with how many rows
+The picker lists every attribute the features in view have, with how many rows
 each would make, `repFamily` among them. <!-- menu-path-ok -->
 
 <Figure src="/img/multirow/display_types_menu.png" caption="Top: the track menu's Display types submenu on the UCSC RepeatMasker track; any feature track offers the multi-row display beside its default one. Bottom: the same window in the multi-row display with one row per repeat class." />
@@ -143,9 +144,10 @@ ones. `rows.colors` pins a color on the label bar of each class it names.
 }
 ```
 
-The rows come from the classes in the file, so a class `rows.colors` leaves out
-still gets a row, as `Unknown` does in the figures, painted in the default block
-color. `scale.unknown` in `rows.color` sets one color for every unnamed row.
+The rows come from the classes in the file, so a class missing from
+`rows.colors` still gets a row, as `Unknown` does in the figures, painted in the
+default block color. `scale.unknown` in `rows.color` sets one color for every
+unnamed row.
 
 The track opens with the first display listed, so the multi-row entry makes rows
 the default. A bare `{ "type": "LinearBasicDisplay" }` ahead of it keeps the
@@ -156,8 +158,8 @@ packed form as the default and leaves the rows one menu click away.
 A hub's RepeatMasker BED has the `repClass` column the display partitions on.
 RepeatMasker's `.out` file instead has a single `class/family` field, `LINE/L1`
 for a repeat with both and a bare `Simple_repeat` for one whose family is its
-class. Splitting that field in two, under a header naming the columns, turns the
-`.out` into a file of the same shape as the one the track above reads:
+class. The commands below split that field in two, under a header naming the
+columns, which gives a file in the same format as the one the track above reads:
 
 <!-- from: scripts/build_repeatmasker_classes.sh -->
 

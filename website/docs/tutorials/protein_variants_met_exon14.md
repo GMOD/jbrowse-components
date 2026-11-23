@@ -134,17 +134,17 @@ the DNA reads, copy the view to the end of exon 14:
 
 <Figure src="/img/protein/met_ex14.png" caption="MET exons 13 to 15 with NCI-H596 DNA and RNA-seq reads and EBC-1 RNA-seq reads (A), the view copied to the end of exon 14 (B), and 3BUX with the exon 14 highlight on the MET stretch CBL binds (C)." />
 
-In panel A, the NCI-H596 arcs leave exon 13 and land on exon 15, over a dip in
-coverage across exon 14, while the EBC-1 arcs enter exon 14 and leave it. In
-panel B, every NCI-H596 read has T where the reference has the G of the intron's
-GT. Without exon 14 the receptor lacks tyrosine 1003, the residue CBL binds in
-panel C, so CBL marks less of the receptor for degradation
+In panel A, the NCI-H596 arcs join exon 13 to exon 15, over a dip in coverage
+across exon 14, while the EBC-1 arcs join exon 13 to exon 14 and exon 14 to
+exon 15. In panel B, every NCI-H596 read has T where the reference has the G of
+the intron's GT. Without exon 14 the receptor lacks tyrosine 1003, the residue
+CBL binds in panel C, so CBL marks less of the receptor for degradation
 ([Kong-Beltran et al. 2006](https://doi.org/10.1158/0008-5472.CAN-05-2749)).
 
 ## Your own reads
 
-- start from the arcs: an arc that jumps an exon in one sample and not in
-  another is the skip, whatever its cause
+- start from the arcs: an arc that spans an exon in one sample and not in
+  another marks the skip, whatever its cause
 - then open the DNA reads at the exon's two ends; a skip can come from a base
   change at the splice site, as here, or a deletion that removes it
 - the same steps work on any gene the protein browser opens, and **Launch

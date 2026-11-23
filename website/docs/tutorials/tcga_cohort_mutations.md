@@ -9,9 +9,9 @@ tutorial_category: Cancer genomics
 
 Breast tumors of one subtype tend to have point mutations in the same genes. The
 [copy-number cohort](/docs/tutorials/tcga_cohort_cnv) sorts the TCGA breast
-tumors by amplification; their point mutations separate the groups the segments
-cannot. We turn the project's somatic mutation calls into one matrix, each
-column a distinct mutation and each row a tumor, and read it at _CDH1_ and
+tumors by amplification; the groups the segments do not separate show in their
+point mutations. We turn the project's somatic mutation calls into one matrix,
+each column a distinct mutation and each row a tumor, and read it at _CDH1_ and
 _PIK3CA_. We:
 
 - load the cohort VCF, merged from the GDC's mutation files, as a multi-sample
@@ -74,9 +74,9 @@ Three conventions affect how to read the matrix:
 - the GDC's open mutation calls cover the exome only, so the matrix reads at
   gene scale
 
-Read counts are kept in `AD`/`DP`. `INFO/CSQ` re-encodes the VEP columns from
-the MAF (`Consequence`, `IMPACT`, `HGVSp_Short`, SIFT, PolyPhen), so the track
-can color cells by consequence impact without running an annotator.
+Read counts are kept in `AD`/`DP`. `INFO/CSQ` holds the VEP columns from the MAF
+(`Consequence`, `IMPACT`, `HGVSp_Short`, SIFT, PolyPhen), so the track can color
+cells by consequence impact without running an annotator.
 
 The clinical TSV is one row per tumor barcode and one column per attribute:
 
@@ -97,8 +97,8 @@ The table lists more tumors than the mutation track draws.[^unmatched]
 
 ## Load the cohort VCF into JBrowse
 
-Add the assembly first. The hosted FASTA calls its contigs bare (`1`) while the
-VCF uses `chr1`, so pass the alias file and both resolve.
+Add the assembly first. The hosted FASTA names its contigs bare (`1`) while the
+VCF uses `chr1`, so pass the alias file to map one onto the other.
 
 ```json addassembly
 {
@@ -177,7 +177,7 @@ In [grammar-of-graphics](/docs/config_guides/mark_display) terms,
 stacked sections, one per value of a samples TSV column, sorted, and
 `facet.sort` pins the sections you want first.
 [`rows.color`](/docs/config/variantrows/#slot-color) is a color scale on each
-row's label bar, so it puts the matching color strip in the gutter.
+row's label bar, so the gutter shows the matching color strip.
 
 **Group by** and **Color by → Samples** in the track menu set the same two keys.
 
@@ -225,9 +225,9 @@ lobular breast cancer
 
 ## Facet rows by receptor subtype
 
-Setting `facet` and `rows.color` to `subtype` instead bands the rows by receptor
-status ([TCGA 2012](https://doi.org/10.1038/nature11412)), with the HR+/HER2-
-band first in `sort`:
+With `facet` and `rows.color` set to `subtype` instead, the rows form bands by
+receptor status ([TCGA 2012](https://doi.org/10.1038/nature11412)), with the
+HR+/HER2- band first in `sort`:
 
 ```json addtrack loc=chr3:179,148,000-179,240,500
 {
@@ -362,9 +362,9 @@ whose first column matches the VCF's sample names works as `samplesTsvLocation`.
 One script builds every file above for any project id,
 [`build_tcga_cohort_mutations.sh`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/build_tcga_cohort_mutations.sh):
 
-1. It downloads every open-access **Masked Somatic Mutation** MAF in the
-   project, the GDC's aliquot-merged ensemble calls with germline sites masked
-   out, which need no dbGaP application.
+1. Downloads every open-access **Masked Somatic Mutation** MAF in the project,
+   the GDC's aliquot-merged ensemble calls with germline sites masked out, which
+   need no dbGaP application.
 2. [`maf_to_vcf.py`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/maf_to_vcf.py)
    merges them into one VCF, a column per tumor. A GDC file query also returns
    metastasis MAFs, so the merge keeps primary tumors (sample-type code `01` in

@@ -5,11 +5,11 @@ guide_category: Tutorials
 tutorial_category: Transcriptomics & proteins
 ---
 
-An RNA-seq read mapped back to the genome jumps the introns spliced out of the
-transcript, and the aligner records each jump in the read's CIGAR string. In a
-stranded library the pair flags also mark which strand the transcript came from.
-JBrowse draws splice arcs and strand coloring from those two BAM fields, with no
-extra files or configuration. We:
+An RNA-seq read mapped back to the genome spans the introns spliced out of the
+transcript as gaps, and the aligner writes each gap into the read's CIGAR
+string. In a stranded library the pair flags also mark which strand the
+transcript came from. JBrowse draws splice arcs and strand coloring from those
+two BAM fields, with no extra files or configuration. We:
 
 - load the stranded reads and RefSeq genes on hg19, and read coverage and splice
   arcs over _ACTB_
@@ -126,14 +126,13 @@ Two more things apply to your own reads:
   from the aligner, loads separately as a
   [quantitative track](/docs/user_guides/quantitative_track).
 
-## What RNA-seq looks like in the genome browser
+## Spliced reads over ACTB
 
 Type `chr7:5,567,000-5,570,000` into the location box. The gene there is _ACTB_,
 a compact gene with deep read coverage.
 
-The thin teal lines jumping across a gap are spliced alignments, where a read
-maps partly to one exon and partly to the next, skipping the intron between
-them.
+The thin teal lines spanning a gap are spliced alignments, where a read maps
+partly to one exon and partly to the next, skipping the intron between them.
 
 <Figure caption="RNA-seq reads over ACTB: coverage with strand-colored splice arcs, then the spliced pileup." src="/img/rnaseq/basic.png" />
 
@@ -165,15 +164,14 @@ JBrowse computes the arcs on the fly from the skips in the reads in view, and
 colors each arc by transcript strand, salmon for forward and purple for reverse.
 It finds the strand two ways:
 
-- **Tags.** `XS` and `TS` record the strand directly. minimap2's `ts` is
-  relative to the read, so JBrowse combines it with the strand the read aligned
-  to.
+- **Tags.** `XS` and `TS` hold the strand. minimap2's `ts` is relative to the
+  read, so JBrowse combines it with the strand the read aligned to.
 - **Splice motif.** A BAM from STAR without `--outSAMstrandField intronMotif`
   has no tags, so JBrowse reads the first and last two bases of the intron off
-  the reference: GT-AG on the forward strand reads as CT-AC on the reverse. A
-  junction whose reads disagree, or whose motif is none of GT-AG, GC-AG and
-  AT-AC, draws in the neutral color. Hovering an arc shows the motif beside the
-  read count.
+  the reference: GT-AG on the forward strand reads as CT-AC on the reverse.
+  JBrowse draws a junction in the neutral color when its reads disagree or its
+  motif is none of GT-AG, GC-AG and AT-AC. Hovering an arc shows the motif
+  beside the read count.
 
 ## Picking out spliced reads in a deep pileup
 
@@ -221,9 +219,10 @@ skips. The IsoSeq alignments are a second BAM on the same assembly:
 ## Strand-specific RNA-seq
 
 The arc colors give the transcript strand of the spliced reads, and an unspliced
-read has none. A _strand-specific_ library records the transcript strand in
-which mate of the pair a read is, so every read has a strand, which separates
-genes close together or overlapping on opposite strands.
+read has none. In a _strand-specific_ library, whether a read is the first or
+second mate of its pair gives the transcript strand, so every read has a strand.
+The read strands separate genes close together or overlapping on opposite
+strands.
 
 The surfeit locus is a tight cluster of genes on alternating strands (_RPL7A_,
 _SURF1_, _SURF2_, _SURF4_). Type `chr9:136,214,000-136,229,000` into the
@@ -249,11 +248,11 @@ On chr6, _NELFE_ and _SKIV2L_ sit back to back on opposite strands. Type
 Every junction so far joins an exon to a downstream one. A circular RNA joins
 the end of an exon back to the start of an upstream one. A short read across
 that joint aligns in two pieces, and the aligner writes the second piece into
-the read's `SA` tag. The junctions band counts split-read junctions beside the
-N-gap splices, one arc per junction, and colors each by its class. A back-splice
-is a duplication-type split, drawn in the teal JBrowse uses for an RL pair
-(mates pointing away from each other). **Split-read junctions → Hide split-read
-junctions** in **Filter by → More filters...** turns them off.
+the read's `SA` tag. JBrowse counts split-read junctions in the junctions band
+beside the N-gap splices, one arc per junction, and colors each by its class. A
+back-splice is a duplication-type split, drawn in the teal JBrowse uses for an
+RL pair (mates pointing away from each other). **Split-read junctions → Hide
+split-read junctions** in **Filter by → More filters...** turns them off.
 
 STAR writes those `SA` tags only in chimeric mode. With its defaults it
 soft-clips the joint, and no back-splice arc appears:
@@ -272,8 +271,8 @@ STAR's `Chimeric.out.junction` lists every chimeric read. A back-splice is a row
 on one chromosome and strand whose acceptor lies upstream of its donor. Columns
 2 and 5 give the intron base beside the junction on the donor and acceptor
 sides, so on the plus strand the circle runs from one base after column 5 to one
-base before column 2, and the minus strand mirrors that. This counts distinct
-reads per back-splice and keeps those with at least two:
+base before column 2, and the minus strand mirrors that. The command below
+counts distinct reads per back-splice and keeps those with at least two:
 
 ```bash
 awk -F'\t' -v OFS='\t' '$1 !~ /^#/ && $1 == $4 && $3 == $6 && $7 >= 0 &&
@@ -345,9 +344,9 @@ At _ZKSCAN1_ the circle spans two exons:
 
 <Figure caption="ZKSCAN1: the STAR back-splice table above the reads, and over their coverage a splice arc and the back-splice as a teal duplication-type split junction." src="/img/circrna/zkscan1_backsplice.png" links="Open this view=circrna/zkscan1_backsplice" />
 
-RNase R digests linear RNA and leaves the circles, so a circle's back-splice
-should hold up against the linear splices into and out of its exons. The same
-HeLa RNA left untreated is the control:
+RNase R digests linear RNA and leaves the circles, so after treatment a circle's
+back-splice should keep its reads while the linear splices into and out of its
+exons lose theirs. The same HeLa RNA left untreated is the control:
 
 ```json addtrack
 {
@@ -365,16 +364,16 @@ HeLa RNA left untreated is the control:
 ```
 
 In the control the long red arcs joining ZKSCAN1's circle exons to the rest of
-the gene carry more reads than the teal back-splice. In the treated reads they
+the gene have more reads than the teal back-splice. In the treated reads they
 all but vanish, while the back-splice and the splice between the circle's two
 exons stay:
 
 <Figure caption="ZKSCAN1 with RNase R above and untreated below: the linear splices into and out of the circle fall away under RNase R, and the back-splice stays." src="/img/circrna/zkscan1_rnase_vs_control.png" links="Open this view=circrna/zkscan1_rnase_vs_control" />
 
 A nanopore read of a circle can run around it several times, and the aligner
-writes each lap as its own piece. isoCirc enriches circles and copies each one
-round and round by rolling-circle amplification, so its reads are long runs of
-laps. The demo holds HEK293 isoCirc reads aligned with `minimap2 -ax splice`:
+writes each lap as a separate piece. isoCirc enriches circles and copies each
+one round and round by rolling-circle amplification, so its reads are long runs
+of laps. The demo holds HEK293 isoCirc reads aligned with `minimap2 -ax splice`:
 
 ```json addtrack
 {
@@ -390,20 +389,20 @@ laps. The demo holds HEK293 isoCirc reads aligned with `minimap2 -ax splice`:
 }
 ```
 
-CDR1as is a single-exon circle antisense to _CDR1_. The junctions band counts
-every lap of every read as a crossing of the back-splice, and the pileup shows
-the pieces of each read stacked over the one exon:
+CDR1as is a single-exon circle antisense to _CDR1_. In the junctions band,
+JBrowse counts every lap of every read as a crossing of the back-splice, and the
+pileup shows the pieces of each read stacked over the one exon:
 
 <Figure caption="CDR1as in HEK293 isoCirc reads: one back-splice spanning the exon, counted once per lap." src="/img/circrna/cdr1as_isocirc.png" links="Open this view=circrna/cdr1as_isocirc" />
 
 ## Loading STAR, regtools and portcullis junction tables
 
-The junction arcs on a reads track count the reads in view. A junction table
-from an RNA-seq pipeline adds whole-library read counts, an annotated-or-novel
-flag and portcullis's filtering verdict. One `awk` line converts each table to
-BED, with the intron as the interval, the read count as the score, then the
-strand and the tool's own columns, and the BED draws as arcs on a feature track.
-Sort and index all three the same way:
+The read counts on a reads track's junction arcs come from the reads in view. A
+junction table from an RNA-seq pipeline adds whole-library read counts, an
+annotated-or-novel flag and portcullis's filtering verdict. One `awk` line
+converts each table to BED, with the intron as the interval, the read count as
+the score, then the strand and the tool's own columns, and JBrowse draws the BED
+as arcs on a feature track. Sort and index all three the same way:
 
 ```bash
 sort -k1,1 -k2,2n junctions.bed | bgzip > junctions.bed.gz
@@ -525,16 +524,16 @@ can read them:
 
 The `filter` applies the junctions menu's read-support floor to the
 whole-library counts in the file and keeps the canonical motifs, which drops the
-duplicate that wrong-strand reads give a junction on the opposite strand. The
-color's `scale.domain` lists the `known_junction` values as strings because the
-adapter reads extra columns as text.
+duplicate of a junction that wrong-strand reads create on the opposite strand.
+The color's `scale.domain` lists the `known_junction` values as strings because
+the adapter reads extra columns as text.
 
 **Advanced → Edit plot...** in the track menu edits the same marks, colors and
 filter on an open track.
 
 Type `chr11:49,220,500-49,231,500` into the location box, the 5' end of _FOLH1_,
-where the track colors the junctions RefSeq annotates apart from the ones only
-this library has:
+where the track gives the junctions RefSeq annotates a different color from
+those found in this library alone:
 
 <Figure caption="FOLH1's 5' end: RefSeq transcripts above the library's junctions, blue where an annotated transcript joins the two ends and red where none does." src="/img/rnaseq/junction_track.png" links="Open this view=rnaseq/junction_track" />
 
@@ -549,7 +548,7 @@ To load the other tables:
   third color in `scale.range`. The `filter`'s `expr` is
   `jexl:feature.score >= 3 && feature.canonical_ss != 'N'`.
 
-The `filter` reads column names, and a name the file lacks reads as nothing, so
+The `filter` looks columns up by name, and a column the file lacks is empty, so
 the config's `splice_site` test would hide every junction in either file.
 
 ## See also

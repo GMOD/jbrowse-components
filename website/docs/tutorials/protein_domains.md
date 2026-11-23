@@ -142,8 +142,8 @@ tabix -f -C -p gff pfam.gff3.gz
 
 ## Drawing the domains on their transcripts
 
-JBrowse loads the file as a track in the multi-row feature display, and the
-config states the whole picture:
+JBrowse loads the file as a track in the multi-row feature display, with the
+plot set by these keys in its config:
 
 - `rows` gives each transcript `name` a row.
 - `marks` draws each transcript as a line with its exons over it, the UTR thin
@@ -151,12 +151,12 @@ config states the whole picture:
   `protein_match` children at the same height over the coding exons. Each
   `flatten` step reaches the transcript's children, and each `filter` keeps one
   type.
-- `encoding.color` colors the marks that name no color of their own, the
-  domains, by Pfam family.
+- `encoding.color` colors the domains, the marks with no color set, by Pfam
+  family.
 
-The key names both greys and the families on screen. The track menu's **Edit
-plot...** offers the same plot as an example for any GFF3 of transcripts
-carrying protein matches.
+The key lists both greys and the families on screen. The track menu's **Edit
+plot...** offers the same plot as an example for any GFF3 of transcripts with
+protein matches.
 
 ```json addtrack loc=NC_037653.1:4,839,300-4,850,050
 {

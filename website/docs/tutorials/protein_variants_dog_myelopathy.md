@@ -92,9 +92,9 @@ and:
   fit the whole structure
 - hover column 40 of the `dog_query` row in the alignment
 
-The hover lights the codon on the gene, the column in the alignment and the
-residue on the structure, and the protein view's header compares the two
-letters: glutamate in the dog genome, lysine in the crystal.
+JBrowse lights the codon on the gene, the column in the alignment and the
+residue on the structure, and the protein view's header shows both letters:
+glutamate in the dog genome, lysine in the crystal.
 
 <Figure src="/img/protein/sod1_codon_hover.png" caption="SOD1 at codon 40 with its ortholog alignment and 7WX0. The hovered column, the codon band and Lys40 mark one position." />
 
@@ -137,7 +137,7 @@ awk -F'\t' 'BEGIN { OFS = "\t"
 
 The track reads hosted copies of the slice and the sheet; for your own, point
 `vcfGzLocation` and `samplesTsvLocation` at the files the commands wrote.
-`rows.color` names the sheet's column that colors each row:
+`rows.color` is the sheet column that sets each row's color:
 
 ```json addtrack
 {
@@ -197,10 +197,11 @@ PDB id and the record for your own:
 }
 ```
 
-Open it from the link under the spec. `gene` finds the _SOD1_ transcript through
-the hub's search index, and `connectedView.loc` opens the genome view on
-codon 40. The launch translates the record on that transcript, labels the base
-with the protein change and frames residue 40 on the structure.
+Open it from the link under the spec. JBrowse finds the _SOD1_ transcript named
+in `gene` through the hub's search index and opens the genome view on codon 40,
+the region in `connectedView.loc`. It then translates the record on that
+transcript, labels the base with the protein change and frames residue 40 on the
+structure.
 
 <Figure src="/img/protein/sod1_e40k_variant.png" caption="SOD1 at codon 40 beside 7WX0, opened on the E40K record. The band on the gene shows the change's label, and the structure labels the residue it has there." />
 

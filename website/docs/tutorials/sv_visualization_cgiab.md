@@ -87,7 +87,7 @@ HG008's.
 
 Every track below names one of two assemblies. The calls and reads sit on the
 C-GIAB GRCh38 build, `GRCh38_GIABv3`, which GIAB hosts BGZF-compressed with its
-`.fai` and `.gzi`, so the assembly reads it in place:
+`.fai` and `.gzi`, so JBrowse reads it in place:
 
 ```json addassembly
 {
@@ -190,7 +190,7 @@ samtools faidx GRCh38.fa
 samtools view HG008-T.bam --write-index -o HG008-T.cram -T GRCh38.fa
 ```
 
-Each CRAM is a read track that decodes against `GRCh38_GIABv3`; the normal uses
+Each CRAM is a read track, decoded against `GRCh38_GIABv3`; the normal uses
 `HG008-N.cram`:
 
 ```json addtrack
@@ -294,9 +294,9 @@ no index, and serves it to a variant track:
 }
 ```
 
-Open `chr3:139,970,000-140,005,000` with the five callsets loaded. A link whose
-other breakend lies outside the view draws as a short stem, as both NYGC records
-do below. The figure also shows the HiFiCNV depth, which
+Open `chr3:139,970,000-140,005,000` with the five callsets loaded. JBrowse draws
+a link whose other breakend lies outside the view as a short stem, as for both
+NYGC records below. The figure also shows the HiFiCNV depth, which
 [part 2](/docs/tutorials/cnv_cgiab#building-depth-per-bin-and-b-allele-frequency-tracks)
 builds.
 
@@ -355,7 +355,7 @@ junction in the reads:
   chr3 and chr13 to launch the breakpoint split view.
 - Set **Read height → Compact** on the tumor PacBio HiFi reads opened on each
   panel.
-- **Sort by → Split reads first** lifts the split reads to the top of each
+- **Sort by → Split reads first** moves the split reads to the top of each
   pileup.
 
 [The cancer SV tutorial](/docs/tutorials/cancer_sv#following-the-chain-across-panels)
@@ -373,7 +373,7 @@ We read the same junction three ways:
   config on the same two panels.
 - In the tumor assembly, the synteny track loaded earlier shows the junction
   with no reads. The C-GIAB assembly resolves both loci onto one tumor contig,
-  named for the two chromosomes it fuses.
+  named for the two chromosomes joined in it.
 
 ### CUZD1: a small heterozygous deletion
 
@@ -418,8 +418,8 @@ view menu helps line up the breakpoint.
 **Add → Dotplot view**, set the tumor assembly as one axis and GRCh38 as the
 other, and pick the matching synteny track.
 
-HG008-T v3.2's scaffold names end in `_hap1` or `_hap2`, so one plot stacks both
-haplotypes and doubles every diagonal. In the import form, tick **Plot only
+HG008-T v3.2's scaffold names end in `_hap1` or `_hap2`, so one plot shows both
+haplotypes, with every diagonal twice. In the import form, tick **Plot only
 certain chromosomes** and type `*_hap1` into the chromosomes box of the
 HG008T_v3.2 axis, then `*_hap2` in a second view, for a plain
 assembly-vs-reference diagonal per haplotype.

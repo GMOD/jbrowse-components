@@ -61,8 +61,8 @@ rebuild those results. The marks and the scan step take your own CRAM or BAM.
 
 ## Loading hg38
 
-The CRAM decodes against the assembly the track is added to, so the assembly
-must be the GRCh38 sequence the reads were aligned to.
+JBrowse decodes the CRAM against the assembly the track is added to, so the
+assembly must be the GRCh38 sequence the reads were aligned to.
 
 ```json addassembly
 {
@@ -136,7 +136,7 @@ A mark display has one y axis, and depth runs in the tens while an insert size
 runs in the thousands, so the insert goes on a second track over the same file.
 Its `filter` keeps the leftmost mate, where the template length is positive, so
 each pair counts once, and drops the few over 8 kb. On an alignments track
-`score` is the mapping quality, which colors the points.
+`score` is the mapping quality, and the track colors the points by it.
 
 ```json addtrack
 {
@@ -209,10 +209,10 @@ tabix -f -C -p bed NA12878.chr20.discordant_pairs.bed.gz
 The BED holds few enough rows to fetch whole at any zoom, and two tracks read
 it:
 
-- the point track's `filter` under 20 kb keeps the centromere's megabase inserts
-  off the axis
-- the count track's axis, pinned at 60, lets the centromere saturate so the bin
-  over a deletion stands up
+- the point track's `filter` drops inserts of 20 kb and over, which keeps the
+  megabase inserts at the centromere off the axis
+- the count track's axis is pinned at 60, so the bins at the centromere saturate
+  and the bin over a deletion stays tall enough to see
 
 ```json addtrack loc=chr20
 {
@@ -288,8 +288,8 @@ it:
 }
 ```
 
-In the counts track the `aggregate` step names no `groupby`, so it groups by the
-edges the `bin` step above it wrote.
+In the counts track the `aggregate` step has no `groupby`, so it groups by the
+bin edges from the `bin` step above it.
 
 Open both tracks on the whole of `chr20`.
 

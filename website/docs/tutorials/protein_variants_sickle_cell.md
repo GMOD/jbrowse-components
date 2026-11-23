@@ -71,14 +71,14 @@ on _HBB_ residue 7 with structure 2HBS:
 - drag across codon 7, the `E` of the gene's translation, in the genome view's
   ruler, and pick **Highlight region**
 - click the link chip at the top of the new band, pick **Edit label...** and
-  type `E6V`. The genome view writes the label on the band, the alignment on
-  column 7 and the structure beside Val6
+  type `E6V`. JBrowse writes the label on the band in the genome view, over
+  column 7 in the alignment and beside Val6 on the structure
 - hover column 7 of the `human_query` row in the alignment
 
-Residue 7 counts the initiator methionine, which the mature protein loses, so
-the literature's Glu6 is the transcript's residue 7. The protein view's header
-reads both numbers off the hover and compares the two letters, glutamate in the
-transcript and valine in the crystal.
+The transcript's numbering counts the initiator methionine, which the mature
+protein loses, so the literature's Glu6 is the transcript's residue 7. For the
+hovered residue, the protein view's header shows both numbers and both letters,
+glutamate in the transcript and valine in the crystal.
 
 <Figure src="/img/protein/hbb_codon_hover.png" caption="HBB at codon 7 with its ortholog alignment and 2HBS. The codon band, the alignment column and Val6 mark the same position." />
 
@@ -92,9 +92,9 @@ trait:
 - click a box to open its record. The records at rs334 include malaria,
   haemolytic anaemias, glycated haemoglobin (HbA1c) and kidney disease
 
-A second copy of the catalog keeps rs334's strongest record for each of those
-traits, the one with the smallest p-value, and labels it with its trait,
-p-value, first author and year, read from the file's columns:
+A second copy of the catalog track shows rs334's strongest record for each of
+those traits, the one with the smallest p-value, labeled with its trait,
+p-value, first author and year from the file's columns:
 
 ```json addtrack loc=chr11:5226956-5227046
 {
@@ -200,13 +200,13 @@ domains and sites.
 
 The figure's callouts cover one view at a time:
 
-- the GWAS records tie the allele to malaria and to haemolytic anaemia and
-  kidney disease: one copy protects against severe malaria, and two copies cause
+- the GWAS records associate the allele with malaria, haemolytic anaemia and
+  kidney disease. One copy protects against severe malaria, and two copies cause
   sickle cell disease
-- in the 1000 Genomes track, nearly every carrier has one copy, the protected
-  genotype
-- the alignment and the domain track mark no heme-binding or tetramer-interface
-  site at Glu6, which sits on the protein's surface[^domain]
+- in the 1000 Genomes track, nearly every genome with the allele has one copy,
+  the protected genotype
+- Glu6 sits on the protein's surface, outside the heme-binding and
+  tetramer-interface sites that the alignment and the domain track mark[^domain]
 - on the structure, the hydrophobic valine 6 of the second tetramer's chain H
   fills a pocket of Phe85 and Leu88 on the first tetramer's chain B.
   Deoxygenated haemoglobin S stacks into fibres through this contact, and the

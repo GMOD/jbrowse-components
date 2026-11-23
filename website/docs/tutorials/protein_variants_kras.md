@@ -68,9 +68,9 @@ label the two hotspots there:
   the same for codon 13
 - click the link chip at the top of each band, pick **Edit label...** and type
   `G12` or `G13`
-- hover codon 12 on the gene. The hover lights the codon, the alignment column
-  and the residue on the structure, and the protein view's header compares the
-  two letters: glycine in the genome, cysteine in the crystal
+- hover codon 12 on the gene. JBrowse lights the codon, the alignment column and
+  the residue on the structure, and the protein view's header shows both
+  letters: glycine in the genome, cysteine in the crystal
 
 <Figure src="/img/protein/kras_codon_hover.png" caption="KRAS at codons 12 and 13 with ClinVar, the ortholog alignment pinned to its human row, and 6OIM. The hovered codon, the alignment column and Cys12 mark one position." />
 

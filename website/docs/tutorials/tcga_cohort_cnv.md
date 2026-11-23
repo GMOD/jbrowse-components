@@ -66,8 +66,9 @@ chr1    3301764   30796057   +0.15   TCGA-3C-AAAU-01A   0.1480
 chr1    3301764   7589655    -0.98   TCGA-3C-AALI-01A   -0.9761
 ```
 
-`sample` is a TCGA barcode that splits the rows, and `segmean` is the caller's
-log2 tumor/normal ratio that colors them.
+`sample` is a TCGA barcode, and the display gives each barcode a row; `segmean`
+is the caller's log2 tumor/normal ratio, and the display colors the segments by
+it.
 
 ## Load the segments into JBrowse
 
@@ -186,9 +187,9 @@ chr16   89200000   89300000   3.26   -46.38
 ```
 
 `BedGraphTabixAdapter` reads every column past `end` as a separate signal. Loss
-is written negative, so a `threshold` color scale with no `scale.domain`, which
-cuts at the default `origin` of 0, draws gains up in one color and losses down
-in the other.
+is written negative, so with a `threshold` color scale with no `scale.domain`,
+which cuts at the default `origin` of 0, JBrowse draws gains up in one color and
+losses down in the other.
 
 ```json addtrack
 {
@@ -240,7 +241,7 @@ the mutation cohort also uses. Four subtypes give eight signals, each named for
 its subtype and direction, with losses below zero. We'll draw them on a
 [mark display](/docs/config_guides/mark_display), where a `mark` is the shape
 drawn (here a bar) and `rows` assigns one row per subtype, with its gain above
-the line and its loss below. A `formula` step reads the subtype off each
+the line and its loss below. A `formula` step takes the subtype from each
 signal's column name:
 
 ```json addtrack config=test_data/tcga_cnv/config.json
@@ -310,7 +311,7 @@ The bottom row is the tumors with no resolved subtype.
 
 The file keeps gain and loss as separate columns, since at the edge of the 17q
 amplicon the HER2+ group is gained and lost at nearly the same rate, and its row
-draws both.
+shows both.
 
 Two options adjust the split:
 
@@ -319,11 +320,11 @@ Two options adjust the split:
 - `--groups` takes any other column for a different split: `histology` and
   `stage` work for any TCGA project, while `subtype` is breast specific.
 
-In the copy-number rows, the 17q amplicon marks the HER2+ row. The point
-mutations separate a group that the segments cannot: the
-[mutation cohort](/docs/tutorials/tcga_cohort_mutations) facets the same tumors
-by the same clinical table, and its recurrence track shows _TP53_ mutations in
-the triple-negative row.
+In the copy-number rows, the 17q amplicon marks the HER2+ row. The
+triple-negative group, which the segments do not separate, shows in the point
+mutations. The [mutation cohort](/docs/tutorials/tcga_cohort_mutations) facets
+the same tumors by the same clinical table, and its recurrence track shows
+_TP53_ mutations in the triple-negative row.
 
 ## Use your own cohort
 
@@ -356,13 +357,13 @@ to `cohort.bed.gz`.
 One script builds every file above for any project id,
 [`build_tcga_cohort_cnv.sh`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/build_tcga_cohort_cnv.sh):
 
-1. It asks the GDC for the project's open-access **Masked Copy Number Segment**
+1. Asks the GDC for the project's open-access **Masked Copy Number Segment**
    files (Affymetrix SNP 6.0, GRCh38, germline CNV probes removed), which need
    no dbGaP application, from primary tumors only, so the matched normals stay
    out of the stack.
-2. It keeps one file per tumor barcode, so a tumor run twice on the array does
-   not draw two overlapping sets of segments in one row.
-3. It joins every tumor's segments into one BED with the barcode as `sample`,
+2. Keeps one file per tumor barcode, so a tumor run twice on the array does not
+   draw two overlapping sets of segments in one row.
+3. Joins every tumor's segments into one BED with the barcode as `sample`,
    adding `chr` to the contig names and moving the 1-based `.seg` starts to
    BED's 0-based ones. `Segment_Mean` passes through unchanged, so each row's
    color is the caller's log2 ratio.

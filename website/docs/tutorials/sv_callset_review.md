@@ -112,7 +112,7 @@ has split reads joining the same two ends, so the junction is germline.
 
 ## Sorting the calls with the manifest
 
-Each `manifest.tsv` row describes one image:
+Each `manifest.tsv` row holds the fields of one image:
 
 - **`links`** counts the split reads with pieces in more than one window. Sort
   `tumor/manifest.tsv` on it to put the unsupported calls first; re-render one
@@ -161,9 +161,9 @@ callset, both samples' reads and the repeats into each image.
 
 ## Rendering a three-chromosome rearrangement
 
-COLO829's der(3) joins pieces of chr3, chr10 and chr12, and its reads align to
-all three. We'll render it with `jb2export breakpoint`, one `--loc` per panel,
-then run the same command with `COLO829BL_normal_ont` as the control:
+COLO829's der(3) contains pieces of chr3, chr10 and chr12, and its reads align
+to all three. We'll render it with `jb2export breakpoint`, one `--loc` per
+panel, then run the same command with `COLO829BL_normal_ont` as the control:
 
 ```bash
 # featureHeight:super-compact draws each read 1 px tall
@@ -183,7 +183,7 @@ reconstructed contig on the right.
 
 ## Opening a call in the browser
 
-A call worth a closer look opens in JBrowse from its manifest row. The row's
+To look closer at a call, open it in JBrowse from its manifest row. The row's
 `spec` column is a [session spec](/docs/urlparams#session-spec): add it,
 URL-encoded, to a JBrowse URL as `&session=spec-<spec>`, with `config=` naming
 the config you rendered from. Or open the
@@ -193,8 +193,8 @@ details are a click away.
 
 ## Rendering calls from other SV callers
 
-`jb2export batch` and `jb2export breakpoint` read any caller that writes
-breakends or symbolic SVs (such as `<DEL>`) to a VCF:
+`jb2export batch` and `jb2export breakpoint` read the VCF of any caller that
+writes breakends or symbolic SVs (such as `<DEL>`):
 
 - cuteSV, Sniffles, pbsv, Delly, Manta and GRIDSS write a VCF that `--sites`
   reads directly.
@@ -203,9 +203,9 @@ breakends or symbolic SVs (such as `<DEL>`) to a VCF:
 - To draw PURPLE's copy-number segments under the reads, convert them to a
   bedGraph, run `bedGraphToBigWig`, and pass the result as `--bigwig`.
 
-A caller that groups one rearrangement's junctions under VCF 4.4's `EVENT` key,
-as DRAGEN and the C-GIAB benchmark do, gets the der(3) image from `batch`
-itself, which renders each event spanning more than two loci once more as
+For a caller that groups one rearrangement's junctions under VCF 4.4's `EVENT`
+key, as DRAGEN and the C-GIAB benchmark do, `batch` itself draws the der(3)
+image: it renders each event spanning more than two loci once more as
 `event_<n>_<label>`. Severus writes the grouping as `CLUSTERID`, which the
 [SV inspector guide](/docs/user_guides/sv_inspector_view#rearrangement-events)
 renames to `EVENT`.
