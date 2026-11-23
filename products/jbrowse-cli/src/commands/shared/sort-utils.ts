@@ -1,10 +1,13 @@
-import { spawn } from 'node:child_process'
 import { once } from 'node:events'
 import { createReadStream } from 'node:fs'
 import { parseArgs } from 'node:util'
 
 import { printHelp } from '../../utils.ts'
-import { describeExit, waitForProcessClose } from '../process-utils.ts'
+import {
+  describeExit,
+  spawnTabSort,
+  waitForProcessClose,
+} from '../process-utils.ts'
 import { validateFileArgument, validateRequiredCommands } from './validators.ts'
 
 export interface SortConfig {
@@ -92,14 +95,7 @@ async function sortInput(
   input: AsyncIterable<Buffer | string>,
   { sortColumn, endOfData }: SortConfig,
 ) {
-  const sort = spawn(
-    'sort',
-    ['-t', '\t', '-k1,1', `-k${sortColumn},${sortColumn}n`],
-    {
-      env: { ...process.env, LC_ALL: 'C' },
-      stdio: ['pipe', 'pipe', 'inherit'],
-    },
-  )
+  const sort = spawnTabSort(sortColumn)
   const closed = waitForProcessClose(sort)
   const state = { sortStopped: false, consumerGone: false }
   const stopFeeding = () => {

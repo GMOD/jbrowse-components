@@ -1,3 +1,5 @@
+import { spawn } from 'node:child_process'
+
 import type { ChildProcess } from 'node:child_process'
 
 // how a spawned child ended. `code` is null when the child was killed by a
@@ -32,4 +34,22 @@ export function diedOfSigpipe({ code, signal }: ProcessExit) {
 // for an error message: the exit code, or the signal when the child was killed
 export function describeExit({ code, signal }: ProcessExit) {
   return code === null ? `signal ${signal}` : `code ${code}`
+}
+
+export const cLocaleEnv = () => ({ ...process.env, LC_ALL: 'C' })
+
+// `sort` over tab-separated rows by refName then a numeric start column, with a
+// piped stdin and stdout
+export function spawnTabSort(startColumn: number, { stable = false } = {}) {
+  return spawn(
+    'sort',
+    [
+      ...(stable ? ['-s'] : []),
+      '-t',
+      '\t',
+      '-k1,1',
+      `-k${startColumn},${startColumn}n`,
+    ],
+    { env: cLocaleEnv(), stdio: ['pipe', 'pipe', 'inherit'] },
+  )
 }

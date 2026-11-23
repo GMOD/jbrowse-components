@@ -14,7 +14,12 @@ import {
   swapIndelCigar,
 } from '@jbrowse/cigar-utils'
 
-import { describeExit, waitForProcessClose } from '../process-utils.ts'
+import {
+  cLocaleEnv,
+  describeExit,
+  spawnTabSort,
+  waitForProcessClose,
+} from '../process-utils.ts'
 
 import type { Writable } from 'node:stream'
 
@@ -323,8 +328,6 @@ export async function createPIF(
 // without claiming a whole machine.
 export const DEFAULT_BGZIP_THREADS = 4
 
-const cLocaleEnv = () => ({ ...process.env, LC_ALL: 'C' })
-
 // The stages are separate children, not one `sort | bgzip && tabix` shell
 // pipeline, because a shell reports only the last stage of a pipeline: a sort
 // that died (ENOSPC in TMPDIR) left bgzip a short input and a clean exit, and
@@ -339,10 +342,7 @@ export function spawnPifIndexer(
   // -s: tabix wants the rows ordered by (refName, start) and by nothing else,
   // so the whole-line comparison a non-stable sort falls back to on a tie is
   // comparing multi-kb CIGARs to pick an order no reader can observe
-  const sort = spawn('sort', ['-s', '-t', '\t', '-k1,1', '-k3,3n'], {
-    env: cLocaleEnv(),
-    stdio: ['pipe', 'pipe', process.stderr],
-  })
+  const sort = spawnTabSort(3, { stable: true })
   const outputFd = openSync(outputFile, 'w')
   const bgzip = spawn('bgzip', ['-@', `${threads}`], {
     env: cLocaleEnv(),
