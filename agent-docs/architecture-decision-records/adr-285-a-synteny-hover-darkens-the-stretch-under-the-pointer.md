@@ -1,6 +1,6 @@
 ---
 status: Accepted
-summary: "A synteny or dotplot hover lights the hovered alignment at two levels: the whole alignment takes the alpha boost (dotplot: the restroke), and only the stretch of matches or the indel under the pointer darkens (dotplot: strokes wider). A stretch ends at an indel the view draws, so the threshold for splitting it is one pixel"
+summary: "A synteny or dotplot hover lights the hovered alignment at two levels: the alignment takes the alpha boost, and only the stretch of matches or indel under the pointer darkens. A stretch ends at a drawn indel, so the threshold is one pixel"
 ---
 
 # ADR-285: A synteny hover darkens the stretch under the pointer
