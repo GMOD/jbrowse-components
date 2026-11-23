@@ -60,6 +60,7 @@ export interface RowArrangementModel<S extends Row> {
   rowColorPins: ReadonlyMap<string, string>
   rowPaletteDeals: boolean
   rowAlias: RowAlias | undefined
+  linkedRowColors: ReadonlyMap<string, string>
   internalRowFields: readonly string[]
   dealtValueColorsFor: (
     setting: RowColorSnapshot,
@@ -159,6 +160,7 @@ export default observer(function RowArrangementDialog<S extends Row>({
     dealt,
     pins,
     model.rowAlias,
+    model.linkedRowColors,
   )
 
   // The pins are set from the row list's swatches, the bulk color button and

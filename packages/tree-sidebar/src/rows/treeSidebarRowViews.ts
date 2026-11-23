@@ -193,6 +193,8 @@ export function treeSidebarRowsConfigViews(self: TreeSidebarRowsConfigHost) {
   }
 }
 
+const NO_LINKED_COLORS: ReadonlyMap<string, string> = new Map()
+
 /**
  * The hooks the row views read, at what a display that overrides none
  * answers.
@@ -265,6 +267,16 @@ export function treeSidebarRowHookDefaults<S extends Row>() {
      */
     get sharesPanel(): boolean {
       return false
+    },
+    /**
+     * #getter
+     * Overridable hook: each row's color in another track of the view, by
+     * row name, which a row with no color of its own takes, as a variant
+     * display's sample row takes its haplotype walk's color from a graph
+     * track. None by default.
+     */
+    get linkedRowColors(): ReadonlyMap<string, string> {
+      return NO_LINKED_COLORS
     },
     /**
      * #getter
@@ -614,9 +626,9 @@ export function arrangedRowViews<S extends Row>(
     /**
      * #getter
      * Each row's color, by name: its `rows.colors` entry, else its
-     * `rows.color` entry, else the row's `color`, else the palette's where
-     * `rowPaletteDeals`. The one answer every display paints a row's color
-     * from.
+     * `rows.color` entry, else the row's `color`, else its
+     * `linkedRowColors` entry, else the palette's where `rowPaletteDeals`.
+     * The one answer every display paints a row's color from.
      */
     get resolvedRowColors(): ReadonlyMap<string, string> {
       return resolveRowColors(
@@ -625,6 +637,7 @@ export function arrangedRowViews<S extends Row>(
         self.dealtValueColors,
         self.rowColorPins,
         self.rowAlias,
+        self.linkedRowColors,
       )
     },
     /**

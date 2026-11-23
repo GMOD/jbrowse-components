@@ -6,6 +6,10 @@ import { predicatesOf } from '@jbrowse/core/util/fieldPredicate'
 import { colorSnapshotOf } from '@jbrowse/display-kit/colorConfigSchema'
 import { facetSettingOf } from '@jbrowse/display-kit/facetConfigSchema'
 import { stableIdentityComputed } from '@jbrowse/display-kit/stableIdentityComputed'
+import {
+  haplotypeRowColors,
+  viewHaplotypeColors,
+} from '@jbrowse/tree-sidebar/haplotypeColors'
 import { narrowRows } from '@jbrowse/tree-sidebar/narrowRows'
 
 import { cellColorEncodingOf, cellHueField } from '../shared/cellHue.ts'
@@ -257,13 +261,14 @@ export function variantDrawnRowViews(self: VariantDrawnRowHost) {
 }
 
 /** What {@link variantRowHookViews} reads: the row settings and the ploidies. */
-export interface VariantRowHookHost {
+export interface VariantRowHookHost extends IStateTreeNode {
   rowsField: VariantRowsField
   facet: FacetSetting | undefined
   samplePloidy: Readonly<Record<string, number>> | undefined
   rowSort: string[]
   rowFocus: readonly string[] | undefined
   discoveredRows: ProcessedSource[]
+  expandedRows: ProcessedSource[]
 }
 
 /**
@@ -287,6 +292,22 @@ export function variantRowHookViews(self: VariantRowHookHost) {
      */
     get rowColorPaintsMarks(): boolean {
       return false
+    },
+    /**
+     * #getter
+     * `TreeSidebarMixin`'s hook: each row's haplotype color in a graph
+     * track of the view, read off the row's own `sampleName` and `HP`, so
+     * a row's label bar matches its walk.
+     */
+    get linkedRowColors(): ReadonlyMap<string, string> {
+      return haplotypeRowColors(
+        self.expandedRows.map(row => ({
+          name: row.name,
+          sample: row.sampleName,
+          phase: row.HP,
+        })),
+        viewHaplotypeColors(self),
+      )
     },
     /**
      * #getter

@@ -121,7 +121,7 @@ export function dealValueColors(
  * own entry else its alias's, so a haplotype row takes its sample's pin over
  * the `scale.unknown` its own name is dealt; else what `dealt` gives its name
  * (its own entry, else its alias's) or its value of the attribute; else its
- * own `color`.
+ * own `color`; else its color in another track, `linked`.
  */
 export function resolveRowColors(
   rows: readonly Row[],
@@ -129,6 +129,7 @@ export function resolveRowColors(
   dealt: ReadonlyMap<string, string>,
   pinned: ReadonlyMap<string, string>,
   alias: RowAlias | undefined,
+  linked: ReadonlyMap<string, string>,
 ): ReadonlyMap<string, string> {
   const colors = new Map<string, string>()
   for (const row of rows) {
@@ -137,7 +138,8 @@ export function resolveRowColors(
       (field === 'name'
         ? colorOf(dealt, row.name, alias)
         : dealt.get(rowFieldValue(row, field))) ??
-      row.color
+      row.color ??
+      linked.get(row.name)
     if (color !== undefined) {
       colors.set(row.name, color)
     }
