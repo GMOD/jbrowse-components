@@ -39,6 +39,8 @@
 #           THREADS=8 bash scripts/build_rice_pangenome.sh /mnt/sdb/rice
 #           FETCH_ONLY=1 ... downloads and writes graph/*.pansn.fa, then stops
 #           before minigraph, so the fetch can run while the box is busy
+#           CALL_MAX_GB=24 caps the memory of each minigraph --call, which
+#           peaks at 16 to 19 GB of RAM, so an overrun stops the script
 #
 # Every stage is skipped when its output exists, so a re-run resumes.
 
@@ -58,6 +60,7 @@ mkdir -p ncbi graph logs
 
 export LC_ALL=C
 THREADS="${THREADS:-8}"
+CALL_MAX_GB="${CALL_MAX_GB:-24}"
 GRAPH=rice-agis1-minigraph
 REF=Nipponbare
 
@@ -270,13 +273,20 @@ while read -r _ name; do
   if [ ! -s "$out" ]; then
     # --call: the walk this assembly takes through every bubble, one line per
     # `gfatools bubble` line, in the same order for every assembly. Each call
-    # loads the whole graph's index, 15 to 19 GB here.
-    minigraph -cxasm --call -t "$THREADS" "graph/$GRAPH.rgfa.gz" \
-      "graph/$name.pansn.fa" >"$out.tmp" 2>"logs/call.$name.log"
+    # loads the whole graph's index; ulimit -v caps its memory at CALL_MAX_GB.
+    (
+      ulimit -v $((CALL_MAX_GB * 1024 * 1024))
+      minigraph -cxasm --call -t "$THREADS" "graph/$GRAPH.rgfa.gz" \
+        "graph/$name.pansn.fa" >"$out.tmp" 2>"logs/call.$name.log"
+    )
     mv "$out.tmp" "$out"
   fi
   CALLS+=("$out")
 done <panel.tsv
+if [ "$(for f in "${CALLS[@]}"; do wc -l <"$f"; done | sort -u | wc -l)" -ne 1 ]; then
+  echo "error: the call files differ in line count, so their bubbles do not line up" >&2
+  exit 1
+fi
 if [ ! -s "$GRAPH.vcf.gz" ]; then
   {
     awk '{ printf "##contig=<ID=%s,length=%d>\n", $1, $2 }' ref.chrom.sizes
