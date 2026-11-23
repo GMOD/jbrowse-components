@@ -35,7 +35,7 @@ into my skills folder
 To install by hand, copy each folder into your agent's skills folder:
 
 - Claude Code: `~/.claude/skills/`
-- Codex: `~/.codex/skills/`
+- Codex: `~/.agents/skills/`
 - another agent that reads `SKILL.md` folders: the folder its docs name
 
 In JBrowse Web or Desktop, **Help → Connect an AI agent...** copies a

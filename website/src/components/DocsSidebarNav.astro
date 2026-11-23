@@ -243,13 +243,41 @@ const sidebar = buildSiteSidebar(allDocs, baseUrl)
       return new URL(url, location.href).pathname.replace(/\/$/, '')
     }
 
+    // Several pages share a title across categories ("Quantitative track" is
+    // both a user guide and a config guide), so a hit names its drawers.
+    function categoriesOf(link: Element) {
+      const names: string[] = []
+      for (
+        let details = link.closest('details');
+        details;
+        details = details.parentElement?.closest('details') ?? null
+      ) {
+        names.unshift(
+          details.querySelector(':scope > summary')?.textContent?.trim() ?? '',
+        )
+      }
+      return names.join(' › ')
+    }
+
+    const categoryByPath = new Map(
+      [...list.querySelectorAll('a')].map(link => [
+        pathOf(link.href),
+        categoriesOf(link),
+      ]),
+    )
+
     function showTextHits(hits: PagefindHit[], titlesMatched: boolean) {
       textList.replaceChildren(
         ...hits.map(hit => {
           const li = document.createElement('li')
           const a = document.createElement('a')
+          const title = document.createElement('span')
+          const category = document.createElement('span')
           a.href = hit.url
-          a.textContent = hit.meta?.title ?? pathOf(hit.url)
+          title.textContent = hit.meta?.title ?? pathOf(hit.url)
+          category.className = 'sidebar-filter-text-category'
+          category.textContent = categoryByPath.get(pathOf(hit.url)) ?? ''
+          a.append(title, category)
           li.append(a)
           return li
         }),
@@ -270,19 +298,13 @@ const sidebar = buildSiteSidebar(allDocs, baseUrl)
           link instanceof HTMLAnchorElement ? pathOf(link.href) : '',
         ),
       )
-      const hits: PagefindHit[] = []
-      if (pf) {
-        const { results } = await pf.search(query)
-        for (const result of results.slice(0, 20)) {
-          const hit = await result.data()
-          if (!titled.has(pathOf(hit.url))) {
-            hits.push(hit)
-          }
-          if (hits.length === TEXT_HITS) {
-            break
-          }
-        }
-      }
+      const { results } = pf ? await pf.search(query) : { results: [] }
+      const fetched = await Promise.all(
+        results.slice(0, TEXT_HITS * 2).map(result => result.data()),
+      )
+      const hits = fetched
+        .filter(hit => !titled.has(pathOf(hit.url)))
+        .slice(0, TEXT_HITS)
       if (input.value.trim() === query) {
         showTextHits(hits, titlesMatched)
       }
@@ -320,14 +342,13 @@ const sidebar = buildSiteSidebar(allDocs, baseUrl)
       } else if (event.key === 'Enter') {
         event.preventDefault()
         // A filtered list is usually down to one obvious hit; Enter takes it
-        // rather than making the reader move back to the mouse.
-        for (const link of list.querySelectorAll(
-          ':scope li:not([hidden]) > a',
-        )) {
-          if (link instanceof HTMLAnchorElement) {
-            link.click()
-            break
-          }
+        // rather than making the reader move back to the mouse, falling back
+        // to the first page-text hit when no title matched.
+        const first =
+          list.querySelector(':scope li:not([hidden]) > a') ??
+          textList.querySelector('a')
+        if (first instanceof HTMLAnchorElement) {
+          first.click()
         }
       }
     })
@@ -374,6 +395,15 @@ const sidebar = buildSiteSidebar(allDocs, baseUrl)
     list-style: none;
     margin: 0;
     padding: 0;
+  }
+  /* Built by the script, so outside the scoped-style attribute. */
+  .sidebar-filter-text :global(.sidebar-filter-text-category) {
+    display: block;
+    font-size: 0.7rem;
+    color: var(--color-text-muted);
+  }
+  .sidebar-filter-text :global(.sidebar-filter-text-category:empty) {
+    display: none;
   }
   .sidebar-filter-text-heading {
     margin: 0 0 0.25rem;
