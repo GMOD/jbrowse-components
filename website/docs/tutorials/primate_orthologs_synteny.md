@@ -78,7 +78,7 @@ of your own.
 | Rhesus macaque, T2T-MMU8v2.0            | [GCF_049350105.2_T2T-MMU8v2.0/](https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/049/350/105/GCF_049350105.2_T2T-MMU8v2.0/)                       |
 | E. coli K-12 MG1655, the E. coli anchor | [GCF_000005845.2_ASM584v2/](https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/000/005/845/GCF_000005845.2_ASM584v2/)                               |
 
-## An ortholog table joined on gene names
+## Join the annotations on gene names {#an-ortholog-table-joined-on-gene-names}
 
 An ortholog table in the `.blocks` shape has one row per orthologous group, one
 column per genome and a gene id in each cell. NCBI's eukaryotic annotation
@@ -125,7 +125,7 @@ cases:
 
 The helper prints how much of each column it filled.
 
-## Setting up each lane's assembly from its hub
+## Set up each lane's assembly from its hub
 
 Each genome is also a hub on [genomes.jbrowse.org](https://genomes.jbrowse.org).
 A hub's `config.json` holds a whole JBrowse assembly: the 2bit sequence, an
@@ -197,7 +197,7 @@ own annotation, add one per genome from a bgzipped, tabix-indexed GFF3
 }
 ```
 
-## Loading the multi-genome ortholog track
+## Load the multi-genome ortholog track
 
 One `SyntenyTrack` lists every assembly, and `blockAssemblies` and
 `bedLocations` hold one entry per table column, in the order the helper printed.
@@ -259,7 +259,7 @@ ortholog group, named by its gene symbol, to a color:
 }
 ```
 
-## Reading the TP53 neighbourhood across eight primates
+## Read the TP53 neighbourhood across eight primates
 
 In a linear genome view on human, the track draws a lane per primate under the
 human axis, each in that genome's coordinates. Each lane's header names the
@@ -298,7 +298,7 @@ separates forward blocks from reversed ones.
 
 <Figure caption="17q over the other primates' lanes, ribbons colored by strand. Blue marks a block read backwards from the lane above." src="/img/multiway_synteny/primate_chr17_inversions.png" />
 
-## Human chromosome 2 as two fused ape chromosomes
+## Read human chromosome 2 against chimpanzee
 
 Human chromosome 2 is two ape chromosomes joined end to end. To see the join:
 
@@ -316,7 +316,7 @@ the track shows the contig with more of them in its lane and names the other in
 the lane header, and **Show ⟨contig⟩ in this lane** on the header menu switches
 the lane to that other contig.
 
-## Joining bacterial annotations (E. coli)
+## Rebuild the join over E. coli annotations
 
 Genes NCBI left unnamed, the `LOC` genes above, are common in a bacterial
 annotation: RefSeq's Prokaryotic Genome Annotation Pipeline (PGAP) writes a
