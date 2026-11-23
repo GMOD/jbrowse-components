@@ -90,8 +90,8 @@ and how each genotype cell is colored.
   past blue on screen, the legend names each allele: a sequence allele by its
   ALT index and length, such as `ALT 17, 2,391 bp (-28 bp)`, a symbolic one with
   its `ALEN` path length where the VCF states one. Otherwise the legend shows
-  those colors in one row, "Other alt alleles at each site, by frequency", since
-  each stands for a different allele at each site.
+  those colors in one row, "Other alt alleles, by frequency", since each stands
+  for a different allele at each site.
 
 Per-haplotype rows draw what the VCF phases:
 

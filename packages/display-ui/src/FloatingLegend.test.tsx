@@ -118,6 +118,33 @@ describe('FloatingLegend', () => {
     expect(container.querySelectorAll('svg')).toHaveLength(4)
   })
 
+  it('stacks a strip over its label without widening the other rows’ column', () => {
+    const { getByText } = render(
+      <FloatingLegend
+        sections={one([
+          { color: '#aaa', label: 'Reference' },
+          {
+            color: '#f00',
+            label: 'Other alt alleles, by frequency',
+            swatches: ['#f00', '#0f0', '#00f', '#f0f'].map(color => ({
+              color,
+            })),
+          },
+        ])}
+      />,
+    )
+    const reference = getByText('Reference')
+    const strip = getByText('Other alt alleles, by frequency')
+    expect(reference.previousElementSibling?.getAttribute('style')).toBe(
+      'min-width: 10px;',
+    )
+    expect(reference.getAttribute('style')).toBeNull()
+    expect(strip.getAttribute('style')).toBe('padding-left: 14px;')
+    expect(strip.parentElement?.className).not.toBe(
+      reference.parentElement?.className,
+    )
+  })
+
   it('shows section titles and per-section close when multi-section', () => {
     const onDismissSection = jest.fn()
     const { getByText, getByLabelText } = render(

@@ -184,7 +184,7 @@ exact length against the reference's, so no two rows read alike; `ALT 2, C`
 for a short substitution; `<X:3>, 53,149 bp path` for a symbolic one, the
 path length from `INFO/ALEN` where the record states one; "spanning deletion"
 for `*`. Otherwise, or where a record folds its rarest alleles into the last
-hue, they share one row of swatches, "Other alt alleles at each site, by
+hue, they share one row of swatches, "Other alt alleles, by
 frequency", which keeps its label as the view pans. Ordinal rows ("2nd most
 common") are declined in ADR-284. A record shown in two displayed regions
 counts once. Blue is named only where that one record is also the only one

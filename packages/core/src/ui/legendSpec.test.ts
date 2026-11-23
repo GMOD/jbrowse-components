@@ -1,4 +1,8 @@
-import { legendEntries, legendSummary } from './legendSpec.ts'
+import {
+  legendEntries,
+  legendSummary,
+  legendSwatchColumns,
+} from './legendSpec.ts'
 
 const READS = { id: 'reads', title: 'Read colors', items: [{ label: 'A' }] }
 const ARCS = { id: 'arcs', title: 'Arc colors', items: [{ label: 'B' }] }
@@ -115,4 +119,21 @@ test('a summary counts values, as a floor where a worker may have stopped', () =
   expect(legendSummary('Pfam family', 34)).toBe('Pfam family · 34 values')
   expect(legendSummary(undefined, 1)).toBe('1 value')
   expect(legendSummary('Name', 1024, 1024)).toBe('Name · 1024+ values')
+})
+
+function boxes(n: number) {
+  return { swatches: Array.from({ length: n }, () => ({ color: 'red' })) }
+}
+
+test('a strip of several hues leaves the single-box column alone', () => {
+  expect(
+    legendSwatchColumns([{ color: 'grey' }, { color: 'blue' }, boxes(7), {}]),
+  ).toBe(1)
+  expect(legendSwatchColumns([{ color: 'grey' }, {}, boxes(3)])).toBe(1)
+})
+
+test('a key of het/hom pairs keeps a two-box column beside its single rows', () => {
+  expect(
+    legendSwatchColumns([boxes(2), boxes(2), boxes(2), { color: 'grey' }]),
+  ).toBe(2)
 })

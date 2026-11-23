@@ -67,6 +67,31 @@ export function legendSwatches(
   )
 }
 
+// How many swatches the shared column holds: the count most keyed rows draw,
+// the smaller on a tie. A row drawing more stacks its swatches over its label,
+// so one strip of several hues never pushes every other label right, while a
+// key of het/hom pairs keeps its pairs inline.
+export function legendSwatchColumns(
+  items: readonly Pick<LegendItem, 'color' | 'swatches'>[],
+) {
+  const tally = new Map<number, number>()
+  for (const item of items) {
+    const n = legendSwatches(item).length
+    if (n > 0) {
+      tally.set(n, (tally.get(n) ?? 0) + 1)
+    }
+  }
+  let columns = 1
+  let most = 0
+  for (const [n, rows] of tally) {
+    if (rows > most || (rows === most && n < columns)) {
+      columns = n
+      most = rows
+    }
+  }
+  return columns
+}
+
 // One color vocabulary. A display that colors by several at once (genotype
 // colors vs. sample-grouping colors, read fills vs. arc colors) gives each its
 // own section, so each can be titled and dismissed independently.

@@ -52,7 +52,7 @@ phase-set hue does.
     hue gets a row naming its allele. Blue is named too where that record is
     also the only one painting it.
   - Otherwise the key reads "Reference", "Most common alt allele", then one row
-    of the painted swatches, "Other alt alleles at each site, by frequency".
+    of the painted swatches, "Other alt alleles, by frequency".
     So does a record whose rarest alleles share the last hue.
   - Biallelic neighbours painting blue beside one multiallelic record (rice
     qSW5) keep "Most common alt allele" for blue and name the record's other

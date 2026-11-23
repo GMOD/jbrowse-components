@@ -154,7 +154,7 @@ function secondaryAltEntries(alleles: readonly KeyedAllele[]) {
           label: name,
           color: ALLELE_HUES[slot],
         }))
-      : [alleleStrip('Other alt alleles at each site, by frequency', alleles)]
+      : [alleleStrip('Other alt alleles, by frequency', alleles)]
 }
 
 // The genotype scale: the constant alt hue or a plain CSS color from

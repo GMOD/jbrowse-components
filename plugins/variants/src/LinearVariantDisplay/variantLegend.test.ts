@@ -103,7 +103,7 @@ describe('getGenotypeEntries', () => {
       ['Reference', REFERENCE_COLOR, undefined],
       ['Most common alt allele', ALT_HUE, undefined],
       [
-        'Other alt alleles at each site, by frequency',
+        'Other alt alleles, by frequency',
         ALLELE_HUES[1],
         [
           { color: ALLELE_HUES[1] },

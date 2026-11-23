@@ -6,6 +6,7 @@ import { use, useLayoutEffect, useState } from 'react'
 // cascading-menu stack in the chunk. `muiFree.test.ts` fails on it.
 import { LegendSwatchGlyph } from '@jbrowse/core/ui/LegendSwatchGlyph'
 import {
+  legendSwatchColumns,
   legendSwatches,
   nonEmptyLegendSections,
 } from '@jbrowse/core/ui/legendSpec'
@@ -139,8 +140,8 @@ const useStyles = makeStyles()(theme => ({
     overflow: 'hidden',
     textOverflow: 'ellipsis',
   },
-  // Wraps where every other line ellipsizes: a note is a sentence, and half of
-  // one says nothing.
+  // Wraps like a row's label: a note is a sentence, and half of one says
+  // nothing.
   sectionNote: {
     color: theme.palette.text.secondary,
     whiteSpace: 'normal',
@@ -161,7 +162,12 @@ const useStyles = makeStyles()(theme => ({
   },
   item: {
     display: 'flex',
-    alignItems: 'center',
+    alignItems: 'flex-start',
+  },
+  // A strip of more swatches than the shared column: its boxes on a line of
+  // their own, its label under them in the column the other labels share.
+  stackedItem: {
+    flexDirection: 'column',
   },
   // A row that acts: the same layout, as a plain button (see `closeButton`
   // for why not Material's), so a key naming groups of rows can focus one.
@@ -180,14 +186,16 @@ const useStyles = makeStyles()(theme => ({
   },
   swatches: {
     display: 'flex',
+    alignItems: 'center',
+    height: ROW_HEIGHT,
     gap: 2,
     marginRight: 4,
     flexShrink: 0,
   },
+  // Wraps rather than ellipsizing: a key's label is what its color means.
   label: {
-    whiteSpace: 'nowrap',
-    overflow: 'hidden',
-    textOverflow: 'ellipsis',
+    whiteSpace: 'normal',
+    overflowWrap: 'anywhere',
   },
   hiddenItem: {
     opacity: 0.4,
@@ -327,9 +335,10 @@ const LegendItemList = observer(function LegendItemList({
   const collapsible = items.length > maxItems + 1
   const shown = collapsible && !expanded ? items.slice(0, maxItems) : items
   const hiddenCount = keyedCount(items.slice(maxItems))
-  // Every row reserves the widest row's swatch column, collapsed or not, so
-  // labels stay in one vertical line and do not shift on expanding.
-  const columns = Math.max(1, ...items.map(i => legendSwatches(i).length))
+  // Every row reserves the same swatch column, collapsed or not, so labels stay
+  // in one vertical line and do not shift on expanding.
+  const columns = legendSwatchColumns(items)
+  const columnWidth = columns * SWATCH + (columns - 1) * 2
   return (
     <>
       {shown.map((item, i) => {
@@ -344,12 +353,10 @@ const LegendItemList = observer(function LegendItemList({
             />
           )
         }
+        const stacked = legendSwatches(item).length > columns
         const row = (
           <>
-            <div
-              className={classes.swatches}
-              style={{ minWidth: columns * SWATCH + (columns - 1) * 2 }}
-            >
+            <div className={classes.swatches} style={{ minWidth: columnWidth }}>
               {legendSwatches(item).map(swatch => (
                 <svg
                   key={`${swatch.shape}-${swatch.color}`}
@@ -360,11 +367,17 @@ const LegendItemList = observer(function LegendItemList({
                 </svg>
               ))}
             </div>
-            <span className={classes.label}>{item.label}</span>
+            <span
+              className={classes.label}
+              style={stacked ? { paddingLeft: columnWidth + 4 } : undefined}
+            >
+              {item.label}
+            </span>
           </>
         )
         const itemClass = cx(
           classes.item,
+          stacked && classes.stackedItem,
           item.hidden && classes.hiddenItem,
           i === 0 && firstRowClass,
         )
@@ -579,12 +592,13 @@ const FloatingLegend = observer(function FloatingLegend({
   onDismissSection?: (id: string) => void
   onItemClick?: (item: LegendItem, section: LegendSection) => void
   maxItems?: number
-  // How wide the box may grow before labels ellipsize. The box floats OVER the
+  // How wide the box may grow before labels wrap. The box floats OVER the
   // data, so this is an occlusion budget, not a text budget — which is why it is
   // per-display rather than sized to whichever plugin has the longest label.
   // Raise it for a vocabulary that genuinely needs the words (alignments, whose
   // split-read rows have to say which kind of read they classify); leave it for
-  // everything else, and let the ellipsis be the signal that a label is too long.
+  // everything else, and let a wrapped line be the signal that a label is too
+  // long.
   maxWidth?: number
   // Distances from the top and right of the display box. `ChromeLegend` adds
   // axis captions to the top and a display's `legendRight` clearance to the

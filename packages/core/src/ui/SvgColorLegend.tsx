@@ -5,7 +5,7 @@ import { useExportFontFamily } from '../svg/constants.ts'
 import { svgSafeId } from '../svg/svgId.ts'
 import { LegendSwatchGlyph } from './LegendSwatchGlyph.tsx'
 import { usePalette } from './PaletteContext.tsx'
-import { legendSwatches } from './legendSpec.ts'
+import { legendSwatchColumns, legendSwatches } from './legendSpec.ts'
 import { measureLegendText } from './measureLegendText.ts'
 import { alpha } from './palette.ts'
 
@@ -42,11 +42,23 @@ function keysAColor(entry: ColorLegendEntry) {
   return entry.gradient !== undefined || legendSwatches(entry).length > 0
 }
 
+// A row with more swatches than the shared column draws them on a line of
+// their own, over its label.
+function stacks(entry: ColorLegendEntry, columns: number) {
+  return legendSwatches(entry).length > columns
+}
+
 // A ramp row is the bar and its labels, captioned when the entry has a label.
-function rowHeight(entry: ColorLegendEntry) {
+function rowHeight(entry: ColorLegendEntry, columns: number) {
   return entry.gradient
     ? GRADIENT_ROW_HEIGHT + (entry.label ? LEGEND_ROW_HEIGHT : 0)
-    : LEGEND_ROW_HEIGHT
+    : stacks(entry, columns)
+      ? 2 * LEGEND_ROW_HEIGHT
+      : LEGEND_ROW_HEIGHT
+}
+
+function swatchesWidth(count: number) {
+  return count * (LEGEND_SWATCH + SWATCH_GAP)
 }
 
 // The rows that fit `maxHeight`, leaving room for a "+N more" summary when
@@ -54,16 +66,20 @@ function rowHeight(entry: ColorLegendEntry) {
 // fit: a key taller than its display runs into whatever is below it, or off the
 // foot of the figure. A heading the cut separated from every row under it is
 // dropped with them.
-function fitEntries(entries: ColorLegendEntry[], maxHeight: number) {
+function fitEntries(
+  entries: ColorLegendEntry[],
+  maxHeight: number,
+  columns: number,
+) {
   let used = 0
   const shown: ColorLegendEntry[] = []
   for (const [idx, entry] of entries.entries()) {
     const rest = entries.length - idx - 1
     const reserve = rest > 0 ? LEGEND_ROW_HEIGHT : 0
-    if (used + rowHeight(entry) + reserve > maxHeight) {
+    if (used + rowHeight(entry, columns) + reserve > maxHeight) {
       break
     }
-    used += rowHeight(entry)
+    used += rowHeight(entry, columns)
     shown.push(entry)
   }
   while (
@@ -89,16 +105,11 @@ function GradientRow({
   const { stops, minLabel, maxLabel } = entry.gradient!
   const inks = useLegendInks()
   const barTop = (entry.label ? LEGEND_ROW_HEIGHT : 0) + 2
+  const height = GRADIENT_ROW_HEIGHT + (entry.label ? LEGEND_ROW_HEIGHT : 0)
   const labelY = barTop + GRADIENT_BAR_HEIGHT + 2 + FONT_SIZE
   return (
     <>
-      <rect
-        x={0}
-        y={0}
-        width={width}
-        height={rowHeight(entry)}
-        fill={inks.paper}
-      />
+      <rect x={0} y={0} width={width} height={height} fill={inks.paper} />
       {entry.label ? (
         <text x={SWATCH_LEFT} y={11} fontSize={FONT_SIZE} fill={inks.text}>
           {entry.label}
@@ -147,18 +158,14 @@ function legendBox(
   maxHeight?: number,
   fontFamily?: string,
 ) {
+  const columns = legendSwatchColumns(entries)
   const shown =
-    maxHeight === undefined ? entries : fitEntries(entries, maxHeight)
+    maxHeight === undefined ? entries : fitEntries(entries, maxHeight, columns)
   const cutRows = entries.slice(shown.length).filter(keysAColor).length
   const overflowLabel =
     cutRows > 0 && shown.length > 0 ? `+${cutRows} more` : undefined
 
-  // Labels line up across rows, so the swatch column is sized by the row with
-  // the most swatches — otherwise a two-box row shoves its own label out of the
-  // column the others share. One box reproduces the original 16px inset.
-  const swatchColumns = Math.max(1, ...shown.map(e => legendSwatches(e).length))
-  const textLeft =
-    SWATCH_LEFT + swatchColumns * (LEGEND_SWATCH + SWATCH_GAP) + 2
+  const textLeft = SWATCH_LEFT + swatchesWidth(columns) + 2
 
   let contentRight = 0
   for (const entry of shown) {
@@ -170,7 +177,10 @@ function legendBox(
               GRADIENT_BAR_WIDTH,
               measureLegendText(entry.label, FONT_SIZE, fontFamily),
             )
-        : textLeft + measureLegendText(entry.label, FONT_SIZE, fontFamily),
+        : Math.max(
+            textLeft + measureLegendText(entry.label, FONT_SIZE, fontFamily),
+            SWATCH_LEFT + swatchesWidth(legendSwatches(entry).length),
+          ),
     )
   }
   if (overflowLabel !== undefined) {
@@ -184,9 +194,17 @@ function legendBox(
   let y = 0
   for (const entry of shown) {
     rowTops.push(y)
-    y += rowHeight(entry)
+    y += rowHeight(entry, columns)
   }
-  return { shown, overflowLabel, textLeft, totalWidth, rowTops, bottom: y }
+  return {
+    shown,
+    columns,
+    overflowLabel,
+    textLeft,
+    totalWidth,
+    rowTops,
+    bottom: y,
+  }
 }
 
 /**
@@ -238,6 +256,7 @@ export default function SvgColorLegend({
   const legendId = idPrefix ?? reactId
   const {
     shown,
+    columns,
     overflowLabel,
     textLeft,
     totalWidth,
@@ -261,7 +280,7 @@ export default function SvgColorLegend({
                 x={0}
                 y={0}
                 width={totalWidth}
-                height={LEGEND_ROW_HEIGHT}
+                height={rowHeight(entry, columns)}
                 fill={inks.paper}
               />
               {/* only the swatch and label dim for a toggled-off entry — dimming
@@ -274,13 +293,13 @@ export default function SvgColorLegend({
                     key={`${swatch.shape}-${swatch.color}`}
                     swatch={swatch}
                     size={LEGEND_SWATCH}
-                    x={SWATCH_LEFT + i * (LEGEND_SWATCH + SWATCH_GAP)}
+                    x={SWATCH_LEFT + swatchesWidth(i)}
                     y={2}
                   />
                 ))}
                 <text
                   x={textLeft}
-                  y={11}
+                  y={(stacks(entry, columns) ? LEGEND_ROW_HEIGHT : 0) + 11}
                   fontSize={FONT_SIZE}
                   fill={inks.text}
                   textDecoration={entry.hidden ? 'line-through' : undefined}

@@ -66,25 +66,56 @@ test('a ramp row draws a gradient bar under its caption, labelled at both ends',
   expect(gradient.querySelectorAll('stop')).toHaveLength(2)
 })
 
-test('a two-color row draws both boxes, and every label keeps one column', () => {
+test('a strip stacks over its label, and the single-box labels keep their column', () => {
   const { getByText, container } = renderSvg(
     <SvgColorLegend
       canvasWidth={500}
       entries={[
+        { key: 'ref', label: 'Reference', color: 'grey' },
         {
-          key: 'a',
-          label: 'Short insert',
-          swatches: [{ color: '#ffc0cb' }, { color: '#ff3a8c' }],
+          key: 'others',
+          label: 'Other alt alleles, by frequency',
+          swatches: ['red', 'green', 'purple', 'pink'].map(color => ({
+            color,
+          })),
         },
-        { key: 'b', label: 'Long insert', color: 'red' },
+        { key: 'nocall', label: 'No call', color: 'gold' },
       ]}
     />,
   )
-  // two swatches and one, plus a paper rect per row
-  expect(container.querySelectorAll('rect')).toHaveLength(5)
-  // the widest row sets the inset for all of them, or the labels stagger
+  // four swatches and two, plus a paper rect per row
+  expect(container.querySelectorAll('rect')).toHaveLength(9)
+  for (const label of [
+    'Reference',
+    'Other alt alleles, by frequency',
+    'No call',
+  ]) {
+    expect(getByText(label).getAttribute('x')).toBe('16')
+  }
+  expect(getByText('Other alt alleles, by frequency').getAttribute('y')).toBe(
+    '25',
+  )
+  const rows = [...container.querySelectorAll('g[transform^="translate(0 "]')]
+  expect(rows.map(g => g.getAttribute('transform'))).toEqual([
+    'translate(0 0)',
+    'translate(0 14)',
+    'translate(0 42)',
+  ])
+})
+
+test('rows that all draw two boxes share a two-box column', () => {
+  const { getByText } = renderSvg(
+    <SvgColorLegend
+      canvasWidth={500}
+      entries={['Short insert', 'Long insert'].map(label => ({
+        key: label,
+        label,
+        swatches: [{ color: '#ffc0cb' }, { color: '#ff3a8c' }],
+      }))}
+    />,
+  )
   expect(getByText('Short insert').getAttribute('x')).toBe('28')
-  expect(getByText('Long insert').getAttribute('x')).toBe('28')
+  expect(getByText('Long insert').getAttribute('y')).toBe('11')
 })
 
 test('a caller may place the box instead of right-aligning it', () => {
