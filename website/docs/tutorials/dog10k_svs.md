@@ -31,7 +31,7 @@ _FGF4_ retrogene leaves at its parent gene. We:
 - `python3`
 - htslib (`tabix`)
 - `minimap2` and `samtools`, for the
-  [FGF4 alignments](#aligning-the-retrocopies-to-fgf4)
+  [FGF4 alignments](#align-the-retrocopies-to-fgf4)
 - the UCSC `liftOver` binary for the OMIA track, which the build script fetches
   itself
 
@@ -72,7 +72,7 @@ everything itself.
 | The CFA12 retrocopy, MF040221, fetched from GenBank                                                                                                                                                                                        | [efetch.fcgi](https://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi?db=nuccore&id=MF040221&rettype=fasta&retmode=text)                                      |
 | The _FGF4_ parent-locus sequence the two retrocopies are aligned against, over UCSC's canFam4 REST API                                                                                                                                     | [sequence](https://api.genome.ucsc.edu/getData/sequence?genome=canFam4;chrom=chr18;start=48865000;end=48876000)                                                 |
 
-## Loading the UU_Cfam_GSD_1.0 dog assembly
+## Load the UU_Cfam_GSD_1.0 dog assembly
 
 The tracks name `UU_Cfam_GSD_1.0`, the Dog10K reference that UCSC calls canFam4.
 We load it from UCSC's 2bit, with the alias file that maps the `chr` names to
@@ -117,7 +117,7 @@ The figures also show NCBI's RefSeq genes as a track:
 }
 ```
 
-## A 7.8 kb deletion in NHEJ1
+## Slice the NHEJ1 locus out of the Paragraph callset
 
 Schall and Kidd genotyped long-read-discovered structural variants across the
 Dog10K collection and flagged those whose allele frequencies track breed clades
@@ -126,8 +126,6 @@ the variant [Parker et al. (2007)](https://doi.org/10.1101/gr.6772807) tied to
 Collie eye anomaly, which should be common in Collies and their relatives and
 absent from unrelated breeds and wolves. The anomaly is recessive, so darker
 cells below mark affected animals and lighter ones mark carriers.
-
-## Slicing the NHEJ1 locus out of the Paragraph callset
 
 The Paragraph callset (Manta's structural variant calls, genotyped in every
 sample with Illumina's Paragraph) is a large VCF across dogs and wolves,
@@ -155,7 +153,7 @@ tabix -C -p vcf dog10k_nhej1_svs.vcf.gz
   reported association
 - four Greek gray wolves, the outgroup
 
-## Loading the NHEJ1 slice with breed labels
+## Load the NHEJ1 slice with breed labels
 
 An SV VCF loads as an ordinary `VariantTrack`. The variant display draws one row
 per sample across the variant's genomic span, so a 7.8 kb deletion is a 7.8 kb
@@ -222,7 +220,7 @@ rename and recolor rows by hand.
 }
 ```
 
-## OMIA's curated record of the NHEJ1 deletion
+## Add OMIA's record of the NHEJ1 deletion
 
 [OMIA](https://omia.org), Online Mendelian Inheritance in Animals, curates the
 published causal variants of Mendelian traits. Its Collie eye anomaly record
@@ -254,14 +252,12 @@ The label under the bar shows the mode of inheritance, and clicking the bar
 opens the rest of the record, including whether the build lifted it from
 CanFam3.1.
 
-## NHEJ1 deletion genotypes across breeds
-
 Open the session above with the OMIA track and the assembly's gene annotation to
 see where the deletion falls in _NHEJ1_:
 
 <Figure caption="A deletion inside an NHEJ1 intron genotyped across breeds, with OMIA's record of the same variant between the genes and the genotypes." src="/img/dog10k-nhej1-cea-deletion.png" />
 
-## AMY2B duplication and RNASE1 insertion
+## Load AMY2B and RNASE1 slices in one order
 
 A 14.9 kb duplication (`DUP`) at chr6:47,375,677 in the Michigan Manta callset
 spans the pancreatic amylase gene _AMY2B_ end to end. Extra copies help dogs
@@ -322,7 +318,7 @@ copies and one with twenty are both `1/1`.
 [The CYP1A2 tutorial](/docs/tutorials/dog10k_lof#copy-number-at-cyp1a2) measures
 copy number from the SNV callset's per-sample `DP`.
 
-## An FGF4 retrogene called as intron deletions
+## Find an FGF4 retrogene among the intron deletions
 
 Each record so far is the variant its type names. A deletion record can also
 mark an insertion somewhere else in the genome.
@@ -333,23 +329,7 @@ so short reads from it map to the parent gene's exons and stop at each splice
 site, and a short-read caller reports each intron as a deletion. The callset
 therefore lists the retrogene as intron deletions that look like real ones.
 
-### Checking the records against the FGF4 introns
-
-_FGF4_ has two introns, so a retrocopy should leave two records, each spanning
-one intron end to end.
-[`build_dog10k_fgf4_retrogene.sh`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/build_dog10k_fgf4_retrogene.sh)
-derives the introns from the RefSeq annotation and checks each record against
-them, with one base of slack at each breakpoint:
-
-```text
-FGF4 RefSeq exons:  48869443-48869782, 48870315-48870418, 48870953-48873311
-FGF4 RefSeq introns: 48869783-48870314 (532 bp),  48870419-48870952 (534 bp)
-
-intron 48869783-48870314: called as a DEL of 532 bp at 48869783-48870314
-intron 48870419-48870952: called as a DEL of 534 bp at 48870418-48870951
-```
-
-### Slicing the two FGF4 intron records out of the Manta callset
+### Slice the two FGF4 intron records
 
 The _FGF4_ records come from the Michigan aggregate Manta callset, which has
 `DUP` and `INV` records too. Select on `POS` to keep the two intron records:
@@ -403,7 +383,23 @@ the record's name and description, as in the synteny figure below.
 Every animal with the insertion is heterozygous: the parent gene's introns are
 still on both chromosomes, so each such animal's pileup is always a mixture.
 
-### The two known FGF4 retrocopies
+### Check the records against the FGF4 introns
+
+_FGF4_ has two introns, so a retrocopy should leave two records, each spanning
+one intron end to end.
+[`build_dog10k_fgf4_retrogene.sh`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/build_dog10k_fgf4_retrogene.sh)
+derives the introns from the RefSeq annotation and checks each record against
+them, with one base of slack at each breakpoint:
+
+```text
+FGF4 RefSeq exons:  48869443-48869782, 48870315-48870418, 48870953-48873311
+FGF4 RefSeq introns: 48869783-48870314 (532 bp),  48870419-48870952 (534 bp)
+
+intron 48869783-48870314: called as a DEL of 532 bp at 48869783-48870314
+intron 48870419-48870952: called as a DEL of 534 bp at 48870418-48870951
+```
+
+### Align the retrocopies to FGF4
 
 Dogs have two known _FGF4_ retrocopies. Both leave the same records at the
 parent gene, so a genotype here is identical whichever copy an animal has:
@@ -417,8 +413,6 @@ parent gene, so a genotype here is identical whichever copy an animal has:
 The spaniels are the rows where body proportions and genotype disagree, and
 placing either insertion needs the other side of the junction from a different
 callset.
-
-### Aligning the retrocopies to FGF4
 
 Brown et al. deposited Sanger sequences of both retrocopies:
 [MF040222](https://www.ncbi.nlm.nih.gov/nuccore/MF040222) for the CFA18
@@ -517,10 +511,10 @@ loads, `dog10k_fgf4_retro_cfa12.paf` and its CFA18 twin. For each file it:
 
 To put the parent gene between the two retrocopies, we:
 
-1. Choose **Add → Linear synteny view**, switch to **Manual**, and set the rows
-   to `FGF4retro-CFA18`, `UU_Cfam_GSD_1.0` and `FGF4retro-CFA12`, top to bottom.
-2. Give the upper pair the CFA18 alignment and the lower pair the CFA12 one,
-   then click **Launch**.
+- Choose **Add → Linear synteny view**, switch to **Manual**, and set the rows
+  to `FGF4retro-CFA18`, `UU_Cfam_GSD_1.0` and `FGF4retro-CFA12`, top to bottom.
+- Give the upper pair the CFA18 alignment and the lower pair the CFA12 one,
+  then click **Launch**.
 
 Each indel is a see-through gap. **Colored indels** in the view's sliders menu
 would show one gap as a deletion above the parent row and an insertion below it,
@@ -532,31 +526,24 @@ it.
 
 <Figure caption="Two FGF4 retrocopies aligned to the parent gene between them, with the Manta calls in reference coordinates and across Dog10K genomes." src="/img/dog10k-fgf4-retrogene-synteny.png" />
 
-## Slicing more clade-associated SVs from Schall and Kidd
-
-Any clade-associated SV on Schall and Kidd's list slices and loads the same way.
-Another retrogene shows up as a gene whose introns are all called deleted in
-some animals, and each record should match an annotated intron to the base, as
-the _FGF4_ check does.
-
 ## Reproduce it end to end
 
 Five scripts build the tracks in the figures, and each writes a `*_build/`
 directory. The tools are under [Prerequisites](#prerequisites). The scripts:
 
-1. `build_dog10k_nhej1_sv.sh` slices the _NHEJ1_ deletion from Schall and Kidd's
-   genotype VCF for the Collie-clade breeds, unaffected breeds and gray wolves.
-2. `build_omia_dog_variants.sh` reads OMIA's nightly mysqldump, since OMIA has
-   no coordinate API. OMIA updates the database continuously, so the record
-   count changes from day to day.
-3. `build_dog10k_amy2b_sv.sh` slices the _AMY2B_ duplication and _RNASE1_
-   insertion records for one panel, in the same order.
-4. `build_dog10k_fgf4_retrogene.sh` slices the two _FGF4_ intron records, and
-   also writes `dog10k_fgf4_cohort_svs`, the same records over every canid in
-   the callset, which this tutorial's config holds as a track.
-5. `build_dog10k_fgf4_synteny.sh` aligns the two _FGF4_ retrocopies to their
-   parent gene. It exits non-zero unless every gap in both alignments is in an
-   annotated _FGF4_ intron and each deposited CDS is a single interval.
+- `build_dog10k_nhej1_sv.sh` slices the _NHEJ1_ deletion from Schall and Kidd's
+  genotype VCF for the Collie-clade breeds, unaffected breeds and gray wolves.
+- `build_omia_dog_variants.sh` reads OMIA's nightly mysqldump, since OMIA has no
+  coordinate API. OMIA updates the database continuously, so the record count
+  changes from day to day.
+- `build_dog10k_amy2b_sv.sh` slices the _AMY2B_ duplication and _RNASE1_
+  insertion records for one panel, in the same order.
+- `build_dog10k_fgf4_retrogene.sh` slices the two _FGF4_ intron records, and
+  also writes `dog10k_fgf4_cohort_svs`, the same records over every canid in the
+  callset, which this tutorial's config holds as a track.
+- `build_dog10k_fgf4_synteny.sh` aligns the two _FGF4_ retrocopies to their
+  parent gene. It exits non-zero unless every gap in both alignments is in an
+  annotated _FGF4_ intron and each deposited CDS is a single interval.
 
 ```bash
 BASE=https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts
@@ -571,6 +558,11 @@ bash build_dog10k_amy2b_sv.sh
 bash build_dog10k_fgf4_retrogene.sh
 bash build_dog10k_fgf4_synteny.sh
 ```
+
+Any clade-associated SV on Schall and Kidd's list slices and loads the same way.
+Another retrogene shows up as a gene whose introns are all called deleted in
+some animals, and each record should match an annotated intron to the base, as
+the _FGF4_ check does.
 
 ## See also
 
