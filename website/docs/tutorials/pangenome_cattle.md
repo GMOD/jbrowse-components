@@ -8,23 +8,28 @@ tutorial_category: Pangenomes
 tutorial_subcategory: Other species
 ---
 
-The bovine super-pangenome is one graph of a set of assemblies on the ARS-UCD1.2
-cattle reference, a Hereford that is itself one of them: taurine and indicine
-breeds, yak, bison and gaur. Each assembly is a named path through the graph,
-and `vg deconstruct` turns those paths into a VCF, so JBrowse can show one locus
-both as a graph of where sequence is present and absent and as a callset listing
-which assemblies have it. We:
+The bovine super-pangenome
+([Leonard et al. 2023](https://doi.org/10.1186/s13059-023-02969-y)) is one graph
+of a set of assemblies on the ARS-UCD1.2 cattle reference, a Hereford that is
+itself one of them: taurine and indicine breeds, yak, bison and gaur. Each
+assembly is a named path through the graph, and `vg deconstruct` turns those
+paths into a VCF, so JBrowse can show one locus both as a graph of where
+sequence is present and absent and as a callset listing which assemblies have
+it. We:
 
 - load the graph as a graph track, and open a whole chromosome with small
   variants folded
 - at _HSPA1A_, load the deconstructed callset as a variant track with one row
   per assembly, over the graph track
-- add OMIA's curated variants as a track, and read three published breed and
-  species variants in the callset
+- add OMIA's curated variants as a track, and open the Celtic polled allele at
+  the POLLED locus
+- open a repeat upstream of _KIT_ and a deletion of _TAS2R46_ in the callset and
+  the graph track
 
-Every step starts from the graph's page on
-[genomes.jbrowse.org](https://genomes.jbrowse.org/pangenomes/bovine), which
-launches the JBrowse 5 development build until JBrowse 5 ships.
+Each step loads its tracks into your own JBrowse. The graph's page on
+[genomes.jbrowse.org](https://genomes.jbrowse.org/pangenomes/bovine) loads the
+same graph, bubble and callset tracks with RefSeq genes, and launches the
+JBrowse 5 development build until JBrowse 5 ships.
 
 :::caution Experimental
 
@@ -41,25 +46,30 @@ The graph view is a beta plugin. We welcome your [feedback](/contact).
   [OMIA track](#the-celtic-polled-allele)
 - [`vg`](https://github.com/vgteam/vg), to
   [deconstruct](#hspa1a-in-the-graph-and-the-callset) the graph into a callset
+- [`gfatools`](https://github.com/lh3/gfatools) and
+  [`gfa-to-tabix`](https://github.com/GMOD/gfa-to-tabix) 5.0.0 or later, to
+  [index the graph](#building-the-bovine-graph-files)
 
-<!-- BEGIN GENERATED TUTORIAL_INSTALL htslib,vg -->
+<!-- BEGIN GENERATED TUTORIAL_INSTALL htslib,vg,gfatools,gfa-to-tabix -->
 
 ```bash
 # Debian/Ubuntu
 sudo apt install tabix
 # or conda, which has every tool above
-conda install -c bioconda -c conda-forge htslib vg
+conda install -c bioconda -c conda-forge htslib vg gfatools
+# any platform
+cargo install gfa-to-tabix
 ```
 
-<!-- END GENERATED TUTORIAL_INSTALL htslib,vg -->
+<!-- END GENERATED TUTORIAL_INSTALL htslib,vg,gfatools,gfa-to-tabix -->
 
 ## The data
 
-The graph tracks read the hosted files by URL, and the OMIA track reads a file
-you build from OMIA's dump with
+The graph and callset tracks read the hosted files by URL, and the OMIA track
+reads a file you build from OMIA's dump with
 [the script under The Celtic polled allele](#the-celtic-polled-allele). For a
-graph of your own, swap the prefix in `uri` for your `gfa-to-tabix build`, as
-[Load the genome and the graph](#load-the-genome-and-the-graph) shows.
+graph of your own, swap the prefix in `uri` for the one your
+[indexing commands](#building-the-bovine-graph-files) wrote.
 
 | What it is                                                    | File                                               |
 | ------------------------------------------------------------- | -------------------------------------------------- |
@@ -73,13 +83,16 @@ graph of your own, swap the prefix in `uri` for your `gfa-to-tabix build`, as
 | The segment and link index                                                                   | [bovine-arsucd12-minigraph.graph.bed.gz](https://jbrowse.org/demos/bovine_pangenome/bovine-arsucd12-minigraph.graph.bed.gz)                     |
 | The bubble index, where assemblies' paths split and rejoin                                   | [bovine-arsucd12-minigraph.bubbles.bed.gz](https://jbrowse.org/demos/bovine_pangenome/bovine-arsucd12-minigraph.bubbles.bed.gz)                 |
 | The overview used for whole chromosomes, with variants under 10 kb folded into the reference | [bovine-arsucd12-minigraph.fold10000.graph.bed.gz](https://jbrowse.org/demos/bovine_pangenome/bovine-arsucd12-minigraph.fold10000.graph.bed.gz) |
+| The deconstructed callset, a genotype column for each assembly but the reference             | [bovine-arsucd12-minigraph.vcf.gz](https://jbrowse.org/demos/bovine_pangenome/bovine-arsucd12-minigraph.vcf.gz)                                 |
+| The callset's sample table, each assembly's breed and lineage                                | [bovine-arsucd12-minigraph.samples.tsv](https://jbrowse.org/demos/bovine_pangenome/bovine-arsucd12-minigraph.samples.tsv)                       |
 
 </details>
 
 ## Load the genome and the graph
 
 We'll load the reference the graph is anchored to, then the graph track. Swap
-the prefix in `uri` for your own `gfa-to-tabix build`, which writes the
+the prefix in `uri` for the one your
+[indexing commands](#building-the-bovine-graph-files) wrote, which name the
 tabix-indexed segments and links and the overview.
 
 ```json addassembly
@@ -116,12 +129,42 @@ tabix-indexed segments and links and the overview.
 }
 ```
 
+The RefSeq genes and the number of segments in each bubble, as a curve, go above
+the graph:
+
+```json addtrack
+{
+  "type": "FeatureTrack",
+  "trackId": "bosTau9_ncbiRefSeq_ucsc",
+  "name": "NCBI RefSeq genes (bosTau9)",
+  "assemblyNames": ["bosTau9"],
+  "adapter": {
+    "type": "Gff3TabixAdapter",
+    "uri": "https://jbrowse.org/ucsc/bosTau9/ncbiRefSeq.gff.gz",
+    "csi": true
+  }
+}
+```
+
+```json addtrack
+{
+  "type": "QuantitativeTrack",
+  "trackId": "bovine_bubble_score",
+  "name": "Bovine super-pangenome: variability (segments per bubble)",
+  "assemblyNames": ["bosTau9"],
+  "adapter": {
+    "type": "MinigraphBubbleAdapter",
+    "uri": "https://jbrowse.org/demos/bovine_pangenome/bovine-arsucd12-minigraph.bubbles.bed.gz",
+    "csi": true
+  }
+}
+```
+
 ## Overview of chr23 with small variants folded {#overview-of-chr23-with-one-node-per-variant-region}
 
-Open
-[chr23 on the portal page](https://genomes.jbrowse.org/pangenomes/bovine/?region=chr23)
-and press **Open in JBrowse**. The whole chromosome opens with the graph's
-coarse tier, in which every variant under 10 kb is folded into the reference.
+Type `chr23` into the location box. Over the whole chromosome, the graph track
+draws its coarse tier, in which every variant under 10 kb is folded into the
+reference.
 
 <Figure caption="Chromosome 23 with RefSeq genes, segments per bubble as a curve, and the graph with variants under 10 kb folded into the reference." src="/img/pangenome/bovine_whole_chromosome.png" />
 
@@ -133,11 +176,12 @@ section.
 
 ARS-UCD1.2 lacks an 11 kb segment beside the heat shock gene _HSPA1A_, which
 contains _HSPA1B_, its near-identical copy. Leonard et al. (2022) recovered it
-in every assembly they built. The **graph** track draws that segment as a loop
-off the reference.
+in every assembly of their earlier pangenome, which had no yak. In this graph's
+callset, every assembly but yak has it, and the **graph** track draws the
+segment as a loop off the reference.
 
-The **callset** has a genotype per assembly. We ran `vg deconstruct` once per
-chromosome over the same graph:
+The **callset** has a genotype for each assembly but the reference. We ran
+`vg deconstruct` once per chromosome over the same graph:
 
 <!-- from: scripts/build_bovine_pangenome.sh -->
 
@@ -153,6 +197,12 @@ vg convert -g chr1.gfa -p > chr1.vg
 vg deconstruct -p chr1 -a -t 8 chr1.vg > chr1.vcf
 ```
 
+`vg deconstruct` reads each assembly's path from a P line, which these published
+graphs hold. A minigraph rGFA has no P lines, so for one of your own, map each
+assembly back through the graph with `minigraph --call`, as
+[the paths section of the graph-hosting tutorial](/docs/tutorials/pangenome_prepare_graph#which-haplotypes-walk-each-segment)
+shows.
+
 The VCF's CHROM column is the `-p` path name, which has to equal the assembly's
 refName. Its sample names are the three-letter codes on each assembly's path,
 and the sample table's first column has to match them. On a mismatch JBrowse
@@ -163,6 +213,10 @@ name	breed	lineage
 ANG	Angus	taurine
 BIS	Bison	bison
 ```
+
+The track below names the graph's twelve assemblies, but the Hereford reference
+has no row: `-p` makes its path the reference, so the VCF has a column for each
+of the other assemblies.
 
 In [grammar-of-graphics](/docs/config_guides/mark_display) terms, `rows.color`
 in the track config is a color scale on each row's label bar, mapping the sample
@@ -233,10 +287,9 @@ table's `lineage` column through `domain` to `range`. The config also sets:
 }
 ```
 
-In the chr23 view the portal opened, type `chr23:27,508,000-27,536,000` to draw
-the graph around _HSPA1A_. Then:
+Type `chr23:27,508,000-27,536,000` to draw the graph around _HSPA1A_. Then:
 
-- Turn on the callset in the track selector.
+- Turn on the RefSeq genes and the callset in the track selector.
 - Open **Graph settings...** in the graph track's menu and set **Bubble spread**
   to **Compress lengths**, which pulls the longest and shortest nodes towards
   the mean so a cut spanning kb and bp nodes fits one pane.
@@ -254,11 +307,6 @@ Angus cattle are born without horns. Medugorac et al. (2012) traced the Celtic
 form of polledness to a 202 bp duplication and insertion on chromosome 1, which
 OMIA, the Online Mendelian Inheritance in Animals database, curates as OMIA
 000483-9913.[^friesian]
-
-The portal page's **POLLED** example shows the name of the Celtic polled allele
-above the map, and each launch opens a **Known alleles** row and OMIA's records
-under the genes. Every launch up to 150 kb wide on the portal includes the OMIA
-row.
 
 To add OMIA to your own JBrowse,
 [`build_omia_cattle_variants.sh`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/build_omia_cattle_variants.sh)
@@ -321,32 +369,62 @@ in red, lacks the span.
 
 ## Building the bovine graph files
 
-[](/docs/tutorials/pangenome_prepare_graph) turns a graph into the files above
-with one command, `gfa-to-tabix build`. The published bovine graphs need three
-steps beyond it, which
-[`build_bovine_pangenome.sh`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/build_bovine_pangenome.sh)
-runs:
+The archive holds one [minigraph](https://github.com/lh3/minigraph) graph (Li et
+al. 2020) per autosome. Before indexing, the build script joins them and
+recovers their rGFA tags:
 
-- Join the autosomes: the archive holds one graph per autosome, each numbering
-  its segments from 1, so the script renumbers and concatenates them.
-- Recover rGFA tags: the graphs hold their coordinates in P lines, and
+- **Joining the autosomes**: each graph numbers its segments from 1, so the
+  script renumbers and concatenates them.
+- **Recovering rGFA tags**: the graphs hold their coordinates in P lines, and
   [`gfa_paths_to_rgfa.py`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/gfa_paths_to_rgfa.py)
   converts them back into `SN`/`SO`/`SR` tags (each segment's contig, offset and
   rank).
-- Deconstruct the callset with the `vg deconstruct` call above.
 
-The script runs on Linux, since it needs GNU tools, and downloads the 12 GB
-Zenodo archive. The script stops if the reference path's chromosome lengths
-differ from bosTau9's, and a
-[README.txt](https://jbrowse.org/demos/bovine_pangenome/README.txt) beside the
-hosted files lists the source and every modification.
+Three commands then write the segment and link index, the bubbles and the coarse
+tier, all in the contig layout. The graph track's `uri` is the prefix the first
+command writes.
+[The graph-hosting tutorial](/docs/tutorials/pangenome_prepare_graph#rgfa-contig-layout)
+lists how these files differ from the ones `gfa-to-tabix build` writes.
 
-Leonard et al. also built pggb and Minigraph-Cactus graphs of the same twelve
-assemblies, base-level GFAs with path lines. From one of those,
+<!-- from: scripts/build_bovine_pangenome.sh -->
+
+```bash
+# --layout contig: each segment under its coordinate on its source contig
+gfa-to-tabix bovine-arsucd12-minigraph.rgfa.gz --layout contig -o bovine-arsucd12-minigraph
+# gfatools bubble writes the bubbles unsorted
+gzip -dc bovine-arsucd12-minigraph.rgfa.gz | gfatools bubble - | sort -k1,1 -k2,2n |
+  bgzip > bovine-arsucd12-minigraph.bubbles.bed.gz
+tabix -f -C -p bed bovine-arsucd12-minigraph.bubbles.bed.gz
+# --below: fold variants under 10 kb into the reference, in the same layout
+gfa-to-tabix fold bovine-arsucd12-minigraph.rgfa.gz --below 10000 --layout contig -o bovine-arsucd12-minigraph.fold10000
+```
+
+Leonard et al. (2023) also built pggb and Minigraph-Cactus graphs of the same
+twelve assemblies, base-level GFAs with path lines. From one of those,
 `gfa-to-tabix build` records the assemblies that pass through each segment,
 which
 [a haplotypes-per-segment track](/docs/tutorials/pangenome_prepare_graph#which-haplotypes-walk-each-segment)
 colors by count.
+
+## Reproduce it end to end
+
+[`build_bovine_pangenome.sh`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/build_bovine_pangenome.sh)
+builds every hosted file on Linux, since it needs GNU tools. It downloads the 12
+GB Zenodo archive and takes about half an hour after that. It:
+
+- joins the autosomes' graphs and recovers their rGFA tags, and stops if the
+  reference path's chromosome lengths differ from bosTau9's
+- indexes the graph, its bubbles and the coarse tier with the commands above
+- deconstructs the callset with the `vg deconstruct` call above, one chromosome
+  at a time
+
+```bash
+curl -fO https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/build_bovine_pangenome.sh
+bash build_bovine_pangenome.sh
+```
+
+A [README.txt](https://jbrowse.org/demos/bovine_pangenome/README.txt) beside the
+hosted files lists the source and every modification.
 
 ## See also
 
