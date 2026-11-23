@@ -9,20 +9,20 @@ tutorial_category: Pangenomes
 tutorial_subcategory: Other species
 ---
 
-The fly pangenome aligns 29 NCBI assemblies of _Drosophila melanogaster_ onto
-the dm6 reference with `minigraph`: the 14 strains of Chakraborty et al. (2019),
-the founders of the Drosophila Synthetic Population Resource (DSPR) and
-Oregon-R; 11 Bloomington stocks carrying classical visible mutations, which
-Samano et al. (2026) assembled to find the structural variants behind them; and
-three single-fly PacBio HiFi strains and a Canton S. dm6 is ISO1, itself a
-laboratory strain, so where it carries a transposon the strains without one
+The fly pangenome is a `minigraph` alignment of 29 NCBI assemblies of
+_Drosophila melanogaster_ onto the dm6 reference: the 14 strains of Chakraborty
+et al. (2019), the founders of the Drosophila Synthetic Population Resource
+(DSPR) and Oregon-R; 11 Bloomington stocks with classical visible mutations,
+which Samano et al. (2026) assembled to find the structural variants behind
+them; and three single-fly PacBio HiFi strains and a Canton S. dm6 is ISO1,
+itself a laboratory strain, so where it has a transposon the strains without one
 appear as a deletion. No graph had been published for these assemblies, so we
 built one. We:
 
 - at _Cyp28d1_, read six duplication alleles of one gene in a single bubble
 - at _Strn-Mlck_, find the transposon behind the Curved wing mutant in one
   Bloomington stock
-- at _CHKov1_, read a resistance allele that the reference carries
+- at _CHKov1_, read a resistance allele that the reference has
 - load the graph and its bubbles as tracks on dm6 in your own JBrowse
 - build a minigraph graph from the assemblies
 
@@ -76,31 +76,31 @@ your own.
 
 </details>
 
-The graph holds no path per assembly, so the portal page reads which assemblies
-carry each bubble's allele from a separate file, made by mapping each assembly
-back onto the graph with `minigraph --call`.
+The graph has no path per assembly, so the portal page reads the assemblies with
+each bubble's allele from a separate file, made by mapping each assembly back
+onto the graph with `minigraph --call`.
 
 ## Cyp28d1: six duplication alleles in one bubble
 
 A nicotine resistance QTL mapped in the DSPR holds two cytochrome P450 genes,
-_Cyp28d1_ and _Cyp28d2_. Chakraborty et al. (2019) found that the founders carry
+_Cyp28d1_ and _Cyp28d2_. Chakraborty et al. (2019) found that the founders have
 different duplications there: A2 has two copies of a 15 kb segment holding both
-genes, B1 three, and B4 a 6 kb duplication. A1 has B4's duplication with a
-transposon inside the second _Cyp28d1_ copy. The A2 and B4 alleles resist
+genes, B1 has three, and B4 has a 6 kb duplication. A1 has B4's duplication with
+a transposon inside the second _Cyp28d1_ copy. The A2 and B4 alleles resist
 nicotine best and express _Cyp28d1_ most. dm6 has the single-copy allele.
 
 - Type `chr2L:5,200,000-5,220,000` into the
   [portal page](https://genomes.jbrowse.org/pangenomes/fly)'s box and press
   **Show**, or pick **Cyp28d1** from its examples.
-- Read the map: one bubble over both genes, with a form per allele. BOG1_A2 is
+- The map shows one bubble over both genes, with a form per allele. BOG1_A2 is
   15 kb longer than dm6, BER1_B1 38 kb, RVC3_B4 6.1 kb and Canton-S_A1 11 kb.
 - Press **Graph** to open the bubble in the graph view.
 
 <Figure caption="The portal page at Cyp28d1. One bubble over the gene holds a form per duplication allele, each named from the known allele above the map." src="/img/pangenome/genomes_fly_cyp28d1.png" />
 
-The map also draws alleles the paper did not describe: KSA2 and A4_HiFi 5.3 kb
-longer, SAM_HiFi 3.3 kb. Two Bloomington stocks share Canton-S_A1's 11 kb form,
-and CantonS_Yunnan shares BOG1_A2's 15 kb.
+The map also draws alleles the paper did not describe: KSA2 and A4_HiFi are 5.3
+kb longer, and SAM_HiFi is 3.3 kb longer. Two Bloomington stocks share
+Canton-S_A1's 11 kb form, and CantonS_Yunnan shares BOG1_A2's 15 kb.
 
 ## Strn-Mlck: the Curved wing mutant
 
@@ -111,42 +111,42 @@ inside an exon of the muscle gene _Strn-Mlck_, which truncates its transcript.
 - Type `chr2R:15,940,000-15,966,000` into the
   [portal page](https://genomes.jbrowse.org/pangenomes/fly)'s box and press
   **Show**, or pick **Strn-Mlck** from its examples.
-- Find the 7.5 kb insertion at `chr2R:15,953,909`, carried by BDSC_156 alone.
+- Find the 7.5 kb insertion at `chr2R:15,953,909`, which only BDSC_156 has.
 
 <Figure caption="The portal page at Strn-Mlck. The known allele above the map names BDSC_156 as the one stock with the DM412 insertion, and the map draws it as a 7.5 kb insertion in the gene." src="/img/pangenome/genomes_fly_strn_mlck.png" />
 
 The window stops short of the gene's PEVK repeats, where almost every assembly
 differs from dm6 in copy number, by up to 2.7 kb. Type
-`chr2R:15,940,000-15,995,000` to see them. The same stock, BDSC_156, carries the
-plexus (px¹) wing-vein allele, a 1.5 kb duplication split by a second DM412,
-which the portal's **plexus** example opens.
+`chr2R:15,940,000-15,995,000` to see them. BDSC_156 also has the plexus (px¹)
+wing-vein allele, a 1.5 kb duplication split by a second DM412, which the
+portal's **plexus** example opens.
 
-## CHKov1: an allele the reference carries
+## CHKov1: a resistance allele in the reference
 
 Aminetzach et al. (2005) found a Doc transposon in the coding sequence of
 _CHKov1_ that truncates the protein and raises resistance to an organophosphate
 insecticide. Magwire et al. (2011) found that the same insertion protects
 against the sigma virus, and that it is now the commonest form of the gene. dm6
-carries the Doc, so the assemblies without it appear as a 4.5 kb deletion.
+has the Doc, so the assemblies without it appear as a 4.5 kb deletion.
 
 - Type `chr3R:25,320,000-25,335,000` into the
   [portal page](https://genomes.jbrowse.org/pangenomes/fly)'s box and press
   **Show**, or pick **CHKov1** from its examples.
-- Read the deletion's carriers: Oregon-R, BOG1_A2, three Bloomington stocks and
-  two of the HiFi strains lack the Doc; the other 22 assemblies have it.
+- Oregon-R, BOG1_A2, three Bloomington stocks and two of the HiFi strains lack
+  the Doc, and the other 22 assemblies have it.
 
-<Figure caption="The portal page at CHKov1. dm6 carries the Doc, so the seven assemblies without it are one form with a 4.5 kb deletion, named no Doc." src="/img/pangenome/genomes_fly_chkov1.png" />
+<Figure caption="The portal page at CHKov1. dm6 has the Doc, so the seven assemblies without it are one form with a 4.5 kb deletion, named no Doc." src="/img/pangenome/genomes_fly_chkov1.png" />
 
-The portal's **Jheh** example reads the same way: dm6 carries Bari-Jheh, a 1.7
-kb Bari1 transposon that adds antioxidant response elements upstream of _Jheh1_
-and _Jheh2_ (Guio et al. 2014), and six assemblies lack it.
+In the portal's **Jheh** example, dm6 has Bari-Jheh, a 1.7 kb Bari1 transposon
+that adds antioxidant response elements upstream of _Jheh1_ and _Jheh2_ (Guio et
+al. 2014), and six assemblies lack it.
 
 ## Loading the graph in your own JBrowse {#load-the-graph}
 
 The portal's launches load these tracks for you. In your own JBrowse, we'll load
-the reference, then the graph and its bubbles. The graph track names the file
-prefix `gfa-to-tabix build` writes, and the `uri`s below are our hosted copy, so
-swap the prefix for your own build.
+the reference, then the graph and its bubbles. The graph track's `uri` is the
+file prefix `gfa-to-tabix build` writes, and the `uri`s below are our hosted
+copy, so swap the prefix for your own build.
 
 ```json addassembly
 {

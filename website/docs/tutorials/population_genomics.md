@@ -10,7 +10,7 @@ tutorial_category: Population genomics
 
 In _Drosophila melanogaster_, a selective sweep at the insecticide-resistance
 gene _Cyp6g1_ ([Daborn et al. 2002](https://doi.org/10.1126/science.1074170))
-and the `In(2L)t` inversion on chromosome 2L each leave a mark in windowed
+and the `In(2L)t` inversion on chromosome 2L each show up in windowed
 population-genetic statistics. π (diversity within a group) dips at the sweep
 and Tajima's D falls below zero there, while Fst (the distance between two
 groups' allele frequencies) rises across the inversion. The inversion flips a
@@ -78,7 +78,7 @@ two sample lists.
 
 ## Building Fst, π and Tajima's D bigWigs with vcftools
 
-DGRPool records each line's `In(2L)t` arrangement
+DGRPool lists each line's `In(2L)t` arrangement
 ([Gardeux et al. 2023](https://doi.org/10.7554/eLife.88981)), harmonizing the
 typing of [Huang et al. 2015](https://doi.org/10.1534/g3.115.019554): `0` for
 standard homozygotes, `2` for inverted and `1` for heterozygotes.
@@ -129,8 +129,8 @@ vcftools --gzvcf dgrp2.vcf.gz --window-pi 2000 --out pi_all
 vcftools --gzvcf dgrp2.vcf.gz --keep In2Lt_INV.txt --window-pi 2000 --out pi_INV
 ```
 
-`$4` of the same table is the called-variant count the figure below stacks under
-π, packed into a bigWig by the same `awk` and `bedGraphToBigWig` pair.
+`$4` of the same table is the called-variant count that the figure below shows
+under π, packed into a bigWig by the same `awk` and `bedGraphToBigWig` pair.
 
 The vcftools Tajima's D table
 ([Tajima 1989](https://doi.org/10.1093/genetics/123.3.585)) reports `BIN_START`
@@ -425,7 +425,7 @@ ones, with the far breakpoint in `END`:
 2L      2225744  In2Lt  N    <INV>  .     PASS    SVTYPE=INV;END=13154180  GT      1/1       0/0
 ```
 
-The samples TSV pairs each line with its `karyotype` (standard or inverted).
+The samples TSV lists each line with its `karyotype` (standard or inverted).
 `facet` splits the display into sections, one per `karyotype` value,
 `facet.sort` orders them, and `rows.color` is a color scale on each row's label
 bar:
@@ -467,7 +467,7 @@ wraps every step above. The script:
 2. Splits the lines into inverted and standard groups, and writes Fst, π, their
    inverted-over-standard ratio and Tajima's D as bigWigs over windows with
    vcftools.
-3. Builds the one-record inversion VCF that genotypes every line.
+3. Builds the one-record inversion VCF, with a genotype for every line.
 4. Downloads JBrowse and writes a `config.json` with dm6 and every track,
    opening on `In(2L)t`.
 

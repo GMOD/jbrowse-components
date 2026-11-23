@@ -13,8 +13,8 @@ tutorial_subcategory: Ortholog tables
 We look at one human locus across seven other primates at once. NCBI gives an
 orthologous gene the same symbol in every species it annotates, so an ortholog
 table is a join on the gene name over eight GFF3 files. Bacterial annotations
-name fewer genes and rename more of them, so the page closes on E. coli to see
-what the join does with them. We:
+name fewer genes and rename more of them, so the last section runs the join on
+E. coli annotations to see how it handles them. We:
 
 - build the join, and set up each lane's assembly from its hub
 - load the table as a multi-genome ortholog track, each primate a lane under the
@@ -53,9 +53,9 @@ pip install git+https://github.com/cmdcolin/orthologs2jbrowse
 
 ## The data
 
-The annotations and sequence reports of eight RefSeq assemblies, each fetched by
-accession with the `datasets` CLI: the current human reference, the six NHGRI
-telomere-to-telomere ape assemblies (Yoo et al. 2025) and the
+The data are the annotations and sequence reports of eight RefSeq assemblies,
+each fetched by accession with the `datasets` CLI: the current human reference,
+the six NHGRI telomere-to-telomere ape assemblies (Yoo et al. 2025) and the
 telomere-to-telomere rhesus macaque. The E. coli section uses E. coli and
 Shigella annotations anchored on K-12 MG1655, all pinned by accession in its
 build script.
@@ -119,9 +119,9 @@ cases:
 - **A symbol shared by several genes in one genome** gets a row per copy,
   because a link joins one gene to one gene. The main case is the
   pseudoautosomal genes, annotated on both X and Y.
-- **Open reading frame genes** spell differently in the apes (human _C1orf35_ is
-  chimp _C1H1orf35_), and the helper maps that spelling back to the human
-  symbol.
+- **Open reading frame genes** are spelled differently in the apes (human
+  _C1orf35_ is chimp _C1H1orf35_), and the helper maps that spelling back to the
+  human symbol.
 
 The helper prints how much of each column it filled.
 
@@ -139,7 +139,7 @@ curl -fO https://jbrowse.org/hubs/genark/GCF/028/858/775/GCF_028858775.2/config.
 ```
 
 The build relabels the lane and adds the short name as an alias, so a session
-can still say `chimp`:
+can still use `chimp`:
 
 ```json
 {
@@ -199,7 +199,7 @@ own annotation, add one per genome from a bgzipped, tabix-indexed GFF3
 
 ## Loading the multi-genome ortholog track
 
-One `SyntenyTrack` names every assembly, and `blockAssemblies` and
+One `SyntenyTrack` lists every assembly, and `blockAssemblies` and
 `bedLocations` hold one entry per table column, in the order the helper printed.
 In [grammar-of-graphics](/docs/config_guides/mark_display) terms, the display's
 `encoding.color` is a color scale, and the `cluster` field maps each gene's
@@ -265,9 +265,9 @@ In a linear genome view on human, the track draws a lane per primate under the
 human axis, each in that genome's coordinates. Each lane's header names the
 chromosome and span, with `[rev]` where the lane runs against human
 ([lane headers](/docs/user_guides/multiway_synteny_display#reading-a-lane-header)).
-The ribbons color by strand by default (**Color by → Strand**, under **Ribbons**
-on the track menu), so each ribbon shows whether its two lanes agree in
-orientation. The session below opens the _TP53_ neighbourhood:
+The ribbons are colored by strand by default (**Color by → Strand**, under
+**Ribbons** on the track menu), so each ribbon shows whether its two lanes agree
+in orientation. The session below opens the _TP53_ neighbourhood:
 
 ```json session config=https://jbrowse.org/demos/primate_orthologs/config.json
 {
@@ -291,7 +291,7 @@ orientation. The session below opens the _TP53_ neighbourhood:
 }
 ```
 
-<Figure caption="TP53 on human chr17 over the other primates' lanes, each with that genome's RefSeq genes. The reversed siamang lane shows [rev] and draws its ribbons straight." src="/img/multiway_synteny/primate_tp53_lanes.png" />
+<Figure caption="TP53 on human chr17 over the other primates' lanes, each with that genome's RefSeq genes. The reversed siamang lane shows [rev], and its ribbons are straight." src="/img/multiway_synteny/primate_tp53_lanes.png" />
 
 Navigate to `chr17:34,000,000-38,000,000` on 17q, where the strand color
 separates forward blocks from reversed ones.
@@ -312,9 +312,9 @@ Human chromosome 2 is two ape chromosomes joined end to end. To see the join:
 <Figure caption="Human chr2 over chimpanzee chr12 and chr13, ribbons colored by chimpanzee chromosome." src="/img/multiway_synteny/primate_chr2_fusion.png" />
 
 In the multi-lane view, where a genome has the window's genes on two contigs,
-its lane shows the contig with more of them and names the other in the lane
-header. **Show ⟨contig⟩ in this lane** on the header menu swaps the lane onto
-it.
+the track shows the contig with more of them in its lane and names the other in
+the lane header, and **Show ⟨contig⟩ in this lane** on the header menu switches
+the lane to that other contig.
 
 ## Joining bacterial annotations (E. coli)
 
@@ -429,8 +429,8 @@ bash build_primate_orthologs.sh
 The E. coli script also needs htslib, and works in three steps:
 
 1. Download each genome's annotation, sequence report and assembly report, name
-   each lane after the report's strain field, and drop a genome the report calls
-   neither _E. coli_ nor _Shigella_.
+   each lane after the report's strain field, and drop a genome whose report
+   lists it as neither _E. coli_ nor _Shigella_.
 2. Keep each genome's longest sequence as its chromosome, so a lane follows one
    contig and no plasmid, and sort and index the GFF3 as in the
    [web quickstart](/docs/quickstart_web).

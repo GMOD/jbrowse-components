@@ -168,8 +168,8 @@ The graph has four kinds of object:
 Type `chr6:32,500,000-32,560,000`, a window in MHC class II, a cluster of
 immune-system HLA genes. Beside _HLA-DRB5_, a charcoal node is an allele much
 shorter than the backbone stretch it hangs across. Left-click it. Its details
-give `contributingHaplotype`, `NA20809#2`: the graph's `SN` tag records which
-assembly minigraph first took the allele from.
+list `contributingHaplotype`, `NA20809#2`, from the graph's `SN` tag, which
+holds the assembly minigraph first took the allele from.
 
 **Open in** appears when the session has an assembly named or aliased
 `sample#haplotype`, the graph's name for it. The launch's config declares every
@@ -197,12 +197,12 @@ allele and no _HLA-DRB5_, the gene it spans on hg38.
 
 ## Listing every haplotype with the HLA-DRB5 allele {#every-haplotype-with-the-allele}
 
-The graph names one source assembly per allele. HPRC's phased VCF lists every
+The graph has one source assembly per allele. HPRC's phased VCF lists every
 haplotype's allele at every bubble: a record is one allele written against
 GRCh38, and each sample's genotype holds a 1 for each of its haplotypes with
 that allele. The variant matrix the launch opened reads the same callset
 realigned with vcfwave, which splits each allele into the deletions and
-insertions it makes against GRCh38. The phased VCF keeps each graph allele whole
+insertions it makes against GRCh38. The phased VCF has each graph allele whole
 as one record, so a record matches a node of the graph track. We'll add it to
 the graph launch's session:
 
@@ -234,8 +234,8 @@ the graph launch's session:
   of the record's longest allele, so it counts an insertion's inserted bases.
 - `fetchSizeLimit` raises the download cap past
   [its default](/docs/config/vcftabixadapter/#slot-fetchsizelimit). The VCF
-  spells out each inserted allele, which puts the MHC class II window over the
-  default.
+  contains the bases of each inserted allele, which puts the MHC class II window
+  over the default.
 - **Filter by → Edit filters...** in the track menu shows the filter and changes
   it.
 - **Advanced → Edit plot...** in the track menu shows `rows` and `filter` as
@@ -277,8 +277,8 @@ the large file makes a locus one ranged read:
 }
 ```
 
-The `uri` shorthand resolves the sibling `.tai`. For a MAF of your own, taffy
-writes the index beside it:
+With the `uri` shorthand, JBrowse finds the `.tai` beside the MAF. For a MAF of
+your own, taffy writes the index beside it:
 
 ```bash
 # writes alignment.maf.gz.tai, which the adapter finds by its name
@@ -291,7 +291,7 @@ sequence that haplotype lacks. Then:
 
 - **Clustering → Cluster rows by genotype...** on the VCF orders its rows.
 - **Clustering → Cluster rows by identity...** on the alignment clusters over
-  the window in view, because HPRC's file ships no guide tree.
+  the window in view, because HPRC's file has no guide tree.
 - **Reset row order** restores the order in the file.
 
 <Figure caption="C4 with the RefSeq genes, the VCF, alignment rows and the graph track. The arrow runs from the shaded band to the graph segment holding it." src="/img/maf_hprc_pangenome.png" />
@@ -305,7 +305,7 @@ GRCh38 has, the difference between a long and a short C4.
 ## Following haplotypes through C4 {#haplotype-threads}
 
 The graph track above draws the sequence that exists at C4. A graph cut from the
-haplotypes' walks also draws the route each haplotype takes: a **walk** is one
+haplotypes' walks also draws the route each haplotype takes. A **walk** is one
 haplotype's path through the graph, and a highlighted walk is a colored thread
 along the nodes it passes through. In the same window:
 
@@ -324,17 +324,17 @@ along the nodes it passes through. In the same window:
 Each highlighted walk takes its color in the key, and the rest of the graph
 fades to grey. Read the threads this way:
 
-- **Threads side by side pass through the same nodes.** The three run together
-  through _C4A_ and most of the window.
+- **Threads side by side pass through the same nodes.** The three highlighted
+  threads run together through _C4A_ and most of the window.
 - **A thread that leaves the others takes another allele.** In _C4B_, GRCh38's
   thread runs through the HERV-K insertion and HG00133's takes the link that
   skips it, the deletion on its row of the variant matrix.
 - **A loop in one color is sequence only that haplotype has here.** At the same
   place HG00128 alone runs the large loop, a further C4-CYP21-TNX module. The
-  genes on it come from HG00128's own annotation, so each name ends with the
-  haplotype.
-- **Hover a node**, and the key gives its position on each highlighted
-  haplotype's own contig.
+  genes on it come from the annotation of HG00128's assembly, so each name ends
+  with the haplotype.
+- **Hover a node**, and the key gives its position on the contig of each
+  highlighted haplotype.
 
 **A panel per haplotype**, further down the same list, draws the same layout
 once for each highlighted haplotype, shaded light to dark from the start of its
@@ -350,8 +350,8 @@ The HPRC page's examples are loci where at least one launch draws something
 readable. At a locus of your own, a picture that looks simple or empty can
 mislead in these cases:
 
-- **Near-identical duplications draw as a single thread.** The graph puts the
-  copies of SMN1 / SMN2, SRGAP2 and the 8p23.1 beta-defensin cluster on one
+- **Near-identical duplications are drawn as a single thread.** The graph puts
+  the copies of SMN1 / SMN2, SRGAP2 and the 8p23.1 beta-defensin cluster on one
   path, so those examples offer no **Graph** launch. A gene-level graph shows
   copy number there.
 - **The graph does not align every haplotype everywhere.** A haplotype the graph
@@ -377,17 +377,17 @@ mislead in these cases:
   merges duplicated copies into one thread or the VCF has no record, and the
   page offers the launch anyway.
 - **Each launch shows one part of the locus.** The graph shows which sequence
-  exists, the VCF which haplotypes have it, and the lanes how a few haplotypes
-  are arranged.
+  exists, the VCF shows which haplotypes have it, and the lanes show how a few
+  haplotypes are arranged.
 
 ## Reproduce it end to end
 
 [Hosting your own graph](/docs/tutorials/pangenome_prepare_graph) builds the
 index files and the bubbles track in one command that runs on any rGFA. Run on
 `hprc-v2.1-mc-grch38.sv.gfa.gz`, it writes the files we host, and
-[README.txt](https://jbrowse.org/demos/hprc/README.txt) beside them records
-their provenance. For a graph of your own, minigraph can list each assembly's
-route through every bubble; see
+[README.txt](https://jbrowse.org/demos/hprc/README.txt) beside them gives their
+provenance. For a graph of your own, minigraph can list each assembly's route
+through every bubble; see
 [Which haplotypes pass through each segment](/docs/tutorials/pangenome_prepare_graph#which-haplotypes-walk-each-segment).
 
 ## See also

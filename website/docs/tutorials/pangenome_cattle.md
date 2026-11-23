@@ -121,7 +121,7 @@ tabix-indexed segments and links and the overview.
 Open
 [chr23 on the portal page](https://genomes.jbrowse.org/pangenomes/bovine/?region=chr23)
 and press **Open in JBrowse**. The whole chromosome opens with the graph's
-coarse tier, which folds every variant under 10 kb into the reference.
+coarse tier, in which every variant under 10 kb is folded into the reference.
 
 <Figure caption="Chromosome 23 with RefSeq genes, segments per bubble as a curve, and the graph with variants under 10 kb folded into the reference." src="/img/pangenome/bovine_whole_chromosome.png" />
 
@@ -133,10 +133,10 @@ section.
 
 ARS-UCD1.2 lacks an 11 kb segment beside the heat shock gene _HSPA1A_, which
 contains _HSPA1B_, its near-identical copy. Leonard et al. (2022) recovered it
-in every assembly they built. The **graph** draws that segment as a loop off the
-reference.
+in every assembly they built. The **graph** track draws that segment as a loop
+off the reference.
 
-The **callset** gives a genotype per assembly. We ran `vg deconstruct` once per
+The **callset** has a genotype per assembly. We ran `vg deconstruct` once per
 chromosome over the same graph:
 
 <!-- from: scripts/build_bovine_pangenome.sh -->
@@ -155,8 +155,8 @@ vg deconstruct -p chr1 -a -t 8 chr1.vg > chr1.vcf
 
 The VCF's CHROM column is the `-p` path name, which has to equal the assembly's
 refName. Its sample names are the three-letter codes on each assembly's path,
-and the sample table's first column has to match them. A mismatch leaves the row
-unlabelled and raises no error:
+and the sample table's first column has to match them. On a mismatch JBrowse
+leaves the row unlabelled and raises no error:
 
 ```text
 name	breed	lineage
@@ -170,10 +170,10 @@ table's `lineage` column through `domain` to `range`. The config also sets:
 
 - `rows.sort` lists the cattle breeds above the wild species, and `rows.labels`
   writes each breed beside its row
-- `rows.field: "haplotype"` draws one row per assembly, each being one
-  haplotype, with a second alternate allele in a separate color. `rows.sort` and
-  `rows.labels` use each assembly's sample name, which covers all of that
-  assembly's rows
+- With `rows.field: "haplotype"` the track draws one row per assembly (each
+  assembly is one haplotype), with a second alternate allele in a separate
+  color. `rows.sort` and `rows.labels` use each assembly's sample name, which
+  covers all of that assembly's rows
 
 ```json addtrack loc=chr23:27,508,000-27,536,000
 {
@@ -255,9 +255,10 @@ form of polledness to a 202 bp duplication and insertion on chromosome 1, which
 OMIA, the Online Mendelian Inheritance in Animals database, curates as OMIA
 000483-9913.[^friesian]
 
-The portal page's **POLLED** example names the Celtic polled allele above the
-map, and each launch opens a **Known alleles** row and OMIA's records under the
-genes. Every launch up to 150 kb wide on the portal includes the OMIA row.
+The portal page's **POLLED** example shows the name of the Celtic polled allele
+above the map, and each launch opens a **Known alleles** row and OMIA's records
+under the genes. Every launch up to 150 kb wide on the portal includes the OMIA
+row.
 
 To add OMIA to your own JBrowse,
 [`build_omia_cattle_variants.sh`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/build_omia_cattle_variants.sh)
@@ -298,8 +299,8 @@ allele.
 
 Simmental and Hereford cattle have white heads. Milia et al. (2025) tied the
 trait to a 14.3 kb segment repeated in tandem upstream of _KIT_: white-headed
-breeds have extra copies, color-headed breeds a deletion. The Hereford reference
-holds one collapsed copy. Open `chr6:70,080,000-70,180,000`.
+breeds have extra copies, and color-headed breeds have a deletion. The Hereford
+reference holds one collapsed copy. Open `chr6:70,080,000-70,180,000`.
 
 <Figure caption="Upstream of KIT with the callset and the graph track, which draws the deletion as a dashed arc." src="/img/pangenome/bovine_kit.png" />
 
@@ -328,17 +329,17 @@ runs:
 
 - Join the autosomes: the archive holds one graph per autosome, each numbering
   its segments from 1, so the script renumbers and concatenates them.
-- Recover rGFA tags: the graphs record their coordinates in P lines, and
+- Recover rGFA tags: the graphs hold their coordinates in P lines, and
   [`gfa_paths_to_rgfa.py`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/gfa_paths_to_rgfa.py)
   converts them back into `SN`/`SO`/`SR` tags (each segment's contig, offset and
   rank).
 - Deconstruct the callset with the `vg deconstruct` call above.
 
 The script runs on Linux, since it needs GNU tools, and downloads the 12 GB
-Zenodo archive. It stops if the reference path does not reproduce bosTau9's
-chromosome lengths, and a
+Zenodo archive. The script stops if the reference path's chromosome lengths
+differ from bosTau9's, and a
 [README.txt](https://jbrowse.org/demos/bovine_pangenome/README.txt) beside the
-hosted files records the source and every modification.
+hosted files lists the source and every modification.
 
 Leonard et al. also built pggb and Minigraph-Cactus graphs of the same twelve
 assemblies, base-level GFAs with path lines. From one of those,
@@ -368,4 +369,4 @@ colors by count.
 
 [^friesian]:
     OMIA also records the Friesian polled allele, a larger duplication further
-    along, which Holstein cattle have. The panel has no Holstein.
+    along, which Holstein cattle have, but the panel has no Holstein assembly.

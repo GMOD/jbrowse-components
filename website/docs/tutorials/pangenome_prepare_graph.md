@@ -18,7 +18,7 @@ We:
 - install the GraphGenomeView plugin and index a graph with `gfa-to-tabix build`
 - load the graph as a graph track, and as a row of segments with **Display
   types**
-- add the tracks that record which haplotypes pass through each segment
+- add the tracks that show which haplotypes pass through each segment
 - index the haplotypes' walks and load them as a graph track with one lane per
   haplotype
 - convert the walks to PAF for a linear synteny view
@@ -140,8 +140,8 @@ gfa-to-tabix build graph.rgfa.gz -o hprc --assembly hg38
 
 To build your own rGFA, give minigraph PanSN-named FASTA records
 (`sample#haplotype#contig`), since it takes each segment's stable name from the
-input headers. Per-strain files that all call their contig `chr` put every
-segment on an ambiguous `chr`, which no query can tell apart by strain.
+input headers. If every per-strain file names its contig `chr`, every segment
+gets the same `chr` name, and no query can tell the strains apart.
 
 A **plain GFA**, from pggb, odgi, vg or base-level Minigraph-Cactus, also needs
 the backbone sample and its bubbles. The bubbles come from a snarl VCF (vg's
@@ -176,21 +176,21 @@ On a plain GFA, the command places each segment by walking the paths:
   diploid one, name the haplotype, or the command anchors on the sample's first
   haplotype and prints a note naming it.
 - **A segment a path reaches twice** takes its position from the first visit, so
-  it draws as one node and the repeat shows as depth.
+  it is drawn as one node and the repeat shows as depth.
 
 At human-chromosome scale, index the SV-resolution rGFA; a pggb graph's index
 does not finish there.
 
 The command writes these files beside the prefix:
 
-| file                      | what it holds                                                                                                                                                                                    |
-| ------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `.graph.bed.gz`           | one row per segment and one per link, filed under reference coordinates for an rGFA and under the segment's coordinate on its source contig for a plain GFA; a link row states both ends in full |
-| `.bubbles.bed.gz`         | where haplotypes diverge and rejoin, with each bubble's shortest and longest allele                                                                                                              |
-| `.fold10000.graph.bed.gz` | the graph with variants under 10 kb folded into the reference, so a whole chromosome draws; a plain GFA folds under 50 bp, as `.fold50.graph.bed.gz`                                             |
-| `.contig.graph.bed.gz`    | an rGFA's segment and link rows under the segment's coordinate on its source contig                                                                                                              |
-| `.graph.json`             | a manifest naming the files above and the tier's fold size                                                                                                                                       |
-| `.config.json`            | the tracks below, with the plugin entry                                                                                                                                                          |
+| file                      | what it holds                                                                                                                                                                                 |
+| ------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `.graph.bed.gz`           | one row per segment and one per link, filed under reference coordinates for an rGFA and under the segment's coordinate on its source contig for a plain GFA; a link row has both ends in full |
+| `.bubbles.bed.gz`         | where haplotypes diverge and rejoin, with each bubble's shortest and longest allele                                                                                                           |
+| `.fold10000.graph.bed.gz` | the graph with variants under 10 kb folded into the reference, so a whole chromosome draws; a plain GFA folds under 50 bp, as `.fold50.graph.bed.gz`                                          |
+| `.contig.graph.bed.gz`    | an rGFA's segment and link rows under the segment's coordinate on its source contig                                                                                                           |
+| `.graph.json`             | a manifest naming the files above and the tier's fold size                                                                                                                                    |
+| `.config.json`            | the tracks below, with the plugin entry                                                                                                                                                       |
 
 Each `.bed.gz` gets a tabix index beside it. `--format 1` writes the index, the
 tier and the contig layout as `.segs.bed.gz` and `.links.bed.gz` pairs, and a
@@ -210,7 +210,7 @@ asks you to zoom in past that.
 
 ## Configuring the graph track {#the-two-indexes-a-graph-track-reads}
 
-The config's first track is the graph. Its adapter holds:
+The config's first track is the graph track, whose adapter holds:
 
 - `uri`, the prefix, and `"format": 2`, which reads `<prefix>.graph.bed.gz`
 - `coarse`, which names the tier and its threshold, `foldBelowBp`; the track
@@ -250,10 +250,10 @@ graph track** reads `hprc.graph.json` beside `hprc.graph.bed.gz`, so a track
 opened from that url gets the coarse tier too.
 
 A plain GFA's index and tier are in the contig layout, each segment under its
-coordinate on its source contig. The anchored layout an rGFA gets files a
-segment under every reference position its branch spans, which on the _E. coli_
-pggb and Minigraph-Cactus graphs makes the track draw multi-megabase rows across
-every window.
+coordinate on its source contig. In the anchored layout an rGFA gets, each
+segment is filed under every reference position its branch spans. On the _E.
+coli_ pggb and Minigraph-Cactus graphs, that layout makes the track draw
+multi-megabase rows across every window.
 
 Turned on, the track draws as a graph. **Display types → Feature display** in
 its track menu draws the same segments as a row.
@@ -294,8 +294,8 @@ seven to nine the segment's contig and span.
 
 - **An empty result** over a tiled reference means the query used the wrong
   name: `chr1` finds nothing where `GRCh38#0#chr1` finds every segment.
-- **Backbone rows with no alleles** mark a place where the graph collapsed,
-  which minigraph does to near-identical segmental duplications.
+- **Backbone rows with no alleles** mark a place where minigraph collapsed the
+  graph, as it does with near-identical segmental duplications.
 
 ## Recording which haplotypes pass through each segment {#which-haplotypes-walk-each-segment}
 
@@ -323,7 +323,7 @@ gfa-to-tabix paths -o graph.paths ref.call.bed sample.call.bed
 ```
 
 The file loads as a feature track with one row per haplotype, partitioned on
-`strain`. The `itemRgb` column sets each block's color by class, so the track
+`strain`. The `itemRgb` column holds each block's color by class, so the track
 needs no color config:
 
 ```json addtrack
@@ -346,7 +346,7 @@ needs no color config:
 }
 ```
 
-The arabidopsis pangenome config hosts one such file as
+The arabidopsis pangenome config includes one such file as the track
 `arabidopsis_minigraph_paths`. Open it over _FLC_ at `Chr5:3,170,000-3,186,000`,
 under `TAIR10_genes`:
 
@@ -411,8 +411,8 @@ haplotype lanes read one range at a time:
   haplotype takes off that path once, and every other walk's piece as the list
   of routes it takes
 - a departure record gives each place a walk leaves the reference and rejoins it
-  in another piece, and is filed over the whole stretch between, so a window
-  inside a deletion still reads the haplotype that skips it
+  in another piece, and is filed over the whole stretch between, so JBrowse
+  still reads the haplotype that skips a deletion in a window inside it
 
 The base-level GFA holds each walk as a W line. Index the GRCh38 graph against
 GRCh38:[^walks-cost]
@@ -423,10 +423,10 @@ gfa-to-tabix hprc-v2.1-mc-grch38.gfa.gz --walks --refs GRCh38 \
   -o hprc-v2.1-mc-grch38
 ```
 
-A Minigraph-Cactus graph's own reference passes no node twice, so its walk file
-places every step exactly. On another reference, a step on a node that reference
-passes more than once takes the pass the tool picks, so a track on T2T-CHM13
-reads the walks of the graph built on CHM13, indexed the same way:
+A Minigraph-Cactus graph's own reference passes no node twice, so every step in
+its walk file is placed exactly. On another reference, a step on a node that
+reference passes more than once takes the pass the tool picks, so a track on
+T2T-CHM13 reads the walks of the graph built on CHM13, indexed the same way:
 
 ```bash
 gfa-to-tabix hprc-v2.1-mc-chm13.gfa.gz --walks --refs CHM13 -o hprc-v2.1-mc-chm13
@@ -464,11 +464,11 @@ gzip -dc hprc-v2.1-mc-grch38.GRCh38.walks.gz | head -4
   of nodes the reference passes more than once (0 when every step is placed
   exactly), and the `--stay` the tool ran with
 - **`abridge` and `abridgebytes`** are the `--abridge-steps` and
-  `--abridge-bytes` budgets. Where a tile's walks cost more, usually in a
-  satellite array, gfa-to-tabix moves the costliest walks to detail records that
-  a window read skips
+  `--abridge-bytes` budgets. Where a tile's walks exceed those budgets, usually
+  in a satellite array, gfa-to-tabix moves the costliest walks to detail records
+  that a window read skips
 - **`graph` and `leftout`** give the hash of the graph the file was written
-  from, which the graph's index states too, and the number of paths left out
+  from, which the graph's index also contains, and the number of paths left out
   because they have no step on a node of the reference
 - **`#reference` and `#haplotype`** list the reference sample, then every other
   haplotype with rows in the file, the other reference included
@@ -590,8 +590,8 @@ one lane per haplotype under GRCh38.
 
 ## Reproduce it end to end
 
-The one command builds the graph track, the bubbles and the tier, with the tools
-under [Prerequisites](#prerequisites). It:
+`gfa-to-tabix build` builds the graph track, the bubbles and the tier, with the
+tools under [Prerequisites](#prerequisites). It:
 
 1. places every segment on a genome: an rGFA holds each position in tags on the
    segment, and for a plain GFA the command follows the backbone's paths first,
@@ -599,7 +599,7 @@ under [Prerequisites](#prerequisites). It:
    passes through it
 2. finds the bubbles, with `gfatools bubble` on an rGFA or from the snarl VCF on
    a plain GFA, and builds the tier from them
-3. writes the manifest and the config that name those files
+3. writes the manifest and the config that list those files
 
 ```bash
 gfa-to-tabix build hprc-v2.1-mc-grch38.sv.gfa.gz -o hprc --assembly hg38

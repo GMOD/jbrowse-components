@@ -8,15 +8,15 @@ tutorial_category: Pangenomes
 tutorial_subcategory: Other species
 ---
 
-The mouse strain pangenome aligns eighteen assemblies of seventeen inbred and
-wild-derived strains onto the GRCm39 reference with `minigraph`. GRCm39 is
+The mouse strain pangenome is a `minigraph` alignment of eighteen assemblies of
+seventeen inbred and wild-derived strains onto the GRCm39 reference. GRCm39 is
 itself a strain, C57BL/6J, so the panel's best-known variant, a C57BL/6J
 deletion, appears as an insertion. No locus list has been published for these
 strains, so we rank the graph's bubbles, the regions where the strains' paths
 split and rejoin, by how many segments each holds, and open the densest. We:
 
 - at _Nnt_, open the graph track with bubble halos, then the liftOver lanes that
-  name the strains
+  show which strains have the gene
 - rank the bubbles file by segment count and open the densest that fits a
   window, at _Dock2_
 - load the graph and its bubbles as tracks on mm39 in your own JBrowse
@@ -90,13 +90,13 @@ insertion. To see it:
 - In the graph track's menu, tick **Show → Show bubble halos**.
 - Turn on the bubbles track in the track selector.
 
-The portal's **Nnt** example names the deletion above its map, calls the other
-strains' insertion "intact Nnt", and opens a **Known alleles** row over the site
-in each launch.
+In the portal's **Nnt** example, the deletion's name is above the map, the other
+strains' insertion is labelled "intact Nnt", and each launch opens a **Known
+alleles** row over the site.
 
 <Figure caption="Nnt with the RefSeq genes and the bubbles track above the force-directed graph track. Of its four haloed bubbles, the one inside Nnt, labelled as a 16.8 kb insertion with five alleles, is the sequence the other strains have and C57BL/6J lacks." src="/img/pangenome/graph_mouse_nnt_halos.png" />
 
-The graph holds no path per strain, so which strains have the exons comes from
+The graph has no path per strain, so the strains with the exons are read from
 mm39's liftOver chains, one lane per strain assembly. We'll open them at the
 same gene:
 
@@ -112,11 +112,11 @@ same gene:
 
 ## Ranking the graph's bubbles to find Dock2 {#finding-the-loci}
 
-The bubbles file's fourth column records how many segments each bubble holds.
+The bubbles file's fourth column holds the number of segments in each bubble.
 Ranked by that count, the bubbles that overlap a gene include the vomeronasal
 receptor and Speer families and the immunoglobulin heavy chain locus, each too
-wide for one window. _Dock2_ is the densest bubble that fits in one, inside one
-intron at `chr11:34,516,045-34,560,497`. Rank the bubbles that fit in a 100 kb
+wide for one window. The densest bubble that fits in one is inside an intron of
+_Dock2_, at `chr11:34,516,045-34,560,497`. Rank the bubbles that fit in a 100 kb
 window, streaming the hosted file, or swap in the `.bubbles.bed.gz` your own
 build wrote:
 
@@ -139,9 +139,9 @@ To open the _Dock2_ bubble:
 ## Loading the graph in your own JBrowse {#load-the-graph}
 
 The portal's launches load these tracks for you. In your own JBrowse, we'll load
-the reference, then the graph and its bubbles. The graph track names the file
-prefix `gfa-to-tabix build` writes, and the `uri`s below are our hosted copy, so
-swap the prefix for your own build.
+the reference, then the graph and its bubbles. The graph track's `uri` is the
+file prefix `gfa-to-tabix build` writes, and the `uri`s below are our hosted
+copy, so swap the prefix for your own build.
 
 ```json addassembly
 {

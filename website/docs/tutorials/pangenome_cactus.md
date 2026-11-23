@@ -228,10 +228,10 @@ record:
 }
 ```
 
-To stack the strains, a linear synteny view takes one panel per strain and names
-the track once in `tracks`, which puts it on every band. **Add → Linear synteny
-view**, whose Quick start fills in a row per assembly the track lists, opens the
-same view as this session:
+To stack the strains, the session gives a linear synteny view one panel per
+strain and names the track once in `tracks`, which puts it on every band. **Add
+→ Linear synteny view**, whose Quick start fills in a row per assembly the track
+lists, opens the same view as this session:
 
 ```json session config=https://jbrowse.org/demos/ecoli_pangenome/config.json
 {
@@ -288,8 +288,8 @@ load unchanged as a [`VariantTrack`](/docs/config_guides/variant_track):
 }
 ```
 
-`rows: "haplotype"` draws one row per strain, and `variantLayout: "columns"` one
-column per variant. The
+With `rows: "haplotype"` the track draws one row per strain, and with
+`variantLayout: "columns"` it draws one column per variant. The
 [multi-sample variant track guide](/docs/user_guides/multivariant_track) covers
 columns versus genomic positions, the genotype colors, and clustering samples by
 genotype.
@@ -342,8 +342,8 @@ writes one line per block, which a
 A row with no colored columns shares its sequence with K12, and a row that stops
 has no alignment to K12 there; the coverage band shows which case applies.
 
-`samples` names the rows and fixes their order. To order them by shared graph
-content instead, build a tree from
+`samples` lists the rows in the order they are drawn. To order them by shared
+graph content instead, build a tree from
 [`odgi similarity`](https://odgi.readthedocs.io/en/latest/rst/commands/odgi_similarity.html)
 and point `nhLocation` at it, as the
 [pggb tutorial's MAF track](/docs/tutorials/pangenome_ecoli#whole-genome-alignment-maf-projection)
@@ -437,9 +437,9 @@ with a row per strain, where a white column is a stretch that strain lacks:
 }
 ```
 
-Depth counts path **steps**, so a repeat the graph folded onto one run of nodes
-has a depth above the strain count. seqwish, pggb's graph builder, folds the
-rrnC and rrnB operons onto each other; the reference-first graph keeps them
+Depth counts path **steps**, so a repeat that the graph builder folded onto one
+run of nodes has a depth above the strain count. seqwish, pggb's graph builder,
+folds the rrnC and rrnB operons onto each other, and Minigraph-Cactus keeps them
 apart.
 
 To compare the two builders, load both depth curves as rows of one track on a
@@ -595,8 +595,9 @@ types → Feature display** in its menu draws the segments as a row.
 
 <Video src="/media/pangenome_cactus/subgraph_launch.mp4" caption="Adding the graph track to an empty K12 session with Open track... → Add pangenome graph track." />
 
-The index records which strains pass through each segment as an `SB:H:` bitmask,
-and a feature track over the same files colors each segment by that count:
+The index holds an `SB:H:` bitmask of the strains that pass through each
+segment, and a feature track over the same files colors each segment by their
+count:
 
 ```json addtrack
 {
@@ -639,14 +640,14 @@ the other four lack. To see it:
 - Type `chr:1,978,100-1,979,700`.
 - Turn on the strains-per-segment track.
 - Show the [MAF track](#whole-genome-alignment-maf-projection) above the graph:
-  the strains-per-segment track counts the strains, and the MAF's rows name
-  them.
+  the strains-per-segment track shows how many strains have each segment, and
+  the MAF's rows show which.
 
 <Figure caption="1.6 kb of K12 past flhD as tracks above and as the graph track below. The shaded span is the IS1 element." src="/img/pangenome_cactus/graph_bubble.png" />
 
 In the track menu, **Show → Show links that skip reference** hides the dashed
-link the graph draws for the other four strains' route, which is labelled with
-the length of the node it skips.
+link the graph track draws for the other four strains' route, which is labelled
+with the length of the node it skips.
 
 ## Comparing odgi viz's node-order axis with K12's coordinates
 
@@ -663,7 +664,7 @@ band marks `chr:1,000,000-1,100,000` in both.
 
 <Figure caption="The same paths and colors on K12's coordinates." src="/img/pangenome_cactus/graph_correspondence.png" />
 
-The graph axis counts pangenome bases, so a locus where other strains have
+The graph axis is in pangenome bases, so a locus where other strains have
 sequence K12 lacks takes up more of it. The band contains Sakai's _stx2_
 prophage and a second Sakai-only stretch.
 

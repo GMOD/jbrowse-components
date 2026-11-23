@@ -9,8 +9,8 @@ tutorial_category: Structural variation
 
 Most of the genome comes in two copies, but some stretches are duplicated or
 deleted in one person and not the next. We read copy number for the whole 1000
-Genomes panel at once, one row per individual, colored by how far that person
-strays from two copies, at the chemokine genes _CCL3L1_, a deletion of
+Genomes panel at once, one row per individual, colored by how far that person's
+copy number is from two, at the chemokine genes _CCL3L1_, a deletion of
 _UGT2B17_, and two nested deletions on chr3. We:
 
 - load per-sample BigWigs as one multi-row heatmap track, and a few individuals
@@ -51,8 +51,8 @@ chmod +x ~/.local/bin/bedGraphToBigWig
 
 ## The data
 
-QuicK-mer2 copy-number estimates over the 30x 1000 Genomes panel, from the Kidd
-lab at the University of Michigan
+The data are QuicK-mer2 copy-number estimates over the 30x 1000 Genomes panel,
+from the Kidd lab at the University of Michigan
 ([Shen and Kidd 2020](https://doi.org/10.3390/genes11020141)).
 
 You don't need these files to follow the page: the track configs below read the
@@ -90,8 +90,7 @@ The copy-number bins are on GRCh38, so the tracks attach to hg38:
 }
 ```
 
-The figures also show NCBI's RefSeq genes. The locus figures read NCBI's own
-GFF:
+The figures also show NCBI's RefSeq genes. The locus figures use NCBI's GFF:
 
 ```json addtrack
 {
@@ -102,7 +101,7 @@ GFF:
 }
 ```
 
-The whole-panel figure reads UCSC's copy:
+The whole-panel figure uses UCSC's copy:
 
 ```json addtrack
 {
@@ -183,8 +182,8 @@ with these settings already applied.
 
 Navigate to `chr17:36,080,000-36,270,000`, around _CCL3L1_ (a chemokine gene
 with a variable number of copies), and load individuals spanning the range of
-copy number as a second track. It draws step lines on one pinned axis, so each
-plateau lines up with a copy count:
+copy number as a second track. The track draws step lines on one pinned axis, so
+each plateau lines up with a copy count:
 
 ```json addtrack loc=chr17:36,080,000-36,270,000
 {
@@ -241,7 +240,7 @@ plateau lines up with a copy count:
 
 <Figure caption="CCL3L1 as six stacked profiles on one shared axis." src="/img/cnv1000g/ccl3l1_ladder.png" />
 
-Two paralogous blocks hold the variation. The right-hand block spans the
+The variation lies in two paralogous blocks. The right-hand block spans the
 chemokine genes _CCL3L1_ and _CCL4L1_ (labelled _CCL3L3_ and _CCL4L2_ in the
 hg38 gene track) in a variable number of tandem copies, and the left-hand block
 is a _TBC1D3_ repeat.
@@ -249,7 +248,7 @@ is a _TBC1D3_ repeat.
 ## UGT2B17, a simple deletion, against the 1000 Genomes SV map
 
 _UGT2B17_ on chr4 is deleted whole in many people, a simple biallelic deletion
-that a structural variant (SV) callset genotypes directly. We'll set the 1000
+that structural variant (SV) callers genotype directly. We'll set the 1000
 Genomes phase 3 integrated SV map beside the copy-number rows:
 
 - Add the SV map as a variant track. For your own callset, swap `uri` for a
@@ -272,11 +271,11 @@ Genomes phase 3 integrated SV map beside the copy-number rows:
 
 ## Load the whole panel from one Zarr store {#a-zarr-store-for-the-whole-panel}
 
-The PUR track lists one population's files. Each BigWig needs several dependent
-reads to find and fetch a region's values, so a track listing every individual
-in the panel slows with each file it adds. A [Zarr](https://zarr.dev/) v3 store
-holds the whole panel as one array of samples by bins, in chunk files on static
-hosting, so a window takes two metadata requests and one chunk.
+The PUR track lists the files of one population, but each BigWig needs several
+dependent reads to find and fetch a region's values, so a track listing every
+individual in the panel gets slower with each file. A [Zarr](https://zarr.dev/)
+v3 store holds the whole panel as one array of samples by bins, in chunk files
+on static hosting, so a window takes two metadata requests and one chunk.
 
 [`jbrowse-plugin-zarr`](https://github.com/cmdcolin/jbrowse-plugin-zarr) adds a
 `MultiWiggleZarrAdapter` that reads such a store with the same display settings
@@ -396,12 +395,12 @@ node build_signal_zarr.ts \
 ```
 
 The hosted store was built this way, from every sample over the windows in the
-figures. Three things shape a store:
+figures. The build sets three features of a store:
 
 - **`--levels`** sets the resolution pyramid, one samples-by-bins array per
   entry, with coarser ones averaged from the finest. The adapter reads the
   coarsest level whose bins are no wider than a screen pixel, so a
-  whole-chromosome view costs the same couple of requests. List the input's bin
+  whole-chromosome view takes the same couple of requests. List the input's bin
   size first, then steps of roughly 3x such as `10000,30000,100000`; a 10x gap
   leaves a view fetching 10x the bins it can draw.
 - **`--region`** limits the build to the windows you pass. The converter holds

@@ -123,24 +123,24 @@ reads one per haplotype from tabix-indexed files. In the same window:
   in its menu draws a force-directed graph of the walks.
 - Check **Haplotypes → The track's 8 assemblies** <!-- menu-path-ok --> in the
   same menu. Every haplotype's walks through the array have more nodes than a
-  force-directed drawing handles, so this keeps the eight HPRC assemblies the
-  hosted config loads, and walk rows below draw them all.
+  force-directed drawing handles, so the menu entry keeps the eight HPRC
+  assemblies the hosted config loads, and walk rows below draw them all.
 
 The track draws a node thicker the more walks pass through it (as in Bandage),
 so the shared backbone is the thick line and copies on one haplotype are thin
 loops. Press the button beside **Haplotypes** in the track's key and check
 `GRCh38`, `HG00097` and `HG00133`, then take **Track sizing → Fit graph to track
-height** <!-- menu-path-ok --> in the track menu. Each checked walk becomes a
-thread in its own color and the rest of the graph fades to grey. Threads side by
-side pass through the same copies, and a loop one thread runs alone is copies
-only that haplotype has here.
+height** <!-- menu-path-ok --> in the track menu. The track draws each checked
+walk as a thread in a separate color and fades the rest of the graph to grey.
+Threads side by side pass through the same copies, and a loop on one thread
+alone is copies that only that haplotype has here.
 
 <Figure caption="The KIV-2 cut with GRCh38, HG00097 and HG00133 highlighted from the boxed Haplotypes button. A loop in one color is copies on that haplotype's walk alone." src="/img/pangenome/graph_kiv2_walks.png" />
 
 ## Every haplotype's KIV-2 array as a bar {#every-haplotypes-copies}
 
-Walk rows draw each walk as a bar, so every haplotype in the release fits in the
-track. In the haplotypes track's menu:
+The walk rows layout draws each walk as a bar, so every haplotype in the release
+fits in the track. In the haplotypes track's menu:
 
 - **Walk rows** under the **Layout** row and **Uniform** under the **Color** row
   turn each walk into a bar, longest first, blue on GRCh38's path through the
@@ -150,13 +150,13 @@ track. In the haplotypes track's menu:
 
 Read the bars this way:
 
-- **Length counts copies.** Each copy a haplotype adds lengthens its bar.
-- **Purple marks sequence off GRCh38's path.** The graph routes most copies
-  through nodes off GRCh38's path.
-- **Gold is steps the file did not load.** The walk file abridges the costliest
-  walks through the array, and a bar marks its length ≈ where the walk runs on
-  past the window. Right-click one and take the **Load the … abridged steps**
-  row, which counts them, to read it in full.
+- **Bar length shows copy number.** Each copy on a haplotype lengthens its bar.
+- **Purple marks sequence off GRCh38's path.** Most copies lie on nodes off
+  GRCh38's path.
+- **Gold is steps the file did not load.** The walk file holds the costliest
+  walks through the array in abridged form, and a bar marks its length ≈ where
+  the walk runs on past the window. Right-click one and take the **Load the …
+  abridged steps** row, which gives their number, to read it in full.
 - **Hover a bar** for its haplotype, length and excess over GRCh38, since the
   rows pack too thin to letter.
 
@@ -176,10 +176,10 @@ Two controls change which bars show:
 
 ## Telling KIV-2A from KIV-2B {#which-copy-is-which}
 
-Walk rows give each haplotype's copy count. KIV-2's copies are near-identical,
-and the aligner's choice of which GRCh38 copy an extra one matches is arbitrary,
-so the walks do not identify which copy is which. A record that lists each
-haplotype's copies identifies them.
+Walk rows give each haplotype's copy count, but KIV-2's copies are
+near-identical and the aligner matches each extra copy to an arbitrary GRCh38
+copy, so telling the copies apart takes a record that lists each haplotype's
+copies.
 
 We host one as a track: a single VCF 4.5 `<CNV:TR>` record at the array over
 every haplotype whose walk reaches both flanks. Each allele lists its runs of
@@ -199,8 +199,8 @@ Turn the track on and click the record. A **Tandem repeat** card opens above the
 details, each copy colored by its type. With this many haplotypes it starts on
 **By allele**: one bar per allele, longest first, and hovering a copy gives that
 allele's share of the haplotypes. **By haplotype** draws one bar per haplotype,
-and hovering a copy names its haplotype. Click a bar: the other bars fade and
-the **Samples** card narrows to the samples with that allele.
+and hovering a copy names its haplotype. Clicking a bar fades the other bars and
+narrows the **Samples** card to the samples with that allele.
 
 <Figure caption="The KIV-2 record's Tandem repeat card, by haplotype. Each bar is one haplotype's array, each copy colored by its type." src="/img/pangenome/hprc_kiv2_copies.png" />
 
@@ -348,11 +348,11 @@ VNTR row and the TRGT genotypes:
 Each row is one haplotype's walk between the flanking reference nodes. Hover a
 row for its haplotype and length.
 
-The session names the TRGT track as its `repeatTrackId`, so the **Layout** row
-of the track menu gains a **Repeat** entry. Pick the _ABCA7_ record: each walk
-gets a black tick at the allele TRGT called for it (paired by length), red where
-the two lie more than 10% apart. At full size, as in the next section, the bars
-also divide into motif-length units.
+The session sets `repeatTrackId` to the TRGT track, so the **Layout** row of the
+track menu has a **Repeat** entry. Pick the _ABCA7_ record there, and the track
+draws a black tick on each walk at the allele TRGT called for it (paired by
+length), red where the two lie more than 10% apart. At full size, as in the next
+section, the bars also divide into motif-length units.
 
 <Figure caption="The ABCA7 VNTR in walk rows with the TRGT record picked under Repeat. Ticks are TRGT's calls, red where a call is far from its walk." src="/img/pangenome/hprc_abca7_repeat_units.png" />
 
@@ -363,14 +363,14 @@ Choose samples...**, under the **Layout** row of the graph track's menu, takes
 HG00099, HG03688, HG00741, HG02647, HG01943, HG02559 and HG04199 in that order.
 Their walks show in pairs in that order and fall into groups:
 
-- The ticks of HG00099, HG03688 and HG00741 sit at each bar's end: reads and
+- The ticks of HG00099, HG03688 and HG00741 sit at each bar's end, so reads and
   assemblies agree.
-- The ticks of HG02647 and HG01943 are red: TRGT calls each near-homozygous, but
-  a walk sits far from both calls (both walks, in HG01943).
+- The ticks of HG02647 and HG01943 are red, because TRGT calls each
+  near-homozygous but a walk sits far from both calls (both walks, in HG01943).
 - HG02559 and HG04199 each have a walk that cannot be compared with TRGT's call.
   No read spans one of HG02559's alleles, so the tick on HG02559#1 is grey, and
-  HG04199's assembly does not span the repeat: its second walk's readout shows
-  that the contig ends before it.
+  HG04199's assembly does not span the repeat, and its second walk's readout
+  shows the contig ending before it.
 
 Click the TRGT record to see why. Its sample table gives `AL`, the allele
 lengths behind each tick, and `SD`, the number of reads spanning each allele;
@@ -430,9 +430,10 @@ structure:
 
 Count the _AMY1_ boxes on each bar to read copy number. As at KIV-2, purple does
 not count copies: HG00133.1 has GRCh38's three _AMY1_ copies and its length, and
-its bar still shows a long purple stretch. Each bar boxes the CAT genes of that
-haplotype's assembly, and GRCh38's row the view's GRCh38 genes. CAT names each
-copy after the GRCh38 copy it projected, so one name can label several boxes.
+its bar still shows a long purple stretch. Each bar has boxes for the CAT genes
+of that haplotype's assembly, and GRCh38's row has boxes for the view's GRCh38
+genes. CAT names each copy after the GRCh38 copy it projected, so one name can
+label several boxes.
 
 Yilmaz et al. (2024) name each structure by its _AMY1_ count:
 
@@ -446,8 +447,8 @@ Yilmaz et al. (2024) name each structure by its _AMY1_ count:
 
 ### Each haplotype aligned to the next {#amylase-stack}
 
-Walk rows count copies; a synteny stack shows which copy of one haplotype
-matches which copy of its neighbour. The commands below run on any
+Walk rows show copy number, and a synteny stack shows which copy of one
+haplotype matches which copy of its neighbour. The commands below run on any
 `gfa-to-tabix --walks` file and any bgzipped, indexed assembly.
 
 Fetch the script that reads a window's walks, then the walk reader it imports:

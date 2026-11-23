@@ -11,9 +11,9 @@ tutorial_subcategory: Building a graph
 A pangenome graph stores the sequence several genomes share once, as a path
 every genome follows, and branches where they differ. We build one of five _E.
 coli_ strains with pggb and turn its outputs into tracks on the K12 genome. Most
-are **linear projections**, which flatten the graph onto K12's coordinates so it
-loads as an ordinary track; together they show which sequence all five strains
-share and which only some have. We:
+are **linear projections** of the graph onto K12's coordinates, which load as
+ordinary tracks; together they show which sequence all five strains share and
+which only some have. We:
 
 - load the alignment between the strains as a synteny track, and stack the
   strains in a linear synteny view
@@ -288,8 +288,8 @@ in_pggb bash -c "bcftools annotate --rename-chrs /data/rename_chrs.tsv \
   | bcftools sort -Oz -o /data/ecoli_pggb.vcf.gz && tabix -C -p vcf /data/ecoli_pggb.vcf.gz"
 ```
 
-Each strain is one haplotype, so `rows: "haplotype"` draws one row per strain,
-colored by that strain's allele:
+Each strain is one haplotype, so with `rows: "haplotype"` the track draws one
+row per strain, colored by that strain's allele:
 
 ```json addtrack
 {
@@ -311,9 +311,9 @@ With a length after the path name, as in `-V K12:10000`, pggb runs
 [`vcfwave`](https://github.com/vcflib/vcflib) over the VCF to decompose large
 sites into smaller variants, giving `*.decomposed.vcf`.
 
-The undecomposed `*.smooth.final.K12.vcf` keeps one record per bubble (where
-paths split and rejoin) for the
-[graph track](#opening-the-graph-in-the-graph-genome-view) to read.
+The undecomposed `*.smooth.final.K12.vcf` has one record per bubble (where paths
+split and rejoin), which the
+[graph track](#opening-the-graph-in-the-graph-genome-view) reads.
 
 ## Whole-genome alignment onto K12 (MAF) {#whole-genome-alignment-maf-projection}
 
@@ -404,7 +404,7 @@ printf 'chr\t%s\n' "$reflen" > chrom.sizes
 bedGraphToBigWig ecoli_pggb_depth.bedgraph chrom.sizes ecoli_pggb_depth.bw
 ```
 
-The config draws reference lines at the strain count and at 1:
+The config adds reference lines at the strain count and at 1:
 
 ```json addtrack
 {
@@ -431,7 +431,7 @@ The config draws reference lines at the strain count and at 1:
 ```
 
 The curve doubles over the rrnC and rrnB operons (ribosomal RNA gene copies),
-because the graph folds those two copies onto each other.
+because pggb folds those two copies onto each other in the graph.
 
 ### Per-strain presence
 
@@ -530,9 +530,9 @@ samtools index ecoli_e146_ont.bam
 }
 ```
 
-Type `chr:2,554,000-2,570,000`. `facet: "split"` puts the reads with a
-supplementary alignment in their own section, linked across the trough. The
-other reads show it as a single labelled deletion.
+Type `chr:2,554,000-2,570,000`. With `facet: "split"` the track puts the reads
+with a supplementary alignment in a separate section, linked across the trough.
+The other reads show it as a single labelled deletion.
 
 <Figure caption="Nanopore reads from another isolate over one K12 depth trough, with the graph's depth curve and MAF below." src="/img/pangenome/long_reads.png" />
 
@@ -615,7 +615,7 @@ To set the tier beside the strains:
   segments as a row at any zoom, marking where the strains differ.
 - Turn on the [MAF track](#whole-genome-alignment-maf-projection) between the
   tier and the graph. A strain's MAF row breaks across each bubble the strain
-  skips, so the MAF rows identify the strains at each bubble.
+  skips, so the MAF rows show which strains skip each bubble.
 - Add a second copy of the K12 genes and keep the insertion sequences with
   **Filter by → Edit filters...** and `startsWith(feature.name || '','ins')`.
 
@@ -630,8 +630,8 @@ in CFT073**.
 
 ### Coloring each segment by how many strains have it {#strains-per-segment-as-a-track}
 
-The index records which strains pass through each segment, and a feature track
-over the same files colors each segment by that count:
+The index lists the strains that pass through each segment, and a feature track
+over the same files colors each segment by their count:
 
 ```json addtrack
 {

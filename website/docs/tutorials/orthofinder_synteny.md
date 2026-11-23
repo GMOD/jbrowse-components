@@ -13,9 +13,9 @@ Genomes too far apart to align base by base still keep their genes in order
 along the chromosomes. OrthoFinder infers orthogroups, sets of genes descended
 from one ancestral gene, from protein similarity alone. An orthogroup contains
 every copy of a gene, so where a genome doubled or tripled, one region of a
-relative without that duplication pairs with two or three regions of it: bread
-wheat's three subgenomes, maize, zebrafish and tomato, and the fruit flies as a
-lineage with one copy. We:
+relative without that duplication pairs with two or three regions of it. The
+examples are bread wheat's three subgenomes, maize, zebrafish and tomato, with
+the fruit flies as a lineage with one copy. We:
 
 - run OrthoFinder and convert the orthogroups to a `.blocks` table that JBrowse
   reads
@@ -237,7 +237,7 @@ dialog. Then:
   view's `encoding.color`, a color scale from a field to colors, and **Query
   sequence** colors each link by its tauschii chromosome.
 
-The same view as a session over the hosted wheat config:
+A session over the hosted wheat config opens the same view:
 
 ```json session config=https://jbrowse.org/demos/orthofinder_wheat/config.json
 {
@@ -364,11 +364,11 @@ Then:
 
 Open human at `2:176,090,000-176,290,000`, the _HOXD_ cluster of body-axis
 patterning genes, with the orthogroups track on the
-[multi-way synteny display](/docs/user_guides/multiway_synteny_display). A lane
-(one horizontal strip per genome) for each of chicken, frog, gar and zebrafish
-draws under the human genes.
+[multi-way synteny display](/docs/user_guides/multiway_synteny_display). The
+display draws a lane (one horizontal strip per genome) for each of chicken,
+frog, gar and zebrafish under the human genes.
 
-<Figure caption="The human HOXD cluster over four vertebrate lanes from one orthogroups track, each lane with its genome's genes." src="/img/multiway_synteny/vertebrate_hox_lanes.png" />
+<Figure caption="The human HOXD cluster over four vertebrate lanes from one orthogroups track, each lane with the genes annotated in that genome." src="/img/multiway_synteny/vertebrate_hox_lanes.png" />
 
 ## Nightshades: one coffee region in three tomato copies {#nightshades}
 
@@ -472,8 +472,8 @@ orthologs2jbrowse mcscanx --gff x.gff --collinearity x.collinearity \
   --chrom-sizes simulans=simulans.chrom.sizes
 ```
 
-The PAF files of every pair, concatenated, back every band of a stack from one
-track:
+One track over the concatenated PAF files of every pair supplies the links for
+every band of a stack:
 
 ```json addtrack
 {
@@ -511,8 +511,9 @@ every band:
 Run past the orthogroup step, OrthoFinder also aligns each orthogroup and infers
 a gene tree for every one of four or more genes, and the
 [MSA view plugin](https://github.com/GMOD/jbrowse-plugin-msaview) opens them
-from a gene on the genome. Every set's config loads them, launched from the top
-genome of its stack: melanogaster, rice, human, tomato or tauschii.
+from a gene on the genome. Every set's config includes them, and the MSA view
+opens from the top genome of each stack: melanogaster, rice, human, tomato or
+tauschii.
 
 Open melanogaster at the `l(2)gl` gene:
 
@@ -555,8 +556,8 @@ residues, out of a long alignment:
 orthofinder -f proteomes -M msa -z -S diamond -t "$(getconf _NPROCESSORS_ONLN)"
 ```
 
-For the five flies that took 15 minutes on 24 threads, on OrthoFinder 3.2, which
-every set's demo runs.
+For the five flies the run took 15 minutes on 24 threads, on OrthoFinder 3.2,
+the version every set's demo was built with.
 
 The plugin finds the clicked gene's row in the alignment by translating its
 transcript, so the top genome (`MSA_GENOMES` names others) is downloaded and cut
@@ -578,7 +579,7 @@ to the sequences in its chrom.sizes, and becomes the assembly in their place:
 
 Last, the run's `Orthogroups/`, `MultipleSequenceAlignments/` and
 `Resolved_Gene_Trees/` are copied into an `orthofinder/` folder beside
-`config.json` (77 MB for the flies), and the config names the plugin and that
+`config.json` (77 MB for the flies), and the config lists the plugin and that
 folder:
 
 ```json
@@ -633,7 +634,8 @@ bash build_orthofinder_synteny.sh wheat   # or: vertebrates, grasses, drosophila
 npx --yes serve orthofinder_wheat_build/jbrowse2  # then open the printed URL
 ```
 
-The sets the script accepts, and what each costs to build:
+The script accepts these sets, each with the number of DIAMOND runs it takes to
+build:
 
 <!-- BEGIN GENERATED ORTHOFINDER_SETS -->
 
@@ -666,7 +668,7 @@ MAXSEQ=60 MAXCOPIES=6 bash build_orthofinder_synteny.sh wheat
 
 ## Your own genomes
 
-A set name tells the script which NCBI assemblies to download. Your own genomes
+The script maps a set name to the NCBI assemblies it downloads. Your own genomes
 need a FASTA and a GFF3 per genome.
 [gffread](https://github.com/gpertea/gffread) translates each CDS into the
 proteome and prints the transcript-to-gene map and FASTA index alongside.

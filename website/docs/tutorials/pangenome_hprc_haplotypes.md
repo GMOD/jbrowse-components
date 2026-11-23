@@ -74,7 +74,7 @@ this window**, click **Haplotypes**, which opens the lanes under the NCBI RefSeq
 genes (hg38), **Known alleles** and **GWAS Catalog (NHGRI-EBI)** tracks:
 
 - **Each structural form gets lanes**, more for a commoner form, and each lane's
-  header counts the haplotypes that share its form.
+  header shows the number of haplotypes that share its form.
 - **A lane missing _CFHR3_ and _CFHR1_** (Hughes et al. 2006) has a gap across
   both, under the **Known alleles** row naming the deletion.
 
@@ -144,14 +144,14 @@ not lift GRCh38's genes across the graph.
     GENCODE's models of _GSTT1_, _LILRA3_, _HLA-DRB3_, _HLA-DRB4_ and _HLA-DRB5_
     onto each haplotype's assembly instead, where its walk crosses them.
   - [README.txt](https://jbrowse.org/pangenome/hprc-grch38/genes/README.txt)
-    beside the files gives every rule and what CAT still misses.
+    beside the files lists every rule and what CAT still misses.
 - **Where a lane's genes come from:** each haplotype is an assembly, such as
   `HG00097.1` aliased `HG00097#1`, holding one track, **CAT genes (HG00097
   haplotype 1, HPRC release 2)**, or for HG002 **RefSeq genes via JHU Liftoff
   v0.6**. JBrowse draws that track in the haplotype's lane, and for each of the
   first 40 walk-row bars reads it over the bar's span on the haplotype's contig
   and boxes each gene where it falls along the bar.
-- **Reading them:**
+- **Reading a lane's genes:**
   - A gene missing from a lane is missing from that haplotype's annotation,
     through a deletion, a copy CAT did not project, or a gene the rules above
     dropped.
@@ -170,9 +170,9 @@ The lanes are easy to misread in several cases:
   A haplotype with no step on the reference across the whole window shows as a
   row at the foot of the lanes, headed with the stretch's length, such as "no
   step on the reference across 150 kb". The row comes from the walk file's
-  departure record for where the walk leaves the reference and rejoins it, which
-  the file keeps over the whole stretch between, so every window inside the
-  stretch reads it. Walk rows, which
+  departure record for where the walk leaves the reference and rejoins it. That
+  record spans the whole stretch between in the file, so JBrowse reads it in
+  every window inside the stretch. Walk rows, which
   [part 3](/docs/tutorials/pangenome_hprc_repeats#amylase) opens, draw the same
   haplotype as a row with no step on the reference. At IGH, IGK and IGL such a
   row is often the cell line's deletion, as
@@ -235,7 +235,7 @@ and the config below is the one to adapt for your own graph:
 [Indexing haplotype walks](/docs/tutorials/pangenome_prepare_graph#haplotype-walks-tabix)
 builds the walk files the lanes read, with one command on the release's GFA, and
 [README.txt](https://jbrowse.org/demos/hprc/README.txt) beside the hosted files
-records their provenance. The same page converts the walks to PAF for a
+gives their provenance. The same page converts the walks to PAF for a
 whole-genome synteny view.
 
 ## See also

@@ -9,13 +9,13 @@ tutorial_category: Pangenomes
 tutorial_subcategory: Other species
 ---
 
-The rice pangenome aligns 47 NCBI assemblies of Asian rice onto AGIS-1.0, the
-telomere-to-telomere assembly of the japonica variety Nipponbare, with
-`minigraph`. Most come from a 2025 set of HiFi and Nanopore assemblies of
+The rice pangenome is a `minigraph` alignment of 47 NCBI assemblies of Asian
+rice onto AGIS-1.0, the telomere-to-telomere assembly of the japonica variety
+Nipponbare. Most come from a 2025 set of HiFi and Nanopore assemblies of
 cultivated, weedy and wild rice (_Oryza rufipogon_); the rest add the aus
 variety Kasalath, the indica IR64 and complete indica and japonica genomes.
-Nipponbare is a temperate japonica, so where it carries a derived allele, the
-other assemblies appear as the change. No graph had been published for these
+Nipponbare is a temperate japonica, so where it has a derived allele, the other
+assemblies appear as the change. No graph had been published for these
 assemblies, so we built one. We:
 
 - at _sd1_, find the Green Revolution's semi-dwarf deletion in IR64
@@ -74,22 +74,22 @@ of your own.
 
 </details>
 
-The graph holds no path per assembly, so the portal page reads which assemblies
-carry each bubble's allele from a separate file, made by mapping each assembly
-back onto the graph with `minigraph --call`.
+The graph has no path per assembly, so the portal page reads the assemblies with
+each bubble's allele from a separate file, made by mapping each assembly back
+onto the graph with `minigraph --call`.
 
 ## sd1: the Green Revolution's semi-dwarf deletion
 
-The semi-dwarf rice varieties of the Green Revolution carry defective alleles of
+The semi-dwarf rice varieties of the Green Revolution have defective alleles of
 _SD1_, which encodes an oxidase of gibberellin biosynthesis. Monna et al. (2002)
 found that the allele from the Taiwanese variety Dee-geo-woo-gen is a 383 bp
 deletion from the middle of exon 1 to upstream of exon 2, which shifts the
-frame. IR64 carries it. Nipponbare is tall and has the intact gene.
+frame. IR64 has this allele, and Nipponbare is tall with the intact gene.
 
 - Open the [portal page](https://genomes.jbrowse.org/pangenomes/rice), which
   starts on **sd1**, or type `chr1:39,008,000-39,020,000` into its box and press
   **Show**.
-- Read the map's sd1-d row: IR64 and eight more assemblies share the 383 bp
+- In the map's sd1-d row, IR64 and eight more assemblies share the 383 bp
   deletion inside the gene.
 
 <Figure caption="The portal page at sd1. The sd1-d row is the 383 bp deletion inside the gene; the commoner 240 bp deletion lies upstream." src="/img/pangenome/genomes_rice_sd1.png" />
@@ -102,19 +102,19 @@ gene.
 A deletion upstream of the grain-width gene _qSW5_ (_GW5_) lowers its expression
 and widens the grain. Lee et al. (2015) distinguished three alleles: Kasalath's,
 with no deletion; an indica allele with a 950 bp deletion; and Nipponbare's,
-with a 1,212 bp deletion. AGIS-1.0 carries the 1,212 bp deletion, so the map
-draws the other two as longer sequence than the reference's at that site.
+with a 1,212 bp deletion. AGIS-1.0 has the 1,212 bp deletion, so the map draws
+the other two as longer sequence than the reference's at that site.
 
 - Type `chr5:5,374,000-5,390,000` into the
   [portal page](https://genomes.jbrowse.org/pangenomes/rice)'s box and press
   **Show**, or pick **qSW5 / GW5** from its examples.
-- Read the forms: the **qSW5, no deletion** rows, about half the assemblies with
-  Kasalath, IR64 and 9311 among them, have the 1.2 kb Nipponbare lacks. The
-  **qSW5, 950 bp deletion** row, a quarter with the three weedy rices among
-  them, has 260 bp of it. Balilla, Udai21, Changxianggeng1813, Wuyunjing8 and
-  eight more share the reference's deletion, the row **AGIS-1.0's structure**.
+- In the **qSW5, no deletion** rows, about half the assemblies, with Kasalath,
+  IR64 and 9311 among them, have the 1.2 kb that Nipponbare lacks. The **qSW5,
+  950 bp deletion** row, a quarter with the three weedy rices among them, has
+  260 bp of it. Balilla, Udai21, Changxianggeng1813, Wuyunjing8 and eight more
+  share the reference's deletion, the row **AGIS-1.0's structure**.
 
-<Figure caption="The portal page at qSW5. The reference carries the 1,212 bp deletion, so the other two alleles are drawn as longer sequence at its site: 1.2 kb longer without a deletion, 260 bp longer with the 950 bp one." src="/img/pangenome/genomes_rice_qsw5.png" />
+<Figure caption="The portal page at qSW5. The reference has the 1,212 bp deletion, so the other two alleles are drawn as longer sequence at its site: 1.2 kb longer without a deletion, 260 bp longer with the 950 bp one." src="/img/pangenome/genomes_rice_qsw5.png" />
 
 ## Pup1: a 90 kb insertion the reference lacks
 
@@ -127,8 +127,8 @@ modern varieties, and Vigueira et al. (2016) place it in an insertion of about
 - Type `chr12:15,866,140-15,866,870` into the
   [portal page](https://genomes.jbrowse.org/pangenomes/rice)'s box and press
   **Show**, or pick **Pup1 / PSTOL1** from its examples.
-- Read the forms: Kasalath and SL190 insert 89 kb at one point, named Pup1.
-  Fifteen more assemblies insert 46 to 77 kb at the same point, and IR64 and
+- Kasalath and SL190 have an 89 kb insertion at one point, named Pup1. Fifteen
+  more assemblies have insertions of 46 to 77 kb at the same point, and IR64 and
   most of the rest have the reference's structure.
 
 <Figure caption="The portal page at Pup1. Every form is an insertion at one point, of 46 to 89 kb; Kasalath's 89 kb form is named Pup1." src="/img/pangenome/genomes_rice_pup1.png" />
@@ -140,10 +140,10 @@ locus, which split the panel into more forms than the map can show.
 ## Loading the graph in your own JBrowse {#load-the-graph}
 
 The portal's launches load these tracks for you. In your own JBrowse, we'll load
-the reference, then the graph and its bubbles. The graph track names the file
-prefix `gfa-to-tabix build` writes, and the `uri`s below are our hosted copy, so
-swap the prefix for your own build. The alias file maps the graph's `chr1` to
-`chr12` onto GenArk's RefSeq names.
+the reference, then the graph and its bubbles. The graph track's `uri` is the
+file prefix `gfa-to-tabix build` writes, and the `uri`s below are our hosted
+copy, so swap the prefix for your own build. The alias file maps the graph's
+`chr1` to `chr12` onto GenArk's RefSeq names.
 
 ```json addassembly
 {
