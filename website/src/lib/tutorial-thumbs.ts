@@ -476,10 +476,10 @@ export const TUTORIAL_THUMB_SPECS: Record<string, ThumbSpec> = {
     position: 'center',
   },
   pangenome_rice: {
-    // The qSW5 gene over its three grain-width forms, labels cut.
-    src: 'pangenome/genomes_rice_qsw5.png',
-    band: [0.5, 0.8],
-    xband: [0.42, 0.806],
+    // GW5 over the callset's three grain-width alleles, row labels cut.
+    src: 'pangenome/rice_qsw5.png',
+    band: [0.08, 0.62],
+    xband: [0.25, 0.75],
     position: 'center',
   },
   pangenome_hprc_haplotypes: {

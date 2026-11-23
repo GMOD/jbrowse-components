@@ -36,6 +36,9 @@
   "minigraph": {
     "conda": "minigraph"
   },
+  "k8": {
+    "conda": "k8"
+  },
   "minimap2": {
     "apt": "minimap2",
     "conda": "minimap2"
