@@ -550,25 +550,20 @@ renamed like the decomposed one:
 in_pggb bash -c "bcftools annotate --rename-chrs /data/rename_chrs.tsv \
   /data/pggb/*.smooth.final.K12.vcf \
   | bcftools sort -Oz -o /data/ecoli_pggb_snarls.vcf.gz && tabix -C -p vcf /data/ecoli_pggb_snarls.vcf.gz"
+```
+
+<!-- from: scripts/build_ecoli_pangenome_graph.sh -->
+
+```bash
 gfa-to-tabix build pggb/*.smooth.final.gfa -o ecoli_pggb --reference K12 --snarls ecoli_pggb_snarls.vcf.gz
 ```
 
-The command writes the segments and links, a coarse tier with variants under 50
-bp folded into the reference, the manifest `ecoli_pggb.graph.json` and
-`ecoli_pggb.config.json`, all in the contig layout. The build script then writes
-the fine index and the tier again with the plain index command and `fold`, both
-in the contig layout, and hosts those:
-
-```bash
-# --layout contig: each segment under its coordinate on its strain's contig
-gfa-to-tabix pggb/*.smooth.final.gfa --layout contig --reference K12 -o ecoli_pggb.fine
-# --below 50: fold variants under 50 bp into the reference, in the same layout
-gfa-to-tabix fold pggb/*.smooth.final.gfa --below 50 --reference K12 --layout contig -o ecoli_pggb.fold50
-```
-
-The script copies `ecoli_pggb.fine.graph.bed.gz` and its index to
-`ecoli_pggb.graph.bed.gz`, beside `build`'s manifest. The `uri`s below are our
-hosted copy.
+The command writes the segments and links, the bubbles from the snarl VCF, a
+coarse tier with variants under 50 bp folded into the reference
+(`ecoli_pggb.fold50`), the manifest `ecoli_pggb.graph.json` and
+`ecoli_pggb.config.json`. For a GFA with paths, as pggb writes, the segment
+index and the tier are in the contig layout, each segment under its coordinate
+on the contig of a strain that has it. The `uri`s below are our hosted copy.
 
 ```json addtrack
 {
@@ -601,10 +596,11 @@ session:
 
 <Video src="/media/pangenome/pggb_subgraph_launch.mp4" caption="Adding the graph track to a K12 session with Open track... → Add pangenome graph track." />
 
-Type `chr:1,292,500-1,307,500`. Zoomed out past five bp per pixel, the track
+Type `chr:1,291,500-1,306,500`. Zoomed out past five bp per pixel, the track
 draws the coarse tier, the graph with variants under 50 bp folded into the
-reference, with charcoal where the strains differ. The tier also loads as a
-separate track:
+reference, with charcoal where the strains differ. As it draws, the track also
+folds each variant narrower than 10 pixels, and its key gives that width in bp.
+The tier also loads as a separate track:
 
 ```json addtrack
 {
@@ -634,7 +630,7 @@ To set the tier beside the strains:
 - Add a second copy of the K12 genes and keep the insertion sequences with
   **Filter by → Edit filters...** and `startsWith(feature.name || '','ins')`.
 
-<Figure caption="K12 around two insertion sequences: the coarse tier with variants under 50 bp folded into the reference, the MAF's strain rows and the graph track. The highlight is insH21." src="/img/pangenome/pggb_bubble_tier.png" />
+<Figure caption="K12 around two insertion sequences: the coarse tier with variants under 50 bp folded into the reference, the MAF's strain rows, and the graph track, which at this zoom also folds variants under 166 bp. The highlight is insH21." src="/img/pangenome/pggb_bubble_tier.png" />
 
 A segment K12 lacks has coordinates on the strain that has it, and its
 right-click menu opens that strain's genome there. Type
@@ -693,10 +689,10 @@ the track menu shows the `encoding.color` block as text and applies edits live.
 [`build_ecoli_pangenome_graph.sh`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/build_ecoli_pangenome_graph.sh)
 runs every step above except the E146 read mapping. The script:
 
-1. Downloads the assemblies and builds the graph with pggb.
-2. Writes the synteny, variant, MAF, depth, presence and graph tracks from it.
-3. Downloads JBrowse and writes a `config.json` with the assemblies, their gene
-   tracks, every other track on this page, and a default session.
+- downloads the assemblies and builds the graph with pggb
+- writes the synteny, variant, MAF, depth, presence and graph tracks from it
+- downloads JBrowse and writes a `config.json` with the assemblies, their gene
+  tracks, every other track on this page, and a default session
 
 ```bash
 curl -fO https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/build_ecoli_pangenome_graph.sh

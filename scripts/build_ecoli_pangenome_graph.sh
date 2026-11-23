@@ -688,15 +688,11 @@ jb add-track-json subgraph_nodes_track.json --update --out "$APP"
 # The whole pggb graph as a track, drawing from the coarse tier past five bp per
 # pixel; the tier as a separate track; and the segments colored by how many
 # strains walk each one.
-# The fine index is the contig layout, with rows on each strain's own contig.
-# The anchored layout files a segment under every K12 position its branch
-# spans, so on this graph it draws multi-megabase rows across every window.
-gfa-to-tabix "$GFA" --layout contig --reference "$REF" -o ecoli_pggb.fine
-cp ecoli_pggb.fine.graph.bed.gz "$APP/ecoli_pggb.graph.bed.gz"
-cp ecoli_pggb.fine.graph.bed.gz.tbi "$APP/ecoli_pggb.graph.bed.gz.tbi"
-# The tier in the same contig layout: an anchored tier cut 628 segments carrying
-# 715 kb from a 15 kb window, and this one cuts 17.
-gfa-to-tabix fold "$GFA" --below 50 --reference "$REF" --layout contig -o ecoli_pggb.fold50
+# For a plain GFA, `build` above writes the fine index and the tier in the
+# contig layout, with rows on each strain's own contig. The anchored layout
+# files a segment under every K12 position its branch spans: an anchored tier
+# cut 628 segments carrying 715 kb from a 15 kb window, and this one cuts 17.
+cp ecoli_pggb.graph.bed.gz ecoli_pggb.graph.bed.gz.tbi "$APP/"
 cp ecoli_pggb.fold50.graph.bed.gz ecoli_pggb.fold50.graph.bed.gz.tbi "$APP/"
 # Open track reads the tier from this manifest beside ecoli_pggb.graph.bed.gz
 cp ecoli_pggb.graph.json "$APP/"

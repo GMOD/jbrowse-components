@@ -64,9 +64,9 @@ The graph opens force-directed under the other tracks. Typing in the location
 box, a gene search, a click on the cytoband and a drag-zoom move the view. The
 track holds its drawing while the view stays inside the cut it drew, and cuts
 the subgraph for the new window and lays it out again once the view leaves it. A
-track with a coarse tier, the same graph with one node per bubble, cuts the tier
-when zoomed out past the handover its config names, so a whole chromosome draws
-as a graph.
+track with a coarse tier, the same graph with small variants folded into the
+reference, cuts the tier when zoomed out past the handover its config names, so
+a whole chromosome draws as a graph.
 
 `WalkTabixSyntenyAdapter` also cuts a subgraph, from `gfa-to-tabix --walks`
 files, and its cut includes the haplotypes' walks. A `BedTabixAdapter` over the

@@ -88,13 +88,15 @@ const PGGB_LOCUS = {
 }
 const PGGB_LOCUS_WINDOW = 'chr:1,299,300-1,300,900'
 
-// Wider windows put the 1.2 kb element in a sliver.
-const PGGB_TIER_WINDOW = 'chr:1,292,500-1,307,500'
+// Wider windows put the 1.2 kb element in a sliver. The window ends 8 kb short
+// of chr:1,314,539, where Sakai and NCTC86 align twice: the MAF fetch reaches
+// past the view, and those blocks added empty `copy 2` rows.
+const PGGB_TIER_WINDOW = 'chr:1,291,500-1,306,500'
 const PGGB_TIER_REGION = {
   refName: 'chr',
   assemblyName: 'K12',
-  start: 1292500,
-  end: 1307500,
+  start: 1291500,
+  end: 1306500,
 }
 const PGGB_TIER_TRACK = 'ecoli_pggb_tier50'
 
@@ -102,10 +104,12 @@ const PGGB_TIER_TRACK = 'ecoli_pggb_tier50'
 const PGGB_TIER_SESSION_TRACK = ecoliPageTrack(ECOLI_DOC, PGGB_TIER_TRACK)
 
 const pggbTierCut = graphTrack(PGGB_SEGMENTS_TRACK, {
-  color: {
-    field: 'position',
-    domainMin: PGGB_TIER_REGION.start,
-    domainMax: PGGB_TIER_REGION.end,
+  encoding: {
+    color: {
+      field: 'position',
+      domainMin: PGGB_TIER_REGION.start,
+      domainMax: PGGB_TIER_REGION.end,
+    },
   },
 })
 
