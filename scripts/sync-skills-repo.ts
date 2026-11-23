@@ -13,8 +13,10 @@
 // so the mirror carries a do-not-edit header and this script is the only way
 // content reaches it.
 //
-// `--check` exits non-zero on drift, for the mirror's own CI to run against a
-// checkout of this repo.
+// .github/workflows/sync-skills.yml runs it on every push to main that touches
+// the skills, and pushes the result with a deploy key (secret
+// SKILLS_MIRROR_DEPLOY_KEY) that can write only to the mirror. `--check` exits
+// non-zero on drift.
 import {
   existsSync,
   mkdirSync,

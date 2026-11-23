@@ -1,0 +1,50 @@
+name: Sync skills mirror
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - .claude/skills/**
+      - scripts/sync-skills-repo.ts
+      - .github/workflows/sync-skills.yml
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  sync:
+    name: Push .claude/skills to cmdcolin/jbrowse-skills
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+        with:
+          persist-credentials: false
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+        with:
+          repository: cmdcolin/jbrowse-skills
+          path: mirror
+          ssh-key: ${{ secrets.SKILLS_MIRROR_DEPLOY_KEY }}
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: '24'
+      - run: node scripts/sync-skills-repo.ts mirror
+      - name: Commit and push
+        working-directory: mirror
+        env:
+          SOURCE_SHA: ${{ github.sha }}
+        run: |
+          git add -A
+          if git diff --cached --quiet; then
+            echo "mirror already up to date"
+          else
+            git -c user.name='github-actions[bot]' \
+              -c user.email='41898282+github-actions[bot]@users.noreply.github.com' \
+              commit -m "Sync from GMOD/jbrowse-components@${SOURCE_SHA}"
+            git push
+          fi
