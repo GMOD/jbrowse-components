@@ -62,7 +62,7 @@ step takes your own per-cell-type segmentation BEDs.
 
 </details>
 
-## Merging nine ENCODE segmentation BEDs into one file
+## Merge nine ENCODE segmentation BEDs into one file
 
 [ChromHMM](https://compbio.mit.edu/ChromHMM/) writes one BED9 per cell type
 (`Gm12878.bed`, `K562.bed`, ...), with the state in `name` (for example
@@ -115,7 +115,7 @@ tabix -f -C -p bed multirow.bed.gz
 A [`BigBedAdapter`](/docs/config/bigbedadapter) reads the hosted bigBed copies
 of both merged files, as in the Roadmap track config below.
 
-## Configuring a multi-row display, one row per cell type
+## Paint one row per cell type over HOXA
 
 The Broad and Roadmap releases are both on hg19, so we load that assembly and a
 RefSeq gene track:
@@ -238,7 +238,7 @@ Polycomb, a repressive chromatin complex. H1-hESC's magenta is
 `3_Poised_Promoter`, the bivalent state HOX clusters are held in before a
 lineage commits.
 
-## Chromatin-state legend, filtering and row order {#the-legend-filtering-and-row-order}
+## Filter the legend and cluster the rows {#the-legend-filtering-and-row-order}
 
 The key lists the identity scale's `scale.domain`, each color under its
 `scale.names` entry. A BED file holds only each state's color, not what it
@@ -258,7 +258,7 @@ these actions for reading the rest:
 - Right-click a state and pick **Sort rows by color here** to rank the rows by
   the state each has at that base.
 
-## Roadmap's epigenomes at PAX5 and HOXA
+## Load Roadmap's epigenomes at PAX5 and HOXA
 
 The nine ENCODE lines are a small sample of tissues. The
 [Roadmap Epigenomics](https://egg2.wustl.edu/roadmap/web_portal/chr_state_learning.html)
