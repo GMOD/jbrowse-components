@@ -795,6 +795,51 @@ describe('an inversion the lane carries against the anchor', () => {
     ])
   })
 
+  const spans = (features: SimpleFeature[]) =>
+    laneIndelsOf(groupFeatures(features))
+      .changes('HG01123.1', ref)
+      .filter(c => c.kind === 'inversion')
+      .map(c => ({
+        lane: c.at - at,
+        anchor: [c.anchor.start - WINDOW_START, c.anchor.end - WINDOW_START],
+        anchorBp: c.anchorBp,
+      }))
+  const nested = [
+    run('l', 0, 0, 40_000, 1),
+    run('r1', 40_000, 640_000, 300_000, -1),
+    run('m', 340_000, 340_000, 300_000, 1),
+    run('r2', 640_000, 40_000, 300_000, -1),
+    run('rt', 940_000, 940_000, 40_000, 1),
+  ]
+
+  test('names both inversions of a nested pair, and not the collinear core between them', () => {
+    expect(spans(nested)).toEqual([
+      { lane: 40_000, anchor: [640_000, 940_000], anchorBp: 300_000 },
+      { lane: 640_000, anchor: [40_000, 340_000], anchorBp: 300_000 },
+    ])
+  })
+
+  test('names two inversions apart from each other, each between its neighbours', () => {
+    expect(
+      spans([
+        run('l', 0, 0, 40_000, 1),
+        run('i1', 40_000, 40_000, 300_000, -1),
+        run('c', 340_000, 340_000, 300_000, 1),
+        run('i2', 640_000, 640_000, 300_000, -1),
+        run('rt', 940_000, 940_000, 40_000, 1),
+      ]),
+    ).toEqual([
+      { lane: 40_000, anchor: [40_000, 340_000], anchorBp: 300_000 },
+      { lane: 640_000, anchor: [640_000, 940_000], anchorBp: 300_000 },
+    ])
+  })
+
+  test('names the core of a nested pair whose window ends differ in strand, between its neighbours alone', () => {
+    expect(spans(nested.slice(1))).toEqual([
+      { lane: 340_000, anchor: [340_000, 640_000], anchorBp: 300_000 },
+    ])
+  })
+
   // HG01960#1 at 8p23.1: each flank's inner end is a hit on the paralogous
   // REPD/REPP copy at the other breakpoint, out of anchor order
   test('names an inversion whose segdup-flanked breakpoints put paralog hits at the flanks inner ends', () => {

@@ -235,60 +235,119 @@ function coveredBp(
 }
 
 /**
- * Inversions: a run whose neighbours on both sides are the other strand,
- * with its anchor span between their outer ends and mostly outside what they
- * cover, sized by the anchor it holds. A segdup-flanked breakpoint (8p23.1's
- * REPD and REPP) puts paralog hits at the flanks' inner ends, which is why the
- * test reads their outer ends. A reverse hit elsewhere on the anchor, or an
- * inverted copy of a flank, is no inversion; neither the vote nor the drawn
- * direction enters. Inversions whose runs hold a shared anchor base are one,
- * the one holding the most anchor, the earlier in the lane on a tie. A run
- * and its neighbours lie in one stretch between array records.
+ * The runs bounding `runs[i]` as an inversion: the nearest of the other
+ * strand on each side, of its refName, with its anchor span between their
+ * outer ends. With `widen`, a bound moves out past the next run of the
+ * other strand on whichever side the run's anchor sticks out, so long as
+ * every run skipped lies between the bounds too, which lets an inversion
+ * hold another nested in it.
+ */
+function flanksOf(runs: readonly LaneRun[], i: number, widen: boolean) {
+  const run = runs[i]!
+  const passable = (r: LaneRun | undefined) =>
+    r?.orientation === run.orientation && r.refName === run.refName
+  let a = i - 1
+  let b = i + 1
+  let skippedStart = Number.POSITIVE_INFINITY
+  let skippedEnd = Number.NEGATIVE_INFINITY
+  let flanks: { left: LaneRun; right: LaneRun } | undefined
+  let searching = true
+  while (searching) {
+    const left = runs[a]
+    const right = runs[b]
+    if (
+      left &&
+      right &&
+      left.orientation !== run.orientation &&
+      right.orientation !== run.orientation &&
+      left.refName === run.refName &&
+      right.refName === run.refName
+    ) {
+      const [lo, hi] =
+        left.orientation > 0
+          ? [left.anchorStart, right.anchorEnd]
+          : [right.anchorStart, left.anchorEnd]
+      if (skippedStart < lo || skippedEnd > hi) {
+        searching = false
+      } else if (run.anchorStart >= lo && run.anchorEnd <= hi) {
+        searching = false
+        flanks = { left, right }
+      } else if (widen) {
+        const growLeft =
+          left.orientation > 0 ? run.anchorStart < lo : run.anchorEnd > hi
+        const skip = (r: LaneRun) => {
+          skippedStart = Math.min(skippedStart, r.anchorStart)
+          skippedEnd = Math.max(skippedEnd, r.anchorEnd)
+        }
+        if (growLeft) {
+          do {
+            skip(runs[a]!)
+            a--
+          } while (passable(runs[a]))
+        } else {
+          do {
+            skip(runs[b]!)
+            b++
+          } while (passable(runs[b]))
+        }
+      } else {
+        searching = false
+      }
+    } else {
+      searching = false
+    }
+  }
+  return flanks
+}
+
+/**
+ * Inversions: a run of the other strand from its stretch's two ends, bounded
+ * by runs of their strand (`flanksOf`), with its anchor span mostly outside
+ * what those bounds cover, sized by the anchor it holds. A segdup-flanked
+ * breakpoint (8p23.1's REPD and REPP) puts paralog hits at the flanks' inner
+ * ends, which is why the test reads their outer ends. A reverse hit elsewhere
+ * on the anchor, or an inverted copy of a flank, is no inversion; neither the
+ * vote nor the drawn direction enters. Where a stretch's ends differ in
+ * strand, a run of either strand can be one, bounded by its two neighbours
+ * alone. Inversions whose runs hold a shared anchor base are one, the one
+ * holding the most anchor, the earlier in the lane on a tie. A run and its
+ * bounds lie in one stretch between array records.
  */
 function laneInversionsOf(sorted: readonly PlacedPiece[]) {
   const found: { change: LaneChange; anchors: LaneRun['anchors'] }[] = []
   for (const runs of laneRunsOf(sorted)) {
+    const endStrand = runs[0]?.orientation
+    const endsAgree = endStrand === runs.at(-1)?.orientation
     for (let i = 1; i < runs.length - 1; i++) {
-      const left = runs[i - 1]!
       const run = runs[i]!
-      const right = runs[i + 1]!
       const held = coveredBp(run.anchors, run.anchors)
+      const flanks =
+        held >= SPLIT_AT_GAP_BP && (!endsAgree || run.orientation !== endStrand)
+          ? flanksOf(runs, i, endsAgree)
+          : undefined
       if (
-        left.orientation === right.orientation &&
-        run.orientation !== left.orientation &&
-        left.refName === run.refName &&
-        right.refName === run.refName &&
-        held >= SPLIT_AT_GAP_BP
-      ) {
-        const [lo, hi] =
-          left.orientation > 0
-            ? [left.anchorStart, right.anchorEnd]
-            : [right.anchorStart, left.anchorEnd]
-        const flanked = coveredBp(
-          [...left.anchors, ...right.anchors],
+        flanks &&
+        coveredBp(
+          [...flanks.left.anchors, ...flanks.right.anchors],
           run.anchors,
-        )
-        if (
-          run.anchorStart >= lo &&
-          run.anchorEnd <= hi &&
-          flanked < held / 2
-        ) {
-          found.push({
-            change: {
-              at: run.laneStart,
-              laneEnd: run.laneEnd,
-              laneBp: run.laneEnd - run.laneStart,
-              anchorBp: held,
-              kind: 'inversion',
-              anchor: {
-                refName: run.refName,
-                start: run.anchorStart,
-                end: run.anchorEnd,
-              },
+        ) <
+          held / 2
+      ) {
+        found.push({
+          change: {
+            at: run.laneStart,
+            laneEnd: run.laneEnd,
+            laneBp: run.laneEnd - run.laneStart,
+            anchorBp: held,
+            kind: 'inversion',
+            anchor: {
+              refName: run.refName,
+              start: run.anchorStart,
+              end: run.anchorEnd,
             },
-            anchors: run.anchors,
-          })
-        }
+          },
+          anchors: run.anchors,
+        })
       }
     }
   }
