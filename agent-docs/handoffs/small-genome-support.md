@@ -17,15 +17,25 @@ locstring).
   `website/docs/tutorials/genomes_basics.md` and the BAM and CRAM adapter docs
   (their `configSchema.ts` `#config` blocks) still need a pointer to its "Deep
   reads over a small genome" section.
-- **A GenBank genome opened through the form gets no feature track.** The
-  form writes the `GenbankSequenceAdapter` assembly alone, since it has no way
-  to return a track with an assembly. The desktop start screen builds the new
-  session's config with an empty `tracks` list
+- **The form opens no feature track from a GenBank, whether it is the genome
+  or its annotation.** A lone GenBank becomes the `GenbankSequenceAdapter`
+  assembly alone. A GenBank beside a FASTA, .fa.gz or 2bit (Prokka's .fna +
+  .gbk) that can open as dropped is read as that genome's annotation
+  (`partitionSequences` in `packages/core/src/util/assemblyConfigUtils.ts`):
+  the other file is the genome, and `FileNotices` in
+  `packages/core/src/ui/AddGenomePane.tsx` says to drop the GenBank on a view
+  of it, or use Open track, once one is open. Beside an unindexed .fna.gz
+  (NCBI's FTP pair) the GenBank stays the genome. The
+  form has no way to return a track with an assembly. The desktop start screen
+  builds the new session's config with an empty `tracks` list
   (`products/jbrowse-desktop/src/components/StartScreen/StartScreenDialogs.tsx`),
-  so the `GenbankAdapter` track could be added there cheaply; in-session Open
+  so a `GenbankAdapter` track could be added there cheaply; in-session Open
   genome and the web assembly manager form would need to return a companion
-  track, a new contract across both callers. Dropping the file on an open view
-  stages it as that track.
+  track, a new contract across both callers. `FormState` would carry the
+  annotation locations, `buildAssemblyConf` or its callers would turn them into
+  track confs on the new assembly name, and the notice would become a line on
+  the recognition card. Dropping the file on an open view stages it as that
+  track.
 - **A text-index hit across a circular origin navigates to its first piece
   only; needs a ruling.** Reproduced: `ctgB` 5999..6500 shows as
   `ctgB:6,000..6,079`. The clamp is in `navToLocations`

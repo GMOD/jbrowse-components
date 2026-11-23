@@ -22,6 +22,7 @@ import {
   isFormReady,
   isSequenceRole,
   partitionExtraLocations,
+  partitionSequences,
   urlTextToLocations,
 } from './assemblyConfigUtils.ts'
 
@@ -1247,6 +1248,87 @@ describe('a GenBank file', () => {
   test('is one genome among the sequence roles', () => {
     expect(classifyFilename('sakai.gbk')).toBe('genbank')
     expect(isSequenceRole('genbank')).toBe(true)
+  })
+
+  describe('beside another sequence file, as Prokka writes .fna + .gbk', () => {
+    const gbk: FileLocation = {
+      uri: 'https://example.com/sakai.gbk.gz',
+      locationType: 'UriLocation',
+    }
+    test.each([
+      ['FASTA after', [gbk, fasta], 'FastaAdapter'],
+      ['FASTA before', [fasta, gbk], 'FastaAdapter'],
+      ['fa.gz before', [fastaGz, fai, gzi, gbk], 'BgzipFastaAdapter'],
+      ['2bit before', [twobit, gbk], 'TwoBitAdapter'],
+    ] as const)(
+      'is never the primary, %s',
+      (_, locations, adapterSelection) => {
+        const form = classifyAssemblyFiles([...locations])
+        expect(form.adapterSelection).toBe(adapterSelection)
+        expect(form.assemblyName).toBe('hg38')
+        expect(form.genbankLocation).toBeUndefined()
+      },
+    )
+
+    // NCBI's FTP pair: the .fna.gz is plain gzip with no .fai or .gzi, so
+    // making it the primary asked for indexes nobody can make
+    describe("beside a .fna.gz that can't open as dropped", () => {
+      const fnaGz: FileLocation = {
+        uri: 'https://example.com/GCF_000005845.2_ASM584v2_genomic.fna.gz',
+        locationType: 'UriLocation',
+      }
+      const gbff: FileLocation = {
+        uri: 'https://example.com/GCF_000005845.2_ASM584v2_genomic.gbff.gz',
+        locationType: 'UriLocation',
+      }
+
+      test.each([
+        ['alone', [gbff, fnaGz]],
+        ['with only its .gzi', [gbff, fnaGz, gzi]],
+      ])('stays the genome, %s', (_, locations) => {
+        expect(classifyAssemblyFiles(locations)).toMatchObject({
+          genbankLocation: gbff,
+          adapterSelection: 'GenbankSequenceAdapter',
+        })
+        expect(
+          partitionSequences(classifyLocations(locations)).annotations,
+        ).toEqual([])
+      })
+
+      test('is annotation once the .fna.gz has both indexes', () => {
+        expect(
+          classifyAssemblyFiles([gbff, fnaGz, fai, gzi]).adapterSelection,
+        ).toBe('BgzipFastaAdapter')
+      })
+    })
+
+    test('is annotation, and two GenBank files alone are two genomes', () => {
+      const other: FileLocation = {
+        uri: 'https://example.com/NC_045512.gbk',
+        locationType: 'UriLocation',
+      }
+      const split = (locations: FileLocation[]) => {
+        const { genomes, annotations } = partitionSequences(
+          classifyLocations(locations),
+        )
+        return {
+          genomes: genomes.map(f => f.location),
+          annotations: annotations.map(f => f.location),
+        }
+      }
+      expect(split([gbk, fai, fasta, other])).toEqual({
+        genomes: [fasta],
+        annotations: [gbk, other],
+      })
+      expect(split([gbk, other])).toEqual({
+        genomes: [gbk, other],
+        annotations: [],
+      })
+      expect(classifyAssemblyFiles([other, gbk])).toMatchObject({
+        genbankLocation: gbk,
+        assemblyName: 'sakai',
+      })
+    })
   })
 
   test('the GenBank slot takes a link with no extension, like an efetch', () => {

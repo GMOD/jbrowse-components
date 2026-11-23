@@ -14,8 +14,8 @@ import {
   formHasSequence,
   getMissingSidecars,
   isFormReady,
-  isSequenceRole,
   partitionExtraLocations,
+  partitionSequences,
   primaryLocation,
   urlTextToLocations,
 } from '../util/assemblyConfigUtils.ts'
@@ -398,9 +398,10 @@ const SourceInput = observer(function SourceInput({
 })
 
 // What the current file set says about itself: what couldn't be placed, whether
-// it holds more than one genome, and what is still missing. Every file that
-// arrives is accounted for in one of these — a set that silently produces no
-// notice and no recognition card reads as a dead drop zone.
+// it holds more than one genome, which GenBank files are annotation rather than
+// the genome, and what is still missing. Every file that arrives is accounted
+// for in one of these — a set that silently produces no notice and no
+// recognition card reads as a dead drop zone.
 const FileNotices = observer(function FileNotices({
   locations,
   hasSequence,
@@ -416,8 +417,9 @@ const FileNotices = observer(function FileNotices({
   const classified = classifyLocations(locations)
   const placed = classified.filter(f => f.role).map(f => f.location)
   const unrecognized = classified.filter(f => !f.role).map(f => f.location)
-  const sequences = classified.filter(f => isSequenceRole(f.role))
-  const primary = sequences.at(-1)?.location
+  const { genomes, annotations } = partitionSequences(classified)
+  const primary = genomes.at(-1)?.location
+  const oneAnnotation = annotations.length === 1
   return (
     <>
       {unrecognized.length ? (
@@ -434,13 +436,28 @@ const FileNotices = observer(function FileNotices({
         </Alert>
       ) : null}
 
-      {sequences.length > 1 && primary ? (
+      {genomes.length > 1 && primary ? (
         <Alert severity="warning" className={classes.intro}>
           This is more than one genome. The form holds one at a time, so only{' '}
           {getFileName(primary)} is being read
           {canStageAnother
             ? ' — open the rest one at a time with "Add another genome".'
             : '.'}
+        </Alert>
+      ) : null}
+
+      {annotations.length && primary ? (
+        <Alert severity="info" className={classes.intro}>
+          {annotations.map(f => getFileName(f.location)).join(', ')}{' '}
+          {oneAnnotation ? 'is' : 'are'} read as annotation
+          {genomes.length === 1 ? ` for ${getFileName(primary)}` : ''}, not as
+          another genome;{' '}
+          {oneAnnotation
+            ? 'if it is a different genome, open it'
+            : 'if they are different genomes, open each'}{' '}
+          on its own. Once a view of the genome is open, drop{' '}
+          {oneAnnotation ? 'it' : 'them'} on that view, or use File → Open
+          track..., to add the features as a track.
         </Alert>
       ) : null}
 

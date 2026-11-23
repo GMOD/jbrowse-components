@@ -504,7 +504,7 @@ export function classifyAssemblyFiles(
       result[field] = location
     }
   }
-  const primary = classified.filter(f => isSequenceRole(f.role)).at(-1)
+  const primary = partitionSequences(classified).genomes.at(-1)
   // A chrom.sizes leads only when nothing that carries bases is in the set: it
   // is the 2bit's optional sequence-name sidecar in every other drop, and
   // promoting it would silently downgrade `hg38.2bit + hg38.chrom.sizes` to an
@@ -519,32 +519,35 @@ export function classifyAssemblyFiles(
     }
   }
   if (primary) {
+    const adapterSelection = sequenceAdapter(primary.role, classified)
     result.assemblyName = getAssemblyNameFromFilename(
       getFileName(primary.location),
     )
-    if (primary.role === 'twoBit') {
-      result.twoBitLocation = primary.location
-      result.adapterSelection = 'TwoBitAdapter'
-    } else if (primary.role === 'genbank') {
-      result.genbankLocation = primary.location
-      result.adapterSelection = 'GenbankSequenceAdapter'
-    } else {
-      result.fastaLocation = primary.location
-      result.adapterSelection =
-        primary.role === 'fastaGz'
-          ? 'BgzipFastaAdapter'
-          : // a plain FASTA with no .fai in the set indexes itself on submit
-            result.faiLocation
-            ? 'IndexedFastaAdapter'
-            : 'FastaAdapter'
-    }
+    result.adapterSelection = adapterSelection
+    result[primaryFields[adapterSelection]] = primary.location
   }
   return result
 }
 
+function sequenceAdapter(
+  role: FileRole | undefined,
+  classified: ClassifiedLocation[],
+) {
+  return role === 'twoBit'
+    ? 'TwoBitAdapter'
+    : role === 'genbank'
+      ? 'GenbankSequenceAdapter'
+      : role === 'fastaGz'
+        ? 'BgzipFastaAdapter'
+        : // a plain FASTA with no .fai in the set indexes itself on submit
+          classified.some(f => f.role === 'fai')
+          ? 'IndexedFastaAdapter'
+          : 'FastaAdapter'
+}
+
 // The roles that describe the sequence itself. Exactly one of these is the
 // genome being added, so a set holding two holds two genomes and the caller
-// warns about it.
+// warns about it, unless partitionSequences reads one as annotation.
 const sequenceRoles: ReadonlySet<FileRole> = new Set([
   'fasta',
   'fastaGz',
@@ -554,6 +557,25 @@ const sequenceRoles: ReadonlySet<FileRole> = new Set([
 
 export function isSequenceRole(role: FileRole | undefined) {
   return role !== undefined && sequenceRoles.has(role)
+}
+
+// A GenBank beside a FASTA or 2bit is that genome's annotation, as Prokka writes
+// .fna + .gbk + .gff, not a second genome. It stays the genome when nothing else
+// in the set can open as dropped: NCBI's FTP pair is a plain-gzip .fna.gz with
+// no .fai or .gzi beside its .gbff.gz, and only the GenBank opens, so it is
+// the primary whatever the drop order.
+export function partitionSequences(classified: ClassifiedLocation[]) {
+  const sequences = classified.filter(f => isSequenceRole(f.role))
+  const genbanks = sequences.filter(f => f.role === 'genbank')
+  const others = sequences.filter(f => f.role !== 'genbank')
+  const opens = others.some(f =>
+    requiredSidecars[sequenceAdapter(f.role, classified)].every(sidecar =>
+      classified.some(c => c.role === sidecar),
+    ),
+  )
+  return opens
+    ? { genomes: others, annotations: genbanks }
+    : { genomes: [...others, ...genbanks], annotations: [] }
 }
 
 // Where each non-sequence role lands on the form. The sequence roles map to

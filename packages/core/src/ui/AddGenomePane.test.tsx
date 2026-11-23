@@ -210,6 +210,76 @@ test('two genomes at once: the notice names the file the card shows', async () =
   expect(isBlank(form().twoBitLocation)).toBe(true)
 })
 
+// Prokka writes .fna + .gbk: the GenBank there is the annotation, and the pane
+// opened it as the genome and called the pair two genomes
+test('a GenBank beside a FASTA is named as annotation, not a second genome', async () => {
+  const { user, form } = setup()
+  await pasteUrls(
+    user,
+    ['https://example.com/sakai.fa', 'https://example.com/sakai.gbk'].join(
+      '\n',
+    ),
+  )
+
+  expect(form().adapterSelection).toBe('FastaAdapter')
+  expect(screen.queryByText(/more than one genome/)).not.toBeInTheDocument()
+  expect(
+    screen.getByText(
+      /sakai\.gbk is read as annotation for sakai\.fa, not as another genome; if it is a different genome, open it on its own\. Once a view of the genome is open, drop it on that view/,
+    ),
+  ).toBeInTheDocument()
+})
+
+// naming the last genome as the one two GenBank files annotate was a guess
+test('GenBank files beside two genomes name no genome they annotate', async () => {
+  const { user } = setup()
+  await pasteUrls(
+    user,
+    [
+      'https://example.com/a.fa',
+      'https://example.com/a.gbk',
+      'https://example.com/b.fa',
+      'https://example.com/b.gbk',
+    ].join('\n'),
+  )
+
+  expect(
+    screen.getByText(/a\.gbk, b\.gbk are read as annotation, not as/),
+  ).toBeInTheDocument()
+  expect(screen.getByText(/only b\.fa is being read/)).toBeInTheDocument()
+})
+
+// NCBI's FTP pair: the .fna.gz is plain gzip with no index, so the GenBank is
+// the one file that opens
+test('a GenBank beside an unindexed .fna.gz stays the genome', async () => {
+  const { user, form } = setup()
+  await pasteUrls(
+    user,
+    [
+      'https://example.com/GCF_000005845.2_genomic.fna.gz',
+      'https://example.com/GCF_000005845.2_genomic.gbff.gz',
+    ].join('\n'),
+  )
+
+  expect(form().adapterSelection).toBe('GenbankSequenceAdapter')
+  expect(
+    screen.getByText(/only GCF_000005845\.2_genomic\.gbff\.gz is being read/),
+  ).toBeInTheDocument()
+  expect(screen.queryByText(/read as annotation/)).not.toBeInTheDocument()
+  expect(screen.queryByText(/needs its index/)).not.toBeInTheDocument()
+})
+
+test('two GenBank files alone are still two genomes', async () => {
+  const { user } = setup()
+  await pasteUrls(
+    user,
+    ['https://example.com/sakai.gbk', 'https://example.com/k12.gbk'].join('\n'),
+  )
+
+  expect(screen.getByText(/only k12\.gbk is being read/)).toBeInTheDocument()
+  expect(screen.queryByText(/read as annotation/)).not.toBeInTheDocument()
+})
+
 // a presigned S3/GCS link is one of the two normal ways to share a genome, and
 // the pane answered "Couldn't place" because its patterns end-anchor the name
 test('a presigned url is placed like any other', async () => {
