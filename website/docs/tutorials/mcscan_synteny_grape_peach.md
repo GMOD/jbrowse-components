@@ -107,8 +107,8 @@ A gene id in the anchors file that is missing from the BEDs breaks the join, and
 some such mismatches load with no error; the
 [synteny track guide](/docs/config_guides/synteny_track#gene-ids-are-the-join-in-the-mcscan-adapters)
 lists which. The mismatch that matters here is jcvi stripping isoform suffixes
-from the ids unless run with `--no_strip_names`, which the ortholog command below
-passes.
+from the ids unless run with `--no_strip_names`, which the ortholog command
+below passes.
 
 Run the same three commands for peach. One ortholog run then writes the gene
 pairs, and `screen --simple` reduces them to blocks:
@@ -405,13 +405,13 @@ The number of `--species` names sets what the run writes:
 runs everything above and writes a `config.json` with both assemblies, gene
 tracks, both MCScan tracks and a default session opening them together:
 
-1. Download the grape and peach RefSeq genomes and annotations by accession,
-   dropping organelle genes, which gffread rejects.
-2. Write a BED and a CDS file per genome keyed on the mRNA ID, and run jcvi with
-   `--no_strip_names` so the anchor ids match the BEDs.
-3. Screen the gene pairs into blocks for `.anchors.simple`.
-4. Write the config with both hub assemblies and gene tracks, both MCScan tracks
-   and a session.
+- Download the grape and peach RefSeq genomes and annotations by accession,
+  dropping organelle genes, which gffread rejects.
+- Write a BED and a CDS file per genome keyed on the mRNA ID, and run jcvi with
+  `--no_strip_names` so the anchor ids match the BEDs.
+- Screen the gene pairs into blocks for `.anchors.simple`.
+- Write the config with both hub assemblies and gene tracks, both MCScan tracks
+  and a session.
 
 ```bash
 curl -fO https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/build_grape_peach_anchors.sh

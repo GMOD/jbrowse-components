@@ -18,8 +18,8 @@ GRCh38's chromosome lacks; and FLNA / EMD, two genes some haplotypes have in the
 opposite order. We:
 
 - at CFH and GSTT1, open the lanes from the HPRC page's **Haplotypes** launch,
-  which stacks them by structure, and read each lane's genes from the
-  annotation of that haplotype's assembly
+  which stacks them by structure, and read each lane's genes from the annotation
+  of that haplotype's assembly
 - at FLNA / EMD, add the graph's bubbles track and filter it to inversions
 - at IGL, choose lanes by name from the **Lanes** menu
 - configure the haplotype lanes track for a graph of your own
@@ -48,8 +48,8 @@ You don't need these files to follow the page: the HPRC launches read the hosted
 tabix indexes, built from these files of
 [HPRC release 2](https://doi.org/10.64898/2026.07.21.739710).
 [Reproduce it end to end](#reproduce-it-end-to-end) names the build, and
-[Configure the haplotype lanes track](#configure-the-haplotype-lanes-track)
-has the config to adapt for your own graph.
+[Configure the haplotype lanes track](#configure-the-haplotype-lanes-track) has
+the config to adapt for your own graph.
 
 | What it is                                            | File                                                                                                                                                                                |
 | ----------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -65,42 +65,6 @@ has the config to adapt for your own graph.
 | Our indexed files of the graph's haplotype walks and bubbles, with the exact build recorded beside them | [README.txt](https://jbrowse.org/demos/hprc/README.txt) |
 
 </details>
-
-### Where each haplotype's genes come from {#haplotype-genes}
-
-JBrowse draws each lane, and each bar under **Walk rows**, with the genes
-annotated on that haplotype's assembly, at that assembly's coordinates. It does
-not lift GRCh38's genes across the graph.
-
-- **The source:** HPRC annotated each release 2 assembly but HG002's with CAT
-  (the Comparative Annotation Toolkit), which projects GENCODE's GRCh38 genes
-  onto it, in the CAT index above. HG002's two haplotypes are the
-  [Q100 assembly](https://github.com/marbl/HG002) hg002v1.1, whose project
-  annotated it with RefSeq's genes through JHU's Liftoff; we keep each gene's
-  MANE Select transcript there, so a few symbols and isoforms differ from the
-  CAT lanes. Liftoff leaves out the functional V, D and J segments of the
-  antibody and T-cell receptor loci, so HG002's lanes there show only their
-  pseudogene segments.
-- **What we host:** one gene model per named gene for each haplotype, as
-  `https://jbrowse.org/pangenome/hprc-grch38/genes/<sample>.<haplotype>.genes.bed.gz`,
-  chosen by these rules:
-  - Each model is the gene's Ensembl canonical transcript as CAT projected it,
-    else its longest coding transcript.
-  - A gene with no symbol is dropped, and so is one spanning over 5 Mb.
-  - Where CAT projected two paralogs onto one locus, such as _GSTM1_ onto
-    _GSTM2_, we keep the gene whose GRCh38 span the haplotype's walk crosses
-    there.
-  - CAT misses genes that only GRCh38's alternate contigs hold. We splice
-    GENCODE's models of _GSTT1_, _LILRA3_, _HLA-DRB3_, _HLA-DRB4_ and _HLA-DRB5_
-    onto each haplotype's assembly instead, where its walk crosses them.
-  - [README.txt](https://jbrowse.org/pangenome/hprc-grch38/genes/README.txt)
-    beside the files lists every rule and what CAT still misses.
-- **Where a lane's genes come from:** each haplotype is an assembly, such as
-  `HG00097.1` aliased `HG00097#1`, holding one track, **CAT genes (HG00097
-  haplotype 1, HPRC release 2)**, or for HG002 **RefSeq genes via JHU Liftoff
-  v0.6**. JBrowse draws that track in the haplotype's lane, and for each of the
-  first 40 walk-row bars reads it over the bar's span on the haplotype's contig
-  and boxes each gene where it falls along the bar.
 
 ## Open the CFH lanes from the Haplotypes launch
 
@@ -120,7 +84,7 @@ Each lane draws the genes annotated on that haplotype's assembly
 ([where they come from](#haplotype-genes)):
 
 - A gene missing from a lane is missing from that haplotype's annotation,
-  through a deletion, a copy CAT did not project, or a gene the rules above
+  through a deletion, a copy CAT did not project, or a gene our hosting rules
   dropped.
 - CAT names each copy of a duplicated gene after the GRCh38 copy it projected,
   so a haplotype with extra _AMY1_ copies shows _AMY1C_ several times. The
@@ -171,11 +135,10 @@ not place in a lane. At IGL, from any **Haplotypes** launch, type
 
 <Figure caption="IGL in five lanes. HG002 haplotype 2 and HG01074 haplotype 1 have no step on the reference across the window, so their rows at the foot draw no ribbons and are headed with the length of the stretch. HG002 haplotype 1's lane spans the window but shows only MIR650 and IGLV3-7, since its Liftoff annotation leaves out functional V segments." src="/img/pangenome/hprc_igl_deletion_lanes.png" />
 
-Those rows are one of several cases where the lanes are easy to misread:
+Rows like those are one of several cases where the lanes are easy to misread:
 
-- **A haplotype the graph does not align has no lane.** Picked by hand under
-  **Lanes → Choose lanes...**, it gets an empty row at the foot headed "no
-  alignment in this window".
+- **A haplotype the graph does not align has no lane.** Picked by hand, as
+  above, it gets an empty row at the foot headed "no alignment in this window".
 - **A stretch the haplotype skips across the window is a row with no ribbons.**
   A haplotype with no step on the reference across the whole window shows as a
   row at the foot of the lanes, headed with the stretch's length, such as "no
@@ -232,6 +195,42 @@ and the config below is the one to adapt for your own graph:
   ]
 }
 ```
+
+### Where each haplotype's genes come from {#haplotype-genes}
+
+JBrowse draws each lane, and each bar under **Walk rows**, with the genes
+annotated on that haplotype's assembly, at that assembly's coordinates. It does
+not lift GRCh38's genes across the graph.
+
+- **The source:** HPRC annotated each release 2 assembly but HG002's with CAT
+  (the Comparative Annotation Toolkit), which projects GENCODE's GRCh38 genes
+  onto it, in the CAT index above. HG002's two haplotypes are the
+  [Q100 assembly](https://github.com/marbl/HG002) hg002v1.1, whose project
+  annotated it with RefSeq's genes through JHU's Liftoff; we keep each gene's
+  MANE Select transcript there, so a few symbols and isoforms differ from the
+  CAT lanes. Liftoff leaves out the functional V, D and J segments of the
+  antibody and T-cell receptor loci, so HG002's lanes there show only their
+  pseudogene segments.
+- **What we host:** one gene model per named gene for each haplotype, as
+  `https://jbrowse.org/pangenome/hprc-grch38/genes/<sample>.<haplotype>.genes.bed.gz`,
+  chosen by these rules:
+  - Each model is the gene's Ensembl canonical transcript as CAT projected it,
+    else its longest coding transcript.
+  - A gene with no symbol is dropped, and so is one spanning over 5 Mb.
+  - Where CAT projected two paralogs onto one locus, such as _GSTM1_ onto
+    _GSTM2_, we keep the gene whose GRCh38 span the haplotype's walk crosses
+    there.
+  - CAT misses genes that only GRCh38's alternate contigs hold. We splice
+    GENCODE's models of _GSTT1_, _LILRA3_, _HLA-DRB3_, _HLA-DRB4_ and _HLA-DRB5_
+    onto each haplotype's assembly instead, where its walk crosses them.
+  - [README.txt](https://jbrowse.org/pangenome/hprc-grch38/genes/README.txt)
+    beside the files lists every rule and what CAT still misses.
+- **Where a lane's genes come from:** each haplotype is an assembly, such as
+  `HG00097.1` aliased `HG00097#1`, holding one track, **CAT genes (HG00097
+  haplotype 1, HPRC release 2)**, or for HG002 **RefSeq genes via JHU Liftoff
+  v0.6**. JBrowse draws that track in the haplotype's lane, and for each of the
+  first 40 walk-row bars reads it over the bar's span on the haplotype's contig
+  and boxes each gene where it falls along the bar.
 
 ## Reproduce it end to end
 

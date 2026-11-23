@@ -53,7 +53,7 @@ lane.
 
 You don't need these files to follow the page: the track config below reads the
 hosted indexed copies. To index a chain of your own, convert it with `chain2paf`
-and `make-pif`, as _LiftOver chains as one indexed alignment per genome_ shows.
+and `make-pif`, as _Index each liftOver chain as PIF_ shows.
 
 | What it is                                                                     | File                                                                   |
 | ------------------------------------------------------------------------------ | ---------------------------------------------------------------------- |

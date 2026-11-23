@@ -282,18 +282,18 @@ The block's edges line up with the published breakpoint coordinates.
 uses the published 2La span only as a test window, and prints the evidence for
 each choice it makes from there:
 
-1. Each panel is one population, since correlation pooled across populations
-   shows linkage that is absent within each one. The script prints, per
-   population, mean D' between variants more than 5 Mb apart inside the test
-   window and outside it, because only a population with both arrangements can
-   show the block.
-2. The script keeps common variants, thins them to a grid, and writes each
-   panel's r² and D' table.
-3. The script bins D' to distant partners along the whole arm. The steps up and
-   down are the inversion's breakpoints, recovered from the data alone.
-4. The script scores each mosquito's karyotype from the tag SNPs, prints the
-   score histogram, which has to come out with three peaks, and writes the
-   `<INV>` calls and a `config.json` opening on the inversion.
+- Each panel is one population, since correlation pooled across populations
+  shows linkage that is absent within each one. The script prints, per
+  population, mean D' between variants more than 5 Mb apart inside the test
+  window and outside it, because only a population with both arrangements can
+  show the block.
+- The script keeps common variants, thins them to a grid, and writes each
+  panel's r² and D' table.
+- The script bins D' to distant partners along the whole arm. The steps up and
+  down are the inversion's breakpoints, recovered from the data alone.
+- The script scores each mosquito's karyotype from the tag SNPs, prints the
+  score histogram, which has to come out with three peaks, and writes the
+  `<INV>` calls and a `config.json` opening on the inversion.
 
 ```bash
 curl -fO https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/build_ag1000g_ld.sh

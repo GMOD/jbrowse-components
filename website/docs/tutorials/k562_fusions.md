@@ -65,8 +65,8 @@ breakpoints on hg19.
 
 The tracks below read local files that the
 [build script](#reproduce-it-end-to-end) writes from these, fetching each
-itself, so run it first, or swap in your own long RNA reads, as _Loading hg38
-and the merged Iso-Seq reads_ shows; `depmap_to_jbrowse.py` takes any DepMap
+itself, so run it first, or swap in your own long RNA reads, as _Load hg38 and
+the merged Iso-Seq reads_ shows; `depmap_to_jbrowse.py` takes any DepMap
 cell-line ID.
 
 | What it is                                                                                             | File                                                                                                          |
@@ -80,7 +80,7 @@ cell-line ID.
 | K562 DNA breakpoints (ENCODE 10X linked-read large-SV calls, hg19, lifted to hg38 by the build script) | [ENCFF863MPP.vcf.gz](https://www.encodeproject.org/files/ENCFF863MPP/@@download/ENCFF863MPP.vcf.gz)           |
 | The hg19-to-hg38 chain the lift uses                                                                   | [hg19ToHg38.over.chain.gz](https://hgdownload.soe.ucsc.edu/goldenPath/hg19/liftOver/hg19ToHg38.over.chain.gz) |
 
-## Cut K562 out of DepMap and lift it to hg38
+## Cut K562 from DepMap and lift its breakpoints
 
 K562 is a chronic myeloid leukemia line with the Philadelphia chromosome, the
 t(9;22) translocation between chr9 and chr22 that fuses _BCR_ to _ABL1_.
@@ -331,14 +331,14 @@ the _ABL1_ intron 1 break with _BCR_ from contact counts alone.
 [`scripts/build_cancer_sv_demo.sh`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/build_cancer_sv_demo.sh)
 builds everything above from public sources. For K562 it:
 
-1. sorts the four ENCODE Iso-Seq runs, which ENCODE releases unsorted, and
-   merges them into the one read track the junction counts come from
-2. cuts K562's rows out of DepMap's fusion and copy-number tables, with the
-   fusion calls ordered by FFPM (fusion fragments per million RNA-seq
-   fragments), best-supported first
-3. lifts the 10X breakends to hg38 as above, and drops a junction whole when
-   either end fails to lift or maps reversed in hg38, where its orientation
-   would come out wrong
+- sorts the four ENCODE Iso-Seq runs, which ENCODE releases unsorted, and merges
+  them into the one read track the junction counts come from
+- cuts K562's rows out of DepMap's fusion and copy-number tables, with the
+  fusion calls ordered by FFPM (fusion fragments per million RNA-seq fragments),
+  best-supported first
+- lifts the 10X breakends to hg38 as above, and drops a junction whole when
+  either end fails to lift or maps reversed in hg38, where its orientation would
+  come out wrong
 
 The script also builds the COLO829 half of the demo, which
 [](/docs/tutorials/cancer_sv) walks through.

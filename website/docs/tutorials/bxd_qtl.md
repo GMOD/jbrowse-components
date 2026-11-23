@@ -61,11 +61,11 @@ script reads GeneNetwork's `.geno` format.
 
 ## Paint each strain's B and D blocks
 
-The painting has one row per strain, each block colored by genotype.
-GeneNetwork distributes the consensus BXD genotypes as a plain-text `.geno`
-file. Each row is a marker with a `cM` genetic-map position and an mm10 `Mb`
-physical position, and the painting uses `Mb`. Each column is a strain, with a
-one-letter genotype, `B`, `D`, `H` (heterozygous) or `U` (unknown):
+The painting has one row per strain, each block colored by genotype. GeneNetwork
+distributes the consensus BXD genotypes as a plain-text `.geno` file. Each row
+is a marker with a `cM` genetic-map position and an mm10 `Mb` physical position,
+and the painting uses `Mb`. Each column is a strain, with a one-letter genotype,
+`B`, `D`, `H` (heterozygous) or `U` (unknown):
 
 ```text
 @name:BXD
@@ -370,9 +370,8 @@ runs every step above. It:
   [`bxd_geno_to_painting_bed.py`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/bxd_geno_to_painting_bed.py)
 - fetches the coat-color scan (trait `11280`) and the per-strain scores from
   GeneNetwork
-- writes a `config.json` that opens on mm10 chr4 with the scan over the
-  painting banded by coat color, and prints the marker at the peak and its LOD
-  as it goes
+- writes a `config.json` that opens on mm10 chr4 with the scan over the painting
+  banded by coat color, and prints the marker at the peak and its LOD as it goes
 
 ```bash
 curl -fO https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/bxd_build_demo.sh

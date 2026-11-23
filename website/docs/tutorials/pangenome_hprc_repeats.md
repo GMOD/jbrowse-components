@@ -569,10 +569,10 @@ PacBio publishes TRGT's calls for a subset of HPRC samples as a TRGTdb, most of
 which have a call at _ABCA7_, and the build turns that locus into the VCF this
 page loads, without re-genotyping anything. It:
 
-1. downloads the TRGTdb and the repeat catalogue
-2. reads the locus's alleles and every sample's calls out of the database
-3. writes one VCF record: each allele's sequence as an ALT, and per sample the
-   genotype, each allele's length (`AL`) and the reads spanning it (`SD`)
+- downloads the TRGTdb and the repeat catalogue
+- reads the locus's alleles and every sample's calls out of the database
+- writes one VCF record: each allele's sequence as an ALT, and per sample the
+  genotype, each allele's length (`AL`) and the reads spanning it (`SD`)
 
 ```bash
 curl -fO https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/build_hprc_abca7_trgt.sh
@@ -596,16 +596,15 @@ duckdb -json -c "
 ```
 
 The amylase build runs the commands under
-[Stack the amylase haplotypes in a synteny view](#amylase-stack) for the haplotypes in that
-session and hg38. It:
+[Stack the amylase haplotypes in a synteny view](#amylase-stack) for the
+haplotypes in that session and hg38. It:
 
-1. reads where each haplotype's walk crosses a single-copy window on either side
-   of the array, which gives its span and so its structure
-2. picks one haplotype per structure and fetches only the locus from its
-   assembly
-3. counts each haplotype's gene copies, and aligns it to its neighbour in the
-   stack
-4. shifts each alignment back onto the whole contig's coordinates
+- reads where each haplotype's walk crosses a single-copy window on either side
+  of the array, which gives its span and so its structure
+- picks one haplotype per structure and fetches only the locus from its assembly
+- counts each haplotype's gene copies, and aligns it to its neighbour in the
+  stack
+- shifts each alignment back onto the whole contig's coordinates
 
 ```bash
 curl -fO https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/build_amylase_haplotypes.sh

@@ -15,8 +15,8 @@ peripheral blood cells (PBMC), one RNA and one ATAC, we:
 
 - pool RNA reads or ATAC fragments into one coverage BigWig per cell type,
   outside JBrowse
-- load each set as one multi-wiggle track with a row per cell type
-- open nine RNA marker genes side by side
+- load each set as one multi-wiggle track with a row per cell type, and open
+  nine RNA marker genes side by side
 - add one row per cell under the pooled RNA rows, from a Zarr store
 - read the ATAC rows at a T-cell and a B-cell marker, then load AlphaGenome 2's
   predicted ATAC for the same cell types under them
@@ -603,15 +603,15 @@ pass a `.json` file of subadapter objects instead of the comma list.
 [`build_scrna_pseudobulk.sh`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/build_scrna_pseudobulk.sh)
 starts from 10x's filtered RNA count matrix and the BAM. It:
 
-1. clusters the cells with the standard scanpy pipeline: quality filtering,
-   normalization, PCA, a neighbor graph, the UMAP and Leiden clusters
-2. names each cluster after the canonical PBMC marker panel it scores highest
-   on, and prints the whole score matrix so each call can be checked. A cluster
-   that scores weakly against every panel stays unassigned
-3. pools each cell type's reads into one row, with the filters and CPM scaling
-   above
-4. writes the per-cell store over the marker windows, the UMAP's data files, and
-   a JBrowse instance with the pooled track
+- clusters the cells with the standard scanpy pipeline: quality filtering,
+  normalization, PCA, a neighbor graph, the UMAP and Leiden clusters
+- names each cluster after the canonical PBMC marker panel it scores highest on,
+  and prints the whole score matrix so each call can be checked. A cluster that
+  scores weakly against every panel stays unassigned
+- pools each cell type's reads into one row, with the filters and CPM scaling
+  above
+- writes the per-cell store over the marker windows, the UMAP's data files, and
+  a JBrowse instance with the pooled track
 
 ```bash
 curl -fO https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/build_scrna_pseudobulk.sh
@@ -626,15 +626,15 @@ starts from SnapATAC2's annotated release of the 10x 5k PBMC ATAC dataset, whose
 tutorials leave every cell filtered, clustered and labeled, with its fragments
 beside its `cell_type`. The script:
 
-1. pools each cell type's fragments into one BigWig, in 25 bp bins and RPKM, as
-   above
-2. orders the rows by lineage (T cells, NK, B cells, then myeloid) from a map
-   written into the script, because in the label order stored in the object the
-   rows of one lineage are far apart. To run it on your own experiment, replace
-   that map
-3. gives each row its cluster's color from the same object, so a cell type
-   matches its UMAP
-4. loads the set as one track over hg38 and RefSeq genes
+- pools each cell type's fragments into one BigWig, in 25 bp bins and RPKM, as
+  above
+- orders the rows by lineage (T cells, NK, B cells, then myeloid) from a map
+  written into the script, because in the label order stored in the object the
+  rows of one lineage are far apart. To run it on your own experiment, replace
+  that map
+- gives each row its cluster's color from the same object, so a cell type
+  matches its UMAP
+- loads the set as one track over hg38 and RefSeq genes
 
 ```bash
 curl -fO https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/build_scatac_pseudobulk.sh

@@ -256,11 +256,11 @@ neighboring gene.
 [`build_protein_domains.sh`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/build_protein_domains.sh)
 runs every step above on your own genome FASTA and GFF3. The script:
 
-1. Translates each transcript's CDS with gffread.
-2. Downloads and presses the Pfam library once, then calls domains with hmmscan,
-   on chunks of the proteins at once.
-3. Places the domains on the exons with domains2genome.
-4. Builds a JBrowse with the genome, the genes and the domain track.
+- Translates each transcript's CDS with gffread.
+- Downloads and presses the Pfam library once, then calls domains with hmmscan,
+  on chunks of the proteins at once.
+- Places the domains on the exons with domains2genome.
+- Builds a JBrowse with the genome, the genes and the domain track.
 
 ```bash
 curl -fO https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/build_protein_domains.sh

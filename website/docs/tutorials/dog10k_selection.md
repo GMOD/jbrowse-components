@@ -58,8 +58,8 @@ directly over HTTP with no local copy of either callset.
 
 The tracks below read local files that the
 [build script](#reproduce-it-end-to-end) writes from these, so run it first, or
-rerun the scan and the slice with groups and regions of your own, as _Scanning
-for peaks in another trait_ lists. The script fetches everything itself.
+rerun the scan and the slice with groups and regions of your own, as _Reproduce
+it end to end_ lists. The script fetches everything itself.
 
 | What it is                                                                             | File                                                                                                                                                            |
 | -------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------- |

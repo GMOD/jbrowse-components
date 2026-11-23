@@ -212,8 +212,9 @@ or D' (a second LD measure), and this table has both. For your own table, swap
 ## Read the LCT block's edges against Fst and deCODE
 
 The [Fst bigWig](#compute-fst-per-variant-with-plink2) loads first. Its track
-config sets a lower `resolutionMultiplier` on the adapter. Zoomed out, JBrowse reads summary bins from a bigWig, and the average over a bin hides
-the few differentiated variants among the many around them:
+config sets a lower `resolutionMultiplier` on the adapter. Zoomed out, JBrowse
+reads summary bins from a bigWig, and the average over a bin hides the few
+differentiated variants among the many around them:
 
 ```json addtrack
 {
@@ -268,8 +269,8 @@ it, the Fst step gives a wide scan that loads the same way:
 }
 ```
 
-We'll also compare the triangle with two maps independent of it. The first is the
-gene track, NCBI's curated RefSeq models as UCSC serves them:
+We'll also compare the triangle with two maps independent of it. The first is
+the gene track, NCBI's curated RefSeq models as UCSC serves them:
 
 ```json addtrack
 {
@@ -372,8 +373,8 @@ equal-width columns, one row per chromosome:
 ```
 
 Over the whole release each haplotype row falls below a pixel, so this VCF holds
-the same number of samples from each population. The script behind it centers
-on one `bcftools` call over a list of sample IDs, one per line:
+the same number of samples from each population. The script behind it centers on
+one `bcftools` call over a list of sample IDs, one per line:
 
 <!-- from: scripts/build_lct_haploblock.sh -->
 
@@ -514,15 +515,15 @@ Open it over `chr2:135,844,000-135,858,000`, the stretch of _MCM6_ that holds
 builds the triangles and the narrow Fst track, and writes a ready-to-serve
 config. It:
 
-1. keeps the release's unrelated samples, since relatives share long haplotypes
-   whether or not a sweep happened, and splits them into the European panel and
-   everyone else
-2. cuts a region wide enough to reach past both edges of the block, and prints
-   mean r² against `rs4988235` along it, so the block's ends show in the data
-3. cuts the European panel out of that same slice, so the pooled and panel
-   triangles hold the same variants and differ only in their samples
-4. correlates each cohort's common variants with PLINK, and scores Fst per
-   variant between the panel and the rest
+- keeps the release's unrelated samples, since relatives share long haplotypes
+  whether or not a sweep happened, and splits them into the European panel and
+  everyone else
+- cuts a region wide enough to reach past both edges of the block, and prints
+  mean r² against `rs4988235` along it, so the block's ends show in the data
+- cuts the European panel out of that same slice, so the pooled and panel
+  triangles hold the same variants and differ only in their samples
+- correlates each cohort's common variants with PLINK, and scores Fst per
+  variant between the panel and the rest
 
 ```bash
 curl -fO https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/build_lct_ld.sh
@@ -537,8 +538,9 @@ Three more scripts build the other files:
   over a wide stretch of chr2 with _LCT_ at its middle, one value per variant.
   It prints where `rs4988235` ranks across the span.
 - [`build_lct_haploblock.sh`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/build_lct_haploblock.sh)
-  builds the [subsampled haplotype matrix](#clustering-lct-haplotypes-by-genotype) from
-  the same number of unrelated samples in each population, which span the
+  builds the
+  [subsampled haplotype matrix](#clustering-lct-haplotypes-by-genotype) from the
+  same number of unrelated samples in each population, which span the
   lactase-persistence allele from common to absent, so none outweighs the rest
   in the clustering. It prints the allele's frequency in each, over the release
   and over the subsample.

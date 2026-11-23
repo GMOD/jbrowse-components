@@ -47,7 +47,8 @@ The graph view is a beta plugin. We welcome your [feedback](/contact).
 - `python3` and htslib (`bgzip`, `tabix`), to build the
   [OMIA track](#open-the-celtic-polled-allele-at-polled)
 - [`vg`](https://github.com/vgteam/vg), to
-  [deconstruct](#load-the-callset-under-the-graph-at-hspa1a) the graph into a callset
+  [deconstruct](#load-the-callset-under-the-graph-at-hspa1a) the graph into a
+  callset
 - [`gfatools`](https://github.com/lh3/gfatools) and
   [`gfa-to-tabix`](https://github.com/GMOD/gfa-to-tabix) 5.0.0 or later, to
   [index the graph](#build-the-bovine-graph-files)

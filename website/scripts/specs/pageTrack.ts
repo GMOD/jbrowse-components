@@ -36,7 +36,9 @@ function sectionText(text: string, section: string) {
     return fenced ? 0 : (/^(#{1,6}) /.exec(line)?.[1]!.length ?? 0)
   })
   const start = lines.findIndex(
-    (line, i) => headingLevel[i]! > 0 && line.replace(/^#+ /, '') === section,
+    (line, i) =>
+      headingLevel[i]! > 0 &&
+      line.replace(/^#+ /, '').replace(/ {#[\w-]+}$/, '') === section,
   )
   if (start === -1) {
     return undefined

@@ -290,8 +290,8 @@ table, so the bands of a stack differ in where their ribbons come from:
 - In a peach-cacao band, JBrowse draws a ribbon only through a grape gene both
   genomes share, so each of its ribbons is transitive, and no ribbon is drawn
   for a row where grape has no member.
-- This stack puts grape at the bottom, so its peach-cacao band is the
-  transitive one. A peach, grape, cacao stack makes both bands direct.
+- This stack puts grape at the bottom, so its peach-cacao band is the transitive
+  one. A peach, grape, cacao stack makes both bands direct.
 
 The adapter also loads an all-against-all table, such as an
 [OrthoFinder one](/docs/tutorials/orthofinder_synteny), where a row holds
@@ -437,14 +437,14 @@ A stacked synteny view opens from the lanes by two routes:
 runs everything above and writes a `config.json` with the hub assemblies, gene
 tracks, synteny track and default session:
 
-1. Download the seven RefSeq genomes and annotations, and write a BED and a CDS
-   file per genome keyed on the mRNA's GFF3 `ID`, so the two join.
-2. Catalog orthologs against grape and MCScan each pair with `--iter=1`, one
-   block per grape gene.
-3. Join the six per-pair tables on the grape column into one seven-column
-   `grape.blocks`.
-4. Write the config from the grape, peach and cacao hubs, with the other four
-   genomes as lanes of the blocks track.
+- Download the seven RefSeq genomes and annotations, and write a BED and a CDS
+  file per genome keyed on the mRNA's GFF3 `ID`, so the two join.
+- Catalog orthologs against grape and MCScan each pair with `--iter=1`, one
+  block per grape gene.
+- Join the six per-pair tables on the grape column into one seven-column
+  `grape.blocks`.
+- Write the config from the grape, peach and cacao hubs, with the other four
+  genomes as lanes of the blocks track.
 
 `BLOCKS_ONLY_SPECIES` lists the extra lanes; a genome added there needs an NCBI
 accession with an annotation, and gets a lane but no row in the synteny view.

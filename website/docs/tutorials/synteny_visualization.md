@@ -154,6 +154,11 @@ indexed needs only its `uri`; swap in your own file.
 }
 ```
 
+When a track's `assemblyNames` are in the wrong order, JBrowse draws an empty
+band and shows a warning in the view header:
+
+<Figure caption="A synteny track whose assemblyNames are reversed draws an empty band, and the warning icon in its header opens a dialog reporting the reversal." src="/img/sv_synteny/assembly_order_warning.png" />
+
 A bacterial PAF is small enough to load whole. For a large whole-genome
 alignment, convert the PAF to [](/docs/developer_guides/pif_format) so JBrowse
 fetches only the alignments in the current viewport:
@@ -162,11 +167,6 @@ fetches only the alignments in the current viewport:
 jbrowse make-pif alignment.paf
 jbrowse add-track alignment.pif.gz -a query,target --load copy
 ```
-
-When a track's `assemblyNames` are in the wrong order, JBrowse draws an empty
-band and shows a warning in the view header:
-
-<Figure caption="A synteny track whose assemblyNames are reversed draws an empty band, and the warning icon in its header opens a dialog reporting the reversal." src="/img/sv_synteny/assembly_order_warning.png" />
 
 ## Read the whole genome in a dotplot
 
@@ -201,11 +201,11 @@ renaming each genome's sequences to PanSN names
 Take the third assembly from its hub and add both alignments the same way as
 above, then:
 
-1. **Add → Linear synteny view**, then switch to **Manual**.
-2. Pick an assembly per row, with **Add row** for the third.
-3. Click the arrow between each adjacent pair to choose that band's synteny
-   track: 26695 against CHC155, then CHC155 against J99.
-4. Click **Launch**, and all the strains stack in one view.
+- **Add → Linear synteny view**, then switch to **Manual**.
+- Pick an assembly per row, with **Add row** for the third.
+- Click the arrow between each adjacent pair to choose that band's synteny
+  track: 26695 against CHC155, then CHC155 against J99.
+- Click **Launch**, and all the strains stack in one view.
 
 Zoom each row in once with its magnifier, then open each strain's gene track,
 **NCBI RefSeq - RefSeq All (GFF)**, from the track selector for that row.
@@ -273,12 +273,12 @@ One script builds everything above,
 [`build_hpylori_synteny.sh`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/build_hpylori_synteny.sh),
 in three steps:
 
-1. Download each strain's sequence and config from its genome hub, so the
-   alignments and the assemblies come from the same files.
-2. Align 26695 to CHC155, CHC155 to J99 and 26695 to J99 with
-   `minimap2 -x asm20 --eqx`.
-3. Write the config with the hub assemblies and gene tracks, the pairwise
-   synteny tracks, and a default session stacking all the strains.
+- Download each strain's sequence and config from its genome hub, so the
+  alignments and the assemblies come from the same files.
+- Align 26695 to CHC155, CHC155 to J99 and 26695 to J99 with
+  `minimap2 -x asm20 --eqx`.
+- Write the config with the hub assemblies and gene tracks, the pairwise synteny
+  tracks, and a default session stacking all the strains.
 
 ```bash
 curl -fO https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/build_hpylori_synteny.sh

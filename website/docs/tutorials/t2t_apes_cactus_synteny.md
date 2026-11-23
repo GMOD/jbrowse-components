@@ -214,12 +214,12 @@ orientation, and human, both orangutans and the siamang in the other.
 
 The script works in four steps:
 
-1. Fetch each genome's hub config from genomes.jbrowse.org, which gives its lane
-   the assembly and the NCBI RefSeq gene track.
-2. Download the chains: hg38 against each ape, and each ape against the next one
-   down the tree.
-3. Convert each chain to PAF with PanSN names and index them all as one file.
-4. Write the config, with the lanes stacked in tree order.
+- Fetch each genome's hub config from genomes.jbrowse.org, which gives its lane
+  the assembly and the NCBI RefSeq gene track.
+- Download the chains: hg38 against each ape, and each ape against the next one
+  down the tree.
+- Convert each chain to PAF with PanSN names and index them all as one file.
+- Write the config, with the lanes stacked in tree order.
 
 ```bash
 curl -fO https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/build_t2t_apes_cactus_multiway.sh

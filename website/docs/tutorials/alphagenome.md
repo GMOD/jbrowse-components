@@ -11,8 +11,8 @@ AlphaGenome reads a megabase of DNA and predicts where it is transcribed, where
 the chromatin is open, how it splices, and how it folds. Given a window of
 reference sequence and a cell type, it predicts the RNA-seq, DNase, ATAC, CAGE,
 PRO-cap and ChIP-seq signal an experiment would produce there, plus splice
-junctions and a contact map. After one base changes, a second prediction
-differs from the first by the variant's predicted effect. At _TAL1_ we:
+junctions and a contact map. After one base changes, a second prediction differs
+from the first by the variant's predicted effect. At _TAL1_ we:
 
 - install the AlphaGenome plugin and request predictions as tracks for two cell
   lines
@@ -31,7 +31,8 @@ model's output. We welcome your [feedback](/contact).
 
 - the AlphaGenome plugin, for the adapters these tracks use, the query panel and
   the variant right-click item. In your own JBrowse,
-  [load it by URL](#install-the-alphagenome-plugin); the sessions below already load it
+  [load it by URL](#install-the-alphagenome-plugin); the sessions below already
+  load it
 
 ## The data
 

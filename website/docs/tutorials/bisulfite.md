@@ -14,7 +14,7 @@ uracil, which reads as T, and a methylated cytosine still reads as C. JBrowse
 compares each read to the reference as it draws, a C→T change meaning
 unmethylated and a retained C methylated, so an aligned BAM is all it needs.
 Plants methylate in three sequence contexts, CpG, CHG and CHH (H is A, C or T),
-and gene bodies and transposons differ in which they methylate. With an
+and gene bodies and transposons differ in which of those are methylated. With an
 _Arabidopsis thaliana_ WGBS run we:
 
 - align the reads with bwameth and load the BAM as an alignments track on the
@@ -37,8 +37,8 @@ _Arabidopsis thaliana_ WGBS run we:
 - `curl`, `unzip` and `python3`, which the build script uses
 - `node`, for the [JBrowse CLI](/docs/cli)
 - [MethylDackel](https://github.com/dpryan79/MethylDackel), for the
-  [conversion-rate check](#check-the-bisulfite-conversion-rate) and the
-  optional aggregate track
+  [conversion-rate check](#check-the-bisulfite-conversion-rate) and the optional
+  aggregate track
 - UCSC's `bedGraphToBigWig`, for the optional aggregate track only
 
 <!-- BEGIN GENERATED TUTORIAL_INSTALL samtools,htslib,node,jbrowse-cli,bedGraphToBigWig,datasets,trim-galore,bwameth -->

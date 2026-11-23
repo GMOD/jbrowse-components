@@ -153,12 +153,12 @@ With the BAM loaded:
 [`scripts/build_metex14.sh`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/build_metex14.sh)
 builds the three BAM files from CCLE's public data in SRA. It:
 
-1. Downloads hg38 chromosome 7 and builds a HISAT2 index of it.
-2. Streams the reads CCLE placed around _MET_ exons 13 to 15 from SRA, without
-   downloading whole runs.
-3. Aligns them to hg38 with HISAT2, the RNA-seq reads spliced and the DNA reads
-   not, then sorts and indexes each BAM.
-4. Keeps 5% of the EBC-1 reads, which brings its depth near NCI-H596's.
+- Downloads hg38 chromosome 7 and builds a HISAT2 index of it.
+- Streams the reads CCLE placed around _MET_ exons 13 to 15 from SRA, without
+  downloading whole runs.
+- Aligns them to hg38 with HISAT2, the RNA-seq reads spliced and the DNA reads
+  not, then sorts and indexes each BAM.
+- Keeps 5% of the EBC-1 reads, which brings its depth near NCI-H596's.
 
 ```bash
 curl -fO https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/build_metex14.sh

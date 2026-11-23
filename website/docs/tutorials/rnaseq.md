@@ -19,8 +19,8 @@ two BAM fields, with no extra files or configuration. We:
   strands sit close together
 - draw a circular RNA's back-splice from split reads, set RNase R-treated reads
   beside untreated ones, and follow nanopore reads around a circle
-- load STAR, regtools and portcullis junction tables as arc tracks
-- align your own reads with STAR and load them the same way
+- load STAR, regtools and portcullis junction tables as arc tracks, then align
+  your own reads with STAR and load them the same way
 
 ## Prerequisites
 

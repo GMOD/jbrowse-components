@@ -439,14 +439,14 @@ Download `genomes.tar.gz` and `supplementary_information.tar.gz` from
 `~/Downloads` first, since Dryad has no direct download URL. The script needs
 the tools under [Prerequisites](#prerequisites) and works in three steps:
 
-1. Unpack the genomes and pair tables the page uses from the two tarballs, and
-   fetch the _Ephydatia_ assembly, which the deposit does not redistribute, from
-   its original host.
-2. Convert each pair's odp table into a `.blocks` table and two BEDs, taking
-   each gene's extent from the `.chrom` files and keeping the group, color and
-   `break_FET` columns.
-3. Write the assemblies, one track per pair, and a session holding the dotplot
-   and the stack.
+- Unpack the genomes and pair tables the page uses from the two tarballs, and
+  fetch the _Ephydatia_ assembly, which the deposit does not redistribute, from
+  its original host.
+- Convert each pair's odp table into a `.blocks` table and two BEDs, taking each
+  gene's extent from the `.chrom` files and keeping the group, color and
+  `break_FET` columns.
+- Write the assemblies, one track per pair, and a session holding the dotplot
+  and the stack.
 
 ```bash
 curl -fO https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/build_odp_linkage_groups_synteny.sh

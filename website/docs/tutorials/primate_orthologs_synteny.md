@@ -414,12 +414,12 @@ by name.
 The primate script needs the tools under [Prerequisites](#prerequisites) and
 works in three steps:
 
-1. Download the eight annotations and sequence reports, and keep the genes on
-   the assembled chromosomes each report names, so no lane has a gene on an
-   unplaced scaffold.
-2. Join the annotations on gene symbol into one table anchored on human.
-3. Write the config from each genome's hub entry and gene track, plus the
-   ortholog track.
+- Download the eight annotations and sequence reports, and keep the genes on the
+  assembled chromosomes each report names, so no lane has a gene on an unplaced
+  scaffold.
+- Join the annotations on gene symbol into one table anchored on human.
+- Write the config from each genome's hub entry and gene track, plus the
+  ortholog track.
 
 ```bash
 curl -fO https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/build_primate_orthologs.sh
@@ -428,14 +428,13 @@ bash build_primate_orthologs.sh
 
 The E. coli script also needs htslib, and works in three steps:
 
-1. Download each genome's annotation, sequence report and assembly report, name
-   each lane after the report's strain field, and drop a genome whose report
-   lists it as neither _E. coli_ nor _Shigella_.
-2. Keep each genome's longest sequence as its chromosome, so a lane follows one
-   contig and no plasmid, and sort and index the GFF3 as in the
-   [web quickstart](/docs/quickstart_web).
-3. Join the annotations on gene symbol with the PGAP flags, and write the
-   config.
+- Download each genome's annotation, sequence report and assembly report, name
+  each lane after the report's strain field, and drop a genome whose report
+  lists it as neither _E. coli_ nor _Shigella_.
+- Keep each genome's longest sequence as its chromosome, so a lane follows one
+  contig and no plasmid, and sort and index the GFF3 as in the
+  [web quickstart](/docs/quickstart_web).
+- Join the annotations on gene symbol with the PGAP flags, and write the config.
 
 ```bash
 curl -fO https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/build_ecoli_orthologs.sh

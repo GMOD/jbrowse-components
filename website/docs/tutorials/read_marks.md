@@ -303,11 +303,11 @@ _EFCAB8_ deletion.
 [`build_read_marks.sh`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/build_read_marks.sh)
 runs the commands above. The script:
 
-1. Reads NA12878's CRAM from the 1000 Genomes release over HTTP, or the BAM or
-   CRAM and FASTA you pass it.
-2. Cuts every pair with a large insert into a BED, then bgzips and indexes it.
-3. Downloads JBrowse and writes a `config.json` with the reads track and the BED
-   track on the mark display.
+- Reads NA12878's CRAM from the 1000 Genomes release over HTTP, or the BAM or
+  CRAM and FASTA you pass it.
+- Cuts every pair with a large insert into a BED, then bgzips and indexes it.
+- Downloads JBrowse and writes a `config.json` with the reads track and the BED
+  track on the mark display.
 
 ```bash
 curl -fO https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/build_read_marks.sh

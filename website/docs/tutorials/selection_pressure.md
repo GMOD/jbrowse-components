@@ -289,14 +289,14 @@ fields at the other end of the ramp.
 runs everything above and writes a `config.json` with both assemblies, both gene
 tracks, the ortholog track and a session opening the locus:
 
-1. Download each genome's annotation from NCBI, and turn it into a BED, a CDS
-   file and a proteome keyed on one transcript per gene.
-2. Align human against rhesus with DIAMOND and chain the hits with jcvi, keeping
-   the chained anchors and not the lifted ones.
-3. Measure dN and dS on each pair, dropping pairs with too few synonymous
-   differences or a dS far above the cluster.
-4. Print the count of pairs genome-wide with dN/dS above 1, and dN/dS and dS for
-   every pair around _LYZ_, and write the config.
+- Download each genome's annotation from NCBI, and turn it into a BED, a CDS
+  file and a proteome keyed on one transcript per gene.
+- Align human against rhesus with DIAMOND and chain the hits with jcvi, keeping
+  the chained anchors and not the lifted ones.
+- Measure dN and dS on each pair, dropping pairs with too few synonymous
+  differences or a dS far above the cluster.
+- Print the count of pairs genome-wide with dN/dS above 1, and dN/dS and dS for
+  every pair around _LYZ_, and write the config.
 
 ```bash
 curl -fO https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/build_primate_selection.sh

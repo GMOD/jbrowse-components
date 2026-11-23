@@ -355,21 +355,21 @@ to `cohort.bed.gz`.
 One script builds every file above for any project id,
 [`build_tcga_cohort_cnv.sh`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/build_tcga_cohort_cnv.sh):
 
-1. Asks the GDC for the project's open-access **Masked Copy Number Segment**
-   files (Affymetrix SNP 6.0, GRCh38, germline CNV probes removed), which need
-   no dbGaP application, from primary tumors only, so the matched normals stay
-   out of the stack.
-2. Keeps one file per tumor barcode, so a tumor run twice on the array does not
-   draw two overlapping sets of segments in one row.
-3. Joins every tumor's segments into one BED with the barcode as `sample`,
-   adding `chr` to the contig names and moving the 1-based `.seg` starts to
-   BED's 0-based ones. `Segment_Mean` passes through unchanged, so each row's
-   color is the caller's log2 ratio.
-4. [`cnv_recurrence.py`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/cnv_recurrence.py)
-   tallies the gained and lost share of the cohort per 100 kb bin, pooled and
-   per clinical group. A tumor counts in a bin when its segment covers the bin's
-   midpoint. Bins where fewer than half the tumors have any call are left out,
-   so a gap in the track is missing data.
+- Asks the GDC for the project's open-access **Masked Copy Number Segment**
+  files (Affymetrix SNP 6.0, GRCh38, germline CNV probes removed), which need no
+  dbGaP application, from primary tumors only, so the matched normals stay out
+  of the stack.
+- Keeps one file per tumor barcode, so a tumor run twice on the array does not
+  draw two overlapping sets of segments in one row.
+- Joins every tumor's segments into one BED with the barcode as `sample`, adding
+  `chr` to the contig names and moving the 1-based `.seg` starts to BED's
+  0-based ones. `Segment_Mean` passes through unchanged, so each row's color is
+  the caller's log2 ratio.
+- [`cnv_recurrence.py`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/cnv_recurrence.py)
+  tallies the gained and lost share of the cohort per 100 kb bin, pooled and per
+  clinical group. A tumor counts in a bin when its segment covers the bin's
+  midpoint. Bins where fewer than half the tumors have any call are left out, so
+  a gap in the track is missing data.
 
 The script needs `curl`, `python3`, and `bgzip` + `tabix` from
 [htslib](http://www.htslib.org/), which on Debian/Ubuntu is

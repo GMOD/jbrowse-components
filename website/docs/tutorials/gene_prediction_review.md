@@ -53,8 +53,7 @@ Tiberius predictions over GRCh38
 against GENCODE 47 and the hg38 reference.
 
 Nothing to download: the track configs and commands below read these files by
-URL.
-[Build the review portal](#build-the-review-portal-with-make-portalmjs)
+URL. [Build the review portal](#build-the-review-portal-with-make-portalmjs)
 takes your own prediction, annotation and genome in their place.
 
 <details>
@@ -118,6 +117,29 @@ annotates two genes with a gap between them. GENCODE's gene features have
 
 ## Build the review portal with make-portal.mjs
 
+The merge above is one kind of disagreement. The portal compares each Tiberius
+model on chr22 with GENCODE and puts it in one of five classes: Agrees and four
+classes of disagreement. Only the four disagreement classes get a card.
+
+| Class              | What it means                                                     | On chr22                                                   | What an annotator does   |
+| ------------------ | ----------------------------------------------------------------- | ---------------------------------------------------------- | ------------------------ |
+| Agrees             | shares splice junctions with a reference gene                     | 424<!--m:tiberius-chr22-classes.agrees.models-->           | nothing                  |
+| Merged model       | one prediction covers two separate reference genes                | 1<!--m:tiberius-chr22-classes.merged-model.models-->       | split into two models    |
+| Structure conflict | covers one gene but shares none of its splice junctions           | 3<!--m:tiberius-chr22-classes.structure-conflict.models--> | check the exon structure |
+| Novel locus        | predicted where the reference annotates nothing                   | 12<!--m:tiberius-chr22-classes.novel-locus.models-->       | assess, then create      |
+| Novel coding       | predicted coding where the reference has only non-coding features | 119<!--m:tiberius-chr22-classes.novel-coding.models-->     | assess coding potential  |
+
+The portal applies these rules, and _PI4KA_ is the control that tests them:
+
+- **A shared junction** is an intron of one of the gene's transcripts.
+- **Exons are compared** with genes on the same strand.
+- **A merge** counts only when the genes it joins do not overlap each other.
+  _PI4KA_ is on the minus strand with _SERPIND1_ inside one of its introns on
+  the plus strand; Tiberius predicts _PI4KA_ correctly, and the portal leaves it
+  off the list.
+- **GENCODE readthrough genes** (one transcript spanning two neighbours) such as
+  `CHKB-CPT1B` overlap the genes they join, so the portal skips them.
+
 Clone the pipeline and install it:
 
 ```bash
@@ -146,29 +168,6 @@ node bin/make-portal.mjs \
   --assembly hg38 --region chr22 --max 3 \
   --with-app --out ./portal
 ```
-
-The merge above is one kind of disagreement. The portal compares each Tiberius
-model on chr22 with GENCODE and puts it in one of five classes: Agrees and four
-classes of disagreement. Only the four disagreement classes get a card.
-
-| Class              | What it means                                                     | On chr22                                                   | What an annotator does   |
-| ------------------ | ----------------------------------------------------------------- | ---------------------------------------------------------- | ------------------------ |
-| Agrees             | shares splice junctions with a reference gene                     | 424<!--m:tiberius-chr22-classes.agrees.models-->           | nothing                  |
-| Merged model       | one prediction covers two separate reference genes                | 1<!--m:tiberius-chr22-classes.merged-model.models-->       | split into two models    |
-| Structure conflict | covers one gene but shares none of its splice junctions           | 3<!--m:tiberius-chr22-classes.structure-conflict.models--> | check the exon structure |
-| Novel locus        | predicted where the reference annotates nothing                   | 12<!--m:tiberius-chr22-classes.novel-locus.models-->       | assess, then create      |
-| Novel coding       | predicted coding where the reference has only non-coding features | 119<!--m:tiberius-chr22-classes.novel-coding.models-->     | assess coding potential  |
-
-The portal applies these rules, and _PI4KA_ is the control that tests them:
-
-- **A shared junction** is an intron of one of the gene's transcripts.
-- **Exons are compared** with genes on the same strand.
-- **A merge** counts only when the genes it joins do not overlap each other.
-  _PI4KA_ is on the minus strand with _SERPIND1_ inside one of its introns on
-  the plus strand; Tiberius predicts _PI4KA_ correctly, and the portal leaves it
-  off the list.
-- **GENCODE readthrough genes** (one transcript spanning two neighbours) such as
-  `CHKB-CPT1B` overlap the genes they join, so the portal skips them.
 
 The output directory holds the page, a JBrowse config, one PNG per candidate
 and, with `--with-app`, a copy of JBrowse. Copy it to any web server to publish.

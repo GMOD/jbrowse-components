@@ -366,7 +366,7 @@ For COLO829 the script:
 - downloads the published der(3) contig with its alignment to GRCh38, its
   segment labels and the spanning reads realigned to it
 
-The coverage tracks give a chromosome-wide look at where the tumor gained and
+The coverage bigWigs give a chromosome-wide look at where the tumor gained and
 lost. They are the `wf-somatic-variation` run's `mosdepth` output in 50 kb
 windows, converted to bigWig the same way for each sample:
 
@@ -380,9 +380,9 @@ gzip -dc COLO829_tumor.regions.bed.gz | sort -k1,1 -k2,2n |
 bedGraphToBigWig cov.bg hg38.chrom.sizes COLO829_tumor.coverage.bw
 ```
 
-[Assemble the der(3) allele](#the-derivative-allele) shows how to assemble a contig
-like it from your own reads. The same run builds the K562 half of the demo,
-which [](/docs/tutorials/k562_fusions) walks through.
+[Assemble the der(3) allele](#the-derivative-allele) shows how to assemble a
+contig like the published one from your own reads. The same run builds the K562
+half of the demo, which [](/docs/tutorials/k562_fusions) walks through.
 
 ```bash
 curl -fO https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/build_cancer_sv_demo.sh

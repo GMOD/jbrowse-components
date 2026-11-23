@@ -131,11 +131,12 @@ hubs store it in different places, so on a GenArk genome the menu switch above
 needs the field spelled out too:
 
 - A **UCSC golden-path** assembly ships a BED whose header names its columns,
-  `repClass` among them. That column is a feature attribute, so `rows` is
+  `repClass` among them. That column is a feature attribute, so `rows.field` is
   `"repClass"`.
 - A **GenArk** assembly ships a `bigRmskBed`, whose autoSql has no class column.
-  The name contains the class as a suffix, `L1HS#LINE/L1`, so `rows` derives it
-  with a jexl expression, `"jexl:split(split(feature.name,'#')[1],'/')[0]"`;
+  The name contains the class as a suffix, `L1HS#LINE/L1`, so `rows.field`
+  derives it with a jexl expression,
+  `"jexl:split(split(feature.name,'#')[1],'/')[0]"`;
   [](/docs/user_guides/multirow_feature_track#when-the-category-is-not-a-column)
   works through it.
 
@@ -188,11 +189,11 @@ path or URL in `uri` and your assembly's name in `assemblyNames`.
 [`build_repeatmasker_classes.sh`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/build_repeatmasker_classes.sh)
 turns your RepeatMasker `.out` into a runnable JBrowse. The script:
 
-1. Splits the `.out`'s `class/family` field into a class column and a family
-   column.
-2. Writes a BED whose header names the columns UCSC's does, then bgzips and
-   indexes it.
-3. Downloads JBrowse and adds the track with the multi-row display selected.
+- Splits the `.out`'s `class/family` field into a class column and a family
+  column.
+- Writes a BED whose header names the columns UCSC's does, then bgzips and
+  indexes it.
+- Downloads JBrowse and adds the track with the multi-row display selected.
 
 ```bash
 curl -fO https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/build_repeatmasker_classes.sh

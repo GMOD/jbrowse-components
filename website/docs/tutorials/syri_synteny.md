@@ -370,11 +370,11 @@ hosted
 
 The script needs the tools under [Prerequisites](#prerequisites):
 
-1. Fetch the assemblies and keep the nuclear chromosomes, named `Chr1` to
-   `Chr5`, since SyRI pairs chromosomes by name.
-2. Align each accession to Col-0 and to the accession above it, and run SyRI on
-   each alignment.
-3. Run syri2jbrowse on the SyRI outputs.
+- Fetch the assemblies and keep the nuclear chromosomes, named `Chr1` to `Chr5`,
+  since SyRI pairs chromosomes by name.
+- Align each accession to Col-0 and to the accession above it, and run SyRI on
+  each alignment.
+- Run syri2jbrowse on the SyRI outputs.
 
 ```bash
 curl -fO https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/build_syri_synteny.sh

@@ -88,8 +88,8 @@ minimap2 -t 8 -cx asm20 --cs mau.fa.gz sim.fa.gz > sim_vs_mau.paf
 The alignment takes several minutes, so the request asks the agent to run it in
 the background and let it finish before opening anything. Otherwise a tool call
 times out, after two minutes for `run_javascript`, and the agent reports a
-failure that did not happen. The agent then indexes the PAF, so the browser can read one region without parsing
-the whole file:
+failure that did not happen. The agent then indexes the PAF, so the browser can
+read one region without parsing the whole file:
 
 <!-- from: scripts/build_fly_agent_synteny.sh -->
 
@@ -129,9 +129,9 @@ synteny band is empty.
 Add a dotplot of the same two assemblies underneath.
 ```
 
-Restrict the axes to the chromosome arms, or a few hundred unplaced scaffolds
-(not assigned to a chromosome) interleave both axes. With the arms alone, the
-plot shows one diagonal:
+Unrestricted, a few hundred unplaced scaffolds (not assigned to a chromosome)
+interleave both axes. Restricted to the chromosome arms, the plot shows one
+diagonal:
 
 ```text
 Restrict both dotplot axes to chr2L, chr2R, chr3L, chr3R, chr4 and chrX.
@@ -151,8 +151,8 @@ alignment file, not from the dotplot, and show me the numbers.
 
 At whole-genome zoom a reverse-strand block a few hundred kilobases wide is a
 few pixels, and asked without "from the alignment file" the agent describes the
-dotplot instead. The request asks for numbers from the PAF: aligned bases per arm,
-split by strand, at mapping quality (MAPQ) 30 or better:
+dotplot instead. The request asks for numbers from the PAF: aligned bases per
+arm, split by strand, at mapping quality (MAPQ) 30 or better:
 
 ```bash
 awk -F'\t' '

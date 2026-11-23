@@ -481,13 +481,13 @@ of red 15 to 25 bases to the left, which the notebook does not discuss.
 [`build_alphagenome2_singlecell.sh`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/build_alphagenome2_singlecell.sh)
 writes every track on this page with your API key. It:
 
-1. scores the seven credible-set SNPs against the seven ileum cell types and
-   writes one BED line per gene, SNP and cell type
-2. predicts scATAC around rs2836882 for both alleles in each cell type, every
-   base change around it, and the input gradient of _ETS2_
-3. predicts scATAC at six PBMC marker loci for
-   [](/docs/tutorials/scrna_pseudobulk)
-4. writes `config.json` over hg38 and the RefSeq genes, opening on _ETS2_
+- scores the seven credible-set SNPs against the seven ileum cell types and
+  writes one BED line per gene, SNP and cell type
+- predicts scATAC around rs2836882 for both alleles in each cell type, every
+  base change around it, and the input gradient of _ETS2_
+- predicts scATAC at six PBMC marker loci for
+  [](/docs/tutorials/scrna_pseudobulk)
+- writes `config.json` over hg38 and the RefSeq genes, opening on _ETS2_
 
 ```bash
 curl -fO https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/build_alphagenome2_singlecell.sh

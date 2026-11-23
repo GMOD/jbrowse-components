@@ -38,7 +38,7 @@ loop calls over the GM12878 matrix.
 
 Nothing to download: the track configs and the scan script below read these
 files by URL. Your own `.hic` file loads by swapping `uri` in the track config
-under _Adding the Hi-C and contact-domain tracks_.
+under _Add the Hi-C and contact-domain tracks_.
 
 <details>
 <summary>Read by URL (no download needed)</summary>

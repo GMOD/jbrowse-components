@@ -383,6 +383,19 @@ the record's name and description, as in the synteny figure below.
 Every animal with the insertion is heterozygous: the parent gene's introns are
 still on both chromosomes, so each such animal's pileup is always a mixture.
 
+Dogs have two known _FGF4_ retrocopies. Both leave the same records at the
+parent gene, so a genotype here is identical whichever copy an animal has:
+
+- one, tied to short legs by Parker et al.
+- a second, on a different chromosome, tied to chondrodystrophy and
+  intervertebral disc disease by
+  [Brown et al. (2017)](https://doi.org/10.1073/pnas.1709082114), which is why
+  breeds of ordinary proportions have a copy too
+
+The spaniels are the rows where body proportions and genotype disagree, and
+placing either insertion needs the other side of the junction from a different
+callset.
+
 ### Check the records against the FGF4 introns
 
 _FGF4_ has two introns, so a retrocopy should leave two records, each spanning
@@ -400,19 +413,6 @@ intron 48870419-48870952: called as a DEL of 534 bp at 48870418-48870951
 ```
 
 ### Align the retrocopies to FGF4
-
-Dogs have two known _FGF4_ retrocopies. Both leave the same records at the
-parent gene, so a genotype here is identical whichever copy an animal has:
-
-- one, tied to short legs by Parker et al.
-- a second, on a different chromosome, tied to chondrodystrophy and
-  intervertebral disc disease by
-  [Brown et al. (2017)](https://doi.org/10.1073/pnas.1709082114), which is why
-  breeds of ordinary proportions have a copy too
-
-The spaniels are the rows where body proportions and genotype disagree, and
-placing either insertion needs the other side of the junction from a different
-callset.
 
 Brown et al. deposited Sanger sequences of both retrocopies:
 [MF040222](https://www.ncbi.nlm.nih.gov/nuccore/MF040222) for the CFA18
@@ -513,8 +513,8 @@ To put the parent gene between the two retrocopies, we:
 
 - Choose **Add → Linear synteny view**, switch to **Manual**, and set the rows
   to `FGF4retro-CFA18`, `UU_Cfam_GSD_1.0` and `FGF4retro-CFA12`, top to bottom.
-- Give the upper pair the CFA18 alignment and the lower pair the CFA12 one,
-  then click **Launch**.
+- Give the upper pair the CFA18 alignment and the lower pair the CFA12 one, then
+  click **Launch**.
 
 Each indel is a see-through gap. **Colored indels** in the view's sliders menu
 would show one gap as a deletion above the parent row and an insertion below it,

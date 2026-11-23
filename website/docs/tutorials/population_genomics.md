@@ -463,13 +463,13 @@ shows this track under the Fst scan.
 [`build_dgrp_popgen.sh`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/build_dgrp_popgen.sh)
 wraps every step above. The script:
 
-1. Downloads the DGRP2 dm6 SNP VCF and the `In(2L)t` karyotypes.
-2. Splits the lines into inverted and standard groups, and writes Fst, π, their
-   inverted-over-standard ratio and Tajima's D as bigWigs over windows with
-   vcftools.
-3. Builds the one-record inversion VCF, with a genotype for every line.
-4. Downloads JBrowse and writes a `config.json` with dm6 and every track,
-   opening on `In(2L)t`.
+- Downloads the DGRP2 dm6 SNP VCF and the `In(2L)t` karyotypes.
+- Splits the lines into inverted and standard groups, and writes Fst, π, their
+  inverted-over-standard ratio and Tajima's D as bigWigs over windows with
+  vcftools.
+- Builds the one-record inversion VCF, with a genotype for every line.
+- Downloads JBrowse and writes a `config.json` with dm6 and every track, opening
+  on `In(2L)t`.
 
 ```bash
 curl -fO https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/build_dgrp_popgen.sh

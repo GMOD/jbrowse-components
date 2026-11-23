@@ -84,7 +84,7 @@ script fetches everything itself.
 
 </details>
 
-## Loading the hg38 assembly
+## Load the hg38 assembly
 
 The trio calls are on GRCh38, and the hap-ibd blocks below use its chr1
 coordinates, so we load that assembly first:
@@ -111,7 +111,7 @@ The figures also show NCBI's RefSeq genes as a track:
 }
 ```
 
-## Marking Mendelian errors with bcftools
+## Mark Mendelian errors with bcftools
 
 bcftools' `+mendelian2` plugin asks at each site whether the child's genotype
 can be made of one allele from each parent's, and writes the answer into the VCF
@@ -132,7 +132,7 @@ error, as does one where no pair of parental alleles gives the child's genotype,
 such as a hom-alt child of a hom-ref parent. MERR counts both kinds the same
 way; the genotypes and the reads below separate them.
 
-## Loading the trio's phased VCF
+## Load the trio's phased VCF
 
 In a phased VCF each genotype is written `0|1` or `1|0`, which assigns each
 allele to a haplotype.
@@ -169,7 +169,7 @@ works the same way.
 
 <Figure caption="The VCF on initial load: one row per sample, each genotype at its variant's position." src="/img/trio-basic.png"/>
 
-## Coloring the trio's calls by Mendelian errors
+## Color the trio's calls by Mendelian errors {#coloring-the-trios-calls-by-mendelian-errors}
 
 We'll check the calls before analyzing them by coloring the alt cells by
 `INFO.MERR`. A `threshold` scale with one cut at 1 gives a site with no error
@@ -258,7 +258,7 @@ files.
 **Color by → Genotype** returns the cells to the genotype colors the steps below
 use.
 
-## Showing the trio VCF as a genotype matrix
+## Show the trio VCF as a genotype matrix {#showing-the-trio-vcf-as-a-genotype-matrix}
 
 In the track menu, check **Layout → Genotype matrix** (the
 [variant sample rows guide](/docs/user_guides/multivariant_track) has the other
@@ -266,7 +266,7 @@ settings).
 
 <Figure caption="The variant display as a genotype matrix. One row per sample, one column per variant, black lines connecting columns to their genome positions." src="/img/trio-matrix.png"/>
 
-## Splitting each sample into two haplotype rows
+## Split each sample into two haplotype rows
 
 Choose **Rows → Per haplotype** from the track menu, which splits each sample
 into its two haplotypes. Per-haplotype rows need phased genotypes, written
@@ -276,7 +276,7 @@ into its two haplotypes. Per-haplotype rows need phased genotypes, written
 
 <Video src="/media/variants/trio_phased_matrix.mp4" caption="Layout → Genotype matrix switched on, then Rows → Per haplotype splitting each trio member into its two haplotype rows." />
 
-## Running hap-ibd to find segments shared with each parent
+## Run hap-ibd to find segments shared with each parent
 
 [hap-ibd](https://github.com/browning-lab/hap-ibd) takes a phased VCF and a
 PLINK-format genetic map, and reports the matching stretches as "identical by
@@ -305,7 +305,7 @@ them:
 | HG02024:1       | HG02026 (father) | paternal       |
 | HG02024:2       | HG02025 (mother) | maternal       |
 
-## Converting hap-ibd data into painted inheritance blocks
+## Paint hap-ibd segments as inheritance blocks
 
 hap-ibd's output has gaps and short spurious segments from the statistical
 phasing, so
@@ -369,7 +369,7 @@ already name the four categories:
 }
 ```
 
-## Reading crossovers off the painted blocks
+## Read crossovers off the painted blocks
 
 Open the whole of chr1 with the painted track. JBrowse draws each parent's two
 copies as rows, blue for father HG02026 and red for mother HG02025:
@@ -387,7 +387,7 @@ neither row filled is one where hap-ibd found no segment long enough to report.
 The blocks run straight through the centromere, because hap-ibd joins the
 markers on either side of it.
 
-## Comparing the painted blocks with the raw genotypes
+## Compare the painted blocks with the raw genotypes
 
 To line the painted blocks up with the genotypes underneath:
 

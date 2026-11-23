@@ -498,9 +498,9 @@ tissue order with one derived from the data at whatever locus is in view.
 [`build_chromhmm_multirow.sh`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/build_chromhmm_multirow.sh)
 does the whole path. The script:
 
-1. Downloads the segmentation BEDs.
-2. Merges them, then bgzips and indexes the result.
-3. Downloads JBrowse and writes the `config.json` above, opening on HOXA.
+- Downloads the segmentation BEDs.
+- Merges them, then bgzips and indexes the result.
+- Downloads JBrowse and writes the `config.json` above, opening on HOXA.
 
 ```bash
 curl -fO https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/build_chromhmm_multirow.sh
@@ -512,13 +512,13 @@ npx --yes serve chromhmm_build/jbrowse2 # then open the printed URL
 builds the Roadmap epigenome track by the same merge. Roadmap's segmentations
 are bare BED4, so the script fills in what the ENCODE files had:
 
-1. paints each segment its state's color from `colormap_15_coreMarks.tab`,
-   giving the merged file the `itemRgb` column JBrowse colors it by
-2. labels each row with the epigenome's name from `EID_metadata.tab`, adding its
-   mnemonic where two epigenomes share a name, so the two never merge into one
-   row
-3. orders the rows by tissue group, so a tissue's epigenomes sit together under
-   one label-bar color
+- paints each segment its state's color from `colormap_15_coreMarks.tab`, giving
+  the merged file the `itemRgb` column JBrowse colors it by
+- labels each row with the epigenome's name from `EID_metadata.tab`, adding its
+  mnemonic where two epigenomes share a name, so the two never merge into one
+  row
+- orders the rows by tissue group, so a tissue's epigenomes sit together under
+  one label-bar color
 
 One `awk` call joins the colors for an epigenome, looking each state's number
 (the part of the name before the underscore) up in the colormap and appending

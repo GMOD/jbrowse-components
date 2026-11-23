@@ -155,13 +155,12 @@ _CYP1A2_ is a drug-metabolizing cytochrome P450 in which dogs have a nonsense
 variant. The truncating allele acts recessively: liver microsomes from dogs
 homozygous for it have no CYP1A2 protein and those dogs are poor metabolizers of
 drugs the enzyme clears, while heterozygotes express the enzyme normally
-([Mise et al. 2004](https://pubmed.ncbi.nlm.nih.gov/15564884/)). We ask which
-breeds have the allele and whether wild canids do. Wolves are the control,
-because an allele they share predates domestication.
+([Mise et al. 2004](https://pubmed.ncbi.nlm.nih.gov/15564884/)). Wolves are the
+control, because an allele they share predates domestication.
 
-The literature names this variant by its protein consequence, p.Arg373Ter. The
-build script rebuilds _CYP1A2_'s coding sequence from the reference and the
-RefSeq exon structure, translates it, and reports codon 373:
+The variant is p.Arg373Ter. The build script rebuilds _CYP1A2_'s coding sequence
+from the reference and the RefSeq exon structure, translates it, and reports
+codon 373:
 
 ```text
 NM_001008720.1 CDS 1539 bp, 513 aa
@@ -444,12 +443,12 @@ counts the windows whose depth-based estimate is above two copies.
 [`build_dog10k_cyp1a2.sh`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/build_dog10k_cyp1a2.sh)
 builds the genotype track. It:
 
-1. derives the stop codon's position from the reference
-2. builds the sample list from the Dog10K sample table and slices the gene out
-   of the callset
-3. prints the genotypes at the stop
-4. genotypes that one site over every canid and prints the breeds and wild
-   canids that have the allele
+- derives the stop codon's position from the reference
+- builds the sample list from the Dog10K sample table and slices the gene out of
+  the callset
+- prints the genotypes at the stop
+- genotypes that one site over every canid and prints the breeds and wild canids
+  that have the allele
 
 ```bash
 curl -fO https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/build_dog10k_cyp1a2.sh
@@ -459,16 +458,16 @@ bash build_dog10k_cyp1a2.sh   # writes ./dog10k_cyp1a2_build/
 [`build_dog10k_cyp1a2_cn.sh`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/build_dog10k_cyp1a2_cn.sh)
 builds the copy-number tracks. It:
 
-1. reads depth over the gene and the sequence around it from each of the
-   published CRAMs, counting only positions RepeatMasker leaves unmasked, the
-   same restriction QuicK-mer2's unique k-mers make
-2. scales each window against that dog's own flanks, taken as two copies, and
-   prints each dog's copy number over the element beside the spread of its
-   flanks around two
-3. takes the same ratio from the callset's per-sample depth for every canid, and
-   prints how closely it agrees with the CRAM estimate in those dogs
-4. drops any flanking window whose median across the animals is off two, rounds
-   the rest to whole copies, and writes one painted row per animal
+- reads depth over the gene and the sequence around it from each of the
+  published CRAMs, counting only positions RepeatMasker leaves unmasked, the
+  same restriction QuicK-mer2's unique k-mers make
+- scales each window against that dog's own flanks, taken as two copies, and
+  prints each dog's copy number over the element beside the spread of its flanks
+  around two
+- takes the same ratio from the callset's per-sample depth for every canid, and
+  prints how closely it agrees with the CRAM estimate in those dogs
+- drops any flanking window whose median across the animals is off two, rounds
+  the rest to whole copies, and writes one painted row per animal
 
 ```bash
 curl -fO https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/build_dog10k_cyp1a2_cn.sh

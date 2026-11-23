@@ -18,7 +18,8 @@ the same files. We:
 
 - load the benchmark SV calls and four further published SV callsets as variant
   tracks
-- align the tumor assembly to GRCh38 and load the alignment as a synteny track
+- load the tumor and normal HiFi reads as CRAM tracks, then align the tumor
+  assembly to GRCh38 and load the alignment as a synteny track
 - open one chr3-chr13 translocation in the SV inspector and a breakpoint split
   view, and compare the tumor reads with the normal's
 - find a small heterozygous deletion in _CUZD1_ with the SV inspector's search,
@@ -274,7 +275,7 @@ builds.
 ## Convert the HiFi reads to CRAM
 
 The tumor and normal BAMs have no `MD` tags. Convert each to a local CRAM
-against the reference above, which this step needs as a local FASTA:
+against the `GRCh38_GIABv3` reference, which this step needs as a local FASTA:
 
 ```bash
 curl -L https://ftp-trace.ncbi.nlm.nih.gov/ReferenceSamples/giab/release/references/GRCh38/GRCh38_GIABv3_no_alt_analysis_set_maskedGRC_decoys_MAP2K3_KMT2C_KCNJ18.fasta.gz |
@@ -452,11 +453,11 @@ views.
 [`build_sv_visualization_cgiab.sh`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/build_sv_visualization_cgiab.sh)
 runs the data preparation above in one shot. The script:
 
-1. Fetches the C-GIAB GRCh38 build and the V0.5 benchmark calls.
-2. Runs the CRAM and minimap2 steps above, and the coverage, HiFiCNV and BAF
-   steps of [part 2](/docs/tutorials/cnv_cgiab).
-3. Downloads JBrowse and writes a `config.json` with all of it loaded beside the
-   published Wakhan segments.
+- Fetches the C-GIAB GRCh38 build and the V0.5 benchmark calls.
+- Runs the CRAM and minimap2 steps above, and the coverage, HiFiCNV and BAF
+  steps of [part 2](/docs/tutorials/cnv_cgiab).
+- Downloads JBrowse and writes a `config.json` with all of it loaded beside the
+  published Wakhan segments.
 
 ```bash
 curl -fO https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/build_sv_visualization_cgiab.sh

@@ -34,7 +34,8 @@ structure to the transcript first. We:
 
 The links open a hosted hg38 config with NCBI RefSeq genes. Nothing to download:
 the protein3d plugin fetches these files by URL when a link opens, and
-_Structures of your own gene_ covers a gene of your own.
+[Open structures of your own gene](#open-structures-of-your-own-gene) covers a
+gene of your own.
 
 <details>
 <summary>The files</summary>

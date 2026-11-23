@@ -68,10 +68,10 @@ own.
 <details>
 <summary>Read by URL (no download needed)</summary>
 
-| What it is                                                                                                                                                                                           | File                                                                                                                                                                                                             |
-| ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| The per-sample bigWigs, one individual's copy number in 1 kb bins, re-hosted unmodified because the lab's download share is offline. Each file sits under its population, so HG00551 and HG00553 are | [HG00551.qm2.CN.1k.bw](https://jbrowse.org/genomes/GRCh38/1000g/kidd_lab_cnv/PUR/HG00551.qm2.CN.1k.bw)<br>[HG00553.qm2.CN.1k.bw](https://jbrowse.org/genomes/GRCh38/1000g/kidd_lab_cnv/PUR/HG00553.qm2.CN.1k.bw) |
-| The same values packed into one Zarr store for the [whole panel](#a-zarr-store-for-the-whole-panel). The store is a directory of chunks that 404s at its root, and an adapter takes the URL as `uri` | [qm2_cn_1kb.zarr](https://jbrowse.org/demos/1000g/qm2_cn_1kb.zarr)                                                                                                                                               |
+| What it is                                                                                                                                                                                                                     | File                                                                                                                                                                                                             |
+| ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| The per-sample bigWigs, one individual's copy number in 1 kb bins, re-hosted unmodified because the lab's download share is offline. Each file sits under its population, so HG00551 and HG00553 are under PUR/ (Puerto Rican) | [HG00551.qm2.CN.1k.bw](https://jbrowse.org/genomes/GRCh38/1000g/kidd_lab_cnv/PUR/HG00551.qm2.CN.1k.bw)<br>[HG00553.qm2.CN.1k.bw](https://jbrowse.org/genomes/GRCh38/1000g/kidd_lab_cnv/PUR/HG00553.qm2.CN.1k.bw) |
+| The same values packed into one Zarr store for the [whole panel](#a-zarr-store-for-the-whole-panel). The store is a directory of chunks that 404s at its root, and an adapter takes the URL as `uri`                           | [qm2_cn_1kb.zarr](https://jbrowse.org/demos/1000g/qm2_cn_1kb.zarr)                                                                                                                                               |
 
 </details>
 
@@ -443,10 +443,10 @@ Over the _CCL3L1_ window against the hosted files, at a median range request of
 [`build_1000g_cnv_zarr.sh`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/build_1000g_cnv_zarr.sh)
 builds the store above. The script:
 
-1. Derives the full sample list from the Kidd lab `trackDb`.
-2. Fetches the converter and its two npm packages.
-3. Runs the converter over the tutorial's windows, or over every main contig
-   with `--whole-genome`.
+- Derives the full sample list from the Kidd lab `trackDb`.
+- Fetches the converter and its two npm packages.
+- Runs the converter over the tutorial's windows, or over every main contig with
+  `--whole-genome`.
 
 ```bash
 curl -fO https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/build_1000g_cnv_zarr.sh

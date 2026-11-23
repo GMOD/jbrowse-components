@@ -360,22 +360,22 @@ whose first column matches the VCF's sample names works as `samplesTsvLocation`.
 One script builds every file above for any project id,
 [`build_tcga_cohort_mutations.sh`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/build_tcga_cohort_mutations.sh):
 
-1. Downloads every open-access **Masked Somatic Mutation** MAF in the project,
-   the GDC's aliquot-merged ensemble calls with germline sites masked out, which
-   need no dbGaP application.
-2. [`maf_to_vcf.py`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/maf_to_vcf.py)
-   merges them into one VCF, a column per tumor. A GDC file query also returns
-   metastasis MAFs, so the merge keeps primary tumors (sample-type code `01` in
-   each MAF's barcode), the tumors the
-   [copy-number cohort](/docs/tutorials/tcga_cohort_cnv) draws. It keeps one
-   aliquot per tumor, names each column by sample barcode as the copy-number
-   rows are named, and reads each deletion's anchor base from the MAF's
-   `CONTEXT` column, so it needs no reference FASTA.
-3. [`tcga_clinical_tsv.py`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/tcga_clinical_tsv.py)
-   builds the [clinical table](#load-the-cohort-vcf-into-jbrowse).
-4. [`mutation_recurrence.py`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/mutation_recurrence.py)
-   writes, per gene and group, the share of tumors with at least one call in the
-   `--impact` tiers. A tumor counts once however many calls it has in the gene.
+- Downloads every open-access **Masked Somatic Mutation** MAF in the project,
+  the GDC's aliquot-merged ensemble calls with germline sites masked out, which
+  need no dbGaP application.
+- [`maf_to_vcf.py`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/maf_to_vcf.py)
+  merges them into one VCF, a column per tumor. A GDC file query also returns
+  metastasis MAFs, so the merge keeps primary tumors (sample-type code `01` in
+  each MAF's barcode), the tumors the
+  [copy-number cohort](/docs/tutorials/tcga_cohort_cnv) draws. It keeps one
+  aliquot per tumor, names each column by sample barcode as the copy-number rows
+  are named, and reads each deletion's anchor base from the MAF's `CONTEXT`
+  column, so it needs no reference FASTA.
+- [`tcga_clinical_tsv.py`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/tcga_clinical_tsv.py)
+  builds the [clinical table](#load-the-cohort-vcf-into-jbrowse).
+- [`mutation_recurrence.py`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/mutation_recurrence.py)
+  writes, per gene and group, the share of tumors with at least one call in the
+  `--impact` tiers. A tumor counts once however many calls it has in the gene.
 
 The scripts need `curl`, `python3`, and `bgzip` + `tabix` from
 [htslib](http://www.htslib.org/), which on Debian/Ubuntu is

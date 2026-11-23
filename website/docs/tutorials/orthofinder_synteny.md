@@ -23,9 +23,8 @@ the fruit flies as a lineage with one copy. We:
   wheat, and color each link by its tauschii chromosome
 - open four more sets the same way (grasses, vertebrates, nightshades and
   drosophila) at one locus each, three of them also as multi-way lanes under one
-  genome
-- chain the drosophila orthogroups into collinear blocks with MCScanX and load
-  them as a PAF track
+  genome, and chain the drosophila orthogroups into MCScanX blocks loaded as a
+  PAF track
 - open a gene's orthogroup as a protein alignment under its gene tree, beside
   the genome, with the MSA view plugin
 - run the same build on a FASTA and GFF3 per genome of your own
@@ -87,8 +86,8 @@ configs name, or follow the same commands on
 
 ## Run OrthoFinder and build the blocks table {#producing-the-blocks-table}
 
-The build commands here produce the `wheat` set, the genomes of wheat's
-polyploid history:
+We'll run OrthoFinder on the `wheat` set, the genomes of wheat's polyploid
+history:
 
 - **Aegilops tauschii**, diploid D donor
 - **bread wheat**, hexaploid, A+B+D
@@ -96,7 +95,7 @@ polyploid history:
 - **durum**, domesticated tetraploid, A+B
 - **wild emmer**, durum's wild tetraploid ancestor
 
-The other four sets differ only in the proteomes used:
+The other four sets run the same commands on their own proteomes:
 
 <!-- from: scripts/build_orthofinder_synteny.sh -->
 
@@ -642,17 +641,17 @@ npx --yes serve orthofinder_my_genomes_build/jbrowse2  # then open the printed U
 runs everything above and writes a `config.json` with the assemblies, gene
 tracks, the synteny track and a stacked default session:
 
-1. Download each genome's proteins, GFF3 and sequence report from NCBI, keeping
-   each gene's longest protein under its gene id so the table and the BEDs
-   agree, and write a gene BED and chrom.sizes per genome.
-2. Run OrthoFinder to the orthogroups only, or with `MSA=1` on to an alignment
-   and gene tree per orthogroup.
-3. Convert the orthogroups to a `.blocks` table, dropping cells over `MAXCOPIES`
-   as gene families.
-4. Chain every pair of genomes into collinear blocks with `MCScanX_h`, and
-   collect the blocks into one PAF.
-5. Write the assemblies, gene tracks, the orthogroups and blocks tracks and a
-   stacked session, and with `MSA=1` the MSA view dataset.
+- Download each genome's proteins, GFF3 and sequence report from NCBI, keeping
+  each gene's longest protein under its gene id so the table and the BEDs agree,
+  and write a gene BED and chrom.sizes per genome.
+- Run OrthoFinder to the orthogroups only, or with `MSA=1` on to an alignment
+  and gene tree per orthogroup.
+- Convert the orthogroups to a `.blocks` table, dropping cells over `MAXCOPIES`
+  as gene families.
+- Chain every pair of genomes into collinear blocks with `MCScanX_h`, and
+  collect the blocks into one PAF.
+- Write the assemblies, gene tracks, the orthogroups and blocks tracks and a
+  stacked session, and with `MSA=1` the MSA view dataset.
 
 ```bash
 curl -fO https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/build_orthofinder_synteny.sh

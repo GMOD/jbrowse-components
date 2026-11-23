@@ -133,6 +133,10 @@ node variant-review-portal/bin/make-portal.mjs \
 npx serve portal
 ```
 
+The [COLO829 review page](https://jbrowse.org/demos/colo829_review/) is this
+callset built the same way, from one `batch` run that draws the genes, the
+callset, both samples' reads and the repeats into each image.
+
 The support filter splits the queue on nanomonsv's counts into calls with no
 supporting read, calls whose normal has supporting reads too, and calls with
 supporting reads in the tumor alone. <kbd>j</kbd> and <kbd>k</kbd> move between
@@ -155,10 +159,6 @@ Each `manifest.tsv` row holds the fields of one image:
 
 A dense fan in a region of ragged coverage is usually a repeat, since the view
 draws an arc for a read mismapped there as for any other.
-
-The [COLO829 review page](https://jbrowse.org/demos/colo829_review/) is this
-callset built the same way, from one `batch` run that draws the genes, the
-callset, both samples' reads and the repeats into each image.
 
 ## Render a three-chromosome rearrangement
 

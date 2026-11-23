@@ -10,7 +10,8 @@ tutorial_subcategory: Ortholog tables
 ---
 
 Hexaploid oat has three near-complete copies of its genome, one from each grass
-that hybridized to make it, so most of its genes exist three times. We:
+that hybridized to make it, so most of its genes exist three times. The copies
+of a gene across subgenomes are homoeologs. We:
 
 - find the gene pairs between the copies with jcvi, and measure each pair's
   divergence at silent sites (dS) and at protein-changing ones (dN) with
@@ -163,9 +164,9 @@ method and the filters.
 ## Load the homoeolog table as a dotplot track
 
 Oat (_Avena sativa_) is an allohexaploid with 21 chromosomes, seven homoeologous
-groups of three, one per subgenome (A, C and D). Copies across subgenomes are
-homoeologs, so a table of them has oat on both sides and the dotplot puts oat on
-both axes. A segment moved between groups lies off the diagonal.
+groups of three, one per subgenome (A, C and D). A homoeolog table has oat on
+both sides, and the dotplot puts oat on both axes. A segment moved between
+groups lies off the diagonal.
 
 `oat.homoeologs.blocks` lists gene pairs, then dN, dS, the synonymous
 substitution count and a Fisher exact p, which is the `.blocks` layout
@@ -270,14 +271,14 @@ color means one dS wherever the view goes; the menu has no field for them:
 runs everything above and writes a `config.json` with the assembly, the track
 and a dotplot session:
 
-1. Cut each transcript's CDS out of the genome, turn the GFF3 into a BED of one
-   primary transcript per gene on the 21 chromosomes, and translate the CDS into
-   a proteome keyed on the same ids.
-2. Align the proteome against itself with DIAMOND and chain the hits with jcvi,
-   with `--self_remove 100` so the A-D homoeologs are kept.
-3. Keep the chained anchors whose two genes sit on different subgenomes, and
-   measure dN and dS on each.
-4. Write the config, with oat on both axes of the dotplot session.
+- Cut each transcript's CDS out of the genome, turn the GFF3 into a BED of one
+  primary transcript per gene on the 21 chromosomes, and translate the CDS into
+  a proteome keyed on the same ids.
+- Align the proteome against itself with DIAMOND and chain the hits with jcvi,
+  with `--self_remove 100` so the A-D homoeologs are kept.
+- Keep the chained anchors whose two genes sit on different subgenomes, and
+  measure dN and dS on each.
+- Write the config, with oat on both axes of the dotplot session.
 
 ```bash
 curl -fO https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/build_oat_homoeologs.sh

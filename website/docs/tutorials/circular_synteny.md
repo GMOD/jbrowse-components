@@ -16,11 +16,11 @@ the autosomes have been shuffled and where the X has not. We:
 
 - declare both assemblies and load the chain as an indexed alignment track
 - open both on a circular view, the mouse arc ordered to follow the human one
-- hover a mouse chromosome to list the human chromosomes aligned to it
-- color the ribbons by strand
+- hover a mouse chromosome to list the human chromosomes aligned to it, and
+  color the ribbons by strand
 - add a gene density ring over both genomes
-- check the X chromosome as the control, and hover a ribbon for its span in
-  each genome
+- check the X chromosome as the control, and hover a ribbon for its span in each
+  genome
 
 ## Prerequisites
 
@@ -406,16 +406,16 @@ The script reads four settings, and the tools it runs are in
 - `MIN_LENGTH` moves the cut.
 - `BASE_URL` is the prefix the finished files will be served under.
 
+```bash
+curl -fO https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/build_circular_synteny.sh
+bash build_circular_synteny.sh
+```
+
 A pair with no hosted chain goes through the `make-pif` commands under
 [Load the chain as an indexed alignment](#load-the-chain-as-an-indexed-alignment),
 and each ring takes one bigWig per assembly, or one bigWig with prefixed contigs
 and an alias per assembly as in
 [Add a gene density ring](#add-a-gene-density-ring-over-both-genomes).
-
-```bash
-curl -fO https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/build_circular_synteny.sh
-bash build_circular_synteny.sh
-```
 
 ## See also
 

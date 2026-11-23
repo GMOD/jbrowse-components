@@ -37,7 +37,9 @@ changes, in a crystal structure of sickle haemoglobin. We:
 ## The data
 
 Nothing to download: the protein browser, the plugins and the track configs
-below read these files by URL. _Your own gene_ covers a gene of your own.
+below read these files by URL.
+[Run the same steps on your own gene](#run-the-same-steps-on-your-own-gene)
+covers a gene of your own.
 
 <details>
 <summary>The files</summary>

@@ -25,8 +25,8 @@ on the axolotl. We:
   row per cell line from **Plot type**
 - filter the gnomAD variant track to predicted loss of function from **Filter
   by**
-- search for _TP53_ on a GenArk genome, the axolotl
-- find the file a track reads, to open it outside JBrowse
+- search for _TP53_ on a GenArk genome, the axolotl, then find the file a track
+  reads, to open it outside JBrowse
 
 ## Open a genome
 
@@ -191,10 +191,10 @@ Type `axolotl` into the site's header search, open `GCF_040938575.1`, and type
 
 ## Find where a track's data is read from
 
-The config is hosted on jbrowse.org, and JBrowse reads most UCSC track data from
-hgdownload by byte range. Back on hg38, **About track** in the phyloP track's
-menu prints the adapter and its file URL, which is where to look when a track is
-slow or missing.
+Each genome's config is hosted on jbrowse.org, and JBrowse reads most UCSC track
+data from hgdownload by byte range. Back on hg38, **About track** in the phyloP
+track's menu prints the adapter and its file URL, which is where to look when a
+track is slow or missing.
 
 <Figure src="/img/genomes_basics/about_track.png" caption="Left: the phyloP track menu with About track boxed. Right: the dialog it opens." />
 

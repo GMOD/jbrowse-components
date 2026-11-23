@@ -67,8 +67,7 @@ The tracks below read local files that the
 [build script](#reproduce-it-end-to-end) writes from these, fetching each
 itself, so run it first, or follow
 [Paint each haplotype's ancestry with FLARE](#paint-each-haplotypes-ancestry-with-flare)
-on a phased
-VCF, reference panels and genetic map of your own.
+on a phased VCF, reference panels and genetic map of your own.
 
 | What it is                                                                                                                            | File                                                                                                                                                            |
 | ------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -338,15 +337,15 @@ corner of the tree shows the locus.
 [`build_dog10k_wolfdog_ancestry.sh`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/build_dog10k_wolfdog_ancestry.sh)
 runs every step above. It:
 
-1. derives the panel and target lists and slices the chromosome
-2. generates the map and runs FLARE
-3. writes both painted BEDs
-   ([`flare_anc_to_bed.py`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/flare_anc_to_bed.py))
-   plus indexes
-4. prints the measurements below and, for each painted block edge, how
-   many ancestry-informative markers each haplotype has on either side. The long
-   wolfdog blocks have marker support at their edges, and the short blocks in
-   ordinary breeds lack it.
+- derives the panel and target lists and slices the chromosome
+- generates the map and runs FLARE
+- writes both painted BEDs
+  ([`flare_anc_to_bed.py`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/flare_anc_to_bed.py))
+  plus indexes
+- prints the measurements below and, for each painted block edge, how many
+  ancestry-informative markers each haplotype has on either side. The long
+  wolfdog blocks have marker support at their edges, and the short blocks in
+  ordinary breeds lack it.
 
 ```bash
 curl -fO https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/build_dog10k_wolfdog_ancestry.sh

@@ -63,7 +63,7 @@ with a sample table and a transcript-to-gene table.
 
 </details>
 
-## Building the GFF3
+## Build the GFF3
 
 The build takes the ENCODE quantifications to a colorable GFF3 in three steps,
 and one [script](#reproduce-it-end-to-end) runs all three.
@@ -229,7 +229,7 @@ no value for a color field named `dIF` and paints every transcript grey.
 is `dif` on the called transcripts and absent on the rest, so a transcript the
 test could not separate has no value to color and stays grey.
 
-## Loading GRCh38
+## Load the GRCh38 assembly
 
 GENCODE v29 is a GRCh38 annotation and the coverage is on GRCh38, so we load the
 hg38 assembly before either track.
@@ -245,7 +245,7 @@ hg38 assembly before either track.
 }
 ```
 
-## Coloring each isoform by its usage change
+## Color each isoform by its usage change
 
 In [grammar-of-graphics](/docs/config_guides/mark_display) terms,
 `encoding.color` is a color scale: its `field`, `dif_called` (a called
@@ -370,10 +370,10 @@ The other three tracks differ in their id, name and file:
 [`build_dtu_demo.sh`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/build_dtu_demo.sh)
 wraps every step above. The script:
 
-1. Downloads the ENTEx muscle and liver RSEM quantifications and GENCODE v29.
-2. Tests differential transcript usage with satuRn and computes each
-   transcript's isoform-fraction change from TPM.
-3. Writes the statistics into the GENCODE GFF3, then bgzips and indexes it.
+- Downloads the ENTEx muscle and liver RSEM quantifications and GENCODE v29.
+- Tests differential transcript usage with satuRn and computes each transcript's
+  isoform-fraction change from TPM.
+- Writes the statistics into the GENCODE GFF3, then bgzips and indexes it.
 
 ```bash
 curl -fO https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/build_dtu_demo.sh

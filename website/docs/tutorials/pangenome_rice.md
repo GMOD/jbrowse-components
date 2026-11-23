@@ -79,8 +79,7 @@ assemblies are NCBI GenBank records, listed with their accessions in the
 
 Nothing to download: the track configs below read the files by URL.
 [Build the rice graph](#build-the-rice-graph) and
-[Make the callset](#make-the-callset) build them from assemblies of your
-own.
+[Make the callset](#make-the-callset) build them from assemblies of your own.
 
 <details>
 <summary>Read by URL (no download needed)</summary>

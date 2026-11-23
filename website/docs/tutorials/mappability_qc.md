@@ -324,20 +324,20 @@ Run both on the control window too, at the same width.
 measures the SMN region from the files in the figures. It tests whether a read
 can be placed at a locus several ways, and compares each result with a control:
 
-1. Over _SMN1_, _SMN2_ and two controls, it measures how much of each window the
-   Umap track has a value for, gnomAD's mean depth, and the share of NA12878's
-   reads at MAPQ 0. The near control is a window of the same width at the 5' end
-   of _BDP1_, past both flagged intervals on the same chromosome, so sample,
-   library and chromosome all match; _ACTB_ on chromosome 7 shows the near
-   control is ordinary.
-2. The script lists which problematic-region tracks flag the region, and bins
-   the gnomAD track across it to find where the depth recovers.
-3. The script counts GM18501's long-read records over _SMN1_ at MAPQ 0 and MAPQ
-   60, once on each reference. The release aligned that sample to both with the
-   same pipeline, so the two counts are comparable.
-4. The script counts each SV catalogue's calls inside the region and in a flank
-   of about the same width on either side, and across chr5 the share of calls
-   whose midpoint falls in a flagged region.
+- Over _SMN1_, _SMN2_ and two controls, it measures how much of each window the
+  Umap track has a value for, gnomAD's mean depth, and the share of NA12878's
+  reads at MAPQ 0. The near control is a window of the same width at the 5' end
+  of _BDP1_, past both flagged intervals on the same chromosome, so sample,
+  library and chromosome all match; _ACTB_ on chromosome 7 shows the near
+  control is ordinary.
+- The script lists which problematic-region tracks flag the region, and bins the
+  gnomAD track across it to find where the depth recovers.
+- The script counts GM18501's long-read records over _SMN1_ at MAPQ 0 and MAPQ
+  60, once on each reference. The release aligned that sample to both with the
+  same pipeline, so the two counts are comparable.
+- The script counts each SV catalogue's calls inside the region and in a flank
+  of about the same width on either side, and across chr5 the share of calls
+  whose midpoint falls in a flagged region.
 
 The script needs kent tools (`bigWigInfo`, `bigWigToBedGraph`, `bigBedToBed`),
 `bedtools`, `samtools`, `curl` and `awk`.
