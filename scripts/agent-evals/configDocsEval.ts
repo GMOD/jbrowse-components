@@ -5,9 +5,13 @@
 // `jbrowse validate` over it inside a volvox config, then checks what the
 // task asked for. A run scores the docs, not the validator.
 //
+// `--skills` scores .claude/skills instead: the sandbox holds them as project
+// skills and no docs, and the agent may fetch the jbrowse.org pages they name,
+// as an agent outside this repo would.
+//
 // Usage: node scripts/agent-evals/configDocsEval.ts [--model m] [--runs N]
 //        [--filter name] [--out dir] [--source dir] [--self-check]
-//        [--regrade dir]
+//        [--regrade dir] [--skills]
 // --source reads docs and schema from another tree, such as a `git archive`
 // of the baseline commit, so the worktree can change while a run is going.
 import { execFileSync, spawn } from 'node:child_process'
@@ -32,6 +36,7 @@ const model = flag('model', 'sonnet')
 const filter = flag('filter', '')
 const runs = Number(flag('runs', '1'))
 const source = path.resolve(flag('source', repoRoot))
+const skills = args.includes('--skills')
 const commit = execFileSync('git', ['rev-parse', '--short', 'HEAD'], {
   cwd: repoRoot,
   encoding: 'utf8',
@@ -42,7 +47,7 @@ const outDir = path.resolve(
     path.join(
       os.homedir(),
       'agent-evals',
-      `${new Date().toISOString().replaceAll(':', '-')}-${commit}-${model}-config-docs`,
+      `${new Date().toISOString().replaceAll(':', '-')}-${commit}-${model}-${skills ? 'skills' : 'config-docs'}`,
     ),
   ),
 )
@@ -440,12 +445,103 @@ const tasks: Task[] = [
       return p
     },
   },
+  {
+    name: 'mark-bars',
+    prompt: `Write a track with trackId "scores", name "Scores", on assembly "volvox", reading volvox-bed12.bed.gz with its .tbi index, that opens drawing each feature's score as a bar, the bars colored by strand.`,
+    solution: {
+      type: 'FeatureTrack',
+      trackId: 'scores',
+      name: 'Scores',
+      assemblyNames: ['volvox'],
+      uri: 'volvox-bed12.bed.gz',
+      displays: [
+        {
+          type: 'LinearMarkDisplay',
+          displayId: 'scores-LinearMarkDisplay',
+          marks: [
+            {
+              mark: 'bar',
+              encoding: {
+                y: 'score',
+                color: { field: 'strand', scale: { type: 'ordinal' } },
+              },
+            },
+          ],
+        },
+      ],
+    },
+    check: track => {
+      const [first] = Array.isArray(track.displays)
+        ? (track.displays as Json[])
+        : []
+      const marks = Array.isArray(first?.marks) ? (first.marks as Json[]) : []
+      const bar = marks.find(
+        m => m.mark === 'bar' || (m.mark as Json | undefined)?.type === 'bar',
+      )
+      const encoding = (bar?.encoding ?? {}) as Json
+      const c = encoding.color
+      const field = typeof c === 'string' ? c : (c as Json | undefined)?.field
+      const p: string[] = []
+      expect(
+        p,
+        first?.type === 'LinearMarkDisplay',
+        `first display ${JSON.stringify(first?.type)}`,
+      )
+      expect(p, encoding.y === 'score', `y ${JSON.stringify(encoding.y)}`)
+      expect(p, field === 'strand', `color ${JSON.stringify(c)}`)
+      return p
+    },
+  },
+  {
+    name: 'facet-population',
+    prompt: `Write a VariantTrack with trackId "sv", name "SVs", on assembly "volvox", reading volvox.sv.vcf.gz with its .tbi index. Each sample's metadata is in volvox.sv.samples.tsv, a table whose columns are name, population, sex, phenotype and group. Group the sample rows into one band per population.`,
+    solution: {
+      type: 'VariantTrack',
+      trackId: 'sv',
+      name: 'SVs',
+      assemblyNames: ['volvox'],
+      adapter: {
+        type: 'VcfTabixAdapter',
+        uri: 'volvox.sv.vcf.gz',
+        samplesTsvLocation: { uri: 'volvox.sv.samples.tsv' },
+      },
+      displays: [{ type: 'LinearVariantDisplay', facet: 'population' }],
+    },
+    check: track => {
+      const adapter = (track.adapter ?? {}) as Json
+      const tsv = (adapter.samplesTsvLocation ?? {}) as Json
+      const f = display(track, 'LinearVariantDisplay').facet
+      const field = typeof f === 'string' ? f : (f as Json | undefined)?.field
+      const p: string[] = []
+      expect(
+        p,
+        String(tsv.uri ?? '').endsWith('volvox.sv.samples.tsv'),
+        `samplesTsvLocation ${JSON.stringify(tsv)}`,
+      )
+      expect(p, field === 'population', `facet ${JSON.stringify(f)}`)
+      return p
+    },
+  },
 ]
 
-const SYSTEM = `You are configuring JBrowse 2, a genome browser. Its documentation is in ./docs (the generated config reference is ./docs/config, the guides ./docs/config_guides) and its JSON Schema is ./schema/config.json. Use only these files. Write the one track configuration object the task asks for, as JSON, to ./track.json: the track object itself, not a whole config.json. Do not ask questions; when done, reply with one line.`
+const WRITE = `Write the one track configuration object the task asks for, as JSON, to ./track.json: the track object itself, not a whole config.json. Do not ask questions; when done, reply with one line.`
+const SYSTEM = skills
+  ? `You are configuring JBrowse 2, a genome browser. ${WRITE}`
+  : `You are configuring JBrowse 2, a genome browser. Its documentation is in ./docs (the generated config reference is ./docs/config, the guides ./docs/config_guides) and its JSON Schema is ./schema/config.json. Use only these files. ${WRITE}`
+const TOOLS = skills
+  ? 'Read,Grep,Glob,Write,Skill,WebFetch'
+  : 'Read,Grep,Glob,Write'
 
 function sandbox() {
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'config-docs-eval-'))
+  if (skills) {
+    fs.cpSync(
+      path.join(source, '.claude/skills'),
+      path.join(dir, '.claude/skills'),
+      { recursive: true },
+    )
+    return dir
+  }
   fs.cpSync(path.join(source, 'website/docs'), path.join(dir, 'docs'), {
     recursive: true,
     filter: src => !/\.(png|jpe?g|gif|svg|webp|mp4|webm)$/i.test(src),
@@ -485,9 +581,9 @@ function claude(prompt: string, cwd: string) {
       'stream-json',
       '--verbose',
       '--tools',
-      'Read,Grep,Glob,Write',
+      TOOLS,
       '--allowedTools',
-      'Read,Grep,Glob,Write',
+      TOOLS,
       '--setting-sources',
       'project',
       '--strict-mcp-config',
