@@ -59,8 +59,9 @@ script reads GeneNetwork's `.geno` format.
 | The coat-color scan (trait 11280), from GeneNetwork's mapping API    | [mapping](https://genenetwork.org/api/v_pre1/mapping?db=BXDPublish&method=gemma&trait_id=11280) |
 | The coat-color scores per strain, from GeneNetwork's sample-data API | [11280](https://genenetwork.org/api/v_pre1/sample_data/BXDPublish/11280)                        |
 
-## Reading GeneNetwork's BXD genotype file
+## Paint each strain's B and D blocks
 
+The painting has one row per strain, each block colored by genotype.
 GeneNetwork distributes the consensus BXD genotypes as a plain-text `.geno`
 file. Each row is a marker with a `cM` genetic-map position and an mm10 `Mb`
 physical position, and the painting uses `Mb`. Each column is a strain, with a
@@ -78,9 +79,6 @@ Chr  Locus         cM    Mb        BXD1  BXD2  BXD5  ...
 The painting skips the F1 columns, since an F1 (a B by D hybrid) is heterozygous
 at every marker and GeneNetwork computes the scan over the strains.
 
-## Painting each strain's B and D blocks
-
-The painting has one row per strain, each block colored by genotype.
 [`bxd_geno_to_painting_bed.py`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/bxd_geno_to_painting_bed.py)
 reads the markers of each strain in order along every chromosome and writes one
 BED interval per run of consecutive same-genotype markers (run-length encoding),
@@ -189,7 +187,7 @@ swap `uri` for the bgzipped, tabix-indexed BED your conversion wrote.
 - `disableGeneHeuristic: true` stops the BED adapter from reading each block as
   a gene, which the `thickStart`/`thickEnd` columns would otherwise trigger.
 
-## Loading the coat-color QTL scan as a Manhattan track
+## Load the coat-color QTL scan as a Manhattan track
 
 GeneNetwork maps these traits itself, and its API serves the per-marker result
 of a GEMMA run. We fetch the scan for one trait by its GeneNetwork id and
@@ -250,7 +248,7 @@ Manhattan score ([GWAS track guide](/docs/config_guides/gwas_track)):
 }
 ```
 
-## Faceting the strains by coat color
+## Facet the strains by coat color at Tyrp1
 
 The scan has a plateau of tied markers on chr4, whose interval contains _Tyrp1_,
 the brown coat-color gene, and a lower peak on chr9. GeneNetwork scores coat
@@ -354,7 +352,7 @@ Under the peak, black and grey strains have B6's copy of _Tyrp1_ and brown and
 dilute brown strains have DBA/2's; the rest of chr4 is the control, with no
 coat-color gene.
 
-## Myo5a, the dilute locus, under the chr9 peak
+## Open the chr9 peak at Myo5a with the same bands
 
 The chr9 peak falls on _Myo5a_, the dilute locus (its mutation lightens coat
 color). Open chr9 with the same grouped painting, and filter the gene track to
@@ -367,14 +365,14 @@ _Myo5a_ the same way, where the sections split the other way:
 [`bxd_build_demo.sh`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/bxd_build_demo.sh)
 runs every step above. It:
 
-1. downloads JBrowse and the GeneNetwork consensus genotypes
-2. builds the painting with
-   [`bxd_geno_to_painting_bed.py`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/bxd_geno_to_painting_bed.py)
-3. fetches the coat-color scan (trait `11280`) and the per-strain scores from
-   GeneNetwork
-4. writes a `config.json` that opens on mm10 chr4 with the scan over the
-   painting banded by coat color, and prints the marker at the peak and its LOD
-   as it goes
+- downloads JBrowse and the GeneNetwork consensus genotypes
+- builds the painting with
+  [`bxd_geno_to_painting_bed.py`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/bxd_geno_to_painting_bed.py)
+- fetches the coat-color scan (trait `11280`) and the per-strain scores from
+  GeneNetwork
+- writes a `config.json` that opens on mm10 chr4 with the scan over the
+  painting banded by coat color, and prints the marker at the peak and its LOD
+  as it goes
 
 ```bash
 curl -fO https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/bxd_build_demo.sh
