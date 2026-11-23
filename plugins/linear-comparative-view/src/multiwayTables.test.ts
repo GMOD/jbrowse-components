@@ -42,12 +42,15 @@ const SYRI = {
 
 test('a source answering lane pairs on the anchor exports its lanes stacked by structure, as the display stacks them', async () => {
   const stacked = await multiwayTables(engine(['lanePairsOnAnchor']), SYRI)
-  // The chain starts from the lane whose profile is nearest the anchor's: in
-  // bins over Chr1, Kyo leaves 4.3 unaligned forward, 0.4 reversed and 1.6
-  // carried (6.3), against Cvi 8.9, Eri 9.0, Sha 10.8 and Ler 11.8
-  const [anchor, nearest, ...rest] = stacked.lanes.assembly
-  expect([anchor, nearest]).toEqual(['Col-0', 'Kyo'])
-  expect(rest.toSorted()).toEqual(['Cvi', 'Eri', 'Ler', 'Sha'])
+  // densest first would read Kyo, Cvi, Sha, Eri, Ler
+  expect(stacked.lanes.assembly).toEqual([
+    'Col-0',
+    'Kyo',
+    'Eri',
+    'Ler',
+    'Cvi',
+    'Sha',
+  ])
 })
 
 test('with genome lanes the anchor exports first whatever rows.sort says', async () => {
