@@ -106,7 +106,6 @@ function fakeModel({
     rowColorPins: new Map(),
     rowPaletteDeals,
     rowAlias: undefined,
-    linkedRowColors: new Map(),
     internalRowFields: [],
     dealtValueColorsFor: previewOf(arrangedRows, rowPaletteDeals),
     ...overrides,

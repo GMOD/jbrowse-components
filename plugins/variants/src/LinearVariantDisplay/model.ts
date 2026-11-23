@@ -142,6 +142,7 @@ import {
   variantRowHookViews,
   variantRowsHeightViews,
 } from './variantRowViews.ts'
+import { variantWalkColorViews } from './walkColors.ts'
 
 import type { SimplifiedVariantFeature } from '../VariantRPC/analyzeVariants.ts'
 import type { CellDataResult } from '../VariantRPC/executeVariantCellData.ts'
@@ -334,7 +335,8 @@ export type VariantLayoutBackend =
  * 5. the result is `drawnRows`, each row's resolved color its label bar.
  *
  * **`rows.color` wins over a color the row already has**, a `samplesTsv`
- * `color` column: a channel bound to a variable beats a per-row constant, so
+ * `color` column, else its walk's color in a graph track of the view
+ * (`walkColors`): a channel bound to a variable beats a per-row constant, so
  * "Color by… → (none)" restores the row's color from that column. A color
  * the dialog pins on a row (`rows.colors`) wins over both.
  *
@@ -1081,6 +1083,7 @@ export function stateModelFactory(
           }
         },
       }))
+      .views(self => variantWalkColorViews(self))
       .views(self => variantRowHookViews(self))
       .views(self => ({
         /**

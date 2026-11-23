@@ -25,7 +25,6 @@
     "./arrangeRows": "./src/rows/arrangeRows.ts",
     "./binColumns": "./src/clustering/binColumns.ts",
     "./clusterMatrix": "./src/clustering/clusterMatrix.ts",
-    "./haplotypeColors": "./src/color/haplotypeColors.ts",
     "./narrowRows": "./src/rows/narrowRows.ts",
     "./newick": "./src/tree/newick.ts",
     "./rowColorKey": "./src/color/rowColorKey.ts",

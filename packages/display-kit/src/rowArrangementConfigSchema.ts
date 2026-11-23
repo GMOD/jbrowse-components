@@ -107,10 +107,8 @@ export const rowArrangementConfigSchema = ConfigurationSchema(
      * to, as `labels` pins its text: ggplot2's
      * `scale_*_manual(values = c(name = ...))`. The arrangement dialog's row
      * swatches write it. A row with none takes `rows.color`, else the file's
-     * own color (MAF's `samples[].color`, a listed source's color), else its
-     * haplotype walk's color in a graph track of the same view (a variant
-     * display's sample rows), else the palette where the rows share one
-     * panel.
+     * own color (MAF's `samples[].color`, a listed source's color), else the
+     * palette where the rows share one panel.
      */
     colors: {
       type: 'stringMap',

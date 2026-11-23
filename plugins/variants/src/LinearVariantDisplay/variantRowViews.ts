@@ -6,10 +6,6 @@ import { predicatesOf } from '@jbrowse/core/util/fieldPredicate'
 import { colorSnapshotOf } from '@jbrowse/display-kit/colorConfigSchema'
 import { facetSettingOf } from '@jbrowse/display-kit/facetConfigSchema'
 import { stableIdentityComputed } from '@jbrowse/display-kit/stableIdentityComputed'
-import {
-  haplotypeRowColors,
-  viewHaplotypeColors,
-} from '@jbrowse/tree-sidebar/haplotypeColors'
 import { narrowRows } from '@jbrowse/tree-sidebar/narrowRows'
 
 import { cellColorEncodingOf, cellHueField } from '../shared/cellHue.ts'
@@ -24,10 +20,12 @@ import {
 import { isSiteField } from '../shared/minorAlleleFrequencyUtils.ts'
 import { DEFAULT_VARIANT_DISPLAY_HEIGHT } from './configSchema.ts'
 import { DEFAULT_ROWS_TRACK_HEIGHT } from './variantTopBands.ts'
+import { withWalkColors } from './walkColors.ts'
 
 import type { VariantRowsField } from '../shared/constants.ts'
 import type { ProcessedSource, Source } from '../shared/types.ts'
 import type { LinearVariantDisplayConfigModel } from './configSchema.ts'
+import type { WalkColors } from './walkColors.ts'
 import type { FieldPredicate } from '@jbrowse/core/util/fieldPredicate'
 import type { ColorSetting } from '@jbrowse/display-kit/colorConfigSchema'
 import type { FacetSetting } from '@jbrowse/display-kit/facetConfigSchema'
@@ -261,14 +259,14 @@ export function variantDrawnRowViews(self: VariantDrawnRowHost) {
 }
 
 /** What {@link variantRowHookViews} reads: the row settings and the ploidies. */
-export interface VariantRowHookHost extends IStateTreeNode {
+export interface VariantRowHookHost {
   rowsField: VariantRowsField
   facet: FacetSetting | undefined
   samplePloidy: Readonly<Record<string, number>> | undefined
   rowSort: string[]
   rowFocus: readonly string[] | undefined
   discoveredRows: ProcessedSource[]
-  expandedRows: ProcessedSource[]
+  walkColors: readonly WalkColors[]
 }
 
 /**
@@ -292,22 +290,6 @@ export function variantRowHookViews(self: VariantRowHookHost) {
      */
     get rowColorPaintsMarks(): boolean {
       return false
-    },
-    /**
-     * #getter
-     * `TreeSidebarMixin`'s hook: each row's haplotype color in a graph
-     * track of the view, read off the row's own `sampleName` and `HP`, so
-     * a row's label bar matches its walk.
-     */
-    get linkedRowColors(): ReadonlyMap<string, string> {
-      return haplotypeRowColors(
-        self.expandedRows.map(row => ({
-          name: row.name,
-          sample: row.sampleName,
-          phase: row.HP,
-        })),
-        viewHaplotypeColors(self),
-      )
     },
     /**
      * #getter
@@ -339,16 +321,20 @@ export function variantRowHookViews(self: VariantRowHookHost) {
     /**
      * #method
      * `TreeSidebarMixin`'s hook: phased mode draws a row per haplotype,
-     * once `samplePloidy` lands or the order names them.
+     * once `samplePloidy` lands or the order names them. A row with no
+     * color of its own takes its haplotype walk's in `walkColors`.
      */
     expandRows(rows: ProcessedSource[]): ProcessedSource[] {
-      return self.rowsField === 'haplotype'
-        ? expandPhasedRows({
-            rows,
-            ploidy: self.samplePloidy,
-            domain: self.rowSort,
-          })
-        : rows
+      return withWalkColors(
+        self.rowsField === 'haplotype'
+          ? expandPhasedRows({
+              rows,
+              ploidy: self.samplePloidy,
+              domain: self.rowSort,
+            })
+          : rows,
+        self.walkColors,
+      )
     },
     /**
      * #getter

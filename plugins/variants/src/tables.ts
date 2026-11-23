@@ -93,6 +93,7 @@ import VcfTabixAdapterF from './VcfTabixAdapter/index.ts'
 import { buildSampleIndex, decodeGenotype } from './shared/genotypeCodec.ts'
 
 import type { RecordsView } from './LinearVariantDisplay/recordsBandViews.ts'
+import type { WalkColors } from './LinearVariantDisplay/walkColors.ts'
 import type { CellDataResult } from './VariantRPC/executeVariantCellData.ts'
 import type { ProcessedSource, Source } from './shared/types.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
@@ -158,6 +159,15 @@ const base = types
 const variantHostRows = treeSidebarRowStages<ProcessedSource>()(base)
   .views(self => variantDrawnRowViews(self))
   .views(self => variantFetchViews(self))
+  .views(() => ({
+    /**
+     * No walk colors: the table's `color` column is each row's own color,
+     * never a graph track's beside it in some view.
+     */
+    get walkColors(): readonly WalkColors[] {
+      return []
+    },
+  }))
   .views(self => variantRowHookViews(self))
   .views(self => variantHeightViews(self))
   .views(self => variantRowsHeightViews(self))

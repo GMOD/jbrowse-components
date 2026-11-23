@@ -237,11 +237,8 @@ species a focus applies as given, as the worker's does.
 
 **A row's color is one getter, `resolvedRowColors`**: its `rows.colors` pin, else
 its `rows.color` entry (the color its field's value is dealt), else its own
-`color`, else its `linkedRowColors` entry, else the palette's by name where
-`rowPaletteDeals` (`sharesPanel && rowColorPaintsMarks`). `linkedRowColors` is
-a hook: the variant display reads the `haplotypeColors` a graph track in the
-same view publishes (`color/haplotypeColors.ts`, ADR-287), so a row's bar
-matches its walk. `dealtValueColors` is the
+`color`, else the palette's by name where `rowPaletteDeals`
+(`sharesPanel && rowColorPaintsMarks`). `dealtValueColors` is the
 value-to-color map behind it and `dealtValueColorsFor` the dialog's preview of
 another setting.
 
