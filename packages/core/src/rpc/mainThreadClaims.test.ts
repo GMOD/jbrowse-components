@@ -159,17 +159,6 @@ test('a call held in serialization across destroy builds nothing', async () => {
   expect(cachedAdapterCount()).toBe(0)
 })
 
-test('a call executing at destroy is freed once it settles', async () => {
-  const { rpcManager } = setup()
-  const pending = touch(rpcManager)
-  await Promise.resolve()
-  await Promise.resolve()
-  rpcManager.destroy()
-  await pending.catch(() => {})
-  await tick()
-  expect(cachedAdapterCount()).toBe(0)
-})
-
 test('a nested call during serialization claims once, under the caller', async () => {
   const a = setup()
   const b = setup()
@@ -266,7 +255,7 @@ test('a batch claim left for the next engine is found by it', async () => {
   expect(cachedAdapterCount()).toBe(1)
 })
 
-test('a call that claims after an await across destroy is freed when it settles', async () => {
+test('a call executing at destroy that claims its adapter after destroy is freed once it settles', async () => {
   const { rpcManager } = setup()
   let open = () => {}
   executeGate = new Promise<void>(resolve => {
