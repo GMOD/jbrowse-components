@@ -83,7 +83,7 @@ HG008's.
 | The T2T tumor assembly, v3.2                                           | [HG008T_v3.2.fasta.gz](https://nist-giab.s3.us-east-1.amazonaws.com/giab_tumor-normal/analysis/HG008/NIST_asm_dev/HG008T_v3.2/HG008T_v3.2.fasta.gz)                                                                                                   |
 | The matched normal assembly, v6.3, which the build script leaves out   | [HG008N_v6.3.fasta.gz](https://nist-giab.s3.us-east-1.amazonaws.com/giab_tumor-normal/analysis/HG008/NIST_asm_dev/HG008N_v6.3/HG008N_v6.3.fasta.gz)                                                                                                   |
 
-## Assemblies: the C-GIAB GRCh38 reference and the tumor assembly
+## Load the GRCh38 reference and the tumor assembly
 
 Every track below names one of two assemblies. The calls and reads sit on the
 C-GIAB GRCh38 build, `GRCh38_GIABv3`, which GIAB hosts BGZF-compressed with its
@@ -112,7 +112,7 @@ samtools faidx HG008T_v3.2.fasta.gz
 }
 ```
 
-## The benchmark SV and CNV calls
+## Load the benchmark SV and CNV calls {#the-benchmark-sv-and-cnv-calls}
 
 The V0.5 HG008-T draft benchmark is an indexed VCF of SV calls and a BED of CNV
 calls, both loaded straight from their FTP URL.
@@ -171,38 +171,7 @@ through the cuts in `scale.domain` to the colors in `scale.range`.
 }
 ```
 
-## Converting the HiFi reads to CRAM
-
-The tumor and normal BAMs have no `MD` tags. Convert each to a local CRAM
-against the reference above, which this step needs as a local FASTA:
-
-```bash
-curl -L https://ftp-trace.ncbi.nlm.nih.gov/ReferenceSamples/giab/release/references/GRCh38/GRCh38_GIABv3_no_alt_analysis_set_maskedGRC_decoys_MAP2K3_KMT2C_KCNJ18.fasta.gz |
-  gzip -dc > GRCh38.fa
-samtools faidx GRCh38.fa
-```
-
-<!-- from: scripts/build_sv_visualization_cgiab.sh -->
-
-```bash
-# -T: the reference for the CRAM, the same build the assembly was loaded from
-# --write-index: write the .crai in the same pass
-samtools view HG008-T.bam --write-index -o HG008-T.cram -T GRCh38.fa
-```
-
-Each CRAM is a read track, decoded against `GRCh38_GIABv3`; the normal uses
-`HG008-N.cram`:
-
-```json addtrack
-{
-  "trackId": "HG008-T_hifi",
-  "name": "HG008-T PacBio HiFi",
-  "uri": "HG008-T.cram",
-  "assemblyNames": ["GRCh38_GIABv3"]
-}
-```
-
-## Structural variants from the published callsets
+## Load the published SV callsets
 
 C-GIAB publishes five somatic SV callsets for this pair, the benchmark among
 them:
@@ -215,7 +184,7 @@ them:
 | DRAGEN                                                                                                                  | Illumina WGS                                   |
 | NYGC somatic pipeline ([Manta](https://github.com/Illumina/manta) and [GRIDSS](https://github.com/PapenfussLab/gridss)) | Illumina WGS                                   |
 
-### Loading Severus and DRAGEN SV calls
+### Load Severus and DRAGEN SV calls
 
 Severus and DRAGEN are indexed VCFs with a record at each breakend, so they load
 with no display settings:
@@ -246,7 +215,7 @@ with no display settings:
 }
 ```
 
-### Loading the minda ensemble SV calls
+### Load the minda ensemble SV calls
 
 The minda ensemble callset is a plain VCF, so
 [`VcfAdapter`](/docs/config/vcfadapter) loads it whole, with no index:
@@ -264,7 +233,7 @@ The minda ensemble callset is a plain VCF, so
 }
 ```
 
-### Drawing the NYGC SV calls (BEDPE) as arcs
+### Draw the NYGC SV calls (BEDPE) as arcs
 
 [`BedpeAdapter`](/docs/config/bedpeadapter) reads a paired-end BED whole, with
 no index, and serves it to a variant track:
@@ -302,7 +271,38 @@ builds.
 
 <Figure caption="One benchmark rearrangement's breakends in the SV callsets, over the HiFiCNV depth and the benchmark's CNV track." src="/img/sv_cgiab/sv_callset_comparison.png" />
 
-## Aligning the tumor assembly to GRCh38
+## Convert the HiFi reads to CRAM
+
+The tumor and normal BAMs have no `MD` tags. Convert each to a local CRAM
+against the reference above, which this step needs as a local FASTA:
+
+```bash
+curl -L https://ftp-trace.ncbi.nlm.nih.gov/ReferenceSamples/giab/release/references/GRCh38/GRCh38_GIABv3_no_alt_analysis_set_maskedGRC_decoys_MAP2K3_KMT2C_KCNJ18.fasta.gz |
+  gzip -dc > GRCh38.fa
+samtools faidx GRCh38.fa
+```
+
+<!-- from: scripts/build_sv_visualization_cgiab.sh -->
+
+```bash
+# -T: the reference for the CRAM, the same build the assembly was loaded from
+# --write-index: write the .crai in the same pass
+samtools view HG008-T.bam --write-index -o HG008-T.cram -T GRCh38.fa
+```
+
+Each CRAM is a read track, decoded against `GRCh38_GIABv3`; the normal uses
+`HG008-N.cram`:
+
+```json addtrack
+{
+  "trackId": "HG008-T_hifi",
+  "name": "HG008-T PacBio HiFi",
+  "uri": "HG008-T.cram",
+  "assemblyNames": ["GRCh38_GIABv3"]
+}
+```
+
+## Align the tumor assembly to GRCh38
 
 The tumor assembly is haplotype-resolved into T2T scaffolds. The synteny and
 dotplot views draw its alignment to GRCh38, a PAF file:
@@ -336,9 +336,9 @@ The matched normal assembly (`HG008N_v6.3.fasta.gz`, same S3 path) loads the
 same way, as the [synteny track config guide](/docs/config_guides/synteny_track)
 shows.
 
-## Checking SV calls against reads and the assembly
+## Check SV calls against reads and the assembly
 
-### A chr3-chr13 translocation: breakpoint reads and the tumor contig
+### Open a chr3-chr13 translocation in a breakpoint view
 
 **Add → SV inspector**, then **Open from track** to pick the C-GIAB benchmark
 VCF loaded earlier.
@@ -375,7 +375,7 @@ We read the same junction three ways:
   with no reads. The C-GIAB assembly resolves both loci onto one tumor contig,
   named for the two chromosomes joined in it.
 
-### CUZD1: a small heterozygous deletion
+### Find a small deletion in CUZD1
 
 Use the **Search rows** box in the SV inspector to find `SV_85`, a heterozygous
 deletion of two exons of _CUZD1_
@@ -413,7 +413,7 @@ view menu helps line up the breakpoint.
 
 <Figure caption="Tumor HiFi reads at compact height, sorted by base pair at the deletion." src="/img/sv_cgiab/deletion_linear_view.png" />
 
-### Dotplot and synteny views of the tumor assembly against GRCh38
+### Open the translocation in dotplot and synteny views
 
 **Add → Dotplot view**, set the tumor assembly as one axis and GRCh38 as the
 other, and pick the matching synteny track.
