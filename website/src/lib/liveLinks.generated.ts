@@ -133,6 +133,9 @@ export const figureLiveRefs: Record<string, string> = {
   "alphagenome/contact_map": "?config=https://jbrowse.org/demos/alphagenome/config.json",
   "alphagenome/predict_variant_menu": "?config=https://jbrowse.org/demos/alphagenome/config.json",
   "alphagenome/variant_difference": "?config=https://jbrowse.org/demos/alphagenome/config.json",
+  "alphagenome2/ets2_expression_effects": "?config=https%3A%2F%2Fjbrowse.org%2Fdemos%2Falphagenome2_singlecell%2Fconfig.json&session=spec-%7B%22views%22%3A%5B%7B%22assembly%22%3A%22hg38%22%2C%22loc%22%3A%22chr21%3A38%2C700%2C000-39%2C330%2C000%22%2C%22type%22%3A%22LinearGenomeView%22%2C%22tracks%22%3A%5B%7B%22trackId%22%3A%22hg38-ncbiRefSeqCurated%22%2C%22displayMode%22%3A%22compact%22%2C%22height%22%3A70%7D%2C%7B%22trackId%22%3A%22ets2_ibd_credible_set%22%2C%22height%22%3A40%7D%2C%7B%22trackId%22%3A%22ag2_ets2_expression_by_cell_type%22%2C%22height%22%3A240%7D%2C%7B%22trackId%22%3A%22ag2_ets2_macrophage_by_snp%22%2C%22height%22%3A240%7D%2C%7B%22trackId%22%3A%22ag2_ets2_gradient%22%2C%22height%22%3A100%7D%5D%7D%5D%7D&sessionName=Screenshot",
+  "alphagenome2/ets2_enhancer_atac": "?config=https%3A%2F%2Fjbrowse.org%2Fdemos%2Falphagenome2_singlecell%2Fconfig.json&session=spec-%7B%22views%22%3A%5B%7B%22assembly%22%3A%22hg38%22%2C%22loc%22%3A%22chr21%3A39%2C094%2C144-39%2C095%2C144%22%2C%22type%22%3A%22LinearGenomeView%22%2C%22tracks%22%3A%5B%7B%22trackId%22%3A%22ets2_ibd_credible_set%22%2C%22height%22%3A60%7D%2C%7B%22trackId%22%3A%22ag2_ets2_atac_reference%22%2C%22height%22%3A240%7D%2C%7B%22trackId%22%3A%22ag2_ets2_atac_change%22%2C%22height%22%3A240%7D%2C%7B%22trackId%22%3A%22pbmc5k_scatac_pseudobulk_hg38%22%2C%22height%22%3A100%2C%22rows%22%3A%7B%22kept%22%3A%5B%22CD14%20Mono%22%2C%22CD16%20Mono%22%5D%7D%7D%5D%7D%5D%7D&sessionName=Screenshot",
+  "alphagenome2/ets2_enhancer_ism": "?config=https%3A%2F%2Fjbrowse.org%2Fdemos%2Falphagenome2_singlecell%2Fconfig.json&session=spec-%7B%22views%22%3A%5B%7B%22assembly%22%3A%22hg38%22%2C%22loc%22%3A%22chr21%3A39%2C094%2C602-39%2C094%2C686%22%2C%22type%22%3A%22LinearGenomeView%22%2C%22tracks%22%3A%5B%7B%22trackId%22%3A%22hg38-refseq%22%2C%22forward%22%3A%7B%22show%22%3Atrue%7D%2C%22reverse%22%3A%7B%22show%22%3Afalse%7D%2C%22translation%22%3A%7B%22show%22%3Afalse%7D%2C%22height%22%3A30%7D%2C%7B%22trackId%22%3A%22ets2_ibd_credible_set%22%2C%22height%22%3A40%7D%2C%7B%22trackId%22%3A%22ag2_ets2_ism%22%2C%22height%22%3A80%7D%5D%7D%5D%7D&sessionName=Screenshot",
   "gene_prediction_merge": "?config=test_data%2Fconfig_demo.json&session=spec-%7B%22views%22%3A%5B%7B%22type%22%3A%22LinearGenomeView%22%2C%22assembly%22%3A%22hg38%22%2C%22loc%22%3A%22chr22%3A49%2C987%2C402-50%2C067%2C759%22%2C%22tracks%22%3A%5B%7B%22trackId%22%3A%22tiberius_grch38%22%2C%22height%22%3A90%7D%2C%7B%22trackId%22%3A%22gencode_47%22%2C%22filter%22%3A%5B%22geneLike%22%5D%2C%22height%22%3A150%7D%5D%7D%5D%7D&sessionName=Screenshot",
   "volvox_variants": "?config=test_data%2Fvolvox%2Fconfig.json&session=spec-%7B%22views%22%3A%5B%7B%22type%22%3A%22LinearGenomeView%22%2C%22assembly%22%3A%22volvox%22%2C%22loc%22%3A%22ctgA%3A5000-10000%22%2C%22tracks%22%3A%5B%22volvox_test_vcf%22%5D%7D%5D%7D&sessionName=Screenshot",
   "variant_with_pileup": "?config=test_data%2Fvolvox%2Fconfig.json&session=spec-%7B%22views%22%3A%5B%7B%22type%22%3A%22LinearGenomeView%22%2C%22assembly%22%3A%22volvox%22%2C%22loc%22%3A%22ctgA%3A14439-14515%22%2C%22tracks%22%3A%5B%7B%22trackId%22%3A%22volvox_filtered_vcf%22%2C%22height%22%3A60%7D%2C%22volvox_cram_alignments%22%5D%7D%5D%7D&sessionName=Screenshot",
@@ -294,6 +297,7 @@ export const figureLiveRefs: Record<string, string> = {
   "qc/smn_problematic_regions": "?config=https%3A%2F%2Fjbrowse.org%2Fucsc%2Fhg38%2Fconfig.json&session=spec-%7B%22sessionTracks%22%3A%5B%7B%22type%22%3A%22FeatureTrack%22%2C%22trackId%22%3A%22hg38-lrSv1kgOnt%22%2C%22name%22%3A%22Long-read%20SVs%20-%201KG%20Vienna%20ONT%20SVs%22%2C%22assemblyNames%22%3A%5B%22hg38%22%5D%2C%22adapter%22%3A%7B%22type%22%3A%22BigBedAdapter%22%2C%22uri%22%3A%22https%3A%2F%2Fhgdownload.soe.ucsc.edu%2Fgbdb%2Fhg38%2FlrSv%2F1kgOnt.bb%22%7D%2C%22displayDefaults%22%3A%7B%22encoding%22%3A%7B%22color%22%3A%7B%22field%22%3A%22svType%22%2C%22scale%22%3A%7B%22type%22%3A%22ordinal%22%2C%22domain%22%3A%5B%22DEL%22%2C%22INS%22%2C%22CPX%22%5D%2C%22range%22%3A%5B%22rgb(200%2C0%2C0)%22%2C%22rgb(0%2C0%2C200)%22%2C%22rgb(140%2C0%2C200)%22%5D%2C%22names%22%3A%5B%22Deletion%22%2C%22Insertion%22%2C%22Complex%22%5D%7D%2C%22legend%22%3A%7B%22title%22%3A%22SV%20type%22%7D%7D%7D%7D%7D%5D%2C%22views%22%3A%5B%7B%22type%22%3A%22LinearGenomeView%22%2C%22assembly%22%3A%22hg38%22%2C%22loc%22%3A%22chr5%3A69%2C200%2C000-71%2C700%2C000%22%2C%22highlight%22%3A%5B%7B%22refName%22%3A%22chr5%22%2C%22start%22%3A70889000%2C%22end%22%3A70989000%2C%22assemblyName%22%3A%22hg38%22%2C%22color%22%3A%22rgba(227%2C36%2C43%2C0.14)%22%7D%5D%2C%22tracks%22%3A%5B%7B%22trackId%22%3A%22hg38-ncbiRefSeqCurated%22%2C%22height%22%3A60%2C%22filter%22%3A%5B%22geneLike%22%5D%2C%22geneGlyphMode%22%3A%22representative%22%2C%22displayMode%22%3A%22compact%22%7D%2C%7B%22trackId%22%3A%22hg38-gnomad3MeanCoverage%22%2C%22encoding%22%3A%7B%22y%22%3A%7B%22scale%22%3A%7B%22domainMin%22%3A0%2C%22domainMax%22%3A40%7D%7D%7D%2C%22height%22%3A120%2C%22mark%22%3A%7B%22extent%22%3A%22none%22%7D%7D%2C%7B%22trackId%22%3A%22hg38-alllowmapandsegdupregions%22%2C%22height%22%3A40%7D%2C%7B%22trackId%22%3A%22hg38-lrSv1kgOnt%22%2C%22height%22%3A100%7D%5D%7D%5D%7D&sessionName=Screenshot",
   "qc/smn_vs_t2t": "?config=test_data%2Fhg38_hs1_synteny%2Fconfig.json&session=spec-%7B%22views%22%3A%5B%7B%22type%22%3A%22LinearSyntenyView%22%2C%22encoding%22%3A%7B%22color%22%3A%22strand%22%2C%22opacity%22%3A0.5%7D%2C%22mark%22%3A%7B%22interpolate%22%3A%22bump%22%7D%2C%22filter%22%3A%5B%7B%22field%22%3A%22length%22%2C%22gte%22%3A10000%7D%5D%2C%22levelHeights%22%3A%5B300%5D%2C%22tracks%22%3A%5B%5B%22hg38_hs1_synteny%22%5D%5D%2C%22views%22%3A%5B%7B%22assembly%22%3A%22hg38%22%2C%22loc%22%3A%22chr5%3A69%2C450%2C000-71%2C550%2C000%22%2C%22tracks%22%3A%5B%7B%22trackId%22%3A%22hg38-genes%22%2C%22filter%22%3A%5B%22geneLike%22%5D%2C%22geneGlyphMode%22%3A%22representative%22%2C%22heightMode%22%3A%22fixed%22%2C%22height%22%3A120%7D%5D%2C%22trackLabels%22%3A%22offset%22%7D%2C%7B%22assembly%22%3A%22hs1%22%2C%22loc%22%3A%22chr5%3A70%2C210%2C000-71%2C980%2C000%22%2C%22tracks%22%3A%5B%7B%22trackId%22%3A%22hs1-genes%22%2C%22filter%22%3A%5B%22geneLike%22%5D%2C%22geneGlyphMode%22%3A%22representative%22%2C%22labels%22%3A%7B%22description%22%3A%7B%22show%22%3Afalse%7D%7D%2C%22heightMode%22%3A%22fixed%22%2C%22height%22%3A200%7D%5D%2C%22trackLabels%22%3A%22offset%22%7D%5D%7D%5D%7D&sessionName=Screenshot",
   "scatac/pbmc5k_marker_swap": "?config=test_data%2Fconfig_demo.json&session=spec-%7B%22views%22%3A%5B%7B%22assembly%22%3A%22hg38%22%2C%22loc%22%3A%22chr2%3A86%2C780%2C000-86%2C820%2C000%20chr11%3A60%2C450%2C000-60%2C490%2C000%22%2C%22type%22%3A%22LinearGenomeView%22%2C%22tracks%22%3A%5B%7B%22trackId%22%3A%22ncbi_refseq_109_hg38_latest%22%2C%22displayMode%22%3A%22compact%22%2C%22filter%22%3A%5B%22geneLike%22%5D%2C%22height%22%3A80%7D%2C%7B%22trackId%22%3A%22pbmc5k_scatac_pseudobulk_hg38%22%2C%22height%22%3A300%7D%5D%7D%5D%7D&sessionName=Screenshot",
+  "scatac/pbmc5k_predicted_vs_measured": "?config=https%3A%2F%2Fjbrowse.org%2Fdemos%2Falphagenome2_singlecell%2Fconfig.json&session=spec-%7B%22views%22%3A%5B%7B%22assembly%22%3A%22hg38%22%2C%22loc%22%3A%22chr2%3A86%2C780%2C000-86%2C820%2C000%20chr11%3A60%2C450%2C000-60%2C490%2C000%22%2C%22type%22%3A%22LinearGenomeView%22%2C%22tracks%22%3A%5B%7B%22trackId%22%3A%22hg38-ncbiRefSeqCurated%22%2C%22displayMode%22%3A%22compact%22%2C%22height%22%3A70%7D%2C%7B%22trackId%22%3A%22pbmc5k_scatac_pseudobulk_hg38%22%2C%22height%22%3A300%7D%2C%7B%22trackId%22%3A%22ag2_pbmc_scatac_predicted%22%2C%22height%22%3A300%7D%5D%7D%5D%7D&sessionName=Screenshot",
   "scrna/marker_panel": "?config=test_data%2Fscrna_pbmc5k%2Fconfig.json&session=spec-%7B%22views%22%3A%5B%7B%22assembly%22%3A%22hg38%22%2C%22loc%22%3A%22chrX%3A136658390-136662390%20chr12%3A10556794-10560794%20chr4%3A1164931-1168931%20chr19%3A35345361-35349361%20chr1%3A153371710-153375710%20chr1%3A996963-1000963%20chr9%3A34519042-34523042%20chr9%3A137166757-137170757%20chr7%3A93926610-93930610%22%2C%22type%22%3A%22LinearGenomeView%22%2C%22tracks%22%3A%5B%7B%22trackId%22%3A%22ncbi_refseq_hg38%22%2C%22displayMode%22%3A%22compact%22%2C%22height%22%3A80%2C%22geneGlyphMode%22%3A%22representative%22%7D%2C%7B%22trackId%22%3A%22pbmc5k_scrna_pseudobulk_hg38%22%2C%22encoding%22%3A%7B%22y%22%3A%7B%22scale%22%3A%7B%22type%22%3A%22log%22%2C%22domainMin%22%3A1%7D%2C%22axis%22%3A%7B%22title%22%3A%22CPM%22%7D%7D%7D%2C%22height%22%3A405%7D%5D%7D%5D%7D&sessionName=Screenshot",
   "scrna/percell_lyz": "?config=test_data%2Fscrna_pbmc5k%2Fconfig.json&session=spec-%7B%22views%22%3A%5B%7B%22assembly%22%3A%22hg38%22%2C%22loc%22%3A%22chr12%3A69%2C353%2C000-69%2C354%2C500%22%2C%22type%22%3A%22LinearGenomeView%22%2C%22tracks%22%3A%5B%7B%22trackId%22%3A%22ncbi_refseq_hg38%22%2C%22displayMode%22%3A%22compact%22%2C%22height%22%3A60%2C%22filter%22%3A%5B%22geneLike%22%5D%7D%2C%7B%22trackId%22%3A%22pbmc5k_scrna_pseudobulk_hg38%22%2C%22height%22%3A150%7D%2C%7B%22trackId%22%3A%22pbmc5k_scrna_percell_hg38%22%2C%22type%22%3A%22LinearWiggleDisplay%22%2C%22encoding%22%3A%7B%22y%22%3A%7B%22scale%22%3A%7B%22domainMin%22%3A0%2C%22domainMax%22%3A2%7D%7D%7D%2C%22height%22%3A620%7D%5D%7D%5D%7D&sessionName=Screenshot",
   "sv_inspector_importform_loaded": "?config=test_data%2Fconfig_demo.json&session=spec-%7B%22views%22%3A%5B%7B%22type%22%3A%22SvInspectorView%22%2C%22assembly%22%3A%22hg19%22%2C%22uri%22%3A%22https%3A%2F%2Fjbrowse.org%2Fgenomes%2Fhg19%2Fskbr3%2Freads_lr_skbr3.fa_ngmlr-0.2.3_mapped.bam.sniffles1kb_auto_l8_s5_noalt.new.vcf%22%7D%5D%7D&sessionName=Screenshot",
@@ -555,6 +559,9 @@ export const figureSlowSpecs: string[] = [
   "alphagenome/predict_variant_menu",
   "alphagenome/splice_junctions",
   "alphagenome/variant_difference",
+  "alphagenome2/ets2_enhancer_atac",
+  "alphagenome2/ets2_enhancer_ism",
+  "alphagenome2/ets2_expression_effects",
   "bigwig/whole_genome_coverage",
   "cancer_sv/k562_amplicon_dna",
   "cancer_sv/k562_fusion_inspector_reads",
@@ -791,6 +798,7 @@ export const figureSlowSpecs: string[] = [
   "read_marks/depth",
   "read_marks/insert_size",
   "scatac/pbmc5k_marker_swap",
+  "scatac/pbmc5k_predicted_vs_measured",
   "scrna/marker_panel",
   "scrna/percell_lyz",
   "selection_pressure/lysozyme",
@@ -1414,6 +1422,21 @@ export const figureFrames: Record<
   "alphagenome/variant_difference": {
     "width": 1500,
     "height": 740
+  },
+  "alphagenome2/ets2_expression_effects": {
+    "width": 1500,
+    "height": 1060,
+    "timeout": 120000
+  },
+  "alphagenome2/ets2_enhancer_atac": {
+    "width": 1500,
+    "height": 980,
+    "timeout": 120000
+  },
+  "alphagenome2/ets2_enhancer_ism": {
+    "width": 1500,
+    "height": 460,
+    "timeout": 120000
   },
   "gene_prediction_merge": {
     "width": 1000,
@@ -2110,6 +2133,11 @@ export const figureFrames: Record<
   "scatac/pbmc5k_marker_swap": {
     "width": 1500,
     "height": 680,
+    "timeout": 120000
+  },
+  "scatac/pbmc5k_predicted_vs_measured": {
+    "width": 1500,
+    "height": 960,
     "timeout": 120000
   },
   "scrna/marker_panel": {

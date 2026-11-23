@@ -37,6 +37,28 @@ Page: https://jbrowse.org/jb2/docs/tutorials/alphagenome/
 - https://jbrowse.org/demos/alphagenome_test.bed
 - https://jbrowse.org/genomes/GRCh38/ncbi_refseq/GCA_000001405.15_GRCh38_full_analysis_set.refseq_annotation.sorted.gff.gz
 
+## AlphaGenome 2 predictions by cell type
+
+View AlphaGenome 2's predicted effect of each IBD credible-set SNP at ETS2 separately for each immune cell type
+
+Page: https://jbrowse.org/jb2/docs/tutorials/alphagenome2_singlecell/
+
+- https://jbrowse.org/demos/alphagenome2_singlecell/config.json
+- https://jbrowse.org/demos/alphagenome2_singlecell/ets2/atac_change_B_cell.bw
+- https://jbrowse.org/demos/alphagenome2_singlecell/ets2/atac_change_Macrophage.bw
+- https://jbrowse.org/demos/alphagenome2_singlecell/ets2/atac_change_Monocyte.bw
+- https://jbrowse.org/demos/alphagenome2_singlecell/ets2/credible_set.vcf.gz
+- https://jbrowse.org/demos/alphagenome2_singlecell/ets2/expression_effects.bed.gz
+- https://jbrowse.org/demos/alphagenome2_singlecell/ets2/gradient_ETS2_Macrophage.bw
+- https://jbrowse.org/demos/alphagenome2_singlecell/ets2/ism_A.bw
+- https://jbrowse.org/demos/alphagenome2_singlecell/ets2/ism_C.bw
+- https://jbrowse.org/demos/alphagenome2_singlecell/ets2/ism_G.bw
+- https://jbrowse.org/demos/alphagenome2_singlecell/ets2/ism_T.bw
+- https://jbrowse.org/demos/scatac_pbmc5k/CD14_Mono.bw
+- https://jbrowse.org/demos/scatac_pbmc5k/CD16_Mono.bw
+- https://jbrowse.org/genomes/GRCh38/fasta/hg38.prefix.fa.gz
+- https://jbrowse.org/ucsc/hg38/ncbiRefSeqCurated.gff.gz
+
 ## A grammar of graphics over a BED (RepeatMasker Alu age)
 
 Declare a BED column as the height of a bar and another as its color, count features per bin zoomed out, and count a whole chromosome into a bigWig
@@ -843,6 +865,10 @@ Page: https://jbrowse.org/jb2/docs/tutorials/scrna_pseudobulk/
 - https://cf.10xgenomics.com/samples/cell-exp/3.0.2/5k_pbmc_v3/5k_pbmc_v3_possorted_genome_bam.bam
 - https://jbrowse.org/code/jb2/main/test_data/config_demo.json
 - https://jbrowse.org/code/jb2/main/test_data/scrna_pbmc5k/config.json
+- https://jbrowse.org/demos/alphagenome2_singlecell/config.json
+- https://jbrowse.org/demos/alphagenome2_singlecell/pbmc/CD8_Memory.bw
+- https://jbrowse.org/demos/alphagenome2_singlecell/pbmc/CD8_Naive.bw
+- https://jbrowse.org/demos/alphagenome2_singlecell/pbmc/Naive_B.bw
 - https://jbrowse.org/demos/scatac_pbmc5k/CD8_Memory.bw
 - https://jbrowse.org/demos/scatac_pbmc5k/CD8_Naive.bw
 - https://jbrowse.org/demos/scatac_pbmc5k/Naive_B.bw
