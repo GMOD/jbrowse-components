@@ -5,7 +5,7 @@ import { pathToFileURL } from 'node:url'
 
 import { MAX_LABEL_FEATURE_DENSITY } from '../../../plugins/features/src/RenderFeatureDataRPC/zoomThresholds.ts'
 import { createTablesEngine } from './index.ts'
-import { BIGBED, DOG_SV, DOG_VCF, GFF3 } from './volvox.fixture.ts'
+import { BIGBED, DOG_SV, DOG_VCF, GFF3, SITES_SVS } from './volvox.fixture.ts'
 
 const engine = createTablesEngine()
 
@@ -144,6 +144,20 @@ test('a VCF read as features is the variant display with no sample rows: each re
     display: { records: { displayMode: 'compact' } },
   })
   expect(compact.rects.height[0]).toBeLessThan(t.rects.height[0]!)
+})
+
+test('a VCF region holding no records reads as empty tables beside a region that holds some', async () => {
+  const { region, ...args } = SITES_SVS
+  const empty = { refName: 'ctgB', start: 0, end: 6000 }
+  const t = await engine.features({ ...args, regions: [region, empty] })
+  expect(t.features.id.length).toBeGreaterThan(0)
+  expect(new Set(t.features.region)).toEqual(new Set([0]))
+
+  const none = await engine.features({ ...args, region: empty })
+  expect({ features: none.features.id, rects: none.rects.start }).toEqual({
+    features: [],
+    rects: [],
+  })
 })
 
 test("the display filter's gene category splits the features", async () => {

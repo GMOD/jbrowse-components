@@ -45,6 +45,7 @@ import {
 } from './LinearBasicDisplay/passes/shaders/rectInstance.generated.ts'
 import { isPlacedRow } from './LinearBasicDisplay/rowPlacement.ts'
 import { centerShrink } from './RenderFeatureDataRPC/collect/emitPrimitives.ts'
+import { packRenderArrays } from './RenderFeatureDataRPC/packRenderArrays.ts'
 import { ROOT_CHILD_ORDINAL } from './RenderFeatureDataRPC/rpcTypes.ts'
 import { shouldRenderPeptideText } from './RenderFeatureDataRPC/zoomThresholds.ts'
 import {
@@ -501,17 +502,18 @@ export function featureBandTables(
   }
   const regionLabels = displayLabels(regions, resolved, labels, bpPerPx)
   const joined = joinRegionTables(
-    regions.map((r, i) =>
-      laidOutTables(resolved.get(i)!, {
-        isShown: shownIn(onScreen, regionLabels[i]!, resolved.get(i)!),
+    regions.map((r, i) => {
+      const d = resolved.get(i) ?? emptyRegionData()
+      return laidOutTables(d, {
+        isShown: shownIn(onScreen, regionLabels[i]!, d),
         region: r,
         widthPx: (r.end - r.start) / bpPerPx,
         bpPerPx,
         hideChevrons: !showChevrons,
         labels: regionLabels[i]!,
         sectionOf,
-      }),
-    ),
+      })
+    }),
   )
   const sections = facet
     ? groupSections
@@ -547,6 +549,16 @@ export function featureBandTables(
       aminoAcidHalo: cssColorToHex(PEPTIDE_HALO_COLOR),
       sectionLabelHeight: facet ? GROUP_LABEL_HEIGHT : 0,
     },
+  }
+}
+
+function emptyRegionData() {
+  return {
+    ...packRenderArrays([], [], [], 0, 0),
+    flatbushItems: [],
+    subfeatureInfos: [],
+    floatingLabelsData: new Map(),
+    featureCount: 0,
   }
 }
 
