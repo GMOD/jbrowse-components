@@ -71,7 +71,7 @@ genome FASTA as arguments and runs the same steps on them.
 | RepeatMasker, UCSC's `rmsk` table as BED with a column header | [rmsk.bed.gz](https://jbrowse.org/ucsc/hg38/rmsk.bed.gz)                                     |
 | Reference lengths, for the bigWig header                      | [hg38.chrom.sizes](https://hgdownload.soe.ucsc.edu/goldenPath/hg38/bigZips/hg38.chrom.sizes) |
 
-## Plotting each Alu copy's divergence at one locus
+## Plot each Alu copy's divergence at one locus
 
 We'll load hg38, the assembly the RepeatMasker coordinates are on.
 
@@ -216,7 +216,7 @@ row of the BED.
 
 <Figure src="/img/alu_age/locus.png" caption="Alu copies over 1q21: bar height is divergence from consensus, color is lineage." />
 
-## Counting Alu copies per bin when zoomed out {#zooming-out}
+## Plot the AluY share under the copy density
 
 Zoomed out past `minBpPerPx`, the track switches to the two binned marks. On a
 whole chromosome it exceeds its fetch budget and shows a "region too large"
@@ -243,8 +243,6 @@ Add the bigWig as a track:
   "displayDefaults": { "mark": { "extent": "none" } }
 }
 ```
-
-## AluY share per megabase, against the genome-wide share
 
 The red AluY count is too small to read against a total that varies between
 bins. A script instead writes a BED with two log2 columns: the AluY share per
@@ -318,12 +316,12 @@ to the cut, colors and key names live. The config below sets them in the track:
 [`build_alu_age.sh`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/build_alu_age.sh)
 runs every step above. It:
 
-1. fetches UCSC's hg38 RepeatMasker table and the reference lengths, or copies
-   your own RepeatMasker BED and FASTA
-2. cuts out the Alu rows and indexes them
-3. counts the copies per kilobase into a bigWig, and per megabase into the AluY
-   share BED
-4. writes a JBrowse with the copies, the bigWig and the share as tracks
+- fetches UCSC's hg38 RepeatMasker table and the reference lengths, or copies
+  your own RepeatMasker BED and FASTA
+- cuts out the Alu rows and indexes them
+- counts the copies per kilobase into a bigWig, and per megabase into the AluY
+  share BED
+- writes a JBrowse with the copies, the bigWig and the share as tracks
 
 ```bash
 curl -fO https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/build_alu_age.sh
