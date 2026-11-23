@@ -539,7 +539,10 @@ config['tracks'] += [
             'height': 80,
             'encoding': {
                 'y': {'scale': {'domainMin': -ism_limit, 'domainMax': ism_limit}},
-                'color': {'scale': {'type': 'linear', 'scheme': 'redblue', 'domainMid': 0}},
+                'color': {
+                    'scale': {'type': 'linear', 'scheme': 'redblue', 'domainMid': 0},
+                    'legend': {'title': 'log fold change'},
+                },
             },
         },
     },
@@ -548,7 +551,7 @@ config['tracks'] += [
         f'Predicted scATAC, risk allele ({atac_mode})',
         'atac_reference',
         cell_rows,
-        {'mark': 'bar', 'height': 240},
+        {'mark': 'bar', 'height': 240, 'encoding': {'y': {'axis': {'title': 'predicted scATAC'}}}},
     ),
     multi(
         'ag2_ets2_atac_change',

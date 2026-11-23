@@ -40,14 +40,6 @@ for this locus.
   [AlphaGenome API key](https://www.alphagenomedocs.com/installation.html) and
   Python 3.10 or later with `pip install "alphagenome==2.0.*" pyBigWig pysam`
 
-## The data
-
-You don't need these files to follow the page: every track reads a hosted
-result. The predictions come from the AlphaGenome API, which the
-[build script](#reproduce-it-end-to-end) calls with your key, and the credible
-set is the seven SNPs SuSiE kept from the IBD GWAS (study GCST004133) in Stankey
-et al. (2024).
-
 ## Loading GRCh38
 
 AlphaGenome 2 predicts from GRCh38 sequence, and the files below use its
@@ -79,9 +71,11 @@ The genes are NCBI's curated RefSeq set from the
 
 ## The credible set as a variant track
 
-The credible set is a VCF with each SNP's posterior inclusion probability (PIP)
-and GWAS effect in `INFO`, so clicking a SNP shows both. The reference allele is
-the risk allele at every SNP, and the alternate is protective:
+The credible set is the seven SNPs SuSiE kept from the IBD GWAS (study
+GCST004133) in Stankey et al. (2024). The VCF has each SNP's posterior inclusion
+probability (PIP) and GWAS effect in `INFO`, so clicking a SNP shows both. The
+reference allele is the risk allele at every SNP, and the alternate is
+protective:
 
 ```json addtrack loc=chr21:39,093,000..39,095,400
 {
@@ -113,10 +107,12 @@ scores = variant_scorers.tidy_scores(
 )
 ```
 
-A score is one log fold change per gene, so the script writes one BED line per
-gene, SNP and cell type, over the gene's span in the model's own annotation. A
-`#` header names the columns, and every column becomes a field JBrowse can
-filter, facet and color by (tab-separated, shown space-aligned):
+A score is one log fold change per protein-coding gene, alternate over
+reference, so a score below zero means the protective allele lowers the gene's
+predicted expression. The script writes one BED line per gene, SNP and cell
+type, over the gene's span in the model's own annotation. A `#` header names the
+columns, and every column becomes a field JBrowse can filter, facet and color by
+(tab-separated, shown space-aligned):
 
 ```text
 #chrom  chromStart  chromEnd  name   score    strand  cell_type   snp
@@ -127,10 +123,10 @@ chr21   38805182    38824955  ETS2   -0.0023  +       B cell      rs2836882
 
 ## rs2836882's effect on expression in each cell type
 
-The track draws the notebook's heatmap along the chromosome: a section per cell
-type, each gene a rectangle colored by its score. `filter` keeps rs2836882's
-lines, `facet` makes the sections, and the facet's `pileup` packs overlapping
-genes into separate lanes:
+The track lays the notebook's heatmap along the chromosome, with a section per
+cell type and each gene a rectangle colored by its score. `filter` keeps
+rs2836882's lines, `facet` makes the sections, and the facet's `pileup` packs
+overlapping genes into separate lanes:
 
 ```json addtrack loc=chr21:38,700,000..39,330,000
 {
@@ -181,9 +177,10 @@ genes into separate lanes:
 }
 ```
 
-The pinned `domainMin`, `domainMax` and `domainMid` put no effect at white in
-every section, as the notebook's color scale does. Hovering a rectangle names
-its gene, and the RefSeq track above names them all.
+With `domainMin`, `domainMax` and `domainMid` pinned, a score of zero is white
+in every section, as in the notebook's color scale. Hovering a rectangle names
+its gene. Genes without a rectangle, such as _ETS2-AS1_, are not protein-coding,
+so `score_variants` left them out.
 
 The second track reads the same BED filtered to macrophages and faceted by SNP,
 a section per credible-set SNP in genomic order:
@@ -237,21 +234,7 @@ a section per credible-set SNP in genomic order:
 }
 ```
 
-Open both over the span from _ETS2_ to _BRWD1_:
-
-```text
-chr21:38,700,000-39,330,000
-```
-
-<Figure caption="Predicted expression effects from ETS2 to BRWD1: rs2836882 in each ileum cell type, each credible-set SNP in macrophages, and the input gradient of ETS2 in macrophages." src="/img/alphagenome2/ets2_expression_effects.png" />
-
-_ETS2_ is red in the macrophage and monocyte sections and white in the lymphoid
-ones. Of the genes nearer the SNPs, _PSMG1_ is pale in the myeloid sections and
-_BRWD1_ stays white. In the second track rs2836882 colors _ETS2_ deep red,
-rs9808651 pale pink and the other five not at all, although rs2836878 has the
-highest PIP.
-
-## Which bases the ETS2 prediction reads
+## Input gradient of ETS2 expression
 
 `predict_interval_gradients` takes the gradient of one gene's predicted
 expression with respect to each base of the megabase centered on its
@@ -295,9 +278,23 @@ with a symmetric axis:
 }
 ```
 
-It is the bottom track of the figure above. Its tallest bar in the whole
-megabase is at rs2836882, 289 kb from _ETS2_, taller than any at the _ETS2_
-promoter.
+Open the three tracks over the span from _ETS2_ to _BRWD1_:
+
+```text
+chr21:38,700,000-39,330,000
+```
+
+<Figure caption="Predicted expression effects from ETS2 to BRWD1: rs2836882 in each ileum cell type, each credible-set SNP in macrophages, and the input gradient of ETS2 in macrophages." src="/img/alphagenome2/ets2_expression_effects.png" />
+
+_ETS2_ is red, a lower predicted expression with the protective allele, in the
+macrophage and monocyte sections and white in the lymphoid ones. Of the genes
+nearer the SNPs, _PSMG1_ is pale in the myeloid sections and _BRWD1_ stays
+white. In the macrophage track _ETS2_ is deep red in the rs2836882 section, pale
+pink in the rs9808651 section and white in the other five, although rs2836878
+has the highest PIP.
+
+The input gradient's tallest bar in the whole megabase is at rs2836882, 289 kb
+from _ETS2_, taller than any at the _ETS2_ promoter.
 
 ## Predicted accessibility at the enhancer
 
@@ -310,8 +307,8 @@ minus the reference as two BigWigs per cell type.
 AlphaGenome 2 was trained on single-cell expression from these ileum cell types
 but on no scATAC from them. `supported_conditions()` lists the mode of each cell
 type's prediction for each output, and for ileum scATAC it is
-`imputed_supported`, which the track names carry. The change track pins a
-symmetric axis so zero sits mid-row; the fence lists three of its seven rows:
+`imputed_supported`, and the track names include it. The change track's axis is
+pinned symmetric, so zero sits mid-row. The fence lists three of its seven rows:
 
 ```json addtrack loc=chr21:39,094,144..39,095,144
 {
@@ -362,9 +359,9 @@ symmetric axis so zero sits mid-row; the fence lists three of its seven rows:
 scATAC the same way, from `atac_reference_<Cell_type>.bw`, with an axis from
 zero. Under both goes measured scATAC from blood: the monocyte rows of the 10x
 PBMC pseudobulk track of [](/docs/tutorials/scrna_pseudobulk), whose hosted
-config has all twelve rows. Its cells are unstimulated blood monocytes, not
-ileum macrophages, so it shows whether monocytes open this enhancer, not whether
-the ileum predictions are right:
+config has all twelve rows. Its cells are unstimulated blood monocytes, so it
+tests whether monocytes open this enhancer and cannot check the ileum
+predictions:
 
 ```json addtrack
 {
@@ -403,10 +400,10 @@ chr21:39,094,144-39,095,144
 
 <Figure caption="Predicted scATAC around rs2836882 in each ileum cell type for the risk allele and for the protective allele minus the risk allele, over measured scATAC from blood CD14 and CD16 monocytes." src="/img/alphagenome2/ets2_enhancer_atac.png" />
 
-Accessibility is predicted in the macrophage and monocyte rows only, and the
-protective allele lowers it across the enhancer in those rows. Stankey et al.
-measured the same direction in primary macrophages, where the risk allele has
-higher accessibility and PU.1 binding.
+Predicted accessibility is near zero outside the macrophage and monocyte rows,
+and in those two rows the protective allele lowers it across the enhancer, most
+near rs2836882. Stankey et al. measured the same direction in primary
+macrophages, where the risk allele has higher accessibility and PU.1 binding.
 
 ## Every base change at the enhancer
 
@@ -466,7 +463,8 @@ the forward strand of the Reference sequence track, `hg38-refseq`, above it:
     "encoding": {
       "y": { "scale": { "domainMin": -0.35, "domainMax": 0.35 } },
       "color": {
-        "scale": { "type": "linear", "scheme": "redblue", "domainMid": 0 }
+        "scale": { "type": "linear", "scheme": "redblue", "domainMid": 0 },
+        "legend": { "title": "log fold change" }
       }
     }
   }
@@ -476,8 +474,9 @@ the forward strand of the Reference sequence track, `hg38-refseq`, above it:
 <Figure caption="The predicted effect on ETS2 expression in ileum macrophages of each base change in the 64 bases around rs2836882, one row per base mutated to, under the reference sequence." src="/img/alphagenome2/ets2_enhancer_ism.png" />
 
 Every change at the seven bases `TGCGTCA`, rs2836882's G the fourth of them,
-lowers _ETS2_. That is the AP-1-like motif the notebook reads off the same
-scores.
+lowers _ETS2_. The notebook identifies them as an AP-1-like motif from the same
+scores. The largest single effect, T to A at 39,094,626, is in a second stretch
+of red 15 to 25 bases to the left, which the notebook does not discuss.
 
 ## Reproduce it end to end
 
@@ -488,8 +487,8 @@ writes every track on this page with your API key. It:
    writes one BED line per gene, SNP and cell type
 2. predicts scATAC around rs2836882 for both alleles in each cell type, every
    base change around it, and the input gradient of _ETS2_
-3. predicts scATAC at six PBMC marker loci for the cell types of
-   [](/docs/tutorials/scrna_pseudobulk), to set beside the measured rows there
+3. predicts scATAC at six PBMC marker loci for
+   [](/docs/tutorials/scrna_pseudobulk)
 4. writes `config.json` over hg38 and the RefSeq genes, opening on _ETS2_
 
 ```bash

@@ -426,6 +426,9 @@
               "type": "linear",
               "scheme": "redblue",
               "domainMid": 0
+            },
+            "legend": {
+              "title": "log fold change"
             }
           }
         }
@@ -493,7 +496,14 @@
       },
       "displayDefaults": {
         "mark": "bar",
-        "height": 240
+        "height": 240,
+        "encoding": {
+          "y": {
+            "axis": {
+              "title": "predicted scATAC"
+            }
+          }
+        }
       }
     },
     {
