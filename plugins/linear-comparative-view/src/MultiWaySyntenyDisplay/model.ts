@@ -104,7 +104,12 @@ import {
   releaseHideUnlabelled,
   ribbonColorFieldOf,
 } from './configSlotViews.ts'
-import { laneGenome, laneKeyIn, touchesWindow } from './copyLane.ts'
+import {
+  laneGenome,
+  laneKeyIn,
+  readsCopies,
+  touchesWindow,
+} from './copyLane.ts'
 import { featureWidgetOf } from './featureWidget.ts'
 import { dealGeneColors, geneColorRampOf, geneColors } from './geneColor.ts'
 import { laneGeneTracksOf } from './laneAnnotation.ts'
@@ -1386,7 +1391,7 @@ export function stateModelFactory(
             groups: self.fitGroups,
             assemblyNames: self.rowAssemblies,
             anchorRow: self.anchorRow,
-            vsAnchor: self.laneField === 'refName',
+            vsAnchor: readsCopies(self.laneField),
             previous,
             frozen,
             pins: self.pinsInForce,

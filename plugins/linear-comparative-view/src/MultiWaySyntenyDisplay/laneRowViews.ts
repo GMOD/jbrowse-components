@@ -27,6 +27,7 @@ import {
 } from './laneSelection.ts'
 import { groupFeatures, laneIndelsOf } from './layoutMultiWay.ts'
 import {
+  headerDeclaresHaplotypeLanes,
   headerReadsAgainstAnchor,
   laneFetchesFor,
   rowsReadAgainstAnchor,
@@ -105,7 +106,7 @@ export type LaneGroupHost = ConfigSlotSelf &
     | 'laneAssemblies'
     | 'trackAssemblyNames'
     | 'features'
-  >
+  > & { adapterHeader: unknown }
 
 export function laneGroupViews(self: LaneGroupHost) {
   return {
@@ -121,6 +122,7 @@ export function laneGroupViews(self: LaneGroupHost) {
         getConf(self, ['rows', 'field']),
         self.trackAssemblyNames,
         name => isSameAssemblyName(name, anchor, assemblies),
+        headerDeclaresHaplotypeLanes(self.adapterHeader),
       )
     },
     /** #getter */
@@ -147,7 +149,9 @@ export function laneGroupViews(self: LaneGroupHost) {
   }
 }
 
-export function filedGroupViews(self: ReturnType<typeof laneGroupViews>) {
+export function filedGroupViews(
+  self: ReturnType<typeof laneGroupViews> & Pick<LaneRowInputs, 'lgv'>,
+) {
   return {
     /**
      * #getter
@@ -155,8 +159,14 @@ export function filedGroupViews(self: ReturnType<typeof laneGroupViews>) {
      * lanes the floor drops
      */
     get filedGroups() {
-      return groupsOfField(self.laneField, self.groupedFeatures, () =>
-        self.copyFiling(),
+      return groupsOfField(
+        self.laneField,
+        self.groupedFeatures,
+        () => self.copyFiling(),
+        self.lgv.settledDynamicBlocks.reduce(
+          (bp, block) => bp + block.end - block.start,
+          0,
+        ),
       )
     },
   }

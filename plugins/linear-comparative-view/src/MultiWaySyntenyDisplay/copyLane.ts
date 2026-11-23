@@ -1,5 +1,7 @@
 import { doesIntersect2 } from '@jbrowse/core/util'
 
+import { blocksOf, extentOf } from '../alignmentBlocks.ts'
+
 import type { MatePlacement, MultiWayGroup } from './layoutMultiWay.ts'
 
 // An old duplication keeps few of its genes: on the grape-peach gamma window
@@ -10,17 +12,25 @@ export const COPY_SHARE = 0.1
 /**
  * What one lane is, `rows.field`: a genome, or with `refName` one contig of a
  * genome holding a copy of the anchor window, a polyploid's homoeolog or an
- * old duplication's ohnolog.
+ * old duplication's ohnolog, or with `piece` each stretch of a contig the
+ * window places, so a haplotype in several pieces draws every one.
  */
-export const LANE_ROWS_FIELDS = ['assembly', 'refName'] as const
+export const LANE_ROWS_FIELDS = ['assembly', 'refName', 'piece'] as const
 export type LaneRowsField = (typeof LANE_ROWS_FIELDS)[number]
+
+/** whether each lane is read against the anchor alone, as copy and piece lanes are */
+export function readsCopies(field: LaneRowsField) {
+  return field !== 'assembly'
+}
 
 /** `rows.field` as written, `auto` choosing by the track's genomes */
 export const LANE_ROWS_SETTINGS = ['auto', ...LANE_ROWS_FIELDS] as const
 export type LaneRowsSetting = (typeof LANE_ROWS_SETTINGS)[number]
 
 /**
- * What one lane is under `setting`. `auto` draws a lane per copy where the
+ * What one lane is under `setting`. `auto` draws a lane per piece where the
+ * source's header declares haplotype lanes, since a haplotype's further
+ * pieces are its own sequence over the window; else a lane per copy where the
  * track's genomes name at most one besides the anchor: every gutter already
  * reads against the anchor, and the copies are what the track is opened to
  * see. Across more genomes, or a track naming none, a lane per genome.
@@ -29,34 +39,52 @@ export function laneFieldOf(
   setting: LaneRowsSetting,
   trackGenomes: readonly string[],
   isAnchor: (assemblyName: string) => boolean,
+  haplotypeLanes = false,
 ): LaneRowsField {
   return setting === 'auto'
-    ? trackGenomes.length > 0 &&
-      trackGenomes.filter(name => !isAnchor(name)).length <= 1
-      ? 'refName'
-      : 'assembly'
+    ? haplotypeLanes
+      ? 'piece'
+      : trackGenomes.length > 0 &&
+          trackGenomes.filter(name => !isAnchor(name)).length <= 1
+        ? 'refName'
+        : 'assembly'
     : setting
 }
 
 /**
  * A copy lane's name, as a locstring names a contig with its assembly:
- * `{grape}chr9`. A genome lane's name is its assembly name.
+ * `{grape}chr9`, and a piece lane's, its stretch's place in contig order
+ * after an `@`: `{HG00097.1}CM094061.1@2`. A genome lane's name is its
+ * assembly name.
  */
-export function copyLaneName(assemblyName: string, refName: string) {
-  return `{${assemblyName}}${refName}`
+export function copyLaneName(
+  assemblyName: string,
+  refName: string,
+  piece?: number,
+) {
+  return `{${assemblyName}}${refName}${piece === undefined ? '' : `@${piece}`}`
 }
 
-const COPY_LANE = /^\{([^}]+)\}(.+)$/
+const COPY_LANE = /^\{([^}]+)\}(.+?)(?:@(\d+))?$/
 
-/** the genome a lane draws, and the contig where it is a copy lane */
+/** the genome a lane draws, the contig where it is a copy or piece lane, and a piece lane's place */
 export function laneOf(lane: string): {
   assemblyName: string
   refName?: string
+  piece?: number
 } {
   const match = COPY_LANE.exec(lane)
   return match
-    ? { assemblyName: match[1]!, refName: match[2]! }
+    ? {
+        assemblyName: match[1]!,
+        refName: match[2]!,
+        ...(match[3] === undefined ? {} : { piece: Number(match[3]) }),
+      }
     : { assemblyName: lane }
+}
+
+export function isPieceLane(lane: string) {
+  return laneOf(lane).piece !== undefined
 }
 
 export function laneGenome(lane: string) {
@@ -87,11 +115,11 @@ export function laneKeyWith(
   genomeKey: (assemblyName: string) => string,
   refNameKey: (genome: string, refName: string) => string,
 ) {
-  const { assemblyName, refName } = laneOf(lane)
+  const { assemblyName, refName, piece } = laneOf(lane)
   const genome = genomeKey(assemblyName)
   return refName === undefined
     ? genome
-    : copyLaneName(genome, refNameKey(genome, refName))
+    : copyLaneName(genome, refNameKey(genome, refName), piece)
 }
 
 /**
@@ -250,16 +278,101 @@ export function lanesPlacedIn(groups: readonly MultiWayGroup[]) {
 }
 
 /**
+ * `groups` with each mate filed under the lane of its genome, contig and
+ * block, the blocks numbered in contig order from 1: a contig's placements
+ * parted a window apart, `unitBp`, as a lane's frame parts them, a record's
+ * pieces never parted (`blocksOf`), and no share floor, so every piece the
+ * window places draws. A block no group `inWindow` places draws no lane.
+ */
+export function fileUnderPieces(
+  groups: readonly MultiWayGroup[],
+  unitBp: number,
+  inWindow: (group: MultiWayGroup) => boolean = () => true,
+) {
+  const contigs = new Map<
+    string,
+    {
+      assemblyName: string
+      refName: string
+      placed: { placement: MatePlacement; weight: number; shown: boolean }[]
+    }
+  >()
+  for (const group of groups) {
+    const shown = inWindow(group)
+    for (const [assemblyName, placements] of group.mates) {
+      for (const placement of placements) {
+        const key = copyLaneName(assemblyName, placement.refName)
+        let contig = contigs.get(key)
+        if (!contig) {
+          contig = { assemblyName, refName: placement.refName, placed: [] }
+          contigs.set(key, contig)
+        }
+        contig.placed.push({ placement, weight: group.weight, shown })
+      }
+    }
+  }
+  const laneOfPlacement = new Map<MatePlacement, string>()
+  for (const { assemblyName, refName, placed } of contigs.values()) {
+    const blocks =
+      unitBp > 0
+        ? blocksOf(placed, unitBp, undefined, {
+            floor: false,
+            joinOf: p => p.placement.feature.get('recordId'),
+          })
+        : [extentOf(placed)]
+    const meets = (
+      block: { lo: number; hi: number },
+      { placement }: (typeof placed)[number],
+    ) => placement.end > block.lo && placement.start < block.hi
+    const shownBlocks = blocks.filter(block =>
+      placed.some(p => p.shown && meets(block, p)),
+    )
+    for (const p of placed) {
+      const at = shownBlocks.findIndex(block => meets(block, p))
+      if (at !== -1) {
+        laneOfPlacement.set(
+          p.placement,
+          copyLaneName(assemblyName, refName, at + 1),
+        )
+      }
+    }
+  }
+  return groups.map(group => {
+    const mates = new Map<string, MatePlacement[]>()
+    for (const placements of group.mates.values()) {
+      for (const p of placements) {
+        const lane = laneOfPlacement.get(p)
+        if (lane !== undefined) {
+          const filed = mates.get(lane)
+          if (filed) {
+            filed.push(p)
+          } else {
+            mates.set(lane, [p])
+          }
+        }
+      }
+    }
+    return { ...group, mates }
+  })
+}
+
+/**
  * The groups `rows.field` draws, the display's and the export's alike: each
- * mate under its genome's lane, or under its copy lane as `filing` files it,
- * with the copy lanes the floor drops
+ * mate under its genome's lane, under its copy lane as `filing` files it,
+ * with the copy lanes the floor drops, or under its piece lane
  */
 export function groupsOfField(
   field: LaneRowsField,
   grouped: MultiWayGroup[],
   filing: () => CopyLaneFiling,
+  unitBp = 0,
 ) {
   return field === 'refName'
     ? fileUnderCopies(grouped, filing())
-    : { groups: grouped, underFloor: [] }
+    : field === 'piece'
+      ? {
+          groups: fileUnderPieces(grouped, unitBp, filing().inWindow),
+          underFloor: [],
+        }
+      : { groups: grouped, underFloor: [] }
 }

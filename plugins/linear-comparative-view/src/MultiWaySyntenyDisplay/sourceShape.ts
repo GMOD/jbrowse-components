@@ -1,4 +1,5 @@
 import { isNamedRecord } from '../syntenyMate.ts'
+import { readsCopies } from './copyLane.ts'
 
 import type { LaneRowsField } from './copyLane.ts'
 import type { Feature } from '@jbrowse/core/util'
@@ -17,6 +18,19 @@ export function headerReadsAgainstAnchor(header: unknown) {
 }
 
 /**
+ * A header's `haplotypeLanes`: a source whose lanes are haplotypes, each
+ * drawing every piece of itself the window places
+ */
+export function headerDeclaresHaplotypeLanes(header: unknown) {
+  return (
+    typeof header === 'object' &&
+    header !== null &&
+    'haplotypeLanes' in header &&
+    header.haplotypeLanes === true
+  )
+}
+
+/**
  * Whether each gutter reads its far lane against the anchor: a source that
  * names an anchor and answers no lane pairs states each lane against it
  * alone, as does one whose header sets `lanesReadAgainstAnchor`, and so does
@@ -30,7 +44,7 @@ export function rowsReadAgainstAnchor(
   headerAgainstAnchor = false,
 ) {
   return (
-    field === 'refName' ||
+    readsCopies(field) ||
     (starAnchor !== undefined &&
       (headerAgainstAnchor || !capabilities.includes('lanePairsOnAnchor')))
   )
@@ -78,7 +92,7 @@ export function againstAnchorName(
   labelOf: (lane: string) => string,
 ) {
   return rowsVsAnchor
-    ? field === 'refName'
+    ? readsCopies(field)
       ? labelOf(anchor)
       : anchor
     : undefined

@@ -9448,7 +9448,8 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "enum": [
             "auto",
             "assembly",
-            "refName"
+            "refName",
+            "piece"
           ],
           "type": "string"
         },
@@ -9458,7 +9459,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "x-closed": true,
           "properties": {
             "field": {
-              "description": "what one lane is: 'assembly', a lane per genome, or 'refName', a lane per contig holding a copy of the window, named '{<assembly>}<refName>' and answering to its genome's name; 'auto' draws 'refName' where the track names at most one genome besides the anchor, else 'assembly'.",
+              "description": "what one lane is: 'assembly', a lane per genome, 'refName', a lane per contig holding a copy of the window, named '{<assembly>}<refName>' and answering to its genome's name, or 'piece', a lane per stretch of a contig the window places, named '{<assembly>}<refName>@<n>'; 'auto' draws 'piece' where the source's header declares haplotype lanes, 'refName' where the track names at most one genome besides the anchor, else 'assembly'.",
               "default": "auto",
               "if": {
                 "type": "null"
@@ -9467,7 +9468,8 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
                 "enum": [
                   "auto",
                   "assembly",
-                  "refName"
+                  "refName",
+                  "piece"
                 ]
               }
             },

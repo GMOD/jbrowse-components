@@ -45,6 +45,7 @@ import {
   laneGenome,
   laneKeyIn,
   laneOf,
+  readsCopies,
 } from './MultiWaySyntenyDisplay/copyLane.ts'
 import {
   laneGroupsFetchSpecsOf,
@@ -825,7 +826,7 @@ export async function multiwayTables(
     groups: fit,
     assemblyNames: rows,
     anchorRow,
-    vsAnchor: field === 'refName',
+    vsAnchor: readsCopies(field),
     previous: new Map(),
     pins: pinsInForce,
     openingsOf,

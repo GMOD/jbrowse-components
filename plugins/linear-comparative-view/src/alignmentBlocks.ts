@@ -40,8 +40,8 @@ export interface Block {
   overlap: number
 }
 
-function clustersOf<P extends BpSpan>(placements: Weighed<P>[], gapBp: number) {
-  const clusters: Weighed<P>[][] = []
+function clustersOf<W extends Weighed>(placements: W[], gapBp: number) {
+  const clusters: W[][] = []
   let reach = Number.NEGATIVE_INFINITY
   for (const p of [...placements].sort(
     (a, b) => a.placement.start - b.placement.start,
@@ -76,24 +76,33 @@ export function extentOf(placements: Weighed[]) {
  * so a scatter of small hits can neither chain two blocks nor widen one. Where
  * every cluster is a stray, each is its own block. A cluster already drawn
  * (`held`) stays solid at a lower share, since each step re-clips the pieces at
- * the window's edges and moves their weight.
+ * the window's edges and moves their weight. `floor: false` sets no cluster
+ * aside. Placements `joinOf` names alike are one record's: a cluster holding
+ * one with a solid cluster is solid, and blocks holding one are one block,
+ * since a record is one colinear alignment and the stretch between its runs
+ * is the mate's own sequence.
  */
-export function blocksOf(
-  placements: Weighed[],
+export function blocksOf<W extends Weighed>(
+  placements: W[],
   unitBp: number,
   held?: { lo: number; hi: number },
+  {
+    floor: hasFloor = true,
+    joinOf,
+  }: { floor?: boolean; joinOf?: (placement: W) => unknown } = {},
 ) {
   const clusters = clustersOf(placements, unitBp * CLUSTER_GAP)
-  const floor = STRAY_SHARE * weightOf(placements)
-  const solid = clusters.filter(cluster => {
+  const floor = hasFloor ? STRAY_SHARE * weightOf(placements) : 0
+  const floored = clusters.filter(cluster => {
     const { lo, hi } = extentOf(cluster)
     const drawn = held !== undefined && lo < held.hi && hi > held.lo
     return weightOf(cluster) >= (drawn ? floor * HELD_STRAY_RATIO : floor)
   })
-  const blocks: Block[] = []
+  const solid = joinOf ? joinedClusters(clusters, floored, joinOf) : floored
+  const linked: Block[] = []
   for (const cluster of solid.length ? solid : clusters) {
     const { lo, hi } = extentOf(cluster)
-    const last = blocks.at(-1)
+    const last = linked.at(-1)
     if (
       solid.length &&
       last &&
@@ -102,9 +111,10 @@ export function blocksOf(
     ) {
       last.hi = Math.max(last.hi, hi)
     } else {
-      blocks.push({ lo, hi, overlap: 0 })
+      linked.push({ lo, hi, overlap: 0 })
     }
   }
+  const blocks = joinOf ? joinedBlocks(linked, placements, joinOf) : linked
   for (const p of placements) {
     const block = blocks[firstEndingAfter(blocks, p.placement.start)]
     if (block && p.placement.end > block.lo) {
@@ -112,6 +122,70 @@ export function blocksOf(
     }
   }
   return blocks
+}
+
+// each cluster holding a record a solid cluster holds, until none is added
+function joinedClusters<W extends Weighed>(
+  clusters: W[][],
+  floored: W[][],
+  joinOf: (placement: W) => unknown,
+) {
+  const solid = new Set(floored)
+  const records = new Set<unknown>()
+  let added = true
+  while (added) {
+    added = false
+    for (const cluster of solid) {
+      for (const p of cluster) {
+        const record = joinOf(p)
+        if (record !== undefined) {
+          records.add(record)
+        }
+      }
+    }
+    for (const cluster of clusters) {
+      if (!solid.has(cluster) && cluster.some(p => records.has(joinOf(p)))) {
+        solid.add(cluster)
+        added = true
+      }
+    }
+  }
+  return clusters.filter(cluster => solid.has(cluster))
+}
+
+// the blocks from the first to the last holding one record are one block
+function joinedBlocks<W extends Weighed>(
+  blocks: Block[],
+  placements: W[],
+  joinOf: (placement: W) => unknown,
+) {
+  const first = new Map<unknown, number>()
+  const reach = blocks.map((_, i) => i)
+  for (const p of placements) {
+    const record = joinOf(p)
+    const at = firstEndingAfter(blocks, p.placement.start)
+    const block = blocks[at]
+    if (record !== undefined && block && p.placement.end > block.lo) {
+      const from = first.get(record) ?? at
+      first.set(record, Math.min(from, at))
+      const lo = Math.min(from, at)
+      reach[lo] = Math.max(reach[lo]!, at, from)
+    }
+  }
+  const joined: Block[] = []
+  for (let i = 0; i < blocks.length;) {
+    let end = reach[i]!
+    let hi = blocks[i]!.hi
+    let j = i
+    while (j <= end) {
+      end = Math.max(end, reach[j]!)
+      hi = Math.max(hi, blocks[j]!.hi)
+      j++
+    }
+    joined.push({ lo: blocks[i]!.lo, hi, overlap: 0 })
+    i = j
+  }
+  return joined
 }
 
 // blocks come out sorted and disjoint, so one search finds the only block a

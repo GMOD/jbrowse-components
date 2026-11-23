@@ -6,7 +6,10 @@ import {
   copyLaneFiling,
   copyLaneName,
   fileUnderCopies,
+  fileUnderPieces,
   groupsOfField,
+  isPieceLane,
+  laneFieldOf,
   laneGenome,
   laneKeyWith,
   laneOf,
@@ -380,5 +383,117 @@ describe('copy lanes around an anchor in the middle', () => {
       anchorRuleY(stack.lanes[3]!, stack.bandHeight),
     ])
     expect(layer.row).toBe(2)
+  })
+})
+
+describe('piece lanes', () => {
+  // one walk-file record of a haplotype against GRCh38 over chr22, its mate
+  // on the haplotype's own contig
+  function walkRecord(
+    id: string,
+    anchor: [number, number],
+    mate: [string, number, number],
+    record = id,
+  ) {
+    return new SimpleFeature({
+      uniqueId: id,
+      recordId: record,
+      refName: 'chr22',
+      start: anchor[0],
+      end: anchor[1],
+      strand: 1,
+      assemblyName: 'hg38',
+      mate: {
+        assemblyName: 'HG00097.1',
+        refName: mate[0],
+        start: mate[1],
+        end: mate[2],
+      },
+    })
+  }
+  const WINDOW = 27_000
+  const lanesOf = (groups: ReturnType<typeof fileUnderPieces>) =>
+    [...new Set(groups.flatMap(g => [...g.mates.keys()]))].sort()
+
+  test('a piece lane names its genome, contig and place in contig order', () => {
+    const name = copyLaneName('HG00097.1', 'CM094061.1', 2)
+    expect(name).toBe('{HG00097.1}CM094061.1@2')
+    expect(laneOf(name)).toEqual({
+      assemblyName: 'HG00097.1',
+      refName: 'CM094061.1',
+      piece: 2,
+    })
+    expect(isPieceLane(name)).toBe(true)
+    expect(isPieceLane('{grape}chr9')).toBe(false)
+    expect(laneGenome(name)).toBe('HG00097.1')
+  })
+
+  test('auto files a lane per piece where the header declares haplotype lanes', () => {
+    const genomes = ['hg38', 'HG00097.1', 'HG00099.1']
+    const isAnchor = (name: string) => name === 'hg38'
+    expect(laneFieldOf('auto', genomes, isAnchor, true)).toBe('piece')
+    expect(laneFieldOf('auto', genomes, isAnchor)).toBe('assembly')
+    expect(laneFieldOf('assembly', genomes, isAnchor, true)).toBe('assembly')
+  })
+
+  test('one record across a 54 kb insertion is one piece', () => {
+    const groups = groupFeatures([
+      walkRecord('left', [0, 13_000], ['CM094073.1', 0, 13_000], 'walk'),
+      walkRecord(
+        'right',
+        [13_000, 27_000],
+        ['CM094073.1', 67_000, 81_000],
+        'walk',
+      ),
+    ])
+    expect(lanesOf(fileUnderPieces(groups, WINDOW))).toEqual([
+      '{HG00097.1}CM094073.1@1',
+    ])
+  })
+
+  test('two records of one contig a window apart, and a second contig, are three pieces', () => {
+    const groups = groupFeatures([
+      walkRecord('a', [0, 10_000], ['CM094061.1', 0, 10_000]),
+      walkRecord('b', [10_000, 27_000], ['CM094061.1', 4_000_000, 4_017_000]),
+      walkRecord('c', [5_000, 9_000], ['JAHEPA020000070.1', 100, 4100]),
+    ])
+    expect(lanesOf(fileUnderPieces(groups, WINDOW))).toEqual([
+      '{HG00097.1}CM094061.1@1',
+      '{HG00097.1}CM094061.1@2',
+      '{HG00097.1}JAHEPA020000070.1@1',
+    ])
+  })
+
+  test('every piece draws, however little of the window it holds', () => {
+    const groups = groupFeatures([
+      walkRecord('a', [0, 26_900], ['CM094061.1', 0, 26_900]),
+      walkRecord('b', [26_900, 27_000], ['CM094061.1', 900_000, 900_100]),
+    ])
+    expect(lanesOf(fileUnderPieces(groups, WINDOW))).toHaveLength(2)
+  })
+
+  test('a piece placing nothing in the window draws no lane', () => {
+    const groups = groupFeatures([
+      walkRecord('a', [0, 27_000], ['CM094061.1', 0, 27_000]),
+      walkRecord('b', [40_000, 50_000], ['CM094061.1', 900_000, 910_000]),
+    ])
+    const inWindow = (g: { anchor: { start: number } }) =>
+      g.anchor.start < WINDOW
+    expect(lanesOf(fileUnderPieces(groups, WINDOW, inWindow))).toEqual([
+      '{HG00097.1}CM094061.1@1',
+    ])
+  })
+
+  test('the piece field files through groupsOfField', () => {
+    const groups = groupFeatures([
+      walkRecord('a', [0, 27_000], ['CM094061.1', 0, 27_000]),
+    ])
+    const { groups: filed } = groupsOfField(
+      'piece',
+      groups,
+      () => copyLaneFiling([], [], name => name),
+      WINDOW,
+    )
+    expect(lanesOf(filed)).toEqual(['{HG00097.1}CM094061.1@1'])
   })
 })

@@ -10,6 +10,7 @@ import {
   voteEvidence,
 } from '../syntenyHysteresis.ts'
 import { isNamedRecord } from '../syntenyMate.ts'
+import { isPieceLane } from './copyLane.ts'
 import { flipPinOf, placePinOf } from './lanePins.ts'
 import {
   frameOpenings,
@@ -28,6 +29,7 @@ import type {
   FetchRegion,
   LaneBlock,
   LaneOpening,
+  MatePlacement,
   MultiWayGroup,
   MultiWayPlacement,
   RowFrame,
@@ -113,9 +115,12 @@ function mid(p: MultiWayPlacement) {
   return (p.start + p.end) / 2
 }
 
-export function pickRung(need: number, incumbent?: number) {
-  const up = SCALE_LADDER.find(r => rungCovers(r, need)) ?? Math.ceil(need)
-  if (incumbent === undefined || !rungCovers(incumbent, need)) {
+/** `exact` takes no rung short of `need`, as a piece lane drawing all of its piece does */
+export function pickRung(need: number, incumbent?: number, exact = false) {
+  const covers = (rung: number) =>
+    exact ? rung >= need : rungCovers(rung, need)
+  const up = SCALE_LADDER.find(covers) ?? Math.ceil(need)
+  if (incumbent === undefined || !covers(incumbent)) {
     return up
   }
   const below = SCALE_LADDER.filter(r => r < incumbent).at(-1)
@@ -177,12 +182,16 @@ function pickContig(
   )
 }
 
-type WeighedPlacement = Weighed<MultiWayPlacement>
+type WeighedPlacement = Weighed<MatePlacement>
+
+const recordOf = ({ placement }: WeighedPlacement): unknown =>
+  placement.feature.get('recordId')
 
 /**
  * The block the lane draws, and the others holding a comparable share of its
  * evidence, which the lane header names. Two blocks a window or more apart
- * draw one at a time rather than zoomed out to hold both.
+ * draw one at a time rather than zoomed out to hold both, unless one record
+ * holds both. A piece lane is one block already, filed so, and fits whole.
  */
 function fitBlocks(
   placements: WeighedPlacement[],
@@ -190,11 +199,12 @@ function fitBlocks(
   incumbentCenter: number | undefined,
   pinnedAt: number | undefined,
   heldFit?: { lo: number; hi: number },
+  whole = false,
 ) {
-  if (unitBp <= 0) {
+  if (unitBp <= 0 || whole) {
     return { fit: extentOf(placements), alsoAt: [] }
   }
-  const blocks = blocksOf(placements, unitBp, heldFit)
+  const blocks = blocksOf(placements, unitBp, heldFit, { joinOf: recordOf })
   const chosen = pickBlock(blocks, pinnedAt, incumbentCenter)
   return {
     fit: { lo: chosen.lo, hi: chosen.hi },
@@ -291,6 +301,7 @@ function fitLane(
     held && (held.fitMin + held.fitMax) / 2,
     onPin ? pinned.at : undefined,
     held && { lo: held.fitMin, hi: held.fitMax },
+    isPieceLane(assemblyName),
   )
   const flipped =
     reversed ?? anchorOrderSign(groups, assemblyName, contig.refName) < 0
@@ -299,7 +310,11 @@ function fitLane(
   const openedHi = Math.max(openedLo + 1, openedBp(openings, fit.hi))
   const rung =
     unitBp > 0
-      ? pickRung(Math.max(openedHi - openedLo, unitBp) / unitBp, held?.rung)
+      ? pickRung(
+          Math.max(openedHi - openedLo, unitBp) / unitBp,
+          held?.rung,
+          isPieceLane(assemblyName),
+        )
       : 0
   const span = unitBp > 0 ? rung * unitBp : openedHi - openedLo
   const min = (openedLo + openedHi) / 2 - span / 2
@@ -491,6 +506,22 @@ function alignFrameTo(
       (frame.max - frame.min)) /
     width
   return { ...frame, min: frame.min + shift, max: frame.max + shift }
+}
+
+/**
+ * `frame` moved the least that holds its whole fit, or centred on the fit
+ * where the fit is wider: a piece lane draws all of its piece
+ */
+function holdingFit(frame: RowFrame): RowFrame {
+  const openings = frameOpenings(frame)
+  const lo = openedBp(openings, frame.fitMin, true)
+  const hi = openedBp(openings, frame.fitMax)
+  const span = frame.max - frame.min
+  const min =
+    hi - lo > span
+      ? (lo + hi) / 2 - span / 2
+      : Math.min(Math.max(frame.min, hi - span), lo)
+  return { ...frame, min, max: min + span }
 }
 
 function weightInside(placements: LanePlacement[], frame: RowFrame) {
@@ -687,7 +718,8 @@ export function decideLaneFrames({
       ...drawn.frame,
       flipped: relativeFlipped !== anchorReversed,
     }
-    const aligned = alignFrameTo(reference, drawnPlacements, oriented, width)
+    const lined = alignFrameTo(reference, drawnPlacements, oriented, width)
+    const aligned = isPieceLane(assemblyName) ? holdingFit(lined) : lined
 
     let decision: LaneDecision | undefined
     let decisionPx: number | undefined
