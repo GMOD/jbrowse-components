@@ -1465,6 +1465,22 @@ describe('validateConfig', () => {
       expect(errorsOf(config)).toEqual([])
     })
 
+    it('registers its assemblies sequence tracks', () => {
+      const config = {
+        ...baseConfig(),
+        defaultSession: sessionWith({
+          views: [
+            {
+              type: 'LinearGenomeView',
+              assembly: 'extra',
+              tracks: ['mine', 'extra-ref'],
+            },
+          ],
+        }),
+      }
+      expect(errorsOf(config)).toEqual([])
+    })
+
     it('registers temporaryAssemblies and assembly aliases too', () => {
       const [assembly] = sessionWith({}).sessionAssemblies
       const config = {
@@ -1611,7 +1627,7 @@ describe('validateConfig', () => {
       displayDefaults: { filter: [{ field: 'flags.DUP', equal: 0 }] },
     })
     expect(warningsOf(config).map(p => p.message)).toEqual([
-      'flags.DUP takes equal: true or false, not {"field":"flags.DUP","equal":0}',
+      'flags.DUP takes true or false, not {"field":"flags.DUP","equal":0}',
     ])
   })
 

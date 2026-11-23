@@ -52,8 +52,8 @@ export const BREAKPOINT_READS = 'breakpoint.reads'
 
 // The fields lowered onto the junction and connection tests, each with the
 // tests it takes: a count takes a floor, a category a boolean `equal`, as
-// the read categories do. A SAM flag bit is a category too: it reads as a
-// boolean.
+// the read categories do. A SAM flag bit reads as a boolean, so it takes
+// boolean values only, by `equal` or `oneOf`.
 const COUNT_FIELDS = new Set([JUNCTION_READS, BREAKPOINT_READS])
 const CATEGORY_FIELDS = new Set([
   JUNCTION_CANONICAL,
@@ -164,7 +164,14 @@ export function filterProblems(written: readonly FieldPredicate[]): string[] {
         ? [`${field} takes a floor (gte or gt), not ${JSON.stringify(p)}`]
         : []
     }
-    if (CATEGORY_FIELDS.has(field) || ADAPTER_FLAG_FIELDS.has(field)) {
+    if (ADAPTER_FLAG_FIELDS.has(field)) {
+      return testsBound(p) ||
+        p.valid !== undefined ||
+        listedValues(p).some(v => typeof v !== 'boolean')
+        ? [`${field} takes true or false, not ${JSON.stringify(p)}`]
+        : []
+    }
+    if (CATEGORY_FIELDS.has(field)) {
       return testsSomething(p) && typeof p.equal !== 'boolean'
         ? [`${field} takes equal: true or false, not ${JSON.stringify(p)}`]
         : []

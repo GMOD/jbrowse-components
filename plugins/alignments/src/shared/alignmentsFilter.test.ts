@@ -400,7 +400,7 @@ describe('problems', () => {
 })
 
 describe('a flag field', () => {
-  test('takes equal: true or false and no other test', () => {
+  test('takes true or false by equal or oneOf, and no bound', () => {
     expect(
       filterProblems([
         { field: 'flags.DUP', equal: false },
@@ -408,11 +408,13 @@ describe('a flag field', () => {
         { field: 'flags.DUP', equal: 0 },
         { field: 'flags.UNMAP', gte: 1 },
         { field: 'flags.SECONDARY', oneOf: [true] },
+        { field: 'flags.SECONDARY', oneOf: [true, false] },
+        { field: 'flags.QCFAIL', oneOf: [1] },
       ]).map(p => p.split(',')[0]),
     ).toEqual([
-      'flags.DUP takes equal: true or false',
-      'flags.UNMAP takes equal: true or false',
-      'flags.SECONDARY takes equal: true or false',
+      'flags.DUP takes true or false',
+      'flags.UNMAP takes true or false',
+      'flags.QCFAIL takes true or false',
     ])
   })
 })

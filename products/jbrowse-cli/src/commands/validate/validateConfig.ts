@@ -640,6 +640,19 @@ function checkSessionView(
   }
 }
 
+// The written trackId wins at runtime, and the `{name, uri}` shorthand
+// derives one only when none is written.
+function sequenceTrackIdOf(assembly: Record<string, unknown>) {
+  const declared = isRecord(assembly.sequence)
+    ? assembly.sequence.trackId
+    : undefined
+  return typeof declared === 'string'
+    ? [declared]
+    : typeof assembly.name === 'string'
+      ? [`${assembly.name}-ReferenceSequenceTrack`]
+      : []
+}
+
 // A session's own tracks and assemblies are visible to its views and to no
 // other session, so they land in a copy of the config's context.
 function sessionContext(
@@ -665,6 +678,10 @@ function sessionContext(
     ]),
     seenTrackIds: new Set(ctx.seenTrackIds),
     trackAliases: new Map(ctx.trackAliases),
+    sequenceTrackIds: new Set([
+      ...ctx.sequenceTrackIds,
+      ...assemblies.flatMap(a => sequenceTrackIdOf(a)),
+    ]),
   }
   const tracks = Array.isArray(session.sessionTracks)
     ? session.sessionTracks
@@ -1484,18 +1501,7 @@ export function validateConfig(
     trackAliases: new Map(),
     declaresPlugins,
     schema,
-    // The written trackId wins at runtime, and the `{name, uri}` shorthand
-    // derives one only when none is written.
-    sequenceTrackIds: new Set(
-      assemblies.flatMap(a => {
-        const declared = isRecord(a.sequence) ? a.sequence.trackId : undefined
-        return typeof declared === 'string'
-          ? [declared]
-          : typeof a.name === 'string'
-            ? [`${a.name}-ReferenceSequenceTrack`]
-            : []
-      }),
-    ),
+    sequenceTrackIds: new Set(assemblies.flatMap(a => sequenceTrackIdOf(a))),
   }
 
   for (const [i, assembly] of assemblies.entries()) {
