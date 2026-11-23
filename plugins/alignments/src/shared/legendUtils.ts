@@ -226,21 +226,31 @@ function scaleOf(
  * fill is a ramp, since the read rows beside a bar are the buckets every
  * field paints, and otherwise the read rows, standing in for "Read" when
  * they merge with the arcs.
+ *
+ * `plainFill` says every read is drawn in one color, whose lone row says
+ * something only when no other section keys anything.
  */
 export function getAlignmentsColorScales(model: {
   ramps?: readonly RampScale[]
   colorTitle?: string
+  plainFill?: boolean
   legendItems: () => LegendItem[]
   arcLegendTitle: string
   arcLegendItems: () => LegendItem[]
   junctionLegend: JunctionLegend
 }): ColorScale[] {
-  const reads = model.legendItems()
+  const listedReads = model.legendItems()
   const drawnArcs = model.arcLegendItems()
   const { arcs, junctions } = keyJunctionSplitsWithArcs(
     drawnArcs,
     model.junctionLegend,
   )
+  const reads =
+    model.plainFill &&
+    listedReads.length === 1 &&
+    (arcs.length > 0 || junctions.length > 0)
+      ? []
+      : listedReads
   // Color-less rows (headings, notes) never count as a shared color — a `reads`
   // and an `arcs` entry that both omit `color` would otherwise both land on
   // `undefined` and read as a match, merging two sections that share no swatch.

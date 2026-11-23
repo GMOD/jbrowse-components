@@ -364,38 +364,66 @@ export function alignmentsColorViews(self: AlignmentsColorHost) {
     /**
      * #getter
      * The color bars beside the read rows: the per-base layer's, then the
-     * read fill's while it paints through a ramp (`colorRampScales`).
+     * read fill's while it paints through a ramp (`colorRampScales`),
+     * none while no read row is drawn.
      */
     get colorRamps() {
-      return colorRampScales({
-        colorField: self.colorField,
-        baseLayer: self.baseLayer,
-        bakedScale: this.bakedColorScale,
-        linearFieldExtent: this.linearFieldExtent,
-        baseQualityExtent: this.baseQualitySpan.extent,
-      })
+      return this.drawsReadRows
+        ? colorRampScales({
+            colorField: self.colorField,
+            baseLayer: self.baseLayer,
+            bakedScale: this.bakedColorScale,
+            linearFieldExtent: this.linearFieldExtent,
+            baseQualityExtent: this.baseQualitySpan.extent,
+          })
+        : []
+    },
+
+    /**
+     * #getter
+     * Some lane lays out read rows, so the read colors key a drawn mark:
+     * false only once every lane laid out is one with no rows.
+     */
+    get drawsReadRows() {
+      return (
+        self.rowlessLaneKeys.size === 0 ||
+        [...self.laidOutByGroupFramed.keys()].some(
+          key => !self.rowlessLaneKeys.has(key),
+        )
+      )
+    },
+
+    /**
+     * #getter
+     * Every read is drawn in the one plain color, with no field or
+     * per-base layer painting over it.
+     */
+    get paintsPlainFill() {
+      return self.colorField === undefined && self.baseLayer === undefined
     },
 
     /**
      * #method
      */
     legendItems(palette: ColorPalette) {
-      return getReadDisplayLegendItems({
-        overlaps: this.overlapLegendRows,
-        colorField: self.colorField,
-        baseLayer: self.baseLayer,
-        presentCategories: this.colorLegendCategories,
-        palette,
-        detectedModifications: self.detectedModifications,
-        presentTagValues: this.presentTagValues,
-        presentModifications: this.presentModifications,
-        refNamePosition: self.paintedRefNamePosition,
-        bakedScale: this.bakedColorScale,
-        sectionOrder: this.keySectionOrder,
-        baseQualityUnavailable: this.baseQualitySpan.unavailable,
-        labels: this.keyReadLabels,
-        descending: self.colorKeyDescending,
-      })
+      return this.drawsReadRows
+        ? getReadDisplayLegendItems({
+            overlaps: this.overlapLegendRows,
+            colorField: self.colorField,
+            baseLayer: self.baseLayer,
+            presentCategories: this.colorLegendCategories,
+            palette,
+            detectedModifications: self.detectedModifications,
+            presentTagValues: this.presentTagValues,
+            presentModifications: this.presentModifications,
+            refNamePosition: self.paintedRefNamePosition,
+            bakedScale: this.bakedColorScale,
+            sectionOrder: this.keySectionOrder,
+            baseQualityUnavailable: this.baseQualitySpan.unavailable,
+            labels: this.keyReadLabels,
+            descending: self.colorKeyDescending,
+          })
+        : []
     },
   }
 }

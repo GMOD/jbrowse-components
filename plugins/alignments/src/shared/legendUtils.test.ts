@@ -986,6 +986,37 @@ describe('getAlignmentsColorScales', () => {
     expect(entries(scales[1]).map(e => e.label)).toEqual(['Supplementary'])
   })
 
+  test('a plain fill row goes when another section keys something', () => {
+    const plain = { color: '#ccc', label: 'Reads' }
+    const interchrom = { color: '#a52', label: 'Inter-chromosomal' }
+    const plainModel = (reads: LegendItem[], arcs: LegendItem[]) => ({
+      ...model(reads, arcs),
+      plainFill: true,
+    })
+    expect(
+      shown(getAlignmentsColorScales(plainModel([plain], [interchrom]))),
+    ).toEqual([['Arc colors', ['Inter-chromosomal']]])
+    expect(shown(getAlignmentsColorScales(plainModel([plain], [])))).toEqual([
+      ['Read colors', ['Reads']],
+    ])
+    const overlap = { color: '#555', label: 'Split segments overlap here' }
+    expect(
+      shown(
+        getAlignmentsColorScales(plainModel([plain, overlap], [interchrom])),
+      ),
+    ).toEqual([
+      ['Read colors', ['Reads', 'Split segments overlap here']],
+      ['Arc colors', ['Inter-chromosomal']],
+    ])
+    // a field's lone row stays, though it is named like the plain one
+    expect(
+      shown(getAlignmentsColorScales(model([plain], [interchrom]))),
+    ).toEqual([
+      ['Read colors', ['Reads']],
+      ['Arc colors', ['Inter-chromosomal']],
+    ])
+  })
+
   test('an insertion split row joins the short insert row', () => {
     const split = { color: 'teal', label: 'Split read (insertion)' }
     expect(

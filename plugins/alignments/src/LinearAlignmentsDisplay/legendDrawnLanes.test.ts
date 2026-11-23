@@ -63,6 +63,28 @@ test('with the pileup hidden the key lists no read color', () => {
   expect(display.colorLegendCategories.size).toBe(0)
 })
 
+test('with the pileup hidden the key has no read rows', () => {
+  const readRows = (display: ReturnType<typeof twoLaneDisplay>) =>
+    display.colorScales.flatMap(s =>
+      s.kind === 'categorical' && s.id === 'reads' ? s.entries : [],
+    )
+  const display = twoLaneDisplay()
+  expect(readRows(display).length).toBeGreaterThan(0)
+  display.setShowPileup(false)
+  expect(readRows(display)).toEqual([])
+})
+
+test('with the pileup hidden a read color bar goes too', () => {
+  const display = twoLaneDisplay()
+  display.applyPlot({
+    encoding: { color: { field: 'mapq', scale: { type: 'linear' } } },
+  })
+  const bars = () => display.colorScales.filter(s => s.kind === 'ramp')
+  expect(bars().length).toBeGreaterThan(0)
+  display.setShowPileup(false)
+  expect(bars()).toEqual([])
+})
+
 test('a lane collapsed to its coverage keys none of its read colors', () => {
   const display = twoLaneDisplay()
   display.toggleGroupCollapsed('low')

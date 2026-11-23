@@ -76,6 +76,7 @@ export interface ThemedHost extends IStateTreeNode {
   renderSections: readonly LaneSection[]
   colorRamps: ColorViews['colorRamps']
   colorKeyTitle: string | undefined
+  paintsPlainFill: boolean
   legendItems: ColorViews['legendItems']
   arcLegendTitle: string
   connectionLegendItems: ReturnType<
@@ -239,6 +240,7 @@ export function themedViews(self: ThemedHost) {
       return getAlignmentsColorScales({
         ramps: self.colorRamps,
         colorTitle: self.colorKeyTitle,
+        plainFill: self.paintsPlainFill,
         legendItems: () => self.legendItems(palette),
         arcLegendTitle: self.arcLegendTitle,
         arcLegendItems: () => self.connectionLegendItems(palette),
