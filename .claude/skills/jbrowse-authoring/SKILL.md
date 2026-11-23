@@ -185,9 +185,7 @@ this column" or "one row per sample".
   no `facet` or `filter`).
 - **`displayDefaults` sends each setting to every display of the track that
   declares it, but the track opens on its first display**, so a setting only a
-  later display takes loads, validates, and changes nothing on screen. Write the
-  track's `type` whenever you set `displayDefaults`: on a bare-`uri` track the
-  validator does not check those keys, so a misspelt one passes.
+  later display takes loads, validates, and changes nothing on screen.
 - **A field** is a feature attribute (`score`, a BED `columnNames` column, a GFF
   attribute), a dotted path (`INFO.SVTYPE`), or a `jexl:` expression over
   `feature` where no field holds the value.
