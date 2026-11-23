@@ -72,7 +72,7 @@ same files for a graph of your own.
 
 </details>
 
-## Launching tracks from the HPRC page
+## Launch tracks from the HPRC page
 
 Open the [HPRC page](https://genomes.jbrowse.org/pangenomes/hprc), which opens
 on its first example, **CFH / CFHR**. Pick another **Examples** entry, or type a
@@ -105,7 +105,7 @@ link such as
 [`?region=chr6:32,510,001-32,600,000`](https://genomes.jbrowse.org/pangenomes/hprc/?region=chr6%3A32%2C510%2C001-32%2C600%2C000)
 opens the same map.
 
-## A known allele: CFHR3–CFHR1 {#a-known-allele-cfhr3-cfhr1}
+## Find a published deletion at CFHR3–CFHR1 {#a-known-allele-cfhr3-cfhr1}
 
 Some windows hold an allele described in a publication, as the page's opening
 example does: pick **CFH / CFHR** in **Examples** to return to it. Above the
@@ -126,7 +126,7 @@ Press **Open in JBrowse**. Under **NCBI RefSeq genes (hg38)**:
 
 <Figure caption="The CFH / CFHR Graph launch: the Known alleles and GWAS Catalog rows under the genes, the graph track, and the variant matrix, one row per haplotype. The red block at the foot of the matrix marks the haplotypes with the deletion." src="/img/pangenome/hprc_cfh_graph_launch.png" />
 
-## Overview of chr1 with small variants folded {#a-chromosome-and-back}
+## Open chr1 with small variants folded {#a-chromosome-and-back}
 
 Open
 [chr1 on the HPRC page](https://genomes.jbrowse.org/pangenomes/hprc/?region=chr1)
@@ -141,7 +141,7 @@ haplotypes disagree at each locus.
 [Hosting your own graph](/docs/tutorials/pangenome_prepare_graph) builds this
 overview and writes the `coarse` slot.
 
-## The C4 locus as a graph
+## Open C4 as a force-directed graph
 
 Click the **HLA / MHC** example on the HPRC page, then **Open in JBrowse**. The
 Graph launch opens genes, the GWAS Catalog's hits, the graph in the
@@ -164,7 +164,7 @@ The graph has four kinds of object:
   charcoal because it is off the reference path
 - an **edge** that skips sequence is a deletion, drawn as a dashed arc
 
-## Opening the haplotype the HLA-DRB5 allele came from {#opening-the-haplotype-an-allele-came-from}
+## Open the haplotype the HLA-DRB5 allele came from {#opening-the-haplotype-an-allele-came-from}
 
 Type `chr6:32,500,000-32,560,000`, a window in MHC class II, a cluster of
 immune-system HLA genes. Beside _HLA-DRB5_, a charcoal node is an allele much
@@ -196,7 +196,7 @@ Zoom out a few steps.
 The haplotype's CAT annotation has _HLA-DRB9_ and _HLA-DRB6_ either side of the
 allele and no _HLA-DRB5_, the gene it spans on hg38.
 
-## Listing every haplotype with the HLA-DRB5 allele {#every-haplotype-with-the-allele}
+## List every haplotype with the HLA-DRB5 allele {#every-haplotype-with-the-allele}
 
 The graph has one source assembly per allele. HPRC's phased VCF lists every
 haplotype's allele at every bubble: a record is one allele written against
@@ -259,7 +259,7 @@ sequences, which differ by a base or two. The blue block under the band is the
 haplotypes with any of its four sequences, plus a smaller block with an 86 kb
 deletion that removes the whole stretch.
 
-## Reading C4's alleles as aligned bases {#the-same-alleles-as-aligned-bases}
+## Read C4's alleles as aligned bases {#the-same-alleles-as-aligned-bases}
 
 HPRC also publishes its alignment as `hprc-v2.1-mc-grch38.full.maf.gz`, a
 multiple alignment with one row of bases per haplotype. A `.tai` index beside
@@ -306,7 +306,7 @@ that lack the 6.4 kb HERV-K (endogenous retrovirus) in a C4 gene's intron, which
 GRCh38 has, the difference between a long and a short C4. The `<INS> 26.4Kbp`
 label over the block in _C4B_ belongs to a rarer record at the same site.
 
-## Following haplotypes through C4 {#haplotype-threads}
+## Follow haplotypes through C4 {#haplotype-threads}
 
 The graph track above draws the sequence that exists at C4. A graph cut from the
 haplotypes' walks also draws the route each haplotype takes. A **walk** is one
