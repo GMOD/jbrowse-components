@@ -11,6 +11,7 @@ connectedView
 connectors.show
 encoding.color
 encoding.opacity
+extent
 facet
 gene
 geneGlyphMode
@@ -18,6 +19,7 @@ geneTrackId
 genotypes.show
 height
 hideHeader
+key
 labels
 layers
 layoutEngine

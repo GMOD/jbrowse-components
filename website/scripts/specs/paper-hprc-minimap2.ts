@@ -1,6 +1,6 @@
-// The paper's supplementary figure for the gfa-to-pairwise-paf validation: the
-// eight CFHR haplotypes as rows twice over, once from the alignments unpacked
-// from the HPRC v2.1 graph (Figure 5's rows) and once from minimap2 -cx asm5 of
+// The paper's supplementary figure for the haplotype-row validation: the
+// eight CFHR haplotypes as rows twice over, once from the HPRC v2.1 walk file
+// (Figure 5's rows) and once from minimap2 -cx asm5 of
 // the same contigs against GRCh38 chr1, so a reader can see the two agree at
 // the 84.7 kb deletion.
 import { displaySettled } from '@jbrowse/browser-test-utils'
@@ -41,9 +41,9 @@ const pifTrack = (trackId: string, name: string, uri: string) => ({
   },
 })
 
-// The graph-derived rows are the config's own PIF lanes track; only the minimap2
-// rows ride along as a session track.
-const GRAPH_ROWS = 'hprc_v2_1_pif_lanes'
+// The graph-derived rows are the config's own walk-file lanes track; only the
+// minimap2 rows ride along as a session track.
+const GRAPH_ROWS = 'hprc_v2_1_walk_lanes'
 const MINIMAP2_ROWS = 'hprc_cfhr_minimap2'
 const MINIMAP2_TRACK = pifTrack(
   MINIMAP2_ROWS,
@@ -88,7 +88,7 @@ const session = sessionSpec(CONFIG, {
           displayMode: 'compact',
           height: 50,
         },
-        lanes(GRAPH_ROWS),
+        { ...lanes(GRAPH_ROWS), type: 'MultiWaySyntenyDisplay' },
         { ...lanes(MINIMAP2_ROWS), type: 'MultiWaySyntenyDisplay' },
       ],
     },

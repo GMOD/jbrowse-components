@@ -130,9 +130,11 @@ export const paperCohortSpecs: ScreenshotSpec[] = [
             graphTrack('hprc_minigraph_segments', {
               layoutMode: 'force',
               layoutEngine: 'stress',
-              paneHeight: 270,
+              paneHeight: 360,
               encoding: { color: { field: 'position' } },
               layers: { lengths: true },
+              key: 'overlay',
+              extent: 'view',
             }),
           ],
         },
@@ -142,7 +144,7 @@ export const paperCohortSpecs: ScreenshotSpec[] = [
     readyTimeout: 300000,
     // the paper prints it at its full text width
     viewportWidth: 930,
-    viewportHeight: 1000,
+    viewportHeight: 1030,
     hideSelectors: [
       'header.MuiAppBar-root',
       // the HGSVC blurb sits where this chip draws

@@ -8,7 +8,7 @@ import { GRAPH_DRAWN, graphTrack } from './graph-fixtures.ts'
 
 import type { Annotation, ScreenshotSpec } from '../screenshot-spec-types.ts'
 
-// The hprc demo config, its graph plugin pinned at 10.4.3, which draws the paper's figure.
+// The hprc demo config, its graph plugin pinned at 10.6.0, which draws the paper's figure.
 const CONFIG = 'test_data/graphgenomeview/paper_hprc.json'
 const SEGMENTS_TRACK = 'hprc_minigraph_segments'
 const LANES_TRACK = 'hprc_v2_1_walk_lanes'
@@ -53,6 +53,7 @@ const view = (
       },
       height: lanesHeight,
       labels: { lanes: { placement: lanePlacement } },
+      legend: { show: false },
     },
     graphTrack(SEGMENTS_TRACK, {
       layoutMode,
@@ -60,6 +61,8 @@ const view = (
       paneHeight,
       encoding: { color: { field: 'position' } },
       layers: { lengths: true },
+      key: 'overlay',
+      extent: 'view',
     }),
   ],
 })
@@ -105,10 +108,9 @@ const callouts: Annotation[] = [
     text: '84.7 kb deletion',
     leader: true,
     fontSize: CALLOUT_FONT,
-    anchor: { graphNode: DELETION_NODE },
-    // under the node, so the leader runs between the 11.8 kb and 2.5 kb labels
-    dx: 30,
-    dy: 170,
+    anchor: { graphNode: DELETION_NODE, alignX: 'left', alignY: 'top' },
+    dx: -150,
+    dy: -130,
   },
 ]
 
