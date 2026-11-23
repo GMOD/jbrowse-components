@@ -67,7 +67,12 @@ function mateLane(
 function placedOf(groups: number[][]): Lane['placements'] {
   return new Map(
     groups.map((orientations, i) => {
-      const feature = new SimpleFeature({ uniqueId: `g${i}`, start: 0, end: 1 })
+      const feature = new SimpleFeature({
+        uniqueId: `g${i}`,
+        refName: 'chr1',
+        start: 0,
+        end: 1,
+      })
       const mates = orientations.map((orientation, k) => ({
         refName: 'Pp1',
         start: 100 * i,
