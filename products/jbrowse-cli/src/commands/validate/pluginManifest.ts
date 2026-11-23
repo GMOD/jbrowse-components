@@ -1,4 +1,4 @@
-import { isRecord } from './liftConfig.ts'
+import { isRecord, listOf } from './liftConfig.ts'
 
 import type { ConfigManifest } from './types.ts'
 
@@ -103,10 +103,6 @@ export function withPluginManifests(
 
 function withoutRepeats(branches: unknown[]) {
   return [...new Map(branches.map(b => [JSON.stringify(b), b])).values()]
-}
-
-function listOf(value: unknown): unknown[] {
-  return Array.isArray(value) ? value : []
 }
 
 function hintOf(type: unknown) {

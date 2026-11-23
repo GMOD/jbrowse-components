@@ -6,6 +6,10 @@ export function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null && !Array.isArray(value)
 }
 
+export function listOf(value: unknown): unknown[] {
+  return Array.isArray(value) ? value : []
+}
+
 // The member a bare string or number written in a sub-schema's place lifts
 // into, by its `shorthand`.
 function bareTarget({ shorthand = {} }: SlotEntry, value: unknown) {

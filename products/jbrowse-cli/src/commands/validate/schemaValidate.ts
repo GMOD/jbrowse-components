@@ -747,7 +747,6 @@ export const coreSchemaValidator = createSchemaValidator(configJsonSchema)
 
 export const {
   schemaProblems,
-  hasDeclaredShape,
   rootConfigurationSlots,
   configKeys,
   declaresConfigKey,

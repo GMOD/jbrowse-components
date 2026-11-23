@@ -150,16 +150,19 @@ export function displayDefaultSlots(
   )
 }
 
-export function canonicalTypeName(
-  group: Record<string, { aliases?: string[] }>,
+// A type's manifest entry under its own name or an alias, the own name first;
+// Object.entries leaves out what a name like "constructor" would inherit
+export function typeEntry<Entry extends { aliases?: string[] }>(
+  group: Record<string, Entry>,
   typeName: string,
 ) {
-  return Object.hasOwn(group, typeName)
-    ? typeName
-    : Object.keys(group).find(name => group[name]?.aliases?.includes(typeName))
+  const entries = Object.entries(group)
+  return (
+    entries.find(([name]) => name === typeName) ??
+    entries.find(([, entry]) => entry.aliases?.includes(typeName))
+  )
 }
 
 function lookup(group: TypeGroup, typeName: string) {
-  const name = canonicalTypeName(group, typeName)
-  return name === undefined ? undefined : group[name]
+  return typeEntry(group, typeName)?.[1]
 }

@@ -1530,6 +1530,14 @@ describe('validateConfig', () => {
     })
   })
 
+  it('warns on a type named after an Object.prototype member rather than crashing', () => {
+    const config = baseConfig()
+    config.tracks[0] = { ...config.tracks[0], type: 'constructor' }
+    expect(
+      warningsOf(config).some(w => w.message.includes('"constructor"')),
+    ).toBe(true)
+  })
+
   it('reports a defaults key two displays read differently once per rule', () => {
     const config = {
       ...baseConfig(),

@@ -26,11 +26,8 @@ import {
   interbaseEntryProblems,
 } from './alignmentsLayerRules/layerFilterRules.ts'
 import { configManifest } from './configManifest.generated.ts'
-import {
-  canonicalTypeName,
-  displayDefaultsForTrackType,
-} from './displayDefaultKeys.ts'
-import { isRecord, liftToSnapshot } from './liftConfig.ts'
+import { displayDefaultsForTrackType, typeEntry } from './displayDefaultKeys.ts'
+import { isRecord, liftToSnapshot, listOf } from './liftConfig.ts'
 import {
   colorProblems,
   colorSlotsOf,
@@ -190,10 +187,9 @@ function resolveType<Entry extends { aliases?: string[] }>(
 ) {
   const typeName = obj.type
   if (typeof typeName === 'string') {
-    const canonicalName = canonicalTypeName(group, typeName)
-    const entry = canonicalName === undefined ? undefined : group[canonicalName]
-    if (entry && canonicalName !== undefined) {
-      return { ...entry, canonicalName }
+    const found = typeEntry(group, typeName)
+    if (found) {
+      return { ...found[1], canonicalName: found[0] }
     }
     report.warn(
       where,
@@ -274,10 +270,6 @@ function assemblyNamesOf(assembly: Record<string, unknown>) {
   return [assembly.name, ...listOf(assembly.aliases)].filter(
     (n): n is string => typeof n === 'string',
   )
-}
-
-function listOf(value: unknown): unknown[] {
-  return Array.isArray(value) ? value : []
 }
 
 function checkTrack(
@@ -390,7 +382,9 @@ function warnDroppedDisplay(
   const dropped =
     typeof type === 'string' &&
     trackType !== undefined &&
-    !!manifest.tracks[trackType]?.droppedDisplays?.includes(type)
+    !!typeEntry(manifest.tracks, trackType)?.[1]?.droppedDisplays?.includes(
+      type,
+    )
   if (dropped) {
     report.warn(
       `${where}.type`,
@@ -727,7 +721,9 @@ function slotPath(slot: string) {
 function isMarkDisplayType(type: unknown, manifest: ConfigManifest) {
   return (
     typeof type === 'string' &&
-    !!manifest.displays[type]?.slots.some(slot => slot.name === 'marks')
+    !!typeEntry(manifest.displays, type)?.[1]?.slots.some(
+      slot => slot.name === 'marks',
+    )
   )
 }
 
@@ -1252,7 +1248,7 @@ function checkMarkDisplays(
     const own = displayNodeOf(
       node,
       typeof node.type === 'string'
-        ? manifest.displays[node.type]?.slots
+        ? typeEntry(manifest.displays, node.type)?.[1]?.slots
         : undefined,
       where,
     )

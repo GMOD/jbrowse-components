@@ -11,9 +11,11 @@ import { configManifest } from './configManifest.generated.ts'
 import { configJsonSchema } from './configSchema.generated.ts'
 import {
   configSchemaUrl,
-  hasDeclaredShape,
+  coreSchemaValidator,
   schemaProblems,
 } from './schemaValidate.ts'
+
+const { hasDeclaredShape } = coreSchemaValidator
 
 const REPO_ROOT = path.resolve(__dirname, '../../../../..')
 
