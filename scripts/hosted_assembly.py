@@ -82,6 +82,11 @@ def absolutize(node, base):
             absolutize(v, base)
 
 
+def without_retired_slots(assembly):
+    """The hubs still carry `transmission`, a slot ADR-279 removed."""
+    return {k: v for k, v in assembly.items() if k != 'transmission'}
+
+
 def hub_parts(hub, label, alias, cache_dir='hubs'):
     """The hub's assembly entry, shown as `label` and also named `alias`, and the
     first of its gene tracks GENE_TRACKS names."""
@@ -94,7 +99,7 @@ def hub_parts(hub, label, alias, cache_dir='hubs'):
     track = copy.deepcopy(by_id[gene_id])
     absolutize(assembly, url)
     absolutize(track, url)
-    return {**assembly, 'displayName': label, 'aliases': [alias]}, track
+    return {**without_retired_slots(assembly), 'displayName': label, 'aliases': [alias]}, track
 
 
 def seed(path, genome, track_ids=()):
@@ -102,7 +107,7 @@ def seed(path, genome, track_ids=()):
     hub, hub_url = fetch_hub(genome)
 
     cfg = json.load(open(path)) if os.path.exists(path) else {}
-    cfg['assemblies'] = hub['assemblies']
+    cfg['assemblies'] = [without_retired_slots(a) for a in hub['assemblies']]
     wanted = set(track_ids)
     # by id rather than by index: a hub's track order is not ours to depend on
     cfg['tracks'] = [t for t in hub['tracks'] if t.get('trackId') in wanted]
