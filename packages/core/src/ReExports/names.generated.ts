@@ -391,7 +391,7 @@ const names: Record<string, string[]> = {
   '@jbrowse/core/util/rxjs': ['ObservableCreate', 'subscribeToObservable'],
   '@jbrowse/core/util/sameStrings': ['sameOptionalStrings', 'sameStrings'],
   '@jbrowse/core/util/samplesTsv': ['getSamplesTsvSources', 'parseSamplesTsv', 'samplesTsvAdapterConfigSchemaFields'],
-  '@jbrowse/core/util/searchText': ['buildSearchText', 'highlightPatterns', 'parseSearchQuery', 'searchMatcher'],
+  '@jbrowse/core/util/searchText': ['buildSearchText', 'highlightPatterns', 'parseSearchQuery', 'searchMatcher', 'termPattern'],
   '@jbrowse/core/util/selectEncodedFeature': ['selectEncodedFeature'],
   '@jbrowse/core/util/sessionParam': ['ENCODED_PREFIX', 'JSON_PREFIX', 'LOCAL_PREFIX', 'SESSION_PARAM_KINDS', 'SHARE_KEY_LENGTH', 'SHARE_PREFIX', 'SPEC_PREFIX', 'missingKeyError', 'pageUrlParams', 'paramsInHash', 'prefetchSharedSession', 'sessionParamKind', 'sessionParamPayload', 'shareEndpoint', 'shareIdForKey', 'sharedSessionUrl', 'takePrefetchedSharedSession'],
   '@jbrowse/core/util/setStackTraceLimit': ['setStackTraceLimit'],

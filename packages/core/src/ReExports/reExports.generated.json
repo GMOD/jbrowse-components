@@ -4023,7 +4023,8 @@
         "buildSearchText",
         "highlightPatterns",
         "parseSearchQuery",
-        "searchMatcher"
+        "searchMatcher",
+        "termPattern"
       ],
       "worker": "real"
     },

@@ -3556,6 +3556,18 @@ export const configManifest: ConfigManifest = {
           "type": "geneGlyphMode"
         },
         {
+          "name": "arrows",
+          "type": "FeatureArrowsConfigurationSchema",
+          "subSlots": [
+            {
+              "name": "show",
+              "type": "boolean"
+            }
+          ],
+          "schema": "FeatureArrows",
+          "writes": "members"
+        },
+        {
           "name": "chevrons",
           "type": "FeatureChevronsConfigurationSchema",
           "subSlots": [

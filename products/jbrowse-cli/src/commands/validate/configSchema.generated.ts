@@ -5617,6 +5617,27 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       },
       "additionalProperties": false
     },
+    "FeatureArrows": {
+      "title": "FeatureArrows",
+      "type": "object",
+      "x-closed": true,
+      "properties": {
+        "show": {
+          "description": "draw an arrow past the 3' end of a stranded feature, pointing the way it reads.",
+          "default": true,
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "boolean"
+          }
+        }
+      },
+      "patternProperties": {
+        "^_+comment": {}
+      },
+      "additionalProperties": false
+    },
     "FeatureChevrons": {
       "title": "FeatureChevrons",
       "type": "object",
@@ -5911,6 +5932,14 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
                 "description": "Legacy spellings a migration rewrites when the config loads."
               }
             ]
+          }
+        },
+        "arrows": {
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "$ref": "#/$defs/FeatureArrows"
           }
         },
         "chevrons": {
@@ -18205,6 +18234,9 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             },
             "geneGlyphMode": {
               "$ref": "#/$defs/LinearBasicDisplaySlots/properties/geneGlyphMode"
+            },
+            "arrows": {
+              "$ref": "#/$defs/LinearBasicDisplaySlots/properties/arrows"
             },
             "chevrons": {
               "$ref": "#/$defs/LinearBasicDisplaySlots/properties/chevrons"
