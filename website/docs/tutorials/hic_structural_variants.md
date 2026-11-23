@@ -26,10 +26,10 @@ regions on screen. We:
 - a JBrowse to paste the tracks into ([Web](/docs/quickstart_web) or
   [Desktop](/docs/quickstart_desktop))
 - `java`, which `juicer_tools` needs for the
-  [scan script](#ranking-chr9-chr22-contact-bins-with-juicer_tools); the script
+  [scan script](#rank-chr9-chr22-contact-bins-with-juicer_tools); the script
   downloads `juicer_tools` itself
 - `curl`, for the same
-  [scan script](#ranking-chr9-chr22-contact-bins-with-juicer_tools)
+  [scan script](#rank-chr9-chr22-contact-bins-with-juicer_tools)
 
 ## The data
 
@@ -52,29 +52,7 @@ under _Adding the Hi-C and contact-domain tracks_.
 
 </details>
 
-## Reading a Hi-C contact map: the triangle, domains and loops
-
-Hi-C counts how often two stretches of the genome touch in the nucleus. JBrowse
-draws the result as a triangle: the diagonal runs along the top edge, and depth
-below it is genomic separation. Two features of that picture have names, and
-ENCODE publishes both as annotation files derived from the matrix:
-
-- **Contact domains** (also called topologically associating domains, TADs) are
-  the square blocks sitting on the diagonal. Inside one, everything contacts
-  everything; across a boundary, contact drops sharply. ENCODE calls them with
-  [Arrowhead](https://github.com/aidenlab/juicer/wiki/Arrowhead) and ships a
-  BEDPE.
-- **Loops** are individual bright dots off the diagonal: two specific points
-  contacting each other far more than their separation predicts, usually a pair
-  of convergent CTCF sites. ENCODE calls them with
-  [HiCCUPS](https://github.com/aidenlab/juicer/wiki/HiCCUPS), also a BEDPE.
-
-Over a wide window the triangle can render as red speckle. If a Hi-C track looks
-like noise, change [`data.resolution`](/docs/config/hicdata/#slot-resolution)
-first, where a negative value steps to coarser bins
-([adjusting resolution](/docs/user_guides/hic_track#adjusting-resolution)).
-
-## Loading the GRCh38 assembly
+## Load the GRCh38 assembly
 
 ENCODE aligned both Hi-C libraries to GRCh38, so we load that assembly before
 adding any track.
@@ -101,7 +79,7 @@ The figures also show NCBI's MANE transcripts as the gene track:
 }
 ```
 
-## Adding the Hi-C and contact-domain tracks
+## Add the Hi-C and contact-domain tracks
 
 The `.hic` files are tens of GB, and JBrowse requests only the bins on screen.
 
@@ -134,6 +112,26 @@ cross-origin redirect the portal's `@@download` links return, and the `.hic`
 comes back as a 403. The S3 URL for any ENCODE file is in its metadata under
 `cloud_metadata.url`.
 
+Hi-C counts how often two stretches of the genome touch in the nucleus. JBrowse
+draws the result as a triangle: the diagonal runs along the top edge, and depth
+below it is genomic separation. Two features of that picture have names, and
+ENCODE publishes both as annotation files derived from the matrix:
+
+- **Contact domains** (also called topologically associating domains, TADs) are
+  the square blocks sitting on the diagonal. Inside one, everything contacts
+  everything; across a boundary, contact drops sharply. ENCODE calls them with
+  [Arrowhead](https://github.com/aidenlab/juicer/wiki/Arrowhead) and ships a
+  BEDPE.
+- **Loops** are individual bright dots off the diagonal: two specific points
+  contacting each other far more than their separation predicts, usually a pair
+  of convergent CTCF sites. ENCODE calls them with
+  [HiCCUPS](https://github.com/aidenlab/juicer/wiki/HiCCUPS), also a BEDPE.
+
+Over a wide window the triangle can render as red speckle. If a Hi-C track looks
+like noise, change [`data.resolution`](/docs/config/hicdata/#slot-resolution)
+first, where a negative value steps to coarser bins
+([adjusting resolution](/docs/user_guides/hic_track#adjusting-resolution)).
+
 The domain BEDPE needs one extra slot, `"type": "FeatureTrack"`:
 
 ```json addtrack
@@ -161,7 +159,7 @@ To color or filter either track by a column, set
 [`columnNames`](/docs/config/bedpeadapter/#slot-columnnames)
 explicitly.[^juicer]
 
-## Opening chr9 and chr22 in one view to look for the translocation
+## Open chr9 and chr22 in one view
 
 Type both locations into the location box, separated by a space:
 `chr9:129,730,000-131,730,000 chr22:22,285,000-24,285,000`.
@@ -178,7 +176,7 @@ joining _BCR_ on chr22 to _ABL1_ on chr9.
 The domain boundaries inside each window line up between the two lines, so chr9
 and chr22 each fold normally in K562.
 
-## Ranking chr9-chr22 contact bins with juicer_tools
+## Rank chr9-chr22 contact bins with juicer_tools
 
 The wedge shows that chr9 and chr22 touch; to find where, rank the contact bins.
 Run one dump per `.hic` file and sort the results, starting with the raw contact
@@ -257,16 +255,6 @@ files that hold inter-chromosomal blocks. Reading the output:
 - A second chr9-chr22 bin further down also sits well clear of the control, so
   treat the ranking as a list of candidates to open.
 
-Purpose-built callers scan the whole genome:
-[EagleC](https://github.com/XiaoTaoWang/EagleC),
-[hic_breakfinder](https://github.com/dixonlab/hic_breakfinder) and
-[HiNT](https://github.com/parklab/HiNT). Each writes BEDPE, which loads here as
-a
-[paired-arc track](/docs/config_guides/hic_track#loops-and-interactions-as-arcs)
-next to the matrix it was called from.
-
-## Choosing the control and normalization for the translocation scan
-
 The ranking rests on the choice of control and of normalization, and both apply
 to a scan of your own files:
 
@@ -286,6 +274,14 @@ to a scan of your own files:
 - **The control's own ranking.** The scan prints a ranked list for the control
   below the one for the case. A bin hot in both GM12878 and K562, such as the
   top of the control list, is a reproducible mapping artifact.
+
+Purpose-built callers scan the whole genome:
+[EagleC](https://github.com/XiaoTaoWang/EagleC),
+[hic_breakfinder](https://github.com/dixonlab/hic_breakfinder) and
+[HiNT](https://github.com/parklab/HiNT). Each writes BEDPE, which loads here as
+a
+[paired-arc track](/docs/config_guides/hic_track#loops-and-interactions-as-arcs)
+next to the matrix it was called from.
 
 ## See also
 
