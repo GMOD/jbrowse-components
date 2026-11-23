@@ -1,3 +1,5 @@
+import { genbankExtension } from '@jbrowse/add-track-core'
+
 import {
   applyClassifiedFiles,
   applyPrimaryFile,
@@ -521,6 +523,19 @@ describe('classifyFilename', () => {
 
   test('returns undefined for unrecognized files', () => {
     expect(classifyFilename('hg38.bam')).toBeUndefined()
+  })
+
+  test.each([
+    'sakai.gb',
+    'sakai.GBK',
+    'sakai.gbff.gz',
+    'sakai.gbk.bgz',
+    'sakai.gb.txt',
+    'sakai.gbkx',
+  ])('%s is a GenBank exactly when the add-track formats say so', name => {
+    expect(classifyFilename(name) === 'genbank').toBe(
+      genbankExtension.test(name),
+    )
   })
 
   test('a fasta named like an alias is still a fasta', () => {

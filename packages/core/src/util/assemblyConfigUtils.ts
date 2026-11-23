@@ -1,5 +1,3 @@
-import { genbankExtension } from '@jbrowse/add-track-core'
-
 import { deepEqual } from './deepEqual.ts'
 import { getFileName } from './getFileName.ts'
 import { isLocalPathLocation, isUriLocation } from './types/data.ts'
@@ -419,6 +417,7 @@ export function partitionExtraLocations(form: FormState) {
 const FASTA_EXT = /\.(fa|fasta|fas|fna|mfa)$/i
 const FASTA_GZ_EXT = /\.(fa|fasta|fas|fna|mfa)\.b?gz$/i
 const TWOBIT_EXT = /\.2bit$/i
+const GENBANK_EXT = /\.(gb|gbk|gbff)(\.gz)?$/i
 // the same pattern `jbrowse add-assembly` infers `--type chromSizes` from, so a
 // file that works there is recognized here
 const CHROM_SIZES_EXT = /\.chrom\.sizes$/i
@@ -431,7 +430,7 @@ export function getAssemblyNameFromFilename(filename: string) {
     .replace(FASTA_GZ_EXT, '')
     .replace(FASTA_EXT, '')
     .replace(TWOBIT_EXT, '')
-    .replace(genbankExtension, '')
+    .replace(GENBANK_EXT, '')
     .replace(CHROM_SIZES_EXT, '')
 }
 
@@ -440,7 +439,7 @@ export function detectAdapterType(filename: string): AdapterType | undefined {
     ? 'BgzipFastaAdapter'
     : TWOBIT_EXT.test(filename)
       ? 'TwoBitAdapter'
-      : genbankExtension.test(filename)
+      : GENBANK_EXT.test(filename)
         ? 'GenbankSequenceAdapter'
         : CHROM_SIZES_EXT.test(filename)
           ? 'ChromSizesAdapter'
@@ -469,7 +468,7 @@ export function classifyFilename(filename: string): FileRole | undefined {
       ? 'gzi'
       : TWOBIT_EXT.test(filename)
         ? 'twoBit'
-        : genbankExtension.test(filename)
+        : GENBANK_EXT.test(filename)
           ? 'genbank'
           : FASTA_GZ_EXT.test(filename)
             ? 'fastaGz'
