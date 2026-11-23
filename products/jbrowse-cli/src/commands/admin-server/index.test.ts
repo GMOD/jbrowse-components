@@ -162,7 +162,7 @@ test('throws an error if unable to write to config.json pt 2', async () => {
   await runInTmpDir(async () => {
     const { stdout } = await runCommand(['admin-server', '--port', '9096'])
     const adminKey = getAdminKey(stdout)
-    const configPath = '/etc/passwd'
+    const configPath = 'missing-dir/config.json'
     const config = { foo: 'bar' }
     const payload = { configPath, adminKey, config }
     const response = await fetch('http://localhost:9096/updateConfig?', {
@@ -198,22 +198,24 @@ test('blocks relative path traversal attempts in updateConfig', async () => {
   })
 })
 
-test('blocks relative path traversal attempts in config route', async () => {
-  await runInTmpDir(async () => {
+test('refuses to write a configPath that is not a .json file', async () => {
+  await runInTmpDir(async ctx => {
     const { stdout } = await runCommand(['admin-server', '--port', '9098'])
     const adminKey = getAdminKey(stdout)
-    const configPath = '../../../etc/passwd'
-    const response = await fetch(
-      `http://localhost:9098/config?adminKey=${adminKey}&config=${configPath}`,
-      {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+    const response = await fetch('http://localhost:9098/updateConfig', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
       },
-    )
+      body: JSON.stringify({
+        configPath: 'notes.txt',
+        adminKey,
+        config: { foo: 'bar' },
+      }),
+    })
     expect(response.status).toBe(401)
-    expect(await response.text()).toMatch(/Cannot perform directory traversal/)
+    expect(await response.text()).toMatch(/must be a .json file/)
+    expect(fs.existsSync(path.join(ctx.dir, 'notes.txt'))).toBe(false)
     await killServer({ stdout })
   })
 })

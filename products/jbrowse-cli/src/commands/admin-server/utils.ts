@@ -33,8 +33,10 @@ export function parsePort({
     return defaultPort
   }
 
-  const parsedPort = Number.parseInt(portStr, 10)
-  if (!(parsedPort > 0 && parsedPort <= 65535)) {
+  const parsedPort = Number(portStr)
+  if (
+    !(Number.isInteger(parsedPort) && parsedPort > 0 && parsedPort <= 65535)
+  ) {
     throw new Error(`${portStr} is not a valid port`)
   }
 
@@ -179,11 +181,11 @@ function validateAndExtractParams({
 
   const relPath = path.relative(path.normalize(baseDir), configPath)
 
-  if (relPath.startsWith('..') || path.isAbsolute(relPath)) {
-    return { ok: false, error: 'Cannot perform directory traversal' }
-  }
-
-  return { ok: true, configPath }
+  return relPath.startsWith('..') || path.isAbsolute(relPath)
+    ? { ok: false, error: 'Cannot perform directory traversal' }
+    : configPathParam && !configPathParam.endsWith('.json')
+      ? { ok: false, error: 'Config path must be a .json file' }
+      : { ok: true, configPath }
 }
 
 function sendText(res: http.ServerResponse, status: number, body: string) {
@@ -240,44 +242,6 @@ function updateConfig({
   }
 }
 
-function readConfig({
-  res,
-  body,
-  query,
-  key,
-  baseDir,
-  outFile,
-}: {
-  res: http.ServerResponse
-  body: Record<string, unknown>
-  query: URLSearchParams
-  key: string
-  baseDir: string
-  outFile: string
-}) {
-  const validation = validateAndExtractParams({
-    body,
-    query,
-    key,
-    baseDir,
-    outFile,
-  })
-  if (validation.ok) {
-    try {
-      if (fs.existsSync(validation.configPath)) {
-        sendText(res, 200, fs.readFileSync(validation.configPath, 'utf8'))
-      } else {
-        sendText(res, 404, 'Error: Config file not found')
-      }
-    } catch (error) {
-      console.error('Error reading config:', error)
-      sendText(res, 500, 'Error: Failed to read config')
-    }
-  } else {
-    sendText(res, 401, `Error: ${validation.error}`)
-  }
-}
-
 /**
  * The static half, and why it runs for `/` before the greeting below does: an
  * admin server is pointed at a JBrowse install, so `/` has to load the app the
@@ -307,14 +271,9 @@ async function hasIndexHtml(baseDir: string) {
 /**
  * The whole server, as one request handler.
  *
- * Replaces express + cors + express.json. The four routes are exact paths with
- * no parameters, so the dispatch is a switch; the rest of what express supplied
- * is the body reader, the CORS headers and the static handler above.
- *
- * One deliberate difference: `GET /config` is always the admin route. Under
- * `express.static` a file literally named `config` sitting in the JBrowse
- * directory would have shadowed it, which is not a thing anyone wants and was
- * never intended.
+ * Replaces express + cors + express.json. The routes are exact paths with no
+ * parameters, so the dispatch is a switch; the rest of what express supplied is
+ * the body reader, the CORS headers and the static handler above.
  */
 export function createRequestHandler({
   baseDir,
@@ -338,21 +297,15 @@ export function createRequestHandler({
       if (req.method === 'OPTIONS') {
         res.writeHead(204)
         res.end()
-      } else if (route === 'POST /updateConfig' || route === 'GET /config') {
-        const body = requestBody(await readJsonBody(req, bodySizeLimit))
-        const args = {
+      } else if (route === 'POST /updateConfig') {
+        updateConfig({
           res,
-          body,
+          body: requestBody(await readJsonBody(req, bodySizeLimit)),
           query: url.searchParams,
           key,
           baseDir,
           outFile,
-        }
-        if (route === 'GET /config') {
-          readConfig(args)
-        } else {
-          updateConfig(args)
-        }
+        })
       } else if (route === 'POST /shutdown') {
         const body = requestBody(await readJsonBody(req, bodySizeLimit))
         if (asString(body.adminKey) === key) {

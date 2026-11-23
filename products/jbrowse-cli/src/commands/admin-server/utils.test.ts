@@ -26,6 +26,10 @@ test('rejects out-of-range ports', () => {
   expect(() => parsePort({ portStr: '-10' })).toThrow(/not a valid port/)
 })
 
+test.each(['80abc', '1.5', 'abc'])('rejects the malformed port %s', portStr => {
+  expect(() => parsePort({ portStr })).toThrow(/not a valid port/)
+})
+
 function bind(host?: string) {
   return new Promise<string | undefined>(resolve => {
     const server = http.createServer(() => {})
