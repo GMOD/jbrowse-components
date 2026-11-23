@@ -41,16 +41,6 @@ test('two records a window and more apart stay two blocks', () => {
   ])
 })
 
-test('a stray holding a run of a solid record is solid, and joins its block', () => {
-  const runs = [placed(0, 26_000, 'walk'), placed(200_000, 200_100, 'walk')]
-  expect(
-    blocksOf(runs, WINDOW, undefined, { joinOf: byRecord }).map(b => [
-      b.lo,
-      b.hi,
-    ]),
-  ).toEqual([[0, 200_100]])
-})
-
 test('without the floor no cluster is set aside', () => {
   const runs = [placed(0, 26_000), placed(200_000, 200_100)]
   expect(blocksOf(runs, WINDOW).map(b => [b.lo, b.hi])).toEqual([[0, 26_000]])

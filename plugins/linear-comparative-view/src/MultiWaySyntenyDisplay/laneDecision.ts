@@ -29,7 +29,6 @@ import type {
   FetchRegion,
   LaneBlock,
   LaneOpening,
-  MatePlacement,
   MultiWayGroup,
   MultiWayPlacement,
   RowFrame,
@@ -115,10 +114,13 @@ function mid(p: MultiWayPlacement) {
   return (p.start + p.end) / 2
 }
 
-/** `exact` takes no rung short of `need`, as a piece lane drawing all of its piece does */
-export function pickRung(need: number, incumbent?: number, exact = false) {
+/**
+ * `slack` takes no rung short of `need` by more than that share of itself, as
+ * a piece lane drawing all of its piece does; unset, the ladder's tolerance
+ */
+export function pickRung(need: number, incumbent?: number, slack?: number) {
   const covers = (rung: number) =>
-    exact ? rung >= need : rungCovers(rung, need)
+    slack === undefined ? rungCovers(rung, need) : rung * (1 + slack) >= need
   const up = SCALE_LADDER.find(covers) ?? Math.ceil(need)
   if (incumbent === undefined || !covers(incumbent)) {
     return up
@@ -182,16 +184,13 @@ function pickContig(
   )
 }
 
-type WeighedPlacement = Weighed<MatePlacement>
-
-const recordOf = ({ placement }: WeighedPlacement): unknown =>
-  placement.feature.get('recordId')
+type WeighedPlacement = Weighed<MultiWayPlacement>
 
 /**
  * The block the lane draws, and the others holding a comparable share of its
  * evidence, which the lane header names. Two blocks a window or more apart
- * draw one at a time rather than zoomed out to hold both, unless one record
- * holds both. A piece lane is one block already, filed so, and fits whole.
+ * draw one at a time rather than zoomed out to hold both. A piece lane is one
+ * block already, filed so, and fits whole.
  */
 function fitBlocks(
   placements: WeighedPlacement[],
@@ -204,7 +203,7 @@ function fitBlocks(
   if (unitBp <= 0 || whole) {
     return { fit: extentOf(placements), alsoAt: [] }
   }
-  const blocks = blocksOf(placements, unitBp, heldFit, { joinOf: recordOf })
+  const blocks = blocksOf(placements, unitBp, heldFit)
   const chosen = pickBlock(blocks, pinnedAt, incumbentCenter)
   return {
     fit: { lo: chosen.lo, hi: chosen.hi },
@@ -283,6 +282,7 @@ function fitLane(
   pinned: LanePlacePin | undefined,
   openingsOf: OpeningsOf,
   reversed?: boolean,
+  width = 0,
 ) {
   const contig = pickContig(
     groups,
@@ -313,7 +313,7 @@ function fitLane(
       ? pickRung(
           Math.max(openedHi - openedLo, unitBp) / unitBp,
           held?.rung,
-          isPieceLane(assemblyName),
+          isPieceLane(assemblyName) ? pieceSlack(width) : undefined,
         )
       : 0
   const span = unitBp > 0 ? rung * unitBp : openedHi - openedLo
@@ -508,10 +508,24 @@ function alignFrameTo(
   return { ...frame, min: frame.min + shift, max: frame.max + shift }
 }
 
-/**
- * `frame` moved the least that holds its whole fit, or centred on the fit
- * where the fit is wider: a piece lane draws all of its piece
- */
+// px a piece may overhang each end of its frame: the canvas the rung is
+// read against runs a few px short of the window the fit is cut to
+const PIECE_SLACK_PX = 3
+
+const pieceSlack = (width: number) =>
+  width > 0 ? (2 * PIECE_SLACK_PX) / width : 0
+
+function holdsFit(frame: RowFrame, width: number) {
+  const openings = frameOpenings(frame)
+  const slack =
+    width > 0 ? (PIECE_SLACK_PX * (frame.max - frame.min)) / width : 0
+  return (
+    openedBp(openings, frame.fitMin, true) >= frame.min - slack &&
+    openedBp(openings, frame.fitMax) <= frame.max + slack
+  )
+}
+
+/** a piece lane draws all of its piece */
 function holdingFit(frame: RowFrame): RowFrame {
   const openings = frameOpenings(frame)
   const lo = openedBp(openings, frame.fitMin, true)
@@ -671,6 +685,8 @@ export function decideLaneFrames({
       prev,
       placePin,
       openingsOf,
+      undefined,
+      width,
     )
     if (fit === undefined) {
       out.set(assemblyName, undefined)
@@ -708,6 +724,7 @@ export function decideLaneFrames({
             placePin,
             openingsOf,
             relativeFlipped,
+            width,
           ) ?? fit)
     const { rung, pinned: onPin } = drawn
     const drawnPlacements =
@@ -752,7 +769,8 @@ export function decideLaneFrames({
       )
       if (
         weightInside(drawnPlacements, heldFrame) >=
-        HOLD_COVERAGE * weightInside(drawnPlacements, aligned)
+          HOLD_COVERAGE * weightInside(drawnPlacements, aligned) &&
+        (!isPieceLane(assemblyName) || holdsFit(heldFrame, width))
       ) {
         decision = sameDecision(held, carried) ? held : carried
         decisionPx = heldPx

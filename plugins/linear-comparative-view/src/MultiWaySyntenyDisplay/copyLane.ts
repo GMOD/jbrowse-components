@@ -18,7 +18,6 @@ export const COPY_SHARE = 0.1
 export const LANE_ROWS_FIELDS = ['assembly', 'refName', 'piece'] as const
 export type LaneRowsField = (typeof LANE_ROWS_FIELDS)[number]
 
-/** whether each lane is read against the anchor alone, as copy and piece lanes are */
 export function readsCopies(field: LaneRowsField) {
   return field !== 'assembly'
 }
@@ -53,21 +52,21 @@ export function laneFieldOf(
 
 /**
  * A copy lane's name, as a locstring names a contig with its assembly:
- * `{grape}chr9`, and a piece lane's, its stretch's place in contig order
- * after an `@`: `{HG00097.1}CM094061.1@2`. A genome lane's name is its
- * assembly name.
+ * `{grape}chr9`, and a piece lane's, the first base of the contig its piece
+ * places, in brackets no contig name holds: `{HG00097.1}CM094061.1[21912395]`.
+ * A genome lane's name is its assembly name.
  */
 export function copyLaneName(
   assemblyName: string,
   refName: string,
   piece?: number,
 ) {
-  return `{${assemblyName}}${refName}${piece === undefined ? '' : `@${piece}`}`
+  return `{${assemblyName}}${refName}${piece === undefined ? '' : `[${piece}]`}`
 }
 
-const COPY_LANE = /^\{([^}]+)\}(.+?)(?:@(\d+))?$/
+const COPY_LANE = /^\{([^}]+)\}(.+?)(?:\[(\d+)\])?$/
 
-/** the genome a lane draws, the contig where it is a copy or piece lane, and a piece lane's place */
+/** the genome a lane draws, the contig where it is a copy or piece lane, and a piece lane's first base */
 export function laneOf(lane: string): {
   assemblyName: string
   refName?: string
@@ -279,10 +278,11 @@ export function lanesPlacedIn(groups: readonly MultiWayGroup[]) {
 
 /**
  * `groups` with each mate filed under the lane of its genome, contig and
- * block, the blocks numbered in contig order from 1: a contig's placements
- * parted a window apart, `unitBp`, as a lane's frame parts them, a record's
- * pieces never parted (`blocksOf`), and no share floor, so every piece the
- * window places draws. A block no group `inWindow` places draws no lane.
+ * block, a block named by its first base, which a pan keeps: a contig's
+ * placements parted a window apart, `unitBp`, as a lane's frame parts them,
+ * a record's pieces never parted (`blocksOf`), and no share floor, so every
+ * piece the window places draws. A block no group `inWindow` places draws no
+ * lane.
  */
 export function fileUnderPieces(
   groups: readonly MultiWayGroup[],
@@ -323,16 +323,16 @@ export function fileUnderPieces(
     const meets = (
       block: { lo: number; hi: number },
       { placement }: (typeof placed)[number],
-    ) => placement.end > block.lo && placement.start < block.hi
+    ) => placement.end >= block.lo && placement.start <= block.hi
     const shownBlocks = blocks.filter(block =>
       placed.some(p => p.shown && meets(block, p)),
     )
     for (const p of placed) {
-      const at = shownBlocks.findIndex(block => meets(block, p))
-      if (at !== -1) {
+      const block = shownBlocks.find(b => meets(b, p))
+      if (block) {
         laneOfPlacement.set(
           p.placement,
-          copyLaneName(assemblyName, refName, at + 1),
+          copyLaneName(assemblyName, refName, Math.round(block.lo)),
         )
       }
     }

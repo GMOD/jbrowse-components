@@ -415,13 +415,17 @@ describe('piece lanes', () => {
   const lanesOf = (groups: ReturnType<typeof fileUnderPieces>) =>
     [...new Set(groups.flatMap(g => [...g.mates.keys()]))].sort()
 
-  test('a piece lane names its genome, contig and place in contig order', () => {
-    const name = copyLaneName('HG00097.1', 'CM094061.1', 2)
-    expect(name).toBe('{HG00097.1}CM094061.1@2')
+  test('a piece lane names its genome, contig and first base', () => {
+    const name = copyLaneName('HG00097.1', 'CM094061.1', 21_912_395)
+    expect(name).toBe('{HG00097.1}CM094061.1[21912395]')
     expect(laneOf(name)).toEqual({
       assemblyName: 'HG00097.1',
       refName: 'CM094061.1',
-      piece: 2,
+      piece: 21_912_395,
+    })
+    expect(laneOf('{grape}chr@12')).toEqual({
+      assemblyName: 'grape',
+      refName: 'chr@12',
     })
     expect(isPieceLane(name)).toBe(true)
     expect(isPieceLane('{grape}chr9')).toBe(false)
@@ -447,7 +451,7 @@ describe('piece lanes', () => {
       ),
     ])
     expect(lanesOf(fileUnderPieces(groups, WINDOW))).toEqual([
-      '{HG00097.1}CM094073.1@1',
+      '{HG00097.1}CM094073.1[0]',
     ])
   })
 
@@ -458,9 +462,9 @@ describe('piece lanes', () => {
       walkRecord('c', [5_000, 9_000], ['JAHEPA020000070.1', 100, 4100]),
     ])
     expect(lanesOf(fileUnderPieces(groups, WINDOW))).toEqual([
-      '{HG00097.1}CM094061.1@1',
-      '{HG00097.1}CM094061.1@2',
-      '{HG00097.1}JAHEPA020000070.1@1',
+      '{HG00097.1}CM094061.1[0]',
+      '{HG00097.1}CM094061.1[4000000]',
+      '{HG00097.1}JAHEPA020000070.1[100]',
     ])
   })
 
@@ -480,7 +484,23 @@ describe('piece lanes', () => {
     const inWindow = (g: { anchor: { start: number } }) =>
       g.anchor.start < WINDOW
     expect(lanesOf(fileUnderPieces(groups, WINDOW, inWindow))).toEqual([
-      '{HG00097.1}CM094061.1@1',
+      '{HG00097.1}CM094061.1[0]',
+    ])
+  })
+
+  test('a piece keeps its name as a pan brings an earlier piece of its contig into the window', () => {
+    const groups = groupFeatures([
+      walkRecord('a', [0, 20_000], ['CM094061.1', 0, 20_000]),
+      walkRecord('b', [20_000, 40_000], ['CM094061.1', 900_000, 920_000]),
+    ])
+    const from = (start: number) => (g: { anchor: { end: number } }) =>
+      g.anchor.end > start
+    expect(lanesOf(fileUnderPieces(groups, WINDOW, from(25_000)))).toEqual([
+      '{HG00097.1}CM094061.1[900000]',
+    ])
+    expect(lanesOf(fileUnderPieces(groups, WINDOW, from(10_000)))).toEqual([
+      '{HG00097.1}CM094061.1[0]',
+      '{HG00097.1}CM094061.1[900000]',
     ])
   })
 
@@ -494,6 +514,6 @@ describe('piece lanes', () => {
       () => copyLaneFiling([], [], name => name),
       WINDOW,
     )
-    expect(lanesOf(filed)).toEqual(['{HG00097.1}CM094061.1@1'])
+    expect(lanesOf(filed)).toEqual(['{HG00097.1}CM094061.1[0]'])
   })
 })

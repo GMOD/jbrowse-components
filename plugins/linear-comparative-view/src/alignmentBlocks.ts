@@ -77,10 +77,9 @@ export function extentOf(placements: Weighed[]) {
  * every cluster is a stray, each is its own block. A cluster already drawn
  * (`held`) stays solid at a lower share, since each step re-clips the pieces at
  * the window's edges and moves their weight. `floor: false` sets no cluster
- * aside. Placements `joinOf` names alike are one record's: a cluster holding
- * one with a solid cluster is solid, and blocks holding one are one block,
- * since a record is one colinear alignment and the stretch between its runs
- * is the mate's own sequence.
+ * aside. Blocks holding placements `joinOf` names alike are one block, one
+ * record's: a record is one colinear alignment, and the stretch between its
+ * runs is the mate's own sequence.
  */
 export function blocksOf<W extends Weighed>(
   placements: W[],
@@ -93,12 +92,11 @@ export function blocksOf<W extends Weighed>(
 ) {
   const clusters = clustersOf(placements, unitBp * CLUSTER_GAP)
   const floor = hasFloor ? STRAY_SHARE * weightOf(placements) : 0
-  const floored = clusters.filter(cluster => {
+  const solid = clusters.filter(cluster => {
     const { lo, hi } = extentOf(cluster)
     const drawn = held !== undefined && lo < held.hi && hi > held.lo
     return weightOf(cluster) >= (drawn ? floor * HELD_STRAY_RATIO : floor)
   })
-  const solid = joinOf ? joinedClusters(clusters, floored, joinOf) : floored
   const linked: Block[] = []
   for (const cluster of solid.length ? solid : clusters) {
     const { lo, hi } = extentOf(cluster)
@@ -122,35 +120,6 @@ export function blocksOf<W extends Weighed>(
     }
   }
   return blocks
-}
-
-// each cluster holding a record a solid cluster holds, until none is added
-function joinedClusters<W extends Weighed>(
-  clusters: W[][],
-  floored: W[][],
-  joinOf: (placement: W) => unknown,
-) {
-  const solid = new Set(floored)
-  const records = new Set<unknown>()
-  let added = true
-  while (added) {
-    added = false
-    for (const cluster of solid) {
-      for (const p of cluster) {
-        const record = joinOf(p)
-        if (record !== undefined) {
-          records.add(record)
-        }
-      }
-    }
-    for (const cluster of clusters) {
-      if (!solid.has(cluster) && cluster.some(p => records.has(joinOf(p)))) {
-        solid.add(cluster)
-        added = true
-      }
-    }
-  }
-  return clusters.filter(cluster => solid.has(cluster))
 }
 
 // the blocks from the first to the last holding one record are one block

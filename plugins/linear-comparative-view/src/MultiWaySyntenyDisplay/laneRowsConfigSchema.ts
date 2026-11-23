@@ -62,8 +62,8 @@ export const laneRowsConfigSchema = ConfigurationSchema(
      * per stretch of a contig the window places, stretches a window apart
      * drawn apart and one record's never, with no floor, so a haplotype in
      * several pieces draws every one; a piece lane is named after its contig
-     * with its place in contig order, `{HG00097.1}CM094061.1@2`, and answers to
-     * its genome's name as a copy lane does. `auto` draws piece lanes where
+     * with the first base its piece places, `{HG00097.1}CM094061.1[21912395]`,
+     * and answers to its genome's name as a copy lane does. `auto` draws piece lanes where
      * the source's header declares haplotype lanes, copy lanes where the
      * track's `assemblyNames` name at most one genome besides the anchor, and
      * genome lanes across more.
@@ -73,7 +73,7 @@ export const laneRowsConfigSchema = ConfigurationSchema(
       model: types.enumeration('LaneRowsField', [...LANE_ROWS_SETTINGS]),
       defaultValue: 'auto',
       description:
-        "what one lane is: 'assembly', a lane per genome, 'refName', a lane per contig holding a copy of the window, named '{<assembly>}<refName>' and answering to its genome's name, or 'piece', a lane per stretch of a contig the window places, named '{<assembly>}<refName>@<n>'; 'auto' draws 'piece' where the source's header declares haplotype lanes, 'refName' where the track names at most one genome besides the anchor, else 'assembly'",
+        "what one lane is: 'assembly', a lane per genome, 'refName', a lane per contig holding a copy of the window, named '{<assembly>}<refName>' and answering to its genome's name, or 'piece', a lane per stretch of a contig the window places, named '{<assembly>}<refName>[<first base>]'; 'auto' draws 'piece' where the source's header declares haplotype lanes, 'refName' where the track names at most one genome besides the anchor, else 'assembly'",
     },
     /**
      * #slot sort

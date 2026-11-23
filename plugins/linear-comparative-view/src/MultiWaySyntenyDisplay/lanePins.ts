@@ -1,3 +1,5 @@
+import { isPieceLane } from './copyLane.ts'
+
 /** the reader's pick of where a lane draws: a contig, and on it a block */
 export interface LanePlacePin {
   lane: string
@@ -67,9 +69,11 @@ export function pinsInForceOf(
 }
 
 export function placePinOf(pins: readonly LanePin[], lane: string) {
-  return pins.find(
-    (pin): pin is LanePlacePin => !isFlipPin(pin) && pin.lane === lane,
-  )
+  return isPieceLane(lane)
+    ? undefined
+    : pins.find(
+        (pin): pin is LanePlacePin => !isFlipPin(pin) && pin.lane === lane,
+      )
 }
 
 export function flipPinOf(pins: readonly LanePin[], lane: string) {
