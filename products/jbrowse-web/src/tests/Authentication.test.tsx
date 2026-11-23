@@ -43,10 +43,10 @@ test('open a bigwig track that needs oauth authentication and has existing token
     ],
   })
   const token = '1234'
-  sessionStorage.setItem('dropboxOAuth-token', token)
   await waitFor(() => {
     expect(rootModel.internetAccounts.length).toBe(6)
   })
+  rootModel.internetAccounts[0]!.storeToken(token)
   rootModel.internetAccounts[0]!.validateToken = jest
     .fn()
     .mockReturnValue(token)
@@ -62,7 +62,7 @@ test('open a bigwig track that needs oauth authentication and has existing token
 }, 25000)
 
 test('opens a bigwig track that needs external token authentication', async () => {
-  const { view, findByTestId } = await createView({
+  const { rootModel, view, findByTestId } = await createView({
     ...config,
     internetAccounts: [
       {
@@ -102,7 +102,11 @@ test('opens a bigwig track that needs external token authentication', async () =
   fireEvent.click(await f0.findByText('Add'))
 
   expect(Object.keys(sessionStorage)).toContain('ExternalTokenTest-token')
-  expect(Object.values(sessionStorage)).toContain('testentry')
+  expect(
+    rootModel.internetAccounts
+      .find(account => account.internetAccountId === 'ExternalTokenTest')
+      ?.retrieveToken(),
+  ).toBe('testentry')
 
   const display = await findAnyDisplayPainted(delay)
   expectCanvasMatch(findCanvasIn(display))

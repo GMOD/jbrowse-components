@@ -58,11 +58,14 @@ const PLUGIN_FACING = {
 // a deliberate edit here rather than a silent one.
 const INTERNAL = [
   'addAuthHeaderToInit',
+  'bindCredential',
+  'credentialBinding',
   'fetchWithToken',
   'getPreAuthorizationInformation',
   'handlesLocation',
   'openLocation',
   'showInFileSelector',
+  'unbindCredential',
   'validateToken',
 ]
 

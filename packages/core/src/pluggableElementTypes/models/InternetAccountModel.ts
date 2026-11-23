@@ -10,6 +10,11 @@ import {
 } from '../../util/sessionStorage.ts'
 import { ElementId } from '../../util/types/mst.ts'
 import { BaseInternetAccountConfig } from './baseInternetAccountConfig.ts'
+import {
+  bindCredential,
+  credentialBinding,
+  unbindCredential,
+} from './credentialBinding.ts'
 import { uriMatchesDomains } from './uriMatchesDomains.ts'
 
 import type { UriLocation } from '../../util/types/index.ts'
@@ -136,6 +141,32 @@ export const InternetAccount = types
     get tokenKey() {
       return `${self.internetAccountId}-token`
     },
+    /**
+     * #getter
+     * The account's config minus its name and description, as JSON with
+     * sorted keys. A stored credential is read back only by an account whose
+     * binding is identical to the one that stored it.
+     */
+    get credentialBinding() {
+      return credentialBinding(getConf(self))
+    },
+  }))
+  .views(self => ({
+    /**
+     * #method
+     * The value to put in storage for `token`, tied to this account's config
+     */
+    bindCredential(token: string) {
+      return bindCredential(token, self.credentialBinding)
+    },
+    /**
+     * #method
+     * The token in a stored value, if this account's config is the one that
+     * stored it
+     */
+    unbindCredential(stored: string | undefined) {
+      return unbindCredential(stored, self.credentialBinding)
+    },
   }))
   .actions(self => ({
     /**
@@ -160,13 +191,13 @@ export const InternetAccount = types
     // cannot be cached costs one more auth prompt per tab; a throw here takes
     // the auth flow down with it.
     storeToken(token: string) {
-      sessionStorageSetItem(self.tokenKey, token)
+      sessionStorageSetItem(self.tokenKey, self.bindCredential(token))
     },
     /**
      * #action
      */
     retrieveToken() {
-      return sessionStorageGetItem(self.tokenKey)
+      return self.unbindCredential(sessionStorageGetItem(self.tokenKey))
     },
     /**
      * #action
@@ -206,8 +237,9 @@ export const InternetAccount = types
       },
       /**
        * #action
-       * Try to get the token from the location pre-auth, from local storage,
-       * or from a previously cached promise. If token is not available, uses
+       * Try to get the token from a previously cached promise, then in a
+       * worker from the location's pre-authorization, or on the main thread
+       * from session storage. If token is not available, uses
        * `getTokenFromUser`.
        *
        * @param location - UriLocation of the resource
@@ -217,23 +249,24 @@ export const InternetAccount = types
         if (tokenPromise) {
           return tokenPromise
         }
-        let token = location?.internetAccountPreAuthorization?.authInfo?.token
-        if (token) {
-          tokenPromise = Promise.resolve(token)
-          return tokenPromise
-        }
         // `isWebWorker()`, not a `typeof sessionStorage` probe: that asks a
         // different question (it is also false on a page where storage is
         // blocked, which is a main thread that CAN prompt) and it throws
         // outright in exactly that case, at module load.
         if (isWebWorker()) {
-          throw new Error(
-            'Did not get internet account pre-authorization info in worker',
-          )
+          const preAuthToken =
+            location?.internetAccountPreAuthorization?.authInfo?.token
+          if (!preAuthToken) {
+            throw new Error(
+              'Did not get internet account pre-authorization info in worker',
+            )
+          }
+          tokenPromise = Promise.resolve(preAuthToken)
+          return tokenPromise
         }
-        token = self.retrieveToken()
-        if (token) {
-          tokenPromise = Promise.resolve(token)
+        const storedToken = self.retrieveToken()
+        if (storedToken) {
+          tokenPromise = Promise.resolve(storedToken)
           return tokenPromise
         }
         // The catch, rather than a clearToken() in the reject callback: a

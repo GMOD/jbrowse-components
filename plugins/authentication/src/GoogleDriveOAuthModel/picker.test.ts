@@ -80,7 +80,7 @@ const fileId = '1AbCdEfGhIjKlMnOpQrStUvWxYz012345'
 
 beforeEach(() => {
   sessionStorage.clear()
-  sessionStorage.setItem('testGoogleDrive-token', 'drive-file-token')
+  makeAccount({ apiKey: 'key', appId: '123' }).storeToken('drive-file-token')
 })
 
 test('no browse button until the Picker key and project number are set', () => {

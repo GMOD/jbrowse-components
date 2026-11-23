@@ -79,7 +79,7 @@ afterEach(() => {
 })
 
 test('a working token is not re-proven on every request', async () => {
-  sessionStorage.setItem('testOAuth-token', 'good-token')
+  makeAccount().storeToken('good-token')
   fetchMock.mockResolvedValue(new Response('data'))
   const fetcher = makeAccount().getFetcher(location)
 
@@ -97,8 +97,8 @@ test('a working token is not re-proven on every request', async () => {
 })
 
 test('a 401 refreshes the token once and retries the request', async () => {
-  sessionStorage.setItem('testOAuth-token', 'expired-token')
-  localStorage.setItem('testOAuth-refreshToken', 'refresh-token')
+  makeAccount().storeToken('expired-token')
+  makeAccount().storeRefreshToken('refresh-token')
   fetchMock
     // the read, with the expired token
     .mockResolvedValueOnce(new Response('', { status: 401 }))
@@ -123,7 +123,7 @@ test('a 401 refreshes the token once and retries the request', async () => {
   ).toBe('Bearer fresh-token')
   // the refreshed token replaces the cached one, so the next read does not
   // repeat the whole validate-and-refresh round trip
-  expect(sessionStorage.getItem('testOAuth-token')).toBe('fresh-token')
+  expect(makeAccount().retrieveToken()).toBe('fresh-token')
 
   fetchMock.mockResolvedValue(new Response('more data'))
   await account.getFetcher(location)(location.uri)
@@ -217,7 +217,7 @@ test('dismissing the login prompt fails the flow', async () => {
 
 test('a read arriving after a failed refresh waits on the same login', async () => {
   setUserActivation(false)
-  localStorage.setItem('testOAuth-refreshToken', 'refresh-token')
+  makeAccount().storeRefreshToken('refresh-token')
   fetchMock.mockImplementation(
     async () => new Response('{"error":"server_error"}', { status: 500 }),
   )
@@ -263,8 +263,8 @@ test('a popup blocked despite an activation is retried behind the prompt', async
 // with a mistyped file URL back through the login, and an account holding a
 // refresh token spent one refresh per RPC on a file that would never load
 test('a probe failing for a reason other than a 401 keeps the token and refreshes nothing', async () => {
-  sessionStorage.setItem('testOAuth-token', 'good-token')
-  localStorage.setItem('testOAuth-refreshToken', 'refresh-token')
+  makeAccount().storeToken('good-token')
+  makeAccount().storeRefreshToken('refresh-token')
   fetchMock.mockResolvedValue(new Response('missing', { status: 404 }))
 
   await expect(
@@ -272,12 +272,12 @@ test('a probe failing for a reason other than a 401 keeps the token and refreshe
   ).rejects.toThrow('HTTP 404 - missing')
 
   expect(fetchMock).toHaveBeenCalledTimes(1)
-  expect(sessionStorage.getItem('testOAuth-token')).toBe('good-token')
+  expect(makeAccount().retrieveToken()).toBe('good-token')
 })
 
 test('a refreshed token is kept when the resource then fails for another reason', async () => {
-  sessionStorage.setItem('testOAuth-token', 'expired-token')
-  localStorage.setItem('testOAuth-refreshToken', 'refresh-token')
+  makeAccount().storeToken('expired-token')
+  makeAccount().storeRefreshToken('refresh-token')
   fetchMock
     .mockResolvedValueOnce(new Response('', { status: 401 }))
     .mockResolvedValueOnce(
@@ -289,11 +289,11 @@ test('a refreshed token is kept when the resource then fails for another reason'
     makeAccount().getPreAuthorizationInformation(location),
   ).rejects.toThrow('HTTP 404 - missing')
 
-  expect(sessionStorage.getItem('testOAuth-token')).toBe('fresh-token')
+  expect(makeAccount().retrieveToken()).toBe('fresh-token')
 })
 
 test('a 401 with no refresh token surfaces the validation error', async () => {
-  sessionStorage.setItem('testOAuth-token', 'expired-token')
+  makeAccount().storeToken('expired-token')
   fetchMock.mockResolvedValue(new Response('nope', { status: 401 }))
 
   await expect(
@@ -306,13 +306,13 @@ test('a 401 with no refresh token surfaces the validation error', async () => {
 // cached, so it threw the same error on every later request and never asked the
 // user to log in again
 test('a token that fails validation is dropped, so the next read re-prompts', async () => {
-  sessionStorage.setItem('testOAuth-token', 'expired-token')
+  makeAccount().storeToken('expired-token')
   fetchMock.mockResolvedValue(new Response('nope', { status: 401 }))
 
   const account = makeAccount()
   await expect(account.getFetcher(location)(location.uri)).rejects.toThrow()
 
-  expect(sessionStorage.getItem('testOAuth-token')).toBeNull()
+  expect(makeAccount().retrieveToken()).toBeUndefined()
   // and the in-memory cache went with it: the next read starts a fresh auth
   // flow rather than replaying the token that just failed
   const opened: string[] = []
@@ -400,4 +400,38 @@ test('each authorization request gets its own PKCE verifier', async () => {
   // and a second flow reuses neither half of the first
   expect(second.verifier).not.toBe(first.verifier)
   expect(second.challenge).not.toBe(first.challenge)
+})
+
+describe('a stored refresh token is bound to the config of the account that stored it', () => {
+  test('an account with the same id but another token endpoint gets none', () => {
+    makeAccount().storeRefreshToken('refresh-token')
+
+    expect(
+      makeAccount({
+        tokenEndpoint: 'https://other.example.org/token',
+      }).retrieveRefreshToken(),
+    ).toBeUndefined()
+  })
+
+  test('an account with the same id but other domains gets none', () => {
+    makeAccount().storeRefreshToken('refresh-token')
+
+    expect(
+      makeAccount({ domains: ['other.example.org'] }).retrieveRefreshToken(),
+    ).toBeUndefined()
+  })
+
+  test('a refresh token stored as a plain string is not read', () => {
+    localStorage.setItem('testOAuth-refreshToken', 'refresh-token')
+
+    expect(makeAccount().retrieveRefreshToken()).toBeUndefined()
+  })
+
+  test('an account whose name changed keeps the refresh token', () => {
+    makeAccount().storeRefreshToken('refresh-token')
+
+    expect(makeAccount({ name: 'Renamed' }).retrieveRefreshToken()).toBe(
+      'refresh-token',
+    )
+  })
 })

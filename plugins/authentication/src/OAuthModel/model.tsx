@@ -182,7 +182,10 @@ const stateModelFactory = (configSchema: OAuthInternetAccountConfigModel) => {
       // that cannot be cached only costs an extra auth prompt; a throw here
       // takes down the whole auth flow.
       storeRefreshToken(refreshToken: string) {
-        localStorageSetItem(self.refreshTokenKey, refreshToken)
+        localStorageSetItem(
+          self.refreshTokenKey,
+          self.bindCredential(refreshToken),
+        )
       },
       /**
        * #action
@@ -194,7 +197,7 @@ const stateModelFactory = (configSchema: OAuthInternetAccountConfigModel) => {
        * #method
        */
       retrieveRefreshToken() {
-        return localStorageGetItem(self.refreshTokenKey)
+        return self.unbindCredential(localStorageGetItem(self.refreshTokenKey))
       },
     }))
     .actions(self => ({

@@ -29,7 +29,7 @@ beforeEach(() => {
 })
 
 test('a stored credential is sent as a Basic header and not re-proven per request', async () => {
-  sessionStorage.setItem('testBasic-token', 'dXNlcjpwdw==')
+  makeAccount().storeToken('dXNlcjpwdw==')
   fetchMock.mockResolvedValue(new Response('data'))
   const fetcher = makeAccount().getFetcher(location)
 
@@ -46,7 +46,7 @@ test('a stored credential is sent as a Basic header and not re-proven per reques
 // user, so a credential the server rejects has to leave the cache or the dialog
 // is never reopened and every later read throws the identical error.
 test('a credential the server rejects is dropped, so the next read can prompt again', async () => {
-  sessionStorage.setItem('testBasic-token', 'd3Jvbmc=')
+  makeAccount().storeToken('d3Jvbmc=')
   fetchMock.mockResolvedValue(new Response('nope', { status: 401 }))
 
   await expect(
@@ -55,14 +55,14 @@ test('a credential the server rejects is dropped, so the next read can prompt ag
 
   // the read, then validateToken's HEAD confirming the credential is the problem
   expect(fetchMock).toHaveBeenCalledTimes(2)
-  expect(sessionStorage.getItem('testBasic-token')).toBeNull()
+  expect(makeAccount().retrieveToken()).toBeUndefined()
 })
 
 // validateToken hands the same credential straight back when the HEAD check is
 // off, and re-running the request with a token that just failed only buys a
 // second identical 401
 test('with validateWithHEAD off a 401 comes back as-is, with no extra request', async () => {
-  sessionStorage.setItem('testBasic-token', 'd3Jvbmc=')
+  makeAccount(false).storeToken('d3Jvbmc=')
   fetchMock.mockResolvedValue(new Response('nope', { status: 401 }))
 
   const response = await makeAccount(false).getFetcher(location)(location.uri)
@@ -74,14 +74,14 @@ test('with validateWithHEAD off a 401 comes back as-is, with no extra request', 
 // A 404 is no fault of the password; dropping the password on one re-opens the
 // login dialog on every read of a URL that never works
 test('a HEAD failing for a reason other than a 401 keeps the credential', async () => {
-  sessionStorage.setItem('testBasic-token', 'dXNlcjpwdw==')
+  makeAccount().storeToken('dXNlcjpwdw==')
   fetchMock.mockResolvedValue(new Response('missing', { status: 404 }))
 
   await expect(
     makeAccount().getPreAuthorizationInformation(location),
   ).rejects.toThrow('HTTP 404 - missing')
 
-  expect(sessionStorage.getItem('testBasic-token')).toBe('dXNlcjpwdw==')
+  expect(makeAccount().retrieveToken()).toBe('dXNlcjpwdw==')
 })
 
 test('an account with no session to prompt in says so', async () => {

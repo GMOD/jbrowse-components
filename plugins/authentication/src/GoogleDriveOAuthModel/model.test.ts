@@ -33,7 +33,7 @@ beforeEach(() => {
 // every read for the rest of the session threw this same error, with nothing
 // ever prompting for a new login.
 test('an expired token is dropped rather than left cached', async () => {
-  sessionStorage.setItem('testGoogleDrive-token', 'expired-token')
+  makeAccount().storeToken('expired-token')
   fetchMock.mockResolvedValue(
     new Response(
       JSON.stringify({ error: { message: 'Invalid Credentials' } }),
@@ -48,7 +48,7 @@ test('an expired token is dropped rather than left cached', async () => {
     'Invalid Credentials',
   )
 
-  expect(sessionStorage.getItem('testGoogleDrive-token')).toBeNull()
+  expect(makeAccount().retrieveToken()).toBeUndefined()
 
   // and getToken's in-memory promise went with it, so the next read opens a
   // login window instead of replaying the token that just failed

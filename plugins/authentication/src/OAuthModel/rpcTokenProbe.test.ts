@@ -67,7 +67,7 @@ function countHeads() {
 // agent-docs/ideas/waiting-on-someone-else/internet-accounts.md, "The pre-flight the base model says it
 // avoids".
 test('every RPC serialization re-probes every location it carries', async () => {
-  sessionStorage.setItem('testOAuth-token', 'a-good-token')
+  makeAccount().storeToken('a-good-token')
   fetchMock.mockResolvedValue(new Response('ok'))
 
   const rpc = withAccount(makeAccount())
@@ -84,7 +84,7 @@ test('every RPC serialization re-probes every location it carries', async () => 
 })
 
 test('the pre-authorization a serialization writes does not survive to the next', async () => {
-  sessionStorage.setItem('testOAuth-token', 'a-good-token')
+  makeAccount().storeToken('a-good-token')
   fetchMock.mockResolvedValue(new Response('ok'))
 
   const rpc = withAccount(makeAccount())
