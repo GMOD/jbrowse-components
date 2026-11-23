@@ -8,7 +8,11 @@ tutorial_category: Epigenomics & single cell
 ---
 
 AlphaGenome reads a megabase of DNA and predicts where it is transcribed, where
-the chromatin is open, how it splices, and how it folds. At _TAL1_ we:
+the chromatin is open, how it splices, and how it folds. Given a window of
+reference sequence and a cell type, it predicts the RNA-seq, DNase, ATAC, CAGE,
+PRO-cap and ChIP-seq signal an experiment would produce there, plus splice
+junctions and a contact map. After one base changes, a second prediction
+differs from the first by the variant's predicted effect. At _TAL1_ we:
 
 - install the AlphaGenome plugin and request predictions as tracks for two cell
   lines
@@ -27,7 +31,7 @@ model's output. We welcome your [feedback](/contact).
 
 - the AlphaGenome plugin, for the adapters these tracks use, the query panel and
   the variant right-click item. In your own JBrowse,
-  [load it by URL](#the-alphagenome-plugin); the sessions below already load it
+  [load it by URL](#install-the-alphagenome-plugin); the sessions below already load it
 
 ## The data
 
@@ -35,9 +39,11 @@ We ran two predictions over the _TAL1_ locus against
 [AlphaGenome](https://www.alphagenomedocs.com/) and stored them under stable
 tokens, following the AlphaGenome team's
 [worked example](https://www.alphagenomedocs.com/colabs/example_analysis_workflow.html).
+The window is a megabase centered on _TAL1_, which is on in K562, an
+erythroleukemia line, and off in GM12878, a lymphoblastoid line, the control.
 
 Nothing to download: the plugin reads both stored predictions by URL. To use
-your own variants, swap `uri` for a VCF or BED, as _Asking AlphaGenome for a
+your own variants, swap `uri` for a VCF or BED, as _Ask AlphaGenome for a
 prediction_ shows, and the query panel requests a prediction for any hg38 locus
 you open.
 
@@ -51,17 +57,7 @@ you open.
 
 </details>
 
-## Predicted assays from sequence
-
-Given a window of reference sequence and a cell type, AlphaGenome predicts the
-RNA-seq, DNase, ATAC, CAGE, PRO-cap and ChIP-seq signal an experiment would
-produce there, plus splice junctions and a contact map. After one base changes,
-a second prediction differs from the first by the variant's predicted effect.
-
-The window is a megabase centered on _TAL1_, which is on in K562, an
-erythroleukemia line, and off in GM12878, a lymphoblastoid line, the control.
-
-## The AlphaGenome plugin
+## Install the AlphaGenome plugin
 
 The plugin is not in the [plugin store](/docs/user_guides/plugin_store) yet, so
 JBrowse loads it by URL from the `plugins` array in `config.json` (see
@@ -88,7 +84,7 @@ default. To use your own, the page or app that embeds JBrowse calls
 `setApiRoot`, a function the plugin module exports, with the service's root URL;
 `config.json` has no slot for it.[^license]
 
-## Asking AlphaGenome for a prediction
+## Ask AlphaGenome for a prediction
 
 AlphaGenome predicts from hg38 sequence, so we load that assembly, the RefSeq
 genes and the oncogenic _TAL1_ variants:
@@ -168,7 +164,13 @@ A wide request takes minutes, and the browser polls until it finishes. The
 service keys each request by its content, so repeating a request this page
 already made returns at once.[^rounding]
 
-## Predicted TAL1 expression in two cell lines on one axis
+The panel adds predictions as session tracks whose adapters read the stored
+arrays through presigned URLs that expire within the hour. A track config copied
+into another session stops loading once they expire, so to share a prediction,
+re-open the panel there and repeat the query, which returns the same stored
+arrays with fresh URLs.
+
+## Stack two cell lines' TAL1 expression on one axis
 
 Open the list of a finished prediction's tracks, often thousands, and stack two
 on one axis:
@@ -186,7 +188,7 @@ untick **Stack on a shared scale**.
 _STIL_, to the right, is predicted in both lines, a sign that the GM12878 row
 loaded.
 
-## Where the chromatin is open
+## Stack the accessibility rows on one axis
 
 Add four accessibility rows to the prediction:
 
@@ -198,14 +200,14 @@ Add four accessibility rows to the prediction:
 
 The GM12878 rows have peaks too, at open chromatin that is not transcribed.
 
-## Predicted TAL1 splice junctions in each cell line
+## Add each cell line's splice junctions as arcs
 
 Splice junctions come back as arcs joining exons, as in a sashimi plot. Add the
 K562 and GM12878 polyA junctions and zoom in to _TAL1_.[^junctions]
 
 <Figure caption="Predicted splice junctions over TAL1 for K562 and GM12878 as arcs." src="/img/alphagenome/splice_junctions.png" />
 
-## The predicted GM12878 contact map over the whole window
+## Add the GM12878 contact map over the window
 
 AlphaGenome predicts Hi-C-style contact maps for a set of cell lines, GM12878
 among them. Add the GM12878 contact map and zoom out to the whole predicted
@@ -213,7 +215,7 @@ megabase:
 
 <Figure caption="The predicted GM12878 contact map across the window." src="/img/alphagenome/contact_map.png" />
 
-## Scoring a TAL1 variant against the reference
+## Score a TAL1 variant against the reference
 
 In T-cell acute lymphoblastic leukemia (T-ALL), _TAL1_ is switched on in a
 lineage where it should be silent. One route is a small insertion upstream of
@@ -238,7 +240,7 @@ The panel warns when the variant falls outside the window. In variant mode
 AlphaGenome reports only the junctions the variant could affect, so clear the
 variant to get the whole locus back.
 
-## Predicted effect of the Jurkat insertion on TAL1
+## Read the Jurkat insertion's effect as difference rows
 
 A variant prediction returns each assay as two tracks: the reference and
 alternate curves together, and a difference row (alternate minus reference)
@@ -255,14 +257,6 @@ where positive is a gain from the insertion.[^mapping] To read the differences:
 
 Accessibility rises at the insertion. H3K27ac, the mark of an active enhancer,
 rises across the locus, and predicted transcription rises over the _TAL1_ exons.
-
-## Sharing prediction tracks between sessions
-
-The panel adds predictions as session tracks whose adapters read the stored
-arrays through presigned URLs that expire within the hour. A track config copied
-into another session stops loading once they expire, so to share a prediction,
-re-open the panel there and repeat the query, which returns the same stored
-arrays with fresh URLs.
 
 ## See also
 
