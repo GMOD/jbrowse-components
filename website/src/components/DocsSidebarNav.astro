@@ -3,7 +3,10 @@ import { getCollection } from 'astro:content'
 
 import SidebarItem from './SidebarItem.astro'
 import { baseUrl } from '../lib/base-url.ts'
-import { buildSiteSidebar } from '../lib/docs-sidebar.ts'
+import {
+  buildSearchCategoryMap,
+  buildSiteSidebar,
+} from '../lib/docs-sidebar.ts'
 
 interface Props {
   currentSlug: string
@@ -12,6 +15,9 @@ const { currentSlug } = Astro.props
 
 const allDocs = await getCollection('docs')
 const sidebar = buildSiteSidebar(allDocs, baseUrl)
+const referenceSlugs = Object.entries(buildSearchCategoryMap(allDocs))
+  .filter(([, category]) => category === 'autogen')
+  .map(([slug]) => slug)
 ---
 
 {/* A filter over the nav itself, not a search: 370-odd pages sit behind ten
@@ -42,11 +48,12 @@ const sidebar = buildSiteSidebar(allDocs, baseUrl)
     <SidebarItem item={item} currentSlug={currentSlug} />
   ))}
 </ul>
+<p class="sr-only" id="sidebar-filter-status" aria-live="polite"></p>
 <div
   class="sidebar-filter-text"
   id="sidebar-filter-text"
   data-base={baseUrl}
-  aria-live="polite"
+  data-reference={JSON.stringify(referenceSlugs)}
   hidden
 >
   <p class="sidebar-filter-text-heading" id="sidebar-filter-text-heading">
@@ -65,6 +72,7 @@ const sidebar = buildSiteSidebar(allDocs, baseUrl)
   const textHeadingEl = document.getElementById('sidebar-filter-text-heading')
   const textListEl = document.getElementById('sidebar-filter-text-list')
   const allEl = document.getElementById('sidebar-filter-all')
+  const statusEl = document.getElementById('sidebar-filter-status')
 
   interface PagefindHit {
     url: string
@@ -82,7 +90,8 @@ const sidebar = buildSiteSidebar(allDocs, baseUrl)
     textEl &&
     textHeadingEl &&
     textListEl &&
-    allEl instanceof HTMLAnchorElement
+    allEl instanceof HTMLAnchorElement &&
+    statusEl
   ) {
     const input = inputEl
     const list = listEl
@@ -91,8 +100,16 @@ const sidebar = buildSiteSidebar(allDocs, baseUrl)
     const textList = textListEl
     const allLink = allEl
     const searchHref = allLink.href
+    const status = statusEl
     const base = textSection.dataset.base ?? ''
+    const referenceSlugs = new Set<string>(
+      JSON.parse(textSection.dataset.reference ?? '[]'),
+    )
     const TEXT_HITS = 6
+    // as the header search: generated reference pages would otherwise take
+    // every row for a common word ("color by" ranks 15 of them first)
+    const REFERENCE_SLOTS = 3
+    const WINDOW = 24
 
     const groups = [...list.querySelectorAll('details')]
 
@@ -229,9 +246,9 @@ const sidebar = buildSiteSidebar(allDocs, baseUrl)
     async function getPagefind() {
       if (pagefind === undefined) {
         try {
-          pagefind = (await import(
+          pagefind = await import(
             /* @vite-ignore */ `${base}/pagefind/pagefind.js`
-          )) as Pagefind
+          )
         } catch {
           pagefind = null
         }
@@ -259,6 +276,22 @@ const sidebar = buildSiteSidebar(allDocs, baseUrl)
       return names.join(' › ')
     }
 
+    function isReference(path: string) {
+      const prefix = `${base}/docs/`
+      return (
+        path.startsWith(prefix) && referenceSlugs.has(path.slice(prefix.length))
+      )
+    }
+
+    function categoryOf(path: string) {
+      return (
+        categoryByPath.get(path) ??
+        (path.startsWith(`${base}/blog/`) ? 'Blog' : '')
+      )
+    }
+
+    let shownQuery = ''
+
     const categoryByPath = new Map(
       [...list.querySelectorAll('a')].map(link => [
         pathOf(link.href),
@@ -266,7 +299,12 @@ const sidebar = buildSiteSidebar(allDocs, baseUrl)
       ]),
     )
 
-    function showTextHits(hits: PagefindHit[], titlesMatched: boolean) {
+    function showTextHits(
+      query: string,
+      hits: PagefindHit[],
+      titleCount: number,
+      searched: boolean,
+    ) {
       textList.replaceChildren(
         ...hits.map(hit => {
           const li = document.createElement('li')
@@ -276,7 +314,7 @@ const sidebar = buildSiteSidebar(allDocs, baseUrl)
           a.href = hit.url
           title.textContent = hit.meta?.title ?? pathOf(hit.url)
           category.className = 'sidebar-filter-text-category'
-          category.textContent = categoryByPath.get(pathOf(hit.url)) ?? ''
+          category.textContent = categoryOf(pathOf(hit.url))
           a.append(title, category)
           li.append(a)
           return li
@@ -284,29 +322,40 @@ const sidebar = buildSiteSidebar(allDocs, baseUrl)
       )
       textHeading.textContent = hits.length
         ? 'In page text'
-        : titlesMatched
-          ? ''
-          : 'No matches'
+        : searched && !titleCount
+          ? 'No matches'
+          : ''
       textHeading.hidden = !textHeading.textContent
       textSection.hidden = false
+      shownQuery = query
+      status.textContent = `Title matches: ${titleCount}. In page text: ${hits.length}. Enter opens the first.`
     }
 
-    async function runTextSearch(query: string, titlesMatched: boolean) {
-      const pf = await getPagefind()
-      const titled = new Set(
-        [...list.querySelectorAll('li:not([hidden]) > a')].map(link =>
-          link instanceof HTMLAnchorElement ? pathOf(link.href) : '',
-        ),
+    function visibleTitleLinks() {
+      return [...list.querySelectorAll('li:not([hidden]) > a')].filter(
+        link => link instanceof HTMLAnchorElement,
       )
+    }
+
+    async function runTextSearch(query: string) {
+      const pf = await getPagefind()
+      const titled = new Set(visibleTitleLinks().map(link => pathOf(link.href)))
       const { results } = pf ? await pf.search(query) : { results: [] }
       const fetched = await Promise.all(
-        results.slice(0, TEXT_HITS * 2).map(result => result.data()),
+        results.slice(0, WINDOW).map(result => result.data()),
       )
-      const hits = fetched
-        .filter(hit => !titled.has(pathOf(hit.url)))
-        .slice(0, TEXT_HITS)
+      const hits: PagefindHit[] = []
+      let reference = 0
+      for (const hit of fetched) {
+        const path = pathOf(hit.url)
+        const overQuota = isReference(path) && reference === REFERENCE_SLOTS
+        if (!titled.has(path) && !overQuota && hits.length < TEXT_HITS) {
+          hits.push(hit)
+          reference += isReference(path) ? 1 : 0
+        }
+      }
       if (input.value.trim() === query) {
-        showTextHits(hits, titlesMatched)
+        showTextHits(query, hits, titled.size, !!pf)
       }
     }
 
@@ -319,6 +368,9 @@ const sidebar = buildSiteSidebar(allDocs, baseUrl)
         details.open = wasOpen.get(details) ?? false
       }
       textSection.hidden = true
+      textList.replaceChildren()
+      shownQuery = ''
+      status.textContent = ''
     }
 
     function apply() {
@@ -328,10 +380,10 @@ const sidebar = buildSiteSidebar(allDocs, baseUrl)
         return
       }
       const tokens = query.toLowerCase().split(/\s+/)
-      const titlesMatched = filterList(list, tokens, false)
+      filterList(list, tokens, false)
       allLink.href = `${searchHref}?q=${encodeURIComponent(query)}`
       clearTimeout(debounce)
-      debounce = setTimeout(() => runTextSearch(query, titlesMatched), 150)
+      debounce = setTimeout(() => runTextSearch(query), 150)
     }
 
     input.addEventListener('input', apply)
@@ -344,9 +396,9 @@ const sidebar = buildSiteSidebar(allDocs, baseUrl)
         // A filtered list is usually down to one obvious hit; Enter takes it
         // rather than making the reader move back to the mouse, falling back
         // to the first page-text hit when no title matched.
-        const first =
-          list.querySelector(':scope li:not([hidden]) > a') ??
-          textList.querySelector('a')
+        const textHit =
+          shownQuery === input.value.trim() ? textList.querySelector('a') : null
+        const first = visibleTitleLinks()[0] ?? textHit
         if (first instanceof HTMLAnchorElement) {
           first.click()
         }
