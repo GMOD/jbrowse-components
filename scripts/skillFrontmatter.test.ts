@@ -14,7 +14,11 @@ function frontmatter(dir: string) {
     .slice(head.indexOf('description:') + 'description:'.length)
     .split('\n')
   const blockScalar = /^ *[>|]/.test(firstLine)
-  const description = (blockScalar ? lines : [firstLine, ...lines])
+  const end = lines.findIndex(line => !line.startsWith(' '))
+  const continuation = end === -1 ? lines : lines.slice(0, end)
+  const description = (
+    blockScalar ? continuation : [firstLine, ...continuation]
+  )
     .join(' ')
     .replaceAll(/\s+/g, ' ')
     .trim()
