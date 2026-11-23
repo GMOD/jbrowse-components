@@ -18,9 +18,9 @@ GRCh38's chromosome lacks; and FLNA / EMD, two genes some haplotypes have in the
 opposite order. We:
 
 - at CFH and GSTT1, open the lanes from the HPRC page's **Haplotypes** launch,
-  which stacks them by structure
+  which stacks them by structure, and read each lane's genes from the
+  annotation of that haplotype's assembly
 - at FLNA / EMD, add the graph's bubbles track and filter it to inversions
-- read each lane's genes from the annotation of that haplotype's assembly
 - at IGL, choose lanes by name from the **Lanes** menu
 - configure the haplotype lanes track for a graph of your own
 
@@ -48,7 +48,7 @@ You don't need these files to follow the page: the HPRC launches read the hosted
 tabix indexes, built from these files of
 [HPRC release 2](https://doi.org/10.64898/2026.07.21.739710).
 [Reproduce it end to end](#reproduce-it-end-to-end) names the build, and
-[Configuring the haplotype lanes track](#configuring-the-haplotype-lanes-track)
+[Configure the haplotype lanes track](#configure-the-haplotype-lanes-track)
 has the config to adapt for your own graph.
 
 | What it is                                            | File                                                                                                                                                                                |
@@ -66,57 +66,7 @@ has the config to adapt for your own graph.
 
 </details>
 
-## CFH: haplotypes missing two genes
-
-Open the [HPRC page](https://genomes.jbrowse.org/pangenomes/hprc) and click the
-**CFH / CFHR** example, the complement factor H gene cluster. Under **More about
-this window**, click **Haplotypes**, which opens the lanes under the NCBI RefSeq
-genes (hg38), **Known alleles** and **GWAS Catalog (NHGRI-EBI)** tracks:
-
-- **Each structural form gets lanes**, more for a commoner form, and each lane's
-  header shows the number of haplotypes that share its form.
-- **A lane missing _CFHR3_ and _CFHR1_** (Hughes et al. 2006) has a gap across
-  both, under the **Known alleles** row naming the deletion.
-
-<Figure caption="The CFH cluster from the Haplotypes launch. The lanes missing CFHR3 and CFHR1 have a gap across both." src="/img/pangenome/hprc_cfhr_lanes.png" />
-
-## GSTT1: a gene GRCh38's chromosome lacks
-
-GRCh38's chromosome 22 has the common _GSTT1_ deletion, so the gene sits on an
-alternate contig and no chr22 track draws it. Click the **GSTT1** example on the
-HPRC page, then **Haplotypes** beside **Open in JBrowse**:
-
-- **The lanes stack by structure**, each beside the one whose deletions and
-  insertions against GRCh38 are most alike, so the lanes of one form sit
-  together.
-- **The band between two lanes** connects the two haplotypes at the nodes both
-  walks share, and widens where the lower lane has sequence the upper lacks.
-
-<Figure caption="GSTT1 from the Haplotypes launch, its lanes stacked by structure." src="/img/multiway_synteny/hprc_gstt1_lanes.png" />
-
-## FLNA / EMD: two genes in the opposite order {#inversions}
-
-_FLNA_ and _EMD_ sit between two inverted repeats on Xq28, and the block between
-them is inverted on many X chromosomes (Small et al. 1997). Click the **FLNA /
-EMD** example on the HPRC page, then **Haplotypes** under **More about this
-window**. Then:
-
-- **The band between two lanes** crosses itself, in blue, where the lower lane
-  runs the block in the other direction, and an inverted lane's header names the
-  inversion.
-- **HPRC release 2 bubbles** in the track selector adds the graph's bubbles.
-  `gfatools bubble` flags one as `inversion` when its paths disagree about
-  orientation.
-- **Filter by → Edit filters...** on that track keeps the flagged ones with this
-  filter:
-
-  ```jexl
-  jexl:feature.inversion
-  ```
-
-<Figure caption="FLNA / EMD from the Haplotypes launch, with the bubbles track filtered to inversions. The band crosses in blue where the inverted lanes meet the lanes in GRCh38's orientation." src="/img/pangenome/hprc_inversion.png" />
-
-## Where each haplotype's genes come from {#haplotype-genes}
+### Where each haplotype's genes come from {#haplotype-genes}
 
 JBrowse draws each lane, and each bar under **Walk rows**, with the genes
 annotated on that haplotype's assembly, at that assembly's coordinates. It does
@@ -124,7 +74,7 @@ not lift GRCh38's genes across the graph.
 
 - **The source:** HPRC annotated each release 2 assembly but HG002's with CAT
   (the Comparative Annotation Toolkit), which projects GENCODE's GRCh38 genes
-  onto it, in the [CAT index](#the-data) above. HG002's two haplotypes are the
+  onto it, in the CAT index above. HG002's two haplotypes are the
   [Q100 assembly](https://github.com/marbl/HG002) hg002v1.1, whose project
   annotated it with RefSeq's genes through JHU's Liftoff; we keep each gene's
   MANE Select transcript there, so a few symbols and isoforms differ from the
@@ -151,17 +101,77 @@ not lift GRCh38's genes across the graph.
   v0.6**. JBrowse draws that track in the haplotype's lane, and for each of the
   first 40 walk-row bars reads it over the bar's span on the haplotype's contig
   and boxes each gene where it falls along the bar.
-- **Reading a lane's genes:**
-  - A gene missing from a lane is missing from that haplotype's annotation,
-    through a deletion, a copy CAT did not project, or a gene the rules above
-    dropped.
-  - CAT names each copy of a duplicated gene after the GRCh38 copy it projected,
-    so a haplotype with extra _AMY1_ copies shows _AMY1C_ several times. The
-    number of _AMY1_ boxes gives the copy number, unless CAT missed a copy.
 
-## Limits of the lanes {#limits}
+## Open the CFH lanes from the Haplotypes launch
 
-The lanes are easy to misread in several cases:
+Open the [HPRC page](https://genomes.jbrowse.org/pangenomes/hprc) and click the
+**CFH / CFHR** example, the complement factor H gene cluster. Under **More about
+this window**, click **Haplotypes**, which opens the lanes under the NCBI RefSeq
+genes (hg38), **Known alleles** and **GWAS Catalog (NHGRI-EBI)** tracks:
+
+- **Each structural form gets lanes**, more for a commoner form, and each lane's
+  header shows the number of haplotypes that share its form.
+- **A lane missing _CFHR3_ and _CFHR1_** (Hughes et al. 2006) has a gap across
+  both, under the **Known alleles** row naming the deletion.
+
+<Figure caption="The CFH cluster from the Haplotypes launch. The lanes missing CFHR3 and CFHR1 have a gap across both." src="/img/pangenome/hprc_cfhr_lanes.png" />
+
+Each lane draws the genes annotated on that haplotype's assembly
+([where they come from](#haplotype-genes)):
+
+- A gene missing from a lane is missing from that haplotype's annotation,
+  through a deletion, a copy CAT did not project, or a gene the rules above
+  dropped.
+- CAT names each copy of a duplicated gene after the GRCh38 copy it projected,
+  so a haplotype with extra _AMY1_ copies shows _AMY1C_ several times. The
+  number of _AMY1_ boxes gives the copy number, unless CAT missed a copy.
+
+## Find GSTT1 in the lanes that carry it
+
+GRCh38's chromosome 22 has the common _GSTT1_ deletion, so the gene sits on an
+alternate contig and no chr22 track draws it. Click the **GSTT1** example on the
+HPRC page, then **Haplotypes** beside **Open in JBrowse**:
+
+- **The lanes stack by structure**, each beside the one whose deletions and
+  insertions against GRCh38 are most alike, so the lanes of one form sit
+  together.
+- **The band between two lanes** connects the two haplotypes at the nodes both
+  walks share, and widens where the lower lane has sequence the upper lacks.
+
+<Figure caption="GSTT1 from the Haplotypes launch, its lanes stacked by structure." src="/img/multiway_synteny/hprc_gstt1_lanes.png" />
+
+## Filter the bubbles to inversions at FLNA / EMD {#inversions}
+
+_FLNA_ and _EMD_ sit between two inverted repeats on Xq28, and the block between
+them is inverted on many X chromosomes (Small et al. 1997). Click the **FLNA /
+EMD** example on the HPRC page, then **Haplotypes** under **More about this
+window**. Then:
+
+- **The band between two lanes** crosses itself, in blue, where the lower lane
+  runs the block in the other direction, and an inverted lane's header names the
+  inversion.
+- **HPRC release 2 bubbles** in the track selector adds the graph's bubbles.
+  `gfatools bubble` flags one as `inversion` when its paths disagree about
+  orientation.
+- **Filter by → Edit filters...** on that track keeps the flagged ones with this
+  filter:
+
+  ```jexl
+  jexl:feature.inversion
+  ```
+
+<Figure caption="FLNA / EMD from the Haplotypes launch, with the bubbles track filtered to inversions. The band crosses in blue where the inverted lanes meet the lanes in GRCh38's orientation." src="/img/pangenome/hprc_inversion.png" />
+
+## Choose lanes by name at IGL {#limits}
+
+**Lanes → Choose lanes...** picks lanes by name, for a haplotype the launch did
+not place in a lane. At IGL, from any **Haplotypes** launch, type
+`chr22:22,800,001-22,850,000` and choose `HG00099.1`, `HG002.1`, `HG00097.1`,
+`HG002.2` and `HG01074.1`, which puts two rows with no ribbons at the foot.
+
+<Figure caption="IGL in five lanes. HG002 haplotype 2 and HG01074 haplotype 1 have no step on the reference across the window, so their rows at the foot draw no ribbons and are headed with the length of the stretch. HG002 haplotype 1's lane spans the window but shows only MIR650 and IGLV3-7, since its Liftoff annotation leaves out functional V segments." src="/img/pangenome/hprc_igl_deletion_lanes.png" />
+
+Those rows are one of several cases where the lanes are easy to misread:
 
 - **A haplotype the graph does not align has no lane.** Picked by hand under
   **Lanes → Choose lanes...**, it gets an empty row at the foot headed "no
@@ -185,14 +195,7 @@ The lanes are easy to misread in several cases:
 - **Near-identical gene copies share one path**, so where the graph merges the
   copies, as at SMN1 / SMN2, a lane cannot show how many copies a haplotype has.
 
-**Lanes → Choose lanes...** picks lanes by name, for a haplotype the launch did
-not place in a lane. At IGL, from any **Haplotypes** launch, type
-`chr22:22,800,001-22,850,000` and choose `HG00099.1`, `HG002.1`, `HG00097.1`,
-`HG002.2` and `HG01074.1`, which puts two such rows at the foot.
-
-<Figure caption="IGL in five lanes. HG002 haplotype 2 and HG01074 haplotype 1 have no step on the reference across the window, so their rows at the foot draw no ribbons and are headed with the length of the stretch. HG002 haplotype 1's lane spans the window but shows only MIR650 and IGLV3-7, since its Liftoff annotation leaves out functional V segments." src="/img/pangenome/hprc_igl_deletion_lanes.png" />
-
-## Configuring the haplotype lanes track
+## Configure the haplotype lanes track
 
 One track draws the lanes, reading each haplotype's walk from indexed files we
 built from the release's graph. The HPRC page's **Haplotypes** launch adds it,
