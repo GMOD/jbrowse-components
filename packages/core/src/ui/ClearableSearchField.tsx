@@ -111,7 +111,9 @@ export const SearchField = observer(function SearchField({
 
 /**
  * `SearchField` over a search too slow to run before the keystroke paints:
- * the box keeps its own text and hands each change on in a transition
+ * the box keeps its own text and hands each change on in a transition. A
+ * `value` set from outside, such as a query an agent sets on the model,
+ * replaces the box's text.
  */
 const ClearableSearchField = observer(function ClearableSearchField({
   value,
@@ -119,12 +121,12 @@ const ClearableSearchField = observer(function ClearableSearchField({
   ...rest
 }: SearchFieldProps) {
   const [localValue, setLocalValue] = useState(value)
+  const [lastValue, setLastValue] = useState(value)
   const [, startTransition] = useTransition()
 
-  // Sync back when the model clears the filter externally (during render,
-  // not in an effect, to avoid the extra render cycle)
-  if (value === '' && localValue !== '') {
-    setLocalValue('')
+  if (value !== lastValue) {
+    setLastValue(value)
+    setLocalValue(value)
   }
 
   return (

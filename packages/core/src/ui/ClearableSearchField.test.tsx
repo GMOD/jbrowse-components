@@ -1,6 +1,8 @@
-import { fireEvent, render } from '@testing-library/react'
+import { act, fireEvent, render } from '@testing-library/react'
+import { observable, runInAction } from 'mobx'
+import { observer } from 'mobx-react'
 
-import { SearchField } from './ClearableSearchField.tsx'
+import ClearableSearchField, { SearchField } from './ClearableSearchField.tsx'
 
 const clear = { name: 'Clear filter tracks' }
 
@@ -35,4 +37,54 @@ test('a box with text shows a clear button that empties it', () => {
   const { onChange, getByRole } = renderField('gencode')
   fireEvent.click(getByRole('button', clear))
   expect(onChange).toHaveBeenCalledWith('')
+})
+
+// the box over an observable query, as TrackFilterBox draws it over the
+// track table's filterText
+function renderOverModel(initial: string) {
+  const model = observable({ query: initial })
+  const setQuery = (query: string) => {
+    runInAction(() => {
+      model.query = query
+    })
+  }
+  const Box = observer(function Box() {
+    return (
+      <ClearableSearchField
+        label="Filter tracks"
+        value={model.query}
+        onChange={setQuery}
+      />
+    )
+  })
+  const { container } = render(<Box />)
+  return {
+    model,
+    box: () => container.querySelector('input')!,
+    setQuery: (query: string) => {
+      act(() => {
+        setQuery(query)
+      })
+    },
+  }
+}
+
+// an agent or window.jb sets the query on the model, not in the box
+test('a query set on the model replaces the text in the box', () => {
+  const { box, setQuery } = renderOverModel('k562')
+  setQuery('k562 bernstein')
+  expect(box().value).toBe('k562 bernstein')
+  setQuery('')
+  expect(box().value).toBe('')
+})
+
+test('typing reaches the model and stays in the box', () => {
+  const { box, model } = renderOverModel('')
+  for (const text of ['l', 'li', 'liv']) {
+    act(() => {
+      fireEvent.change(box(), { target: { value: text } })
+    })
+  }
+  expect(box().value).toBe('liv')
+  expect(model.query).toBe('liv')
 })
