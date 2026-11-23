@@ -26,8 +26,9 @@ on the axolotl. We:
 - filter the gnomAD variant track to predicted loss of function from **Filter
   by**
 - search for _TP53_ on a GenArk genome, the axolotl
+- find the file a track reads, to open it outside JBrowse
 
-## Opening a genome
+## Open a genome
 
 [genomes.jbrowse.org](https://genomes.jbrowse.org) hosts a JBrowse instance for
 every main UCSC database (hg19, hg38, hs1, mm39 and the rest) and for the UCSC
@@ -49,7 +50,7 @@ instance with a URL you can share:
 
 <Figure src="/img/genomes_basics/site_search.png" caption="The header search box, mid-query, mixing UCSC databases with GenArk accessions." />
 
-## Searching for TP53 and trimming its isoforms
+## Search for TP53 and trim its isoforms
 
 Open hg38. The view starts with one track on, the **NCBI RefSeq - RefSeq All**
 gene track, and the track selector open down the right. The location box at the
@@ -68,7 +69,7 @@ than fit in the track's height. Two controls trim them:
   transcripts / Representative transcript**. The last collapses every gene to
   one transcript, which the rest of this page uses
 
-## Finding the phyloP conservation track in the catalog
+## Find the phyloP conservation track in the catalog
 
 Every other track in the catalog is a checkbox in the track selector, the drawer
 down the right, which the button at the top left of the view header closes and
@@ -80,7 +81,7 @@ Type `phyloP` into **Filter tracks**. Under Comparative Genomics, tick
 
 <Video src="/media/genomes_basics/find_a_track.mp4" caption="The hg38 track catalog in the selector, narrowed by typing phyloP into Filter tracks, with the 100-way vertebrate alignment ticked under Comparative Genomics. The conservation track appears under the TP53 transcript." />
 
-## Reading the phyloP track
+## Read the phyloP track
 
 phyloP scores each base against the neutral rate the alignment implies. The
 score is signed: blue above the line marks a base that changes more slowly than
@@ -99,7 +100,7 @@ base:
 Within a codon the third base's bar is the short one, since most third-position
 changes leave the amino acid unchanged. Hover a bar to read its score.
 
-## The multiple alignment behind the phyloP score
+## Add the multiple alignment behind the phyloP score
 
 The multiple alignment behind a phyloP track is a checkbox too. UCSC publishes
 no bigMaf (indexed alignment file) for the 100-way, so this section switches to
@@ -123,7 +124,7 @@ substitution events on the tree:
 A MAF block has a row per species, so at gene-wide zoom JBrowse asks you to
 confirm before fetching the alignment.
 
-## Regulatory tracks at the TP53 promoter
+## Turn on regulation tracks at the TP53 promoter
 
 Zoom out to the whole gene, and tick five Regulation and Expression tracks:
 
@@ -145,7 +146,7 @@ give each cell line a row:
 _TP53_ is on the minus strand, so its promoter sits at the high-coordinate end,
 where every track in the figure has a call.
 
-## Filtering gnomAD's TP53 variants to predicted loss of function
+## Filter gnomAD's TP53 variants to loss of function
 
 The **gnomAD v4.1.1 - Exomes** track, under Variation and Repeats, opens as a
 dense run of variant records over _TP53_, one block of color. A filter keeps the
@@ -175,11 +176,25 @@ catalog. Click **Add track** in the track selector and give it the file's URL,
 or pick it from disk; the [web quickstart](/docs/quickstart_web#adding-tracks)
 lists the index each format needs.
 
-## Where the track data is read from
+## Search TP53 on a GenArk genome, the axolotl
+
+The GenArk configs have a smaller track set than the UCSC database configs, and
+their name indexes come from NCBI RefSeq annotation. A `GCF_` accession has gene
+tracks and resolves gene symbols, while a `GCA_` accession generally has neither
+and takes coordinates. An assembly released both ways appears under both
+accessions: the axolotl `Mex_15411` is `GCF_040938575.1` and `GCA_040938575.1`.
+
+Type `axolotl` into the site's header search, open `GCF_040938575.1`, and type
+`TP53` into its location box.
+
+<Figure src="/img/genomes_basics/genark_axolotl.png" caption="Axolotl TP53, reached by typing the symbol into the location box." />
+
+## Find where a track's data is read from
 
 The config is hosted on jbrowse.org, and JBrowse reads most UCSC track data from
-hgdownload by byte range. **About track** in the track menu prints the adapter
-and its file URL, which is where to look when a track is slow or missing.
+hgdownload by byte range. Back on hg38, **About track** in the phyloP track's
+menu prints the adapter and its file URL, which is where to look when a track is
+slow or missing.
 
 <Figure src="/img/genomes_basics/about_track.png" caption="Left: the phyloP track menu with About track boxed. Right: the dialog it opens." />
 
@@ -193,19 +208,6 @@ scores <- import(
   which = GRanges("chr17", IRanges(7668400, 7687550))
 )
 ```
-
-## Searching TP53 on a GenArk genome, the axolotl
-
-The GenArk configs have a smaller track set than the UCSC database configs, and
-their name indexes come from NCBI RefSeq annotation. A `GCF_` accession has gene
-tracks and resolves gene symbols, while a `GCA_` accession generally has neither
-and takes coordinates. An assembly released both ways appears under both
-accessions: the axolotl `Mex_15411` is `GCF_040938575.1` and `GCA_040938575.1`.
-
-Type `axolotl` into the site's header search, open `GCF_040938575.1`, and type
-`TP53` into its location box.
-
-<Figure src="/img/genomes_basics/genark_axolotl.png" caption="Axolotl TP53, reached by typing the symbol into the location box." />
 
 ## See also
 
