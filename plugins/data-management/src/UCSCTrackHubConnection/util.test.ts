@@ -98,6 +98,28 @@ test('makeLoc uses the fallback when the path is empty', () => {
   })
 })
 
+test.each([
+  'file:///etc/hosts',
+  'file://fileserver/share/x.bam',
+  'ftp://x.org/x.bam',
+])('a hub on the web cannot name a file that is not on the web: %s', path => {
+  expect(() => makeLoc(path, uri('https://x.org/hub/trackDb.txt'))).toThrow(
+    'a hub on the web can only name files served over http or https',
+  )
+})
+
+test('a hub on the web can name files on another web host', () => {
+  expect(
+    makeLoc('http://y.org/x.bam', uri('https://x.org/hub/trackDb.txt')),
+  ).toEqual({ uri: 'http://y.org/x.bam', locationType: 'UriLocation' })
+})
+
+test('a hub opened from this computer can name an absolute local file', () => {
+  expect(
+    makeLoc('file:///data/x.bam', local('/home/u/hub/trackDb.txt')),
+  ).toEqual({ localPath: '/data/x.bam', locationType: 'LocalPathLocation' })
+})
+
 // `html`/`htmlPath` are hub-controlled text going into markup, and the anchor
 // is stored in metadata rather than rendered through the sanitizer every
 // current reader happens to sit behind. The label side is the one `new URL`

@@ -2,6 +2,7 @@ import { GenomesFile, TrackDbFile } from '@gmod/ucsc-hub'
 import { isUriLocation } from '@jbrowse/core/util'
 import { escapeHTML } from '@jbrowse/core/util/htmlText'
 import { openLocation } from '@jbrowse/core/util/io'
+import { isWebUrl } from '@jbrowse/core/util/jbrowseProtocol'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type {
@@ -61,9 +62,16 @@ export function makeLoc(path: string, base: HubLocation, fallback?: string) {
 }
 
 // build a location for a hub-relative path resolved against a base url; emits a
-// LocalPathLocation when the base is a file:// (local desktop) url
+// LocalPathLocation when the base is a file:// (local desktop) url. A hub on the
+// web names only files on the web: only a hub opened from this computer reads
+// from it.
 export function makeLocFromUri(path: string, baseUrl: string): HubLocation {
   const uri = resolve(path, baseUrl)
+  if (!baseUrl.startsWith('file:') && !isWebUrl(uri)) {
+    throw new Error(
+      `The hub at ${baseUrl} names ${uri}, and a hub on the web can only name files served over http or https`,
+    )
+  }
   return uri.startsWith('file://')
     ? {
         localPath: fileUrlToLocalPath(uri),
