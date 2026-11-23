@@ -164,7 +164,7 @@ function githubToken() {
 
 // fetch + parse JSON from the GitHub API, throwing on a non-ok response. The
 // lone cast localizes the unavoidable response.json(): Promise<unknown>
-async function fetchJson<T>(url: string): Promise<T> {
+async function fetchJson<T>(url: string, notFound?: string): Promise<T> {
   const token = githubToken()
   const response = await fetch(
     url,
@@ -172,13 +172,14 @@ async function fetchJson<T>(url: string): Promise<T> {
   )
   if (!response.ok) {
     // 403 unauthenticated is nearly always the rate limit rather than anything
-    // about this url, and the caller above turns a throw into "could not find
-    // version", which sends the reader looking for a version that is right
-    // there. Say which it is.
+    // about this url, which a "could not find version" would hide from a reader
+    // looking for a version that is right there. Say which it is.
     throw new Error(
-      response.status === 403 && !token
-        ? `HTTP 403 fetching ${url} -- probably GitHub's 60/hour anonymous rate limit. Set GITHUB_TOKEN to raise it.`
-        : `HTTP ${response.status} fetching ${url}`,
+      response.status === 404 && notFound
+        ? notFound
+        : response.status === 403 && !token
+          ? `HTTP 403 fetching ${url} -- probably GitHub's 60/hour anonymous rate limit. Set GITHUB_TOKEN to raise it.`
+          : `HTTP ${response.status} fetching ${url}`,
     )
   }
   return response.json() as Promise<T>
@@ -203,20 +204,16 @@ function isInstallable(release: GithubRelease) {
     !release.draft &&
     (takesPrereleases || !release.prerelease) &&
     release.tag_name.startsWith(`v${cliMajor}.`) &&
-    !!release.assets?.length
+    !!findWebAssetUrl(release)
   )
 }
 
 async function getLatest() {
   for await (const versions of fetchVersions()) {
     const release = versions.find(r => isInstallable(r))
-    if (release) {
-      const file = findWebAssetUrl(release)
-      if (file) {
-        return file
-      } else {
-        throw new Error('no jbrowse-web download found')
-      }
+    const file = release && findWebAssetUrl(release)
+    if (file) {
+      return file
     }
   }
 
@@ -241,16 +238,17 @@ async function* fetchVersions() {
 }
 
 async function getTag(tag: string) {
+  const notFound =
+    'Could not find version specified. Use --listVersions to see all available versions'
   const release = await fetchJson<GithubRelease>(
     `https://api.github.com/repos/GMOD/jbrowse-components/releases/tags/${tag}`,
+    notFound,
   )
   const file = findWebAssetUrl(release)
   if (file) {
     return file
   } else {
-    throw new Error(
-      'Could not find version specified. Use --listVersions to see all available versions',
-    )
+    throw new Error(notFound)
   }
 }
 

@@ -18,6 +18,6 @@ exports[`fails if user selects a directory that does not have a installation 1`]
 `;
 
 exports[`fails to upgrade if version does not exist 1`] = `
-"Error: HTTP 404 fetching https://api.github.com/repos/GMOD/jbrowse-components/releases/tags/v999.999.999
+"Error: Could not find version specified. Use --listVersions to see all available versions
 "
 `;

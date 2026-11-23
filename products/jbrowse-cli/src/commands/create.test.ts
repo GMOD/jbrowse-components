@@ -230,6 +230,42 @@ test('installs the newest release of its own major and channel, never a draft', 
   })
 })
 
+test('skips a release whose jbrowse-web zip is not uploaded', async () => {
+  await runInTmpDir(async () => {
+    const major = Number(version.split('.')[0])
+    const fetchMock = mockFetch(url =>
+      new URL(url).host === 'api.github.com'
+        ? new URL(url).searchParams.get('page') === '1'
+          ? {
+              json: [
+                {
+                  tag_name: `v${major}.1.0`,
+                  prerelease: false,
+                  assets: [
+                    {
+                      browser_download_url: 'https://example.com/notes.txt',
+                      name: 'notes.txt',
+                    },
+                  ],
+                },
+                currentRelease,
+              ],
+            }
+          : { json: [] }
+        : {
+            arrayBuffer: readZipAsArrayBuffer(),
+          },
+    )
+    fetchMock.mockClear()
+    await runCommand(['create', 'jbrowse'])
+    expect(
+      fetchMock.mock.calls
+        .map(([url]) => url.toString())
+        .filter(url => new URL(url).host === 'example.com'),
+    ).toEqual(['https://example.com/jbrowse-web-current.zip'])
+  })
+})
+
 test('downloads from a url', async () => {
   await runInTmpDir(async ctx => {
     mockFetch({
