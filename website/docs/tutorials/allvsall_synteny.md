@@ -75,7 +75,7 @@ track, read jbrowse.org's copy.
 | NCTC86     | [GCF_002007705.1_ASM200770v1/](https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/002/007/705/GCF_002007705.1_ASM200770v1/) |
 | IAI39      | [GCF_000026345.1_ASM2634v1/](https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/000/026/345/GCF_000026345.1_ASM2634v1/)     |
 
-## Producing an all-vs-all PAF
+## Align the strains into one all-vs-all PAF
 
 [minimap2](https://github.com/lh3/minimap2) aligning
 [PanSN](https://github.com/pangenome/PanSN-spec)-named genomes against
@@ -102,7 +102,7 @@ done > all.fa
 minimap2 -c -x asm20 -X all.fa all.fa > all_vs_all.paf
 ```
 
-## Setting up the assemblies
+## Load each strain as an assembly
 
 Each strain FASTA becomes an assembly whose name matches an entry in
 `assemblyNames` on the track:
@@ -129,7 +129,7 @@ The `jbrowse add-assembly` step for one strain, as a config or in Desktop:
 An assembly whose refNames still have the PanSN prefix is drawn empty. The
 [assemblies configuration guide](/docs/config_guides/assemblies) has more.
 
-## Loading the PAF with MultiGenomePAFAdapter
+## Load the PAF with MultiGenomePAFAdapter
 
 List every assembly the file covers in `assemblyNames`; the adapter keeps only
 the records whose PanSN prefixes match the pair of rows each band joins:
@@ -152,8 +152,6 @@ The config sets the adapter type to `MultiGenomePAFAdapter` because a `.paf`
 extension makes JBrowse guess the pairwise `PAFAdapter`, which reads two
 assembly names. An assembly name that differs from its PanSN sample prefix needs
 a map.[^pansn]
-
-## Large files: index with make-pif
 
 `MultiGenomePAFAdapter` reads the whole PAF into memory. For many samples, index
 it with `jbrowse make-pif` and switch to `MultiGenomeIndexedPAFAdapter`,
@@ -190,20 +188,20 @@ Only the `adapter` block differs from the un-indexed version:
 `make-pif` also writes a coarse copy of the alignments for zoomed-out
 views.[^coarse]
 
-## Stacking the strains {#stacking-the-genomes}
+## Stack the strains {#stacking-the-genomes}
 
-### Stacking the strains from the import form {#from-the-ui}
+### Stack the strains from the import form {#from-the-ui}
 
-1. **Add → Linear synteny view** opens the form in **Quick start**.
-2. Choose `ecoli_ava`, whose assemblies become rows.
-3. Click **Launch**.
+- **Add → Linear synteny view** opens the form in **Quick start**.
+- Choose `ecoli_ava`, whose assemblies become rows.
+- Click **Launch**.
 
 **Manual** mode builds the stack by hand: **Add row** per strain, and the
 connector button between each pair to pick its track.
 
 <Figure caption="The all-vs-all Quick start in the import form, the ecoli_ava track filling in its assemblies as rows." src="/img/multiway_synteny/ecoli_import_form.png" />
 
-### Stacking the strains in a defaultSession
+### Stack the strains in a defaultSession
 
 A `defaultSession` holding a `LinearSyntenyView` opens the stack on load:
 
@@ -239,7 +237,7 @@ alignment for every pair.
 
 <Figure caption="Five E. coli strains stacked from one minimap2 all-vs-all PAF, short alignments filtered out by length." src="/img/multiway_synteny/ecoli_pangenome.png" />
 
-## Adding gene tracks to see what a gap holds
+## Add gene tracks to see what a gap holds
 
 Each strain's GFF becomes a gene track attached to that strain's assembly:
 
@@ -260,7 +258,7 @@ _stx2B_, the Shiga-toxin subunits, with no alignment to K-12.
 
 <Figure caption="K-12 (top) and Sakai (bottom) with their gene tracks at the Sp5 prophage. The ribbon runs out where the shared backbone ends." src="/img/multiway_synteny/ecoli_stx_island.png" />
 
-## One strain against all the others
+## Read one strain against all the others
 
 The stack shows each strain against its neighbours. To read one strain against
 every other, open it in a linear genome view and turn on the `ecoli_ava` track.
@@ -298,7 +296,12 @@ strain stack:
 
 <Figure caption="The one-vs-all sections on the K-12 row of the strain stack, colored by strand." src="/img/multiway_synteny/ecoli_one_vs_all_whole_genome.png" />
 
-### Percent identity per strain
+A strain with no alignment to the backbone is a white gap on the K-12 axis. With
+**Display types → Multi-way synteny display**, JBrowse redraws each lane in the
+coordinates of the strain it shows, one ribbon per PAF record
+([multi-way synteny display](/docs/user_guides/multiway_synteny_display)).
+
+### Draw each strain's alignments as percent identity {#percent-identity-per-strain}
 
 With **Display types → Marks** in the track menu, JBrowse draws each `ecoli_ava`
 alignment as a line at its identity, one row per strain, with nothing to
@@ -347,14 +350,7 @@ applies edits live.
 
 <Figure caption="K-12 against each other strain, one row per strain, each alignment a line at its identity." src="/img/multiway_synteny/ecoli_identity_rows.png" />
 
-### Multi-way synteny display
-
-A strain with no alignment to the backbone is a white gap on the K-12 axis. With
-**Display types → Multi-way synteny display**, JBrowse redraws each lane in the
-coordinates of the strain it shows, one ribbon per PAF record
-([multi-way synteny display](/docs/user_guides/multiway_synteny_display)).
-
-### Launching a stacked view at one locus
+### Launch a stacked view at one locus
 
 Drag-select a region on the scale bar and pick **Launch → Linear synteny
 view...**. The dialog lists every assembly aligning to that region as a panel,
@@ -387,15 +383,15 @@ offers to paint them instead, or to draw each alignment as one block.
 runs everything on this page, download and preparation included, and needs the
 tools under [Prerequisites](#prerequisites):
 
-1. Download the five RefSeq assemblies with their annotation and keep each
-   chromosome as `chr`, so the plasmids drop out and every row reads the same
-   name.
-2. Concatenate the strains under PanSN names and align them with `minimap2 -X`,
-   so each pair is aligned once and no strain aligns to itself.
-3. Rename each GFF's chromosome features to `chr` too, so the genes load on that
-   strain's row.
-4. Write the config with the assemblies, the gene tracks, the all-vs-all track
-   and the session.
+- download the five RefSeq assemblies with their annotation and keep each
+  chromosome as `chr`, so the plasmids drop out and every row reads the same
+  name
+- concatenate the strains under PanSN names and align them with `minimap2 -X`,
+  so each pair is aligned once and no strain aligns to itself
+- rename each GFF's chromosome features to `chr` too, so the genes load on that
+  strain's row
+- write the config with the assemblies, the gene tracks, the all-vs-all track
+  and the session
 
 ```bash
 curl -fO https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/build_ecoli_pangenome_synteny.sh
