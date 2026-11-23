@@ -18,7 +18,6 @@ import {
   parseJsonFlag,
   validateLoadAndLocation,
 } from '../add-track-utils/validators.ts'
-import { findAndUpdateOrAdd } from '../shared/config-operations.ts'
 
 import type { Assembly, Config, Sequence } from '../../base.ts'
 import type { FaiToGenerate } from './generateFai.ts'
@@ -395,28 +394,5 @@ export async function loadOrCreateConfig(target: string): Promise<Config> {
   } else {
     debug(`Creating config file ${target}`)
     return { ...defaultConfig }
-  }
-}
-
-export async function addAssemblyToConfig({
-  config,
-  assembly,
-  runFlags,
-}: {
-  config: Config
-  assembly: Assembly
-  runFlags: AssemblyFlags
-}): Promise<{ config: Config; wasOverwritten: boolean }> {
-  const { updatedItems, wasOverwritten } = findAndUpdateOrAdd({
-    items: config.assemblies ?? [],
-    newItem: assembly,
-    idField: 'name',
-    force: runFlags.force ?? false,
-    itemType: 'assembly',
-  })
-
-  return {
-    config: { ...config, assemblies: updatedItems },
-    wasOverwritten,
   }
 }

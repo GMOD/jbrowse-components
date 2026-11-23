@@ -9,10 +9,7 @@ import {
   resolveConfigPath,
 } from '../utils.ts'
 import { parseJsonFlag } from './add-track-utils/validators.ts'
-import {
-  findAndUpdateOrAdd,
-  saveConfigAndReport,
-} from './shared/config-operations.ts'
+import { upsertConfigEntry } from './shared/config-operations.ts'
 
 import type { Config, Connection } from '../base.ts'
 
@@ -193,20 +190,15 @@ export async function run(args?: string[]) {
     ...configObj,
   }
 
-  const { updatedItems: connections, wasOverwritten } = findAndUpdateOrAdd({
-    items: configContents.connections ?? [],
-    newItem: connectionConfig,
-    idField: 'connectionId',
-    force: force ?? false,
-    itemType: 'connection',
-  })
-
-  await saveConfigAndReport({
-    config: { ...configContents, connections },
+  await upsertConfigEntry({
+    config: configContents,
     target,
+    collection: 'connections',
+    items: configContents.connections ?? [],
+    entry: connectionConfig,
+    idField: 'connectionId',
     itemType: 'connection',
     itemName: name || id,
-    itemId: id,
-    wasOverwritten,
+    force,
   })
 }

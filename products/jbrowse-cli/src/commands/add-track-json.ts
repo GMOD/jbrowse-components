@@ -9,10 +9,7 @@ import {
   requirePositional,
   resolveConfigPath,
 } from '../utils.ts'
-import {
-  findAndUpdateOrAdd,
-  saveConfigAndReport,
-} from './shared/config-operations.ts'
+import { upsertConfigEntry } from './shared/config-operations.ts'
 
 import type { Config, Track } from '../base.ts'
 
@@ -96,21 +93,16 @@ export async function run(args?: string[]) {
 
   const parsed: unknown = await readInlineOrFileJson(track)
   if (isTrack(parsed)) {
-    const { updatedItems, wasOverwritten } = findAndUpdateOrAdd({
-      items: config.tracks ?? [],
-      newItem: parsed,
-      idField: 'trackId',
-      force: update ?? false,
-      itemType: 'track',
-    })
-
-    await saveConfigAndReport({
-      config: { ...config, tracks: updatedItems },
+    await upsertConfigEntry({
+      config,
       target,
+      collection: 'tracks',
+      items: config.tracks ?? [],
+      entry: parsed,
+      idField: 'trackId',
       itemType: 'track',
       itemName: parsed.name ?? parsed.trackId,
-      itemId: parsed.trackId,
-      wasOverwritten,
+      force: update,
     })
   } else {
     throw new Error(

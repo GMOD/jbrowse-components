@@ -26,10 +26,7 @@ import {
   validateTrackArg,
   warnUnknownAssemblyNames,
 } from './add-track-utils/validators.ts'
-import {
-  findAndUpdateOrAdd,
-  saveConfigAndReport,
-} from './shared/config-operations.ts'
+import { upsertConfigEntry } from './shared/config-operations.ts'
 
 import type { Config } from '../base.ts'
 import type { Adapter, Location } from '@jbrowse/launch-args'
@@ -307,30 +304,24 @@ export async function run(args?: string[]) {
     adapter,
   })
 
-  const { updatedItems: tracks, wasOverwritten } = findAndUpdateOrAdd({
-    items: configContents.tracks ?? [],
-    newItem: trackConfig,
-    idField: 'trackId',
-    force: force ?? false,
-    itemType: 'track',
-  })
-  const updatedConfig = { ...configContents, tracks }
-
-  await loadFiles({
-    files,
-    destDir: configDir,
-    mode: load,
-    subDir,
-    force,
-  })
-
-  await saveConfigAndReport({
-    config: updatedConfig,
+  await upsertConfigEntry({
+    config: configContents,
     target: targetConfigPath,
+    collection: 'tracks',
+    items: configContents.tracks ?? [],
+    entry: trackConfig,
+    idField: 'trackId',
     itemType: 'track',
     itemName: name,
-    itemId: trackId,
-    wasOverwritten,
+    force,
+    beforeSave: () =>
+      loadFiles({
+        files,
+        destDir: configDir,
+        mode: load,
+        subDir,
+        force,
+      }),
   })
 }
 

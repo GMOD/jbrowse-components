@@ -2,10 +2,7 @@ import { debug, writeJsonFile } from '../../utils.ts'
 
 import type { Config } from '../../base.ts'
 
-export function findAndUpdateOrAdd<
-  I extends string,
-  T extends Record<I, string>,
->({
+function findAndUpdateOrAdd<I extends string, T extends Record<I, string>>({
   items,
   newItem,
   idField,
@@ -17,7 +14,7 @@ export function findAndUpdateOrAdd<
   idField: I
   force: boolean
   itemType: string
-}): { updatedItems: T[]; wasOverwritten: boolean } {
+}) {
   const newId = newItem[idField]
   const idx = items.findIndex(item => item[idField] === newId)
 
@@ -38,27 +35,49 @@ export function findAndUpdateOrAdd<
   }
 }
 
-export async function saveConfigAndReport({
+// adds `entry` to the config's `collection` (or replaces the one with its id
+// under force), runs `beforeSave` once a duplicate can no longer throw, then
+// writes the config and says what happened
+export async function upsertConfigEntry<
+  I extends string,
+  T extends Record<I, string>,
+>({
   config,
   target,
+  collection,
+  items,
+  entry,
+  idField,
   itemType,
   itemName,
-  itemId,
-  wasOverwritten,
+  force = false,
+  beforeSave,
 }: {
   config: Config
   target: string
+  collection: 'tracks' | 'connections' | 'assemblies'
+  items: T[]
+  entry: T
+  idField: I
   itemType: string
   itemName: string
-  itemId?: string
-  wasOverwritten: boolean
-}): Promise<void> {
-  debug(`Writing configuration to file ${target}`)
-  await writeJsonFile(target, config)
+  force?: boolean
+  beforeSave?: () => Promise<void>
+}) {
+  const { updatedItems, wasOverwritten } = findAndUpdateOrAdd({
+    items,
+    newItem: entry,
+    idField,
+    force,
+    itemType,
+  })
+  await beforeSave?.()
 
-  const idPart = itemId ? ` and ${itemType}Id "${itemId}"` : ''
+  debug(`Writing configuration to file ${target}`)
+  await writeJsonFile(target, { ...config, [collection]: updatedItems })
+
   console.log(
-    `${wasOverwritten ? 'Overwrote' : 'Added'} ${itemType} with name "${itemName}"${idPart} ${
+    `${wasOverwritten ? 'Overwrote' : 'Added'} ${itemType} with name "${itemName}" and ${itemType}Id "${entry[idField]}" ${
       wasOverwritten ? 'in' : 'to'
     } ${target}`,
   )

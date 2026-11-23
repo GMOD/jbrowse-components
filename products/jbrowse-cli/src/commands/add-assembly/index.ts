@@ -4,10 +4,9 @@ import { parseArgs } from 'node:util'
 import { debug, printHelp, requirePositional } from '../../utils.ts'
 import { loadFiles } from '../add-track-utils/file-operations.ts'
 import { validateLoadOption } from '../add-track-utils/validators.ts'
-import { saveConfigAndReport } from '../shared/config-operations.ts'
+import { upsertConfigEntry } from '../shared/config-operations.ts'
 import { generateFai } from './generateFai.ts'
 import {
-  addAssemblyToConfig,
   enhanceAssembly,
   getAssembly,
   loadOrCreateConfig,
@@ -192,31 +191,29 @@ export async function run(args?: string[]) {
   )
 
   const configContents = await loadOrCreateConfig(target)
-  const { config: updatedConfig, wasOverwritten } = await addAssemblyToConfig({
+  await upsertConfigEntry({
     config: configContents,
-    assembly,
-    runFlags: flags,
-  })
-
-  if (faiToGenerate) {
-    console.log(`No FASTA index found, generating ${faiToGenerate.fai}`)
-    await generateFai({ ...faiToGenerate, force: flags.force })
-  }
-
-  await loadFiles({
-    files: [...sequenceFiles, ...aliasFiles],
-    destDir,
-    mode: flags.load,
-    force: flags.force,
-  })
-
-  await saveConfigAndReport({
-    config: updatedConfig,
     target,
+    collection: 'assemblies',
+    items: configContents.assemblies ?? [],
+    entry: assembly,
+    idField: 'name',
     itemType: 'assembly',
     itemName: assembly.name,
-    itemId: assembly.name,
-    wasOverwritten,
+    force: flags.force,
+    beforeSave: async () => {
+      if (faiToGenerate) {
+        console.log(`No FASTA index found, generating ${faiToGenerate.fai}`)
+        await generateFai({ ...faiToGenerate, force: flags.force })
+      }
+
+      await loadFiles({
+        files: [...sequenceFiles, ...aliasFiles],
+        destDir,
+        mode: flags.load,
+        force: flags.force,
+      })
+    },
   })
 
   console.log(
