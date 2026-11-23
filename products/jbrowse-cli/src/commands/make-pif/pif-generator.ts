@@ -1,5 +1,5 @@
 import { spawn } from 'node:child_process'
-import { createReadStream } from 'node:fs'
+import { closeSync, createReadStream, openSync } from 'node:fs'
 import path from 'node:path'
 import { Transform } from 'node:stream'
 import { pipeline } from 'node:stream/promises'
@@ -13,6 +13,8 @@ import {
   swapCoarseCigar,
   swapIndelCigar,
 } from '@jbrowse/cigar-utils'
+
+import { describeExit, waitForProcessClose } from '../process-utils.ts'
 
 import type { Writable } from 'node:stream'
 
@@ -321,7 +323,15 @@ export async function createPIF(
 // without claiming a whole machine.
 export const DEFAULT_BGZIP_THREADS = 4
 
-export function spawnSortProcess(
+const cLocaleEnv = () => ({ ...process.env, LC_ALL: 'C' })
+
+// The stages are separate children, not one `sort | bgzip && tabix` shell
+// pipeline, because a shell reports only the last stage of a pipeline: a sort
+// that died (ENOSPC in TMPDIR) left bgzip a short input and a clean exit, and
+// the truncated PIF was renamed into place. Each exit is checked here, and
+// tabix runs only once sort and bgzip have both succeeded. `done` resolves to
+// what went wrong, or nothing.
+export function spawnPifIndexer(
   outputFile: string,
   useCsi: boolean,
   threads = DEFAULT_BGZIP_THREADS,
@@ -329,20 +339,45 @@ export function spawnSortProcess(
   // -s: tabix wants the rows ordered by (refName, start) and by nothing else,
   // so the whole-line comparison a non-stable sort falls back to on a tie is
   // comparing multi-kb CIGARs to pick an order no reader can observe
-  const sortCmd = `sort -s -t"\`printf '\\t'\`" -k1,1 -k3,3n`
-  const bgzipCommand = `bgzip -@ ${threads} > "$1"`
-  const tabixCommand = `tabix ${useCsi ? '-C ' : ''}-s1 -b3 -e4 -0 "$1"`
-  // `&&` (not `;`) so a bgzip failure aborts before tabix runs and propagates
-  // as the pipeline's exit code. The output path is passed as the shell's "$1"
-  // positional rather than interpolated into the command string, so a path
-  // with shell metacharacters (`"`, `$(...)`, backticks) can't break out and
-  // execute — same technique as sort-utils.ts. useCsi is a fixed literal, and
-  // the caller has already checked threads is a positive integer.
-  const fullCommand = `${sortCmd} | ${bgzipCommand} && ${tabixCommand}`
-  return spawn('sh', ['-c', fullCommand, 'sh', outputFile], {
-    env: { ...process.env, LC_ALL: 'C' },
-    stdio: ['pipe', process.stdout, process.stderr],
+  const sort = spawn('sort', ['-s', '-t', '\t', '-k1,1', '-k3,3n'], {
+    env: cLocaleEnv(),
+    stdio: ['pipe', 'pipe', process.stderr],
   })
+  const outputFd = openSync(outputFile, 'w')
+  const bgzip = spawn('bgzip', ['-@', `${threads}`], {
+    env: cLocaleEnv(),
+    stdio: ['pipe', outputFd, process.stderr],
+  })
+  closeSync(outputFd)
+  sort.stdout.pipe(bgzip.stdin)
+
+  const done = async () => {
+    const [sortExit, bgzipExit] = await Promise.all([
+      waitForProcessClose(sort),
+      waitForProcessClose(bgzip),
+    ])
+    const failedStage = [
+      { name: 'sort', exit: sortExit },
+      { name: 'bgzip', exit: bgzipExit },
+    ].find(({ exit }) => exit.code !== 0)
+    if (failedStage) {
+      return `${failedStage.name} exited with ${describeExit(failedStage.exit)}`
+    }
+    const tabixExit = await waitForProcessClose(
+      spawn(
+        'tabix',
+        [...(useCsi ? ['-C'] : []), '-s1', '-b3', '-e4', '-0', outputFile],
+        {
+          env: cLocaleEnv(),
+          stdio: ['ignore', process.stdout, process.stderr],
+        },
+      ),
+    )
+    return tabixExit.code === 0
+      ? undefined
+      : `tabix exited with ${describeExit(tabixExit)}`
+  }
+  return { stdin: sort.stdin, done: done() }
 }
 
 export function getOutputFilename(

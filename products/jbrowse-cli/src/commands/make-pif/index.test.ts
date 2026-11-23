@@ -651,6 +651,34 @@ test('a truncated gzip input fails and leaves no output behind', async () => {
   })
 })
 
+// `sort | bgzip && tabix` in one shell reports only bgzip's status, so a sort
+// that died (ENOSPC in TMPDIR) left a short, valid, indexed PIF and a "Created"
+test('a failing sort fails the command and leaves no output behind', async () => {
+  await runInTmpDir(async ({ dir }) => {
+    const shims = path.join(dir, 'shims')
+    fs.mkdirSync(shims)
+    fs.writeFileSync(
+      path.join(shims, 'sort'),
+      '#!/bin/sh\necho "sort: write failed: No space left on device" >&2\nexit 2\n',
+      { mode: 0o755 },
+    )
+    const originalPath = process.env.PATH
+    process.env.PATH = `${shims}${path.delimiter}${originalPath}`
+    try {
+      const { error } = await runCommand([
+        'make-pif',
+        simplePaf,
+        '--out',
+        'o.pif.gz',
+      ])
+      expect(error?.message).toMatch('sort exited with code 2')
+    } finally {
+      process.env.PATH = originalPath
+    }
+    expect(fs.readdirSync(dir).filter(f => f.startsWith('o.pif'))).toEqual([])
+  })
+})
+
 test('detects a plain-named PAF as pairwise (no PanSN samples)', async () => {
   const { samples } = await createPIF(simplePaf, sink())
   expect(samples.size).toBe(0)

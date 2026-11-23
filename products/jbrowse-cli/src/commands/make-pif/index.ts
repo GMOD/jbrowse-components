@@ -2,7 +2,6 @@ import fs from 'node:fs'
 import { parseArgs } from 'node:util'
 
 import { printHelp } from '../../utils.ts'
-import { describeExit, waitForProcessClose } from '../process-utils.ts'
 import {
   validateFileArgument,
   validateRequiredCommands,
@@ -14,7 +13,7 @@ import {
   createPIF,
   getOutputFilename,
   missingPairs,
-  spawnSortProcess,
+  spawnPifIndexer,
 } from './pif-generator.ts'
 
 export async function run(args?: string[]) {
@@ -152,29 +151,28 @@ export async function run(args?: string[]) {
   // preceded the failure, which a build script reads as done.
   const partFile = `${outputFile}.part`
   const partIndex = `${partFile}.${indexExt}`
-  const child = spawnSortProcess(partFile, csi, bgzipThreads)
-  const closed = waitForProcessClose(child)
-  const pass = await createPIF(file, child.stdin, coarseGap).then(
+  const indexer = spawnPifIndexer(partFile, csi, bgzipThreads)
+  const pass = await createPIF(file, indexer.stdin, coarseGap).then(
     stats => ({ stats }),
     (error: unknown) => ({
       error: error instanceof Error ? error : new Error(String(error)),
     }),
   )
-  child.stdin.end()
+  indexer.stdin.end()
   // no SIGPIPE exemption here (unlike sort-gff/sort-bed): this pipeline's output
   // is the .pif.gz file, so anything that killed it early left that file broken
-  const exit = await closed
+  const failure = await indexer.done
   const discardPart = () => {
     fs.rmSync(partFile, { force: true })
     fs.rmSync(partIndex, { force: true })
   }
+  if (failure !== undefined) {
+    discardPart()
+    throw new Error(`PIF sort/index pipeline failed: ${failure}`)
+  }
   if ('error' in pass) {
     discardPart()
     throw pass.error
-  }
-  if (exit.code !== 0) {
-    discardPart()
-    throw new Error(`PIF sort/index pipeline exited with ${describeExit(exit)}`)
   }
   const { stats } = pass
   const { samples, rows, cigarRows, skipped } = stats
