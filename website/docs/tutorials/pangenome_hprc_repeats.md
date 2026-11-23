@@ -44,8 +44,8 @@ The graph view is a beta plugin, and walk rows is its newest layout. The
   load it
 - for your own samples: [TRGT](https://github.com/PacificBiosciences/trgt) and
   `bcftools`
-- for [Which copy is which](#which-copy-is-which) and
-  [The ABCA7 alleles across the samples](#the-abca7-alleles-across-the-samples):
+- for [Tell KIV-2A from KIV-2B](#which-copy-is-which) and
+  [Load TRGT's ABCA7 alleles as repeat records](#load-trgts-abca7-alleles-as-repeat-records):
   Node, to run our scripts
 - for [Reproduce it end to end](#reproduce-it-end-to-end):
   [DuckDB](https://duckdb.org), and for its amylase build `samtools` built with
@@ -95,7 +95,7 @@ catalogue.
 
 </details>
 
-## Reading the LPA kringle repeat as a graph
+## Read the LPA kringle repeat as a graph
 
 _LPA_ contains a tandem array of kringle IV type 2 (KIV-2) copies, tied to
 lipoprotein(a) levels, a heart-disease risk factor (Schmidt et al. 2016). We'll
@@ -115,7 +115,7 @@ Each loop in the knot is a different number of copies. Click the array's label,
 **3–175 kb repeat array (KIV-2)**, to lay the bubble's segments out alone, with
 a button back to the window.
 
-## Haplotypes' routes through the KIV-2 array {#one-haplotypes-copies}
+## Follow each haplotype's route through KIV-2 {#one-haplotypes-copies}
 
 A **walk** is one haplotype's route through the graph, and the haplotypes track
 reads one per haplotype from tabix-indexed files. In the same window:
@@ -141,7 +141,7 @@ alone is copies that only that haplotype has here.
 
 <Figure caption="The KIV-2 cut with GRCh38, HG00097 and HG00133 highlighted from the boxed Haplotypes button. A loop in one color is copies on that haplotype's walk alone." src="/img/pangenome/graph_kiv2_walks.png" />
 
-## Every haplotype's KIV-2 array as a bar {#every-haplotypes-copies}
+## Draw every haplotype's KIV-2 array as a bar {#every-haplotypes-copies}
 
 The walk rows layout draws each walk as a bar, so every haplotype in the release
 fits in the track. In the haplotypes track's menu:
@@ -178,7 +178,7 @@ Two controls change which bars show:
 - **Samples → Choose samples...** under the **Layout** row picks names, and
   **Samples → Every sample** brings the cohort back.
 
-## Telling KIV-2A from KIV-2B {#which-copy-is-which}
+## Tell KIV-2A from KIV-2B {#which-copy-is-which}
 
 Walk rows give each haplotype's copy count, but KIV-2's copies are
 near-identical and the aligner matches each extra copy to an arbitrary GRCh38
@@ -251,7 +251,7 @@ node tandem-repeat-vcf.mjs hprc-v2.1-mc-grch38.kiv2.eight-haplotypes.gfa \
 JBrowse draws a repeat finder's output as these bars too once it is written as a
 `<CNV:TR>` record with each allele's runs and copy lengths.
 
-## Measuring the ABCA7 VNTR against TRGT's read-based genotypes
+## Measure the ABCA7 VNTR against TRGT's genotypes
 
 An intron of _ABCA7_ holds a VNTR (variable-number tandem repeat) tied to
 Alzheimer's disease risk (De Roeck et al. 2018). Each haplotype's walk length
@@ -360,7 +360,7 @@ section, the bars also divide into motif-length units.
 
 <Figure caption="The ABCA7 VNTR in walk rows with the TRGT record picked under Repeat. Ticks are TRGT's calls, red where a call is far from its walk." src="/img/pangenome/hprc_abca7_repeat_units.png" />
 
-## Samples where reads and assemblies disagree
+## Choose the samples where reads and assemblies disagree
 
 To compare samples, keep the _ABCA7_ record picked under **Repeat**. **Samples →
 Choose samples...**, under the **Layout** row of the graph track's menu, takes
@@ -382,7 +382,7 @@ one of HG02559's alleles has an `SD` of 0.
 
 <Figure caption="Samples' walks through the ABCA7 VNTR, each marked with TRGT's allele as a tick." src="/img/pangenome/hprc_abca7_disagreements.png" />
 
-## The ABCA7 alleles across the samples
+## Load TRGT's ABCA7 alleles as repeat records
 
 TRGT writes each allele as its full sequence, so the details panel shows long
 runs of `CCCCGTGAGC`. Our script rewrites the record as `<CNV:TR>` alleles, each
@@ -416,7 +416,7 @@ allele's share and its length.
 
 <Figure caption="The ABCA7 VNTR record's Tandem repeat card, by allele. The dotted line is GRCh38's allele." src="/img/pangenome/hprc_abca7_tandem_repeat_alleles.png" />
 
-## Amylase: counting AMY1 copies per haplotype {#amylase}
+## Count AMY1 copies per haplotype {#amylase}
 
 A gene array varies the same way a tandem repeat does, in whole gene copies. We
 draw haplotypes' routes through the salivary amylase array as walk rows, one per
@@ -449,7 +449,7 @@ Yilmaz et al. (2024) name each structure by its _AMY1_ count:
 | 94 kb longer          | 5             | H5        |
 | 188 kb longer         | 7             | H7        |
 
-### Each haplotype aligned to the next {#amylase-stack}
+### Stack the amylase haplotypes in a synteny view {#amylase-stack}
 
 Walk rows show copy number, and a synteny stack shows which copy of one
 haplotype matches which copy of its neighbour. The commands below run on any
