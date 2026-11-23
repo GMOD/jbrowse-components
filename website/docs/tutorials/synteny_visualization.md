@@ -17,12 +17,12 @@ pair of assemblies of your own. The other way to build a stack of genomes is to
 align every genome against every other in one run, which
 [](/docs/tutorials/allvsall_synteny) follows through five _E. coli_ strains. We:
 
-- load the assemblies, and the minimap2 PAF as a synteny track
+- load the assemblies, and the minimap2 PAF as a synteny track, indexed as PIF
+  when it is large
 - open the whole-genome alignment in a dotplot view
 - stack the strains in a linear synteny view, with a gene track on each row
 - color the gene tracks by gene symbol, so an ortholog is one color down the
   stack
-- index a large alignment as PIF
 
 ## Prerequisites
 
@@ -66,7 +66,7 @@ fetches everything itself.
 | CHC155 GCF_025998455.1 sequence | [GCF_025998455.1.fa.gz](https://hgdownload.soe.ucsc.edu/hubs/GCF/025/998/455/GCF_025998455.1/GCF_025998455.1.fa.gz) |
 | J99 GCF_000982695.1 sequence    | [GCF_000982695.1.fa.gz](https://hgdownload.soe.ucsc.edu/hubs/GCF/000/982/695/GCF_000982695.1/GCF_000982695.1.fa.gz) |
 
-## Aligning the assemblies
+## Align the assemblies
 
 minimap2 takes the target genome first and the query second, and writes one PAF
 row per aligned block:
@@ -89,7 +89,7 @@ JBrowse also loads [MUMmer](https://github.com/mummer4/mummer) `.delta` and UCSC
 `delta2paf` reads a `.delta`, and
 [chain2paf](https://github.com/AndreaGuarracino/chain2paf) reads a `.chain`.
 
-## Loading the assemblies and the alignment
+## Load the assemblies and the alignment
 
 We'll load each strain's assembly from its hub. Each strain's hub `config.json`
 holds a whole JBrowse assembly: the 2bit sequence, an alias table and the NCBI
@@ -154,12 +154,21 @@ indexed needs only its `uri`; swap in your own file.
 }
 ```
 
+A bacterial PAF is small enough to load whole. For a large whole-genome
+alignment, convert the PAF to [](/docs/developer_guides/pif_format) so JBrowse
+fetches only the alignments in the current viewport:
+
+```bash
+jbrowse make-pif alignment.paf
+jbrowse add-track alignment.pif.gz -a query,target --load copy
+```
+
 When a track's `assemblyNames` are in the wrong order, JBrowse draws an empty
 band and shows a warning in the view header:
 
 <Figure caption="A synteny track whose assemblyNames are reversed draws an empty band, and the warning icon in its header opens a dialog reporting the reversal." src="/img/sv_synteny/assembly_order_warning.png" />
 
-## Reading the whole genome in a dotplot
+## Read the whole genome in a dotplot
 
 **Add → Dotplot view** opens the import form in **Quick start**: pick the track
 just added and click **Launch**. **Swap** transposes the axes. **Manual** picks
@@ -172,7 +181,7 @@ each axis and a synteny file by hand.
 To open any part of the dotplot at base resolution, drag a box across it, then
 right-click inside the box and choose **Linear synteny view**.
 
-## Stacking the strains
+## Stack the strains
 
 A synteny band joins matching regions of two adjacent rows only, so a 26695 /
 CHC155 / J99 stack needs the two adjacent alignments:
@@ -215,7 +224,7 @@ NZ_CP011330v1:1,238,100-1,258,100
 
 <Figure caption="Three H. pylori strains stacked with a gene track on each. The ribbons into J99 cross over its inverted block." src="/img/sv_synteny/linear_synteny_genes.png" />
 
-## Coloring genes by ortholog
+## Color genes by ortholog
 
 NCBI reuses standardized gene symbols across bacterial strains, so the `gene`
 attribute works as an ortholog id. In
@@ -256,17 +265,6 @@ The config below is the same setting on the hub's gene track:
     "encoding": { "color": "gene" }
   }
 }
-```
-
-## Indexing large alignments as PIF
-
-A bacterial PAF is small enough to load whole. For a large whole-genome
-alignment, convert the PAF to [](/docs/developer_guides/pif_format) so JBrowse
-fetches only the alignments in the current viewport:
-
-```bash
-jbrowse make-pif alignment.paf
-jbrowse add-track alignment.pif.gz -a query,target --load copy
 ```
 
 ## Reproduce it end to end
