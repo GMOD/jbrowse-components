@@ -114,13 +114,19 @@ function mid(p: MultiWayPlacement) {
   return (p.start + p.end) / 2
 }
 
+// the share of the window a piece may overhang each end of a 1× lane
+const ONE_X_OVERHANG = 0.01
+
+const overhangAt = (rung: number) => (rung === 1 ? ONE_X_OVERHANG : 0)
+
 /**
- * `slack` takes no rung short of `need` by more than that share of itself, as
- * a piece lane drawing all of its piece does; unset, the ladder's tolerance
+ * `whole`, as a piece lane drawing all of its piece, takes no rung short of
+ * `need` but 1×, which may be short by `ONE_X_OVERHANG` of the window at
+ * each end; otherwise the ladder's tolerance
  */
-export function pickRung(need: number, incumbent?: number, slack?: number) {
+export function pickRung(need: number, incumbent?: number, whole = false) {
   const covers = (rung: number) =>
-    slack === undefined ? rungCovers(rung, need) : rung * (1 + slack) >= need
+    whole ? rung * (1 + 2 * overhangAt(rung)) >= need : rungCovers(rung, need)
   const up = SCALE_LADDER.find(covers) ?? Math.ceil(need)
   if (incumbent === undefined || !covers(incumbent)) {
     return up
@@ -282,7 +288,6 @@ function fitLane(
   pinned: LanePlacePin | undefined,
   openingsOf: OpeningsOf,
   reversed?: boolean,
-  width = 0,
 ) {
   const contig = pickContig(
     groups,
@@ -313,7 +318,7 @@ function fitLane(
       ? pickRung(
           Math.max(openedHi - openedLo, unitBp) / unitBp,
           held?.rung,
-          isPieceLane(assemblyName) ? pieceSlack(width) : undefined,
+          isPieceLane(assemblyName),
         )
       : 0
   const span = unitBp > 0 ? rung * unitBp : openedHi - openedLo
@@ -508,17 +513,9 @@ function alignFrameTo(
   return { ...frame, min: frame.min + shift, max: frame.max + shift }
 }
 
-// px a piece may overhang each end of its frame: the canvas the rung is
-// read against runs a few px short of the window the fit is cut to
-const PIECE_SLACK_PX = 3
-
-const pieceSlack = (width: number) =>
-  width > 0 ? (2 * PIECE_SLACK_PX) / width : 0
-
-function holdsFit(frame: RowFrame, width: number) {
+function holdsFit(frame: RowFrame, rung: number) {
   const openings = frameOpenings(frame)
-  const slack =
-    width > 0 ? (PIECE_SLACK_PX * (frame.max - frame.min)) / width : 0
+  const slack = (overhangAt(rung) * (frame.max - frame.min)) / rung
   return (
     openedBp(openings, frame.fitMin, true) >= frame.min - slack &&
     openedBp(openings, frame.fitMax) <= frame.max + slack
@@ -685,8 +682,6 @@ export function decideLaneFrames({
       prev,
       placePin,
       openingsOf,
-      undefined,
-      width,
     )
     if (fit === undefined) {
       out.set(assemblyName, undefined)
@@ -724,7 +719,6 @@ export function decideLaneFrames({
             placePin,
             openingsOf,
             relativeFlipped,
-            width,
           ) ?? fit)
     const { rung, pinned: onPin } = drawn
     const drawnPlacements =
@@ -770,7 +764,7 @@ export function decideLaneFrames({
       if (
         weightInside(drawnPlacements, heldFrame) >=
           HOLD_COVERAGE * weightInside(drawnPlacements, aligned) &&
-        (!isPieceLane(assemblyName) || holdsFit(heldFrame, width))
+        (!isPieceLane(assemblyName) || holdsFit(heldFrame, rung))
       ) {
         decision = sameDecision(held, carried) ? held : carried
         decisionPx = heldPx

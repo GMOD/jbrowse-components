@@ -189,6 +189,13 @@ describe('the ladder rung', () => {
     expect(pickRung(2.25)).toBe(3)
   })
 
+  test('a whole piece overhangs 1× by up to 1% of the window each end, and covers exactly above it', () => {
+    expect(pickRung(1.019, undefined, true)).toBe(1)
+    expect(pickRung(1.021, undefined, true)).toBe(1.5)
+    expect(pickRung(1.501, undefined, true)).toBe(2)
+    expect(pickRung(1.5, undefined, true)).toBe(1.5)
+  })
+
   test('the overrun a tolerated rung leaves out falls outside the frame', () => {
     const window = 260_066
     const longer = groupFeatures([

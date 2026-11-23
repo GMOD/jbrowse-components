@@ -278,12 +278,16 @@ function undrawnLaneBp({ groups, frames }: Laid) {
   return undrawn
 }
 
-/** per genome, 3 px at each end of each of its lanes, in lane bp */
-function pixelSlack({ frames }: Laid) {
+/** per genome, a 1× lane may overhang 1% of the window at each end */
+function overhangSlack({ frames, decisions }: Laid) {
   const slack = new Map<string, number>()
   for (const [lane, frame] of frames) {
     const genome = laneGenome(lane)
-    slack.set(genome, (slack.get(genome) ?? 0) + 6 * frameBpPerPx(frame, WIDTH))
+    const share = decisions.get(lane)?.rung === 1 ? 0.02 : 0
+    slack.set(
+      genome,
+      (slack.get(genome) ?? 0) + share * (frame.max - frame.min),
+    )
   }
   return slack
 }
@@ -305,9 +309,9 @@ function drawnBy(laid: ReturnType<typeof layHosted>, genome: string) {
   })
 }
 
-/** every placement of `genome` shown but for 3 px at each end of a lane */
+/** every placement of `genome` shown but for a 1× lane's overhang */
 function expectAllShown(laid: Laid, genome: string) {
-  const slack = pixelSlack(laid).get(genome) ?? 0
+  const slack = overhangSlack(laid).get(genome) ?? 0
   expect(undrawnAnchorBp(laid).get(genome) ?? 0).toBeLessThanOrEqual(slack)
   expect(undrawnLaneBp(laid).get(genome) ?? 0).toBeLessThanOrEqual(slack)
 }
@@ -374,6 +378,16 @@ describe('every piece of a haplotype the window places is drawn', () => {
       const [lane] = lanesOf(laid, genome)
       expect(laid.decisions.get(lane!)?.rung).toBe(1)
       expectAllShown(laid, genome)
+    }
+  })
+
+  // each haplotype holds about 1.1 kb more than the 100 kb window
+  test('R100k-09: lanes about 1% longer than the window stay at 1×', () => {
+    const laid = layHosted(hostedWindow('R100k-09'))
+    expect(laid.lanes).toHaveLength(8)
+    for (const lane of laid.lanes) {
+      expect(laid.decisions.get(lane)?.rung).toBe(1)
+      expectAllShown(laid, laneGenome(lane))
     }
   })
 
