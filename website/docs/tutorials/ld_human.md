@@ -72,7 +72,7 @@ VCF in place of the 1000 Genomes slice.
 | The release's own unrelated set, whose SAMPLE_NAME column is `unrelated.samples`                                                | [1000G_2504_high_coverage.sequence.index](https://ftp.1000genomes.ebi.ac.uk/vol1/ftp/data_collections/1000G_2504_high_coverage/1000G_2504_high_coverage.sequence.index)                                                                                                                 |
 | Populations and superpopulations, narrowed to that unrelated set for `panel.samples` (EUR) and `rest.samples` (everything else) | [20130606_g1k_3202_samples_ped_population.txt](https://ftp.1000genomes.ebi.ac.uk/vol1/ftp/data_collections/1000G_2504_high_coverage/20130606_g1k_3202_samples_ped_population.txt)                                                                                                       |
 
-## Loading the hg38 assembly
+## Load the hg38 assembly
 
 The tables, the Fst track and the haplotypes all use GRCh38 coordinates on chr2,
 so the tracks below go on that assembly.
@@ -88,7 +88,7 @@ so the tracks below go on that assembly.
 }
 ```
 
-## Cutting the LCT region out of the 1000 Genomes VCF
+## Cut the LCT region out of the 1000 Genomes VCF
 
 Cut the region twice: over the whole release, and over its European samples (the
 panel, where the sweep happened). `*.samples` files list one ID per line.
@@ -108,7 +108,7 @@ bcftools view -S panel.samples -Oz -o panel.vcf.gz pooled.vcf.gz
 tabix -f -C -p vcf panel.vcf.gz
 ```
 
-## Correlating the LCT variants with PLINK
+## Correlate the LCT variants with PLINK
 
 PLINK correlates allele indicators, so we first reduce each slice to biallelic
 SNVs, one record per position, with the IDs dropped:
@@ -148,7 +148,34 @@ awk 'NR==1{$1=$1; print "#" $0; next} {$1=$1; print}' OFS='\t' \
 tabix -C -s 1 -b 2 -e 2 -f lct_1kg38_chr2_eur.ld.gz
 ```
 
-## Drawing the LCT LD triangle from a PLINK table
+## Compute Fst per variant with plink2
+
+Fst, how far apart two groups' allele frequencies sit, comes from `plink2 --fst`
+over `panel.samples` and `rest.samples`, as a bigWig for a
+[quantitative track](/docs/user_guides/quantitative_track):
+
+<!-- from: scripts/build_lct_fst_scan.sh -->
+
+```bash
+# plink2 takes the two panels as one categorical phenotype, with FID beside IID
+{ printf '#FID\tIID\tPOP\n'
+  awk '{print $1"\t"$1"\tPANEL"}' panel.samples
+  awk '{print $1"\t"$1"\tREST"}' rest.samples; } > fst_pops.txt
+
+# method=wc is Weir and Cockerham; the plink2 default, Hudson, gives a
+# different number
+# --output-chr chrM writes the chromosome as chr2, matching the file
+plink2 --vcf pooled.vcf.gz --double-id --output-chr chrM --pheno fst_pops.txt \
+  --fst POP method=wc report-variants vcols=chrom,pos,fst --out fst_site
+
+# 1-based site to bedGraph interval, dropping sites scored nan
+awk 'NR>1 && $4!="nan" {printf "%s\t%d\t%d\t%.5f\n",$1,$2-1,$2,$4}' \
+  fst_site.PANEL.REST.fst.var | sort -k1,1 -k2,2n > fst_site.bedgraph
+printf 'chr2\t242193529\n' > hg38.chrom.sizes
+bedGraphToBigWig fst_site.bedgraph hg38.chrom.sizes fst.bw
+```
+
+## Draw the LCT LD triangle from a PLINK table
 
 In the triangle, red means two variants are inherited together and white means
 independent. The triangle is a matrix turned on its corner, so the vertical axis
@@ -182,35 +209,10 @@ In [grammar-of-graphics](/docs/config_guides/mark_display) terms,
 or D' (a second LD measure), and this table has both. For your own table, swap
 `uri` for the `.ld.gz` that `tabix` indexed, with its `.csi` beside it.
 
-## Computing Fst per variant with plink2
+## Read the LCT block's edges against Fst and deCODE
 
-Fst, how far apart two groups' allele frequencies sit, comes from `plink2 --fst`
-over `panel.samples` and `rest.samples`, as a bigWig for a
-[quantitative track](/docs/user_guides/quantitative_track):
-
-<!-- from: scripts/build_lct_fst_scan.sh -->
-
-```bash
-# plink2 takes the two panels as one categorical phenotype, with FID beside IID
-{ printf '#FID\tIID\tPOP\n'
-  awk '{print $1"\t"$1"\tPANEL"}' panel.samples
-  awk '{print $1"\t"$1"\tREST"}' rest.samples; } > fst_pops.txt
-
-# method=wc is Weir and Cockerham; the plink2 default, Hudson, gives a
-# different number
-# --output-chr chrM writes the chromosome as chr2, matching the file
-plink2 --vcf pooled.vcf.gz --double-id --output-chr chrM --pheno fst_pops.txt \
-  --fst POP method=wc report-variants vcols=chrom,pos,fst --out fst_site
-
-# 1-based site to bedGraph interval, dropping sites scored nan
-awk 'NR>1 && $4!="nan" {printf "%s\t%d\t%d\t%.5f\n",$1,$2-1,$2,$4}' \
-  fst_site.PANEL.REST.fst.var | sort -k1,1 -k2,2n > fst_site.bedgraph
-printf 'chr2\t242193529\n' > hg38.chrom.sizes
-bedGraphToBigWig fst_site.bedgraph hg38.chrom.sizes fst.bw
-```
-
-The Fst track config sets a lower `resolutionMultiplier` on the adapter. Zoomed
-out, JBrowse reads summary bins from a bigWig, and the average over a bin hides
+The [Fst bigWig](#compute-fst-per-variant-with-plink2) loads first. Its track
+config sets a lower `resolutionMultiplier` on the adapter. Zoomed out, JBrowse reads summary bins from a bigWig, and the average over a bin hides
 the few differentiated variants among the many around them:
 
 ```json addtrack
@@ -266,9 +268,7 @@ it, the Fst step gives a wide scan that loads the same way:
 }
 ```
 
-## The LCT block against Fst and the deCODE map
-
-We'll compare the triangle with two maps independent of it. The first is the
+We'll also compare the triangle with two maps independent of it. The first is the
 gene track, NCBI's curated RefSeq models as UCSC serves them:
 
 ```json addtrack
@@ -344,7 +344,7 @@ triangles:
 - The pooled triangle is lighter, because it adds populations the sweep never
   reached to the swept European samples.
 
-## Clustering LCT haplotypes by genotype
+## Cluster LCT haplotypes by genotype {#clustering-lct-haplotypes-by-genotype}
 
 The triangle summarises haplotypes, the variants on each chromosome along the
 block. A variant track over the multi-population VCF shows them below it in
@@ -369,6 +369,16 @@ equal-width columns, one row per chromosome:
     }
   ]
 }
+```
+
+Over the whole release each haplotype row falls below a pixel, so this VCF holds
+the same number of samples from each population. The script behind it centers
+on one `bcftools` call over a list of sample IDs, one per line:
+
+<!-- from: scripts/build_lct_haploblock.sh -->
+
+```bash
+bcftools view -S sub.samples --force-samples -Oz -o lct_1kg38_chr2_6pop.vcf.gz pooled.vcf.gz
 ```
 
 The lactase-persistence variant, `rs4988235`, falls below the matrix's frequency
@@ -399,19 +409,7 @@ Cluster the rows by genotype two ways:
 In file order the matrix is a plaid. Clustering puts near-identical chromosomes
 together, so a swept haplotype forms one slab.
 
-### Subsampling populations for the haplotype matrix {#rows-have-to-be-worth-a-pixel}
-
-Over the whole release each haplotype row falls below a pixel, so the figure
-uses the same number of samples from each population. The script behind it
-centers on one `bcftools` call over a list of sample IDs, one per line:
-
-<!-- from: scripts/build_lct_haploblock.sh -->
-
-```bash
-bcftools view -S sub.samples --force-samples -Oz -o lct_1kg38_chr2_6pop.vcf.gz pooled.vcf.gz
-```
-
-## Allele frequency per population across the LCT block {#allele-frequency-per-population}
+## Draw each population's allele frequency at LCT {#allele-frequency-per-population}
 
 A few people from each population are enough to sort haplotypes and too few to
 read a frequency off. `bcftools +fill-tags` therefore computes each population's
@@ -539,7 +537,7 @@ Three more scripts build the other files:
   over a wide stretch of chr2 with _LCT_ at its middle, one value per variant.
   It prints where `rs4988235` ranks across the span.
 - [`build_lct_haploblock.sh`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/build_lct_haploblock.sh)
-  builds the [subsampled haplotype matrix](#rows-have-to-be-worth-a-pixel) from
+  builds the [subsampled haplotype matrix](#clustering-lct-haplotypes-by-genotype) from
   the same number of unrelated samples in each population, which span the
   lactase-persistence allele from common to absent, so none outweighs the rest
   in the clustering. It prints the allele's frequency in each, over the release
