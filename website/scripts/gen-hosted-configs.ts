@@ -62,7 +62,10 @@ const references = hostedReferences([
 for (const [assembly, url] of [
   ...Object.entries(defaultConfigs),
   ...hostedGenomeFences().flatMap(({ genome, name }) =>
-    [genome, ...(name ? [name] : [])].map(n => [n, genomeConfigUrl(genome)]),
+    [genome, ...(name ? [name] : [])].map((n): [string, string] => [
+      n,
+      genomeConfigUrl(genome),
+    ]),
   ),
 ]) {
   const entry = references.get(url) ?? {
