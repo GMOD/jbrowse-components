@@ -273,6 +273,9 @@ interface Ctx {
   // only a plugin could supply is a warning here and an error without one
   declaresPlugins: boolean
   schema: SchemaValidator
+  // per track node, since the defaults a track's displays take cost a schema
+  // check per key and two passes read them
+  reached: Map<Record<string, unknown>, ReachedDefaults[]>
 }
 
 // An assembly's `aliases` are usable wherever its name is.
@@ -380,7 +383,7 @@ function checkTrack(
       }
     }
   }
-  warnDisplayDefaults(track, manifest, where, report, ctx.schema)
+  warnDisplayDefaults(track, manifest, where, report, ctx)
 }
 
 // Warns on a display entry whose type its track removes on load, and says
@@ -413,23 +416,12 @@ function warnDisplayDefaults(
   manifest: ConfigManifest,
   where: string,
   report: Report,
-  schema: SchemaValidator,
+  ctx: Ctx,
 ) {
-  const trackType = trackTypeOf(track)
-  const defaults = track.displayDefaults
-  if (!trackType || !isRecord(defaults)) {
-    return
-  }
-  for (const display of displaysTaking(trackType, defaults, manifest)) {
+  for (const { display, defaults } of reachedDefaults(track, manifest, ctx)) {
     const entry = manifest.displays[display]
     if (entry) {
-      warnSlots(
-        displayDefaultsReaching(display, defaults, schema),
-        entry,
-        `${where}.displayDefaults`,
-        report,
-        manifest,
-      )
+      warnSlots(defaults, entry, `${where}.displayDefaults`, report, manifest)
     }
   }
 }
@@ -781,17 +773,9 @@ function holdsMarkRules(
 // the rule list the display shows in its corner notice, copied from the plugin
 // (`markRules/`). A single mark's `requires` is the schema's to report.
 function checkMarkDisplay(
-  display: Record<string, unknown>,
-  manifest: ConfigManifest,
-  where: string,
+  { written: display, lifted, slots, where }: DisplayNode,
   report: Report,
 ) {
-  const type = typeof display.type === 'string' ? display.type : MARK_DISPLAY
-  const slots = manifest.displays[type]?.slots
-  const lifted = liftToSnapshot(display, slots ?? [])
-  if (!slots || !isRecord(lifted)) {
-    return
-  }
   const { facet, encoding } = lifted
   const rowsWrites = slots.find(slot => slot.name === 'rows')?.writes
   const rows = isKeyedWrites(rowsWrites)
@@ -887,14 +871,9 @@ function filterEntriesOf(list: unknown): FieldPredicate[] {
 // a field the filter has no reading of, a test the field does not take, or a
 // floor past the field's range.
 function checkAlignmentsFilters(
-  display: Record<string, unknown>,
-  type: string,
-  manifest: ConfigManifest,
-  where: string,
+  { lifted, slots, where }: DisplayNode,
   report: Report,
 ) {
-  const slots = manifest.displays[type]?.slots ?? []
-  const lifted = liftToSnapshot(display, slots)
   for (const {
     path,
     declares = path,
@@ -944,18 +923,12 @@ function rowExpressionProblem(field: string) {
 // on a display whose rows take a `rows.filter`: the top-level list tests
 // records, so it points there.
 function checkRowFilters(
-  display: Record<string, unknown>,
-  type: string,
-  manifest: ConfigManifest,
-  where: string,
+  { lifted, slots, where }: DisplayNode,
   report: Report,
 ) {
-  const slots = manifest.displays[type]?.slots ?? []
   if (declaresSlot(slots, ['rows', 'filter'])) {
-    const lifted = liftToSnapshot(display, slots)
-    const record = isRecord(lifted) ? lifted : {}
-    const attributes = statedRowAttributes(record.rows)
-    const rowFilter = isRecord(record.rows) ? record.rows.filter : undefined
+    const attributes = statedRowAttributes(lifted.rows)
+    const rowFilter = isRecord(lifted.rows) ? lifted.rows.filter : undefined
     filterEntriesOf(rowFilter).forEach((entry, i) => {
       const at = `${where}.rows.filter[${i}].field`
       if (entry.field.startsWith('jexl:')) {
@@ -967,7 +940,7 @@ function checkRowFilters(
         })
       }
     })
-    const topLevel = declaresSlot(slots, ['filter']) ? record.filter : []
+    const topLevel = declaresSlot(slots, ['filter']) ? lifted.filter : []
     filterEntriesOf(topLevel).forEach((entry, i) => {
       const at = `${where}.filter[${i}]`
       if (attributes.has(entry.field)) {
@@ -992,18 +965,12 @@ const ROW_ANNOTATION_REFUSALS: Record<string, string> = {
 }
 
 function checkRowAnnotations(
-  display: Record<string, unknown>,
-  type: string,
-  manifest: ConfigManifest,
-  where: string,
+  { written, slots, where }: DisplayNode,
   report: Report,
 ) {
-  const { rows } = display
+  const { rows } = written
   const annotations =
-    declaresSlot(manifest.displays[type]?.slots ?? [], [
-      'rows',
-      'annotations',
-    ]) && isRecord(rows)
+    declaresSlot(slots, ['rows', 'annotations']) && isRecord(rows)
       ? rows.annotations
       : undefined
   if (Array.isArray(annotations)) {
@@ -1155,16 +1122,10 @@ function checkChannels(
 // code the CLI does not run, and every quantitative scale's ends answer to
 // one rule.
 function checkScaleSlots(
-  display: Record<string, unknown>,
-  slots: SlotEntry[],
-  where: string,
+  { lifted, slots, where }: DisplayNode,
   report: Report,
   adapterType?: string,
 ) {
-  const lifted = liftToSnapshot(display, slots)
-  if (!isRecord(lifted)) {
-    return
-  }
   const warn = (at: string, { rule, slot, message }: ChannelProblem) => {
     report.add({
       level: 'warning',
@@ -1251,12 +1212,68 @@ function displayDefaultsReaching(
   )
 }
 
+interface ReachedDefaults {
+  display: string
+  defaults: Record<string, unknown>
+}
+
+function reachedDefaults(
+  track: Record<string, unknown>,
+  manifest: ConfigManifest,
+  ctx: Ctx,
+) {
+  const trackType = trackTypeOf(track)
+  const { displayDefaults } = track
+  const reached =
+    trackType && isRecord(displayDefaults)
+      ? (ctx.reached.get(track) ??
+        displaysTaking(trackType, displayDefaults, manifest).map(display => ({
+          display,
+          defaults: displayDefaultsReaching(
+            display,
+            displayDefaults,
+            ctx.schema,
+          ),
+        })))
+      : []
+  if (reached.length > 0) {
+    ctx.reached.set(track, reached)
+  }
+  return reached
+}
+
+// A display's settings, as written and as its schema holds them once loaded
+interface DisplayNode {
+  written: Record<string, unknown>
+  lifted: Record<string, unknown>
+  slots: SlotEntry[]
+  where: string
+}
+
+function displayNodeOf(
+  written: Record<string, unknown>,
+  slots: SlotEntry[] | undefined,
+  where: string,
+) {
+  const lifted = slots ? liftToSnapshot(written, slots) : undefined
+  return slots && isRecord(lifted)
+    ? { written, lifted, slots, where }
+    : undefined
+}
+
+const DISPLAY_CHECKS = [
+  checkScaleSlots,
+  checkAlignmentsFilters,
+  checkRowFilters,
+  checkRowAnnotations,
+]
+
 function checkMarkDisplays(
   node: unknown,
   manifest: ConfigManifest,
   where: string,
   report: Report,
-  schema: SchemaValidator,
+  ctx: Ctx,
   outerAdapterType?: string,
 ) {
   if (Array.isArray(node)) {
@@ -1266,7 +1283,7 @@ function checkMarkDisplays(
         manifest,
         `${where}[${i}]`,
         report,
-        schema,
+        ctx,
         outerAdapterType,
       )
     }
@@ -1275,65 +1292,38 @@ function checkMarkDisplays(
       isRecord(node.adapter) && typeof node.adapter.type === 'string'
         ? node.adapter.type
         : outerAdapterType
-    const slots =
+    const own = displayNodeOf(
+      node,
       typeof node.type === 'string'
         ? manifest.displays[node.type]?.slots
-        : undefined
-    if (slots) {
-      checkScaleSlots(node, slots, where, report, adapterType)
-    }
-    if (typeof node.type === 'string') {
-      checkAlignmentsFilters(node, node.type, manifest, where, report)
-      checkRowFilters(node, node.type, manifest, where, report)
-      checkRowAnnotations(node, node.type, manifest, where, report)
-    }
-    const trackType = trackTypeOf(node)
-    if (trackType && isRecord(node.displayDefaults)) {
-      for (const display of displaysTaking(
-        trackType,
-        node.displayDefaults,
-        manifest,
-      )) {
-        const defaults = displayDefaultsReaching(
-          display,
-          node.displayDefaults,
-          schema,
-        )
-        checkScaleSlots(
+        : undefined,
+      where,
+    )
+    const reached = reachedDefaults(node, manifest, ctx).map(
+      ({ display, defaults }) =>
+        displayNodeOf(
           defaults,
-          manifest.displays[display]?.slots ?? [],
+          manifest.displays[display]?.slots,
           `${where}.displayDefaults`,
-          report,
-          adapterType,
-        )
-        checkAlignmentsFilters(
-          defaults,
-          display,
-          manifest,
-          `${where}.displayDefaults`,
-          report,
-        )
-        checkRowFilters(
-          defaults,
-          display,
-          manifest,
-          `${where}.displayDefaults`,
-          report,
-        )
-        checkRowAnnotations(
-          defaults,
-          display,
-          manifest,
-          `${where}.displayDefaults`,
-          report,
-        )
+        ),
+    )
+    for (const display of [own, ...reached]) {
+      if (display) {
+        for (const check of DISPLAY_CHECKS) {
+          check(display, report, adapterType)
+        }
       }
     }
     if (
       holdsMarkRules(node, manifest) &&
       !report.problems.some(p => p.where === `${where}.marks`)
     ) {
-      checkMarkDisplay(node, manifest, where, report)
+      const marked =
+        own ??
+        displayNodeOf(node, manifest.displays[MARK_DISPLAY]?.slots, where)
+      if (marked) {
+        checkMarkDisplay(marked, report)
+      }
     }
     for (const [key, member] of Object.entries(node)) {
       checkMarkDisplays(
@@ -1341,7 +1331,7 @@ function checkMarkDisplays(
         manifest,
         where ? `${where}.${key}` : key,
         report,
-        schema,
+        ctx,
         adapterType,
       )
     }
@@ -1475,6 +1465,7 @@ export function validateConfig(
     trackAliases: new Map(),
     declaresPlugins,
     schema,
+    reached: new Map(),
     sequenceTrackIds: new Set(assemblies.flatMap(a => sequenceTrackIdOf(a))),
   }
 
@@ -1521,7 +1512,7 @@ export function validateConfig(
   ).entries()) {
     checkSession(session, `preConfiguredSessions[${i}]`, manifest, report, ctx)
   }
-  checkMarkDisplays(config, manifest, '', report, schema)
+  checkMarkDisplays(config, manifest, '', report, ctx)
 
   return report.result()
 }
