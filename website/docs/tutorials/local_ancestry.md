@@ -74,7 +74,7 @@ VCF, reference panels and genetic map of your own.
 | The sample table, breed and category labels the panels and targets are derived from                                                   | [dog10K-alignment-sample-table.2022-02-23-v7.txt](https://kiddlabshare.med.umich.edu/dog10K/sample-information/dog10K-alignment-sample-table.2022-02-23-v7.txt) |
 | The Campbell pedigree map, transitioned onto the assembly of this panel ([Wang et al. 2025](https://doi.org/10.5281/zenodo.17095604)) | [campbell_sex_average_canFam4.tar.gz](https://zenodo.org/records/17095604/files/campbell_sex_average_canFam4.tar.gz?download=1)                                 |
 
-## Loading the UU_Cfam_GSD_1.0 dog assembly
+## Load the UU_Cfam_GSD_1.0 dog assembly
 
 `UU_Cfam_GSD_1.0` is the Dog10K reference that UCSC calls canFam4. We load it
 from UCSC's 2bit, with the alias file that maps the `chr` names to GenBank
@@ -96,7 +96,13 @@ accessions:
 }
 ```
 
-## Two wolfdog breeds and their wolf blocks
+## Paint each haplotype's ancestry with FLARE
+
+Every file between the phased panel and the painted track is text, VCF or BED:
+
+<Figure caption="The sample table and phased BCF, FLARE's inputs, and the BED9 files the track reads." src="/img/wolfdog_ancestry_pipeline.png" />
+
+### Choose the targets and the reference panels
 
 Local ancestry labels each stretch of a chromosome with the reference panel (a
 labelled set of animals) it most resembles. The
@@ -115,14 +121,6 @@ cross in any breed, plus:
 - **The Tamaskan**, from the same discussion, is a wolf-lookalike bred from
   ordinary sled and herding dogs.
 - **Eight European wolves**, held out of the wolf panel.
-
-## The files FLARE reads and writes
-
-Every file between the phased panel and the painted track is text, VCF or BED:
-
-<Figure caption="The sample table and phased BCF, FLARE's inputs, and the BED9 files the track reads." src="/img/wolfdog_ancestry_pipeline.png" />
-
-### Choosing the wolf and dog reference panels
 
 FLARE compares each target animal against a wolf panel and a dog panel. The
 build script derives both lists from the sample table's breed and category per
@@ -147,7 +145,7 @@ AFFN000001	Dog
 AFGH000001	Dog
 ```
 
-### Slicing one chromosome out of the phased BCF
+### Slice one chromosome out of the phased BCF
 
 The panel is a single large BCF, which `bcftools` reads over HTTP by range
 request. The script splits the chromosome subset into `chr1.ref.vcf.gz` (the two
@@ -167,7 +165,7 @@ bcftools view -S targets.txt --force-samples -Oz -o chr1.gt.vcf.gz chr1.subset.v
 
 `all.txt`, `wolves.txt`, `dogs.txt` and `targets.txt` list one sample per line.
 
-### Reshaping the Campbell genetic map for FLARE
+### Reshape the Campbell genetic map for FLARE
 
 FLARE requires a genetic map in four PLINK columns: chromosome, marker ID,
 genetic position in cM and base-pair position. The build script reshapes the
@@ -176,7 +174,7 @@ chromosome names must match the VCF's. With no map for your organism, write one
 at a constant rate per megabase from the assembly's `chrom.sizes`; segment edges
 are then approximate.
 
-### Running FLARE
+### Run FLARE
 
 FLARE takes the two panel VCFs, the `ref-panel` file and the map, and writes
 `wolfdog_chr1.anc.vcf.gz` plus a summary:
@@ -212,7 +210,7 @@ The wolfdogs sit far above the swept breeds, apart from one Czechoslovakian
 Wolfdog (`CZEC000002`) that falls within their range and has no long block
 anywhere.
 
-### Merging FLARE's calls into BED blocks
+### Merge FLARE's calls into BED blocks
 
 FLARE writes per-marker calls into the `AN1`/`AN2` `FORMAT` fields of
 `wolfdog_chr1.anc.vcf.gz`.
@@ -252,7 +250,7 @@ runs the converter twice:
 - `named.tsv` over the animals the figure names, into
   `dog10k_wolfdog_named.chr1.bed.gz`, the file the track below loads
 
-## Loading the blocks as a multi-row track
+## Load the blocks as a multi-row track
 
 The multi-row feature display (`LinearMultiRowFeatureDisplay`) draws one row per
 `sample`. In [grammar-of-graphics](/docs/config_guides/mark_display) terms,
@@ -314,7 +312,7 @@ order of chr1 wolf fraction from FLARE's summary. For your own animals:
   per animal there is no room for labels, so the named-animals track shows the
   labels and the all-animals track shows the extent
 
-## Wolf blocks along chr1 in wolfdogs and controls
+## Read the wolf blocks along chr1
 
 Open the whole of chr1 with the named-animals track:
 
@@ -326,27 +324,6 @@ row and dog on the other is heterozygous, and both orange is homozygous
 wolf-derived.
 
 Blocks break up towards the end of chr1, tracking the genetic map.
-
-### Where FLARE calls and allele counts disagree in the held-out wolves
-
-Most held-out wolves come out essentially all wolf. The two Swedish museum
-specimens come out partly dog in FLARE's calls, yet score highest of the
-held-out wolves on a second measure the build script prints, the fraction of
-near-fixed differing sites with the wolf allele. That measure looks at one site
-at a time, where FLARE matches whole haplotypes against a panel.
-
-### How long the Tamaskan's and Shiloh Shepherd's wolf blocks run
-
-The build script prints a count of wolf blocks with their median and longest,
-one line per animal:
-
-- The Tamaskan's wolf blocks are many and short, no longer than ordinary breeds'
-  (the Kars, the Eurasier, the Spanish Mastiff).
-- The Shiloh Shepherd has the longest wolf block of any dog outside the two
-  wolfdog breeds, and many more blocks than the runner-up, a Great Anglo-French
-  Tricolor Hound. A later genome-wide run over the same collection puts it among
-  the three dogs with the longest, most recent wolf tracts
-  ([Lin et al. 2025](https://doi.org/10.1073/pnas.2421768122)).
 
 **Clustering** → **Cluster rows by similarity...** in the track menu orders the
 rows of the full-cohort track by their blocks. The clustering puts the held-out
@@ -364,7 +341,7 @@ runs every step above. It:
 3. writes both painted BEDs
    ([`flare_anc_to_bed.py`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/flare_anc_to_bed.py))
    plus indexes
-4. prints every measurement read above and, for each painted block edge, how
+4. prints the measurements below and, for each painted block edge, how
    many ancestry-informative markers each haplotype has on either side. The long
    wolfdog blocks have marker support at their edges, and the short blocks in
    ordinary breeds lack it.
@@ -374,6 +351,23 @@ curl -fO https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/
 bash build_dog10k_wolfdog_ancestry.sh       # chr1, into ./dog10k_wolfdog_build
 bash build_dog10k_wolfdog_ancestry.sh chr38 # any other autosome
 ```
+
+Most held-out wolves come out essentially all wolf. The two Swedish museum
+specimens come out partly dog in FLARE's calls, yet score highest of the
+held-out wolves on a second measure the script prints, the fraction of
+near-fixed differing sites with the wolf allele. That measure looks at one site
+at a time, where FLARE matches whole haplotypes against a panel.
+
+It also prints a count of wolf blocks with their median and longest, one line
+per animal:
+
+- The Tamaskan's wolf blocks are many and short, no longer than ordinary breeds'
+  (the Kars, the Eurasier, the Spanish Mastiff).
+- The Shiloh Shepherd has the longest wolf block of any dog outside the two
+  wolfdog breeds, and many more blocks than the runner-up, a Great Anglo-French
+  Tricolor Hound. A later genome-wide run over the same collection puts it among
+  the three dogs with the longest, most recent wolf tracts
+  ([Lin et al. 2025](https://doi.org/10.1073/pnas.2421768122)).
 
 ## See also
 
