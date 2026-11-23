@@ -1,6 +1,6 @@
 ---
 status: Proposed
-summary: "In phased mode an alt cell's hue is its allele's frequency rank at the site: the alt blue, the old red, then six more, the rarest sharing the last; the key lists the hues on screen and names an allele where a hue stands for one. No setting"
+summary: "In phased mode an alt cell's hue is its allele's frequency rank at the site: alt blue, the old red, then six more, the rarest sharing the last; the key names an allele where one hue stands for it. No setting"
 ---
 
 # ADR-284: A phased alt cell takes the hue of its allele's frequency rank
