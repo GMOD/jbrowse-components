@@ -328,6 +328,19 @@ function checkTrack(
     }
   }
 
+  const inferredType = loose ? trackTypeOf(track) : undefined
+  if (inferredType && isRecord(track.displayDefaults)) {
+    for (const problem of ctx.schema.schemaProblems(
+      track.displayDefaults,
+      `/$defs/${inferredType}/properties/displayDefaults`,
+    )) {
+      report.add({
+        ...problem,
+        where: `${where}.displayDefaults${problem.where ? `.${problem.where}` : ''}`,
+      })
+    }
+  }
+
   checkPluggable(track, manifest.tracks, 'track', where, report, manifest)
   if (!loose) {
     checkPluggable(

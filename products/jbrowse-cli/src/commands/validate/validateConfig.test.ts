@@ -1541,6 +1541,30 @@ describe('validateConfig', () => {
     ).toBe(true)
   })
 
+  it('checks the displayDefaults keys of a track written as only a uri', () => {
+    const track = (displayDefaults: Record<string, unknown>) => ({
+      ...baseConfig(),
+      tracks: [
+        ...baseConfig().tracks,
+        {
+          trackId: 'v',
+          uri: 'x.vcf.gz',
+          assemblyNames: ['hg38'],
+          displayDefaults,
+        },
+      ],
+    })
+    expect(errorsOf(track({ facet: 'population' }))).toEqual([])
+    expect(errorsOf(track({ facett: 'population' }))).toEqual([
+      {
+        level: 'error',
+        where: 'tracks[1].displayDefaults.facett',
+        message:
+          'no display of this track declares "facett" — did you mean "facet"?',
+      },
+    ])
+  })
+
   it('reports a defaults key two displays read differently once per rule', () => {
     const config = {
       ...baseConfig(),
