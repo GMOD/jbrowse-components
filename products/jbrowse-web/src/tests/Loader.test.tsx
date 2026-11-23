@@ -120,6 +120,7 @@ test('a healthy boot clears a marker left by an earlier crash', async () => {
 }, 20000)
 
 test('can use config from a url with shared session ', async () => {
+  const warn = jest.spyOn(console, 'warn').mockImplementation(() => {})
   render(
     <App search="?config=test_data/volvox/config_main_thread.json&session=share-testid&password=Z42aq" />,
   )
@@ -127,6 +128,9 @@ test('can use config from a url with shared session ', async () => {
   await waitFor(() => {
     expect(sessionStorage.length).toBeGreaterThan(0)
   }, delay)
+  expect(warn).toHaveBeenCalledWith(
+    'LinearGenomeView ignored unknown key(s): trackSelectorType',
+  )
 }, 20000)
 
 // minimal session with plugin in our plugins.json
