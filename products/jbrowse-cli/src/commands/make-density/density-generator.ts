@@ -1,6 +1,6 @@
 import { createReadStream, existsSync, readFileSync } from 'node:fs'
-import { createInterface } from 'node:readline'
-import { createGunzip } from 'node:zlib'
+
+import { createReadlineInterface } from '@jbrowse/text-indexing-core'
 
 // Which parser a filename selects. BAM/CRAM/SAM are named so the refusal can
 // say what to do instead, rather than falling into the unknown-extension case.
@@ -104,10 +104,7 @@ export async function countFeatureStarts({
   let records = 0
   let transcriptRecords = 0
   const source = createReadStream(file)
-  const lines = createInterface({
-    input: /\.b?gz$/i.test(file) ? source.pipe(createGunzip()) : source,
-    crlfDelay: Number.POSITIVE_INFINITY,
-  })
+  const lines = createReadlineInterface(source, file)
   for await (const line of lines) {
     // everything after a GFF3 ##FASTA directive is sequence, not features
     if (line.trimEnd() === '##FASTA') {
