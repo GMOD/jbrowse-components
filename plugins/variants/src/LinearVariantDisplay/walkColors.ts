@@ -19,11 +19,15 @@ export interface HaplotypeColor {
 /** One display's published colors, by sample. */
 export type WalkColors = ReadonlyMap<string, readonly HaplotypeColor[]>
 
+function isHaplotypeColors(value: unknown): value is readonly HaplotypeColor[] {
+  return Array.isArray(value)
+}
+
 function publishedColors(display: unknown): readonly HaplotypeColor[] {
   return typeof display === 'object' &&
     display !== null &&
     'haplotypeColors' in display &&
-    Array.isArray(display.haplotypeColors)
+    isHaplotypeColors(display.haplotypeColors)
     ? display.haplotypeColors
     : []
 }

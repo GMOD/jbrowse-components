@@ -62,7 +62,7 @@ export function validateHostedFlags({
 export async function getHostedAssembly(genome: string) {
   const url = genomeConfigUrl(genome)
   const hub = await fetchJson(url, `genome "${genome}"`, HOSTED_HINT)
-  const assemblies =
+  const assemblies: unknown[] =
     isRecord(hub) && Array.isArray(hub.assemblies) ? hub.assemblies : []
   const assembly = assemblies.find(a => isRecord(a) && a.name === genome)
   resolveRelativeUris(assembly, url)
