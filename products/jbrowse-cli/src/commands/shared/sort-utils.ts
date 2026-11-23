@@ -1,17 +1,11 @@
 import { spawn } from 'node:child_process'
+import { once } from 'node:events'
+import { createReadStream } from 'node:fs'
 import { parseArgs } from 'node:util'
 
-import { fileSync } from 'tmp'
-
 import { printHelp } from '../../utils.ts'
-import {
-  describeExit,
-  diedOfSigpipe,
-  waitForProcessClose,
-} from '../process-utils.ts'
+import { describeExit, waitForProcessClose } from '../process-utils.ts'
 import { validateFileArgument, validateRequiredCommands } from './validators.ts'
-
-import type { ChildProcess } from 'node:child_process'
 
 export interface SortConfig {
   description: string
@@ -56,62 +50,88 @@ export const GFF_CONFIG: SortConfig = {
   endOfData: '##FASTA',
 }
 
-function getMinimalEnvironment(): NodeJS.ProcessEnv {
-  return {
-    ...process.env,
-    LC_ALL: 'C',
+const getMinimalEnvironment = () => ({ ...process.env, LC_ALL: 'C' })
+
+const NEWLINE = 0x0a
+const HASH = 0x23
+
+// bytes, not decoded text, so a line leaves exactly as it came in (a CRLF
+// file keeps its CR) and a file that is not UTF-8 is not rewritten
+async function* splitLines(input: AsyncIterable<Buffer | string>) {
+  let tail = Buffer.alloc(0)
+  for await (const chunk of input) {
+    const data = Buffer.concat([tail, Buffer.from(chunk)])
+    let start = 0
+    for (
+      let end = data.indexOf(NEWLINE);
+      end !== -1;
+      end = data.indexOf(NEWLINE, start)
+    ) {
+      yield data.subarray(start, end)
+      start = end + 1
+    }
+    tail = data.subarray(start)
+  }
+  if (tail.length > 0) {
+    yield tail
   }
 }
 
-// The file path is passed to the shell as the positional argument "$1" rather
-// than interpolated into the command string, so a path containing shell
-// metacharacters (`"`, `$(...)`, backticks) cannot break out and execute. Only
-// sortColumn, an integer from the BED/GFF configs, and endOfData, a constant
-// pragma from the same configs, are interpolated.
-export function sortPipeline({ sortColumn, endOfData }: SortConfig): string {
-  const input = endOfData ? `sed '/^${endOfData}/,$d' "$1"` : 'cat "$1"'
-  return `${input} | grep "^#"; ${input} | grep -v -e "^#" -e "^[[:space:]]*$" | sort -t"\`printf '\\t'\`" -k1,1 -k${sortColumn},${sortColumn}n`
-}
+const isBlank = (line: Buffer) => line.toString('latin1').trim() === ''
 
-function createSortCommandForStdin(config: SortConfig): {
-  command: string
-  pathArg: string
-} {
-  // discardDescriptor: we only want the path — the shell below opens the file
-  // itself, so tmp's own handle would just be a descriptor left open for the
-  // life of the process
-  const tmpFile = fileSync({
-    prefix: 'jbrowse-sort',
-    discardDescriptor: true,
-  }).name
-  // trap on EXIT removes the temp file whether or not the sort pipeline
-  // succeeds (a bare `&& rm` leaks the file when the pipeline fails)
-  return {
-    command: `trap 'rm -f "$1"' EXIT; cat > "$1" && (${sortPipeline(config)})`,
-    pathArg: tmpFile,
+// One pass over the input: `#` lines go straight to stdout, in input order,
+// and every other non-blank line goes to sort, whose output follows once its
+// input ends. Nothing is copied to disk, so there is no temp file for an
+// interrupted run to leave behind.
+async function sortInput(
+  input: AsyncIterable<Buffer | string>,
+  { sortColumn, endOfData }: SortConfig,
+) {
+  const sort = spawn(
+    'sort',
+    ['-t', '\t', '-k1,1', `-k${sortColumn},${sortColumn}n`],
+    { env: getMinimalEnvironment(), stdio: ['pipe', 'pipe', 'inherit'] },
+  )
+  const closed = waitForProcessClose(sort)
+  const state = { sortStopped: false, consumerGone: false }
+  const stopFeeding = () => {
+    state.sortStopped = true
   }
-}
+  const stopOutput = () => {
+    state.consumerGone = true
+    sort.kill()
+  }
+  sort.stdin.on('error', stopFeeding)
+  process.stdout.on('error', stopOutput)
+  sort.stdout.pipe(process.stdout)
 
-function createSortCommandForFile(
-  file: string,
-  config: SortConfig,
-): { command: string; pathArg: string } {
-  return { command: `(${sortPipeline(config)})`, pathArg: file }
-}
-
-export function spawnSortProcess(
-  file: string | undefined,
-  config: SortConfig,
-): ChildProcess {
-  const { command, pathArg } = file
-    ? createSortCommandForFile(file, config)
-    : createSortCommandForStdin(config)
-
-  // 'sh' becomes $0, pathArg becomes $1 inside the command
-  return spawn('sh', ['-c', command, 'sh', pathArg], {
-    env: getMinimalEnvironment(),
-    stdio: 'inherit',
-  })
+  const endMarker = endOfData ? Buffer.from(endOfData) : undefined
+  let dataEnded = false
+  for await (const line of splitLines(input)) {
+    if (state.sortStopped || state.consumerGone) {
+      break
+    }
+    dataEnded =
+      dataEnded ||
+      (endMarker !== undefined &&
+        line.subarray(0, endMarker.length).equals(endMarker))
+    if (!dataEnded) {
+      if (line[0] === HASH) {
+        process.stdout.write(Buffer.concat([line, Buffer.from('\n')]))
+      } else if (!isBlank(line)) {
+        if (!sort.stdin.write(Buffer.concat([line, Buffer.from('\n')]))) {
+          await Promise.race([once(sort.stdin, 'drain'), closed]).catch(
+            stopFeeding,
+          )
+        }
+      }
+    }
+  }
+  sort.stdin.end()
+  const exit = await closed
+  await new Promise(resolve => process.stdout.write('', resolve))
+  process.stdout.off('error', stopOutput)
+  return { exit, consumerGone: state.consumerGone }
 }
 
 export async function runSort(
@@ -138,23 +158,16 @@ export async function runSort(
 
   const file = positionals[0]
   validateFileArgument(file, commandName, config.fileType)
-  validateRequiredCommands([
-    'sh',
-    'sort',
-    'grep',
-    config.endOfData ? 'sed' : 'cat',
-  ])
+  validateRequiredCommands(['sort'])
 
-  const child = spawnSortProcess(file, config)
-  const exit = await waitForProcessClose(child)
+  const input = file ? createReadStream(file) : process.stdin
+  const { exit, consumerGone } = await sortInput(input, config)
+  input.destroy()
 
   // These commands exist to be piped (`jbrowse sort-bed in.bed | bgzip > …`), so
   // a consumer that stops reading early — `| head`, `| grep -q` — must not be
   // reported as a sort failure. It used to exit 1 with "exited with code 141".
-  if (diedOfSigpipe(exit)) {
-    return
-  }
-  if (exit.code !== 0) {
+  if (!consumerGone && exit.code !== 0) {
     throw new Error(`Sort process exited with ${describeExit(exit)}`)
   }
 }

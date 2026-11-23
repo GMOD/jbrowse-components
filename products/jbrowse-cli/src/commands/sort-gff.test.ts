@@ -2,13 +2,15 @@
  * @jest-environment node
  */
 
-import { execFileSync } from 'node:child_process'
+import { spawn, spawnSync } from 'node:child_process'
+import fs from 'node:fs'
+import os from 'node:os'
 import path from 'node:path'
 
 import { runCommand } from '../testUtils.ts'
-import { GFF_CONFIG, sortPipeline } from './shared/sort-utils.ts'
 import { validateFileArgument } from './shared/validators.ts'
 
+const bin = path.join(__dirname, '..', 'bin.ts')
 const dataDir = path.join(__dirname, '..', '..', 'test', 'data')
 const existingGff = path.join(dataDir, 'two_records.gff3')
 
@@ -62,32 +64,86 @@ describe('validateFileArgument', () => {
   })
 })
 
+function sortGff(args: string[], input?: string) {
+  const { status, stdout, stderr } = spawnSync(
+    'node',
+    [bin, 'sort-gff', ...args],
+    { encoding: 'utf8', input },
+  )
+  return { status, stdout, stderr }
+}
+
+const firstFourColumns = (output: string) =>
+  output
+    .trim()
+    .split('\n')
+    .map(line => line.split('\t').slice(0, 4).join(' '))
+
+const expectedProkka = [
+  '##gff-version 3',
+  '##sequence-region contig_2 1 120',
+  '##sequence-region contig_1 1 120',
+  'contig_1 Prodigal:v2.6 CDS 4',
+  'contig_1 Prodigal:v2.6 CDS 40',
+  'contig_2 Prodigal:v2.6 CDS 61',
+]
+
 describe('the sort-gff pipeline', () => {
   test('drops a ##FASTA section, so the sorted file is all features tabix can index', () => {
-    const sorted = execFileSync(
-      'sh',
-      [
-        '-c',
-        sortPipeline(GFF_CONFIG),
-        'sh',
-        path.join(dataDir, 'prokka_with_fasta.gff3'),
-      ],
-      { encoding: 'utf8', env: { ...process.env, LC_ALL: 'C' } },
+    const { status, stdout } = sortGff([
+      path.join(dataDir, 'prokka_with_fasta.gff3'),
+    ])
+    expect(status).toBe(0)
+    expect(firstFourColumns(stdout)).toEqual(expectedProkka)
+  })
+
+  test('reads the same data from stdin, keeping headers first in input order', () => {
+    const { status, stdout } = sortGff(
+      [],
+      fs.readFileSync(path.join(dataDir, 'prokka_with_fasta.gff3'), 'utf8'),
     )
-    expect(
-      sorted
-        .trim()
-        .split('\n')
-        .map(line => line.split('\t').slice(0, 4).join(' ')),
-    ).toEqual([
-      '##gff-version 3',
-      '##sequence-region contig_2 1 120',
-      '##sequence-region contig_1 1 120',
-      'contig_1 Prodigal:v2.6 CDS 4',
-      'contig_1 Prodigal:v2.6 CDS 40',
-      'contig_2 Prodigal:v2.6 CDS 61',
+    expect(status).toBe(0)
+    expect(firstFourColumns(stdout)).toEqual(expectedProkka)
+  })
+
+  test('leaves a CRLF line ending on the line it came with', () => {
+    const { stdout } = sortGff(
+      [],
+      '##gff-version 3\r\nchr1\tsrc\tgene\t20\t30\t.\t+\t.\tID=b\r\nchr1\tsrc\tgene\t5\t9\t.\t+\t.\tID=a\r\n',
+    )
+    expect(stdout).toBe(
+      '##gff-version 3\r\nchr1\tsrc\tgene\t5\t9\t.\t+\t.\tID=a\r\nchr1\tsrc\tgene\t20\t30\t.\t+\t.\tID=b\r\n',
+    )
+  })
+
+  test('sorts a last line that has no trailing newline', () => {
+    const { stdout } = sortGff(
+      [],
+      'chr1\tsrc\tgene\t20\t30\t.\t+\t.\tID=b\nchr1\tsrc\tgene\t5\t9\t.\t+\t.\tID=a',
+    )
+    expect(firstFourColumns(stdout)).toEqual([
+      'chr1 src gene 5',
+      'chr1 src gene 20',
     ])
   })
+})
+
+test('an interrupted stdin run leaves no copy of the input in the temp dir', async () => {
+  const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'sort-gff-interrupt-'))
+  try {
+    const child = spawn('node', [bin, 'sort-gff'], {
+      env: { ...process.env, TMPDIR: tmpDir },
+      stdio: ['pipe', 'ignore', 'ignore'],
+    })
+    child.stdin.write('chr1\tsrc\tgene\t20\t30\t.\t+\t.\tID=b\n')
+    await new Promise(resolve => setTimeout(resolve, 500))
+    const closed = new Promise(resolve => child.on('close', resolve))
+    child.kill('SIGTERM')
+    await closed
+    expect(fs.readdirSync(tmpDir)).toEqual([])
+  } finally {
+    fs.rmSync(tmpDir, { recursive: true, force: true })
+  }
 })
 
 describe('sort-gff command', () => {
