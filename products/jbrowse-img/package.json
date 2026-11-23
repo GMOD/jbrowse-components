@@ -49,7 +49,7 @@
     "@jbrowse/plugin-linear-comparative-view": "workspace:^",
     "@jbrowse/plugin-linear-genome-view": "workspace:^",
     "@jbrowse/react-app2": "workspace:^",
-    "@napi-rs/canvas": "^1.1.1",
+    "@napi-rs/canvas": "^1.2.0",
     "jsdom": "^31.0.1",
     "mobx": "catalog:",
     "mobx-react": "catalog:",
