@@ -40,7 +40,7 @@ The graph view is a beta plugin. We welcome your [feedback](/contact).
   In your own JBrowse,
   [install it from the plugin store](/docs/user_guides/plugin_store)
 - [`gfa-to-tabix`](https://github.com/GMOD/gfa-to-tabix) 5.0.0 or later, for
-  [indexing the graph](#indexing-the-graph)
+  [indexing the graph](#index-the-graph)
 - for the [whole build](#reproduce-it-end-to-end): the NCBI
   [`datasets`](https://www.ncbi.nlm.nih.gov/datasets/docs/v2/download-and-install/)
   CLI, `bedGraphToBigWig` (UCSC kentUtils), `samtools`, `unzip`, `wget` and
@@ -93,7 +93,7 @@ the short reads too, and the graph track reads our hosted copy.
 
 </details>
 
-## Building the graph with cactus-pangenome
+## Build the graph with cactus-pangenome
 
 Each strain's FASTA holds its chromosome as one record named `chr`. Fetch and
 trim one assembly with the NCBI `datasets` CLI:
@@ -180,7 +180,7 @@ the projections map to, from a bgzip-compressed, indexed FASTA:
 Sakai, CFT073, NCTC86 and IAI39 load the same way, one assembly per strain,
 named as in the `assemblyNames` of the tracks below.
 
-## Synteny between all the strains (halSynteny)
+## Stack the strains in a synteny view (halSynteny)
 
 [`halSynteny`](https://github.com/ComparativeGenomicsToolkit/hal) reads the
 HAL's base-level alignment and emits synteny blocks per genome pair as PSL with
@@ -265,7 +265,7 @@ other.
 
 <Figure caption="The Minigraph-Cactus graph's halSynteny projection, the strains stacked and colored by strand." src="/img/pangenome_cactus/synteny.png" />
 
-## Variants against K12 (vg deconstruct)
+## Load the variants and alignment onto K12 {#whole-genome-alignment-maf-projection}
 
 `--vcf` decomposes the graph against K12 with
 [`vg deconstruct`](https://github.com/vgteam/vg), genotyped across the other
@@ -300,8 +300,6 @@ nesting level, so wide records are drawn over finer ones. `cactus-pangenome`
 prunes that tree with [`vcfbub`](https://github.com/pangenome/vcfbub) by
 default; `--vcfbub 0` turns that off, and `--vcfwave` realigns the remaining
 records into primitive variants.
-
-## Whole-genome alignment onto K12 (MAF) {#whole-genome-alignment-maf-projection}
 
 The MAF comes out of `mc/ecoli.full.hal`. `hal2maf --refGenome K12` roots every
 block on K12, and the rows come out as `K12.chr`, `Sakai.chr`, and so on, the
@@ -362,7 +360,7 @@ python3 odgi_similarity_to_newick.py ecoli_cactus_similarity.tsv ecoli_cactus.nh
 Then add `"nhLocation": { "uri": "ecoli_cactus.nh" }` to the MAF track's
 adapter.
 
-## Pangenome depth and per-strain presence
+## Plot depth and per-strain presence on K12
 
 [`odgi depth`](https://odgi.readthedocs.io/en/latest/rst/commands/odgi_depth.html)
 counts how many paths traverse the graph under each K12 base, and
@@ -481,7 +479,7 @@ gene copy):
 pggb's curve doubles to about 10 over the operon. Minigraph-Cactus's curve sits
 near 4 across the whole window, with no rise over the operon.
 
-## Mapping a new isolate through the graph
+## Map a new isolate through the graph
 
 We'll map the short reads of a sample outside the graph through the whole
 pangenome and project the result onto K12. A read that follows another strain's
@@ -555,13 +553,13 @@ it, because the prophage is sequence K12 has and KTa004 lacks.
 `.min` and `.zipcodes` built from it, so a second run refuses to start. `touch`
 the two derived files before re-mapping.
 
-## Drawing the graph as a graph {#opening-the-graph-in-the-graph-genome-view}
+## Load the graph as a graph track {#opening-the-graph-in-the-graph-genome-view}
 
 The [graph genome view plugin](/docs/user_guides/graph_genome_view) draws the
 graph as a track of the linear view. [](/docs/tutorials/pangenome_prepare_graph)
 covers installing the plugin and the commands that index a graph for it.
 
-### Indexing the graph
+### Index the graph
 
 [`gfa-to-tabix`](https://github.com/GMOD/gfa-to-tabix) indexes the base-level
 graph, where every SNP is a bubble. That GFA has no rGFA tags, so `--reference`
@@ -657,7 +655,7 @@ In the track menu, **Show → Show links that skip reference** hides the dashed
 link the graph track draws for the other four strains' route, which is labelled
 with the length of the node it skips.
 
-## Comparing odgi viz's node-order axis with K12's coordinates
+## Compare odgi viz's node order with K12's coordinates
 
 Open `mc/ecoli.viz/chr.full.viz.png`, the
 [`odgi viz`](https://odgi.readthedocs.io/en/latest/rst/commands/odgi_viz.html)
@@ -686,7 +684,7 @@ runs everything above in one shot. It:
 - converts the HAL, VCF, `odgi depth` and `odgi pav` into the projections above,
   and maps the KTa004 reads
 - indexes the base-level graph by following the reference's paths, with the
-  command under [Indexing the graph](#indexing-the-graph)
+  command under [Indexing the graph](#index-the-graph)
 - writes a `config.json` with the assemblies, per-strain gene tracks, the
   projection and segments tracks, the plugin declaration and a default session
 

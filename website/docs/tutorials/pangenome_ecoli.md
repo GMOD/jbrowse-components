@@ -71,7 +71,7 @@ The page's commands fetch the five _E. coli_ RefSeq assemblies by accession and
 build local files from them; run [the build script](#reproduce-it-end-to-end)
 first, or follow the same commands on your own assemblies. The graph tracks read
 our hosted copy, and the nanopore reads under
-[Testing the CPZ-55 depth trough](#testing-the-cpz-55-depth-trough-with-nanopore-reads)
+[Testing the CPZ-55 depth trough](#test-the-cpz-55-depth-trough-with-nanopore-reads)
 are the one file the script does not fetch.
 
 | What it is                                               | File                                                                                                                  |
@@ -83,7 +83,7 @@ are the one file the script does not fetch.
 | IAI39                                                    | [GCF_000026345.1_ASM2634v1/](https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/000/026/345/GCF_000026345.1_ASM2634v1/)     |
 | Nanopore reads from an unrelated isolate, _E. coli_ E146 | [DRR193901_1.fastq.gz](https://ftp.sra.ebi.ac.uk/vol1/fastq/DRR193/DRR193901/DRR193901_1.fastq.gz)                    |
 
-## Building the graph
+## Build the graph
 
 Each strain's FASTA holds its chromosome as one record named `chr`. Fetch and
 trim one assembly with the NCBI `datasets` CLI:
@@ -154,7 +154,7 @@ bgzip-compressed, indexed FASTA:
 Sakai, CFT073, NCTC86 and IAI39 load the same way, named as in the
 `assemblyNames` of the tracks below.
 
-## Synteny between the strains (wfmash) {#synteny-projection}
+## Stack the strains in a synteny view (wfmash) {#synteny-projection}
 
 pggb's first step is an all-vs-all alignment by wfmash, which JBrowse reads as a
 synteny track once `jbrowse make-pif` indexes it:
@@ -192,7 +192,7 @@ row, with **Replace current view**, re-anchors the stack on that strain:
 
 <Video src="/media/synteny/ecoli_roundtrip.mp4" caption="Launch over a K12 window opens a stack anchored on K12; a drag on the Sakai row re-anchors it on Sakai." />
 
-### Synteny read out of the graph with odgi untangle {#the-same-picture-read-out-of-the-graph}
+### Untangle the graph's synteny with odgi {#the-same-picture-read-out-of-the-graph}
 
 [`odgi untangle`](https://odgi.readthedocs.io/en/latest/rst/commands/odgi_untangle.html)
 follows each strain's path and reports which stretch of the K12 path it
@@ -275,7 +275,7 @@ tabix -C -p bed ecoli_pggb_untangle_rows.bed.gz
 
 <Figure caption="The odgi untangle synteny two ways, each inverted arm boxed in a distinct color, the same in both panels. Above, one row per strain over K12. Below, K12 against IAI39 as a dotplot." src="/img/pangenome/pggb_untangle_inversion.png" links="Rows=pangenome/pggb_untangle_rows,Dotplot=pangenome/pggb_untangle_dotplot" />
 
-## Variants against K12 (pggb -V) {#pangenome-variants-projection}
+## Load the variants and alignment onto K12 {#whole-genome-alignment-maf-projection}
 
 `pggb -V` wrote a VCF of every variant it decomposes from the graph against the
 K12 path, genotyped in the other four strains. Its `CHROM` is the PanSN path,
@@ -314,8 +314,6 @@ sites into smaller variants, giving `*.decomposed.vcf`.
 The undecomposed `*.smooth.final.K12.vcf` has one record per bubble (where paths
 split and rejoin), which the
 [graph track](#opening-the-graph-in-the-graph-genome-view) reads.
-
-## Whole-genome alignment onto K12 (MAF) {#whole-genome-alignment-maf-projection}
 
 `pggb -M` wrote the multiple alignment as a MAF. Re-root every block on K12,
 rename the rows to `sample.chr`, and blank the padding smoothxg writes around
@@ -383,7 +381,7 @@ covers under two submenus:
 
 <Video src="/media/synteny/maf_row_synteny.mp4" caption="A drag across the MAF rows, the menu listing the strains it covers, and the synteny view the IAI39 entry opens." />
 
-## Pangenome depth: core versus accessory sequence {#pangenome-depth-projection-core-vs-accessory}
+## Plot depth and per-strain presence on K12 {#pangenome-depth-projection-core-vs-accessory}
 
 [`odgi depth`](https://odgi.readthedocs.io/en/latest/rst/commands/odgi_depth.html)
 counts how many paths cross each K12 window, so the depth equals the strain
@@ -435,7 +433,7 @@ The config adds reference lines at the strain count and at 1:
 The curve doubles over the rrnC and rrnB operons (ribosomal RNA gene copies),
 because pggb folds those two copies onto each other in the graph.
 
-### Per-strain presence
+### Add per-strain presence as a heatmap
 
 [`odgi pav`](https://odgi.readthedocs.io/en/latest/rst/commands/odgi_pav.html)
 splits depth per strain, as the fraction of each window that the strain's path
@@ -500,7 +498,7 @@ Across the shaded span IAI39's row is empty and depth drops by one. The deeper
 trough to its right, `chr:565,000-585,000`, is the prophage that begins at
 _intD_, where depth falls toward the **K12 alone** line.
 
-### Testing the CPZ-55 depth trough with nanopore reads
+### Test the CPZ-55 depth trough with nanopore reads
 
 A depth trough marks a stretch of K12 the other strains lack. Reads from a new
 isolate show whether it lacks the stretch too. We'll load nanopore reads from
@@ -538,7 +536,7 @@ The other reads show it as a single labelled deletion.
 
 <Figure caption="Nanopore reads from another isolate over one K12 depth trough, with the graph's depth curve and MAF below." src="/img/pangenome/long_reads.png" />
 
-## The graph as a track {#opening-the-graph-in-the-graph-genome-view}
+## Load the graph as a graph track {#opening-the-graph-in-the-graph-genome-view}
 
 The [graph genome view plugin](/docs/user_guides/graph_genome_view) draws the
 graph itself as a track of the linear view.
@@ -639,7 +637,7 @@ in CFT073**.
 
 <Video src="/media/pangenome/pggb_out_to_strain.mp4" caption="A node's menu on the CFT073 allele, and the CFT073 view its Open in entry adds." />
 
-### Coloring each segment by how many strains have it {#strains-per-segment-as-a-track}
+### Color each segment by its strain count {#strains-per-segment-as-a-track}
 
 The index lists the strains that pass through each segment, and a feature track
 over the same files colors each segment by their count:
