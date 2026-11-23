@@ -40,6 +40,7 @@ import { ecoliGraphSpecs } from './specs/graph-ecoli.ts'
 import { hprcGraphSpecs } from './specs/graph-hprc.ts'
 import { mouseCattleGraphSpecs } from './specs/graph-mouse-cattle.ts'
 import { graphReadingSpecs } from './specs/graph-reading.ts'
+import { riceFlyGraphSpecs } from './specs/graph-rice-fly.ts'
 import { gwasSpecs } from './specs/gwas.ts'
 import { hg002HaplotypeSpecs } from './specs/hg002_haplotypes.ts'
 import { hicSpecs } from './specs/hic.ts'
@@ -170,6 +171,7 @@ export const specs: ScreenshotSpec[] = [
   ...ecoliGraphSpecs,
   ...hprcGraphSpecs,
   ...mouseCattleGraphSpecs,
+  ...riceFlyGraphSpecs,
   ...graphReadingSpecs,
   ...cookbookSpecs,
   ...embeddedSpecs,

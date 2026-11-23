@@ -45,6 +45,47 @@
           "uri": "https://jbrowse.org/ucsc/bosTau9/bosTau9.chromAlias.txt"
         }
       }
+    },
+    {
+      "name": "GCF_034140825.1",
+      "displayName": "Rice (AGIS-1.0)",
+      "aliases": ["AGIS-1.0"],
+      "sequence": {
+        "type": "ReferenceSequenceTrack",
+        "trackId": "GCF_034140825.1-ReferenceSequenceTrack",
+        "adapter": {
+          "type": "TwoBitAdapter",
+          "uri": "https://hgdownload.soe.ucsc.edu/hubs/GCF/034/140/825/GCF_034140825.1/GCF_034140825.1.2bit",
+          "chromSizes": "https://hgdownload.soe.ucsc.edu/hubs/GCF/034/140/825/GCF_034140825.1/GCF_034140825.1.chrom.sizes.txt"
+        }
+      },
+      "refNameAliases": {
+        "adapter": {
+          "type": "RefNameAliasAdapter",
+          "refNameColumnHeaderName": "ucsc",
+          "uri": "https://hgdownload.soe.ucsc.edu/hubs/GCF/034/140/825/GCF_034140825.1/GCF_034140825.1.chromAlias.txt"
+        }
+      }
+    },
+    {
+      "name": "dm6",
+      "displayName": "D. melanogaster (dm6)",
+      "aliases": ["BDGP6"],
+      "sequence": {
+        "type": "ReferenceSequenceTrack",
+        "trackId": "dm6-refseq",
+        "adapter": {
+          "type": "TwoBitAdapter",
+          "uri": "https://hgdownload.soe.ucsc.edu/goldenPath/dm6/bigZips/dm6.2bit",
+          "chromSizes": "https://jbrowse.org/ucsc/dm6/dm6.chrom.sizes"
+        }
+      },
+      "refNameAliases": {
+        "adapter": {
+          "type": "RefNameAliasAdapter",
+          "uri": "https://jbrowse.org/ucsc/dm6/dm6.chromAlias.txt"
+        }
+      }
     }
   ],
   "tracks": [
@@ -87,7 +128,9 @@
               "range": ["rgb(52,152,219)", "rgb(237,137,44)"],
               "names": ["reference", "other assemblies"]
             },
-            "legend": { "title": "Segment rank" }
+            "legend": {
+              "title": "Segment rank"
+            }
           }
         }
       },
@@ -140,7 +183,11 @@
         }
       },
       "displayDefaults": {
-        "encoding": { "color": { "value": "rgb(130,130,130)" } }
+        "encoding": {
+          "color": {
+            "value": "rgb(130,130,130)"
+          }
+        }
       }
     },
     {
@@ -212,7 +259,9 @@
               "range": ["rgb(52,152,219)", "rgb(237,137,44)"],
               "names": ["reference", "other assemblies"]
             },
-            "legend": { "title": "Segment rank" }
+            "legend": {
+              "title": "Segment rank"
+            }
           }
         }
       },
@@ -265,7 +314,11 @@
         }
       },
       "displayDefaults": {
-        "encoding": { "color": { "value": "rgb(130,130,130)" } }
+        "encoding": {
+          "color": {
+            "value": "rgb(130,130,130)"
+          }
+        }
       }
     },
     {
@@ -333,6 +386,176 @@
                 "domain": ["taurine", "indicine", "gaur", "bison", "yak"],
                 "range": ["#0072B2", "#E69F00", "#009E73", "#CC79A7", "#D55E00"]
               }
+            }
+          }
+        }
+      ]
+    },
+    {
+      "type": "FeatureTrack",
+      "trackId": "GCF_034140825.1-ncbiRefSeq",
+      "name": "NCBI RefSeq genes (AGIS-1.0)",
+      "assemblyNames": ["GCF_034140825.1"],
+      "adapter": {
+        "type": "BigBedAdapter",
+        "uri": "https://hgdownload.soe.ucsc.edu/hubs/GCF/034/140/825/GCF_034140825.1/bbi/GCF_034140825.1_ASM3414082v1.ncbiRefSeq.bb",
+        "aggregateField": "name2"
+      }
+    },
+    {
+      "type": "GraphTrack",
+      "trackId": "rice_minigraph_segments",
+      "name": "Rice pangenome (rGFA segments)",
+      "assemblyNames": ["GCF_034140825.1"],
+      "adapter": {
+        "type": "RgfaTabixAdapter",
+        "uri": "https://jbrowse.org/demos/rice_pangenome/rice-agis1-minigraph",
+        "format": 2,
+        "assemblyNameToPanSN": {
+          "GCF_034140825.1": "Nipponbare"
+        },
+        "coarse": {
+          "uri": "https://jbrowse.org/demos/rice_pangenome/rice-agis1-minigraph.fold10000",
+          "format": 2,
+          "aboveBpPerPx": 1000
+        }
+      },
+      "displays": [
+        {
+          "type": "LinearGraphDisplay",
+          "displayId": "rice_minigraph_segments-LinearGraphDisplay"
+        },
+        {
+          "type": "LinearBasicDisplay",
+          "displayId": "rice_minigraph_segments-LinearBasicDisplay"
+        }
+      ]
+    },
+    {
+      "type": "FeatureTrack",
+      "trackId": "rice_minigraph_bubbles",
+      "name": "Rice pangenome bubbles",
+      "assemblyNames": ["GCF_034140825.1"],
+      "adapter": {
+        "type": "MinigraphBubbleAdapter",
+        "uri": "https://jbrowse.org/demos/rice_pangenome/rice-agis1-minigraph.bubbles.bed.gz",
+        "csi": true,
+        "assemblyNameToPanSN": {
+          "GCF_034140825.1": "Nipponbare"
+        }
+      },
+      "displayDefaults": {
+        "encoding": {
+          "color": {
+            "value": "rgb(130,130,130)"
+          }
+        }
+      }
+    },
+    {
+      "type": "VariantTrack",
+      "trackId": "rice_pangenome_vcf",
+      "name": "Rice pangenome callset",
+      "assemblyNames": ["GCF_034140825.1"],
+      "adapter": {
+        "type": "VcfTabixAdapter",
+        "uri": "https://jbrowse.org/demos/rice_pangenome/rice-agis1-minigraph.vcf.gz"
+      },
+      "displays": [
+        {
+          "type": "LinearVariantDisplay",
+          "displayId": "rice_pangenome_vcf-LinearVariantDisplay",
+          "rows": {
+            "field": "haplotype"
+          },
+          "records": {
+            "labels": {
+              "description": "jexl:feature.INFO.ALEN + ' bp'"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "type": "FeatureTrack",
+      "trackId": "dm6_ncbiRefSeq_ucsc",
+      "name": "NCBI RefSeq genes (dm6)",
+      "assemblyNames": ["dm6"],
+      "adapter": {
+        "type": "Gff3TabixAdapter",
+        "uri": "https://jbrowse.org/ucsc/dm6/ncbiRefSeq.gff.gz",
+        "csi": true
+      }
+    },
+    {
+      "type": "GraphTrack",
+      "trackId": "fly_minigraph_segments",
+      "name": "Fly pangenome (rGFA segments)",
+      "assemblyNames": ["dm6"],
+      "adapter": {
+        "type": "RgfaTabixAdapter",
+        "uri": "https://jbrowse.org/demos/fly_pangenome/fly-dm6-minigraph",
+        "format": 2,
+        "assemblyNameToPanSN": {
+          "dm6": "dm6"
+        },
+        "coarse": {
+          "uri": "https://jbrowse.org/demos/fly_pangenome/fly-dm6-minigraph.fold10000",
+          "format": 2,
+          "aboveBpPerPx": 1000
+        }
+      },
+      "displays": [
+        {
+          "type": "LinearGraphDisplay",
+          "displayId": "fly_minigraph_segments-LinearGraphDisplay"
+        },
+        {
+          "type": "LinearBasicDisplay",
+          "displayId": "fly_minigraph_segments-LinearBasicDisplay"
+        }
+      ]
+    },
+    {
+      "type": "FeatureTrack",
+      "trackId": "fly_minigraph_bubbles",
+      "name": "Fly pangenome bubbles",
+      "assemblyNames": ["dm6"],
+      "adapter": {
+        "type": "MinigraphBubbleAdapter",
+        "uri": "https://jbrowse.org/demos/fly_pangenome/fly-dm6-minigraph.bubbles.bed.gz",
+        "csi": true,
+        "assemblyNameToPanSN": {
+          "dm6": "dm6"
+        }
+      },
+      "displayDefaults": {
+        "encoding": {
+          "color": {
+            "value": "rgb(130,130,130)"
+          }
+        }
+      }
+    },
+    {
+      "type": "VariantTrack",
+      "trackId": "fly_pangenome_vcf",
+      "name": "Fly pangenome callset",
+      "assemblyNames": ["dm6"],
+      "adapter": {
+        "type": "VcfTabixAdapter",
+        "uri": "https://jbrowse.org/demos/fly_pangenome/fly-dm6-minigraph.vcf.gz"
+      },
+      "displays": [
+        {
+          "type": "LinearVariantDisplay",
+          "displayId": "fly_pangenome_vcf-LinearVariantDisplay",
+          "rows": {
+            "field": "haplotype"
+          },
+          "records": {
+            "labels": {
+              "description": "jexl:feature.INFO.ALEN + ' bp'"
             }
           }
         }
