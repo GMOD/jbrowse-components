@@ -1507,24 +1507,64 @@ describe('a tandem copy the lane carries against the anchor', () => {
     ).toEqual([])
   })
 
-  test('states the deletion after a copy from inside the left piece, as without the copy', () => {
-    const deletion = (lane: number) => ({
-      lane: [lane, lane],
-      anchor: 100_000,
-      laneBp: 0,
-      anchorBp: 50_000,
-      kind: 'deletion',
-    })
-    expect(
-      changes([run('p1', 0, 0, 100_000), run('p3', 100_000, 150_000, 100_000)]),
-    ).toEqual([deletion(100_000)])
-    expect(
-      changes([
-        run('p1', 0, 0, 100_000),
-        run('p2', 100_000, 40_000, 30_000),
-        run('p3', 130_000, 150_000, 100_000),
-      ]),
-    ).toEqual([insertion(100_000, 100_000, 30_000), deletion(130_000)])
+  const opened = (features: SimpleFeature[], reversed = false) =>
+    laneIndelsOf(groupFeatures(features))
+      .openings('HG01123.1', ref, reversed)
+      .map(o => ({ at: o.at - at, bp: o.bp }))
+  const deletion = (lane: number) => ({
+    lane: [lane, lane],
+    anchor: 100_000,
+    laneBp: 0,
+    anchorBp: 50_000,
+    kind: 'deletion',
+  })
+
+  test('states and opens the deletion after a copy from inside the left piece, as without the copy', () => {
+    const plain = [
+      run('p1', 0, 0, 100_000),
+      run('p3', 100_000, 150_000, 100_000),
+    ]
+    const copied = [
+      run('p1', 0, 0, 100_000),
+      run('p2', 100_000, 40_000, 30_000),
+      run('p3', 130_000, 150_000, 100_000),
+    ]
+    expect(changes(plain)).toEqual([deletion(100_000)])
+    expect(opened(plain)).toEqual([{ at: 100_000, bp: 50_000 }])
+    expect(changes(copied)).toEqual([
+      insertion(100_000, 100_000, 30_000),
+      deletion(130_000),
+    ])
+    expect(opened(copied)).toEqual([{ at: 130_000, bp: 50_000 }])
+  })
+
+  test('states and opens the deletion after a copy on a reverse-strand lane, as without the copy', () => {
+    const plain = [
+      run('p1', 0, 150_000, 100_000, -1),
+      run('p3', 100_000, 0, 100_000, -1),
+    ]
+    const copied = [
+      run('p1', 0, 150_000, 100_000, -1),
+      run('p2', 100_000, 180_000, 30_000, -1),
+      run('p3', 130_000, 0, 100_000, -1),
+    ]
+    expect(changes(plain)).toEqual([deletion(100_000)])
+    expect(opened(plain, true)).toEqual([{ at: 100_000, bp: 50_000 }])
+    expect(changes(copied)).toEqual([
+      insertion(100_000, 150_000, 30_000),
+      deletion(130_000),
+    ])
+    expect(opened(copied, true)).toEqual([{ at: 130_000, bp: 50_000 }])
+  })
+
+  test('opens no hole after a copy for anchor the left piece already holds, stating the copy alone', () => {
+    const copied = [
+      run('p1', 0, 0, 100_000),
+      run('p2', 100_000, 40_000, 10_000),
+      run('p3', 110_000, 60_000, 100_000),
+    ]
+    expect(opened(copied)).toEqual([])
+    expect(changes(copied)).toEqual([insertion(100_000, 100_000, 10_000)])
   })
 })
 

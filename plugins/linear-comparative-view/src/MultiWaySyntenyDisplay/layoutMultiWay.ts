@@ -14,6 +14,7 @@ import { forEachLaneGap } from './laneGaps.ts'
 
 import type { SyntenyGroupedMate } from '../syntenyMate.ts'
 import type { AlignmentOpsById } from './alignmentOps.ts'
+import type { LanePiece } from './laneGaps.ts'
 import type { Feature } from '@jbrowse/core/util'
 
 export type Span = readonly [number, number]
@@ -690,11 +691,11 @@ function segmentsOf(
  * piece's anchor is a rearrangement and states nothing. A gap's anchor side
  * starts past the anchor that the drawn pieces before it reached, from its
  * left piece back through each whose anchor the next one starts inside, read
- * on the drawn strand, so a copy leaves the change after it as the lane
- * without the copy states it. Named records are genes, whose spacing says
- * nothing. An array record, of either strand, bounds gaps as a piece of the
- * drawn strand does, and a gap it bounds opens and states nothing, since its
- * anchor stretch is only where its copies lie.
+ * on the drawn strand, so a copy leaves the change and the opening after it
+ * as the lane without the copy has them. Named records are genes, whose
+ * spacing says nothing. An array record, of either strand, bounds gaps as a
+ * piece of the drawn strand does, and a gap it bounds opens and states
+ * nothing, since its anchor stretch is only where its copies lie.
  */
 function laneGapsOf(
   list: readonly PlacedPiece[],
@@ -711,8 +712,10 @@ function laneGapsOf(
   const openings: LaneOpening[] = []
   const unparted: LaneChange[] = []
   const parted: LaneChange[] = []
-  type Stretch = { refName: string; start: number; end: number }
-  const startsWithin = (anchor: Stretch, held: Stretch) =>
+  const startsWithin = (
+    anchor: LanePiece['anchor'],
+    held: LanePiece['anchor'],
+  ) =>
     anchor.refName === held.refName &&
     (orientation < 0
       ? anchor.end <= held.end && anchor.end >= held.start
@@ -754,7 +757,7 @@ function laneGapsOf(
         ))
     ) {
       const at = left.lane.end
-      const net = anchorGap - laneGap
+      const net = hi - lo - laneGap
       if (laneGap >= 0 && net >= SPLIT_AT_GAP_BP) {
         openings.push({ at, bp: net })
       }
