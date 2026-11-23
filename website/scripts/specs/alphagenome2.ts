@@ -8,9 +8,10 @@ const CONFIG = 'https://jbrowse.org/demos/alphagenome2_singlecell/config.json'
 
 export const alphagenome2Specs: ScreenshotSpec[] = [
   // ETS2 to BRWD1, so the two nearer genes are in frame as the genes with no
-  // effect. At build time rs2836882 scored -0.23 in macrophages and -0.28 in
-  // monocytes on ETS2, every lymphoid section stayed within 0.008, and the
-  // largest ETS2 input gradient in the megabase sat on rs2836882 itself.
+  // effect, starting far enough left that ETS2 clears the section chips. At
+  // build time rs2836882 scored -0.23 in macrophages and -0.28 in monocytes on
+  // ETS2, every lymphoid section stayed within 0.008, and the largest ETS2
+  // input gradient in the megabase sat on rs2836882 itself.
   {
     mode: 'url',
     name: 'alphagenome2/ets2_expression_effects',
@@ -18,7 +19,7 @@ export const alphagenome2Specs: ScreenshotSpec[] = [
       views: [
         {
           assembly: 'hg38',
-          loc: 'chr21:38,790,000-39,330,000',
+          loc: 'chr21:38,700,000-39,330,000',
           type: 'LinearGenomeView',
           tracks: [
             {
@@ -35,7 +36,7 @@ export const alphagenome2Specs: ScreenshotSpec[] = [
       ],
     }),
     readyTimeout: 120000,
-    viewportHeight: 920,
+    viewportHeight: 1060,
   },
   {
     mode: 'url',
@@ -60,7 +61,7 @@ export const alphagenome2Specs: ScreenshotSpec[] = [
       ],
     }),
     readyTimeout: 120000,
-    viewportHeight: 880,
+    viewportHeight: 980,
   },
   // The 64 bases scored, with ten either side; TGCGTCA at 39,094,641-647
   // carried the largest effects at build time
@@ -82,6 +83,6 @@ export const alphagenome2Specs: ScreenshotSpec[] = [
       ],
     }),
     readyTimeout: 120000,
-    viewportHeight: 400,
+    viewportHeight: 460,
   },
 ]

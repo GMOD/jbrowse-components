@@ -133,7 +133,7 @@ type, each gene a rectangle colored by its score. `filter` keeps rs2836882's
 lines, `facet` makes the sections, and the facet's `pileup` packs overlapping
 genes such as _GET1_ and the _GET1-SH3BGR_ readthrough into separate lanes:
 
-```json addtrack loc=chr21:38,790,000..39,330,000
+```json addtrack loc=chr21:38,700,000..39,330,000
 {
   "type": "FeatureTrack",
   "trackId": "ag2_ets2_expression_by_cell_type",
@@ -175,13 +175,7 @@ genes such as _GET1_ and the _GET1-SH3BGR_ readthrough into separate lanes:
           "legend": { "title": "log fold change" }
         }
       },
-      "marks": [
-        { "mark": "rect" },
-        {
-          "mark": "text",
-          "encoding": { "text": "name", "color": { "value": "#222222" } }
-        }
-      ],
+      "marks": [{ "mark": "rect" }],
       "tooltip": "name"
     }
   ]
@@ -189,8 +183,8 @@ genes such as _GET1_ and the _GET1-SH3BGR_ readthrough into separate lanes:
 ```
 
 The pinned `domainMin`, `domainMax` and `domainMid` put no effect at white in
-every section, as the notebook's color scale does, and the dark labels stay
-readable over it.
+every section, as the notebook's color scale does. Hovering a rectangle names
+its gene, and the RefSeq track above names them all.
 
 The second track, `ag2_ets2_macrophage_by_snp` in the hosted config,
 https://jbrowse.org/demos/alphagenome2_singlecell/config.json, reads the same
@@ -199,7 +193,7 @@ BED with `"filter": [{ "field": "cell_type", "equal": "Macrophage" }]` and
 the span from _ETS2_ to _BRWD1_:
 
 ```text
-chr21:38,790,000-39,330,000
+chr21:38,700,000-39,330,000
 ```
 
 <Figure caption="Predicted expression effects from ETS2 to BRWD1: rs2836882 in each ileum cell type, each credible-set SNP in macrophages, and the input gradient of ETS2 in macrophages." src="/img/alphagenome2/ets2_expression_effects.png" />

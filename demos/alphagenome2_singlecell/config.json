@@ -286,15 +286,6 @@
           "marks": [
             {
               "mark": "rect"
-            },
-            {
-              "mark": "text",
-              "encoding": {
-                "text": "name",
-                "color": {
-                  "value": "#222222"
-                }
-              }
             }
           ],
           "tooltip": "name"
@@ -357,15 +348,6 @@
           "marks": [
             {
               "mark": "rect"
-            },
-            {
-              "mark": "text",
-              "encoding": {
-                "text": "name",
-                "color": {
-                  "value": "#222222"
-                }
-              }
             }
           ],
           "tooltip": "name"

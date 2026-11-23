@@ -482,7 +482,7 @@ def effects_track(track_id, name, keep, facet, sort):
                         'legend': {'title': 'log fold change'},
                     }
                 },
-                'marks': [{'mark': 'rect'}, {'mark': 'text', 'encoding': {'text': 'name', 'color': {'value': '#222222'}}}],
+                'marks': [{'mark': 'rect'}],
                 'tooltip': 'name',
             }
         ],
