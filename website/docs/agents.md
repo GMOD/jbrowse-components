@@ -17,9 +17,8 @@ An AI agent works with JBrowse in two ways:
   `@jbrowse/img` or `@jbrowse/capture`, with no app running.
   [](/docs/agents_authoring) covers that loop.
 
-Install the [JBrowse skills](/docs/agents_skills) in a coding agent with a
-shell: they brief it on configs, hosted data, rendering and the Desktop MCP
-server.
+Install the [JBrowse skills](/docs/agents_skills) in a coding agent: they brief
+it on configs, hosted data, rendering, and driving a running JBrowse.
 
 To start from a figure in these docs, open its **Open or rebuild this view**
 button and copy the **Agent** tab's prompt: it names the view's config, tracks

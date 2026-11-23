@@ -23,26 +23,30 @@ plain words.
 
 ## Install
 
-An agent with a shell can install them itself; ask it:
+The skills are mirrored at
+[cmdcolin/jbrowse-skills](https://github.com/cmdcolin/jbrowse-skills) for
+installing without the JBrowse repository. Copy them into your agent's skills
+folder:
 
-```text
-Install the jbrowse-authoring, jbrowse-hosted-data, jbrowse-capture and
-jbrowse-mcp skills from
-https://github.com/GMOD/jbrowse-components/tree/main/.claude/skills
-into my skills folder
+- `~/.agents/skills/`: Codex, Gemini CLI, Cursor and other agents that read
+  `SKILL.md` folders
+- `~/.claude/skills/`: Claude Code
+
+```bash
+mkdir -p ~/.agents/skills
+curl -sL https://github.com/cmdcolin/jbrowse-skills/archive/refs/heads/main.tar.gz |
+  tar -xz --strip-components=2 -C ~/.agents/skills jbrowse-skills-main/skills
 ```
 
-To install by hand, copy each folder into your agent's skills folder:
+Rerun it to update. An agent with a shell can do the same; ask it to install the
+skills from https://github.com/cmdcolin/jbrowse-skills into its skills folder.
 
-- Claude Code: `~/.claude/skills/`
-- Codex: `~/.agents/skills/`
-- another agent that reads `SKILL.md` folders: the folder its docs name
-
-In JBrowse Web or Desktop, **Help → Connect an AI agent...** copies a
-command-line prompt that points the agent at the same skills.
+In JBrowse Web or Desktop, the **Command line** tab of **Help → Connect an AI
+agent...** copies a prompt that has the agent follow jbrowse-authoring,
+jbrowse-hosted-data and jbrowse-capture from GitHub without installing them.
 
 ## See also
 
-- [](/docs/agents_authoring), the loop the first three skills brief
-- [](/docs/agents_capture), the two render tools behind jbrowse-capture
-- [](/docs/agents_hosted_data), the genomes jbrowse-hosted-data searches
+- [](/docs/agents_authoring)
+- [](/docs/agents_capture)
+- [](/docs/agents_hosted_data)

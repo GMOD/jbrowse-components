@@ -80,7 +80,7 @@ export function commandLineAgentRoute(version: string): AgentRoute {
         >
           Install the skills
         </Link>{' '}
-        to keep them loaded for later tasks.
+        and later tasks load them without this prompt.
       </>
     ),
   }
