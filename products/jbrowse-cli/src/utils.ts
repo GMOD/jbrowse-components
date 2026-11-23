@@ -380,22 +380,44 @@ function inflateEntry(
   return method === 0 ? raw : zlib.inflateRawSync(raw)
 }
 
-// Extracts a ZIP archive (a JBrowse web build) into destPath with the built-in
-// node:zlib. Replaces the `decompress` dependency and its large, unmaintained
-// transitive tree without pulling in a new one.
-export async function extractZip(archive: Buffer, destPath: string) {
-  await Promise.all(
+interface ZipFile {
+  name: string
+  data: Buffer
+}
+
+// Parses and inflates every file in a ZIP archive before anything is written,
+// so a corrupt or hostile archive fails while the destination is still intact.
+export function readZipFiles(archive: Buffer): ZipFile[] {
+  return (
     [...centralDirectoryEntries(archive)]
       // directory entries (trailing slash) carry no file data; the files below
       // create their own parent dirs
       .filter(entry => !entry.name.endsWith('/'))
-      .map(entry =>
-        writeZipEntry(destPath, entry.name, inflateEntry(archive, entry)),
-      ),
+      .map(entry => {
+        zipEntryPath('.', entry.name)
+        return { name: entry.name, data: inflateEntry(archive, entry) }
+      })
   )
 }
 
-async function writeZipEntry(destPath: string, name: string, data: Buffer) {
+export async function writeZipFiles(files: ZipFile[], destPath: string) {
+  await Promise.all(
+    files.map(async ({ name, data }) => {
+      const outPath = zipEntryPath(destPath, name)
+      await fsPromises.mkdir(path.dirname(outPath), { recursive: true })
+      await fsPromises.writeFile(outPath, data)
+    }),
+  )
+}
+
+// Extracts a ZIP archive (a JBrowse web build) into destPath with the built-in
+// node:zlib. Replaces the `decompress` dependency and its large, unmaintained
+// transitive tree without pulling in a new one.
+export async function extractZip(archive: Buffer, destPath: string) {
+  await writeZipFiles(readZipFiles(archive), destPath)
+}
+
+function zipEntryPath(destPath: string, name: string) {
   const outPath = path.join(destPath, name)
   // guard against zip-slip: a crafted entry name (e.g. ../../etc/foo) must not
   // let path.join escape destPath, since --url accepts arbitrary archives
@@ -403,8 +425,7 @@ async function writeZipEntry(destPath: string, name: string, data: Buffer) {
   if (rel.startsWith('..') || path.isAbsolute(rel)) {
     throw new Error(`Corrupt ZIP: entry escapes destination directory: ${name}`)
   }
-  await fsPromises.mkdir(path.dirname(outPath), { recursive: true })
-  await fsPromises.writeFile(outPath, data)
+  return outPath
 }
 
 function findEndOfCentralDirectory(archive: Buffer) {

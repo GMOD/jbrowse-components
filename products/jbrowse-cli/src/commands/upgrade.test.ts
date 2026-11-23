@@ -186,3 +186,57 @@ test('fails if the fetch does not return the right file', async () => {
     expect(stderr).toMatchSnapshot()
   })
 })
+
+test('--clean leaves static in place when the download is not a zip', async () => {
+  await runInTmpDir(async ctx => {
+    mockFetch({
+      headers: { 'content-type': 'application/zip' },
+      arrayBuffer: new TextEncoder().encode('not a zip at all').buffer,
+    })
+    await writeFile('manifest.json', '{"name":"JBrowse"}')
+    mkdirSync('static')
+    await writeFile(path.join('static', 'main.js'), 'old build')
+    await writeFile('main.worker.js', 'old worker')
+
+    const { error } = await runCommand([
+      'upgrade',
+      '--clean',
+      '--url',
+      'https://example.com/JBrowse2-0.0.1.zip',
+    ])
+
+    expect(error?.message).toContain('Corrupt ZIP')
+    expect(
+      await readFile(path.join(ctx.dir, 'static', 'main.js'), 'utf8'),
+    ).toBe('old build')
+    expect(await readdir(ctx.dir)).toContain('main.worker.js')
+  })
+})
+
+test('--clean removes static and worker files, then unpacks the new release', async () => {
+  await runInTmpDir(async ctx => {
+    mockFetch({
+      headers: { 'content-type': 'application/zip' },
+      arrayBuffer: readZipAsArrayBuffer(),
+    })
+    await writeFile('manifest.json', '{"name":"JBrowse"}')
+    mkdirSync('static')
+    await writeFile(path.join('static', 'stale.js'), 'old build')
+    await writeFile('stale.worker.js', 'old worker')
+
+    const { error } = await runCommand([
+      'upgrade',
+      '--clean',
+      '--url',
+      'https://example.com/JBrowse2-0.0.1.zip',
+    ])
+
+    expect(error).toBeUndefined()
+    expect(fs.existsSync(path.join(ctx.dir, 'static', 'stale.js'))).toBe(false)
+    expect(fs.existsSync(path.join(ctx.dir, 'stale.worker.js'))).toBe(false)
+    expect(
+      JSON.parse(await readFile(path.join(ctx.dir, 'manifest.json'), 'utf8'))
+        .theme_color,
+    ).toBe('#396494')
+  })
+})

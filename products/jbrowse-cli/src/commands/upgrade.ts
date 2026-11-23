@@ -4,9 +4,10 @@ import { parseArgs } from 'node:util'
 
 import {
   downloadRelease,
-  extractZip,
   printHelp,
   printVersions,
+  readZipFiles,
+  writeZipFiles,
 } from '../utils.ts'
 
 const description =
@@ -60,7 +61,8 @@ const options = {
   },
   clean: {
     type: 'boolean',
-    description: 'Removes old js,map,and LICENSE files in the installation',
+    description:
+      "Removes the installation's static directory and its *worker.js files before unpacking the new release, so files the new release no longer ships do not linger",
   },
   url: {
     type: 'string',
@@ -109,6 +111,8 @@ export async function run(args: string[]) {
     tag,
   })
 
+  const files = readZipFiles(archive)
+
   if (clean) {
     fs.rmSync(path.join(argsPath, 'static'), { recursive: true, force: true })
     const workerFiles = fs
@@ -119,6 +123,6 @@ export async function run(args: string[]) {
     }
   }
 
-  await extractZip(archive, argsPath)
+  await writeZipFiles(files, argsPath)
   console.log(`Unpacked ${locationUrl} at ${argsPath}`)
 }
