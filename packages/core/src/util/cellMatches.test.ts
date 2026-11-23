@@ -233,6 +233,33 @@ test('an unfaceted request hands its trailing cells to the layer that fuses it',
   expect(answers(fused.layers[0]!.table)).toEqual(answers(apart))
 })
 
+test('a layer’s cells, bin and aggregate that do not fuse clip as they do with the cells in the shared steps', () => {
+  const input = blocks(60, 5)
+  const [bin] = identity(10)
+  const counted: AggregateStep = {
+    type: 'aggregate',
+    groupby: ['start', 'end'],
+    ops: [{ op: 'count' }],
+  }
+  const clip = { refName: 'ctgA', start: 400, end: 600 }
+  const own = (request: Parameters<typeof layerTables>[1]) =>
+    answers(layerTables(input, request).layers[0]!.table)
+  const inLayer = own({
+    layers: [{ transform: [FLATTEN, CELLS, bin, counted] }],
+    clip,
+  })
+  expect(inLayer).toEqual(
+    own({
+      transform: [FLATTEN, CELLS],
+      layers: [{ transform: [bin, counted] }],
+      clip,
+    }),
+  )
+  expect(inLayer.length).toBeLessThan(
+    own({ layers: [{ transform: [FLATTEN, CELLS, bin, counted] }] }).length,
+  )
+})
+
 test('a cells step reading another field fuses over that field', () => {
   const input = blocks(60, 9, 'bases')
   const cells: CellsStep = { type: 'cells', field: 'bases' }

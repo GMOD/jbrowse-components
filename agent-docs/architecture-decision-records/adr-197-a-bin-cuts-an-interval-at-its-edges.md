@@ -110,9 +110,10 @@ for the interval case as an explicit spelling.
   `bin`, `cells` or `formula` into `start` can move a dropped bin's row into
   the region. So `runSteps` passes the clip to a pair only where every later
   step in that list is one `isRowwise` (`stepOutputs.ts`) calls row-wise and
-  writes no `refName`, `start` or `end`, and no `cells` runs right before it,
-  so the `cells` walk, which takes no clip, and the steps it hands back answer
-  alike. The choice reads that one list: a pair in the display's shared
+  writes no `refName`, `start` or `end`, and no `cells` right before it fuses
+  with the pair, so the `cells` walk, which takes no clip, and the steps it
+  hands back answer alike; a `cells` that cannot fuse clips as it would from
+  the shared steps. The choice reads that one list: a pair in the display's shared
   steps, the facet's own steps or ahead of a facet split never clips, because
   a click reruns only the layer asked about (`executeEncodedLayers.ts`), and a
   rule reading the neighbours' steps drew a bar's bin from one answer and

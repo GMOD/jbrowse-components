@@ -1180,11 +1180,10 @@ function keepsPosition(step: TransformStep) {
 
 /**
  * The steps in order, a `cells`, `bin` and `aggregate` or a `bin` and
- * `aggregate` that fuse run as one kernel. A fused interval bin keeps only
- * `clip`'s bins where every later step in this list is row-wise and leaves
- * the position alone, and no `cells` comes right before it, and so does the bin the kernel hands back to
- * the steps as written, so the answer never rests on which kernel ran. Only a
- * layer's own list is handed a `clip`, so the choice reads that list alone.
+ * `aggregate` that fuse running as one kernel. A fused `bin` and `aggregate`
+ * keeps only `clip`'s bins when every later step in this list is row-wise and
+ * leaves the position alone, and no `cells` right before it fuses with them,
+ * so a `cells` walk that hands its steps back answers as the walk does.
  */
 function runSteps(
   staged: Staged,
@@ -1195,6 +1194,7 @@ function runSteps(
   let current = staged
   const list = steps ?? []
   for (let k = 0; k < list.length; k++) {
+    const before = list[k - 1]
     const step = list[k]!
     const next = list[k + 1]
     const after = list[k + 2]
@@ -1214,7 +1214,7 @@ function runSteps(
         : undefined
     const pairClip =
       pair &&
-      list[k - 1]?.type !== 'cells' &&
+      !(before?.type === 'cells' && fusesAfterCells(before, list.slice(k))) &&
       list.slice(k + 2).every(keepsPosition)
         ? clip
         : undefined
@@ -1612,7 +1612,8 @@ function partitionPoint(steps: readonly TransformStep[], field: FieldRef) {
  *
  * `clip` names the fetched region: an interval bin fused with its aggregate
  * in a layer's own steps, where every later step of that layer reads one row
- * at a time and leaves its position alone, makes no bin outside it for a row
+ * at a time and leaves its position alone and no `cells` right before it fuses
+ * with the pair, makes no bin outside it for a row
  * on its `refName`, so a feature far longer than the view is cut only where
  * it is fetched. A bin it keeps gathers the pieces it did unclipped; one it
  * drops lies wholly outside the fetch. A pair in the shared steps, the
