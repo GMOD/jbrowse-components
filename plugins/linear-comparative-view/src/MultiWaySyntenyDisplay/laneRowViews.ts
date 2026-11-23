@@ -38,7 +38,7 @@ import { laneProfiles, structureOrder } from './structureOrder.ts'
 import type { WindowDeletion } from './MultiWayGetFeatures.ts'
 import type { AlignmentOpsById } from './alignmentOps.ts'
 import type { ConfigSlotSelf } from './configSlotViews.ts'
-import type { LaneAssemblies, LaneRowsField } from './copyLane.ts'
+import type { FiledPiece, LaneAssemblies, LaneRowsField } from './copyLane.ts'
 import type { Placeless } from './laneHeader.ts'
 import type { LanePin } from './lanePins.ts'
 import type { LaneChoice } from './laneSelection.ts'
@@ -152,14 +152,16 @@ export function laneGroupViews(self: LaneGroupHost) {
 export function filedGroupViews(
   self: ReturnType<typeof laneGroupViews> & Pick<LaneRowInputs, 'lgv'>,
 ) {
+  let lastPieces: readonly FiledPiece[] = []
   return {
     /**
      * #getter
      * the groups as `rows.field` files them, in one pass with the copy
-     * lanes the floor drops
+     * lanes the floor drops; a piece keeps the name of the piece it
+     * overlaps in the last filing
      */
     get filedGroups() {
-      return groupsOfField(
+      const filed = groupsOfField(
         self.laneField,
         self.groupedFeatures,
         () => self.copyFiling(),
@@ -167,7 +169,10 @@ export function filedGroupViews(
           (bp, block) => bp + block.end - block.start,
           0,
         ),
+        lastPieces,
       )
+      lastPieces = filed.pieces
+      return filed
     },
   }
 }

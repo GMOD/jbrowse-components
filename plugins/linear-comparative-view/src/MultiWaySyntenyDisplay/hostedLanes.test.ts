@@ -27,7 +27,9 @@ import {
 import { SEQUENCE_BAR_PX, buildLaneCells } from './multiwayGeometry.ts'
 import { PX_ORIGIN } from './multiwayRenderTypes.ts'
 
+import type { FiledPiece } from './copyLane.ts'
 import type { LaneDecision } from './laneDecision.ts'
+import type { LanePin } from './lanePins.ts'
 import type {
   MatePlacement,
   MultiWayGroup,
@@ -43,6 +45,8 @@ import type { SimpleFeatureSerialized } from '@jbrowse/core/util'
 interface HostedWindow {
   window: string
   region: { refName: string; start: number; end: number }
+  /** the region fetched, as the display's 800 px tiles reach past the window */
+  fetch?: { refName: string; start: number; end: number }
   records: (SimpleFeatureSerialized & { alignmentOps?: number[] })[]
 }
 
@@ -81,9 +85,13 @@ function layHosted(
   {
     shift = 0,
     previous = new Map<string, LaneDecision | undefined>(),
+    pieces: filedBefore = [],
+    pins = [],
   }: {
     shift?: number
     previous?: ReadonlyMap<string, LaneDecision | undefined>
+    pieces?: readonly FiledPiece[]
+    pins?: readonly LanePin[]
   } = {},
 ) {
   const { refName } = region
@@ -112,11 +120,12 @@ function layHosted(
     name => name === 'hg38',
     true,
   )
-  const { groups: filed } = groupsOfField(
+  const { groups: filed, pieces } = groupsOfField(
     field,
     fetched,
     () => copyLaneFiling([], [], name => name, inWindow),
     unitBp,
+    filedBefore,
   )
   const groups = filed
     .filter(inWindow)
@@ -134,6 +143,7 @@ function layHosted(
     unitBp,
     width: WIDTH,
     previous,
+    pins,
     openingsOf: openings,
     vsAnchor: true,
   })
@@ -158,6 +168,7 @@ function layHosted(
     field,
     grouped,
     groups,
+    pieces,
     lanes,
     decisions,
     frames,
@@ -397,6 +408,59 @@ describe('every piece of a haplotype the window places is drawn', () => {
     laid.frames.delete(dropped!)
     expect(undrawnAnchorBp(laid).get('HG01109.1')).toBeGreaterThan(100_000)
     expect(undrawnLaneBp(laid).get('HG01109.1')).toBeGreaterThan(100_000)
+  })
+})
+
+// Records fetched over the 800 px tiles past two windows 6 kb or 300 kb apart,
+// so the walk adapter cuts each walk, and its recordId, at other bases
+describe('a piece keeps its name across a refetch', () => {
+  test.each([
+    ['SV-ins-10k-100k', 'HG00097.1'],
+    ['H-SMN', 'HG00097.1'],
+  ])('%s: %s', (name, genome) => {
+    const before = layHosted(hostedWindow(`${name}-fetchA`))
+    const after = layHosted(hostedWindow(`${name}-fetchB`), {
+      previous: before.decisions,
+      pieces: before.pieces,
+    })
+    const fresh = layHosted(hostedWindow(`${name}-fetchB`))
+    const kept = lanesOf(after, genome).filter(lane =>
+      lanesOf(before, genome).includes(lane),
+    )
+    expect(kept.length).toBeGreaterThan(0)
+    expect(lanesOf(fresh, genome)).not.toEqual(lanesOf(after, genome))
+    for (const lane of kept) {
+      expect(after.decisions.get(lane)?.refName).toBe(laneOf(lane).refName)
+    }
+  })
+
+  // the piece fits its rung exactly, so its frame re-centres as the pan moves
+  // its ends: what survives is the lane, its pin and its previous decision
+  test('SV-ins-10k-100k: a flip pin and the previous decision survive the pan', () => {
+    const before = layHosted(hostedWindow('SV-ins-10k-100k-fetchA'))
+    const [lane] = lanesOf(before, 'HG00097.1')
+    const decided = before.decisions.get(lane!)!
+    const pins = [
+      { lane: lane!, refName: decided.refName, flipped: !decided.flipped },
+    ]
+    const pinned = layHosted(hostedWindow('SV-ins-10k-100k-fetchA'), {
+      previous: before.decisions,
+      pieces: before.pieces,
+      pins,
+    })
+    expect(pinned.decisions.get(lane!)?.flipped).toBe(!decided.flipped)
+    const after = layHosted(hostedWindow('SV-ins-10k-100k-fetchB'), {
+      previous: pinned.decisions,
+      pieces: pinned.pieces,
+      pins,
+    })
+    expect(lanesOf(after, 'HG00097.1')).toEqual([lane])
+    const carried = after.decisions.get(lane!)
+    expect(carried?.flipped).toBe(!decided.flipped)
+    expect(carried?.orientationPinned).toBe(true)
+    expect(carried?.rung).toBe(decided.rung)
+    expect(after.frames.get(lane!)?.flipped).toBe(!decided.flipped)
+    expectAllShown(after, 'HG00097.1')
   })
 })
 

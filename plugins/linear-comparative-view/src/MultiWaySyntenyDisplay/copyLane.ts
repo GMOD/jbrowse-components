@@ -276,18 +276,65 @@ export function lanesPlacedIn(groups: readonly MultiWayGroup[]) {
   return new Set(groups.flatMap(group => [...group.mates.keys()]))
 }
 
+/** a piece lane as last filed: its name and the lane bp its block spanned */
+export interface FiledPiece {
+  lane: string
+  lo: number
+  hi: number
+}
+
+/**
+ * Names for `blocks`, ascending, of one contig: each takes the name of the
+ * piece `previous` filed that it overlaps most, if no block overlapping it
+ * more has, so a name survives the refetch and the zoom that move a clipped
+ * block's ends; else its first base, or its last where that is taken.
+ */
+function pieceNames(
+  blocks: readonly { lo: number; hi: number }[],
+  previous: readonly FiledPiece[],
+  fresh: (bp: number) => string,
+) {
+  const overlaps = blocks
+    .flatMap((block, i) =>
+      previous.map(old => ({
+        i,
+        lane: old.lane,
+        bp: Math.min(block.hi, old.hi) - Math.max(block.lo, old.lo),
+      })),
+    )
+    .filter(o => o.bp >= 0)
+    .toSorted((a, b) => b.bp - a.bp)
+  const names: (string | undefined)[] = blocks.map(() => undefined)
+  const taken = new Set<string>()
+  for (const { i, lane } of overlaps) {
+    if (names[i] === undefined && !taken.has(lane)) {
+      names[i] = lane
+      taken.add(lane)
+    }
+  }
+  return blocks.map((block, i) => {
+    const name =
+      names[i] ??
+      (taken.has(fresh(block.lo)) ? fresh(block.hi) : fresh(block.lo))
+    taken.add(name)
+    return name
+  })
+}
+
 /**
  * `groups` with each mate filed under the lane of its genome, contig and
- * block, a block named by its first base, which a pan keeps: a contig's
- * placements parted a window apart, `unitBp`, as a lane's frame parts them,
- * a record's pieces never parted (`blocksOf`), and no share floor, so every
- * piece the window places draws. A block no group `inWindow` places draws no
- * lane.
+ * block: a contig's placements parted a window apart, `unitBp`, as a lane's
+ * frame parts them, a record's pieces never parted (`blocksOf`), and no share
+ * floor, so every piece the window places draws. A block no group `inWindow`
+ * places draws no lane. A block keeps the name of the piece `previous` filed
+ * that it overlaps (`pieceNames`), since the fetch cuts records, and so a
+ * block's ends, at its own edges.
  */
 export function fileUnderPieces(
   groups: readonly MultiWayGroup[],
   unitBp: number,
   inWindow: (group: MultiWayGroup) => boolean = () => true,
+  previous: readonly FiledPiece[] = [],
 ) {
   const contigs = new Map<
     string,
@@ -311,8 +358,20 @@ export function fileUnderPieces(
       }
     }
   }
+  const before = new Map<string, FiledPiece[]>()
+  for (const piece of previous) {
+    const { assemblyName, refName = '' } = laneOf(piece.lane)
+    const key = copyLaneName(assemblyName, refName)
+    const list = before.get(key)
+    if (list) {
+      list.push(piece)
+    } else {
+      before.set(key, [piece])
+    }
+  }
   const laneOfPlacement = new Map<MatePlacement, string>()
-  for (const { assemblyName, refName, placed } of contigs.values()) {
+  const pieces: FiledPiece[] = []
+  for (const [key, { assemblyName, refName, placed }] of contigs) {
     const blocks =
       unitBp > 0
         ? blocksOf(placed, unitBp, undefined, {
@@ -327,33 +386,39 @@ export function fileUnderPieces(
     const shownBlocks = blocks.filter(block =>
       placed.some(p => p.shown && meets(block, p)),
     )
+    const names = pieceNames(shownBlocks, before.get(key) ?? [], bp =>
+      copyLaneName(assemblyName, refName, Math.round(bp)),
+    )
+    shownBlocks.forEach(({ lo, hi }, i) => {
+      pieces.push({ lane: names[i]!, lo, hi })
+    })
     for (const p of placed) {
-      const block = shownBlocks.find(b => meets(b, p))
-      if (block) {
-        laneOfPlacement.set(
-          p.placement,
-          copyLaneName(assemblyName, refName, Math.round(block.lo)),
-        )
+      const at = shownBlocks.findIndex(b => meets(b, p))
+      if (at !== -1) {
+        laneOfPlacement.set(p.placement, names[at]!)
       }
     }
   }
-  return groups.map(group => {
-    const mates = new Map<string, MatePlacement[]>()
-    for (const placements of group.mates.values()) {
-      for (const p of placements) {
-        const lane = laneOfPlacement.get(p)
-        if (lane !== undefined) {
-          const filed = mates.get(lane)
-          if (filed) {
-            filed.push(p)
-          } else {
-            mates.set(lane, [p])
+  return {
+    groups: groups.map(group => {
+      const mates = new Map<string, MatePlacement[]>()
+      for (const placements of group.mates.values()) {
+        for (const p of placements) {
+          const lane = laneOfPlacement.get(p)
+          if (lane !== undefined) {
+            const filed = mates.get(lane)
+            if (filed) {
+              filed.push(p)
+            } else {
+              mates.set(lane, [p])
+            }
           }
         }
       }
-    }
-    return { ...group, mates }
-  })
+      return { ...group, mates }
+    }),
+    pieces,
+  }
 }
 
 /**
@@ -366,13 +431,18 @@ export function groupsOfField(
   grouped: MultiWayGroup[],
   filing: () => CopyLaneFiling,
   unitBp = 0,
-) {
+  previous: readonly FiledPiece[] = [],
+): {
+  groups: MultiWayGroup[]
+  underFloor: string[]
+  pieces: readonly FiledPiece[]
+} {
   return field === 'refName'
-    ? fileUnderCopies(grouped, filing())
+    ? { ...fileUnderCopies(grouped, filing()), pieces: [] }
     : field === 'piece'
       ? {
-          groups: fileUnderPieces(grouped, unitBp, filing().inWindow),
+          ...fileUnderPieces(grouped, unitBp, filing().inWindow, previous),
           underFloor: [],
         }
-      : { groups: grouped, underFloor: [] }
+      : { groups: grouped, underFloor: [], pieces: [] }
 }

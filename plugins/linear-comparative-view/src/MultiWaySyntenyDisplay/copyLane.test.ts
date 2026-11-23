@@ -23,7 +23,7 @@ import {
   buildRibbonGeometry,
 } from './multiwayGeometry.ts'
 
-import type { RowFrame, Span } from './layoutMultiWay.ts'
+import type { MultiWayGroup, RowFrame, Span } from './layoutMultiWay.ts'
 import type { MultiWayCell } from './multiwayRenderTypes.ts'
 
 const WIDTH = 800
@@ -412,7 +412,7 @@ describe('piece lanes', () => {
     })
   }
   const WINDOW = 27_000
-  const lanesOf = (groups: ReturnType<typeof fileUnderPieces>) =>
+  const lanesOf = ({ groups }: { groups: MultiWayGroup[] }) =>
     [...new Set(groups.flatMap(g => [...g.mates.keys()]))].sort()
 
   test('a piece lane names its genome, contig and first base', () => {
@@ -504,6 +504,40 @@ describe('piece lanes', () => {
     ])
   })
 
+  test('a block the fetch cuts differently keeps the name of the piece it overlaps', () => {
+    const fetched = (lo: number) =>
+      groupFeatures([
+        walkRecord('a', [lo, 27_000], ['CM094061.1', lo, 27_000]),
+        walkRecord('b', [10_000, 27_000], ['CM094061.1', 4_000_000, 4_017_000]),
+      ])
+    const first = fileUnderPieces(fetched(0), WINDOW)
+    const after = fileUnderPieces(
+      fetched(6_000),
+      WINDOW,
+      undefined,
+      first.pieces,
+    )
+    expect(lanesOf(after)).toEqual(lanesOf(first))
+    expect(lanesOf(fileUnderPieces(fetched(6_000), WINDOW))).toContain(
+      '{HG00097.1}CM094061.1[6000]',
+    )
+  })
+
+  test('a block two pieces merge into keeps the name it overlaps most, and the other is freed', () => {
+    const groups = groupFeatures([
+      walkRecord('a', [0, 7_000], ['CM094061.1', 0, 7_000]),
+      walkRecord('b', [7_000, 27_000], ['CM094061.1', 17_000, 37_000]),
+    ])
+    const narrow = fileUnderPieces(groups, 5_000)
+    expect(lanesOf(narrow)).toEqual([
+      '{HG00097.1}CM094061.1[0]',
+      '{HG00097.1}CM094061.1[17000]',
+    ])
+    expect(
+      lanesOf(fileUnderPieces(groups, WINDOW, undefined, narrow.pieces)),
+    ).toEqual(['{HG00097.1}CM094061.1[17000]'])
+  })
+
   test('the piece field files through groupsOfField', () => {
     const groups = groupFeatures([
       walkRecord('a', [0, 27_000], ['CM094061.1', 0, 27_000]),
@@ -514,6 +548,6 @@ describe('piece lanes', () => {
       () => copyLaneFiling([], [], name => name),
       WINDOW,
     )
-    expect(lanesOf(filed)).toEqual(['{HG00097.1}CM094061.1[0]'])
+    expect(lanesOf({ groups: filed })).toEqual(['{HG00097.1}CM094061.1[0]'])
   })
 })

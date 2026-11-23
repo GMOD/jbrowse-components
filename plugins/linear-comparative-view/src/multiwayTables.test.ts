@@ -82,6 +82,19 @@ test('copy lanes export as the display draws them, rows.kept lifting the floor b
   expect(kept.lanes.assembly).toEqual(['Col-0', '{Ler}Chr1', '{Ler}Chr3'])
 })
 
+test('a piece lane rows.kept names exports though the export names its pieces afresh', async () => {
+  const pieces = await multiwayTables(engine([]), {
+    ...SYRI,
+    display: { rows: { field: 'piece', kept: ['{Kyo}Chr1[1]'] } },
+  })
+  const [anchor, ...lanes] = pieces.lanes.assembly
+  expect(anchor).toBe('Col-0')
+  expect(lanes.length).toBeGreaterThan(0)
+  for (const lane of lanes) {
+    expect(lane).toMatch(/^\{Kyo\}Chr1\[\d+\]$/)
+  }
+})
+
 test('a reference-anchored file not declaring lane pairs on the anchor fails the export naming the missing pair', async () => {
   await expect(multiwayTables(engine([]), SYRI)).rejects.toThrow(
     /no alignments between "Kyo" and "Cvi"/,

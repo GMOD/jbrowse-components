@@ -219,7 +219,8 @@ const KIND_NAMES: Record<number, string> = {
 /**
  * Refuses a `rows.kept` lane the file holds no sequence for, naming the lanes
  * it has here, as the adapter refuses an anchor assembly it lacks. A lane
- * compares by its key, and a copy lane needs its genome to hold its contig.
+ * compares by its key, and a copy or piece lane needs its genome to hold its
+ * contig, since a piece is named afresh by each fetch.
  */
 async function refuseUnknownLanes(
   kept: readonly string[],
@@ -241,7 +242,7 @@ async function refuseUnknownLanes(
     if (
       refName === undefined
         ? contigs.length === 0
-        : !contigKeys.has(keyOf(name))
+        : !contigKeys.has(keyOf(copyLaneName(assemblyName, refName)))
     ) {
       unknown.push(name)
     }

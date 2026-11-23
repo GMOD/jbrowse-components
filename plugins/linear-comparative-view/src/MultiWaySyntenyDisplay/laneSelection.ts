@@ -1,4 +1,10 @@
-import { isCopyLane, laneGenome, laneOf, lanesPlacedIn } from './copyLane.ts'
+import {
+  copyLaneName,
+  isCopyLane,
+  laneGenome,
+  laneOf,
+  lanesPlacedIn,
+} from './copyLane.ts'
 import { rowAssembliesOf, sortedLanes } from './layoutMultiWay.ts'
 
 import type { LaneRowsField } from './copyLane.ts'
@@ -187,6 +193,32 @@ export function laneColorOf(
   )
 }
 
+/** a piece lane's contig, which a piece name the filing no longer holds stands for */
+function contigOfPiece(name: string) {
+  const { assemblyName, refName, piece } = laneOf(name)
+  return piece === undefined || refName === undefined
+    ? undefined
+    : copyLaneName(assemblyName, refName)
+}
+
+/**
+ * `selection` with each piece lane no row holds read as every row on its
+ * contig, since a piece is named afresh by a fetch with no filing before it
+ */
+function heldPieces(
+  selection: readonly string[] | undefined,
+  rows: readonly string[],
+  keyOf: KeyOf,
+) {
+  const held = new Set(rows.map(keyOf))
+  return selection?.flatMap(name => {
+    const contig = contigOfPiece(name)
+    return contig === undefined || held.has(keyOf(name))
+      ? [name]
+      : rows.filter(row => contigOfPiece(row) === contig)
+  })
+}
+
 /**
  * The mate lanes the stack draws, in order: `preferred` first, then by their
  * heaviest contig's group weight, then each lane `placeless` names that no
@@ -212,13 +244,14 @@ export function laneRowsOf({
   keyOf: KeyOf
 }) {
   const anchorKey = keyOf(anchor)
-  const drawn = drawnLaneTest(selection, hidden, keyOf)
-  return rowAssembliesOf(
+  const rows = rowAssembliesOf(
     groups,
     preferred.filter(name => keyOf(name) !== anchorKey),
     keyOf,
     placeless,
-  ).filter(name => keyOf(name) !== anchorKey && drawn(name))
+  )
+  const drawn = drawnLaneTest(heldPieces(selection, rows, keyOf), hidden, keyOf)
+  return rows.filter(name => keyOf(name) !== anchorKey && drawn(name))
 }
 
 /**
