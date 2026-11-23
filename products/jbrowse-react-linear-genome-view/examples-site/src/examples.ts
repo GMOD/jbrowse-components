@@ -89,6 +89,12 @@ export const pages: ExamplePage[] = [
     group: 'Navigation and search',
   },
   {
+    slug: 'track-list',
+    title: 'Your own track list',
+    description: 'Checkboxes beside the view open and close its tracks.',
+    group: 'Navigation and search',
+  },
+  {
     slug: 'highlight-regions',
     title: 'Highlight regions',
     description: 'view.highlight shades regions, with a color and label each.',
