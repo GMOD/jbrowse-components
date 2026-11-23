@@ -75,7 +75,7 @@ and `make-pif`, as _LiftOver chains as one indexed alignment per genome_ shows.
 
 </details>
 
-## LiftOver chains as one indexed alignment per genome
+## Index each liftOver chain as PIF
 
 A liftOver chain maps each stretch of one genome to a position in another,
 whether or not a gene lies there, so JBrowse draws each lane from the chain
@@ -121,7 +121,7 @@ tabix -l https://jbrowse.org/ucsc/hg38/liftOver/hg38ToPanTro6.over.pif.gz | grep
 922
 ```
 
-## Composing the chains into one track
+## Compose the chains into one track {#composing-the-chains-into-one-track}
 
 One `SyntenyTrack` names hg38 and every genome stacked under it. Its adapter, a
 `MultiPairwiseSyntenyAdapter`, holds one `PairwiseIndexedPAFAdapter` per chain:
@@ -131,7 +131,7 @@ One `SyntenyTrack` names hg38 and every genome stacked under it. Its adapter, a
 - The config below is cut to a few genomes for the page, and the hosted config
   has all of them. genomes.jbrowse.org serves the same kind of track over every
   hg38 chain, which
-  [Stacking many genomes under hg38](/docs/tutorials/genomes_synteny#many-genomes-at-once)
+  [Stack many genomes under hg38](/docs/tutorials/genomes_synteny#many-genomes-at-once)
   turns on.
 - The assemblies and their gene tracks come from the hub configs unchanged, and
   each lane shows the gene track from that genome's hub, so this track is the
@@ -188,7 +188,7 @@ A genome of your own loads from its FASTA instead:
 zoom, as on a pairwise synteny track. The menu offers it once every child has a
 coarse tier, which the `tabix -l` line above checks on each file.
 
-## Stacking the genomes at TP53 and at PMP22
+## Stack the genomes at TP53 and PMP22
 
 We'll open the track on hg38 around _TP53_. JBrowse draws a lane per genome
 under the human axis, each fitted to wherever its chain places the window, and
@@ -287,12 +287,12 @@ frame:
 
 The script writes one config in three steps:
 
-1. Probe which of the listed genomes have both a hub config and an indexed chain
-   with its `.csi` on jbrowse.org, and drop the rest.
-2. Report the tiers each chain file holds, since **Level of detail** needs a
-   coarse tier in every child.
-3. Write each kept genome's hub entry and gene track, and one composed track
-   with a child per chain.
+- probe which of the listed genomes have both a hub config and an indexed chain
+  with its `.csi` on jbrowse.org, and drop the rest
+- report the tiers each chain file holds, since **Level of detail** needs a
+  coarse tier in every child
+- write each kept genome's hub entry and gene track, and one composed track with
+  a child per chain
 
 `GENOMES`, a space-separated list of UCSC genome names, selects a different set
 to stack:
