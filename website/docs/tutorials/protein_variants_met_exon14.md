@@ -65,23 +65,7 @@ same way.
 
 </details>
 
-## Aligning your own RNA-seq reads
-
-A splice-aware aligner writes each read that crosses an intron as one alignment
-with a gap, and JBrowse draws those gaps as junction arcs. HISAT2 writes a
-sorted BAM that JBrowse loads as an alignments track:
-
-```bash
-# -x: a HISAT2 index of hg38; -1/-2: the read pairs
-hisat2 -p 8 -x hg38 -1 reads_1.fq.gz -2 reads_2.fq.gz | samtools sort -o rna.bam -
-```
-
-```bash
-# the .bai index lets JBrowse fetch one region at a time
-samtools index rna.bam
-```
-
-## Opening MET beside CBL
+## Open MET beside CBL and add the reads
 
 The protein browser opens a gene's exons, an alignment of the protein across
 species and a structure, linked:
@@ -99,10 +83,8 @@ species and a structure, linked:
   into the location box, which keeps exons 13, 14 and 15 with a little intron on
   each side
 
-## Adding the reads
-
-Each BAM goes in through **File → Open track...**, given its URL. Its `.bai`
-index is found beside it:
+Then add the reads. Each BAM goes in through **File → Open track...**, given its
+URL, and its `.bai` index is found beside it:
 
 - open `https://jbrowse.org/demos/metex14/NCI-H596_DNA.bam`, then
   `NCI-H596_RNA.bam` and `EBC-1_RNA_5pct.bam` from the same folder
@@ -110,7 +92,7 @@ index is found beside it:
   Show junction read counts** in the track menu, which leaves the coverage and
   an arc for each junction, labelled with its number of reads
 
-## Following exon 14 onto the structure
+## Follow exon 14 onto the structure
 
 A highlight on the genome appears in every linked view:
 
@@ -121,7 +103,7 @@ A highlight on the genome appears in every linked view:
 The highlight marks the residues of 3BUX that exon 14 encodes. Rotate the
 structure until they face you; they lie in a groove on CBL.
 
-## The cause at the splice site
+## Find the cause at the splice site
 
 The first two bases of an intron are almost always GT, and the splicing
 machinery reads them to find the end of the exon. To look for a change there in
@@ -141,7 +123,23 @@ the intron's GT. Without exon 14 the receptor lacks tyrosine 1003, the residue
 CBL binds in panel C, so CBL marks less of the receptor for degradation
 ([Kong-Beltran et al. 2006](https://doi.org/10.1158/0008-5472.CAN-05-2749)).
 
-## Your own reads
+## Run the same steps on your own reads
+
+A splice-aware aligner writes each read that crosses an intron as one alignment
+with a gap, and JBrowse draws those gaps as junction arcs. HISAT2 writes a
+sorted BAM that JBrowse loads as an alignments track:
+
+```bash
+# -x: a HISAT2 index of hg38; -1/-2: the read pairs
+hisat2 -p 8 -x hg38 -1 reads_1.fq.gz -2 reads_2.fq.gz | samtools sort -o rna.bam -
+```
+
+```bash
+# the .bai index lets JBrowse fetch one region at a time
+samtools index rna.bam
+```
+
+With the BAM loaded:
 
 - start from the arcs: an arc that spans an exon in one sample and not in
   another marks the skip, whatever its cause
