@@ -228,9 +228,15 @@ function scaleOf(lane: Lane, visibleBpSpan: number) {
       : { text: '' }
 }
 
+/** every placement the lane draws reads against the anchor, each on its own */
 function allReversed(lane: Lane) {
-  const orientations = [...lane.placements.values()].flatMap(
-    group => group.orientations,
+  const refName = lane.frame?.refName
+  const orientations = [...lane.placements.values()].flatMap(({ group }) =>
+    group.anchor
+      ? (group.mates.get(lane.assemblyName) ?? [])
+          .filter(p => p.refName === refName)
+          .map(p => p.orientation)
+      : [],
   )
   return (
     !lane.isAnchor &&

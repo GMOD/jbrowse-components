@@ -1,3 +1,5 @@
+import { SimpleFeature } from '@jbrowse/core/util'
+
 import {
   LABEL_FONT_SIZE,
   changesTitle,
@@ -25,45 +27,92 @@ const frame: RowFrame = {
   alsoAt: [],
 }
 
+const laneDefaults = {
+  canon: (ref: string) => ref,
+  placements: new Map(),
+  spanOf: () => undefined,
+  spansOf: () => [],
+  bpPerPx: 1,
+  baseline: [],
+  holes: [],
+  bandTop: 0,
+  bandStart: 0,
+  bandEnd: 80,
+}
+
 function mateLane(
   overrides: Omit<Partial<Lane>, 'frame'> & { frame?: Partial<RowFrame> },
-) {
+): Lane {
   const { frame: frameOverrides, ...rest } = overrides
   return {
+    ...laneDefaults,
     assemblyName: 'peach',
     label: 'peach',
     isAnchor: false,
     glyphTop: 40,
     layerTop: 40,
-    canon: (ref: string) => ref,
-    placements: new Map(),
     frame:
       'frame' in overrides && frameOverrides === undefined
         ? undefined
         : { ...frame, ...frameOverrides },
     ...rest,
-  } as Lane
+  }
 }
 
-// a lane drawing one run of each orientation given, against the anchor
-const runsOf = (...orientations: number[]) =>
-  new Map(
-    orientations.map((orientation, i) => [
-      `g${i}`,
-      { orientations: [orientation] },
-    ]),
-  ) as Lane['placements']
+/**
+ * A lane drawing one group per entry, each holding a placement on Pp1 of
+ * every orientation listed, overlapping and each half as long as the one
+ * before, and one run signed by their length-weighted sum
+ */
+function placedOf(groups: number[][]): Lane['placements'] {
+  return new Map(
+    groups.map((orientations, i) => {
+      const feature = new SimpleFeature({ uniqueId: `g${i}`, start: 0, end: 1 })
+      const mates = orientations.map((orientation, k) => ({
+        refName: 'Pp1',
+        start: 100 * i,
+        end: 100 * i + 100 / 2 ** k,
+        orientation,
+        feature,
+      }))
+      return [
+        `g${i}`,
+        {
+          group: {
+            key: `g${i}`,
+            anchor: { refName: 'chr1', start: 100 * i, end: 100 * i + 100 },
+            mates: new Map([['peach', mates]]),
+            feature,
+          },
+          spans: [],
+          orientations: [
+            Math.sign(
+              mates.reduce(
+                (sum, m) => sum + m.orientation * (m.end - m.start),
+                0,
+              ),
+            ),
+          ],
+          intervals: [],
+          features: [],
+        },
+      ]
+    }),
+  )
+}
 
-const anchorLane = {
+const runsOf = (orientations: number[]) =>
+  placedOf(orientations.map(orientation => [orientation]))
+
+const anchorLane: Lane = {
+  ...laneDefaults,
   assemblyName: 'grape',
   label: 'grape',
   isAnchor: true,
   glyphTop: 12,
   layerTop: 12,
-  canon: (ref: string) => ref,
-  placements: new Map(),
   frame: undefined,
-} as Lane
+}
 
 // the whole frame matched to the window, unless a test says what is
 const rowOf = (
@@ -128,21 +177,29 @@ describe('the label', () => {
   })
 
   test('says a lane is reversed against the anchor where every run it draws is', () => {
-    expect(rowOf(mateLane({ placements: runsOf(-1, -1) })).label).toBe(
+    expect(rowOf(mateLane({ placements: runsOf([-1, -1]) })).label).toBe(
       'peach  Pp1:1..1,960 reversed vs grape',
+    )
+  })
+
+  // an inverted duplication: a forward copy inside a longer reversed one
+  test('says nothing of strand where two overlapping placements of one run disagree', () => {
+    expect(rowOf(mateLane({ placements: placedOf([[-1, 1]]) })).label).toBe(
+      'peach  Pp1:1..1,960',
     )
   })
 
   test('says nothing of strand where the runs disagree, however the lane is drawn', () => {
     expect(
-      rowOf(mateLane({ placements: runsOf(-1, 1), frame: { flipped: true } }))
+      rowOf(mateLane({ placements: runsOf([-1, 1]), frame: { flipped: true } }))
         .label,
     ).toBe('peach  Pp1:1..1,960')
   })
 
   test('names a lane drawn against the anchor as drawn flipped, which says nothing of its sequence', () => {
     expect(
-      rowOf(mateLane({ placements: runsOf(1) }), 2000, laneRegion, true).label,
+      rowOf(mateLane({ placements: runsOf([1]) }), 2000, laneRegion, true)
+        .label,
     ).toBe('peach  Pp1:1..1,960 drawn flipped')
   })
 
@@ -252,7 +309,7 @@ describe('a name on the gene row', () => {
     expect(inlineRow(mateLane({ frame: { flipped: true } }), 10).label).toBe(
       'peach',
     )
-    expect(inlineRow(mateLane({ placements: runsOf(-1) }), 10).label).toBe(
+    expect(inlineRow(mateLane({ placements: runsOf([-1]) }), 10).label).toBe(
       'peach reversed vs the anchor',
     )
     expect(inlineRow(anchorLane, 10).label).toBe('grape')
