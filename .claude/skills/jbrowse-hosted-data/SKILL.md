@@ -4,7 +4,7 @@ description:
   Use when a JBrowse task involves a genome that already exists publicly —
   human, mouse, zebrafish, any UCSC or GenArk assembly — or when you are about
   to download and index a reference genome, look up a gene's coordinates, or
-  find an annotation track. Covers genomes.jbrowse.org: what is hosted, how to
+  find an annotation track. Covers genomes.jbrowse.org, what is hosted, how to
   discover trackIds, how to open one, and how to put your own file on top of it
   without authoring a config.
 ---

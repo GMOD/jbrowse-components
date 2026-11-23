@@ -1,18 +1,20 @@
 ---
 name: jbrowse-mcp
-description:
-  Use when driving a running JBrowse: Desktop through its MCP server (the
-  "jbrowse" MCP — run_javascript, docs, open, screenshot), or a JBrowse Web
-  page through window.jb from Claude in Chrome, Chrome DevTools MCP, Playwright
-  MCP or Puppeteer. Points at the discipline the app itself serves, and carries
-  the repo-only parts.
+description: >-
+  Use when driving a running JBrowse, either JBrowse Desktop through its MCP
+  server (the "jbrowse" MCP with run_javascript, docs, open and screenshot) or a
+  JBrowse Web tab through window.jb from Claude in Chrome, Chrome DevTools MCP,
+  Playwright MCP or Puppeteer, as in "in my open JBrowse tab, add this bigWig
+  and make it red". Points at the discipline the app itself serves.
 ---
 
 # Driving a running JBrowse
 
-One interface: `run_javascript` executes your code against the live session,
-with `jb` as the standard library; `open`, `screenshot`, and `docs` cover the
-three things code inside the app cannot do.
+One interface: your code runs against the live session with `jb` as the standard
+library. Desktop runs it through the `run_javascript` MCP tool, beside `open`,
+`screenshot` and `docs` for the three things code inside the app cannot do; a
+JBrowse Web page publishes the same `jb` as `window.jb` (see JBrowse Web below).
+The rest applies to both.
 
 **The working discipline is served by the app, not written here.** It ships with
 the server, so it cannot drift from the version you are driving, and reaches the
@@ -48,9 +50,10 @@ far cheaper. Verify data claims with `jb.getFeatures`, never from the picture.
 
 ## JBrowse Web
 
-Every JBrowse Web page publishes the same `jb` as `window.jb`, beside
-`window.JBrowseSession`, with nothing installed. The discipline above applies
-unchanged; only the way in differs:
+JBrowse Web 5.0 and later publish the same `jb` as `window.jb`, beside
+`window.JBrowseSession`, with nothing installed; the page's
+`<meta name="ai-instructions">` says so. The discipline above applies unchanged;
+only the way in differs:
 
 - **The user's open tab**: run JavaScript in the page through Claude in Chrome,
   [Chrome DevTools MCP](https://github.com/ChromeDevTools/chrome-devtools-mcp)
@@ -60,8 +63,10 @@ unchanged; only the way in differs:
 
 There is no `docs` tool, so:
 
-- After navigating, poll until `window.jb` exists (the app assigns it after its
-  first render), then read `jb.help`.
+- After navigating, poll for `window.jb` for a few seconds (the app assigns it
+  after its first render), then read `jb.help`. If it never appears, the page is
+  an older release: say so, and offer to open the same data in a v5 page
+  (`openJBrowse`) rather than scripting `window.JBrowseSession` blind.
 - Read the live-model guide as Markdown,
   `https://jbrowse.org/jb2/docs/agents_live_model.md`, and its **In a browser**
   section for what differs from Desktop: a track takes a URL, never a local

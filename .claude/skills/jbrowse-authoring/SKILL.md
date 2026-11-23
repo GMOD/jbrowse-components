@@ -4,9 +4,11 @@ description:
   Use when authoring a JBrowse 2 config.json, session, or track from scratch —
   including fetching and indexing the data files first — or when asked to
   build/show/open a genome-browser view of some data, add a track, set up a
-  demo, or check that a JBrowse config is correct. Covers the config shape, the
-  session spec, and a validator that catches the config errors JBrowse itself
-  accepts silently.
+  demo, or check that a JBrowse config is correct; also when setting how a track
+  is drawn, such as coloring by a field, faceting or splitting rows by a sample
+  attribute, filtering, or plotting a file's column (LinearMarkDisplay, the
+  grammar of graphics). Covers the config shape, the session spec, and a
+  validator that catches the config errors JBrowse itself accepts silently.
 ---
 
 # Authoring JBrowse sessions
@@ -174,21 +176,50 @@ every display speaks part of it with the same names. Reach for it before a
 plugin or a precomputed image whenever the ask is "color by", "split by", "plot
 this column" or "one row per sample".
 
-- **The shared settings** go on any display that declares them, in the track's
-  `displayDefaults` (or a `displays` entry): `encoding.color` (a field through a
-  scale, `{ "field": "strand", "scale": { "type": "ordinal" } }`, or a constant
-  `{ "value": "green" }`), `facet` (a band of rows per value of a field), `rows`
-  (what a row is, its order, labels and colors) and `filter` (a list of
-  predicates or `jexl:` expressions).
+- **The shared settings** are `encoding.color` (a field through a scale,
+  `{ "field": "strand", "scale": { "type": "ordinal" } }`, or a constant
+  `{ "value": "green" }`), `facet` (a band of rows per value), `rows` (what a
+  row is, its order, labels and colors) and `filter` (a list of predicates or
+  `jexl:` expressions). Not every display takes every one: check the display's
+  `config/<type>.md` page (LinearBasicDisplay has no `rows`, LinearWiggleDisplay
+  no `facet` or `filter`).
+- **`displayDefaults` sends each setting to every display of the track that
+  declares it, but the track opens on its first display**, so a setting only a
+  later display takes loads, validates, and changes nothing on screen. Write the
+  track's `type` whenever you set `displayDefaults`: on a bare-`uri` track the
+  validator does not check those keys, so a misspelt one passes.
 - **A field** is a feature attribute (`score`, a BED `columnNames` column, a GFF
   attribute), a dotted path (`INFO.SVTYPE`), or a `jexl:` expression over
   `feature` where no field holds the value.
+- **On the multi-sample displays (variant, multi-wiggle, MAF) a row is a
+  sample**, so `facet`, `rows.color` and `rows.filter` read sample attributes:
+  the columns of the adapter's `samplesTsvLocation` TSV, keyed by sample name.
+  That needs the full `adapter` form:
+
+```json
+{
+  "type": "VariantTrack",
+  "trackId": "sv",
+  "assemblyNames": ["hg38"],
+  "adapter": {
+    "type": "VcfTabixAdapter",
+    "uri": "sv.vcf.gz",
+    "samplesTsvLocation": { "uri": "samples.tsv" }
+  },
+  "displayDefaults": {
+    "encoding": { "color": { "field": "INFO.SVTYPE" } },
+    "facet": "population"
+  }
+}
+```
+
 - **`LinearMarkDisplay`** is the whole grammar, on a feature, alignments,
   variant or quantitative track. Its `marks` are layers, each a `bar`, `point`,
   `rule`, `line`, `rect`, `text` or `link` with an `encoding`; its `transform`
   steps (`bin`, `aggregate`, `pileup`, `coverage`, `formula`, `filter` and more)
-  compute fields on the way in; and it takes `facet` and `rows` like any
-  display. A BED score as bars colored by strand:
+  compute fields on the way in; and it takes `facet` and `rows`. To open on it,
+  list it first in a `displays` entry, which needs the track's `type`. A BED
+  score as bars colored by strand:
 
 ```json
 {
@@ -214,9 +245,7 @@ this column" or "one row per sample".
 }
 ```
 
-A `displays` list needs the track's `type`: a track that is only a `uri` takes
-`displayDefaults` and no `displays`. Read
-`https://jbrowse.org/jb2/docs/config_guides/mark_display.md` before writing
+Read `https://jbrowse.org/jb2/docs/config_guides/mark_display.md` before writing
 `marks`: it maps each ggplot2 and Vega-Lite idea to this display's spelling, and
 lists the rule ids the validator reports for a mark that cannot draw. A
 display's own page (`config/<type>.md`) says which shared settings it takes. In
