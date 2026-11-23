@@ -117,6 +117,18 @@ features:
 }
 ```
 
+## Your own track selector
+
+A plugin can draw its own selector in the drawer. Fill
+[`Core-replaceWidget`](/docs/developer_guides/extension_points#core-replacewidget)
+and render your component when `model.type` is
+`HierarchicalTrackSelectorWidget`; `model.view` is the view the tracks open
+into. An embedding page can put its list outside the view instead, as the
+[track list example](https://jbrowse.org/storybook/lgv/track-list/) does. Either
+way, `offeredTracks` from `@jbrowse/core/util/tracks` returns the tracks the
+view can show, the list this selector reads, and `view.toggleTrack` opens or
+closes one.
+
 ## See also
 
 - [](/docs/user_guides/basic_usage)
