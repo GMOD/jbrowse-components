@@ -150,9 +150,16 @@ export function displayDefaultSlots(
   )
 }
 
+export function canonicalTypeName(
+  group: Record<string, { aliases?: string[] }>,
+  typeName: string,
+) {
+  return Object.hasOwn(group, typeName)
+    ? typeName
+    : Object.keys(group).find(name => group[name]?.aliases?.includes(typeName))
+}
+
 function lookup(group: TypeGroup, typeName: string) {
-  return (
-    group[typeName] ??
-    Object.values(group).find(entry => entry.aliases?.includes(typeName))
-  )
+  const name = canonicalTypeName(group, typeName)
+  return name === undefined ? undefined : group[name]
 }

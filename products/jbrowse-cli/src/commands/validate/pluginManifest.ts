@@ -1,3 +1,5 @@
+import { isRecord } from './liftConfig.ts'
+
 import type { ConfigManifest } from './types.ts'
 
 type Schema = Record<string, unknown>
@@ -81,10 +83,6 @@ export function withPluginManifests(
       plugins.map(p => p.views),
     ),
   }
-}
-
-function isRecord(value: unknown): value is Schema {
-  return typeof value === 'object' && value !== null && !Array.isArray(value)
 }
 
 function withoutRepeats(branches: unknown[]) {

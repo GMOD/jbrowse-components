@@ -26,7 +26,10 @@ import {
   interbaseEntryProblems,
 } from './alignmentsLayerRules/layerFilterRules.ts'
 import { configManifest } from './configManifest.generated.ts'
-import { displayDefaultsForTrackType } from './displayDefaultKeys.ts'
+import {
+  canonicalTypeName,
+  displayDefaultsForTrackType,
+} from './displayDefaultKeys.ts'
 import { isRecord, liftToSnapshot } from './liftConfig.ts'
 import {
   colorProblems,
@@ -37,7 +40,11 @@ import {
   withImpliedField,
 } from './markRules/colorScale.ts'
 import { markProblems } from './markRules/markProblems.ts'
-import { coreSchemaValidator, hasDeclaredShape } from './schemaValidate.ts'
+import {
+  coreSchemaValidator,
+  hasDeclaredShape,
+  SEQUENCE_FROM_ASSEMBLY,
+} from './schemaValidate.ts'
 import { didYouMean, didYouMeanKey, suggest } from './suggest.ts'
 
 import type { FieldPredicate } from './alignmentsFilterRules/filterRuleFacts.ts'
@@ -89,23 +96,6 @@ class Report {
   }
 }
 
-// A declared `sequenceAdapter` works and is simply the wrong way round: every
-// feature adapter takes its sequence from the assembly the track is displayed
-// against, so a hand-written one pins the track to that source. An undeclared
-// one is the schema's unknown-key error, with its own message there.
-const SELF_SUPPLIED: Record<string, string> = {
-  sequenceAdapter:
-    '`sequenceAdapter` is set by hand. JBrowse takes the sequence from the assembly the track is displayed against, so this is only needed to read some OTHER sequence — and it pins the track to that source even when the assembly changes. Delete it unless that is what you meant',
-}
-
-// What replaced a dropped legacy key, where there is something to say: a
-// config written before v4 carries a `sequenceAdapter` on its BAM and CRAM
-// adapters.
-const DROPPED: Record<string, string> = {
-  sequenceAdapter:
-    'JBrowse takes the sequence from the assembly the track is displayed against. ',
-}
-
 // One object, or each entry of a list, with the path suffix naming it
 function entriesOf(value: unknown) {
   return isRecord(value)
@@ -131,8 +121,11 @@ function warnSlots(
 ) {
   const declared = new Set(entry.slots.map(s => s.name))
   for (const [key, value] of Object.entries(obj)) {
-    if (declared.has(key) && SELF_SUPPLIED[key]) {
-      report.warn(`${where}.${key}`, SELF_SUPPLIED[key])
+    if (declared.has(key) && key === 'sequenceAdapter') {
+      report.warn(
+        `${where}.${key}`,
+        `\`sequenceAdapter\` is set by hand. ${SEQUENCE_FROM_ASSEMBLY}, so this is only needed to read some OTHER sequence — and it pins the track to that source even when the assembly changes. Delete it unless that is what you meant`,
+      )
     } else if (entry.legacyValues?.[key]?.includes(value)) {
       report.warn(
         `${where}.${key}`,
@@ -142,7 +135,7 @@ function warnSlots(
       report.warn(
         `${where}.${key}`,
         entry.droppedKeys?.includes(key)
-          ? `"${key}" is a legacy key that is never read. ${DROPPED[key] ?? ''}The config loads, and the key can be deleted`
+          ? `"${key}" is a legacy key that is never read. ${key === 'sequenceAdapter' ? `${SEQUENCE_FROM_ASSEMBLY}. ` : ''}The config loads, and the key can be deleted`
           : `"${key}" is a legacy key that a migration rewrites into current slots — the config loads, but check the settings inside it landed`,
       )
     }
@@ -187,25 +180,19 @@ function resolveType<Entry extends { aliases?: string[] }>(
   groupLabel: string,
   where: string,
   report: Report,
-): (Entry & { canonicalName: string }) | undefined {
+) {
   const typeName = obj.type
-  if (typeof typeName !== 'string') {
-    return undefined
+  if (typeof typeName === 'string') {
+    const canonicalName = canonicalTypeName(group, typeName)
+    const entry = canonicalName === undefined ? undefined : group[canonicalName]
+    if (entry && canonicalName !== undefined) {
+      return { ...entry, canonicalName }
+    }
+    report.warn(
+      where,
+      `${groupLabel} type "${typeName}" is not registered by the core plugins${didYouMean(typeName, Object.keys(group))} — it may come from a plugin`,
+    )
   }
-  const canonical =
-    typeName in group
-      ? typeName
-      : Object.keys(group).find(name =>
-          group[name]!.aliases?.includes(typeName),
-        )
-  const entry = canonical === undefined ? undefined : group[canonical]
-  if (entry && canonical !== undefined) {
-    return { ...entry, canonicalName: canonical }
-  }
-  report.warn(
-    where,
-    `${groupLabel} type "${typeName}" is not registered by the core plugins${didYouMean(typeName, Object.keys(group))} — it may come from a plugin`,
-  )
   return undefined
 }
 

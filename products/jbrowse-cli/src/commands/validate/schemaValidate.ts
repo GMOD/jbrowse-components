@@ -6,6 +6,7 @@
 import { Ajv2020 } from 'ajv/dist/2020.js'
 
 import { configJsonSchema } from './configSchema.generated.ts'
+import { isRecord } from './liftConfig.ts'
 import { misnamedByTitle } from './misnamed.ts'
 import { didYouMeanKey } from './suggest.ts'
 
@@ -13,6 +14,9 @@ import type { Misnamed, Problem } from './types.ts'
 import type { ErrorObject, ValidateFunction } from 'ajv/dist/2020.js'
 
 type Schema = Record<string, unknown>
+
+export const SEQUENCE_FROM_ASSEMBLY =
+  'JBrowse takes the sequence from the assembly the track is displayed against'
 
 /**
  * The checks over one config JSON Schema: core's, or core's with a plugin
@@ -214,10 +218,6 @@ export function createSchemaValidator(
     return where && key ? `${where}.${key}` : where || key
   }
 
-  function isRecord(value: unknown): value is Record<string, unknown> {
-    return typeof value === 'object' && value !== null && !Array.isArray(value)
-  }
-
   function jsonTypeOf(data: unknown) {
     return Array.isArray(data)
       ? 'array'
@@ -282,7 +282,7 @@ export function createSchemaValidator(
       declaresPath(schema, members),
     )
     if (key === 'sequenceAdapter' && !title.endsWith('Snapshot')) {
-      return 'JBrowse takes the sequence from the assembly the track is displayed against, and this adapter declares no `sequenceAdapter` slot, so the one written here is never read — delete it'
+      return `${SEQUENCE_FROM_ASSEMBLY}, and this adapter declares no \`sequenceAdapter\` slot, so the one written here is never read — delete it`
     }
     if (title.endsWith('Snapshot')) {
       const properties =
