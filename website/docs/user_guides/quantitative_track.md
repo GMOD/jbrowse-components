@@ -15,7 +15,7 @@ The track menu's **Plot type** submenu (backed by the display's
 [`interpolate`](/docs/config/wigglemark/#slot-interpolate)) offers these styles:
 
 - **Bar plot:** filled bars
-- **Density:** a heatmap row, compact for many signals at once
+- **Heatmap:** a row colored by value, compact for many signals at once
 - **Line (step):** the tops of the bars as a stepped line
 - **Line (interpolated):** midpoint to midpoint, smoother for sparse signals
 - **Scatter:** individual points, for sparse data
@@ -32,7 +32,7 @@ at, finer or coarser than one per pixel, and **Bin summary** sits beneath it.
 **Y axis...** opens the track's axis settings in the side drawer. The track
 redraws as you change them, and **Reset to defaults** returns to the track's
 configuration. On an alignments track the row is **Coverage axis...**, and on a
-density plot **Score range...**.
+heatmap **Score range...**.
 
 <Figure src="/img/bigwig/y_axis_panel.png" caption="A BigWig's Y axis drawer with Max pinned and one labelled reference line. Bars past the pinned Max end in a red strip." />
 
@@ -57,7 +57,7 @@ density plot **Score range...**.
 
 Include 0 and Clip extreme outliers move only an end left empty, so both leave
 the panel once Min and Max are both set; Include 0 also leaves on a log axis,
-which has no 0. Density mode offers neither Include 0 nor reference lines. The
+which has no 0. A heatmap offers neither Include 0 nor reference lines. The
 **?** in the drawer's header sums these up.
 
 ### Bin summary
@@ -72,7 +72,7 @@ Zoomed out, a BigWig serves precomputed summary bins.
 - **Show min and max** draws the bin's range around it
   ([`mark.extent`](/docs/config/wigglemark/#slot-extent)): a bar plot nests the
   darker bar inside the lighter range, and a line plot fills it as a translucent
-  band behind the line. Density mode draws no range.
+  band behind the line. A heatmap draws no range.
 - **Raw values**, from a bedGraph or a BigWig zoomed all the way in, make the
   three statistics one number, so neither setting changes anything. A y field
   naming another feature field hides **Bin summary**.

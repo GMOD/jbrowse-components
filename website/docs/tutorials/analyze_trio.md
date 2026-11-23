@@ -240,16 +240,16 @@ mother's het.
 
 To check every flagged site this way, the
 [KHV trio review portal](https://jbrowse.org/demos/khv_trio_review/) stacks the
-daughter's, father's and mother's 30x reads under each of the 173 flagged sites
-in chr1:190-200 Mb, with a verdict per site. In a sample of 30 of its 91 de novo
-candidates, the reads showed:
+daughter's, father's and mother's 30x reads under each flagged site in
+chr1:190-200 Mb, with a verdict per site. A de novo candidate's reads show one
+of these, most often one of the first two:
 
-- 11 a child miscall: the child's reads lack the allele, or are homozygous where
+- a child miscall: the child's reads lack the allele, or are homozygous where
   the call is het
-- 8 a parent's het the calls missed
-- 6 a parent's indel, which the call writes as a different allele
-- 2 the allele in the child's reads alone
-- 3 unclear
+- a parent's het the calls missed
+- a parent's indel, which the call writes as a different allele
+- the allele in the child's reads alone, which supports a de novo variant
+- nothing clear either way
 
 [variant-review-portal](https://github.com/cmdcolin/variant-review-portal)
 builds such a portal from a trio VCF, its pedigree and the three alignment

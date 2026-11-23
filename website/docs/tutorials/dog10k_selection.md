@@ -30,7 +30,7 @@ on chr15, we:
   [canFam4 hub on genomes.jbrowse.org](https://genomes.jbrowse.org/ucsc/canFam4/)
   is a config that loads it with its gene and repeat tracks, and the
   [assemblies guide](/docs/config_guides/assemblies) shows how to build one by
-  hand. This track reads its `chrom.sizes` alone.
+  hand.
 - `bcftools` built with libcurl
 - `curl`
 - `python3`

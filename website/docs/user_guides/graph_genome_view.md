@@ -468,7 +468,7 @@ from, is:
     "coarse": {
       "uri": "ecoli_minigraph.fold10000",
       "format": 2,
-      "aboveBpPerPx": 1000
+      "foldBelowBp": 10000
     }
   },
   "displayDefaults": {
