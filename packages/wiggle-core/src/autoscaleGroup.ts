@@ -1,9 +1,6 @@
 import { getConf } from '@jbrowse/core/configuration'
-import {
-  getContainingTrack,
-  getContainingView,
-} from '@jbrowse/core/util/mstUtils'
-import { hasParent, isStateTreeNode } from '@jbrowse/mobx-state-tree'
+import { getContainingTrack } from '@jbrowse/core/util/mstUtils'
+import { viewDisplays } from '@jbrowse/core/util/viewDisplays'
 
 import type { IAnyStateTreeNode } from '@jbrowse/mobx-state-tree'
 
@@ -29,35 +26,6 @@ function isMember(thing: unknown): thing is AutoscaleGroupMember {
 
 function isPeer(thing: unknown): thing is AutoscalePeer {
   return isMember(thing) && 'setAutoscaleGroup' in thing
-}
-
-function displaysOf(track: unknown): unknown[] {
-  return typeof track === 'object' &&
-    track !== null &&
-    'displays' in track &&
-    Array.isArray(track.displays)
-    ? track.displays
-    : []
-}
-
-function containingView(node: IAnyStateTreeNode): object | undefined {
-  if (!isStateTreeNode(node) || !hasParent(node)) {
-    return undefined
-  }
-  try {
-    return getContainingView(node)
-  } catch {
-    return undefined
-  }
-}
-
-// A display standing outside any view, as a unit test builds one, shares its
-// axis with nothing.
-function viewDisplays(node: IAnyStateTreeNode) {
-  const view = containingView(node)
-  const tracks =
-    view && 'tracks' in view && Array.isArray(view.tracks) ? view.tracks : []
-  return tracks.flatMap(displaysOf)
 }
 
 /**
