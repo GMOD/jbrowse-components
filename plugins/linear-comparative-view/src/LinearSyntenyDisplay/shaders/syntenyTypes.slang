@@ -21,6 +21,7 @@
 // the CPU pick engine must make identically; both import the generated twins
 // rather than re-spelling the thresholds (adr-051).
 //! js-export: hoverLevel, isInstanceInvisible, isCigarKind, isMarkerKind, isTileKind, spanOutsideBand, markerTravelsTooFar, fillShade, hoverDarken, thinWidthFade, sBlend, yCurve
+//! oracle-skip: perpCoverage — each pf is an edge's sqrt(1 + slope²), never under 1, and the probe's 0.25 beside -100.5 cancels in 0.5 * (pfL + pfR), so a 65536 px edge's float32 rounding is amplified past the slack; no twin is emitted for it (js-skip), so the skip costs only emitter coverage
 //! export-consts: KIND_CIGAR_MIN, KIND_MARKER, KIND_BASE_TILE, STROKE_ALPHA
 //! js-skip: sBlendDeriv — the ribbon tangent, for extruding an edge normal per fragment; Canvas2D draws one bezierCurveTo and never needs the derivative
 //! js-skip: yCurveDeriv — same as sBlendDeriv, the other half of the tangent
