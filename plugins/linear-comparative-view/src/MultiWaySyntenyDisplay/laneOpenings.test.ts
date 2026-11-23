@@ -574,6 +574,13 @@ describe('what a lane states across a gap against the anchor', () => {
     ])
   })
 
+  test('two records overlapping on the lane state no deletion across their anchor gap', () => {
+    expect(read(gapped(20_000, -1_000, ['r', 's']))).toEqual({
+      openings: [],
+      changes: [],
+    })
+  })
+
   test('an insertion between two runs of one record, at its breakpoint, its length', () => {
     expect(read(gapped(0, 30_000, ['r', 'r']))).toEqual({
       openings: [],

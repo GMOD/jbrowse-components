@@ -545,7 +545,8 @@ function uncoveredSpans(
  * window. Pieces of the other strand never bound a gap. A gap holding none of
  * their lane bases states its anchor bp against its lane bp once either
  * reaches SPLIT_AT_GAP_BP; one holding some states nothing, since the records
- * pair no stretch across a breakpoint. A gap whose anchor the lane's
+ * pair no stretch across a breakpoint, and so does one whose pieces overlap
+ * on the lane, whose lane bp is no deletion. A gap whose anchor the lane's
  * haplotype places elsewhere states nothing either, within one record or
  * across two, and opens only within one: two records meeting where it went
  * elsewhere are a rearrangement's breakpoint. An opening is the anchor bp
@@ -651,10 +652,11 @@ function laneGapsOf(
           })
         }
       }
-      const laneBp = Math.max(0, Math.round(laneGap))
+      const laneBp = Math.round(laneGap)
       const anchorBp = Math.round(hi - lo)
       if (
         anchorGap >= 0 &&
+        laneGap >= 0 &&
         right.lane.end > left.lane.end &&
         !holdsTurned &&
         !elsewhere &&
