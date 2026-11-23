@@ -430,6 +430,7 @@ const MUI_STYLES_FILE = path.join(
   'MuiStylesReExports.generated.ts',
 )
 const MUI_STYLES_OVERRIDDEN = new Set(['makeStyles'])
+const isMuiInternal = (name: string) => name.startsWith('private_')
 
 // A runtime export the package's types do not declare cannot be imported by
 // name, so the bindings follow the declared names and the runtime ones together.
@@ -470,6 +471,7 @@ function emitMuiStyles() {
   const names = Object.keys(styles)
     .filter(k => declared.has(k) && k !== 'default')
     .filter(k => !MUI_STYLES_OVERRIDDEN.has(k))
+    .filter(k => !isMuiInternal(k))
     .sort((a, b) => a.localeCompare(b, 'en'))
   const list = names.map(n => `  ${n},\n`).join('')
   return [
