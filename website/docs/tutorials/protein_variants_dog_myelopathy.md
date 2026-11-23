@@ -71,7 +71,7 @@ tabix-indexed VCF of your own slices the same way.
 
 </details>
 
-## Opening SOD1 on codon 40 with the E40K structure
+## Open SOD1 on codon 40 with the E40K structure
 
 [Part 1](/docs/tutorials/protein_variants_sickle_cell) opened its gene from the
 protein browser, which opens dog genes on a Labrador assembly. Dog10K is called
@@ -98,11 +98,11 @@ glutamate in the dog genome, lysine in the crystal.
 
 <Figure src="/img/protein/sod1_codon_hover.png" caption="SOD1 at codon 40 with its ortholog alignment and 7WX0. The hovered column, the codon band and Lys40 mark one position." />
 
-## Slicing SOD1 out of Dog10K
+## Read E40K across breeds, village dogs and wild canids
 
-`bcftools` reads one gene of the tabix-indexed callset over HTTP and writes a
-small VCF of its genotypes. Set `SNVS` to your own callset's path or URL to
-slice it the same way:
+`bcftools` reads _SOD1_ out of the tabix-indexed Dog10K callset over HTTP and
+writes a small VCF of its genotypes. Set `SNVS` to your own callset's path or
+URL to slice it the same way:
 
 ```bash
 SNVS=https://kiddlabshare.med.umich.edu/dog10K/SNP_and_indel_calls_2021-10-17/AutoAndXPAR.SNPs.vqsr99.vcf.gz
@@ -132,8 +132,6 @@ awk -F'\t' 'BEGIN { OFS = "\t"
   | sort -t$'\t' -k1,1n -k4,4 -k2,2 | cut -f2- \
   | (printf 'name\tcategory\tbreed\n'; cat) > samples.tsv
 ```
-
-## E40K across breeds, village dogs and wild canids
 
 The track reads hosted copies of the slice and the sheet; for your own, point
 `vcfGzLocation` and `samplesTsvLocation` at the files the commands wrote.
@@ -175,7 +173,7 @@ first region is 30 bp of the upstream intron, around an SNV at chr31:27,122,819.
 
 <Figure src="/img/protein/sod1_dog10k.png" caption="Dog10K genotypes under SOD1, one row per canid, colored down the left edge by category." />
 
-## Opening the structure on the E40K record
+## Open the structure on the E40K record
 
 A VCF record names its change on the genome's forward strand, the spelling the
 protein view's `variant` key takes. E40K's record in the slice reads
