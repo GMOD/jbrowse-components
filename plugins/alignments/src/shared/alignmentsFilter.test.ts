@@ -399,6 +399,24 @@ describe('problems', () => {
   })
 })
 
+describe('a flag field', () => {
+  test('takes equal: true or false and no other test', () => {
+    expect(
+      filterProblems([
+        { field: 'flags.DUP', equal: false },
+        { field: 'flags.UNMAP', equal: true },
+        { field: 'flags.DUP', equal: 0 },
+        { field: 'flags.UNMAP', gte: 1 },
+        { field: 'flags.SECONDARY', oneOf: [true] },
+      ]).map(p => p.split(',')[0]),
+    ).toEqual([
+      'flags.DUP takes equal: true or false',
+      'flags.UNMAP takes equal: true or false',
+      'flags.SECONDARY takes equal: true or false',
+    ])
+  })
+})
+
 describe('the read dimensions', () => {
   const ENTRIES: FieldPredicate[] = [
     { field: 'pairOrientation', oneOf: ['LL', 'RR'] },
