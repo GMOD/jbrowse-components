@@ -20,6 +20,7 @@ peripheral blood cells (PBMC), one RNA and one ATAC, we:
 - add one row per cell under the pooled RNA rows, from a Zarr store
 - read the ATAC rows at a T-cell and a B-cell marker, then load AlphaGenome 2's
   predicted ATAC for the same cell types under them
+- load a plain list of BigWigs as one track, without names, colors or groups
 
 ## Prerequisites
 
@@ -89,7 +90,7 @@ and barcode table.
 
 </details>
 
-## Loading GRCh38
+## Load GRCh38
 
 The RNA reads and the ATAC fragments were both aligned to GRCh38, and the
 BigWigs use its `chr1`-style chromosome names, so the tracks go on an hg38
@@ -135,7 +136,7 @@ The ATAC figure reads the same genes from NCBI's own RefSeq GFF3:
 }
 ```
 
-## Generating per-cell-type BigWigs
+## Pool reads into one BigWig per cell type
 
 Clustering and labeling happen upstream, in Seurat, scanpy, Cell Ranger ATAC,
 ArchR, Signac or SnapATAC2. Each route below starts from a barcode-to-label
@@ -277,7 +278,7 @@ The other ATAC tools write the same files:
   unnormalized, so scale each group yourself (1e6 / total fragments for CPM)
   before the conversion
 
-## Loading the per-cell-type BigWigs as one track
+## Load the RNA rows and open nine marker genes
 
 One `MultiQuantitativeTrack` holds the set, one `BigWigAdapter` subadapter per
 cell type with its `name`, `color`, and `group`. The fence lists the first RNA
@@ -348,50 +349,6 @@ Set three things in the `subadapters` list from the single-cell object:
 - `group`: the sidebar tree branches on it, and [](/docs/user_guides/clustering)
   clusters rows within each group
 
-### Building the track from a list of BigWigs
-
-Without per-row names, colors or groups, the `bigWigs` shorthand takes a plain
-array of URLs and labels each row from its filename:
-
-```json addtrack
-{
-  "type": "MultiQuantitativeTrack",
-  "trackId": "scrna_pseudobulk_simple",
-  "name": "scRNA pseudobulk",
-  "assemblyNames": ["hg38"],
-  "adapter": {
-    "type": "MultiWiggleAdapter",
-    "bigWigs": [
-      "https://jbrowse.org/demos/scrna_pbmc5k/CD4_T.bw",
-      "https://jbrowse.org/demos/scrna_pbmc5k/CD8_T.bw",
-      "https://jbrowse.org/demos/scrna_pbmc5k/CD14_Mono.bw"
-    ]
-  }
-}
-```
-
-Two workflows write the list from a set of files:
-
-- **Add multi-row track**, in the **Add track** workflow, takes BigWig URLs one
-  per line, or a JSON array of subadapter objects. On JBrowse Desktop it reads
-  local `.bw` files directly, and the same form stacks BED or BigBed files, one
-  row of features per file. Exporting the session gets the JSON config back out
-- **`jbrowse add-track --multiwig`** takes the whole set of BigWigs in place of
-  the single positional file, labeling rows from the filenames, as in the
-  command below
-
-```bash
-jbrowse add-track --multiwig "$(find bw -name '*.bw' | sort | paste -sd,)" \
-  --name "Pseudobulk by cell type" --assemblyNames hg38 \
-  --load copy --subDir bw --out /var/www/html/jbrowse2
-```
-
-`--load copy --subDir bw` copies local files in beside `config.json`; leave both
-off for BigWigs already served over HTTP. For per-row names, colors and groups,
-pass a `.json` file of subadapter objects instead of the comma list.
-
-## RNA marker genes side by side
-
 We named the RNA clusters by scoring them against marker panels, so those
 markers have signal in the rows of their cell types by construction. To test the
 labels, we open nine markers the panels leave out, one per cell type: _CD40LG_,
@@ -406,7 +363,7 @@ chrX:136,658,390-136,662,390 chr12:10,556,794-10,560,794 chr4:1,164,931-1,168,93
 
 <Figure caption="The per-cell-type BigWigs as one MultiQuantitativeTrack over the nine marker loci, in the order of the rows they mark." src="/img/scrna/marker_panel.png" />
 
-## Per-cell coverage rows from a Zarr store
+## Add one row per cell from a Zarr store {#per-cell-coverage-rows-from-a-zarr-store}
 
 A pseudobulk RNA row sums thousands of cells. A Zarr store holding a
 cells-by-bins coverage matrix adds the cells themselves, one row each, under the
@@ -474,7 +431,7 @@ Two settings decide whether those single-UMI cells are visible:
   the color ramp, whereas autoscale takes its maximum from the tallest single
   cell in view
 
-## ATAC accessibility at a T-cell and a B-cell marker
+## Load the ATAC rows at CD8A and MS4A1
 
 The ATAC BigWigs written under _From ATAC fragments_ load the same way, as a
 second track. The fence lists some of the cell types the figure draws; the
@@ -536,7 +493,7 @@ go into the `subadapters` list like the PBMC files. Percent-encode the `+` in a
 cell-type name (`T_lymphocyte_2_CD4%2B.bw`); left unencoded, the URL breaks and
 the row loads with no data.
 
-## Predicted ATAC under the measured rows
+## Load predicted ATAC under the measured rows
 
 AlphaGenome 2 predicts scATAC from sequence for blood cell types that match each
 of the twelve ATAC labels, so its predictions load as a second track with the
@@ -598,6 +555,48 @@ chr2:86,780,000-86,820,000 chr11:60,450,000-60,490,000
 At _CD8A_ the predicted peaks fall in the CD8, MAIT and NK rows, as the measured
 ones do. At _MS4A1_ the B rows are highest in both tracks, and the predicted
 track also has two peaks in the T and NK rows where the measured rows are flat.
+
+## Load a plain list of BigWigs as one track
+
+Without per-row names, colors or groups, the `bigWigs` shorthand takes a plain
+array of URLs and labels each row from its filename:
+
+```json addtrack
+{
+  "type": "MultiQuantitativeTrack",
+  "trackId": "scrna_pseudobulk_simple",
+  "name": "scRNA pseudobulk",
+  "assemblyNames": ["hg38"],
+  "adapter": {
+    "type": "MultiWiggleAdapter",
+    "bigWigs": [
+      "https://jbrowse.org/demos/scrna_pbmc5k/CD4_T.bw",
+      "https://jbrowse.org/demos/scrna_pbmc5k/CD8_T.bw",
+      "https://jbrowse.org/demos/scrna_pbmc5k/CD14_Mono.bw"
+    ]
+  }
+}
+```
+
+Two workflows write the list from a set of files:
+
+- **Add multi-row track**, in the **Add track** workflow, takes BigWig URLs one
+  per line, or a JSON array of subadapter objects. On JBrowse Desktop it reads
+  local `.bw` files directly, and the same form stacks BED or BigBed files, one
+  row of features per file. Exporting the session gets the JSON config back out
+- **`jbrowse add-track --multiwig`** takes the whole set of BigWigs in place of
+  the single positional file, labeling rows from the filenames, as in the
+  command below
+
+```bash
+jbrowse add-track --multiwig "$(find bw -name '*.bw' | sort | paste -sd,)" \
+  --name "Pseudobulk by cell type" --assemblyNames hg38 \
+  --load copy --subDir bw --out /var/www/html/jbrowse2
+```
+
+`--load copy --subDir bw` copies local files in beside `config.json`; leave both
+off for BigWigs already served over HTTP. For per-row names, colors and groups,
+pass a `.json` file of subadapter objects instead of the comma list.
 
 ## Reproduce it end to end
 
