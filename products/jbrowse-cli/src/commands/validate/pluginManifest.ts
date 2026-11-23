@@ -33,10 +33,26 @@ export interface PluginManifest extends Partial<
    * core's unions (`Track`, `Display`, `RootConfiguration`, ...) with its types
    * among their branches and properties.
    */
-  schema?: {
+  schema: {
     properties?: Record<string, Schema>
     $defs: Record<string, Schema>
   }
+}
+
+function isPluginManifest(value: unknown): value is PluginManifest {
+  return (
+    isRecord(value) && isRecord(value.schema) && isRecord(value.schema.$defs)
+  )
+}
+
+/** A parsed manifest file, refused when it is not one, as a config.json is not. */
+export function pluginManifestOf(value: unknown, file: string) {
+  if (isPluginManifest(value)) {
+    return value
+  }
+  throw new Error(
+    `${file} is not a plugin manifest: it has no schema.$defs. generateConfigManifest.ts --plugin writes one`,
+  )
 }
 
 function merged<T extends object>(core: T, extra: readonly (T | undefined)[]) {
@@ -89,6 +105,38 @@ function withoutRepeats(branches: unknown[]) {
   return [...new Map(branches.map(b => [JSON.stringify(b), b])).values()]
 }
 
+function listOf(value: unknown): unknown[] {
+  return Array.isArray(value) ? value : []
+}
+
+function hintOf(type: unknown) {
+  const [hint] = isRecord(type) ? listOf(type.anyOf) : []
+  return isRecord(hint) ? hint : {}
+}
+
+// A union's `type` property hints the names registered in its first branch,
+// which the plugins' names join rather than replace.
+function mergedTypeProperty(existing: unknown, plugin: Schema) {
+  const [hint, ...rest] = listOf(plugin.anyOf)
+  return isRecord(hint) && Array.isArray(hint.enum)
+    ? {
+        ...plugin,
+        anyOf: [
+          {
+            ...hint,
+            enum: [
+              ...new Set([
+                ...listOf(hintOf(existing).enum),
+                ...listOf(hint.enum),
+              ]),
+            ],
+          },
+          ...rest,
+        ],
+      }
+    : plugin
+}
+
 // A union's branches and an object's properties gather across plugins, so two
 // plugins' types land in one `Display`; any other definition is the plugin's.
 function mergedDefinition(existing: unknown, plugin: Schema): Schema {
@@ -99,7 +147,20 @@ function mergedDefinition(existing: unknown, plugin: Schema): Schema {
           ? { allOf: withoutRepeats(existing.allOf.concat(plugin.allOf)) }
           : {}),
         ...(isRecord(existing.properties) && isRecord(plugin.properties)
-          ? { properties: { ...existing.properties, ...plugin.properties } }
+          ? {
+              properties: {
+                ...existing.properties,
+                ...plugin.properties,
+                ...(isRecord(plugin.properties.type)
+                  ? {
+                      type: mergedTypeProperty(
+                        existing.properties.type,
+                        plugin.properties.type,
+                      ),
+                    }
+                  : {}),
+              },
+            }
           : {}),
       }
     : plugin
@@ -115,10 +176,8 @@ export function withPluginSchemas(
   }
   const defs: Schema = { ...(isRecord(core.$defs) ? core.$defs : {}) }
   for (const plugin of plugins) {
-    Object.assign(properties, plugin.schema?.properties)
-    for (const [name, definition] of Object.entries(
-      plugin.schema?.$defs ?? {},
-    )) {
+    Object.assign(properties, plugin.schema.properties)
+    for (const [name, definition] of Object.entries(plugin.schema.$defs)) {
       defs[name] = mergedDefinition(defs[name], definition)
     }
   }

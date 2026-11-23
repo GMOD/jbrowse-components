@@ -4,7 +4,11 @@
 /* eslint-disable unicorn/no-thenable -- `if`/`then` are JSON Schema keywords */
 import { configManifest } from './configManifest.generated.ts'
 import { configJsonSchema } from './configSchema.generated.ts'
-import { withPluginManifests, withPluginSchemas } from './pluginManifest.ts'
+import {
+  pluginManifestOf,
+  withPluginManifests,
+  withPluginSchemas,
+} from './pluginManifest.ts'
 import { coreSchemaValidator, createSchemaValidator } from './schemaValidate.ts'
 import { validateConfig } from './validateConfig.ts'
 
@@ -56,6 +60,15 @@ function pluginDisplay(name: string): PluginManifest {
         },
         Display: {
           ...coreDisplay,
+          properties: {
+            type: {
+              type: 'string',
+              anyOf: [
+                { enum: ['LinearBasicDisplay', name] },
+                { type: 'string' },
+              ],
+            },
+          },
           allOf: [...coreDisplay.allOf, displayBranch(name)],
         },
       },
@@ -212,4 +225,36 @@ test("a plugin's mark step is judged by the mark rules once its schema declares 
   expect(where(validateWith(config, [plugin]))).toEqual([
     'error tracks[0].displays[0].transform[0].step',
   ])
+})
+
+test("two plugins' names join the Display type hint, neither replacing the other's", () => {
+  const { $defs } = withPluginSchemas(configJsonSchema, [
+    pluginDisplay('FooDisplay'),
+    pluginDisplay('BarDisplay'),
+  ])
+  const display = isRecord($defs) ? $defs.Display : undefined
+  const type =
+    isRecord(display) && isRecord(display.properties)
+      ? display.properties.type
+      : undefined
+  const [hint] = isRecord(type) && Array.isArray(type.anyOf) ? type.anyOf : []
+  const names = isRecord(hint) && Array.isArray(hint.enum) ? hint.enum : []
+  expect(names).toEqual(
+    expect.arrayContaining([
+      'LinearBasicDisplay',
+      'LinearAlignmentsDisplay',
+      'FooDisplay',
+      'BarDisplay',
+    ]),
+  )
+  expect(new Set(names).size).toBe(names.length)
+})
+
+test('a file with no schema.$defs, such as a config.json, is not a plugin manifest', () => {
+  expect(() =>
+    pluginManifestOf({ assemblies: [], tracks: [] }, 'config.json'),
+  ).toThrow('config.json is not a plugin manifest')
+  expect(pluginManifestOf(pluginDisplay('FooDisplay'), 'foo.json')).toEqual(
+    pluginDisplay('FooDisplay'),
+  )
 })

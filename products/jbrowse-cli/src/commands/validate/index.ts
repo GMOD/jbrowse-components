@@ -4,11 +4,14 @@ import { printHelp, readConfigFile, readJsonFile } from '../../utils.ts'
 import { configManifest } from './configManifest.generated.ts'
 import { configJsonSchema } from './configSchema.generated.ts'
 import { misnamedByTitle } from './misnamed.ts'
-import { withPluginManifests, withPluginSchemas } from './pluginManifest.ts'
+import {
+  pluginManifestOf,
+  withPluginManifests,
+  withPluginSchemas,
+} from './pluginManifest.ts'
 import { coreSchemaValidator, createSchemaValidator } from './schemaValidate.ts'
 import { validateConfig } from './validateConfig.ts'
 
-import type { PluginManifest } from './pluginManifest.ts'
 import type { Problem } from './types.ts'
 
 const description =
@@ -119,8 +122,8 @@ export async function run(args?: string[]) {
   // most common way this fails, and it says which path it looked at.
   const config = await readConfigFile<unknown>(file)
   const pluginManifests = await Promise.all(
-    (flags['plugin-manifest'] ?? []).map(manifest =>
-      readJsonFile<PluginManifest>(manifest),
+    (flags['plugin-manifest'] ?? []).map(async manifest =>
+      pluginManifestOf(await readJsonFile<unknown>(manifest), manifest),
     ),
   )
   const manifest = withPluginManifests(configManifest, pluginManifests)
