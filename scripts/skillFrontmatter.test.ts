@@ -16,7 +16,7 @@ function frontmatter(dir: string) {
   const blockScalar = /^ *[>|]/.test(firstLine)
   const description = (blockScalar ? lines : [firstLine, ...lines])
     .join(' ')
-    .replace(/\s+/g, ' ')
+    .replaceAll(/\s+/g, ' ')
     .trim()
   return { name, description, blockScalar }
 }
