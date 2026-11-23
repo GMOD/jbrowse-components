@@ -67,7 +67,7 @@ for peaks in another trait_ lists. The script fetches everything itself.
 | The SNV/indel callset the _IGF1_ window is sliced from                                 | [AutoAndXPAR.SNPs.vqsr99.vcf.gz](https://kiddlabshare.med.umich.edu/dog10K/SNP_and_indel_calls_2021-10-17/AutoAndXPAR.SNPs.vqsr99.vcf.gz)                       |
 | The sample table, which the scripts derive the breed groups and the wolf outgroup from | [dog10K-alignment-sample-table.2022-02-23-v7.txt](https://kiddlabshare.med.umich.edu/dog10K/sample-information/dog10K-alignment-sample-table.2022-02-23-v7.txt) |
 
-## Loading the UU_Cfam_GSD_1.0 dog assembly
+## Load the UU_Cfam_GSD_1.0 dog assembly
 
 The tracks name `UU_Cfam_GSD_1.0`, the Dog10K reference that UCSC calls canFam4.
 We load it from UCSC's 2bit, with the alias file that maps the `chr` names to
@@ -112,7 +112,7 @@ The figures also show NCBI's RefSeq genes as a track:
 }
 ```
 
-## Scanning the genome for toy-versus-giant Fst peaks
+## Scan the genome for toy-versus-giant Fst peaks {#scanning-the-genome-for-toy-versus-giant-fst-peaks}
 
 Body size is the trait, so the two groups are the breeds at its extremes: every
 animal of the toy and small breeds against every animal of the giant breeds.
@@ -188,7 +188,7 @@ needs a new one. The tallest labelled peak, on chr10, is _HMGA2_, one of the six
 variants [Rimbault et al. 2013](https://doi.org/10.1101/gr.157339.113) fit to
 about half the size variation across breeds.
 
-## Slicing the IGF1 window out of the SNV callset
+## Slice the IGF1 window out of the SNV callset
 
 Small breeds share a haplotype at _IGF1_ that large breeds largely lack
 ([Sutter et al. 2007](https://doi.org/10.1126/science.1137045)). The samples are
@@ -218,7 +218,7 @@ tabix -C -p vcf dog10k_igf1.vcf.gz
 TSV below without its header. A site that is reference in every animal is drawn
 as an empty column, so the second `bcftools view` drops it.
 
-## Loading the IGF1 slice with a sample-metadata TSV
+## Load the IGF1 slice with a sample-metadata TSV
 
 The display draws one row per sample. For this many samples, point the adapter
 at a TSV whose first column is the sample name and whose other columns are
@@ -256,7 +256,7 @@ column whose values color the swatch:
 }
 ```
 
-## Clustering the IGF1 rows by genotype
+## Cluster the IGF1 rows by genotype
 
 The build script prints which sites separate the two size classes. Frame the
 view on that span with a margin of undifferentiated sequence on each side, as
@@ -268,11 +268,11 @@ so they start out grouped by breed. Clustering reads the region on screen, and
 over the whole window the undifferentiated sites dilute the separating columns,
 so we cluster the core first:
 
-1. Zoom to the core, `chr15:41,440,000-41,580,000`.
-2. Choose **Clustering → Cluster rows by genotype...** in the track menu, then
-   **Run clustering**. The rows reorder by genotype similarity and a dendrogram
-   appears in the sidebar.
-3. Widen back out to see how far the block runs.
+- Zoom to the core, `chr15:41,440,000-41,580,000`.
+- Choose **Clustering → Cluster rows by genotype...** in the track menu, then
+  **Run clustering**. The rows reorder by genotype similarity and a dendrogram
+  appears in the sidebar.
+- Widen back out to see how far the block runs.
 
 The display applies the size-class color from the sample table after clustering,
 so the order comes from genotypes alone. A session can set the region directly
@@ -310,7 +310,7 @@ with `clusterRegion` beside `runClustering`, as the figure below does:
 
 <Video src="/media/dog10k/igf1_cluster_route.mp4" caption="Clustering the rows from the track menu over the peak's core." />
 
-## The IGF1 haplotype block in toy, giant and wolf genotypes
+## Read the IGF1 block against per-site Fst
 
 The build script also scores Fst one site at a time over the slice, with the
 scan's estimator and size classes, and writes it as `dog10k_igf1_fst.bed.gz`. It
@@ -336,7 +336,28 @@ Reading the matrix against the Fst track above it:
 - The wolves form a contiguous band directly below the toy and small block, and
   have part of its haplotype.
 
-## Scanning for peaks in another trait
+## Reproduce it end to end
+
+Two scripts, in order:
+
+- [`build_dog10k_size_fst.sh`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/build_dog10k_size_fst.sh)
+  runs the scan. It corrects each class's allele frequency for that class's
+  sample size, so the unequal classes do not tilt the score, skips windows with
+  too few sites to score, and prints the percentiles behind the reference line.
+- [`build_dog10k_igf1.sh`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/build_dog10k_igf1.sh)
+  slices the _IGF1_ window for those samples and scores each site with the
+  scan's estimator.
+
+The two scripts take their breed groups from the Dog10K sample table by breed
+name, so a sample's class never depends on its genotype.
+
+```bash
+BASE=https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts
+curl -fO $BASE/build_dog10k_size_fst.sh
+curl -fO $BASE/build_dog10k_igf1.sh
+bash build_dog10k_size_fst.sh   # writes ./dog10k_size_fst_build/
+bash build_dog10k_igf1.sh       # writes ./dog10k_igf1_build/
+```
 
 The Fst scan and the IGF1 slice take the same two inputs, a pair of groups and a
 region, so any trait in the sample table can substitute. To scan another trait:
@@ -349,29 +370,6 @@ region, so any trait in the sample table can substitute. To scan another trait:
 
 Schall and Kidd (2025) list structural variants whose frequencies track breed
 clades, and those slice from their SV callsets the same way.
-
-## Reproduce it end to end
-
-Two scripts, in order:
-
-1. [`build_dog10k_size_fst.sh`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/build_dog10k_size_fst.sh)
-   runs the scan. It corrects each class's allele frequency for that class's
-   sample size, so the unequal classes do not tilt the score, skips windows with
-   too few sites to score, and prints the percentiles behind the reference line.
-2. [`build_dog10k_igf1.sh`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/build_dog10k_igf1.sh)
-   slices the _IGF1_ window for those samples and scores each site with the
-   scan's estimator.
-
-The two scripts take their breed groups from the Dog10K sample table by breed
-name, so a sample's class never depends on its genotype.
-
-```bash
-BASE=https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts
-curl -fO $BASE/build_dog10k_size_fst.sh
-curl -fO $BASE/build_dog10k_igf1.sh
-bash build_dog10k_size_fst.sh   # writes ./dog10k_size_fst_build/
-bash build_dog10k_igf1.sh       # writes ./dog10k_igf1_build/
-```
 
 ## See also
 
