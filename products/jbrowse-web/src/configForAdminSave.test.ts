@@ -46,6 +46,7 @@ test.each(['/?config=data/config.json', '/', '/app/?config=../conf/c.json'])(
     window.__jbrowseEarlyConfig = {
       configPath: resolveConfigPath(configParam),
       config: Promise.resolve(structuredClone(authored)),
+      url: Promise.resolve(undefined),
     }
     prefetchConfig()
     const { config } = await fetchRemoteConfig(resolveConfigPath(configParam))

@@ -57,6 +57,15 @@ test('a config redirected to another origin is judged and resolved by where it w
   )
 })
 
+test('a config that cannot be reached is named in the error', async () => {
+  jest
+    .spyOn(global, 'fetch')
+    .mockRejectedValue(new TypeError('Failed to fetch'))
+  await expect(fetchRemoteConfig('data/config.json')).rejects.toThrow(
+    'Failed to fetch fetching data/config.json',
+  )
+})
+
 test('a config served from where it was requested keeps the requested url', async () => {
   serveConfigFrom('http://localhost/data/config.json?rand=0.5')
   const { config, configUri } = await fetchRemoteConfig('data/config.json')

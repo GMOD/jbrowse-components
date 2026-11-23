@@ -126,7 +126,11 @@ export async function writeSessionToIDB(snap: Snap, configPath: string) {
 async function fetchConfigJson(configPath: string) {
   const uri =
     configPath + (window.__jbrowseCacheBuster ? `?rand=${Math.random()}` : '')
-  const response = await fetch(uri)
+  const response = await fetch(uri).catch((e: unknown) => {
+    throw new Error(`${e instanceof Error ? e.message : e} fetching ${uri}`, {
+      cause: e,
+    })
+  })
   if (!response.ok) {
     throw new Error(`HTTP ${response.status} fetching ${uri}`)
   }
