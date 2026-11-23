@@ -14,8 +14,8 @@ Certain sets of genes have stayed on the same chromosome together since before
 animals existed; they are called ancestral linkage groups.
 [odp](https://github.com/conchoecia/odp) writes, for every pair of genomes it
 compares, a table of their orthologs with the set each one belongs to and a
-color for it. A sponge keeps each set on one chromosome; a comb jelly spreads
-each over several. We:
+color for it. A sponge has each set on one chromosome, and a comb jelly has each
+spread over several. We:
 
 - load the jellyfish-sponge table as a synteny track, each ortholog colored by
   its set
@@ -105,8 +105,8 @@ a protein id, the scaffold it sits on, the strand, and the least and greatest
 CDS coordinates, tab-separated. Name each genome by a short code, which becomes
 its assembly name in JBrowse.
 
-odp runs under snakemake 7 or 8 and pandas 2, which a fresh environment does not
-pick by default:
+odp runs under snakemake 7 or 8 and pandas 2, which conda does not pick by
+default in a fresh environment:
 
 ```bash
 # odp breaks under pandas 3 and snakemake 9; diamond, blast and hmmer are the
@@ -129,8 +129,8 @@ For an NCBI annotation, a script in odp writes the `.chrom` from the GFF:
 python3 odp/scripts/NCBIgff2chrom.py genomic.gff > SP.chrom
 ```
 
-The colored tables come only from a linkage-group database unpacked in the
-clone. Building the BCnS one takes about a minute on 16 cores:
+odp writes the colored tables only when a linkage-group database is unpacked in
+the clone. The BCnS database builds in about a minute on 16 cores:
 
 ```bash
 # odp refuses an LG_db directory whose name has '_', and a bare make also
@@ -164,8 +164,8 @@ Two RefSeq genomes, _Nematostella_ and amphioxus, took about 20 minutes on 16
 cores. odp writes the colored tables under
 `odp/step2-figures/synteny_coloredby_BCnSSimakov2022/`, one per pair. An older
 odp made the deposit, with a database named `BCnS_LGs` and the tables under
-`synteny_analysis/`. The conversion below reads both layouts. The group names
-are the same, and the palette in `color` differs.
+`synteny_analysis/`, and the conversion below reads both layouts. The group
+names are the same, and the palette in `color` differs.
 
 ### Converting a table to a `.blocks` file
 
@@ -186,7 +186,7 @@ orthologs2jbrowse odp EMU_RES_xy_reciprocal_best_hits.coloredby_BCnS_LGs.plotted
 
 `orthologs2jbrowse odp` prints how many of each genome's gene ids it found in
 the `.chrom` file. An ortholog from outside the BCnS families gets `.` in the
-group column, which the browser draws in grey.
+group column, which JBrowse draws in grey.
 
 A `.blocks` row is the gene ids across the two genomes, then the attribute
 columns:
@@ -228,10 +228,10 @@ each.
 `attributeColumns` exposes the last three columns of the `.blocks` file:
 
 - `gene_group` becomes a color-by mode named after it.
-- `color` holds the color odp chose for each group, which that mode paints the
-  group with, so it is not a mode of its own.
-- `break_FET` is odp's test of the row's chromosome pair, which sets opacity in
-  the stack below.
+- `color` holds the color odp chose for each group. The `gene_group` mode colors
+  each group with it, so `color` has no separate mode.
+- `break_FET` holds odp's test of the row's chromosome pair, and the stack below
+  sets opacity from it.
 
 ```json addtrack
 {
@@ -258,8 +258,8 @@ We'll open the jellyfish-against-sponge table as a dotplot, then:
 - Pick **gene_group** under **Color by value** on the palette button in the view
   header, which also opens the legend.
 - Choose **Re-order chromosomes** on the view menu to sort the vertical genome's
-  chromosomes by where their orthologs land along the horizontal one, which
-  turns one block per group into a diagonal.
+  chromosomes by where their orthologs lie along the horizontal one, which turns
+  one block per group into a diagonal.
 
 As a session, the same dotplot with the sponge's unplaced scaffolds left off its
 axis. In [grammar-of-graphics](/docs/config_guides/mark_display) terms,
@@ -337,7 +337,7 @@ the orthologs that have a group, so the legend names only the four drawn:
 <Figure caption="Three jellyfish chromosomes against three sponge chromosomes, orthologs colored by linkage group." src="/img/linkage_groups/alg_fusions.png" />
 
 Along RES10, the J1 and Qa orthologs each run the chromosome's full length. On
-EMU23, J2 holds one end and K the rest.
+EMU23, J2 holds one end and K holds the rest.
 
 [^mixing]:
     The fusion-with-mixing model is from Simakov et al. 2022. Schultz et al.
@@ -371,11 +371,11 @@ Each setting in the session has a menu route except `render` and the
   rows** on the palette menu writes.
 - `mark` is **Curved lines** on the sliders button.
 - `render.antialias` turns off the fade a whole-genome view applies to sub-pixel
-  ribbons, since the figure shows the ribbons' colors. It has no menu item.
+  ribbons, since the figure shows the ribbons' colors.
 - `encoding.opacity` is the scale above. **Opacity** on the sliders button
-  scales both opacities together; the mapping itself has no menu item.
-- `levelHeights` is each band's height, which dragging the bar under a band sets
-  for every band.
+  scales both opacities together.
+- `levelHeights` is each band's height, and dragging the bar under a band sets
+  it for every band.
 - `collapseEmptyRows` draws each genome row that has no track as a bare scale
   bar. **Rows → Compact all views** on the header's ⋮ menu does the same.
 
@@ -428,9 +428,9 @@ Each setting in the session has a menu route except `render` and the
 
 <Figure caption="The genomes in the paper's order, ribbons colored by linkage group, solid on significantly paired chromosomes and faint elsewhere." src="/img/linkage_groups/alg_stack.png" />
 
-The comb jellies spread most groups over several chromosomes, where the
-jellyfish keeps each on one, so the second band is the faintest. Both comb
-jellies spread them the same way, so the band between the two stays solid.
+The comb jellies have most groups spread over several chromosomes, where the
+jellyfish has each on one, so the second band is the faintest. Both comb jellies
+have them spread the same way, so the band between the two stays solid.
 
 ## Reproduce it end to end
 

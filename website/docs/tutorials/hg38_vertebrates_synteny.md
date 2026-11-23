@@ -13,11 +13,11 @@ We look at one human locus across eight other mammals at once, from alignments
 that already exist. UCSC publishes a liftOver chain from hg38 to each genome it
 hosts, and jbrowse.org keeps each chain as an indexed alignment file. The same
 config works for any set of pairwise chains that share one genome. We look at
-_TP53_, where the genomes keep one gene order, and at the _PMP22_ segmental
-duplications, where they break into many blocks. We:
+_TP53_, where the genomes share one gene order, and at the _PMP22_ segmental
+duplications, where their alignments break into many blocks. We:
 
 - index a chain as PIF, and compose the chains into one multi-way synteny track,
-  each lane drawing the RefSeq gene models from that genome's UCSC hub
+  with the RefSeq gene models from each genome's UCSC hub in its lane
 - open the track in a linear genome view at _TP53_, with the lanes in tree order
 - pin and flip lanes from the lane header menu near _PMP22_
 
@@ -78,7 +78,7 @@ and `make-pif`, as _LiftOver chains as one indexed alignment per genome_ shows.
 ## LiftOver chains as one indexed alignment per genome
 
 A liftOver chain maps each stretch of one genome to a position in another,
-whether or not a gene lies there, so the track draws each lane from the chain
+whether or not a gene lies there, so JBrowse draws each lane from the chain
 alone. Each UCSC chain aligns hg38 to one other genome, so there is no
 chimpanzee-to-mouse alignment, and every ribbon joins a lane to hg38, whichever
 lane sits above it.
@@ -123,7 +123,7 @@ tabix -l https://jbrowse.org/ucsc/hg38/liftOver/hg38ToPanTro6.over.pif.gz | grep
 
 ## Composing the chains into one track
 
-One `SyntenyTrack` names hg38 and every genome it stacks. Its adapter, a
+One `SyntenyTrack` names hg38 and every genome stacked under it. Its adapter, a
 `MultiPairwiseSyntenyAdapter`, holds one `PairwiseIndexedPAFAdapter` per chain:
 
 - Each child names its two assemblies as `query,target`, with the genome the
@@ -134,8 +134,8 @@ One `SyntenyTrack` names hg38 and every genome it stacks. Its adapter, a
   [Stacking many genomes under hg38](/docs/tutorials/genomes_synteny#many-genomes-at-once)
   turns on.
 - The assemblies and their gene tracks come from the hub configs unchanged, and
-  each lane draws its genome's gene track, so this track is the only addition to
-  the hub entries.
+  each lane shows the gene track from that genome's hub, so this track is the
+  only addition to the hub entries.
 
 A genome of your own loads from its FASTA instead:
 
@@ -190,11 +190,12 @@ coarse tier, which the `tabix -l` line above checks on each file.
 
 ## Stacking the genomes at TP53 and at PMP22
 
-We'll open the track on hg38 around _TP53_. It draws a lane per genome under the
-human axis, each fitted to wherever its chain places the window, and each lane
-header names the chromosome and the span the lane shows, with `[rev]` where that
-chromosome runs the other way relative to hg38. In the session, `rows.sort`
-stacks the lanes down the tree from human, the apes first and the cow last.
+We'll open the track on hg38 around _TP53_. JBrowse draws a lane per genome
+under the human axis, each fitted to wherever its chain places the window, and
+each lane header names the chromosome and the span the lane shows, with `[rev]`
+where that chromosome runs the other way relative to hg38. In the session,
+`rows.sort` sets the lane order down the tree from human, the apes first and the
+cow last.
 
 ```json session config=https://jbrowse.org/demos/hg38_vertebrates/config.json
 {
@@ -232,19 +233,19 @@ stacks the lanes down the tree from human, the apes first and the cow last.
 }
 ```
 
-The ribbons color by strand, the default `ribbons.encoding.color` (**Color by →
-Strand**, under **Ribbons** in the track menu). Each ribbon has the strand of
-the chain record it comes from, red where the lane runs the same way as hg38 and
-blue where it runs reversed.
+The ribbons are colored by strand, the default `ribbons.encoding.color` (**Color
+by → Strand**, under **Ribbons** in the track menu). Each ribbon has the strand
+of the chain record it comes from, red where the lane runs the same way as hg38
+and blue where it runs reversed.
 
-Around _TP53_ every lane but gorilla places the whole window from one chain,
-with the same genes in the same order:
+Around _TP53_, the whole window aligns through one chain in every lane but
+gorilla's, with the same genes in the same order:
 
 - **The gorilla ribbons** stop after _FXR2_, because gorGor6 holds the _TP53_
   end of the window on an unplaced contig.
-- **The mouse, cow and dog lanes** break into many ribbons, because the track
-  cuts a chain record at every long indel and draws each gap-free run as one
-  ribbon, with a gap wherever the lane has sequence hg38 lacks.
+- **The mouse, cow and dog lanes** break into many ribbons, because JBrowse cuts
+  a chain record at every long indel and draws each gap-free run as one ribbon,
+  with a gap wherever the lane has sequence hg38 lacks.
 - **The ape lanes** have only short gaps, so their ribbons look continuous.
 - **The mouse lane** shows `[rev]` because its chain runs the other way against
   hg38 here, so its ribbons are blue.
@@ -254,23 +255,24 @@ with the same genes in the same order:
 Navigate to `chr17:15,200,000-16,400,000`, toward the centromere, near _PMP22_.
 The region is a hotspot of segmental duplications (long repeated copies of
 sequence): every genome aligns to it in several blocks, and many of those blocks
-run the other way against their neighbours. Three rules decide how a lane draws
-them:
+run the other way against their neighbours. JBrowse follows three rules when it
+draws them in a lane:
 
-- **A lane whose blocks mostly run backwards** along hg38 draws flipped, so its
-  ribbons run straight on screen while the strand color still marks each of them
-  as an inversion.
+- **A lane whose blocks mostly run backwards** along hg38 is drawn flipped, so
+  its ribbons run straight on screen while the strand color still marks each of
+  them as an inversion.
 - **Inside a lane**, a ribbon crosses where one block runs against its
   neighbour, as in the dog and cow lanes.
-- **A lane draws one stretch of its chromosome at a time.** Where the window
-  aligns to two stretches a window or more apart, the lane draws the one holding
-  more of the window, and its header names the other after `also at`. The
-  marmoset lane draws the reversed block that places the right of the window,
-  and names the forward chain that places the left.
+- **A lane shows one stretch of its chromosome at a time.** Where the window
+  aligns to two stretches a window or more apart, JBrowse draws the one holding
+  more of the window, and the lane header names the other after `also at`. The
+  marmoset lane shows the reversed block aligned to the right of the window, and
+  its header names the forward chain aligned to the left.
 
-The gorilla lane header names chr17 beside chr5, the chromosome the lane drew.
-Part of the window aligns to chr17, the homologous chromosome, so the chr5 frame
-misses some of what the alignment places. The lane header menu sets the frame:
+The gorilla lane header names chr17 beside chr5, the chromosome drawn in the
+lane. Part of the window aligns to chr17, the homologous chromosome, so the chr5
+frame leaves out some of the aligned sequence. The lane header menu sets the
+frame:
 
 - **Show chr17 in this lane** pins the lane onto chr17.
 - **Show ⟨stretch⟩ in this lane**, on the marmoset lane, pins it onto the
@@ -279,7 +281,7 @@ misses some of what the alignment places. The lane header menu sets the frame:
   whose blocks split about evenly between the two orientations.
 - **Unpin orientation on ⟨contig⟩** restores the automatic orientation.
 
-<Figure caption="The same lanes near the PMP22 duplications. A flipped lane, marked reversed in its header, draws its ribbons straight and still blue." src="/img/multiway_synteny/hg38_vertebrates_17p_strand.png" />
+<Figure caption="The same lanes near the PMP22 duplications. A flipped lane, marked reversed in its header, has straight ribbons that are still blue." src="/img/multiway_synteny/hg38_vertebrates_17p_strand.png" />
 
 ## Reproduce it end to end
 
@@ -292,7 +294,8 @@ The script writes one config in three steps:
 3. Write each kept genome's hub entry and gene track, and one composed track
    with a child per chain.
 
-`GENOMES`, a space-separated list of UCSC genome names, stacks a different set:
+`GENOMES`, a space-separated list of UCSC genome names, selects a different set
+to stack:
 
 ```bash
 curl -fO https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/build_hg38_liftover_multiway.sh

@@ -3,7 +3,7 @@ title: Gene fusion calls and the DNA behind them
 sidebar_label: SVs (gene fusion calls)
 description:
   Triage a fusion caller's short-read calls against long RNA reads from the same
-  cells, then find the DNA breaks the transcript junctions do not sit on
+  cells, then find the DNA breaks in the introns beside the transcript junctions
 guide_category: Tutorials
 tutorial_category: Cancer genomics
 ---
@@ -187,8 +187,8 @@ circular view of it, one chord per row. The import form reads the **File Type**
 from the filename or the table's header line, and its menu sets the type by
 hand.
 
-Searching the SV inspector's table filters the table and the circular view
-together:
+Type into the SV inspector's search box to filter the table and the circular
+view together:
 
 - `chrM` keeps the rows that pair a gene with a mitochondrial transcript, the
   usual chimeric-read artefacts.
@@ -204,8 +204,8 @@ row's two breakpoints side by side as two regions of one view:
   (`[rev]`).
 - **Read connections → View as pairs/link supplementary alignments** merges each
   molecule's two alignments onto one row.
-- The figure's track keeps the split reads with alignments on both chr9 and
-  chr22, with
+- The figure's track is filtered to the split reads with alignments on both chr9
+  and chr22, with
   `"filter": [{ "field": "split", "equal": true }, { "field": "alignedRefNames", "equal": "chr9" }, { "field": "alignedRefNames", "equal": "chr22" }]`
   in its `displayDefaults`.
 
@@ -257,8 +257,8 @@ in neither window.
 ## Where the DNA broke under BCR-ABL1 and NUP214-XKR3
 
 A fusion caller reports transcribed junctions, which sit on exon edges. Two DNA
-assays on the same cells give where the chromosome broke and how much of it is
-amplified:
+assays on the same cells measure where the chromosome broke and how much of it
+is amplified:
 
 - **10X Chromium linked reads** from ENCODE (ENCSR053AXS,
   [Zhou et al. 2019](https://doi.org/10.1101/gr.234948.118)) give the breakends,

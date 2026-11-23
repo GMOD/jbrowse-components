@@ -129,9 +129,9 @@ VCF with `--double-id`, which sets each family id to the sample id:
 plink2 --vcf common.vcf --double-id --allow-extra-chr --make-bed --out common
 ```
 
-Then we thin, correlate and index. `keep.CMgam.txt` lists the Cameroon samples
-in two tab-separated columns of the same sample id, the family/individual pair
-plink asks for.
+Then we thin the variants, correlate them and index the table. `keep.CMgam.txt`
+lists the Cameroon samples in two tab-separated columns of the same sample id,
+the family/individual pair plink asks for.
 
 <!-- from: scripts/build_ag1000g_ld.sh -->
 
@@ -289,13 +289,13 @@ each choice it makes from there:
    population, mean D' between variants more than 5 Mb apart inside the test
    window and outside it, because only a population with both arrangements can
    show the block.
-2. It keeps common variants, thins them to a grid, and writes each panel's r²
-   and D' table.
-3. It bins D' to distant partners along the whole arm. The steps up and down are
-   the inversion's breakpoints, recovered from the data alone.
-4. It scores each mosquito's karyotype from the tag SNPs, prints the score
-   histogram, which has to come out with three peaks, and writes the `<INV>`
-   calls and a `config.json` opening on the inversion.
+2. The script keeps common variants, thins them to a grid, and writes each
+   panel's r² and D' table.
+3. The script bins D' to distant partners along the whole arm. The steps up and
+   down are the inversion's breakpoints, recovered from the data alone.
+4. The script scores each mosquito's karyotype from the tag SNPs, prints the
+   score histogram, which has to come out with three peaks, and writes the
+   `<INV>` calls and a `config.json` opening on the inversion.
 
 ```bash
 curl -fO https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/build_ag1000g_ld.sh

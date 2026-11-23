@@ -30,8 +30,8 @@ wolfdogs, held-out wolves and other breeds, we:
 - the `UU_Cfam_GSD_1.0` dog assembly (UCSC's canFam4) set up in JBrowse. The
   [canFam4 hub on genomes.jbrowse.org](https://genomes.jbrowse.org/ucsc/canFam4/)
   is a config that loads it with its gene and repeat tracks, and the
-  [assemblies guide](/docs/config_guides/assemblies) builds one by hand. These
-  tracks read only its `chrom.sizes`.
+  [assemblies guide](/docs/config_guides/assemblies) builds one by hand. For
+  these tracks JBrowse reads only its `chrom.sizes`.
 - Java 8+, for FLARE
 - `bcftools` built with libcurl
 - `curl`
@@ -64,9 +64,9 @@ The Dog10K consortium's public phased reference panel
 canFam4 genetic map published separately.
 
 The tracks below read local files that the
-[build script](#reproduce-it-end-to-end) writes from these, so run it first, or
-run _The files FLARE reads and writes_ on a phased VCF, reference panels and
-genetic map of your own. The script fetches everything itself.
+[build script](#reproduce-it-end-to-end) writes from these, fetching each
+itself, so run it first, or run _The files FLARE reads and writes_ on a phased
+VCF, reference panels and genetic map of your own.
 
 | What it is                                                                                                                            | File                                                                                                                                                            |
 | ------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -150,8 +150,8 @@ AFGH000001	Dog
 ### Slicing one chromosome out of the phased BCF
 
 The panel is a single large BCF, which `bcftools` reads over HTTP by range
-request. The chromosome subset splits into `chr1.ref.vcf.gz` (the two panels)
-and `chr1.gt.vcf.gz` (the targets).
+request. The script splits the chromosome subset into `chr1.ref.vcf.gz` (the two
+panels) and `chr1.gt.vcf.gz` (the targets).
 
 <!-- from: scripts/build_dog10k_wolfdog_ancestry.sh -->
 
@@ -229,8 +229,8 @@ curl -fO https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/
 python3 flare_anc_to_bed.py wolfdog_chr1.anc.vcf.gz labels.tsv ancestry.chr1.bed
 ```
 
-The BED sorts and indexes like any other BED track. The build script sorts
-inline to run without node:
+Sort and index the BED like any other BED track. The build script sorts inline
+to run without node:
 
 ```bash
 jbrowse sort-bed ancestry.chr1.bed | bgzip > ancestry.chr1.bed.gz
@@ -312,7 +312,7 @@ order of chr1 wolf fraction from FLARE's summary. For your own animals:
 - omit `sort` and cluster the rows, or list the animals in the order you want
 - load a second BED of all the animals the same way, with no `sort`: at two rows
   per animal there is no room for labels, so the named-animals track shows the
-  labels and the all-animals track the extent
+  labels and the all-animals track shows the extent
 
 ## Wolf blocks along chr1 in wolfdogs and controls
 
@@ -327,13 +327,13 @@ wolf-derived.
 
 Blocks break up towards the end of chr1, tracking the genetic map.
 
-### Held-out wolves where FLARE and allele counts disagree
+### FLARE calls and allele counts in the held-out wolves
 
 Most held-out wolves come out essentially all wolf. The two Swedish museum
 specimens come out partly dog in FLARE's calls, yet score highest of the
 held-out wolves on a second measure the build script prints, the fraction of
-near-fixed differing sites with the wolf allele. That measure scores one site at
-a time, where FLARE matches whole haplotypes against a panel.
+near-fixed differing sites with the wolf allele. The script scores that measure
+one site at a time, where FLARE matches whole haplotypes against a panel.
 
 ### How long the Tamaskan's and Shiloh Shepherd's wolf blocks run
 
@@ -349,10 +349,10 @@ one line per animal:
   ([Lin et al. 2025](https://doi.org/10.1073/pnas.2421768122)).
 
 **Clustering** → **Cluster rows by similarity...** in the track menu orders the
-rows of the full-cohort track by their blocks. It puts the held-out wolves on a
-small branch with the wolfdog haplotypes with the most wolf, apart from the
-breed dogs. Clustering runs over the region in view, and a chip in the corner of
-the tree shows the locus.
+rows of the full-cohort track by their blocks. The clustering puts the held-out
+wolves on a small branch with the wolfdog haplotypes with the most wolf, apart
+from the breed dogs. Clustering runs over the region in view, and a chip in the
+corner of the tree shows the locus.
 
 ## Reproduce it end to end
 

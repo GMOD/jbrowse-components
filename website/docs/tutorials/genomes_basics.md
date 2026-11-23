@@ -60,8 +60,8 @@ index, or a coordinate range such as `chr17:7,668,400-7,687,550`:
 
 <Figure src="/img/genomes_basics/search_tp53.png" caption="Top: TP53 typed into the location box. Bottom: the view Enter opens, with the isoform control circled." />
 
-RefSeq All draws each transcript on a separate row, and _TP53_ has more
-transcripts than the track's height holds. Two controls trim them:
+The RefSeq All track has a row per transcript, and _TP53_ has more transcripts
+than fit in the track's height. Two controls trim them:
 
 - Click the **+19 more** link beside the gene name to open that one gene
 - Click the `Isoforms trimmed` chip at the bottom right for **Auto / All
@@ -86,17 +86,18 @@ phyloP scores each base against the neutral rate the alignment implies. The
 score is signed: blue above the line marks a base that changes more slowly than
 neutral, and red below it one that changes faster.
 
-We'll zoom to single bases in exon 7, where phyloP draws one bar per base:
+We'll zoom to single bases in exon 7, where the phyloP track has one bar per
+base:
 
 - Type `chr17:7,674,180-7,674,290` into the location box
 - Tick **Reference sequence**, which is off by default
-- If the gene track draws a codon row per transcript, pick **Representative
+- If the gene track shows a codon row per transcript, pick **Representative
   transcript** from the isoform control to keep one
 
 <Figure src="/img/genomes_basics/isoform_control.png" caption="The gene track's isoform control and the popover it opens." />
 
 Within a codon the third base's bar is the short one, since most third-position
-changes leave the amino acid alone. Hover a bar to read its score.
+changes leave the amino acid unchanged. Hover a bar to read its score.
 
 ## The multiple alignment behind the phyloP score
 
@@ -119,8 +120,8 @@ substitution events on the tree:
 - under T256 and G244 (threonine 256, glycine 244), fewer rows differ and those
   that do disagree with each other, and the score goes red
 
-A MAF block has a row per species, so at gene-wide zoom the alignment track asks
-you to confirm before fetching.
+A MAF block has a row per species, so at gene-wide zoom JBrowse asks you to
+confirm before fetching the alignment.
 
 ## Regulatory tracks at the TP53 promoter
 
@@ -153,8 +154,8 @@ records that match an expression:
 - Choose **Filter by → Edit filters...** in the track menu. The dialog takes one
   [jexl](/docs/config_guides/jexl) expression per line, and a record has to pass
   every line
-- **Insert field…** lists the file's columns with the description the file gives
-  each, and writes the one you pick at the cursor
+- **Insert field…** lists the file's columns with the description the file lists
+  for each, and writes the one you pick at the cursor
 - Type `feature.annot == 'pLoF'` to keep gnomAD's predicted loss-of-function
   consequence class (the others are missense, synonymous and other)
 - Add `feature.AF >= 0.001` on a second line to drop the rarest variants
@@ -176,10 +177,9 @@ lists the index each format needs.
 
 ## Where the track data is read from
 
-The config is hosted on jbrowse.org, and most UCSC track data resolves back to
-hgdownload, read by byte range. **About track** in the track menu prints the
-adapter and its file URL, which is where to look when a track is slow or
-missing.
+The config is hosted on jbrowse.org, and JBrowse reads most UCSC track data from
+hgdownload by byte range. **About track** in the track menu prints the adapter
+and its file URL, which is where to look when a track is slow or missing.
 
 <Figure src="/img/genomes_basics/about_track.png" caption="Left: the phyloP track menu with About track boxed. Right: the dialog it opens." />
 

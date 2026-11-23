@@ -66,8 +66,8 @@ chromosome sizes of a genome of your own.
 
 Oat (_Avena sativa_) is an allohexaploid with 21 chromosomes, seven homoeologous
 groups of three, one per subgenome (A, C and D). Copies across subgenomes are
-homoeologs, so a table of them pairs oat with itself and the dotplot puts oat on
-both axes. A segment moved between groups leaves the diagonal.
+homoeologs, so a table of them has oat on both sides and the dotplot puts oat on
+both axes. A segment moved between groups lies off the diagonal.
 
 ## Producing the homoeolog table
 
@@ -125,17 +125,17 @@ whole proteome is aligned against itself. Run separately as above, DIAMOND uses
 its default sensitivity, which finds homoeologs this recent, and jcvi picks up
 `oat.oat.last` by name and skips its own alignment.
 
-Three choices decide which pairs survive:
+Three choices set which pairs are kept:
 
-- jcvi chains the pairs and keeps a gene pair (an anchor) only where its
-  neighbours agree, which removes the off-diagonal noise of gene families' best
-  hits.
+- jcvi chains the pairs and keeps a gene pair (an anchor) only where it is
+  collinear with neighbouring pairs, which removes the off-diagonal noise of
+  gene families' best hits.
 - The script keeps the pairs whose chromosomes have different subgenome letters,
   since a self-comparison also chains tandem and segmental duplicates within a
   subgenome, and writes them, two transcript ids per line, to `oat.pairs.tsv`.
 - The script reads `oat.oat.anchors` and skips `oat.oat.lifted.anchors`, because
-  liftover recruits extra pairs near an established block, and their dS runs far
-  above the chained ones', which marks them as paralogs.
+  jcvi's liftover step adds extra pairs near an established block, and their dS
+  is far above that of the chained pairs, which marks them as paralogs.
 
 On a genome of your own, the pair list comes from the two gene columns of the
 chained anchors, kept where the two genes' chromosomes end in different
@@ -276,7 +276,7 @@ and a dotplot session:
    primary transcript per gene on the 21 chromosomes, and translate the CDS into
    a proteome keyed on the same ids.
 2. Align the proteome against itself with DIAMOND and chain the hits with jcvi,
-   with `--self_remove 100` so the A-D homoeologs survive.
+   with `--self_remove 100` so the A-D homoeologs are kept.
 3. Keep the chained anchors whose two genes sit on different subgenomes, and
    measure dN and dS on each.
 4. Write the config, with oat on both axes of the dotplot session.

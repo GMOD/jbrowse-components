@@ -121,9 +121,9 @@ bcftools view -m2 -M2 -v snps panel.vcf.gz | bcftools norm -d both |
 ```
 
 Then we pick common variants per cohort and correlate every pair. PLINK's table
-has one row per pair, so a minor allele frequency (MAF) floor keeps it small
-enough for a browser to draw. The same reduction on `pooled.vcf.gz` gives
-`pooled.snvs.vcf.gz` for the pooled table.
+has one row per pair, so we apply a minor allele frequency (MAF) floor to keep
+it small enough for a browser to draw. The same reduction on `pooled.vcf.gz`
+gives `pooled.snvs.vcf.gz` for the pooled table.
 
 <!-- from: scripts/build_lct_ld.sh -->
 
@@ -210,8 +210,8 @@ bedGraphToBigWig fst_site.bedgraph hg38.chrom.sizes fst.bw
 ```
 
 The Fst track config sets a lower `resolutionMultiplier` on the adapter. Zoomed
-out, a bigWig serves summary bins, and averaging a bin hides the few
-differentiated variants among the many around them:
+out, JBrowse reads summary bins from a bigWig, and the average over a bin hides
+the few differentiated variants among the many around them:
 
 ```json addtrack
 {
@@ -238,9 +238,8 @@ differentiated variants among the many around them:
 }
 ```
 
-Running the Fst step over 40 Mb of chr2, as
-[`build_lct_fst_scan.sh`](#reproduce-it-end-to-end) does, gives a wide scan that
-loads the same way:
+Run over 40 Mb of chr2, as [`build_lct_fst_scan.sh`](#reproduce-it-end-to-end)
+does, the Fst step gives a wide scan that loads the same way:
 
 ```json addtrack
 {
@@ -269,7 +268,7 @@ loads the same way:
 
 ## The LCT block against Fst and the deCODE map
 
-We'll compare the triangle with two maps it does not depend on. The first is the
+We'll compare the triangle with two maps independent of it. The first is the
 gene track, NCBI's curated RefSeq models as UCSC serves them:
 
 ```json addtrack
@@ -338,18 +337,18 @@ triangles:
 - In the Fst track at the top, the sites with the highest Fst in the window sit
   inside the block.
 - The block fills the flat span of the
-  [deCODE map](https://doi.org/10.1126/science.aau1043). The map counts
-  crossovers in sequenced families, so it is a check on the triangle that is
-  independent of LD. The HapMap and 1000 Genomes recombination maps in the UCSC
-  hg38 hub are estimated from LD, so they are not independent of LD.
-- Pooling the swept European samples with populations the sweep never reached
-  lightens the pooled triangle.
+  [deCODE map](https://doi.org/10.1126/science.aau1043). The map is built from
+  crossovers counted in sequenced families, so it is a check on the triangle
+  that is independent of LD. The HapMap and 1000 Genomes recombination maps in
+  the UCSC hg38 hub are estimated from LD, so they are not independent of LD.
+- The pooled triangle is lighter, because it adds populations the sweep never
+  reached to the swept European samples.
 
-## Clustering LCT haplotypes into the block the triangle draws
+## Clustering LCT haplotypes by genotype
 
 The triangle summarises haplotypes, the variants on each chromosome along the
-block. A track over the multi-population VCF draws them below it in equal-width
-columns, one row per chromosome:
+block. A variant track over the multi-population VCF shows them below it in
+equal-width columns, one row per chromosome:
 
 ```json addtrack loc=chr2:134,400,000-136,900,000
 {
@@ -443,7 +442,7 @@ for pop in CEU FIN PJL TSI YRI CHB; do
 done
 ```
 
-A [`MultiQuantitativeTrack`](/docs/config_guides/quantitative_track) draws the
+A [`MultiQuantitativeTrack`](/docs/config_guides/quantitative_track) shows the
 six bigWigs as a row each, on one axis from 0 to 1:
 
 ```json addtrack loc=chr2:135,844,000-135,858,000

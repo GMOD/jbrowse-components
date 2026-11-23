@@ -110,10 +110,10 @@ genes, so the `geneLike` filter keeps the genes and their transcripts:
 ```
 
 Open the two annotations together at `chr22:49,987,402-50,067,759`. Tiberius
-draws one model, `g14001.t1`, across most of the window, where GENCODE has two
-genes with a gap between them. GENCODE's gene features have `gene_name` and no
-`Name`, so the track labels them by accession, `ENSG00000188263` for _IL17REL_
-and `ENSG00000138892` for _TTLL8_.
+predicts one model, `g14001.t1`, across most of the window, where GENCODE
+annotates two genes with a gap between them. GENCODE's gene features have
+`gene_name` and no `Name`, so the track labels them by accession,
+`ENSG00000188263` for _IL17REL_ and `ENSG00000138892` for _TTLL8_.
 
 <Figure src="/img/gene_prediction_merge.png" caption="One Tiberius model spans IL17REL and TTLL8, which GENCODE annotates as two genes." />
 
@@ -131,7 +131,7 @@ classes of disagreement. Only the four disagreement classes get a card.
 | Novel locus        | predicted where the reference annotates nothing                   | 12<!--m:tiberius-chr22-classes.novel-locus.models-->       | assess, then create      |
 | Novel coding       | predicted coding where the reference has only non-coding features | 119<!--m:tiberius-chr22-classes.novel-coding.models-->     | assess coding potential  |
 
-The portal applies these rules, and the _PI4KA_ control exercises them:
+The portal applies these rules, and _PI4KA_ is the control that tests them:
 
 - **A shared junction** is an intron of one of the gene's transcripts.
 - **Exons are compared** with genes on the same strand.

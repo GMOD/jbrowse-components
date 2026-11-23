@@ -123,7 +123,7 @@ We'll set up the dotplot in the import form:
 <Figure caption="The dotplot import form in Manual mode, the chromosome boxes cutting each axis down to one haplotype." src="/img/hg002_haplotypes_import_form.png" />
 
 Press **Launch**, then click the palette icon in the view's header and pick
-**Strand**, which draws the collinear blocks red and the inverted ones blue.
+**Strand**, which colors the collinear blocks red and the inverted ones blue.
 
 <Video src="/media/synteny/hg002_dotplot_import.mp4" caption="Building the whole-genome dotplot from the import form and coloring it by strand." />
 
@@ -140,12 +140,12 @@ the boxes, colored by strand.
 
 HG002 is heterozygous for the 8p23.1 inversion polymorphism (Bosch _et al._
 2009), so the maternal and paternal copies of that arm run in opposite
-directions, and the Q100 chain records it as its largest inverted block. A
+directions, and the inversion is the largest inverted block in the Q100 chain. A
 linear synteny view lays the two copies against each other, with each
 haplotype's tracks beside the ribbons.
 
-Open **Add → Linear synteny view**, whose **Quick start** offers the two rows
-the chain implies and the chain between them. Press **Launch**, and both panels
+Open **Add → Linear synteny view**, whose **Quick start** offers a row for each
+side of the chain, and the chain between them. Press **Launch**, and both panels
 open on the whole assembly.[^from-dotplot]
 
 Tick **Follow** in the header. With follow on, the view places the panel below
@@ -156,7 +156,7 @@ and the view moves the paternal panel to the matching stretch of
 
 - pick **Strand** from the palette icon, matching the plot's coloring: collinear
   red, inverted blue
-- turn the chain track on in each panel's track selector, where it draws as
+- turn the chain track on in each panel's track selector, where it shows as
   blocks on that panel's ruler. The inverted block is the long blue bar in both
 
 The gene annotation shows the inversion too, from the JHU Liftoff GFFs published
@@ -165,8 +165,8 @@ beside the assembly, one per haplotype, on matching contig names:
 - the files annotate v1.1, and on chromosome 8 the gene tracks still line up
   with the v1.2 ribbons
 - the gene symbol is in `gene_name`, so the label points there
-- the paternal panel takes the same config with `PAT` in the name and URL, under
-  a different `trackId`
+- the paternal panel's gene track uses the same config with `PAT` in the name
+  and URL, under a different `trackId`
 
 ```json addtrack
 {
@@ -187,11 +187,11 @@ beside the assembly, one per haplotype, on matching contig names:
 
 Set these on each gene track:
 
-- `geneGlyphMode` draws one representative transcript per gene, the RefSeq or
-  MANE Select one where the file tags it and the longest coding one otherwise,
-  so the track is one row deep
-- **Color by → Strand** paints forward red and reverse blue, matching the
-  ribbons
+- with `geneGlyphMode`, JBrowse draws one representative transcript per gene,
+  the RefSeq or MANE Select one where the file tags it and the longest coding
+  one otherwise, so the track is one row deep
+- **Color by → Strand** colors forward genes red and reverse genes blue,
+  matching the ribbons
 - at this zoom the labels come from a second track over the same GFF under a
   separate `trackId`, with **Filter by...** set to
   `jexl:feature.gene_name == 'MFHAS1' || feature.gene_name == 'ERI1' || feature.gene_name == 'TNKS' || feature.gene_name == 'MSRA' || feature.gene_name == 'PINX1' || feature.gene_name == 'XKR6' || feature.gene_name == 'BLK' || feature.gene_name == 'GATA4'`,
@@ -209,16 +209,17 @@ one window typed into both panels looks lined up. Zoomed in, every upstream
 indel shifts one haplotype against the other and the offset fills the screen.
 
 In the figure below the same 70 kb is typed into both panels with follow off,
-and ticking **Follow** fills the paternal panel and closes the ribbon. Turn
-follow off to pan the paternal panel by hand, or right-click a chain block for
-**Move other panel to the matching region**, which does the follow move once.
+and after **Follow** is ticked, the paternal panel fills and the ribbon closes.
+Turn follow off to pan the paternal panel by hand, or right-click a chain block
+for **Move other panel to the matching region**, which does the follow move
+once.
 
 <Figure caption="Before and after ticking Follow, maternal over paternal." src="/img/hg002_haplotypes_follow_panel.png" />
 
-**Gridlines**, in the header's settings menu, draw a line through each ribbon
-from a point on the top row to where it maps on the bottom. In the clip the same
-coordinates are typed into both panels, 2 Mb into the collinear chain past the
-inversion.
+With **Gridlines** on, in the header's settings menu, the view draws a line
+through each ribbon from a point on the top row to where it maps on the bottom.
+In the clip the same coordinates are typed into both panels, 2 Mb into the
+collinear chain past the inversion.
 
 <Video src="/media/synteny/hg002_follow_panels.mp4" caption="Follow places the paternal panel from the maternal one through the chain, so the location markers stay vertical as the top panel is dragged." />
 

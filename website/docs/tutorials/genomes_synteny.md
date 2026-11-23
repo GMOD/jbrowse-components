@@ -32,9 +32,8 @@ genome UCSC aligned hg38 to:
   **hg38 to Human (hs1) liftOver**
 - type `TNNT3` into the location box, which searches the hosted name index
 
-The liftOver track draws one feature per chain block. The hg38 config declares
-one assembly, and the site loads the other genome's config when a track names
-it.
+The liftOver track has one feature per chain block. The hg38 config declares one
+assembly, and the site loads the other genome's config when a track names it.
 
 ## Launching a synteny view
 
@@ -64,7 +63,7 @@ session's synteny datasets align to it. See
 The synteny view's settings menu, the sliders button in its header, holds the
 ribbon settings. **Curved lines** draws each ribbon as a curve, easier to follow
 across a gap. Insertions and deletions inside each block are see-through gaps;
-**CIGAR indels** → **Colored indels** paints them instead.
+**CIGAR indels** → **Colored indels** colors them instead.
 
 <Figure src="/img/genomes_synteny/ribbon_settings.png" links="As it opens=genomes_synteny/ribbons_default,Curved=genomes_synteny/ribbons_curved" caption="The TNNT3 comparison before and after Curved lines, with the menu open on top." />
 
@@ -98,10 +97,10 @@ hg38's RepeatMasker track, and the chimp panel's has no L1HS. The rest of the
 panTro6 hub loads from **File → Open connection...** as a JBrowse 2 hub at
 `https://jbrowse.org/ucsc/panTro6/config.json`.
 
-A chain or PAF of your own launches the same way once it is added as a synteny
-track: [HG002 haplotypes](/docs/tutorials/hg002_haplotypes) loads a chain, and
-[Synteny (pairwise minimap2)](/docs/tutorials/synteny_visualization) aligns two
-genomes and loads the PAF.
+You can launch from a chain or PAF of your own the same way once it is added as
+a synteny track: [HG002 haplotypes](/docs/tutorials/hg002_haplotypes) loads a
+chain, and [Synteny (pairwise minimap2)](/docs/tutorials/synteny_visualization)
+aligns two genomes and loads the PAF.
 
 To start from a gene, the site's
 [ortholog search](https://genomes.jbrowse.org/orthologs) lists a symbol's NCBI
@@ -112,8 +111,8 @@ alignment exists.
 
 A liftOver track pairs hg38 with one other genome. To compare many genomes at
 once, hg38's staging config also has **hg38 vs 242 genomes (liftOver,
-multi-way)**, one track over all of hg38's liftOver chains, which draws hg38 on
-top and a lane per genome below. It is on
+multi-way)**, one track over all of hg38's liftOver chains, with hg38 on top and
+a lane per genome below. It is on
 [staging.genomes.jbrowse.org](https://staging.genomes.jbrowse.org) until JBrowse
 5 ships. Open hg38 there, type `TNNT3` into the location box and turn the track
 on.
@@ -140,7 +139,7 @@ many to read at once. In its track menu:
 [The multi-way synteny display guide](/docs/user_guides/multiway_synteny_display)
 covers the lane labels, `[rev]`, the ribbons and the lane menus.
 [Synteny (liftOver lanes, vertebrates)](/docs/tutorials/hg38_vertebrates_synteny)
-builds the same kind of track from chains you choose.
+shows how to build the same kind of track from chains you choose.
 
 ## Choosing which mouse strains become lanes at Nnt
 

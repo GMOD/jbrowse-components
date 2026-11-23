@@ -90,11 +90,11 @@ NC_012920.1	RefSeq	region	1	16569
 NC_012920.1	RefSeq	D_loop	16024	17145
 ```
 
-GFF3 writes a feature that crosses the origin of a circular sequence this way,
-in coordinates that continue past the end. JBrowse's GFF3 adapters read the
-length off the `Is_circular=true` record and cut such a feature at the origin
-into a piece before it and a piece after, so keep that record in the file you
-load.
+In GFF3, a feature that crosses the origin of a circular sequence is written
+this way, in coordinates that continue past the end. JBrowse's GFF3 adapters
+read the length off the `Is_circular=true` record and cut such a feature at the
+origin into a piece before it and a piece after, so keep that record in the file
+you load.
 
 ## Loading the genome and the genes
 
@@ -123,9 +123,10 @@ Desktop the assembly loads from a
 
 - `circularRefNames` marks the sequence circular, so the circular view closes it
   into a ring with no gap at its origin.
-- `geneticCodes` translates the reference sequence track's six frames with
-  NCBI's vertebrate mitochondrial code, table 2. NCBI's CDS records name the
-  same table in their own `transl_table`, which a gene's protein sequence reads.
+- With `geneticCodes`, JBrowse translates the reference sequence track's six
+  frames with NCBI's vertebrate mitochondrial code, table 2. NCBI's CDS records
+  name the same table in their `transl_table` attribute, which JBrowse uses for
+  a gene's protein sequence.
 
 For your own accession, put your sequence's name in both settings and pick its
 [NCBI genetic code](https://www.ncbi.nlm.nih.gov/Taxonomy/Utils/wprintgc.cgi)

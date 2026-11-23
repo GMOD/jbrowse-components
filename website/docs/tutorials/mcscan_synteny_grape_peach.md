@@ -9,7 +9,7 @@ tutorial_category: Synteny & comparative genomics
 tutorial_subcategory: Ortholog tables
 ---
 
-Grape and peach keep long runs of genes in the same order, though the genomes
+Grape and peach share long runs of genes in the same order, though the genomes
 have diverged too far to align base by base. We:
 
 - produce the gene BEDs and anchor files with
@@ -62,8 +62,8 @@ pip install jcvi git+https://github.com/cmdcolin/orthologs2jbrowse
 
 Grape ([Shi et al. 2023](https://doi.org/10.1093/hr/uhad061)) and peach RefSeq
 assemblies and annotations, each fetched by accession with the `datasets` CLI:
-the same two genomes [](/docs/tutorials/multiway_synteny_grape_peach_cacao)
-stacks with cacao.
+the same two genomes stacked with cacao in
+[](/docs/tutorials/multiway_synteny_grape_peach_cacao).
 
 You don't need these files to follow the figures, which come from the hosted
 grape, peach and cacao build. The track configs name local files that the
@@ -76,7 +76,7 @@ your own.
 | Grape      | [GCF_030704535.1_ASM3070453v1/](https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/030/704/535/GCF_030704535.1_ASM3070453v1/)                   |
 | Peach      | [GCF_000346465.2_Prunus_persica_NCBIv2/](https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/000/346/465/GCF_000346465.2_Prunus_persica_NCBIv2/) |
 
-## What `.anchors` and `.anchors.simple` hold
+## Contents of `.anchors` and `.anchors.simple`
 
 The run writes two files that JBrowse loads as separate synteny tracks.
 `.anchors`, via `MCScanAnchorsAdapter`, is the gene-pair level: each line is one
@@ -114,8 +114,8 @@ NC_081805.1	53914	63050	rna-XM_010651756.3	0	+
 Column 1 must name a sequence in the JBrowse assembly, directly or through its
 alias table: the hub assemblies below resolve `NC_081805.1` to grape `chr1`.
 
-A gene id in the anchors file that no BED names breaks the join, and some such
-mismatches load with no error; the
+A gene id in the anchors file that is missing from the BEDs breaks the join, and
+some such mismatches load with no error; the
 [synteny track guide](/docs/config_guides/synteny_track#gene-ids-are-the-join-in-the-mcscan-adapters)
 lists which. The mismatch that matters here is jcvi stripping isoform suffixes
 from the ids unless run with `--no_strip_names`, which the command in the next
@@ -242,7 +242,7 @@ We'll start with **Add → Linear synteny view** and pick peach and grape. Then:
 
 - Turn on both MCScan tracks in the band between them.
 - Turn on the simple-anchors track in each panel's track selector, where it
-  draws as a row of bars.
+  shows as a row of bars.
 
 <Figure caption="Peach and grape with both MCScan tracks: .anchors.simple blocks as wide ribbons, the per-gene .anchors pairs over them." src="/img/mcscan_anchors.png" />
 
@@ -267,7 +267,7 @@ ribbon.
 Pick **Color by value → Syntenic depth** on the palette button in the view
 header. A ribbon stays grey where its two genes pair only with each other, and
 turns orange where several genes share one ortholog. The count covers the whole
-`.anchors` file, so a gene whose other copies are off screen still takes color.
+`.anchors` file, so a gene whose other copies are off screen is still colored.
 
 <Figure caption="Grape chr3 against peach chrG8, the .anchors track colored by syntenic depth." src="/img/mcscan_synteny/syntenic_depth.png" />
 
@@ -277,14 +277,15 @@ at once, open peach in a linear genome view at `chrG7:18,290,000-18,660,000` and
 turn on the .anchors track:
 
 - Pick **Display types → Multi-way synteny display** in the track menu. The
-  track pairs peach with one other genome, so each grape chromosome holding a
-  copy of the window gets its own lane, with its gene track, and every ribbon
-  joins a peach gene to the grape gene MCScan paired it with.
+  track has peach paired with one other genome, so the display draws each grape
+  chromosome that holds a copy of the window in a separate lane, with that
+  chromosome's gene track, and every ribbon joins a peach gene to the grape gene
+  MCScan paired it with.
 - In **Lanes → Choose lanes...**, untick every grape chromosome but chr9 and
   chr11.
 - Pick **Move up** twice in the grape chr9 lane's menu (right-click its name),
   so the older copy sits above peach and the ortholog below, each facing peach
-  across its own gutter.
+  across a separate gutter.
 
 <Figure caption="A 370 kb stretch of peach chrG7 between an older grape copy on chr9 (above) and its grape ortholog on chr11 (below), one lane per copy, each gutter joining peach genes to one copy's." src="/img/mcscan_synteny/gamma_copies.png" />
 
@@ -309,7 +310,7 @@ where several blocks join peach to grape chr8:
 <Figure src="/img/mcscan_synteny/blocks.png" links="By strand=mcscan_synteny/blocks_by_strand,By block=mcscan_synteny/blocks_by_block" caption="Peach chrG7 against grape chr8 in the .anchors track, each block a pale band under its gene pairs. Top: colored by strand. Bottom: colored by block." />
 
 A block holds gene pairs on both strands, so the strand colors mix inside one
-block, whose band takes the color of the block's own direction.
+block, whose band has the color of the block's overall direction.
 
 `blockSpan` is the size `screen --minspan=30` tested when it wrote
 `.anchors.simple`, so a `filter` on it leaves the gene pairs of the blocks that
@@ -390,8 +391,9 @@ options decide whether JBrowse can draw the result:
 - `--strand-gff3 peach=peach.gff3.gz` recovers strand from the annotation, so an
   inverted `.anchors` pair is drawn as inverted
 
-`--fai peach=peach.fa.fai` checks the refNames against the assembly; an unknown
-name shows nothing. An anchors score becomes `-log10` of MCScanX's e-value.
+`--fai peach=peach.fa.fai` checks the refNames against the assembly, since
+JBrowse draws nothing on an unknown name. An anchors score becomes `-log10` of
+MCScanX's e-value.
 
 The number of `--species` names sets what the run writes:
 
@@ -399,7 +401,7 @@ The number of `--species` names sets what the run writes:
   `.collinearity` covers every pair. See
   [ortholog tables](/docs/config_guides/synteny_track#from-mcscanx).
 - With a single species the script keeps the blocks duplicated within that
-  genome, which [](/docs/tutorials/homoeolog_synteny) draws as a dotplot of one
+  genome, which [](/docs/tutorials/homoeolog_synteny) shows as a dotplot of one
   assembly on both axes.
 
 ## Reproduce it end to end

@@ -69,7 +69,7 @@ cancer, where the protein contacts DNA. Open the
   hotspot R248**.
 - Tick **Advanced**. The **Structure** box shows the entry the chip picked,
   3KMD, the DNA-binding core of p53 bound to DNA.
-- Set **Color** to **AlphaMissense pathogenicity**, which paints each residue by
+- Set **Color** to **AlphaMissense pathogenicity**, which colors each residue by
   how damaging AlphaMissense predicts a substitution there to be.
 - Click **Open in JBrowse ↗**.
 
@@ -160,7 +160,7 @@ the session opens on the model. Open the protein browser on residue 197:
 The model opens colored by pLDDT, AlphaFold's per-residue confidence, which the
 protein view's palette menu sets as **pLDDT confidence (AlphaFold)**. Dark blue
 is very high, light blue confident, yellow low and orange very low, and the
-header's **pLDDT** row draws the same scale along the sequence.
+header's **pLDDT** row shows the same scale along the sequence.
 
 <Figure src="/img/protein/agl11_codon_hover.png" caption="VviAGL11 at codon 197 with its UniRef alignment and the AlphaFold model colored by pLDDT." />
 
@@ -200,7 +200,7 @@ browser's:
 - **A gene track of your own** works when its features have a protein or
   transcript ID the lookup recognizes, as the hosted configs' **NCBI RefSeq -
   RefSeq All** and **NCBI RefSeq - RefSeq Curated** tracks do.
-- **Per-residue tracks** in the protein view draw pLDDT, domains, helices and
+- **Per-residue tracks** in the protein view show pLDDT, domains, helices and
   hydrophobicity.
 
 To put the two views beside each other, open the arrow beside the dialog's
@@ -251,7 +251,7 @@ and choose **Launch MSA view**. The dialog opens on its **Orthologs** tab:
 - **Query species** is the species the gene came from, free text resolved
   against NCBI's taxonomy: a scientific name, a common name or a taxon id
 - **Rows to align** is how many species to build. NCBI orders its ortholog
-  report from the reference organisms outward, so this takes the closest N
+  report from the reference organisms outward, so the box takes the closest N
 - **Choose isoform** picks which transcript becomes the query row, the one the
   genome view stays linked to
 - **MSA Algorithm** sets which aligner EBI runs, Clustal Omega by default
@@ -287,24 +287,25 @@ UCSC projects UniProt's annotations onto the genome, so the hosted hg38 config
 holds them as tracks. Turn on **UniProt - Domains** (under Genes and Gene
 Predictions) in the linear view you launched from, then narrow it to one record:
 
-- **Filter by...** in the track menu applies the row `uniProtId` is `Q9C000`,
+- In **Filter by...** in the track menu, add the row `uniProtId` is `Q9C000`,
   the gene's reviewed UniProt entry. Without it, the track draws a domain once
   per isoform, and isoforms sharing exons overlap.
-- **UniProt - Chains**, **Mutations** and **AA Modifications** project the rest
-  of the record.
+- **UniProt - Chains**, **Mutations** and **AA Modifications** hold the rest of
+  the record, projected the same way.
 
 <Figure src="/img/genomes_msa/genomic_domains.png" caption="NLRP1 with NCBI RefSeq above UniProt - Domains, filtered to the gene's reviewed UniProt entry." />
 
 For a genome UCSC projects no UniProt record onto, or for your own gene models,
-[](/docs/tutorials/protein_domains) calls Pfam domains on the proteins and
-places each one on the exons that encode it, as a track of the same kind.
+[](/docs/tutorials/protein_domains) shows how to call Pfam domains on the
+proteins and place each one on the exons that encode it, as a track of the same
+kind.
 
 ## More protein browser sessions
 
 A protein browser session takes any other JBrowse track beside the codon, and a
 second protein view beside the first. Open a figure's live link to load its
 session, then hover the highlighted codon in the genome view: each protein view
-lights the residue it codes for.[^constructs]
+highlights the residue that codon encodes.[^constructs]
 
 <Figure src="/img/protein/brca1_sge_alphamissense.png" caption="BRCA1 at codon 1775 with the saturation genome editing score of every missense change and the AlphaMissense score of every possible base change, above 1T15 twice: colored by the scan's residue mean on the left and by AlphaMissense on the right. The M1775R highlight names the residue in both structures." />
 
@@ -322,11 +323,11 @@ lights the residue it codes for.[^constructs]
 
 <Figure src="/img/protein/hbb_e6v.png" caption="HBB at the sickle codon with its two single-base changes, above wild-type hemoglobin (2HHB) and two sickle hemoglobin molecules (2HBS), both from one camera. The sickle codon and its residue are magenta, and Phe85 and Leu88 of the neighboring molecule are teal." />
 
-<Figure src="/img/protein/ccr5_delta32.png" caption="CCR5 with the 1000 Genomes 30x reads of a Δ32/Δ32, a Δ32/+ and a +/+ sample over the 32-base deletion, above the codons the shifted frame reads, then CCR5 bound by HIV gp120, drawn green (6MEO), beside CCR5 alone, drawn only to the last residue the frameshift spares." />
+<Figure src="/img/protein/ccr5_delta32.png" caption="CCR5 with the 1000 Genomes 30x reads of a Δ32/Δ32, a Δ32/+ and a +/+ sample over the 32-base deletion, above the codons of the shifted frame, then CCR5 bound by HIV gp120, drawn green (6MEO), beside CCR5 alone, drawn only to the last residue before the frameshift." />
 
 <Figure src="/img/protein/ccr5_delta32_gene.png" caption="CCR5 on hg38 above the Δ32 allele as its own assembly, with the deletion drawn as the pinch between the two alignment blocks and the Δ32 coding sequence ending at its premature stop." />
 
-<Figure src="/img/protein/ccr5_delta32_combo.png" caption="The same locus in one session: the three samples' reads over the deletion, CCR5 on hg38 above the Δ32 allele as its own assembly, and the receptor drawn whole beside the part the frameshift spares." />
+<Figure src="/img/protein/ccr5_delta32_combo.png" caption="The same locus in one session: the three samples' reads over the deletion, CCR5 on hg38 above the Δ32 allele as its own assembly, and the receptor drawn whole beside the part before the frameshift." />
 
 <Figure src="/img/protein/apoe_e4.png" caption="APOE under a Manhattan plot of FinnGen Alzheimer's disease statistics, above the ortholog alignment and two protein views: the 1B68 crystal structure and its AlphaFold model colored by pLDDT." />
 
@@ -399,7 +400,8 @@ The approach is described in
     and a `connectedView` with the `assembly`, `loc` and `tracks` to look the
     transcript up in; the plugin derives the AlphaFold structure and translates
     the transcript's CDS. The explicit form takes a structure `url`, feature and
-    protein sequence, for a transcript no loaded track serves. A `ProteinView`
-    with only a `url` opens as a standalone structure. The protein3d
+    protein sequence, for a transcript that is in no loaded track. A
+    `ProteinView` with only a `url` opens as a standalone structure. The
+    protein3d
     [launching guide](https://github.com/GMOD/jbrowse-plugin-protein3d/blob/main/docs/launching.md#a-structure-connected-to-the-genome)
     has both forms.

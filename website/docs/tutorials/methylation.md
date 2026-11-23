@@ -127,12 +127,12 @@ track. For your own reads, swap `uri` for a sorted modBAM or CRAM with the
 
 **File → Open track...** also opens the file by URL and infers the `.bai`.
 
-**Color by → Modifications** in the track menu paints each read with its 5mC
+**Color by → Modifications** in the track menu colors each read by its 5mC
 calls:
 
-- On its own it paints red each position the `MM` tag lists as modified
+- On its own it colors red each position the `MM` tag lists as modified
 - **Show unmethylated in blue** (IGV's "2-color" scheme) marks every CpG,
-  including the ones the tag leaves implicit, and paints blue each one more
+  including the implicit ones absent from the tag, and colors blue each one more
   likely unmodified than modified, so an unmethylated region is solid blue
 
 The
@@ -160,7 +160,7 @@ bgzip output.bedmethyl
 tabix -p bed output.bedmethyl.gz
 ```
 
-Two `modkit pileup` options shape the output:
+Two `modkit pileup` options set the output:
 
 - `--combine-mods` combines 5mC and 5hmC into a single fraction
   (bisulfite-equivalent). Pass `--modified-bases 5mC 5hmC` without it to keep
@@ -219,8 +219,8 @@ that box starts unchecked, and leaving it unchecked keeps the coloring.
 <Figure caption="HG002 ONT reads over the SNRPN CpG island colored by 5mC. Top: file order. Bottom: grouped by the HP tag." src="/img/methylation/hg002_snrpn_group_by_hp.png" links="Ungrouped=methylation/hg002_snrpn_ungrouped,Grouped by HP=methylation/hg002_snrpn_grouped" />
 
 The two per-haplotype bedMethyl files from `--phased` load as one track above
-the reads, with a row per file. Pinning the axis at 0 to 100 puts both rows on
-one scale, so an unmethylated row stays flat:
+the reads, with a row per file. With the axis pinned at 0 to 100, both rows
+share one scale, so an unmethylated row stays flat:
 
 ```json addtrack loc=chr15:24,948,000-24,962,000
 {
@@ -274,7 +274,7 @@ samtools index haplotagged.bam
 A single CpG's fraction rests on the few reads covering it, so per-site values
 scatter from 0 to 100 and a difference spread over many sites is hard to see. A
 `window` step averages each CpG with a fixed number of neighbouring CpGs, so a
-CpG island weighs as many sites as it holds. We'll load both haplotypes around
+CpG island counts as many sites as it holds. We'll load both haplotypes around
 _SNRPN_, each in a row with its raw values under a moving average:
 
 ```json addtrack loc=chr15:24,800,000-25,200,000
@@ -364,13 +364,13 @@ The display draws two marks over the same rows:
   mean over the 50 CpGs on either side, weighted by `n_valid_cov`, the read
   depth modkit counted there
 
-Three more settings shape the track:
+Three more settings configure the track:
 
 - **`groupby: ["source"]`** in the `window` step averages each haplotype over
   that haplotype's CpGs
 - **`rows: "source"`** gives each haplotype a row whose label names it, so
   `legend.show` is off
-- **`fetchSizeLimit`**, raised, lets the track read the whole slice when zoomed
+- **`fetchSizeLimit`**, raised, lets JBrowse read the whole slice when zoomed
   out
 
 Type `chr15:24,800,000-25,200,000` into the location box to see the _SNRPN_
@@ -402,4 +402,5 @@ then type `chr15:22,200,000-26,900,000` to take in the whole imprinted domain:
 [^dmr]:
     To compare two samples, run `modkit dmr` on their per-sample pileups and
     load its BED output as a `FeatureTrack` beside the bedMethyl tracks, so the
-    differentially-methylated regions line up with the positions driving them.
+    differentially-methylated regions line up with the per-CpG values behind
+    them.

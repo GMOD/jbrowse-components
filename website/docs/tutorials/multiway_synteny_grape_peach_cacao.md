@@ -71,7 +71,7 @@ GFF3 and a FASTA per genome of your own.
 | Tomato      | [GCF_036512215.1_SLM_r2.1/](https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/036/512/215/GCF_036512215.1_SLM_r2.1/)                               |
 | Citrus      | [GCF_000493195.1_Citrus_clementina_v1.0/](https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/000/493/195/GCF_000493195.1_Citrus_clementina_v1.0/)   |
 
-## What a `.blocks` file is
+## The `.blocks` file format
 
 A `.blocks` file is a tab-delimited table. Each row is an orthologous group and
 each column a genome, with `.` where a genome has no member. The file has no
@@ -84,12 +84,13 @@ grape03	.	.
 ```
 
 A real cell holds the gene id from the annotation (`rna-XM_007225519.2` for
-NCBI); the table has no coordinates, so one `.bed` per genome places each id.
+NCBI); the table has no coordinates, so one `.bed` per genome holds each id's
+coordinates.
 
-### How a .blocks table holds a duplicated gene
+### Duplicated genes in a .blocks table
 
 <details>
-<summary>Two conventions place a second copy of a gene</summary>
+<summary>Two conventions for a second copy of a gene</summary>
 
 `mcscan` writes a column per chain of synteny blocks, so a grape gene syntenic
 to two peach regions fills a second peach column (`--iter` caps the chains). At
@@ -113,7 +114,7 @@ grape02	peach02b	cacao02
 grape03	.	.
 ```
 
-OrthoFinder's converter, `orthologs2jbrowse orthofinder`, writes this shape by
+OrthoFinder's converter, `orthologs2jbrowse orthofinder`, writes this layout by
 default; the MCScanX converter keeps the best-scoring copy.
 
 </details>
@@ -168,9 +169,9 @@ tomato and citrus too, joins all six tables and keeps column 1 and every even
 column after it, which writes the seven-column `grape.blocks`.
 
 [Building a table for MCScanBlocksAdapter](/docs/config_guides/synteny_track#building-a-table-for-mcscanblocksadapter)
-converts MCScanX, OrthoFinder, Ensembl Compara and reciprocal-best-hit output to
-the same shape, and the adapter reads the `.blocks` and BED files plain or
-gzipped.
+shows how to convert MCScanX, OrthoFinder, Ensembl Compara and
+reciprocal-best-hit output to the same layout, and the adapter reads the
+`.blocks` and BED files plain or gzipped.
 
 ## Setting up the grape, peach and cacao assemblies
 
@@ -216,9 +217,10 @@ chromosome is `chrG1` where the BED has `NC_034009.1`.
 
 ## Loading the blocks file with MCScanBlocksAdapter {#loading-it-in-jbrowse-with-mcscanblocksadapter}
 
-One track backs each pair of adjacent rows. `blockAssemblies` names every column
-in order, and `bedLocations` gives the matching BED per column; the adapter
-needs no `assemblyNames` unless you mean to narrow it:
+One track supplies the ribbons between each pair of adjacent rows.
+`blockAssemblies` names every column in order, and `bedLocations` gives the
+matching BED per column; the adapter needs no `assemblyNames` unless you mean to
+narrow it:
 
 ```json addtrack
 {
@@ -243,9 +245,9 @@ The hosted
 [config.json](https://jbrowse.org/demos/grape_peach_cacao/config.json) holds the
 seven-column version of this track under the same `trackId`, named **Grape vs
 peach, cacao, arabidopsis, poplar, tomato, citrus (MCScan blocks)**. Every
-session and figure below runs on that one. Its `assemblyNames` lists only grape,
-peach and cacao, the genomes with an assembly; the other four columns draw as
-multi-way lanes from the table and their BED alone.
+session and figure below uses that track. Its `assemblyNames` lists only grape,
+peach and cacao, the genomes with an assembly, and JBrowse draws the other four
+columns as multi-way lanes from the table and their BED alone.
 
 ## Stacking grape, peach and cacao
 
@@ -276,23 +278,24 @@ dialog. As a `defaultSession`, the same stack ordered peach-cacao-grape:
 }
 ```
 
-- `tracks` names the track once, and it backs both bands because its
+- `tracks` names the track once, and it supplies both bands because its
   `assemblyNames` list every genome
 - `collapseEmptyRows` gives each trackless row a bare scale bar
-- `encoding.color` is a color scale, a `field` mapped to colors; the `reference`
-  field colors both bands by the chromosomes of the shared middle row
+- `encoding.color` is a color scale, a `field` mapped to colors; with the
+  `reference` field, both bands are colored by the chromosomes of the shared
+  middle row
 
-<Figure caption="Peach, cacao and grape stacked from one MCScan .blocks file. Color by → Reference anchors both bands on the middle row." src="/img/multiway_synteny/grape_peach_cacao.png" />
+<Figure caption="Peach, cacao and grape stacked from one MCScan .blocks file. Color by → Reference colors both bands by the middle row's chromosomes." src="/img/multiway_synteny/grape_peach_cacao.png" />
 
 ## Direct and transitive pairs {#direct-vs-transitive-pairs}
 
 Every row of `grape.blocks` starts from a grape gene, as in any jcvi MCScan
 table, so the bands of a stack differ in where their ribbons come from:
 
-- A band touching grape draws pairs straight from the table (direct pairs).
-- A peach-cacao band draws a ribbon only through a grape gene both genomes
-  share, so each of its ribbons is transitive, and no ribbon is drawn for a row
-  where grape has no member.
+- A band touching grape shows pairs straight from the table (direct pairs).
+- In a peach-cacao band, JBrowse draws a ribbon only through a grape gene both
+  genomes share, so each of its ribbons is transitive, and no ribbon is drawn
+  for a row where grape has no member.
 - The stack above puts grape at the bottom, so its peach-cacao band is the
   transitive one. A peach, grape, cacao stack makes both bands direct.
 
@@ -316,13 +319,13 @@ We'll stack peach over grape over cacao. Then:
 ## One grape locus against all the genomes
 
 `grape.blocks` has seven columns, and the hosted track names all seven in
-`blockAssemblies` and `bedLocations`, so it draws every mate (the ortholog in
-each other genome) at once in a linear genome view on grape:
+`blockAssemblies` and `bedLocations`, so JBrowse draws every mate (the ortholog
+in each other genome) at once in a linear genome view on grape:
 
 - Navigate to `chr11:778,000-866,000` and turn on grape's **NCBI RefSeq - RefSeq
   All** track.
 - Turn on **Grape vs peach, cacao, arabidopsis, poplar, tomato, citrus (MCScan
-  blocks)**, which draws every mate in one pileup.
+  blocks)**, which shows every mate in one pileup.
 - Pick **Group by → Mate assembly** to facet the track into one lane per genome.
 
 <Figure caption="One grape locus against the other plants, the blocks track grouped by mate assembly, one lane per genome." src="/img/multiway_synteny/blocks_one_vs_all.png" />
@@ -337,7 +340,7 @@ of one genome:
   window
 - one ribbon per ortholog group joins adjacent lanes, bridging past an empty
   one, red where the two lanes run the same way and blue where one is reversed
-- any track whose features have a `mate` per assembly feeds the same lanes,
+- any track whose features have a `mate` per assembly can fill the same lanes,
   including an [OrthoFinder table](/docs/tutorials/orthofinder_synteny) or an
   [all-vs-all PAF](/docs/tutorials/allvsall_synteny)
 
@@ -423,7 +426,7 @@ number differs.
 
 ## Restacking the genomes around a locus
 
-Two routes open a stacked synteny view from the lanes:
+A stacked synteny view opens from the lanes by two routes:
 
 - from the lane track, **Advanced → Launch → Linear synteny view (visible
   region)...** in its track menu offers a row to every aligning genome
@@ -450,7 +453,7 @@ tracks, synteny track and default session:
    genomes as lanes of the blocks track.
 
 `BLOCKS_ONLY_SPECIES` lists the extra lanes; a genome added there needs an NCBI
-accession with an annotation, and gets a lane but no row of its own.
+accession with an annotation, and gets a lane but no row in the synteny view.
 
 ```bash
 curl -fO https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/build_grape_peach_cacao_synteny.sh

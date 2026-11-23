@@ -86,23 +86,23 @@ and problematic-region tracks for hg38 only:
 
 - **Multi-read mappability - Umap M100**, the fraction of overlapping 100-mers
   at each position that are unique in the genome, computed from the reference
-  alone. The file omits positions with no unique 100-mer, so the track goes
-  blank there. The hosted config holds it only as one row of **Multi-read
+  alone. The file omits positions with no unique 100-mer, so the track is blank
+  there. The hosted config holds it only as one row of **Multi-read
   mappability - Umap (multi)**, so add it on its own with the config below.
   - **Resolution → Bin summary → Minimum**, with **Show min and max** unchecked,
     draws the worst position in each bin
   - **Y axis... → Min** and **Max** pin the axis at 0 to 1
-  - In the 2.5 Mb frame, at about a kilobase per pixel, even **Minimum** sits on
-    the floor everywhere, so read this track in the zoomed view
+  - In the 2.5 Mb frame, at about a kilobase per pixel, even the **Minimum**
+    line is at 0 everywhere, so read this track in the zoomed view
 - **gnomAD v3 Genome Coverage - Mean Coverage**, averaged over tens of thousands
   of genomes. gnomAD drops reads that do not place uniquely before averaging, so
-  this track falls wherever the Umap track is blank.
+  this track is low wherever the Umap track is blank.
 - **GIAB Problematic Regions - LowMap+SegDup**, the sequence GIAB leaves out of
   its benchmark.
 - **Long-read SVs - 1KG Vienna ONT SVs**, the long-read callset, which the
   hosted config holds only as one row of **Long-read SVs - by cohort**; add it
   with the config below.
-- **NCBI RefSeq - RefSeq Curated**, the gene track the figures draw.
+- **NCBI RefSeq - RefSeq Curated**, the gene track in the figures.
 
 The Umap config holds the **Minimum** score mode and the 0 to 1 axis:
 
@@ -132,7 +132,7 @@ The Umap config holds the **Minimum** score mode and the 0 to 1 axis:
 }
 ```
 
-The coverage track draws the mean alone, with the axis fixed at 0 to 40, so a
+The coverage track shows the mean alone, with the axis fixed at 0 to 40, so a
 bin's minimum and maximum do not fill the low-coverage block at this zoom:
 
 ```json addtrack
@@ -212,11 +212,11 @@ dark blue.
 Dark blue is MAPQ 0; yellow is MAPQ 30 and above. **Advanced → Edit plot...** on
 the reads track shows this `encoding.color` as text and applies edits live.
 
-Coloring shows each read's MAPQ, and the coverage band above the reads still
-counts every read. **Group by → Mapping quality** in the track menu gives each
-MAPQ bin a section with a coverage band of its own, and turning off **Show →
-Show pileup** leaves only the bands, drawn on one scale. In the track config
-that is a `facet` on the `mapq` field:
+The color shows each read's MAPQ, but the coverage band above the reads still
+includes every read. **Group by → Mapping quality** in the track menu gives each
+MAPQ bin a section with a separate coverage band, and with **Show → Show
+pileup** turned off, only the bands remain, drawn on one scale. In the track
+config that is a `facet` on the `mapq` field:
 
 ```json addtrack loc=chr5:70,889,000-70,989,000
 {
@@ -240,7 +240,7 @@ only in the islands where the gnomAD track reaches its flank level.
 ## Does T2T-CHM13 resolve the SMN duplication?
 
 T2T-CHM13, the telomere-to-telomere assembly, is finished on this chromosome.
-UCSC's hg38-to-CHM13 liftOver forms several long, overlapping chains over the
+UCSC's hg38-to-CHM13 liftOver has several long, overlapping chains over the
 region, some of them reversed:
 
 ```bash
@@ -323,7 +323,7 @@ Run both on the control window too, at the same width.
 ## Reproduce it end to end
 
 [`scan_mappability_qc.sh`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/scan_mappability_qc.sh)
-measures the SMN region from the files the figures draw. It tests whether a read
+measures the SMN region from the files in the figures. It tests whether a read
 can be placed at a locus several ways, and compares each result with a control:
 
 1. Over _SMN1_, _SMN2_ and two controls, it measures how much of each window the
@@ -332,14 +332,14 @@ can be placed at a locus several ways, and compares each result with a control:
    of _BDP1_, past both flagged intervals on the same chromosome, so sample,
    library and chromosome all match; _ACTB_ on chromosome 7 shows the near
    control is ordinary.
-2. It lists which problematic-region tracks flag the region, and bins the gnomAD
-   track across it to find where the depth recovers.
-3. It counts GM18501's long-read records over _SMN1_ at MAPQ 0 and MAPQ 60, once
-   on each reference. The release aligned that sample to both with the same
-   pipeline, so the two counts compare.
-4. It counts each SV catalogue's calls inside the region and in a flank of about
-   the same width on either side, and across chr5 the share of calls whose
-   midpoint falls in a flagged region.
+2. The script lists which problematic-region tracks flag the region, and bins
+   the gnomAD track across it to find where the depth recovers.
+3. The script counts GM18501's long-read records over _SMN1_ at MAPQ 0 and MAPQ
+   60, once on each reference. The release aligned that sample to both with the
+   same pipeline, so the two counts are comparable.
+4. The script counts each SV catalogue's calls inside the region and in a flank
+   of about the same width on either side, and across chr5 the share of calls
+   whose midpoint falls in a flagged region.
 
 The script needs kent tools (`bigWigInfo`, `bigWigToBedGraph`, `bigBedToBed`),
 `bedtools`, `samtools`, `curl` and `awk`.

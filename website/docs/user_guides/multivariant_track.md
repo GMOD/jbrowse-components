@@ -282,7 +282,7 @@ dendrogram, and how to share a result in a session URL.
 
 With per-haplotype rows, clustering treats each haplotype as a separate row, so
 the dendrogram shows haplotype-level relationships. The
-[LD tutorial](/docs/tutorials/ld_human#clustering-lct-haplotypes-into-the-block-the-triangle-draws)
+[LD tutorial](/docs/tutorials/ld_human#clustering-lct-haplotypes-by-genotype)
 clusters haplotypes across the LCT block.
 
 ## See also

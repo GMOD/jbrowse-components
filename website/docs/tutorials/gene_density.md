@@ -9,9 +9,9 @@ tutorial_category: Genes & annotation
 ---
 
 We look at where the genes sit along human chromosome 1 and which transposons
-sit near them: Alu elements pile up where the genes are, and L1 elements spread
-more evenly. A whole chromosome holds more genes, and far more repeat copies,
-than a browser fetches at once. We:
+sit near them: Alu elements are densest where the genes are, and L1 elements are
+spread more evenly. A whole chromosome holds more genes, and far more repeat
+copies, than a browser fetches at once. We:
 
 - count each file's features per kilobase into a small bigWig with
   `jbrowse make-density`
@@ -110,9 +110,9 @@ Add the bigWig as a track:
 }
 ```
 
-`mark.extent: "none"` draws each bin's mean alone. Most kilobases hold no gene
-or one, so the min-max band drawn around the mean would fill every zoomed-out
-pixel to the same height.
+With `mark.extent: "none"`, JBrowse draws each bin's mean alone. Most kilobases
+hold no gene or one, so the min-max band drawn around the mean would fill every
+zoomed-out pixel to the same height.
 
 The Alu, L1 and simple-repeat tracks start from a RepeatMasker BED. For a genome
 of your own, RepeatMasker's `.out` file lists class and family as one
@@ -141,9 +141,9 @@ jbrowse sort-bed rmsk.bed | bgzip > rmsk.bed.gz
 tabix -f -C -p bed rmsk.bed.gz
 ```
 
-We cut that table into one BED per `repFamily`, so the Alu bigWig counts only
-Alus. An `awk` filter keeps the header line and the sort order, so `tabix`
-indexes each cut file as it is:
+We cut that table into one BED per `repFamily`, so the Alu bigWig holds counts
+of Alus alone. An `awk` filter keeps the header line and the sort order, so
+`tabix` indexes each cut file as it is:
 
 <!-- from: scripts/build_gene_density.sh -->
 
@@ -199,8 +199,8 @@ The gap in every track is the centromere and the 1q12 heterochromatin beside it.
 ## Zooming in to 1q21 with the genes as features
 
 Add the gene file as a track, then type `chr1:150,000,000-160,000,000`, 10 Mb
-over 1q21 to 1q23. At this width the gene track's fetch fits, so it draws each
-gene:
+over 1q21 to 1q23. At this width the genes in view fit in one fetch, so JBrowse
+draws each gene:
 
 ```json addtrack loc=chr1:150,000,000-160,000,000
 {

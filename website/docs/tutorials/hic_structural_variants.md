@@ -8,11 +8,11 @@ guide_category: Tutorials
 tutorial_category: Structural variation
 ---
 
-Two chromosomes joined by a translocation touch along the join, so Hi-C reads
-linking them run far above background. The Philadelphia chromosome, the
-_BCR_-_ABL1_ fusion in the K562 leukemia line, is the example, against GM12878's
-normal karyotype. JBrowse fetches a Hi-C matrix for every _pair_ of regions on
-screen. We:
+Two chromosomes joined by a translocation touch along the join, so the count of
+Hi-C reads linking them is far above background. The Philadelphia chromosome,
+the _BCR_-_ABL1_ fusion in the K562 leukemia line, is the example, against
+GM12878's normal karyotype. JBrowse fetches a Hi-C matrix for every _pair_ of
+regions on screen. We:
 
 - load each line's `.hic` file as a Hi-C track, and the contact domains as a
   BEDPE feature track
@@ -150,8 +150,9 @@ The domain BEDPE needs one extra slot, `"type": "FeatureTrack"`:
 ```
 
 Arrowhead writes each domain with both BEDPE ends set to the same interval, so
-as a `FeatureTrack` the file gives one box per domain, nested domains stacking
-into rows. Loops, whose mates differ, are the paired-arc case in the
+JBrowse draws the file as a `FeatureTrack` with one box per domain, nested
+domains stacking into rows. Loops, whose mates differ, are the paired-arc case
+in the
 [Hi-C track config guide](/docs/config_guides/hic_track#loops-and-interactions-as-arcs);
 the whole GM12878 loops track is `hic_gm12878_loops` in
 https://jbrowse.org/code/jb2/main/test_data/config_demo.json.
@@ -179,9 +180,9 @@ and chr22 each fold normally in K562.
 
 ## Ranking chr9-chr22 contact bins with juicer_tools
 
-The wedge shows that chr9 and chr22 touch, and ranking the contact bins finds
-where. Run one dump per `.hic` file and sort the results, starting with the raw
-contact counts between the two chromosomes:
+The wedge shows that chr9 and chr22 touch; to find where, rank the contact bins.
+Run one dump per `.hic` file and sort the results, starting with the raw contact
+counts between the two chromosomes:
 
 <!-- from: scripts/scan_hic_translocation.sh -->
 
@@ -249,10 +250,10 @@ Override `CASE`, `CTRL`, `CHR1`, `CHR2`, `RES` and `NORM` to scan any two `.hic`
 files that hold inter-chromosomal blocks. Reading the output:
 
 - The top row pairs _ABL1_ intron 1 with the 5' end of _BCR_.
-- `RES=10000` resolves the junction itself, _ABL1_ intron 1 against the _BCR_
-  major breakpoint cluster region.
-  [The K562 fusions tutorial](/docs/tutorials/k562_fusions) places the DNA break
-  of the same fusion in that intron.
+- With `RES=10000`, the scan resolves the junction itself, _ABL1_ intron 1
+  against the _BCR_ major breakpoint cluster region. In
+  [the K562 fusions tutorial](/docs/tutorials/k562_fusions), the DNA break of
+  the same fusion falls in that intron.
 - A second chr9-chr22 bin further down also sits well clear of the control, so
   treat the ranking as a list of candidates to open.
 
