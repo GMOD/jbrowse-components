@@ -1410,6 +1410,83 @@ describe('an inversion the lane carries against the anchor', () => {
   })
 })
 
+describe('a tandem copy the lane carries against the anchor', () => {
+  const [ref, at] = CARRIERS['HG01123.1']
+  const run = (
+    id: string,
+    lane: number,
+    anchor: number,
+    length: number,
+    orientation = 1,
+  ) =>
+    piece(
+      id,
+      WINDOW_START + anchor,
+      WINDOW_START + anchor + length,
+      [{ assemblyName: 'HG01123.1', refName: ref, start: at + lane }],
+      orientation,
+    )
+  const changes = (features: SimpleFeature[], reversed = false) =>
+    laneIndelsOf(groupFeatures(features))
+      .changes('HG01123.1', ref, reversed)
+      .map(c => ({
+        lane: [c.at - at, c.laneEnd - at],
+        anchor: c.anchor.start - WINDOW_START,
+        laneBp: c.laneBp,
+        anchorBp: c.anchorBp,
+        kind: c.kind,
+      }))
+  const insertion = (lane: number, anchor: number, laneBp: number) => ({
+    lane: [lane, lane + laneBp],
+    anchor,
+    laneBp,
+    anchorBp: 0,
+    kind: 'insertion',
+  })
+
+  test('states the copied stretch as an insertion, as it does for unaligned lane bp, whichever way the lane is drawn', () => {
+    const tandem = [
+      run('p1', 0, 0, 100_000),
+      run('p2', 100_000, 70_000, 30_000),
+      run('p3', 130_000, 100_000, 100_000),
+    ]
+    expect(changes(tandem)).toEqual([insertion(100_000, 100_000, 30_000)])
+    expect(changes(tandem, true)).toEqual(changes(tandem))
+    expect(
+      changes([run('p1', 0, 0, 100_000), run('p3', 130_000, 100_000, 100_000)]),
+    ).toEqual(changes(tandem))
+  })
+
+  test('states a copy of a stretch from inside the left piece', () => {
+    expect(
+      changes([
+        run('p1', 0, 0, 100_000),
+        run('p2', 100_000, 40_000, 30_000),
+        run('p3', 130_000, 100_000, 100_000),
+      ]),
+    ).toEqual([insertion(100_000, 100_000, 30_000)])
+  })
+
+  test('states the copy at the left piece’s anchor start on a reverse-strand lane', () => {
+    expect(
+      changes([
+        run('p3', 0, 100_000, 100_000, -1),
+        run('p2', 100_000, 70_000, 30_000, -1),
+        run('p1', 130_000, 0, 100_000, -1),
+      ]),
+    ).toEqual([insertion(130_000, 70_000, 30_000)])
+  })
+
+  test('states the overlap two pieces repeat, and nothing under SPLIT_AT_GAP_BP', () => {
+    expect(
+      changes([run('p1', 0, 0, 100_000), run('p2', 100_000, 85_000, 100_000)]),
+    ).toEqual([insertion(100_000, 100_000, 15_000)])
+    expect(
+      changes([run('p1', 0, 0, 100_000), run('p2', 100_000, 95_000, 100_000)]),
+    ).toEqual([])
+  })
+})
+
 describe('a lane with pieces on both strands', () => {
   const rows = (
     assemblyName: string,

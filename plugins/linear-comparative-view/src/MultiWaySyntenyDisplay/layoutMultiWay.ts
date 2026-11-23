@@ -684,7 +684,10 @@ function segmentsOf(
  * megabases. An opening is the anchor bp between the two pieces less the lane
  * bp between them, so each piece of the drawn strand sits under its own
  * anchor stretch; between two fetch windows lies anchor the fetch never read,
- * which opens and states nothing. Named records are genes, whose spacing says
+ * which opens and states nothing. A right piece stepping back to anchor the
+ * left piece also holds, a tandem copy, states the lane bp repeating it as an
+ * insertion at the left piece's anchor end; a step back to before the left
+ * piece's anchor is a rearrangement and states nothing. Named records are genes, whose spacing says
  * nothing. An array record, of either strand, bounds gaps as a piece of the
  * drawn strand does, and a gap it bounds opens and states nothing, since its
  * anchor stretch is only where its copies lie.
@@ -733,6 +736,26 @@ function laneGapsOf(
       const net = anchorGap - laneGap
       if (laneGap >= 0 && net >= SPLIT_AT_GAP_BP) {
         openings.push({ at, bp: net })
+      }
+      const repeatsLeft =
+        orientation < 0
+          ? right.anchor.end <= left.anchor.end
+          : right.anchor.start >= left.anchor.start
+      if (anchorGap < 0 && repeatsLeft && right.lane.end > left.lane.end) {
+        const laneBp =
+          Math.max(0, laneGap) +
+          Math.min(-anchorGap, right.lane.end - right.lane.start)
+        const point = orientation < 0 ? left.anchor.start : left.anchor.end
+        if (laneBp >= SPLIT_AT_GAP_BP) {
+          unparted.push({
+            at: Math.round(at),
+            laneEnd: Math.round(at + laneBp),
+            laneBp,
+            anchorBp: 0,
+            kind: 'insertion',
+            anchor: { refName: left.anchor.refName, start: point, end: point },
+          })
+        }
       }
       if (anchorGap >= 0 && right.lane.end > left.lane.end) {
         const held = inGap.flatMap(p =>
