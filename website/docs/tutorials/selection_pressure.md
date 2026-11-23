@@ -72,7 +72,7 @@ GFF3 and a CDS FASTA per genome of your own.
 | Human, GRCh38.p14            | [GCF_000001405.40](https://www.ncbi.nlm.nih.gov/datasets/genome/GCF_000001405.40/) |
 | Rhesus macaque, T2T-MMU8v2.0 | [GCF_049350105.2](https://www.ncbi.nlm.nih.gov/datasets/genome/GCF_049350105.2/)   |
 
-## Synonymous and non-synonymous rates
+## Produce the human-rhesus ortholog table and its rates {#producing-the-human-rhesus-ortholog-table-and-its-rates}
 
 A coding substitution is synonymous (the codon changes, the amino acid does not)
 or non-synonymous.
@@ -84,12 +84,10 @@ or non-synonymous.
 - **dN/dS below 1** indicates purifying selection, where most genes sit, and a
   ratio **above 1** needs positive selection to explain.
 
-## Producing the human-rhesus ortholog table and its rates
-
 dS has to be large enough to estimate and small enough not to saturate. Rhesus
 macaque sits in that window against human.[^chimp]
 
-### Calling human-rhesus orthologs with jcvi
+### Call human-rhesus orthologs with jcvi
 
 jcvi takes a BED and a proteome per genome under one set of ids. The BED comes
 from the GFF3, one transcript per gene on the assembled chromosomes, and the
@@ -128,7 +126,7 @@ Two input mistakes leave jcvi with no orthologs:
   BED on the transcript (`XM_`, `NM_`), so nothing matches until the two are
   joined. A CDS row in the GFF3 has both, and the script joins on it
 
-### Measuring dN and dS on each pair {#dn-and-ds}
+### Measure dN and dS on each pair {#dn-and-ds}
 
 The pair list is the two gene columns of `human.rhesus.anchors`. The script
 skips `human.rhesus.lifted.anchors`, where jcvi adds extra pairs recruited near
@@ -156,7 +154,7 @@ gzip -kf primate.blocks human.bed rhesus.bed
 each pair as protein, back-translates to codons so that nothing shifts frame,
 and runs Nei-Gojobori.
 
-### Filtering paralogs and low-count pairs
+### Filter paralogs and low-count pairs
 
 True orthologs share one divergence time, so their dS values cluster. A pair
 well above the cluster is a paralog the aligner preferred, and `--max-ds` drops
@@ -172,7 +170,7 @@ Every row also has that count and a two-sided Fisher exact p, the test
 prescribes for small substitution counts. The track config below lists both in
 `attributeColumns`, so clicking a link shows the evidence behind its color.
 
-## Loading the human and rhesus genomes and genes
+## Load the human and rhesus genomes and genes
 
 A gene-level synteny view needs only sequence names and lengths, so each
 assembly is a `.chrom.sizes` file (a name and a length per line) that the script
@@ -204,7 +202,7 @@ needs the same refNames as the assembly:
 
 Add the rhesus track the same way, with `rhesus_genes` under `rhesus`.
 
-## Loading the ortholog table as a synteny track
+## Load the ortholog table as a synteny track
 
 `primate.blocks` lists each pair's two gene ids, then dN, dS, the synonymous
 substitution count and the Fisher p, the `.blocks` format
@@ -240,7 +238,7 @@ Two view settings matter for a view this sparse:
 - **Curved lines** on the same menu sets `mark: { interpolate: 'bump' }`, which
   separates stacked neighbours.
 
-## Reading lysozyme (LYZ) against its neighbours by dN/dS
+## Read LYZ against its neighbours by dN/dS
 
 The session below opens, from the hosted copy, the stretch around lysozyme
 (_LYZ_) on human chromosome 12 where gene order matches rhesus, colored by
