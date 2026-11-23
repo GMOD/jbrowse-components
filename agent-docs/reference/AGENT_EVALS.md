@@ -1,6 +1,6 @@
 ---
 name: agent-evals
-description: How the two agent evals grade the jb surface, what selfCheck proves about a grader, the held-out split, and the route report that says which briefed jb members agents reach. Read before changing jb, jb.help or the agent docs, or adding an eval task.
+description: How the agent evals grade the jb surface and the config docs and skills, what selfCheck proves about a grader, the held-out split, and the route report that says which briefed jb members agents reach. Read before changing jb, jb.help or the agent docs, or adding an eval task.
 audience: internal
 kind: operations
 ---
@@ -16,6 +16,19 @@ state** afterwards, never the transcript:
   Chrome.
 
 Tasks live in `scripts/agent-evals/tasks.ts`, all against the volvox baseline.
+
+## Config from the docs, or from the skills
+
+`node scripts/agent-evals/configDocsEval.ts` asks for one track config per
+task with file tools only, writes nothing to a running app, and grades
+`track.json` with `jbrowse validate` plus a per-task check. By default the
+sandbox holds `website/docs` and the JSON Schema, so a run scores the docs.
+`--skills` holds `.claude/skills` instead and allows `WebFetch`, so a run
+scores the skills as an agent outside the repo meets them; read the events for
+a `Skill` call before crediting one. `--self-check` proves each grader passes
+its solution and fails an empty track. `mark-bars` and `facet-population` load
+and validate when done wrong, so they are the tasks that separate a skill
+saying where a setting lands from one that does not.
 
 ## A grader has to be proven before an agent meets it
 
