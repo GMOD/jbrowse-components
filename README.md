@@ -27,6 +27,10 @@ TypeScript, and @jbrowse/mobx-state-tree.
 - [Tutorials](https://jbrowse.org/jb2/docs/tutorials/) are step-by-step guides
   grouped by topic (synteny, SVs, methylation, RNA-seq, and more)
 - [FAQ](https://jbrowse.org/jb2/docs/faq/)
+- [AI agents](https://jbrowse.org/jb2/docs/agents/): connect an agent to JBrowse
+  Desktop or Web, and install the
+  [agent skills](https://jbrowse.org/jb2/docs/agents_skills/) for Claude Code,
+  Codex and other coding agents
 
 ## Examples
 

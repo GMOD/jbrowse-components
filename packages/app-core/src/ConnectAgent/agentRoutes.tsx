@@ -69,7 +69,19 @@ export function commandLineAgentRoute(version: string): AgentRoute {
         text: `Follow the jbrowse-authoring, jbrowse-hosted-data and jbrowse-capture skills at ${AGENT_SKILLS_URL}. From the command line, build the view (name a hosted genome with --genome, or write a config for your own data and check it with npx @jbrowse/cli@${version} validate), render it with npx @jbrowse/img@${version} or npx @jbrowse/capture@${version}, and look at the image to confirm every track drew. My goal: `,
       },
     ],
-    about:
-      'For an agent with a shell, such as Claude Code, Codex CLI or Gemini CLI. It makes images without opening JBrowse.',
+    about: (
+      <>
+        For an agent with a shell, such as Claude Code, Codex CLI or Gemini CLI.
+        It makes images without opening JBrowse.{' '}
+        <Link
+          href="https://jbrowse.org/jb2/docs/agents_skills/"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          Install the skills
+        </Link>{' '}
+        to keep them loaded for later tasks.
+      </>
+    ),
   }
 }
