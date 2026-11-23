@@ -293,8 +293,8 @@ order:
 minigraph -cxggs -t 8 Nipponbare.fa SL001.fa SL010.fa ... Wuyunjing8.fa > rice.rgfa
 ```
 
-Three commands then write the files the tracks read. The segment and link index
-files each segment under its own coordinate:
+Three commands then write the files the tracks read. `gfa-to-tabix` writes the
+segment and link index, with each segment at its coordinate on the reference:
 
 <!-- from: scripts/build_rice_pangenome.sh -->
 
@@ -328,8 +328,8 @@ layouts.
 
 ## Making the callset
 
-The graph records no path per assembly, so the callset comes from mapping each
-assembly back onto it. `minigraph --call` writes the walk one assembly takes
+The callset comes from mapping each assembly back onto the graph, whose rGFA
+holds no path lines. `minigraph --call` writes the walk one assembly takes
 through every bubble:
 
 <!-- from: scripts/build_rice_pangenome.sh -->

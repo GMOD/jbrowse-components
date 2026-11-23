@@ -16,9 +16,10 @@
 #
 # THE ONE THING TO KNOW: minigraph writes no P or W lines, so the graph says
 # nothing about which strain carries which allele, and a segment's rank is
-# construction order. jb2hubs' buildFlySvStates.sh recovers carriage per
-# bubble by mapping each assembly back with `minigraph --call`, from the
-# graph/<name>.pansn.fa files this script leaves.
+# construction order. The callset stage recovers carriage per bubble by
+# mapping each assembly back with `minigraph --call` and merging the calls into
+# fly-dm6-minigraph.vcf.gz, one haploid column per assembly, as jb2hubs'
+# buildFlySvStates.sh does for the portal.
 #
 # Sequence names: NCBI names a GenBank assembly's chromosomes by accession
 # (CM010590.1), so each assembly's own sequence report says which is which.
@@ -29,8 +30,8 @@
 # chr3: minigraph aligns it to both arms.
 #
 # Requires: datasets (NCBI datasets CLI), unzip, python3, gawk (as `awk`),
-#           sort, gzip, coreutils, bgzip and tabix (htslib), minigraph,
-#           gfatools, gfa-to-tabix
+#           sort, gzip, coreutils, curl, bgzip and tabix (htslib), minigraph,
+#           gfatools, gfa-to-tabix (5.0 or later), k8, bcftools
 # Usage:    bash scripts/build_fly_pangenome.sh [outdir]
 #           THREADS=8 bash scripts/build_fly_pangenome.sh /mnt/sdb/fly
 #           FETCH_ONLY=1 ... downloads and writes graph/*.pansn.fa, then stops
@@ -40,7 +41,7 @@
 
 set -euo pipefail
 
-for tool in datasets unzip python3 awk sort gzip bgzip tabix minigraph gfatools gfa-to-tabix; do
+for tool in datasets unzip python3 awk sort gzip curl bgzip tabix minigraph gfatools gfa-to-tabix k8 bcftools; do
   command -v "$tool" >/dev/null 2>&1 || {
     echo "error: '$tool' not found on PATH" >&2
     exit 1
@@ -221,6 +222,52 @@ cd ..
 for f in graph/"$GRAPH".*; do
   case "$f" in *.txt | *.sizes) ;; *) cp -p "$f" . ;; esac
 done
+
+echo "== callset: map each assembly back onto the graph, one VCF column each"
+# mgutils.js and mgutils-es6.js live in minigraph's misc/, which the bioconda
+# package leaves out; this is the revision the hosted callset was built with.
+MGUTILS="https://raw.githubusercontent.com/lh3/minigraph/2f569ebe3071fcb242f1bf0eabbb917941b47239/misc"
+mkdir -p calls
+for js in mgutils.js mgutils-es6.js; do
+  if [ ! -s "calls/$js" ]; then
+    curl -fsSL -o "calls/$js.part" "$MGUTILS/$js"
+    mv "calls/$js.part" "calls/$js"
+  fi
+done
+cut -f2 panel.tsv >calls/samples.txt
+CALLS=()
+while read -r _ name; do
+  out="calls/$name.call.bed"
+  if [ ! -s "$out" ]; then
+    # --call: the walk this assembly takes through every bubble, one line per
+    # `gfatools bubble` line, in the same order for every assembly. Each call
+    # loads the whole graph's index.
+    minigraph -cxasm --call -t "$THREADS" "graph/$GRAPH.rgfa.gz" \
+      "graph/$name.pansn.fa" >"$out.tmp" 2>"logs/call.$name.log"
+    mv "$out.tmp" "$out"
+  fi
+  CALLS+=("$out")
+done <panel.tsv
+if [ ! -s "$GRAPH.vcf.gz" ]; then
+  {
+    awk '{ printf "##contig=<ID=%s,length=%d>\n", $1, $2 }' dm6.chrom.sizes
+    echo '##INFO=<ID=END,Number=1,Type=Integer,Description="End of the bubble">'
+    echo '##INFO=<ID=AN,Number=1,Type=Integer,Description="Number of called alleles">'
+    paste "${CALLS[@]}" | k8 calls/mgutils.js merge -s calls/samples.txt - |
+      sed "s/^$REF#1#//"
+  } >calls/merged.bed
+  # -r0: the first column, dm6, is allele 0; -a: up to one allele per
+  # assembly. The ID is the bubble's end segments, a record whose reference
+  # call is not allele 0 is dropped, and so is the reference's own column.
+  k8 calls/mgutils-es6.js merge2vcf -r0 -a "${#CALLS[@]}" calls/merged.bed |
+    bcftools annotate --set-id '%INFO/VS%INFO/VE' -Ou |
+    bcftools view -i 'GT[0]="ref"' -Ou |
+    bcftools view -s "^$REF" -Ou |
+    bcftools sort -Oz -o "$GRAPH.vcf.gz.tmp"
+  mv "$GRAPH.vcf.gz.tmp" "$GRAPH.vcf.gz"
+  tabix -f -p vcf "$GRAPH.vcf.gz"
+  rm calls/merged.bed
+fi
 
 echo
 echo "Built in $PWD:"

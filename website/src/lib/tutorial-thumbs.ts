@@ -469,17 +469,17 @@ export const TUTORIAL_THUMB_SPECS: Record<string, ThumbSpec> = {
     position: 'center',
   },
   pangenome_fly: {
-    // The Cyp28d1 genes over the bubble's duplication forms, labels cut.
-    src: 'pangenome/genomes_fly_cyp28d1.png',
-    band: [0.5, 0.8],
-    xband: [0.42, 0.806],
+    // Cyp28d1 over the callset's duplication alleles, row labels cut.
+    src: 'pangenome/fly_cyp28d1.png',
+    band: [0.1, 0.45],
+    xband: [0.28, 0.68],
     position: 'center',
   },
   pangenome_rice: {
     // GW5 over the callset's three grain-width alleles, row labels cut.
     src: 'pangenome/rice_qsw5.png',
-    band: [0.08, 0.62],
-    xband: [0.25, 0.75],
+    band: [0.1, 0.45],
+    xband: [0.3, 0.85],
     position: 'center',
   },
   pangenome_hprc_haplotypes: {

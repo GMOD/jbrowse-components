@@ -22,8 +22,9 @@ Four configs live here:
   of the strains that contribute to it. Derived from the hosted
   `demos/ecoli_pangenome/config.json` by keeping the assemblies, genes and
   `ecoli_pggb_ava`, and adding the plugin plus the rGFA track.
-- `pangenome_nonhuman.json` — mm39 and bosTau9 with the mouse and bovine
-  minigraph graphs, their bubble tiers, bubbles and alleles.
+- `pangenome_nonhuman.json` — mm39, bosTau9, rice AGIS-1.0 and dm6 with the
+  mouse, bovine, rice and fly minigraph graphs, their bubble tiers, bubbles and
+  alleles, and the rice and fly `minigraph --call` callsets.
 
 Every `RgfaTabixAdapter` track here lists `LinearGraphDisplay` first, so turning
 it on opens the graph, and `LinearBasicDisplay` second, the segments lane the

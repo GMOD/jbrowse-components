@@ -15,10 +15,6 @@ export const PORTAL_CONFIG =
 
 const MHC_WINDOW = { refName: 'chr6', start: 32510000, end: 32600000 }
 
-const FLY_PAGE = 'https://genomes.jbrowse.org/pangenomes/fly'
-const flyAnswer = (region: string) =>
-  `${FLY_PAGE}/?region=${encodeURIComponent(region)}`
-
 const FORMS_MAP = '.ui-lanes'
 const OPEN_IN_JBROWSE = '.ui-actions a.ui-btn'
 
@@ -141,20 +137,4 @@ export const genomesPangenomeSpecs: ScreenshotSpec[] = [
       },
     ],
   },
-  ...[
-    { gene: 'cyp28d1', region: 'chr2L:5,200,001-5,220,000' },
-    { gene: 'strn_mlck', region: 'chr2R:15,940,001-15,966,000' },
-    { gene: 'chkov1', region: 'chr3R:25,320,001-25,335,000' },
-  ].map(({ gene, region }): ScreenshotSpec => ({
-    mode: 'url',
-    name: `pangenome/genomes_fly_${gene}`,
-    noSession: true,
-    url: flyAnswer(region),
-    readySelector: FORMS_MAP,
-    readyTimeout: 180000,
-    viewportWidth: 1100,
-    viewportHeight: 850,
-    liveLabel: 'Open the fly page',
-    diffThreshold: 0.02,
-  })),
 ]

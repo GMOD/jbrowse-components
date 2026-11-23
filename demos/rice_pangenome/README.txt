@@ -103,6 +103,15 @@ Files
     (+ .csi, .tbi)                             both ways: the pangenome configs
                                                read the .tbi
 
+  rice-agis1-minigraph.vcf.gz (+ .tbi)         the callset: each assembly mapped
+                                               back with minigraph -cxasm --call,
+                                               the calls merged with mgutils.js
+                                               merge and mgutils-es6.js merge2vcf
+                                               -r0, Nipponbare's column dropped. One
+                                               haploid column per assembly; INFO
+                                               ALEN lists each allele's length,
+                                               the reference's first
+
   sources.sha256.tsv                           name, accession and SHA-256 of
                                                each assembly's genomic.fna
 
