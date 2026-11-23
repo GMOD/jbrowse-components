@@ -118,6 +118,11 @@ no em-dashes.
 - Describe what the data shows and stop at the observation. Cut a thesis
   paragraph, a sentence that answers an objection the reader never raised, and
   moral framing ("the honest outcome").
+- **Each heading names a step toward the page's goal**, phrased as what the
+  reader does (`Scale up to the whole panel with one Zarr store`), so the
+  headings read in order as the route to the result. A heading naming a locus
+  or a feature in isolation reads as a detour. A section with no figure or
+  payoff of its own folds into the step that uses it.
 - Open each step with one full sentence of orientation that states its goal
   without arguing for it, then give the mechanics.
 - **The opening paragraph reads to someone who has never used JBrowse**: what

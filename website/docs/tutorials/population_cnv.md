@@ -13,9 +13,9 @@ Genomes panel at once, one row per individual, colored by how far that person's
 copy number is from two, at the chemokine genes _CCL3L1_, a deletion of
 _UGT2B17_, and two nested deletions on chr3. We:
 
-- load per-sample BigWigs as one multi-row heatmap track, and a few individuals
-  as step lines at _CCL3L1_
-- add the 1000 Genomes SV map as a variant track over _UGT2B17_
+- load a few individuals' BigWigs as step lines at _CCL3L1_
+- load one population as a multi-row heatmap track, and set the 1000 Genomes SV
+  map beside it over _UGT2B17_
 - load the whole panel from one Zarr store, and cluster its rows over the nested
   chr3 deletions under a length-filtered variant track
 - turn your own QuicK-mer2 output into BigWigs, and build a Zarr store from them
@@ -117,73 +117,16 @@ The whole-panel figure uses UCSC's copy:
 }
 ```
 
-## Load the panel as one heatmap track
+## Count copies at CCL3L1 in a few individuals
 
 [QuicK-mer2](https://github.com/KiddLab/QuicK-mer2) counts k-mers that occur
 exactly once in the reference, so each estimate belongs to one _paralog_, one
-copy of a duplicated sequence. The config lists two of the panel's 104 PUR
-(Puerto Rican) bigWigs, and every file follows the
-`kidd_lab_cnv/<population>/<sample>.qm2.CN.1k.bw` pattern above:
+copy of a duplicated sequence. Every individual's estimates are one bigWig,
+following the `kidd_lab_cnv/<population>/<sample>.qm2.CN.1k.bw` pattern above.
 
-```json addtrack loc=chr3:162,275,163-163,360,944
-{
-  "type": "MultiQuantitativeTrack",
-  "trackId": "pur_copynumber_1000g",
-  "name": "PUR copy number (1000 Genomes)",
-  "assemblyNames": ["hg38"],
-  "adapter": {
-    "type": "MultiWiggleAdapter",
-    "bigWigs": [
-      "https://jbrowse.org/genomes/GRCh38/1000g/kidd_lab_cnv/PUR/HG00551.qm2.CN.1k.bw",
-      "https://jbrowse.org/genomes/GRCh38/1000g/kidd_lab_cnv/PUR/HG00553.qm2.CN.1k.bw"
-    ]
-  },
-  "displayDefaults": {
-    "mark": "rect",
-    "origin": 2,
-    "encoding": {
-      "y": { "scale": { "domainMin": 0, "domainMax": 4 } },
-      "color": {
-        "scale": { "range": ["#2166ac", "#b2182b"] },
-        "legend": { "title": "Copy number" }
-      }
-    }
-  }
-}
-```
-
-The [`bigWigs`](/docs/config/multiwiggleadapter/#slot-bigwigs) shorthand takes a
-plain list of absolute URLs and names each subtrack from its filename. In
-[grammar-of-graphics](/docs/config_guides/mark_display) terms, `encoding.color`
-is a color scale and `encoding.y` the y scale, which these settings turn into a
-copy-number heatmap:
-
-- [`mark`](/docs/config/linearwiggledisplay/#slot-mark) `rect` gives each sample
-  one strip of color.
-- [`origin`](/docs/config/linearwiggledisplay/#slot-origin) `2` puts white at
-  the diploid baseline, and [`encoding.color`](/docs/config/wigglecolor/)'s
-  `scale.range` names the two colors it fades to: losses toward the first, gains
-  toward the second.
-- [`encoding.y.scale.domainMin`](/docs/config/yscale/#slot-domainmin) and
-  [`encoding.y.scale.domainMax`](/docs/config/yscale/#slot-domainmax) pin the
-  scale, so two copies are the same color in every window. Keep the bounds
-  **symmetric around the origin**, because the ramp divides both sides by the
-  longer one: 0 to 4 lets both extremes saturate, and gains past 4 clamp.
-
-**Clustering → Cluster rows by score...** in the track menu brings similar
-samples together, since rows otherwise stay in file order.
-
-The full list is the `pur_copynumber_1000g` track in
-https://jbrowse.org/code/jb2/main/test_data/config_demo.json, so
-[the panel opens on a copy-number-polymorphic window of chr3](https://jbrowse.org/code/jb2/main/?config=test_data%2Fconfig_demo.json&session=spec-%7B%22views%22%3A%5B%7B%22type%22%3A%22LinearGenomeView%22%2C%22assembly%22%3A%22hg38%22%2C%22loc%22%3A%22chr3%3A162%2C275%2C163-163%2C360%2C944%22%2C%22tracks%22%3A%5B%7B%22trackId%22%3A%22pur_copynumber_1000g%22%2C%22height%22%3A420%7D%5D%7D%5D%7D&sessionName=Screenshot)
-with these settings already applied.
-
-## Individuals' copy-number profiles at CCL3L1
-
-Navigate to `chr17:36,080,000-36,270,000`, around _CCL3L1_ (a chemokine gene
-with a variable number of copies), and load individuals spanning the range of
-copy number as a second track. The track draws step lines on one pinned axis, so
-each plateau lines up with a copy count:
+We start with six PUR (Puerto Rican) individuals spanning the range of copy
+number at _CCL3L1_, a chemokine gene with a variable number of copies. The track
+draws step lines on one pinned axis, so each plateau lines up with a copy count:
 
 ```json addtrack loc=chr17:36,080,000-36,270,000
 {
@@ -245,17 +188,69 @@ chemokine genes _CCL3L1_ and _CCL4L1_ (labelled _CCL3L3_ and _CCL4L2_ in the
 hg38 gene track) in a variable number of tandem copies, and the left-hand block
 is a _TBC1D3_ repeat.
 
-## UGT2B17, a simple deletion, against the 1000 Genomes SV map
+## Compare one population against the SV map at UGT2B17
 
-_UGT2B17_ on chr4 is deleted whole in many people, a simple biallelic deletion
-that structural variant (SV) callers genotype directly. We'll set the 1000
-Genomes phase 3 integrated SV map beside the copy-number rows:
+Step lines stop being readable past a handful of individuals, so the next track
+draws each of the 104 PUR individuals as one row of color. _UGT2B17_ on chr4 is
+deleted whole in many people, a simple biallelic deletion that structural
+variant (SV) callers genotype directly, so we set the 1000 Genomes phase 3
+integrated SV map beside the rows. The config lists two of the population's
+bigWigs:
 
-- Add the SV map as a variant track. For your own callset, swap `uri` for a
-  bgzip-compressed, tabix-indexed VCF on the same assembly.
-- Navigate to _UGT2B17_ with the PUR panel track from
-  [Load the panel as one heatmap track](#load-the-panel-as-one-heatmap-track)
-  under it.
+```json addtrack loc=chr4:68,480,000-68,660,000
+{
+  "type": "MultiQuantitativeTrack",
+  "trackId": "pur_copynumber_1000g",
+  "name": "PUR copy number (1000 Genomes)",
+  "assemblyNames": ["hg38"],
+  "adapter": {
+    "type": "MultiWiggleAdapter",
+    "bigWigs": [
+      "https://jbrowse.org/genomes/GRCh38/1000g/kidd_lab_cnv/PUR/HG00551.qm2.CN.1k.bw",
+      "https://jbrowse.org/genomes/GRCh38/1000g/kidd_lab_cnv/PUR/HG00553.qm2.CN.1k.bw"
+    ]
+  },
+  "displayDefaults": {
+    "mark": "rect",
+    "origin": 2,
+    "encoding": {
+      "y": { "scale": { "domainMin": 0, "domainMax": 4 } },
+      "color": {
+        "scale": { "range": ["#2166ac", "#b2182b"] },
+        "legend": { "title": "Copy number" }
+      }
+    }
+  }
+}
+```
+
+The [`bigWigs`](/docs/config/multiwiggleadapter/#slot-bigwigs) shorthand takes a
+plain list of absolute URLs and names each subtrack from its filename. In
+[grammar-of-graphics](/docs/config_guides/mark_display) terms, `encoding.color`
+is a color scale and `encoding.y` the y scale, which these settings turn into a
+copy-number heatmap:
+
+- [`mark`](/docs/config/linearwiggledisplay/#slot-mark) `rect` gives each sample
+  one strip of color.
+- [`origin`](/docs/config/linearwiggledisplay/#slot-origin) `2` puts white at
+  the diploid baseline, and [`encoding.color`](/docs/config/wigglecolor/)'s
+  `scale.range` names the two colors it fades to: losses toward the first, gains
+  toward the second.
+- [`encoding.y.scale.domainMin`](/docs/config/yscale/#slot-domainmin) and
+  [`encoding.y.scale.domainMax`](/docs/config/yscale/#slot-domainmax) pin the
+  scale, so two copies are the same color in every window. Keep the bounds
+  **symmetric around the origin**, because the ramp divides both sides by the
+  longer one: 0 to 4 lets both extremes saturate, and gains past 4 clamp.
+
+The full list is the `pur_copynumber_1000g` track in
+https://jbrowse.org/code/jb2/main/test_data/config_demo.json, so
+[the population opens at UGT2B17](https://jbrowse.org/code/jb2/main/?config=test_data%2Fconfig_demo.json&session=spec-%7B%22views%22%3A%5B%7B%22type%22%3A%22LinearGenomeView%22%2C%22assembly%22%3A%22hg38%22%2C%22loc%22%3A%22chr4%3A68%2C480%2C000-68%2C660%2C000%22%2C%22tracks%22%3A%5B%7B%22trackId%22%3A%22pur_copynumber_1000g%22%2C%22height%22%3A420%7D%5D%7D%5D%7D&sessionName=Screenshot)
+with these settings already applied. Rows stay in file order, so run
+**Clustering → Cluster rows by score...** from the track menu to bring the
+individuals with the deletion together.
+
+Add the SV map as a variant track. For your own callset, swap `uri` for a
+bgzip-compressed, tabix-indexed VCF on the same assembly:
 
 ```json addtrack
 {
@@ -267,9 +262,9 @@ Genomes phase 3 integrated SV map beside the copy-number rows:
 }
 ```
 
-<Figure caption="UGT2B17 with the SV map above the PUR panel track." src="/img/cnv1000g/ugt2b17_biallelic.png" />
+<Figure caption="UGT2B17 with the SV map above the PUR heatmap, clustered." src="/img/cnv1000g/ugt2b17_biallelic.png" />
 
-## Load the whole panel from one Zarr store {#a-zarr-store-for-the-whole-panel}
+## Scale up to the whole panel with one Zarr store {#a-zarr-store-for-the-whole-panel}
 
 The PUR track lists the files of one population, but each BigWig needs several
 dependent reads to find and fetch a region's values, so a track listing every
@@ -319,7 +314,7 @@ beside your `config.json`, the `uri` is `qm2_cn_1kb.zarr`.
 
 <Figure caption="Every individual from one Zarr store, clustered. Red is a gain, blue a loss, white two copies." src="/img/cnv1000g/zarr_cohort.png" />
 
-## A deletion nested inside another on chr3, sorted by clustering
+## Sort the panel by which nested deletion each person carries {#a-deletion-nested-inside-another-on-chr3-sorted-by-clustering}
 
 The Zarr store covers chr3:162.5-163.2 Mb, where a 22 kb deletion sits inside a
 114 kb one. Clustering sorts the individuals by which deletion they have, and
@@ -373,7 +368,7 @@ Host it, then add its URL to a heatmap track's `bigWigs`, or a `name` and `url`
 row to `samples.tsv` for the Zarr build below. For an individual already in the
 panel, compare your result with the lab's estimate.
 
-## Building a Zarr store from per-sample BigWigs
+## Build a Zarr store from your BigWigs {#building-a-zarr-store-from-per-sample-bigwigs}
 
 [`build_signal_zarr.ts`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/build_signal_zarr.ts)
 turns a list of BigWigs into one store. Its input is a TSV of `name` and `url`,
