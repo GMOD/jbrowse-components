@@ -31,7 +31,7 @@
 #
 # Requires: curl, gzip, samtools, bgzip + tabix (htslib), minigraph, gfatools,
 #           gawk (as `awk`), sort, flock, xargs, python3, node (npx) and
-#           gfa-to-tabix for the coarse tier
+#           gfa-to-tabix 5.0.0 or later
 # Usage:    bash scripts/build_mouse_pangenome.sh [outdir]
 #           THREADS=8 JOBS=2 MEM_FLOOR_GB=30 bash scripts/build_mouse_pangenome.sh
 #

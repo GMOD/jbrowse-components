@@ -25,7 +25,7 @@
 # Requires: docker or singularity (the cactus image, which also carries odgi,
 #           halSynteny, hal2maf, and vg), the NCBI `datasets` CLI, samtools,
 #           bedGraphToBigWig (UCSC kentUtils), python3, bgzip/tabix (htslib),
-#           gfa-to-tabix, curl, unzip, wget, awk, sort, gzip, ImageMagick
+#           gfa-to-tabix 5.0.0 or later, curl, unzip, wget, awk, sort, gzip, ImageMagick
 #           (`convert`/`identify`, for the correspondence band), and node
 #           (JBrowse CLI, via npx unless `jbrowse` is on PATH).
 # Usage:    bash scripts/build_ecoli_pangenome_cactus.sh [outdir]

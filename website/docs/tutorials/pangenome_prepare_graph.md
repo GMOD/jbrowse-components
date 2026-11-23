@@ -196,6 +196,36 @@ Each `.bed.gz` gets a tabix index beside it. `--format 1` writes the index, the
 tier and the contig layout as `.segs.bed.gz` and `.links.bed.gz` pairs, and a
 track reading such a pair leaves out `"format": 2`.
 
+### An rGFA in the contig layout, in three commands {#rgfa-contig-layout}
+
+The species tutorials index their rGFAs with three commands in place of `build`.
+For an rGFA, `build` writes the anchored layout at the bare prefix
+(`<prefix>.graph.bed.gz`) and the contig layout at `<prefix>.contig`. The three
+commands write the contig layout at the bare prefix, so a track's `uri` is the
+prefix itself. First the segments and links:
+
+```bash
+# --layout contig: each segment under its coordinate on its source contig
+gfa-to-tabix graph.rgfa.gz --layout contig -o graph
+```
+
+Then the bubbles, which `gfatools bubble` writes unsorted:
+
+```bash
+gzip -dc graph.rgfa.gz | gfatools bubble - | sort -k1,1 -k2,2n | bgzip > graph.bubbles.bed.gz
+tabix -C -p bed graph.bubbles.bed.gz
+```
+
+Then the coarse tier, in the same layout as the segments:
+
+```bash
+# --below: fold variants under 10 kb into the reference
+gfa-to-tabix fold graph.rgfa.gz --below 10000 --layout contig -o graph.fold10000
+```
+
+The three commands write no `.graph.json` or `.config.json`, so the graph
+track's `coarse` entry names the tier's prefix itself.
+
 ### The coarse tier for whole-chromosome views {#a-whole-chromosome-the-bubble-tier}
 
 The coarse tier is a copy of the graph with every variant under a threshold
@@ -303,15 +333,19 @@ The rank in an rGFA is build order, so it names the first assembly a segment
 came from. The full list of haplotypes whose paths pass through each segment
 comes from one of two sources.
 
-With the **assemblies**, map each one back through the graph, reference first,
-and read the path it takes:
+With the **assemblies**, map each one back through the graph, the reference
+included, and read the path it takes. Each call file's name, minus `.call.bed`,
+becomes that sample's row label. Name the reference's file after its PanSN
+sample (`TAIR10` for contigs named `TAIR10#1#Chr1`), since `gfa-to-tabix paths`
+drops `<that name>#` from the contig names:
 
 ```bash
 # --call: the path this sample takes through every bubble, one line per
 #   `gfatools bubble` line, in the same order for every sample
 # -xasm: the assembly-to-graph preset
 # -c: base-level alignment, which --call reads
-minigraph -cxasm --call -t 8 graph.rgfa.gz sample.fa > sample.call.bed
+minigraph -cxasm --call -t 8 graph.rgfa.gz TAIR10.pansn.fa > TAIR10.call.bed
+minigraph -cxasm --call -t 8 graph.rgfa.gz sample.pansn.fa > sample.call.bed
 ```
 
 [`gfa-to-tabix paths`](https://github.com/GMOD/gfa-to-tabix/blob/main/docs/subcommands.md#paths)
@@ -319,7 +353,7 @@ joins the call files, the reference's first, into one tabix-indexed row per
 bubble per sample, drawn as one row per haplotype:
 
 ```bash
-gfa-to-tabix paths -o graph.paths ref.call.bed sample.call.bed
+gfa-to-tabix paths -o graph.paths TAIR10.call.bed sample.call.bed
 ```
 
 The file loads as a feature track with one row per haplotype, partitioned on
@@ -594,13 +628,13 @@ one lane per haplotype under GRCh38.
 `gfa-to-tabix build` builds the graph track, the bubbles and the tier, with the
 tools under [Prerequisites](#prerequisites). It:
 
-1. places every segment on a genome: an rGFA holds each position in tags on the
-   segment, and for a plain GFA the command follows the backbone's paths first,
-   then places each remaining segment on the first other haplotype whose path
-   passes through it
-2. finds the bubbles, with `gfatools bubble` on an rGFA or from the snarl VCF on
-   a plain GFA, and builds the tier from them
-3. writes the manifest and the config that list those files
+- places every segment on a genome: an rGFA holds each position in tags on the
+  segment, and for a plain GFA the command follows the backbone's paths first,
+  then places each remaining segment on the first other haplotype whose path
+  passes through it
+- finds the bubbles, with `gfatools bubble` on an rGFA or from the snarl VCF on
+  a plain GFA, and builds the tier from them
+- writes the manifest and the config that list those files
 
 ```bash
 gfa-to-tabix build hprc-v2.1-mc-grch38.sv.gfa.gz -o hprc --assembly hg38
@@ -631,10 +665,9 @@ The walk files come from the commands under
   [The rGFA format](https://github.com/lh3/gfatools/blob/master/doc/rGFA.md) and
   [gfatools](https://github.com/lh3/gfatools): the `SN`/`SO`/`SR` tags and the
   bubble calls.
-- [gfa-to-tabix](https://github.com/GMOD/gfa-to-tabix/blob/main/docs/walks-format.md):
-  `--walks`, and the
-  [rows it writes](https://github.com/GMOD/gfa-to-tabix/blob/main/docs/walks-format.md).
-- [gfa-to-tabix and gbz-base compared](https://github.com/GMOD/gfa-to-tabix/blob/main/docs/gbz-comparison.md):
+- [gfa-to-tabix's walk format](https://github.com/GMOD/gfa-to-tabix/blob/main/docs/walks-format.md):
+  the rows `--walks` writes.
+- [gfa-to-tabix and gbz-base compared](https://github.com/GMOD/gfa-to-tabix/blob/main/docs/comparison.md):
   what each holds, sizes and requests on HPRC v2.1.
 - [ggbandage](https://github.com/GMOD/ggbandage) and
   [ggtubemap](https://github.com/GMOD/ggtubemap): R packages that draw a region

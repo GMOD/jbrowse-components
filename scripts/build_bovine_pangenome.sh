@@ -35,7 +35,7 @@
 # order below that carries this segment", and never carriage.
 #
 # Requires: curl, tar, md5sum, python3, gfatools, vg, gawk (as `awk`), sort,
-#           gzip, bgzip/tabix (htslib), node (npx) and gfa-to-tabix 2.0.0 or later,
+#           gzip, bgzip/tabix (htslib), node (npx) and gfa-to-tabix 5.0.0 or later,
 #           for the index and the coarse tier
 # Usage:    bash scripts/build_bovine_pangenome.sh [outdir]
 #
