@@ -37,8 +37,7 @@ export interface AlleleSummary {
 // shared so it allocates nothing
 const FIRST_ALT_ONLY: readonly string[] = ['1']
 
-// Whether alt `a` ranks ahead of `b`: `*` last, then by count, ties in file
-// order
+// Whether alt `a` ranks strictly ahead of `b`: `*` last, the rest by count
 function ranksAhead(
   a: string,
   b: string,
@@ -46,14 +45,14 @@ function ranksAhead(
   spanningDeletion: string,
 ) {
   return (
-    (Number(a === spanningDeletion) - Number(b === spanningDeletion) ||
-      alleleCounts[b]! - alleleCounts[a]! ||
-      Number(a) - Number(b)) < 0
+    a !== spanningDeletion &&
+    (b === spanningDeletion || alleleCounts[a]! > alleleCounts[b]!)
   )
 }
 
 // An insertion sort, since a site carries a handful of alts, with no
-// comparator closure per site
+// comparator closure per site. It is stable, and `for...in` lists an
+// object's integer keys ascending, so ties keep file order.
 function sortAlts(
   alts: string[],
   alleleCounts: Record<string, number>,
