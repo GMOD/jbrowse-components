@@ -30,6 +30,22 @@ its solution and fails an empty track. `mark-bars` and `facet-population` load
 and validate when done wrong, so they are the tasks that separate a skill
 saying where a setting lands from one that does not.
 
+Measured 2026-11-23 at f9e5d30a3d, three runs a cell, passes and mean turns:
+
+| Task | Sonnet, skills | Sonnet, docs | Opus, skills | Opus, docs |
+| --- | --- | --- | --- | --- |
+| `mark-bars` | 3/3, 4.7 | 2/3, 9.0 | | |
+| `facet-population` | 3/3, 4.0 | 3/3, 12.3 | | |
+| `hosted-brca1` | 3/3, 5.0 | 3/3, 5.7 | | |
+| `haplotype-tint` (held out) | 3/3, 5.7 | 3/3, 7.3 | 3/3, 8.3 | 3/3, 6.7 |
+| `one-population` (held out) | 3/3, 9.7 | 3/3, 12.3 | 3/3, 9.7 | 3/3, 7.7 |
+| `score-strip` (held out) | 3/3, 5.0 | 3/3, 10.3 | 3/3, 7.3 | 3/3, 6.7 |
+
+Every skills run loaded `jbrowse-authoring` or `jbrowse-hosted-data`. The one
+miss, docs `mark-bars`, chose `LinearScoreDisplay`. The skills save Sonnet
+turns; Opus finds the docs about as fast, so the next skill change is judged on
+pass rate first and turns second.
+
 ## A grader has to be proven before an agent meets it
 
 `pnpm check-eval-graders` needs a `jbrowse-web` build and no agent. For each
