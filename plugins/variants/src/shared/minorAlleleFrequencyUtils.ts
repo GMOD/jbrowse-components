@@ -33,21 +33,53 @@ export interface AlleleSummary {
   calledAlleleCount: number
 }
 
-function altOrderOf(
+// The order of a site carrying only the first alt, or none, the usual case,
+// shared so it allocates nothing
+const FIRST_ALT_ONLY: readonly string[] = ['1']
+
+// Whether alt `a` ranks ahead of `b`: `*` last, then by count, ties in file
+// order
+function ranksAhead(
+  a: string,
+  b: string,
   alleleCounts: Record<string, number>,
-  alts: string[],
   spanningDeletion: string,
-): readonly string[] {
-  return alts.length === 0
-    ? ['1']
-    : alts.length === 1 && alts[0] === spanningDeletion
-      ? ['1', spanningDeletion]
-      : alts.sort(
-          (a, b) =>
-            Number(a === spanningDeletion) - Number(b === spanningDeletion) ||
-            alleleCounts[b]! - alleleCounts[a]! ||
-            Number(a) - Number(b),
-        )
+) {
+  return (
+    (Number(a === spanningDeletion) - Number(b === spanningDeletion) ||
+      alleleCounts[b]! - alleleCounts[a]! ||
+      Number(a) - Number(b)) < 0
+  )
+}
+
+// An insertion sort, since a site carries a handful of alts, with no
+// comparator closure per site
+function sortAlts(
+  alts: string[],
+  alleleCounts: Record<string, number>,
+  spanningDeletion: string,
+) {
+  for (let i = 1; i < alts.length; i++) {
+    const alt = alts[i]!
+    let j = i - 1
+    while (
+      j >= 0 &&
+      ranksAhead(alt, alts[j]!, alleleCounts, spanningDeletion)
+    ) {
+      alts[j + 1] = alts[j]!
+      j--
+    }
+    alts[j + 1] = alt
+  }
+  return alts
+}
+
+function soleAltOrder(alt: string | undefined, spanningDeletion: string) {
+  return alt === spanningDeletion
+    ? ['1', alt]
+    : alt === undefined || alt === '1'
+      ? FIRST_ALT_ONLY
+      : [alt]
 }
 
 // One pass over the allele counts yields everything the filter chokepoint and
@@ -62,7 +94,8 @@ export function summarizeAlleleCounts(
   let secondMax = 0
   let called = 0
   let missing = 0
-  const alts: string[] = []
+  let firstAlt: string | undefined
+  let alts: string[] | undefined
   for (const key in alleleCounts) {
     const count = alleleCounts[key]!
     if (key === '.') {
@@ -76,7 +109,13 @@ export function summarizeAlleleCounts(
         secondMax = count
       }
       if (key !== '0') {
-        alts.push(key)
+        if (firstAlt === undefined) {
+          firstAlt = key
+        } else if (alts === undefined) {
+          alts = [firstAlt, key]
+        } else {
+          alts.push(key)
+        }
       }
     }
   }
@@ -84,7 +123,9 @@ export function summarizeAlleleCounts(
   return {
     minorAlleleFrequency: called > 0 ? secondMax / called : 0,
     missingness: total > 0 ? missing / total : 0,
-    altOrder: altOrderOf(alleleCounts, alts, spanningDeletion),
+    altOrder: alts
+      ? sortAlts(alts, alleleCounts, spanningDeletion)
+      : soleAltOrder(firstAlt, spanningDeletion),
     calledAlleleCount: called,
   }
 }

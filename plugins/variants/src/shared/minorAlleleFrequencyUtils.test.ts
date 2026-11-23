@@ -582,6 +582,13 @@ describe('summarizeAlleleCounts', () => {
     ).toEqual(['1', '2'])
   })
 
+  it('shares one order between the sites carrying only the first alt', () => {
+    expect(summarizeAlleleCounts({ '0': 4, '1': 9 }).altOrder).toBe(
+      summarizeAlleleCounts({ '0': 7 }).altOrder,
+    )
+    expect(summarizeAlleleCounts({ '0': 4, '2': 9 }).altOrder).toEqual(['2'])
+  })
+
   it('reports zero counts for an empty site', () => {
     expect(summarizeAlleleCounts({})).toEqual({
       minorAlleleFrequency: 0,
