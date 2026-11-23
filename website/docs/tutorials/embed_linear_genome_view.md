@@ -14,6 +14,7 @@ them. We:
 
 - embed the view in an HTML page with one script tag
 - point its `assembly` and `tracks` at your own data files
+- draw genes, reads, conservation and variants in one view
 - use the same component in a React app, with `useCreateViewState` for control
   from code
 
@@ -94,7 +95,7 @@ against in place of `@next` (`@jbrowse/react-linear-genome-view2@<version>`).
 For other view types, a different bundler, or working demo repos, see
 [](/docs/embedded_components).
 
-## Using your own data files in the embedded view
+## Point the view at your own data files
 
 The browser fetches each file itself, so each must be reachable and indexed:
 
@@ -112,40 +113,7 @@ The browser fetches each file itself, so each must be reachable and indexed:
 Prep your own data files with the
 [web quickstart](/docs/quickstart_web#adding-tracks) recipes.
 
-## Using the component in a React app
-
-In a React app, pass the same `assembly`, `tracks`, and `view` as props:
-
-```jsx
-import { LinearGenomeView } from '@jbrowse/react-linear-genome-view2'
-
-function GenomeBrowser() {
-  return <LinearGenomeView assembly={assembly} tracks={tracks} view={view} />
-}
-```
-
-The component reads its props once, on mount. To navigate or show a track from
-code afterwards, take a `ref` or use `useCreateViewState`, which builds the same
-view state as a hook.
-
-`useCreateViewState` also destroys the view when the component unmounts, which
-`<LinearGenomeView>` leaves running, so use it in a component that mounts and
-unmounts repeatedly, such as an app route. It returns `undefined` until it has
-built the view, so render nothing until then:
-
-```js
-import {
-  useCreateViewState,
-  JBrowseLinearGenomeView,
-} from '@jbrowse/react-linear-genome-view2'
-
-function GenomeBrowser() {
-  const state = useCreateViewState({ assembly, tracks, location: '...' })
-  return state ? <JBrowseLinearGenomeView viewState={state} /> : null
-}
-```
-
-## A more complete example
+## Add genes, reads, conservation and variants
 
 Swap in the example below to draw genes, reads, conservation and variants in one
 view.
@@ -213,7 +181,7 @@ const view = {
 }
 ```
 
-Drop these into the `index.html` from [Quick start](#quick-start) in place of
+Drop these into the `index.html` from [the first step](#quick-start) in place of
 the smaller `assembly`/`tracks`/`view`.
 
 - JBrowse decodes CRAM reads against the enclosing assembly's sequence. See the
@@ -232,6 +200,39 @@ npx serve -S .
 ```
 
 <Figure caption="The more complete example embedded in a web page." src="/img/embed_linear_genome_view/final.png"/>
+
+## Use the component in a React app
+
+In a React app, pass the same `assembly`, `tracks`, and `view` as props:
+
+```jsx
+import { LinearGenomeView } from '@jbrowse/react-linear-genome-view2'
+
+function GenomeBrowser() {
+  return <LinearGenomeView assembly={assembly} tracks={tracks} view={view} />
+}
+```
+
+The component reads its props once, on mount. To navigate or show a track from
+code afterwards, take a `ref` or use `useCreateViewState`, which builds the same
+view state as a hook.
+
+`useCreateViewState` also destroys the view when the component unmounts, which
+`<LinearGenomeView>` leaves running, so use it in a component that mounts and
+unmounts repeatedly, such as an app route. It returns `undefined` until it has
+built the view, so render nothing until then:
+
+```js
+import {
+  useCreateViewState,
+  JBrowseLinearGenomeView,
+} from '@jbrowse/react-linear-genome-view2'
+
+function GenomeBrowser() {
+  const state = useCreateViewState({ assembly, tracks, location: '...' })
+  return state ? <JBrowseLinearGenomeView viewState={state} /> : null
+}
+```
 
 ## See also
 
