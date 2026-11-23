@@ -1,30 +1,11 @@
+import type { options } from './command.ts'
+import type { parseArgs } from 'node:util'
+
 export { aggregateIndex } from './aggregate.ts'
 export { perTrackIndex } from './per-track.ts'
 export { indexFileList } from './file-list.ts'
 export { run } from './command.ts'
 
-/**
- * Type-safe flags interface for text-index command
- */
-export interface TextIndexFlags {
-  // Common flags
-  out?: string
-  target?: string
-  tracks?: string
-  excludeTracks?: string
-  attributes: string
-  quiet?: boolean
-  exclude?: string
-  include?: string
-  prefixSize?: string
-  force?: boolean
-  dryrun?: boolean
-
-  // Aggregate/per-track specific
-  assemblies?: string
-  perTrack?: boolean
-
-  // File-list specific
-  file?: string[]
-  fileId?: string[]
-}
+export type TextIndexFlags = ReturnType<
+  typeof parseArgs<{ options: typeof options }>
+>['values']

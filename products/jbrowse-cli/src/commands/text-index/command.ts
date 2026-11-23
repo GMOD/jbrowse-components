@@ -8,89 +8,90 @@ import {
 import { printHelp } from '../../utils.ts'
 import { aggregateIndex, indexFileList, perTrackIndex } from './index.ts'
 
+export const options = {
+  help: {
+    type: 'boolean',
+    short: 'h',
+    description: 'Show CLI help',
+  },
+  tracks: {
+    type: 'string',
+    description:
+      'Specific tracks to index, formatted as comma separated trackIds. If unspecified, indexes all available tracks',
+  },
+  excludeTracks: {
+    type: 'string',
+    description:
+      'Specific tracks to exclude from indexing, formatted as comma separated trackIds. To exclude a track permanently, set metadata.skipTextIndex on it in config.json instead (see Notes)',
+  },
+  target: {
+    type: 'string',
+    description:
+      'Path to config file in JB2 installation directory to read from.',
+  },
+  out: { type: 'string', description: 'Synonym for target' },
+  attributes: {
+    type: 'string',
+    description: 'Comma separated list of attributes to index',
+    default: defaultAttributesToIndex.join(','),
+  },
+  assemblies: {
+    type: 'string',
+    short: 'a',
+    description:
+      'Specify the assembl(ies) to create an index for. If unspecified, creates an index for each assembly in the config',
+  },
+  force: {
+    type: 'boolean',
+    default: false,
+    description: 'Overwrite previously existing indexes',
+  },
+  quiet: {
+    type: 'boolean',
+    short: 'q',
+    default: false,
+    description: 'Hide the progress bars',
+  },
+  perTrack: {
+    type: 'boolean',
+    default: false,
+    description: 'If set, creates an index per track',
+  },
+  exclude: {
+    type: 'string',
+    description:
+      'Comma separated list of feature types to exclude from indexing. Unset, CDS and exon rows are skipped where they have a Parent, and a parentless one, which is the gene itself, is indexed',
+  },
+  include: {
+    type: 'string',
+    description:
+      'Comma separated list of feature types to index, dropping every other type. Unset by default, which indexes every type --exclude does not name. GFF3 only',
+  },
+  prefixSize: {
+    type: 'string',
+    description:
+      'Specify the prefix size for the ixx index. We attempt to automatically calculate this, but you can manually specify this too. If many genes have similar gene IDs e.g. Z000000001, Z000000002 the prefix size should be larger so that they get split into different bins',
+  },
+  file: {
+    type: 'string',
+    multiple: true,
+    description:
+      'File or files to index (can be used to create trix indexes for embedded component use cases not using a config.json for example)',
+  },
+  fileId: {
+    type: 'string',
+    multiple: true,
+    description:
+      'Set the trackId used for the indexes generated with the --file argument',
+  },
+  dryrun: {
+    type: 'boolean',
+    description:
+      'Just print out tracks that will be indexed by the process, without doing any indexing',
+  },
+} as const
+
 export async function run(args?: string[]) {
-  const options = {
-    help: {
-      type: 'boolean',
-      short: 'h',
-      description: 'Show CLI help',
-    },
-    tracks: {
-      type: 'string',
-      description:
-        'Specific tracks to index, formatted as comma separated trackIds. If unspecified, indexes all available tracks',
-    },
-    excludeTracks: {
-      type: 'string',
-      description:
-        'Specific tracks to exclude from indexing, formatted as comma separated trackIds. To exclude a track permanently, set metadata.skipTextIndex on it in config.json instead (see Notes)',
-    },
-    target: {
-      type: 'string',
-      description:
-        'Path to config file in JB2 installation directory to read from.',
-    },
-    out: { type: 'string', description: 'Synonym for target' },
-    attributes: {
-      type: 'string',
-      description: 'Comma separated list of attributes to index',
-      default: defaultAttributesToIndex.join(','),
-    },
-    assemblies: {
-      type: 'string',
-      short: 'a',
-      description:
-        'Specify the assembl(ies) to create an index for. If unspecified, creates an index for each assembly in the config',
-    },
-    force: {
-      type: 'boolean',
-      default: false,
-      description: 'Overwrite previously existing indexes',
-    },
-    quiet: {
-      type: 'boolean',
-      short: 'q',
-      default: false,
-      description: 'Hide the progress bars',
-    },
-    perTrack: {
-      type: 'boolean',
-      default: false,
-      description: 'If set, creates an index per track',
-    },
-    exclude: {
-      type: 'string',
-      description:
-        'Comma separated list of feature types to exclude from indexing. Unset, CDS and exon rows are skipped where they have a Parent, and a parentless one, which is the gene itself, is indexed',
-    },
-    include: {
-      type: 'string',
-      description:
-        'Comma separated list of feature types to index, dropping every other type. Unset by default, which indexes every type --exclude does not name. GFF3 only',
-    },
-    prefixSize: {
-      type: 'string',
-      description:
-        'Specify the prefix size for the ixx index. We attempt to automatically calculate this, but you can manually specify this too. If many genes have similar gene IDs e.g. Z000000001, Z000000002 the prefix size should be larger so that they get split into different bins',
-    },
-    file: {
-      type: 'string',
-      multiple: true,
-      description:
-        'File or files to index (can be used to create trix indexes for embedded component use cases not using a config.json for example)',
-    },
-    fileId: {
-      type: 'string',
-      multiple: true,
-      description:
-        'Set the trackId used for the indexes generated with the --file argument',
-    },
-    dryrun: {
-      type: 'boolean',
-      description:
-        'Just print out tracks that will be indexed by the process, without doing any indexing',
-    },
-  } as const
   const { values: flags } = parseArgs({
     args,
     options,
