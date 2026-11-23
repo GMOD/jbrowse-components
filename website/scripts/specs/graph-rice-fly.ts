@@ -178,7 +178,8 @@ export const riceFlyGraphSpecs: ScreenshotSpec[] = [
   }),
   // One record, nine alleles: AGIS-1.0's 39 bp path (Balilla alone), a second
   // 39 bp path (allele 1, IR64 among its 29), and seven insertions of 46 to
-  // 89 kb, all one red. Kasalath and SL190 share the 88,924 bp one.
+  // 89 kb, a color each, which the legend names with their ALEN. Kasalath and
+  // SL190 share the 88,924 bp one.
   locusSpec({
     name: 'pangenome/rice_pup1',
     species: rice,
@@ -193,7 +194,6 @@ export const riceFlyGraphSpecs: ScreenshotSpec[] = [
         "39 bp, no insertion (not AGIS-1.0's path)",
         -120,
       ),
-      rowCallout(rice, PUP1_RECORD, 'Kasalath', 'Kasalath, 89 kb', -120, -30),
       rowCallout(rice, PUP1_RECORD, 'Balilla', "AGIS-1.0's 39 bp", -120, 10),
     ],
   }),

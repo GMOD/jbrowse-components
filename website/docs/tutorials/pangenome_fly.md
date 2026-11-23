@@ -231,11 +231,12 @@ dm6's.
 - In the graph track's menu, open **Graph settings...** and set **Bubble
   spread** to **Compress lengths**, so the kb and bp segments fit one pane.
 
-<Figure caption="Cyp28d1 with the callset sorted at its record over the gene, above the graph track. The callouts name each DSPR founder's allele and how much longer it is than dm6's." src="/img/pangenome/fly_cyp28d1.png" />
+<Figure caption="Cyp28d1 with the callset sorted at its record over the gene, above the graph track. The six alternate alleles take a color each, and the legend lists the path length of each but the commonest, whose blue other records on screen share. The callouts name each DSPR founder's allele and how much longer it is than dm6's." src="/img/pangenome/fly_cyp28d1.png" />
 
 Two Bloomington stocks share Canton-S_A1's allele, and CantonS_Yunnan shares
-BOG1_A2's. Three alleles the paper did not describe are 5.3 kb longer than dm6's
-in KSA2 and A4_HiFi, and 3.3 kb longer in SAM_HiFi.
+BOG1_A2's. KSA2 and A4_HiFi, the red rows, have an allele the paper did not
+describe, 5.3 kb longer than dm6's, and SAM_HiFi, the mint row, has another, 3.3
+kb longer.
 
 ## Strn-Mlck: the Curved wing mutant
 
