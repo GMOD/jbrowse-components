@@ -67,6 +67,15 @@ graph display also mounts `DisplayChrome` itself, so `DisplayChrome`'s own reads
 plugin ABI with no check. A read a plugin adds after the measurement is not
 covered until someone adds it.
 
+**The host reads `haplotypeColors` off a plugin's display.** The variant
+display reads it off every other display in its view (`viewDisplays`,
+`plugins/variants/src/LinearVariantDisplay/walkColors.ts`), as the shape
+`{ sample: string, haplotype?: number, color: string }[]`: PanSN sample,
+haplotype counted from 1 and absent for a bare sample, a CSS color.
+jbrowse-plugin-graphgenomeviewer's `LinearGraphDisplay` publishes it (ADR-287).
+Nothing checks either side: renaming the member, or changing its shape,
+silently turns off the variant rows' walk-colored label bars.
+
 **The signature is as public as the name.** A required second argument breaks
 a duck-typed caller as deleting the member does, so add plugin-facing
 parameters optional, never required. The converse breaks subclasses: removing

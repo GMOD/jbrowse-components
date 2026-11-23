@@ -293,7 +293,9 @@ reset rules are [TREE_SIDEBAR.md](TREE_SIDEBAR.md)'s. What is specific here:
 - **A row's color shows on the label bar only**: the cells are colored by
   genotype, so `rowColorPaintsMarks` is false. The tooltip swatch reads it too,
   and the row color key follows the genotype key. A `samplesTsv` `color` column
-  is the row's own `color`.
+  is the row's own `color`; with none, `expandRows` folds in its haplotype
+  walk's color from a graph track in the same view (`walkColors.ts`,
+  ADR-287), which the tables export never sees.
 - **The `facet` bands win over a cluster tree**
   ([A tree per band](TREE_SIDEBAR.md#a-tree-per-band)): `rowBanding` is the
   `facet`, and a run under bands clusters each band apart into one forest. A run
