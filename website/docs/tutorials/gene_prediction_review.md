@@ -18,9 +18,8 @@ disagreements into a review page that links each one back into JBrowse. We:
 
 - load the predictions and GENCODE as two gene tracks over a model that merges
   two genes
-- sort every model against GENCODE into classes with the review pipeline
-- build the static review page, with a JBrowse capture and an **Open in
-  JBrowse** link per model
+- sort every model against GENCODE into classes and build the static review
+  page, with a JBrowse capture and an **Open in JBrowse** link per model
 - review the cards, and read the Disagreements track the pipeline adds under
   each prediction
 
@@ -55,7 +54,7 @@ against GENCODE 47 and the hg38 reference.
 
 Nothing to download: the track configs and commands below read these files by
 URL.
-[Building the review portal](#building-the-review-portal-with-make-portalmjs)
+[Build the review portal](#build-the-review-portal-with-make-portalmjs)
 takes your own prediction, annotation and genome in their place.
 
 <details>
@@ -69,7 +68,7 @@ takes your own prediction, annotation and genome in their place.
 
 </details>
 
-## A Tiberius model that merges IL17REL and TTLL8
+## Load both annotations at the IL17REL-TTLL8 merge
 
 We'll load the GRCh38 sequence the predictions were made on, then the two
 annotations. Each annotation is a GFF3 that is bgzipped, sorted and
@@ -117,32 +116,7 @@ annotates two genes with a gap between them. GENCODE's gene features have
 
 <Figure src="/img/gene_prediction_merge.png" caption="One Tiberius model spans IL17REL and TTLL8, which GENCODE annotates as two genes." />
 
-## Sorting Tiberius models into five classes against GENCODE
-
-The merge above is one kind of disagreement. The portal compares each Tiberius
-model on chr22 with GENCODE and puts it in one of five classes: Agrees and four
-classes of disagreement. Only the four disagreement classes get a card.
-
-| Class              | What it means                                                     | On chr22                                                   | What an annotator does   |
-| ------------------ | ----------------------------------------------------------------- | ---------------------------------------------------------- | ------------------------ |
-| Agrees             | shares splice junctions with a reference gene                     | 424<!--m:tiberius-chr22-classes.agrees.models-->           | nothing                  |
-| Merged model       | one prediction covers two separate reference genes                | 1<!--m:tiberius-chr22-classes.merged-model.models-->       | split into two models    |
-| Structure conflict | covers one gene but shares none of its splice junctions           | 3<!--m:tiberius-chr22-classes.structure-conflict.models--> | check the exon structure |
-| Novel locus        | predicted where the reference annotates nothing                   | 12<!--m:tiberius-chr22-classes.novel-locus.models-->       | assess, then create      |
-| Novel coding       | predicted coding where the reference has only non-coding features | 119<!--m:tiberius-chr22-classes.novel-coding.models-->     | assess coding potential  |
-
-The portal applies these rules, and _PI4KA_ is the control that tests them:
-
-- **A shared junction** is an intron of one of the gene's transcripts.
-- **Exons are compared** with genes on the same strand.
-- **A merge** counts only when the genes it joins do not overlap each other.
-  _PI4KA_ is on the minus strand with _SERPIND1_ inside one of its introns on
-  the plus strand; Tiberius predicts _PI4KA_ correctly, and the portal leaves it
-  off the list.
-- **GENCODE readthrough genes** (one transcript spanning two neighbours) such as
-  `CHKB-CPT1B` overlap the genes they join, so the portal skips them.
-
-## Building the review portal with make-portal.mjs
+## Build the review portal with make-portal.mjs
 
 Clone the pipeline and install it:
 
@@ -173,6 +147,29 @@ node bin/make-portal.mjs \
   --with-app --out ./portal
 ```
 
+The merge above is one kind of disagreement. The portal compares each Tiberius
+model on chr22 with GENCODE and puts it in one of five classes: Agrees and four
+classes of disagreement. Only the four disagreement classes get a card.
+
+| Class              | What it means                                                     | On chr22                                                   | What an annotator does   |
+| ------------------ | ----------------------------------------------------------------- | ---------------------------------------------------------- | ------------------------ |
+| Agrees             | shares splice junctions with a reference gene                     | 424<!--m:tiberius-chr22-classes.agrees.models-->           | nothing                  |
+| Merged model       | one prediction covers two separate reference genes                | 1<!--m:tiberius-chr22-classes.merged-model.models-->       | split into two models    |
+| Structure conflict | covers one gene but shares none of its splice junctions           | 3<!--m:tiberius-chr22-classes.structure-conflict.models--> | check the exon structure |
+| Novel locus        | predicted where the reference annotates nothing                   | 12<!--m:tiberius-chr22-classes.novel-locus.models-->       | assess, then create      |
+| Novel coding       | predicted coding where the reference has only non-coding features | 119<!--m:tiberius-chr22-classes.novel-coding.models-->     | assess coding potential  |
+
+The portal applies these rules, and _PI4KA_ is the control that tests them:
+
+- **A shared junction** is an intron of one of the gene's transcripts.
+- **Exons are compared** with genes on the same strand.
+- **A merge** counts only when the genes it joins do not overlap each other.
+  _PI4KA_ is on the minus strand with _SERPIND1_ inside one of its introns on
+  the plus strand; Tiberius predicts _PI4KA_ correctly, and the portal leaves it
+  off the list.
+- **GENCODE readthrough genes** (one transcript spanning two neighbours) such as
+  `CHKB-CPT1B` overlap the genes they join, so the portal skips them.
+
 The output directory holds the page, a JBrowse config, one PNG per candidate
 and, with `--with-app`, a copy of JBrowse. Copy it to any web server to publish.
 
@@ -185,7 +182,7 @@ run against the hg38 hub's GENCODE 49, with `--rnaseq` on Human Brain Reference
 and Universal Human Reference BAMs from the
 [Griffith lab's RNA-seq course data](https://genomedata.org/rnaseq-tutorial/results/alignments/hisat/).
 
-## Using the review page: cards, filters and verdicts
+## Review each card and record a verdict
 
 Open the [example portal](https://jbrowse.org/demos/tiberius_review/), or
 `npx serve ./portal` for your own build. It has one card per model:
@@ -202,7 +199,7 @@ The page keeps verdicts in your browser. **Export** writes them out as TSV, and
 [Apollo](https://github.com/GMOD/Apollo3), the annotation editor, and an
 `apollo_url` column to the exported TSV.
 
-## The Disagreements track: junctions that differ from GENCODE
+## Read the moved junctions in the Disagreements track
 
 Every capture and live link has a **Disagreements** track under the prediction,
 with one box per junction that differs from the reference, labelled with what
