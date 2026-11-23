@@ -128,6 +128,11 @@ export async function readInlineOrFileJson<T>(inlineOrFileName: string) {
   try {
     result = JSON.parse(inlineOrFileName)
   } catch (error) {
+    // an argument that opens like an object or array was meant as inline JSON,
+    // so its parse error is the useful one, not an ENOENT for a file named '{...'
+    if (/^\s*[{[]/.test(inlineOrFileName)) {
+      throw error
+    }
     debug(
       `Not valid inline JSON, attempting to parse as filename: '${inlineOrFileName}'`,
     )
