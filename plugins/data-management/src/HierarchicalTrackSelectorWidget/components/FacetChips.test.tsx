@@ -233,13 +233,16 @@ test('a chip opens a dialog named for its facet, and "More filters" one of its o
 test("in tree mode the chips count what the tree's own search keeps", () => {
   const { model } = setup()
   const table = model.trackTable
-  model.setFilterText('K562')
+  model.setFilterText('FromConfigAdapter')
   expect(treeTrackIds(model)).toEqual([])
   expect(table.facetCounts('metadata.biosample').size).toBe(0)
 
   model.openTable()
   expect(table.facetCounts('metadata.biosample')).toEqual(
-    new Map([['K562', 4]]),
+    new Map([
+      ['K562', 4],
+      ['HepG2', 4],
+    ]),
   )
 })
 

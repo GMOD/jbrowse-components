@@ -121,6 +121,10 @@ test('the tree keeps and counts what its own text search keeps', async () => {
   expect(status()).toBe('4 of 9')
 
   filter('K562')
+  expect(treeTrackIds(model).toSorted()).toEqual(['t0', 't1', 't4', 't5'])
+  expect(status()).toBe('4 of 9')
+
+  filter('FromConfigAdapter')
   expect(treeTrackIds(model)).toEqual([])
   expect(status()).toBe('0 of 9')
 })

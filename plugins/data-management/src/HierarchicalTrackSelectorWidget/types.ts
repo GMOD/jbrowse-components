@@ -67,5 +67,10 @@ export interface TrackNodeSource {
   sortName: string
   description: string
   categories: string[]
+  /**
+   * the text a row does not draw, as [key, value]: its metadata and
+   * description, and in Favorites and Recent its category
+   */
+  hintFields: [string, string][]
   searchText: string
 }

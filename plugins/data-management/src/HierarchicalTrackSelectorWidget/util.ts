@@ -1,5 +1,8 @@
+import { coarseStripHTML } from '@jbrowse/core/util'
+import { termPattern } from '@jbrowse/core/util/searchText'
 import { trackCatalogEntry } from '@jbrowse/core/util/tracks'
 
+import { getRootKeys } from '../TrackTable/tableUtil.ts'
 import { buildTrackSearchText } from '../shared/searchText.ts'
 
 import type {
@@ -27,20 +30,17 @@ const sessionTracksCategory = ' Session tracks'
 
 // Everything the tree needs from a track's config, read once into
 // model.allTracks instead of on every filterText keystroke. searchText covers
-// what a tree row shows — its name, the categories it nests under, and the
-// description it carries as a tooltip — and is normalized by
-// buildTrackSearchText, which the track table's rows go through too. Adapter
-// and metadata are left out here because, unlike in the table grid, the tree
-// renders neither.
+// a row's name, the categories it nests under, its description and its
+// metadata values, normalized by buildTrackSearchText as the track table's
+// rows are. The description and metadata are not on the row, so hintFields
+// keeps them for matchHint to say which one a query hit.
 // Each is a raw member read, so a frozen entry answers without hydrating, and
 // supplies the slot's default itself since a frozen entry omits it. sortName is the raw name slot rather than getTrackName, so the unnamed
 // reference sequence track still sorts to the top.
 //
 // A session track's pseudo-category is prepended here rather than where the
 // hierarchy is built, so it is one of the categories for every purpose that
-// reads them — sorting, the subcategory count, and searching. The tree draws
-// that folder, and the rule is that the filter box searches what the tree
-// shows.
+// reads them — sorting, the subcategory count, and searching.
 export function trackNodeSourceFor(
   conf: AnyTrackConfig,
   {
@@ -55,14 +55,80 @@ export function trackNodeSourceFor(
   const categories = isSessionTrack
     ? [sessionTracksCategory, ...category]
     : category
+  const metadata = (conf.metadata ?? {}) as Record<string, unknown>
+  const hintFields = [
+    ...getRootKeys(metadata).map(key => hintField(key, String(metadata[key]))),
+    ...(description ? [hintField('description', description)] : []),
+  ]
   return {
     conf,
     name,
     sortName: String(conf.name ?? ''),
     description,
     categories,
-    searchText: buildTrackSearchText([name, description, ...categories]),
+    hintFields,
+    searchText: buildTrackSearchText([
+      name,
+      ...categories,
+      ...hintFields.map(([, value]) => value),
+    ]),
   }
+}
+
+/**
+ * A field a row can name in its hint, as the plain text a table cell shows:
+ * descriptions and metadata values may be markup
+ */
+export function hintField(key: string, value: string): [string, string] {
+  return [key, coarseStripHTML(value)]
+}
+
+const snippetLead = 12
+
+/**
+ * A value whose term sits past its first few characters, from the word holding
+ * the term on (or from the term, deep in a long word such as a URL), after an
+ * ellipsis, so a row cut at its end still shows the term
+ */
+export function snippetAround(value: string, term: string) {
+  const index = value.search(termPattern(term))
+  const wordStart = value.lastIndexOf(' ', index - 1) + 1
+  const start = index - wordStart > snippetLead ? index : wordStart
+  return index > snippetLead && start > 0 ? `…${value.slice(start)}` : value
+}
+
+/**
+ * What a row shows beside its name while a query is set: for each term its
+ * name and drawn categories lack, the first metadata field holding it as
+ * `key: value`, else the description's text alone, so a track kept for text
+ * off the row says why. The description goes unlabeled since the row's
+ * tooltip already shows it and the label would take the room a long name
+ * leaves. A long value starts near the term. Metadata goes first since its
+ * values are usually short.
+ */
+export function matchHint(
+  {
+    name,
+    categories,
+    hintFields,
+  }: Pick<TrackNodeSource, 'name' | 'categories' | 'hintFields'>,
+  terms: string[],
+) {
+  const shown = buildTrackSearchText([name, ...categories])
+  const hits = new Map<string, string>()
+  for (const term of terms) {
+    if (!shown.includes(term)) {
+      const field = hintFields.find(([, value]) =>
+        buildTrackSearchText([value]).includes(term),
+      )
+      if (field && !hits.has(field[0])) {
+        hits.set(field[0], snippetAround(field[1], term))
+      }
+    }
+  }
+  return [...hits]
+    .map(([key, value]) => (key === 'description' ? value : `${key}: ${value}`))
+    .join(' · ')
 }
 
 interface Node {

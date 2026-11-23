@@ -9,6 +9,7 @@ function src(sortName: string, categories: string[] = []): TrackNodeSource {
     sortName,
     description: '',
     categories,
+    hintFields: [],
     searchText: sortName.toLowerCase(),
   }
 }

@@ -2,6 +2,7 @@ import { getSession } from '@jbrowse/core/util'
 import { createTestSession } from '@jbrowse/web/testUtils'
 
 import { trackTableModelFactory } from '../TrackTable/trackTableModel.ts'
+import { matchHint } from './util.ts'
 
 import type { HierarchicalTrackSelectorModel } from './model.ts'
 
@@ -29,8 +30,24 @@ function setup() {
   })
   for (const conf of [
     { trackId: 'plain', name: 'plain', description: 'chromatin marks' },
-    { trackId: 'markup', name: '<i>italic</i> track', description: '' },
-    { trackId: 'categorized', name: 'categorized', category: ['assays'] },
+    {
+      trackId: 'markup',
+      name: '<i>italic</i> track',
+      description: '',
+      metadata: { source: '<a href="https://example.org">portal</a>' },
+    },
+    {
+      trackId: 'categorized',
+      name: 'categorized',
+      category: ['assays'],
+      description: 'Signal in K562 cells',
+      metadata: {
+        biosample: 'K562',
+        replicates: 2,
+        files: { bam: 'nested.bam' },
+        aliases: ['listed'],
+      },
+    },
   ]) {
     session.addSessionTrackConf({
       ...conf,
@@ -87,6 +104,52 @@ test('the tree counts the tracks a query keeps, of all it lists', () => {
   expect(model.trackTable.matchCounts).toEqual({ matched: 3, total: 4 })
 })
 
+test('the tree filter matches a metadata value, a number included', () => {
+  const { model } = setup()
+  expect(treeMatches(model, 'k562')).toEqual(['categorized'])
+  expect(treeMatches(model, 'k562 2')).toEqual(['categorized'])
+  expect(treeMatches(model, 'session -k562')).toEqual(['markup', 'plain'])
+})
+
+// a metadata value is usually short enough to show whole, so it names a term
+// the description also holds
+test('a hit in metadata and the description names the metadata field', () => {
+  const { model } = setup()
+  model.setFilterText('k562')
+  const [track] = model.rows.map(r => r.item).filter(i => i.type === 'track')
+  expect(track?.type === 'track' && matchHint(track, model.searchTerms)).toBe(
+    'biosample: K562',
+  )
+})
+
+// a table cell renders a metadata value's markup, so the hint names its text
+test('a metadata value is searched and named without its markup', () => {
+  const { model } = setup()
+  expect(treeMatches(model, 'example.org')).toEqual([])
+  expect(treeMatches(model, 'portal')).toEqual(['markup'])
+  const [track] = model.rows.map(r => r.item).filter(i => i.type === 'track')
+  expect(track?.type === 'track' && matchHint(track, model.searchTerms)).toBe(
+    'source: portal',
+  )
+})
+
+test('the tree filter skips object and array metadata values', () => {
+  const { model } = setup()
+  expect(treeMatches(model, 'nested')).toEqual([])
+  expect(treeMatches(model, 'listed')).toEqual([])
+})
+
+test('a favorite kept for its category names the category', () => {
+  const { model } = setup()
+  model.addToFavorites('categorized')
+  model.setTrackList('favorites')
+  model.setFilterText('assays k562')
+  const [track] = model.rows.map(r => r.item).filter(i => i.type === 'track')
+  expect(track?.type === 'track' && matchHint(track, model.searchTerms)).toBe(
+    'category: …assays · biosample: K562',
+  )
+})
+
 test('the tree filter still matches a category name', () => {
   const { model } = setup()
   expect(treeMatches(model, 'assays')).toEqual(['categorized'])
@@ -111,8 +174,8 @@ test('a query cannot span two fields', () => {
   expect(treeMatches(model, 'plainchromatin')).toEqual([])
 })
 
-// The two selectors search different field sets on purpose — each searches what
-// it shows — but they must normalize the same way. This is the case that drifted
+// The two selectors search different field sets on purpose — the tree leaves
+// out the kind and adapter — but they must normalize the same way. This is the case that drifted
 // before: the tree matched raw markup while the table grid stripped it.
 test('both selectors agree on markup and case normalization', () => {
   const { session, model } = setup()

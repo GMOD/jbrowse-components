@@ -2,7 +2,7 @@ import { coarseStripHTML } from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { observer } from 'mobx-react'
 
-import { isUnsupported } from '../../util.ts'
+import { isUnsupported, matchHint } from '../../util.ts'
 import CheckboxLite from './CheckboxLite.tsx'
 import OverrideBadge from './OverrideBadge.tsx'
 import TrackNameText from './TrackNameText.tsx'
@@ -53,6 +53,20 @@ const useStyles = makeStyles()(theme => ({
     gap: 2,
     minWidth: 0,
   },
+  nameBeforeHint: {
+    display: 'flex',
+    flexShrink: 0,
+    maxWidth: '100%',
+    minWidth: 0,
+  },
+  hint: {
+    color: theme.palette.text.secondary,
+    minWidth: 0,
+    overflow: 'hidden',
+    textOverflow: 'ellipsis',
+    whiteSpace: 'nowrap',
+    marginLeft: 4,
+  },
 }))
 
 // Separate observer so only this checkbox re-renders when a track is toggled
@@ -82,26 +96,38 @@ const TrackCheckbox = observer(function TrackCheckbox({
 // Separate observer so only this label re-renders when selection changes
 const TrackLabelText = observer(function TrackLabelText({
   model,
-  id,
-  name,
-  trackId,
+  item,
   selectedClass,
 }: {
   model: HierarchicalTrackSelectorModel
-  id: string
-  name: string
-  trackId: string
+  item: TreeTrackNode
   selectedClass: string
 }) {
   const { classes } = useStyles()
+  const { id, name, trackId } = item
   const selected = model.selectionSet.has(trackId)
+  const hint = matchHint(item, model.searchTerms)
   return (
     <div
       data-testid={`htsTrackLabel-${id}`}
       className={`${classes.label} ${selected ? selectedClass : ''}`}
     >
-      <TrackNameText name={name} />
-      <OverrideBadge model={model} trackId={trackId} name={name} />
+      {hint ? (
+        <>
+          <span className={classes.nameBeforeHint}>
+            <TrackNameText name={name} />
+          </span>
+          <OverrideBadge model={model} trackId={trackId} name={name} />
+          <span data-testid={`htsTrackHint-${id}`} className={classes.hint}>
+            {hint}
+          </span>
+        </>
+      ) : (
+        <>
+          <TrackNameText name={name} />
+          <OverrideBadge model={model} trackId={trackId} name={name} />
+        </>
+      )}
     </div>
   )
 })
@@ -132,9 +158,7 @@ const TrackLabel = observer(function TrackLabel({
         />
         <TrackLabelText
           model={model}
-          id={id}
-          name={name}
-          trackId={trackId}
+          item={item}
           selectedClass={classes.selected}
         />
       </label>

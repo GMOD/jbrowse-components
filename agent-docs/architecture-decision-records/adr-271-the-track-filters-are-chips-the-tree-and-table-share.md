@@ -59,6 +59,20 @@ the tree would draw nothing. A filter chip whose facet has no value left opens
 on "No matching values". Every search box shows its clear button only while
 there is text, and keeps the button's room so the box does not change height.
 
+Amended 2026-11-23: the tree's filter box matches metadata values too, so a
+query finds the same tracks in Tree mode as in Table mode, less the kind and
+adapter (#1708). A row kept for text it does not draw names that text after its
+name in grey, as `biosample: K562`, or as the description's text alone, since
+the row's tooltip already shows the description and a label would take the
+room a long name leaves, and only while a query is set; in Favorites and Recent, which draw no folders, a
+category hit is named as `category: …`. A value whose term sits past its first
+12 characters starts at the word holding it, or at the term inside a long word
+such as a URL, after an ellipsis, since the row is cut at its end; a value is
+named as the plain text its table cell shows. An excluded term hides a track for a
+value the row does not draw, as the table already did. A typed `field:value` is
+still a literal term: it waits on the filter predicates in
+`waiting-on-a-call/the-track-list-config-speaks-the-grammar.md`.
+
 ## Context
 
 ADR-269 left the facet panel off in the drawer, reachable only through "Show
@@ -81,9 +95,9 @@ on the way back, and the tree could not filter by metadata at all.
   creates it on attach (`trackTable`) and destroys it with itself. Its search
   text is the selector's `filterText`, so one filter box serves both modes,
   and the tree keeps a track only when it is in the table's `keptIds`.
-  Each mode still matches the text against what it shows: the tree its name,
-  categories and description, the table also its kind, adapter and metadata,
-  so "N of M" is the open mode's count. Facets and sort survive a Tree |
+  The tree matches the text against a track's name, categories, description
+  and metadata values, and the table also its kind and adapter, so "N of M" is
+  the open mode's count. Facets and sort survive a Tree |
   Table toggle.
 - **One header.** The drawer's table draws the tree's header (☰, cart,
   filter box, chips). Amended 2026-11-17, the ☰ menu's rows went to:
@@ -122,7 +136,8 @@ on the way back, and the tree could not filter by metadata at all.
 | A Filters toggle button with a side panel that opens when the table has room | The panel cost a column in the usual drawer width, and closed it hid an active filter behind a count |
 | Keeping the side panel for the wide folder dialog | Two filter mechanisms for one table |
 | Column-header filter popovers | Found only by hovering a header, and the tree has no headers |
-| The tree matching text against the table's rows (kind, adapter, metadata) | The filter box searches what the tree shows; a track kept for a hidden metadata value reads as a wrong match. The chips are how the tree filters on metadata |
+| The tree matching text against metadata with nothing on the row saying why | A track kept for a value it does not draw reads as a wrong match. Superseded 2026-11-23: the tree matches metadata and names the hit after the track's name |
+| A hint guaranteed 90 or 120 px while a query is set, the name cut at its end to make room | Tried 2026-11-23 on hosted hg38 (`rna`, `splicing`, `difficult`, `chicken`) and an ENCODE-style hub at 384 and 500 px: with the description unlabeled, every hinted row already showed its term, and the floor only cut names that fit. A long name hides the hint only for a description-only hit on about 42 hg38 tracks of 40+ characters, mostly conservation tracks (`mammals`, `primates`) |
 | Folding the folder dialog into table mode with a category chip | Breaks the `TrackSelector-folderDialog` extension point |
 | An add-to-selection mode for the table's checkboxes | One checkbox meant two things, switched from a menu; Ctrl/Cmd-click and "Add matching tracks to selection" select without it (2026-11-18) |
 | A show-all header checkbox on an unfiltered list | One stray click turned on every track of a hub; it appears with "N of M" |

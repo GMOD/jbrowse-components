@@ -10,7 +10,7 @@ import {
   localStorageSetJSON,
   notEmpty,
 } from '@jbrowse/core/util'
-import { searchMatcher } from '@jbrowse/core/util/searchText'
+import { parseSearchQuery, searchMatcher } from '@jbrowse/core/util/searchText'
 import { filterTracks, offeredTracks } from '@jbrowse/core/util/tracks'
 import { ElementId } from '@jbrowse/core/util/types/mst'
 import { addDisposer, destroy, types } from '@jbrowse/mobx-state-tree'
@@ -25,6 +25,7 @@ import {
   findSubCategories,
   findTopLevelCategories,
   getAllTrackNodes,
+  hintField,
   trackNodeSourceFor,
 } from './util.ts'
 
@@ -742,7 +743,8 @@ export default function stateTreeFactory(pluginManager: PluginManager) {
     .views(self => ({
       /**
        * #getter
-       * the trackIds whose searchText holds every term in the filter box;
+       * the trackIds whose searchText (name, categories, description and
+       * metadata values) holds every term in the filter box;
        * undefined when the box holds no terms
        */
       get textKeptIds() {
@@ -755,6 +757,15 @@ export default function stateTreeFactory(pluginManager: PluginManager) {
                 .map(t => t.conf.trackId),
             )
           : undefined
+      },
+      /**
+       * #getter
+       * the terms a kept row must contain, which matchHint explains
+       */
+      get searchTerms() {
+        return parseSearchQuery(self.filterText)
+          .filter(term => !term.exclude)
+          .map(term => term.text)
       },
     }))
     .views(self => ({
@@ -819,7 +830,19 @@ export default function stateTreeFactory(pluginManager: PluginManager) {
           .map(id => sources.get(id))
           .filter(notEmpty)
           .filter(t => keptIds?.has(t.conf.trackId) ?? true)
-          .map(t => ({ ...t, categories: [] }))
+          .map(t => ({
+            ...t,
+            categories: [],
+            hintFields: t.categories.length
+              ? [
+                  hintField(
+                    'category',
+                    t.categories.map(c => c.trim()).join(', '),
+                  ),
+                  ...t.hintFields,
+                ]
+              : t.hintFields,
+          }))
         return generateHierarchy(tracks, trackList)
       },
     }))

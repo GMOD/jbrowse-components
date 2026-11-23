@@ -66,15 +66,19 @@ function escapeRegExp(text: string) {
 }
 
 /**
+ * One lowercased term as a case-insensitive pattern that also spans the `-`
+ * and `_` the match skipped, so `thp1` finds "THP-1" in raw text.
+ */
+export function termPattern(text: string, flags = 'iu') {
+  return new RegExp(Array.from(text, escapeRegExp).join('[-_]*'), flags)
+}
+
+/**
  * What a search box highlights in the rows it kept: each term a row has to
- * contain, as a pattern that also spans the `-` and `_` the match skipped, so
- * `thp1` marks "THP-1".
+ * contain, as a {@link termPattern}.
  */
 export function highlightPatterns(filterText: string) {
   return parseSearchQuery(filterText)
     .filter(term => !term.exclude)
-    .map(
-      term =>
-        new RegExp(Array.from(term.text, escapeRegExp).join('[-_]*'), 'giu'),
-    )
+    .map(term => termPattern(term.text, 'giu'))
 }

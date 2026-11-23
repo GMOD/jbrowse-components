@@ -208,9 +208,12 @@ track draws its data. Each track type's guide describes its displays.
 ## Filtering tracks
 
 The filter box at the top of Available tracks keeps the tracks that contain
-every word you type, in any order and in any field shown: name, category and
-description, plus the table's other columns. `thp1` also finds "THP-1". The box
-shows how many tracks are kept, of how many, such as "6 of 800".
+every word you type, in any order, in the name, category, description or a
+metadata value, plus the table's other columns. `thp1` also finds "THP-1". A
+tree row kept for a word it does not show names where the word was in grey after
+the track name, such as "biosample: K562", or shows the part of its description
+that holds the word. The box shows how many tracks are kept, of how many, such
+as "6 of 800".
 
 - **`"quoted words"`** must appear together, as typed.
 - **`-word`** drops the tracks that contain it: `liftover -mm10`. A minus before

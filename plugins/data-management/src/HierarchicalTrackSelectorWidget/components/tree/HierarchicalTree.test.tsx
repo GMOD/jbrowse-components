@@ -53,7 +53,7 @@ function setup(trackCount: number) {
       <HierarchicalTree height={VIEWPORT} model={model} />
     </ThemeProvider>,
   )
-  return { model, ...utils }
+  return { model, session, ...utils }
 }
 
 // The scroll container is the tree's own root div; jsdom reports 0 for
@@ -93,4 +93,28 @@ test('a filter that shrinks then restores the tree leaves the top rendered', () 
     model.clearFilterText()
   })
   expect(container.textContent).toContain('zzz unique')
+})
+
+test('a row kept for a metadata value names it only while a query is set', () => {
+  const { model, session, queryByTestId } = setup(0)
+  act(() => {
+    session.addSessionTrackConf({
+      trackId: 'liver',
+      name: 'H3K27ac',
+      metadata: { biosample: 'liver' },
+      assemblyNames: ['volMyt1'],
+      type: 'FeatureTrack',
+      adapter: { type: 'FromConfigAdapter', features: [] },
+    })
+  })
+  const hint = () => queryByTestId(/^htsTrackHint-.*liver$/)
+  expect(hint()).toBeNull()
+  act(() => {
+    model.setFilterText('liver')
+  })
+  expect(hint()?.textContent).toBe('biosample: liver')
+  act(() => {
+    model.setFilterText('h3k27ac')
+  })
+  expect(hint()).toBeNull()
 })
