@@ -21,6 +21,12 @@ plain words.
 | [jbrowse-capture](https://github.com/GMOD/jbrowse-components/tree/main/.claude/skills/jbrowse-capture)         | render a view to an image and know when it finished drawing                                                        |
 | [jbrowse-mcp](https://github.com/GMOD/jbrowse-components/tree/main/.claude/skills/jbrowse-mcp)                 | drive a running JBrowse: Desktop over its [MCP server](/docs/agents), or a JBrowse Web page through `window.jb`    |
 
+An
+[eval](https://github.com/GMOD/jbrowse-components/blob/main/scripts/agent-evals/configDocsEval.ts)
+tests them: an agent given only the skills writes a track config or a link for
+each task, and `jbrowse validate` plus a check of what the task asked for grade
+the result.
+
 ## Install
 
 The skills are mirrored at
