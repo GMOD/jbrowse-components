@@ -178,8 +178,8 @@ It finds the strand two ways:
 In the compact _ACTB_ stack, reads with a skip sit among many more that have
 none. Three track-menu settings separate the splicing evidence from the rest.
 
-**Sort by → Spliced reads first** gives every read whose CIGAR has a skip the
-lowest rows, so the junction-spanning reads sit together at the top of the
+**Sort by → Spliced reads first** puts every read whose CIGAR has a skip in the
+first rows, so the junction-spanning reads sit together at the top of the
 pileup.
 
 <Figure caption="The ACTB pileup in file order above, sorted with spliced reads first below." src="/img/rnaseq/sort_spliced_first.png" links="File order=rnaseq/deep_pileup_file_order,Spliced first=rnaseq/deep_pileup_spliced_first" />

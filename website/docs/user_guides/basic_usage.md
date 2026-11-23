@@ -164,7 +164,7 @@ Administrators can add tracks with the
 
 ## Undo and redo
 
-Use **Tools → Undo/Redo**, or `ctrl+z`/`cmd+z` (undo) and
+Use **Tools → Undo** and **Tools → Redo**, or `ctrl+z`/`cmd+z` (undo) and
 `ctrl+shift+z`/`ctrl+y`/`cmd+shift+z` (redo).
 
 Undo is app-wide, so it reaches things like reopening a view you just closed.
