@@ -30,8 +30,8 @@
 #           ets2/*.bw, pbmc/<Cell_Type>.bw, pbmc/sources.json (the subadapter
 #           list for the measured track's config), config.json wiring them
 #           over hg38 with RefSeq genes and opening on ETS2
-# Runtime:  a few minutes: 121 predictions and 192 ISM variants, then the
-#           BigWig writing
+# Runtime:  a few minutes: 128 requests, 192 ISM variants and a gradient,
+#           then the BigWig writing
 #
 # Usage: ALPHAGENOME_API_KEY=... bash scripts/build_alphagenome2_singlecell.sh [outdir]
 #
@@ -93,29 +93,27 @@ from alphagenome.models.v2 import dna_client, variant_scorers
 base, demo_config = sys.argv[1:3]
 
 
-class WaitOutQuota:
+def wait_out_quota(method):
     """The API answers RESOURCE_EXHAUSTED past its per-minute request quota."""
 
-    def __init__(self, client):
-        self.client = client
+    def call(*args, **kwargs):
+        for attempt in range(5):
+            try:
+                return method(*args, **kwargs)
+            except grpc.RpcError as e:
+                if e.code() != grpc.StatusCode.RESOURCE_EXHAUSTED or attempt == 4:
+                    raise
+                print(f'{method.__name__}: request quota reached, waiting a minute')
+                time.sleep(65)
 
-    def __getattr__(self, name):
-        method = getattr(self.client, name)
-
-        def call(*args, **kwargs):
-            for attempt in range(5):
-                try:
-                    return method(*args, **kwargs)
-                except grpc.RpcError as e:
-                    if e.code() != grpc.StatusCode.RESOURCE_EXHAUSTED or attempt == 4:
-                        raise
-                    print(f'{name}: request quota reached, waiting a minute')
-                    time.sleep(65)
-
-        return call
+    return call
 
 
-model = WaitOutQuota(dna_client.create(os.environ['ALPHAGENOME_API_KEY']))
+model = dna_client.create(os.environ['ALPHAGENOME_API_KEY'])
+# The batch calls send each request through one of the first three, so a
+# request that meets the quota waits alone; an ISM chunk has no such hook
+for name in ('predict_interval', 'predict_variant', 'score_variant', 'score_ism_variants', 'predict_interval_gradients'):
+    setattr(model, name, wait_out_quota(getattr(model, name)))
 conditions = model.supported_conditions()
 by_name = conditions.set_index('biosample_name')
 by_curie = conditions.set_index('condition')

@@ -1,8 +1,8 @@
 ---
 title: AlphaGenome 2 predictions by cell type
 description:
-  View AlphaGenome 2's predicted effect of each IBD credible-set SNP at ETS2 as
-  one row per immune cell type
+  View AlphaGenome 2's predicted effect of each IBD credible-set SNP at ETS2
+  separately for each immune cell type
 guide_category: Tutorials
 tutorial_category: Epigenomics & single cell
 ---
@@ -10,10 +10,10 @@ tutorial_category: Epigenomics & single cell
 An inflammatory bowel disease association on chromosome 21 fine-maps to seven
 SNPs in 1.2 kb of gene desert, 289 kb from the _ETS2_ promoter. AlphaGenome 2
 predicts a variant's effect on expression and on chromatin accessibility
-separately for each cell type it was trained on. Drawn as one row per cell type
-along the chromosome, those predictions show which SNP has an effect, on which
-gene, and in which cell types, following DeepMind's own worked example. At
-_ETS2_ and the enhancer between _ETS2_ and _PSMG1_, we:
+separately for each cell type it was trained on. Drawn per cell type along the
+chromosome, those predictions show which SNP has an effect, on which gene, and
+in which cell types, following DeepMind's own worked example. At _ETS2_ and the
+enhancer between _ETS2_ and _PSMG1_, we:
 
 - load the credible set as a variant track
 - load each SNP's predicted effect on each gene from one BED, faceted into a
@@ -28,7 +28,7 @@ _ETS2_ and the enhancer between _ETS2_ and _PSMG1_, we:
 :::caution Predictions
 
 Every track on this page except the credible set and the genes is a model's
-output. The rows follow DeepMind's
+output. The tracks follow DeepMind's
 [fine-mapping notebook](https://www.alphagenomedocs.com/colabs/v2/finemapping_ets2.html)
 for this locus.
 
@@ -122,7 +122,7 @@ filter, facet and color by (tab-separated, shown space-aligned):
 ```text
 #chrom  chromStart  chromEnd  name   score    strand  cell_type   snp
 chr21   38805182    38824955  ETS2   -0.2327  +       Macrophage  rs2836882
-chr21   38805182    38824955  ETS2   -0.2830  +       Monocyte    rs2836882
+chr21   38805182    38824955  ETS2   -0.2832  +       Monocyte    rs2836882
 chr21   38805182    38824955  ETS2   -0.0023  +       B cell      rs2836882
 ```
 
@@ -131,7 +131,7 @@ chr21   38805182    38824955  ETS2   -0.0023  +       B cell      rs2836882
 The track draws the notebook's heatmap along the chromosome: a section per cell
 type, each gene a rectangle colored by its score. `filter` keeps rs2836882's
 lines, `facet` makes the sections, and the facet's `pileup` packs overlapping
-genes such as _GET1_ and the _GET1-SH3BGR_ readthrough into separate lanes:
+genes into separate lanes:
 
 ```json addtrack loc=chr21:38,700,000..39,330,000
 {
@@ -186,11 +186,59 @@ The pinned `domainMin`, `domainMax` and `domainMid` put no effect at white in
 every section, as the notebook's color scale does. Hovering a rectangle names
 its gene, and the RefSeq track above names them all.
 
-The second track, `ag2_ets2_macrophage_by_snp` in the hosted config,
-https://jbrowse.org/demos/alphagenome2_singlecell/config.json, reads the same
-BED with `"filter": [{ "field": "cell_type", "equal": "Macrophage" }]` and
-`"facet": { "field": "snp" }`, a section per credible-set SNP. Open both over
-the span from _ETS2_ to _BRWD1_:
+The second track reads the same BED filtered to macrophages and faceted by SNP,
+a section per credible-set SNP in genomic order:
+
+```json addtrack
+{
+  "type": "FeatureTrack",
+  "trackId": "ag2_ets2_macrophage_by_snp",
+  "name": "Macrophage predicted expression effect per gene, by credible-set SNP",
+  "assemblyNames": ["hg38"],
+  "adapter": {
+    "type": "BedTabixAdapter",
+    "uri": "https://jbrowse.org/demos/alphagenome2_singlecell/ets2/expression_effects.bed.gz"
+  },
+  "displays": [
+    {
+      "type": "LinearMarkDisplay",
+      "displayId": "ag2_ets2_macrophage_by_snp-LinearMarkDisplay",
+      "height": 300,
+      "filter": [{ "field": "cell_type", "equal": "Macrophage" }],
+      "facet": {
+        "field": "snp",
+        "sort": [
+          "rs4817986",
+          "rs2836878",
+          "rs4817987",
+          "rs2836881",
+          "rs9808651",
+          "rs2836882",
+          "rs2836883"
+        ],
+        "transform": [{ "type": "pileup" }]
+      },
+      "encoding": {
+        "color": {
+          "field": "score",
+          "scale": {
+            "type": "linear",
+            "scheme": "redblue",
+            "domainMin": -0.3,
+            "domainMax": 0.3,
+            "domainMid": 0
+          },
+          "legend": { "title": "log fold change" }
+        }
+      },
+      "marks": [{ "mark": "rect" }],
+      "tooltip": "name"
+    }
+  ]
+}
+```
+
+Open both over the span from _ETS2_ to _BRWD1_:
 
 ```text
 chr21:38,700,000-39,330,000
@@ -200,8 +248,9 @@ chr21:38,700,000-39,330,000
 
 _ETS2_ is red in the macrophage and monocyte sections and white in the lymphoid
 ones. Of the genes nearer the SNPs, _PSMG1_ is pale in the myeloid sections and
-_BRWD1_ stays white. In the second track only rs2836882 colors _ETS2_, although
-rs2836878 has the higher PIP.
+_BRWD1_ stays white. In the second track rs2836882 colors _ETS2_ deep red,
+rs9808651 pale pink and the other five not at all, although rs2836878 has the
+highest PIP.
 
 ## Which bases the ETS2 prediction reads
 
@@ -311,12 +360,43 @@ symmetric axis so zero sits mid-row; the fence lists three of its seven rows:
 ```
 
 `ag2_ets2_atac_reference` in the hosted config holds the risk allele's predicted
-scATAC the same way, from `atac_reference_<Cell_type>.bw`. Under both goes
-measured scATAC from blood, the 10x PBMC pseudobulk track of
-[](/docs/tutorials/scrna_pseudobulk), narrowed to its two monocyte rows. Its
-cells are unstimulated blood monocytes, not ileum macrophages, so it shows
-whether monocytes open this enhancer, not whether the ileum predictions are
-right. Open the kilobase around rs2836882:
+scATAC the same way, from `atac_reference_<Cell_type>.bw`, with an axis from
+zero. Under both goes measured scATAC from blood: the monocyte rows of the 10x
+PBMC pseudobulk track of [](/docs/tutorials/scrna_pseudobulk), whose hosted
+config has all twelve rows. Its cells are unstimulated blood monocytes, not
+ileum macrophages, so it shows whether monocytes open this enhancer, not whether
+the ileum predictions are right:
+
+```json addtrack
+{
+  "type": "MultiQuantitativeTrack",
+  "trackId": "pbmc5k_scatac_pseudobulk_hg38",
+  "name": "Single-cell ATAC pseudobulk by cell type (10x 5k PBMC, SnapATAC2)",
+  "assemblyNames": ["hg38"],
+  "adapter": {
+    "type": "MultiWiggleAdapter",
+    "subadapters": [
+      {
+        "type": "BigWigAdapter",
+        "name": "CD14 Mono",
+        "group": "Myeloid",
+        "color": "#aa40fc",
+        "uri": "https://jbrowse.org/demos/scatac_pbmc5k/CD14_Mono.bw"
+      },
+      {
+        "type": "BigWigAdapter",
+        "name": "CD16 Mono",
+        "group": "Myeloid",
+        "color": "#8c564b",
+        "uri": "https://jbrowse.org/demos/scatac_pbmc5k/CD16_Mono.bw"
+      }
+    ]
+  },
+  "displayDefaults": { "mark": "bar", "height": 100 }
+}
+```
+
+Open the kilobase around rs2836882:
 
 ```text
 chr21:39,094,144-39,095,144
