@@ -71,7 +71,7 @@ everything itself.
 | The RefSeq gene structure that same derivation reads exon boundaries from           | [track](https://api.genome.ucsc.edu/getData/track?genome=canFam4;track=ncbiRefSeqCurated;chrom=chr30;start=38258000;end=38265000)                               |
 | The 15 published CRAMs that callset depth is validated against                      | [cram-share/](https://kiddlabshare.med.umich.edu/dog10K/cram-share/)                                                                                            |
 
-## Loading the UU_Cfam_GSD_1.0 dog assembly
+## Load the UU_Cfam_GSD_1.0 dog assembly
 
 The tracks name `UU_Cfam_GSD_1.0`, the Dog10K reference that UCSC calls canFam4.
 We load it from UCSC's 2bit, with the alias file that maps the `chr` names to
@@ -149,7 +149,7 @@ The figures also show NCBI's RefSeq genes and UCSC's CpG islands:
 }
 ```
 
-## The CYP1A2 nonsense variant
+## Derive the stop codon's coordinate from the reference
 
 _CYP1A2_ is a drug-metabolizing cytochrome P450 in which dogs have a nonsense
 variant. The truncating allele acts recessively: liver microsomes from dogs
@@ -158,8 +158,6 @@ drugs the enzyme clears, while heterozygotes express the enzyme normally
 ([Mise et al. 2004](https://pubmed.ncbi.nlm.nih.gov/15564884/)). We ask which
 breeds have the allele and whether wild canids do. Wolves are the control,
 because an allele they share predates domestication.
-
-## Deriving the CYP1A2 stop codon's coordinate from the reference
 
 The literature names this variant by its protein consequence, p.Arg373Ter. The
 build script rebuilds _CYP1A2_'s coding sequence from the reference and the
@@ -183,7 +181,7 @@ bcftools query -r chr30:38261635 -f '%CHROM\t%POS\t%REF\t%ALT\t%FILTER\t%AC\t%AN
 # chr30  38261635  C  T  PASS  174  3974
 ```
 
-## Slicing CYP1A2 out of the Dog10K SNV callset
+## Slice CYP1A2 out of the Dog10K SNV callset
 
 The Dog10K SNV callset is a single large VCF over every sequenced canid with a
 tabix index, so `bcftools` fetches one gene over HTTP:
@@ -202,7 +200,7 @@ tabix -C -p vcf dog10k_cyp1a2_snvs.vcf.gz
 `cyp.samples` holds breeds that have the allele, two that do not, and four Greek
 gray wolves.
 
-## Loading the CYP1A2 slice as a variant track
+## Load the CYP1A2 slice as a variant track
 
 An SNV VCF loads as an ordinary `VariantTrack`:
 
@@ -229,7 +227,7 @@ panel, a `samplesTsvLocation` on the adapter supplies the names instead.
 A whole-gene view of the slice is a field of one-pixel ticks. At base level each
 sample's call is a block, and the gene track shows which exon it sits in.
 
-## CYP1A2 stop-gained genotypes across breeds and wolves
+## Filter the track to the stop site
 
 Other variants lie near the stop site, and the config below filters them out so
 the stop site is the one column drawn. Dropping the filter shows them.
@@ -260,7 +258,7 @@ Every wolf and every coyote in the collection is homozygous reference at the
 site. The build script genotypes the stop site over every canid in the callset
 and prints the breeds that have the allele.
 
-## Copy number at CYP1A2
+## Cluster per-animal copy number at CYP1A2 {#copy-number-at-cyp1a2}
 
 The Dog10K paper reports half the collection at three or more copies of
 _CYP1A2_. The per-animal estimates are unpublished, but the SNV callset holds a
