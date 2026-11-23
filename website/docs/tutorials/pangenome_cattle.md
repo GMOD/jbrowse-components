@@ -202,7 +202,7 @@ vg deconstruct -p chr1 -a -t 8 chr1.vg > chr1.vcf
 graphs hold. A minigraph rGFA has no P lines, so for one of your own,
 `minigraph --call` maps each assembly back through the graph and writes its
 allele at every bubble, as in
-[the rice tutorial's callset section](/docs/tutorials/pangenome_rice#making-the-callset).
+[the rice tutorial's callset section](/docs/tutorials/pangenome_rice#make-the-callset).
 
 The VCF's CHROM column is the `-p` path name, which has to equal the assembly's
 refName. Its sample names are the three-letter codes on each assembly's path,
