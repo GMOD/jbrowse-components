@@ -1531,8 +1531,11 @@ describe('validateConfig', () => {
   })
 
   it('warns on a type named after an Object.prototype member rather than crashing', () => {
-    const config = baseConfig()
-    config.tracks[0] = { ...config.tracks[0], type: 'constructor' }
+    const base = baseConfig()
+    const config = {
+      ...base,
+      tracks: base.tracks.map(t => ({ ...t, type: 'constructor' })),
+    }
     expect(
       warningsOf(config).some(w => w.message.includes('"constructor"')),
     ).toBe(true)
