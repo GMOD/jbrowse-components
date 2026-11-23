@@ -240,7 +240,7 @@ its `rows.color` entry (the color its field's value is dealt), else its own
 `color`, else its `linkedRowColors` entry, else the palette's by name where
 `rowPaletteDeals` (`sharesPanel && rowColorPaintsMarks`). `linkedRowColors` is
 a hook: the variant display reads the `haplotypeColors` a graph track in the
-same view publishes (`color/haplotypeColors.ts`, ADR-286), so a row's bar
+same view publishes (`color/haplotypeColors.ts`, ADR-287), so a row's bar
 matches its walk. `dealtValueColors` is the
 value-to-color map behind it and `dealtValueColorsFor` the dialog's preview of
 another setting.
