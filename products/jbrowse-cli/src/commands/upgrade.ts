@@ -1,10 +1,9 @@
 import fs from 'node:fs'
 import path from 'node:path'
-import { parseArgs } from 'node:util'
 
 import {
   installRelease,
-  printHelp,
+  parseCommand,
   printVersions,
   releaseOptions,
 } from '../utils.ts'
@@ -42,45 +41,40 @@ const options = {
 } as const
 
 export async function run(args: string[]) {
-  const { positionals, values: runFlags } = parseArgs({
+  await parseCommand(args, {
+    description,
+    examples,
+    usage: 'jbrowse upgrade [localPath] [options]',
     options,
-    args,
-    allowPositionals: true,
-  })
-  if (runFlags.help) {
-    printHelp({
-      options,
-      examples,
-      usage: 'jbrowse upgrade [localPath] [options]',
-      description,
-    })
-    return
-  }
+    run: async ({ flags, positionals }) => {
+      if (flags.listVersions) {
+        await printVersions()
+      } else {
+        // localPath is optional: `jbrowse upgrade` upgrades the install in the
+        // current directory, as the examples and docs advertise
+        const argsPath = positionals[0] ?? '.'
 
-  if (runFlags.listVersions) {
-    await printVersions()
-    return
-  }
-
-  // localPath is optional: `jbrowse upgrade` upgrades the install in the
-  // current directory, as the examples and docs advertise
-  const argsPath = positionals[0] ?? '.'
-
-  if (!fs.existsSync(path.join(argsPath, 'manifest.json'))) {
-    throw new Error(
-      `No manifest.json found in this directory, are you sure it is an
+        if (!fs.existsSync(path.join(argsPath, 'manifest.json'))) {
+          throw new Error(
+            `No manifest.json found in this directory, are you sure it is an
         existing jbrowse 2 installation?`,
-    )
-  }
-
-  await installRelease(runFlags, argsPath, () => {
-    if (runFlags.clean) {
-      fs.rmSync(path.join(argsPath, 'static'), { recursive: true, force: true })
-      for (const f of fs.readdirSync(argsPath)) {
-        if (f.includes('worker.js')) {
-          fs.unlinkSync(path.join(argsPath, f))
+          )
         }
+
+        await installRelease(flags, argsPath, () => {
+          if (flags.clean) {
+            fs.rmSync(path.join(argsPath, 'static'), {
+              recursive: true,
+              force: true,
+            })
+            for (const f of fs.readdirSync(argsPath)) {
+              if (f.includes('worker.js')) {
+                fs.unlinkSync(path.join(argsPath, f))
+              }
+            }
+          }
+        })
       }
-    }
+    },
   })
 }

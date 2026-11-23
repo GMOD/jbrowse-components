@@ -1,5 +1,6 @@
 import { existsSync, promises as fsPromises, readFileSync } from 'node:fs'
 import path from 'node:path'
+import { parseArgs } from 'node:util'
 import zlib from 'node:zlib'
 
 import fetch from './cliFetch.ts'
@@ -268,10 +269,6 @@ function getBranch(branch: string) {
 }
 
 export const releaseOptions = {
-  help: {
-    type: 'boolean',
-    short: 'h',
-  },
   listVersions: {
     type: 'boolean',
     short: 'l',
@@ -519,9 +516,7 @@ function formatOption(
   const indent = ' '.repeat(prefix.length + namePadded.length + 1)
 
   const desc = [
-    // every command declares a bare help flag; give it uniform wording so the
-    // rendered `-h, --help` line is never blank
-    opt.description ?? (name === 'help' ? 'Show help' : ''),
+    opt.description,
     opt.choices && ` [choices: ${opt.choices.join(', ')}]`,
     opt.default !== undefined && ` [default: ${opt.default}]`,
   ]
@@ -532,7 +527,7 @@ function formatOption(
   return `${prefix}${namePadded} ${wrapped}`.trimEnd()
 }
 
-export function printHelp({
+function printHelp({
   description,
   options,
   examples,
@@ -560,4 +555,63 @@ export function printHelp({
       ...(examples.length ? ['Examples:\n', examples.join('\n')] : []),
     ].join('\n'),
   )
+}
+
+const helpOption = {
+  help: { type: 'boolean', short: 'h', description: 'Show help' },
+} as const
+
+export const configTargetOptions = {
+  target: {
+    type: 'string',
+    description:
+      'Path to config file in JB2 installation directory to write out to',
+  },
+  out: { type: 'string', description: 'Synonym for target' },
+} as const
+
+type CommandOptions = Record<
+  string,
+  HelpOption & { type: 'string' | 'boolean'; multiple?: boolean }
+>
+
+type CommandParse<O extends CommandOptions> = ReturnType<
+  typeof parseArgs<{ options: typeof helpOption & O; allowPositionals: true }>
+>
+
+// parses `args` against `options` plus a `--help` flag, prints the help page
+// and stops when it was asked for, and otherwise hands `run` the typed flags
+// and positionals. `noPositionals` makes a stray argument an error, so
+// `jbrowse text-index /dir` is not read as a bare `jbrowse text-index`
+export async function parseCommand<const O extends CommandOptions>(
+  args: string[] | undefined,
+  {
+    options,
+    noPositionals,
+    run,
+    ...help
+  }: {
+    description: string
+    usage: string
+    examples: string[]
+    notes?: string
+    options: O
+    noPositionals?: boolean
+    run: (parsed: {
+      flags: CommandParse<O>['values']
+      positionals: string[]
+    }) => Promise<void>
+  },
+) {
+  const allOptions = { ...helpOption, ...options }
+  const { values: flags, positionals } = parseArgs({
+    args,
+    options: allOptions,
+    allowPositionals: !noPositionals,
+  })
+  if ('help' in flags && flags.help) {
+    printHelp({ ...help, options: allOptions })
+  } else {
+    await run({ flags, positionals })
+  }
 }

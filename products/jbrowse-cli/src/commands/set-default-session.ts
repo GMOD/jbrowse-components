@@ -1,8 +1,7 @@
-import { parseArgs } from 'node:util'
-
 import {
+  configTargetOptions,
   isRecord,
-  printHelp,
+  parseCommand,
   readConfigFile,
   readJsonFile,
   resolveConfigPath,
@@ -50,62 +49,55 @@ const options = {
     short: 'c',
     description: 'List out the current default session',
   },
-  target: {
-    type: 'string',
-    description:
-      'path to config file in JB2 installation directory to write out to',
-  },
-  out: { type: 'string', description: 'synonym for target' },
+  ...configTargetOptions,
   delete: {
     type: 'boolean',
     description: 'Delete any existing default session.',
   },
-  help: { type: 'boolean', short: 'h', description: 'Show help' },
 } as const
 
 export async function run(args: string[]) {
-  const { values: runFlags } = parseArgs({ options, args })
-  if (runFlags.help) {
-    printHelp({
-      description,
-      examples,
-      usage: 'jbrowse set-default-session [options]',
-      options,
-    })
-    return
-  }
-  const {
-    session,
-    name,
-    currentSession,
-    delete: deleteDefaultSession,
-  } = runFlags
-  const target = await resolveConfigPath(runFlags.target, runFlags.out)
-  const configContents: Config = await readConfigFile(target)
+  await parseCommand(args, {
+    description,
+    examples,
+    usage: 'jbrowse set-default-session [options]',
+    options,
+    noPositionals: true,
+    run: async ({ flags: runFlags }) => {
+      const {
+        session,
+        name,
+        currentSession,
+        delete: deleteDefaultSession,
+      } = runFlags
+      const target = await resolveConfigPath(runFlags.target, runFlags.out)
+      const configContents: Config = await readConfigFile(target)
 
-  if (deleteDefaultSession) {
-    configContents.defaultSession = undefined
-    await writeJsonFile(target, configContents)
-  } else if (currentSession) {
-    console.log(
-      `The current default session is ${JSON.stringify(
-        configContents.defaultSession,
-      )}`,
-    )
-  } else if (!session) {
-    throw new Error('Please provide a --session file')
-  } else {
-    const fileSession = await readDefaultSessionFile(session)
-    await writeJsonFile(target, {
-      ...configContents,
-      // precedence: explicit --name > the session file's own name > fallback
-      defaultSession: {
-        name: 'New Default Session',
-        ...fileSession,
-        ...(name !== undefined ? { name } : {}),
-      },
-    })
-  }
+      if (deleteDefaultSession) {
+        configContents.defaultSession = undefined
+        await writeJsonFile(target, configContents)
+      } else if (currentSession) {
+        console.log(
+          `The current default session is ${JSON.stringify(
+            configContents.defaultSession,
+          )}`,
+        )
+      } else if (!session) {
+        throw new Error('Please provide a --session file')
+      } else {
+        const fileSession = await readDefaultSessionFile(session)
+        await writeJsonFile(target, {
+          ...configContents,
+          // precedence: explicit --name > the session file's own name > fallback
+          defaultSession: {
+            name: 'New Default Session',
+            ...fileSession,
+            ...(name !== undefined ? { name } : {}),
+          },
+        })
+      }
+    },
+  })
 }
 
 async function readDefaultSessionFile(defaultSessionFile: string) {

@@ -1,9 +1,8 @@
 import { mkdir, readdir } from 'node:fs/promises'
-import { parseArgs } from 'node:util'
 
 import {
   installRelease,
-  printHelp,
+  parseCommand,
   printVersions,
   releaseOptions,
 } from '../utils.ts'
@@ -39,42 +38,33 @@ const options = {
 } as const
 
 export async function run(args: string[]) {
-  const { positionals, values: runFlags } = parseArgs({
+  await parseCommand(args, {
+    description,
+    examples,
+    usage: 'jbrowse create [localPath] [options]',
     options,
-    allowPositionals: true,
-    args,
+    run: async ({ flags, positionals }) => {
+      if (flags.listVersions) {
+        await printVersions()
+      } else {
+        const argsPath = positionals[0]
+        if (!argsPath) {
+          throw new Error(
+            'Missing 1 required arg:\nlocalPath  Location where JBrowse 2 will be installed\nSee more help with --help',
+          )
+        }
+
+        // mkdir will do nothing if dir exists
+        await mkdir(argsPath, { recursive: true })
+
+        if (!flags.force) {
+          await checkPath(argsPath)
+        }
+
+        await installRelease(flags, argsPath)
+      }
+    },
   })
-
-  if (runFlags.help) {
-    printHelp({
-      description,
-      examples,
-      usage: 'jbrowse create [localPath] [options]',
-      options,
-    })
-    return
-  }
-
-  if (runFlags.listVersions) {
-    await printVersions()
-    return
-  }
-
-  const argsPath = positionals[0]
-  if (!argsPath) {
-    throw new Error(
-      'Missing 1 required arg:\nlocalPath  Location where JBrowse 2 will be installed\nSee more help with --help',
-    )
-  }
-
-  // mkdir will do nothing if dir exists
-  await mkdir(argsPath, { recursive: true })
-
-  if (!runFlags.force) {
-    await checkPath(argsPath)
-  }
-
-  await installRelease(runFlags, argsPath)
 }
 
 async function checkPath(userPath: string) {

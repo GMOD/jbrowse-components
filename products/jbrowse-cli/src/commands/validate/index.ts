@@ -1,6 +1,4 @@
-import { parseArgs } from 'node:util'
-
-import { printHelp, readConfigFile, readJsonFile } from '../../utils.ts'
+import { parseCommand, readConfigFile, readJsonFile } from '../../utils.ts'
 import { configManifest } from './configManifest.generated.ts'
 import { configJsonSchema } from './configSchema.generated.ts'
 import { misnamedByTitle } from './misnamed.ts'
@@ -93,7 +91,6 @@ const options = {
     short: 'q',
     description: 'Only print errors, suppressing warnings and notes',
   },
-  help: { type: 'boolean', short: 'h', description: 'Show help' },
 } as const
 
 function format({ level, where, message }: Problem) {
@@ -101,74 +98,71 @@ function format({ level, where, message }: Problem) {
 }
 
 export async function run(args?: string[]) {
-  const { values: flags, positionals } = parseArgs({
+  await parseCommand(args, {
+    description,
+    examples,
+    notes,
+    usage: 'jbrowse validate [config.json] [options]',
     options,
-    args,
-    allowPositionals: true,
-  })
-  if (flags.help) {
-    printHelp({
-      description,
-      examples,
-      notes,
-      usage: 'jbrowse validate [config.json] [options]',
-      options,
-    })
-    return
-  }
-
-  const file = positionals[0] ?? 'config.json'
-  // readConfigFile, not readJsonFile: running from the wrong directory is the
-  // most common way this fails, and it says which path it looked at.
-  const config = await readConfigFile<unknown>(file)
-  const pluginManifests = await Promise.all(
-    (flags['plugin-manifest'] ?? []).map(async manifest =>
-      pluginManifestOf(await readJsonFile<unknown>(manifest), manifest),
-    ),
-  )
-  const manifest = withPluginManifests(configManifest, pluginManifests)
-  const result = validateConfig(
-    config,
-    manifest,
-    pluginManifests.length > 0
-      ? createSchemaValidator(
-          withPluginSchemas(configJsonSchema, pluginManifests),
-          misnamedByTitle(manifest),
-        )
-      : coreSchemaValidator,
-  )
-
-  if (flags.json) {
-    console.log(
-      JSON.stringify({ file, ok: result.errorCount === 0, ...result }, null, 2),
-    )
-  } else {
-    const shown = flags.quiet
-      ? result.problems.filter(p => p.level === 'error')
-      : result.problems
-    if (!flags.quiet) {
-      for (const note of result.notes) {
-        console.log(`note: ${note}`)
-      }
-    }
-    for (const problem of shown) {
-      console.log(format(problem))
-    }
-    if (result.problems.length === 0) {
-      console.log(`${file} looks good`)
-    } else {
-      console.log(
-        `\n${result.errorCount} error(s), ${result.warningCount} warning(s) in ${file}`,
+    run: async ({ flags, positionals }) => {
+      const file = positionals[0] ?? 'config.json'
+      // readConfigFile, not readJsonFile: running from the wrong directory is the
+      // most common way this fails, and it says which path it looked at.
+      const config = await readConfigFile<unknown>(file)
+      const pluginManifests = await Promise.all(
+        (flags['plugin-manifest'] ?? []).map(async manifest =>
+          pluginManifestOf(await readJsonFile<unknown>(manifest), manifest),
+        ),
       )
-    }
-  }
+      const manifest = withPluginManifests(configManifest, pluginManifests)
+      const result = validateConfig(
+        config,
+        manifest,
+        pluginManifests.length > 0
+          ? createSchemaValidator(
+              withPluginSchemas(configJsonSchema, pluginManifests),
+              misnamedByTitle(manifest),
+            )
+          : coreSchemaValidator,
+      )
 
-  if (result.errorCount > 0) {
-    // Non-zero so this can gate a deploy. Thrown rather than process.exit so it
-    // goes through the same error path as every other command.
-    throw new Error(
-      `${result.errorCount} error(s) found in ${file}`,
-      // no cause: the findings are already printed above
-    )
-  }
+      if (flags.json) {
+        console.log(
+          JSON.stringify(
+            { file, ok: result.errorCount === 0, ...result },
+            null,
+            2,
+          ),
+        )
+      } else {
+        const shown = flags.quiet
+          ? result.problems.filter(p => p.level === 'error')
+          : result.problems
+        if (!flags.quiet) {
+          for (const note of result.notes) {
+            console.log(`note: ${note}`)
+          }
+        }
+        for (const problem of shown) {
+          console.log(format(problem))
+        }
+        if (result.problems.length === 0) {
+          console.log(`${file} looks good`)
+        } else {
+          console.log(
+            `\n${result.errorCount} error(s), ${result.warningCount} warning(s) in ${file}`,
+          )
+        }
+      }
+
+      if (result.errorCount > 0) {
+        // Non-zero so this can gate a deploy. Thrown rather than process.exit so it
+        // goes through the same error path as every other command.
+        throw new Error(
+          `${result.errorCount} error(s) found in ${file}`,
+          // no cause: the findings are already printed above
+        )
+      }
+    },
+  })
 }

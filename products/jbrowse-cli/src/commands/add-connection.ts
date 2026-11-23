@@ -1,9 +1,8 @@
-import { parseArgs } from 'node:util'
-
 import {
+  configTargetOptions,
   debug,
   parseCommaSeparatedString,
-  printHelp,
+  parseCommand,
   readConfigFile,
   requirePositional,
   resolveConfigPath,
@@ -44,161 +43,141 @@ function determineConnectionType(url: URL) {
   return inferred
 }
 
+const options = {
+  type: {
+    type: 'string',
+    short: 't',
+    description:
+      'Type of connection (e.g. JBrowse1Connection, UCSCTrackHubConnection, JB2TrackHubConnection, or one a plugin registers)',
+  },
+  assemblyNames: {
+    type: 'string',
+    short: 'a',
+    description:
+      'For a UCSC or JBrowse 2 hub: optional comma separated list of the genomes to load. For JBrowse1: a single assembly name',
+  },
+  config: {
+    type: 'string',
+    short: 'c',
+    description:
+      'Extra config settings to add to connection in JSON object format',
+  },
+  connectionId: {
+    type: 'string',
+    description: 'Id for the connection that must be unique to JBrowse',
+  },
+  name: {
+    type: 'string',
+    short: 'n',
+    description:
+      'Name of the connection. Defaults to connectionId if not provided',
+  },
+  ...configTargetOptions,
+  force: {
+    type: 'boolean',
+    short: 'f',
+    description: 'Overwrite existing connection if one with the same id exists',
+  },
+} as const
+
+const description = 'Add a connection to a JBrowse 2 configuration'
+
+const usage = 'jbrowse add-connection <connectionUrl> [options]'
+
+const examples = [
+  '# add a JBrowse 1 data directory connection (type inferred from the jbrowse/data path)',
+  '$ jbrowse add-connection https://mysite.com/jbrowse/data/ -a hg19',
+  '',
+  '# force the JBrowse1Connection type for a non-standard data folder path',
+  '$ jbrowse add-connection https://mysite.com/jbrowse/custom_data_folder/ --type JBrowse1Connection -a hg38',
+  '',
+  '# add a UCSC track hub (type inferred from the hub.txt filename)',
+  '$ jbrowse add-connection https://mysite.com/path/to/hub.txt',
+  '',
+  '# force the UCSCTrackHubConnection type for a hub file not named hub.txt',
+  '$ jbrowse add-connection https://mysite.com/path/to/custom_hub_name.txt --type UCSCTrackHubConnection',
+  '',
+  '# subscribe to the tracks of another JBrowse 2 instance (type inferred from the config.json filename)',
+  '$ jbrowse add-connection https://mysite.com/jbrowse2/config.json -a hg38',
+  '',
+  "# add a connection type a plugin registers, its location in the plugin's own slot",
+  `$ jbrowse add-connection https://mysite.com/path/to/source --type MyPluginConnection --config '{"sourceLocation":{"uri":"https://mysite.com/path/to/source","locationType":"UriLocation"}}' -a hg19`,
+  '',
+  '# set an explicit id/name and write to a specific config file',
+  '$ jbrowse add-connection https://mysite.com/path/to/hub.txt --connectionId newId --name newName --target /path/to/jb2/installation/config.json',
+]
+
 export async function run(args?: string[]) {
-  const options = {
-    help: {
-      type: 'boolean',
-      short: 'h',
-    },
-    type: {
-      type: 'string',
-      short: 't',
-      description:
-        'Type of connection (e.g. JBrowse1Connection, UCSCTrackHubConnection, JB2TrackHubConnection, or one a plugin registers)',
-    },
-    assemblyNames: {
-      type: 'string',
-      short: 'a',
-      description:
-        'For a UCSC or JBrowse 2 hub: optional comma separated list of the genomes to load. For JBrowse1: a single assembly name',
-    },
-    config: {
-      type: 'string',
-      short: 'c',
-      description:
-        'Extra config settings to add to connection in JSON object format',
-    },
-    connectionId: {
-      type: 'string',
-      description: 'Id for the connection that must be unique to JBrowse',
-    },
-    name: {
-      type: 'string',
-      short: 'n',
-      description:
-        'Name of the connection. Defaults to connectionId if not provided',
-    },
-    target: {
-      type: 'string',
-      description:
-        'Path to config file in JB2 installation directory to write out to',
-    },
-    out: {
-      type: 'string',
-      description: 'Synonym for target',
-    },
-    force: {
-      type: 'boolean',
-      short: 'f',
-      description:
-        'Overwrite existing connection if one with the same id exists',
-    },
-  } as const
-  const { values: flags, positionals } = parseArgs({
-    args,
+  await parseCommand(args, {
+    description,
+    examples,
+    usage,
     options,
-    allowPositionals: true,
-  })
+    run: async ({ flags, positionals }) => {
+      const connectionUrl = positionals[0]
+      requirePositional(connectionUrl, 'connectionUrl', usage)
 
-  const description = 'Add a connection to a JBrowse 2 configuration'
+      const { assemblyNames, type, name, config, connectionId, force } = flags
+      const configObj = config ? parseJsonFlag(config, '--config') : undefined
 
-  const usage = 'jbrowse add-connection <connectionUrl> [options]'
+      const target = await resolveConfigPath(flags.target, flags.out)
 
-  const examples = [
-    '# add a JBrowse 1 data directory connection (type inferred from the jbrowse/data path)',
-    '$ jbrowse add-connection https://mysite.com/jbrowse/data/ -a hg19',
-    '',
-    '# force the JBrowse1Connection type for a non-standard data folder path',
-    '$ jbrowse add-connection https://mysite.com/jbrowse/custom_data_folder/ --type JBrowse1Connection -a hg38',
-    '',
-    '# add a UCSC track hub (type inferred from the hub.txt filename)',
-    '$ jbrowse add-connection https://mysite.com/path/to/hub.txt',
-    '',
-    '# force the UCSCTrackHubConnection type for a hub file not named hub.txt',
-    '$ jbrowse add-connection https://mysite.com/path/to/custom_hub_name.txt --type UCSCTrackHubConnection',
-    '',
-    '# subscribe to the tracks of another JBrowse 2 instance (type inferred from the config.json filename)',
-    '$ jbrowse add-connection https://mysite.com/jbrowse2/config.json -a hg38',
-    '',
-    "# add a connection type a plugin registers, its location in the plugin's own slot",
-    `$ jbrowse add-connection https://mysite.com/path/to/source --type MyPluginConnection --config '{"sourceLocation":{"uri":"https://mysite.com/path/to/source","locationType":"UriLocation"}}' -a hg19`,
-    '',
-    '# set an explicit id/name and write to a specific config file',
-    '$ jbrowse add-connection https://mysite.com/path/to/hub.txt --connectionId newId --name newName --target /path/to/jb2/installation/config.json',
-  ]
+      const url = resolveURL(connectionUrl)
+      const configContents = await readConfigFile<Config>(target)
+      debug(`Using config file ${target}`)
 
-  if (flags.help) {
-    printHelp({
-      description,
-      examples,
-      usage,
-      options,
-    })
-    return
-  }
+      if (!configContents.assemblies?.length) {
+        throw new Error(
+          'No assemblies found. Please add one before adding connections',
+        )
+      }
 
-  const connectionUrl = positionals[0]
-  requirePositional(connectionUrl, 'connectionUrl', usage)
+      const configType = type || determineConnectionType(url)
+      const id =
+        connectionId ||
+        [configType, assemblyNames, url.href].filter(Boolean).join('-')
 
-  const { assemblyNames, type, name, config, connectionId, force } = flags
-  const configObj = config ? parseJsonFlag(config, '--config') : undefined
+      // each known connection type stores the URL under its own location slot,
+      // written out rather than as the `uri` shorthand so the config also loads on
+      // a release whose type lacks the shorthand (v4's JBrowse1Connection); a
+      // plugin's type has no entry here, so its --config supplies the location
+      const locationField = {
+        UCSCTrackHubConnection: 'hubTxtLocation',
+        JB2TrackHubConnection: 'configJsonLocation',
+        JBrowse1Connection: 'dataDirLocation',
+      }[configType]
 
-  const target = await resolveConfigPath(flags.target, flags.out)
+      // a JBrowse 1 connection serves exactly one assembly, so it falls back to the
+      // config's first (the assemblies list is known non-empty by here)
+      const defaultAssemblyNames =
+        configType === 'JBrowse1Connection'
+          ? [configContents.assemblies[0]!.name]
+          : undefined
 
-  const url = resolveURL(connectionUrl)
-  const configContents = await readConfigFile<Config>(target)
-  debug(`Using config file ${target}`)
+      const connectionConfig: Connection = {
+        type: configType,
+        name: name || id,
+        ...(locationField && {
+          [locationField]: { uri: url.href, locationType: 'UriLocation' },
+        }),
+        connectionId: id,
+        assemblyNames: assemblyNames
+          ? parseCommaSeparatedString(assemblyNames)
+          : defaultAssemblyNames,
+        ...configObj,
+      }
 
-  if (!configContents.assemblies?.length) {
-    throw new Error(
-      'No assemblies found. Please add one before adding connections',
-    )
-  }
-
-  const configType = type || determineConnectionType(url)
-  const id =
-    connectionId ||
-    [configType, assemblyNames, url.href].filter(Boolean).join('-')
-
-  // each known connection type stores the URL under its own location slot,
-  // written out rather than as the `uri` shorthand so the config also loads on
-  // a release whose type lacks the shorthand (v4's JBrowse1Connection); a
-  // plugin's type has no entry here, so its --config supplies the location
-  const locationField = {
-    UCSCTrackHubConnection: 'hubTxtLocation',
-    JB2TrackHubConnection: 'configJsonLocation',
-    JBrowse1Connection: 'dataDirLocation',
-  }[configType]
-
-  // a JBrowse 1 connection serves exactly one assembly, so it falls back to the
-  // config's first (the assemblies list is known non-empty by here)
-  const defaultAssemblyNames =
-    configType === 'JBrowse1Connection'
-      ? [configContents.assemblies[0]!.name]
-      : undefined
-
-  const connectionConfig: Connection = {
-    type: configType,
-    name: name || id,
-    ...(locationField && {
-      [locationField]: { uri: url.href, locationType: 'UriLocation' },
-    }),
-    connectionId: id,
-    assemblyNames: assemblyNames
-      ? parseCommaSeparatedString(assemblyNames)
-      : defaultAssemblyNames,
-    ...configObj,
-  }
-
-  await upsertConfigEntry({
-    config: configContents,
-    target,
-    collection: 'connections',
-    items: configContents.connections ?? [],
-    entry: connectionConfig,
-    idField: 'connectionId',
-    itemType: 'connection',
-    itemName: name || id,
-    force,
+      await upsertConfigEntry({
+        config: configContents,
+        target,
+        collection: 'connections',
+        items: configContents.connections ?? [],
+        entry: connectionConfig,
+        idField: 'connectionId',
+        itemType: 'connection',
+        itemName: name || id,
+        force,
+      })
+    },
   })
 }

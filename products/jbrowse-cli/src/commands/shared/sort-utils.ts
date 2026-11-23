@@ -1,8 +1,7 @@
 import { once } from 'node:events'
 import { createReadStream } from 'node:fs'
-import { parseArgs } from 'node:util'
 
-import { printHelp } from '../../utils.ts'
+import { parseCommand } from '../../utils.ts'
 import {
   describeExit,
   spawnTabSort,
@@ -152,35 +151,26 @@ export async function runSort(
   commandName: string,
   args?: string[],
 ) {
-  const options = { help: { type: 'boolean', short: 'h' } } as const
-  const { values: flags, positionals } = parseArgs({
-    args,
-    options,
-    allowPositionals: true,
+  await parseCommand(args, {
+    description: config.description,
+    examples: config.examples,
+    usage: `jbrowse ${commandName} [file] [options]`,
+    options: {},
+    run: async ({ positionals }) => {
+      const file = positionals[0]
+      validateFileArgument(file, commandName, config.fileType)
+      validateRequiredCommands(['sort'])
+
+      const input = file ? createReadStream(file) : process.stdin
+      const { exit, consumerGone } = await sortInput(input, config)
+      input.destroy()
+
+      // These commands exist to be piped (`jbrowse sort-bed in.bed | bgzip > …`), so
+      // a consumer that stops reading early — `| head`, `| grep -q` — must not be
+      // reported as a sort failure. It used to exit 1 with "exited with code 141".
+      if (!consumerGone && exit.code !== 0) {
+        throw new Error(`Sort process exited with ${describeExit(exit)}`)
+      }
+    },
   })
-
-  if (flags.help) {
-    printHelp({
-      description: config.description,
-      examples: config.examples,
-      usage: `jbrowse ${commandName} [file] [options]`,
-      options,
-    })
-    return
-  }
-
-  const file = positionals[0]
-  validateFileArgument(file, commandName, config.fileType)
-  validateRequiredCommands(['sort'])
-
-  const input = file ? createReadStream(file) : process.stdin
-  const { exit, consumerGone } = await sortInput(input, config)
-  input.destroy()
-
-  // These commands exist to be piped (`jbrowse sort-bed in.bed | bgzip > …`), so
-  // a consumer that stops reading early — `| head`, `| grep -q` — must not be
-  // reported as a sort failure. It used to exit 1 with "exited with code 141".
-  if (!consumerGone && exit.code !== 0) {
-    throw new Error(`Sort process exited with ${describeExit(exit)}`)
-  }
 }

@@ -1,10 +1,10 @@
 import { mkdir } from 'node:fs/promises'
 import path from 'node:path'
-import { parseArgs } from 'node:util'
 
 import {
+  configTargetOptions,
   debug,
-  printHelp,
+  parseCommand,
   requirePositional,
   resolveConfigPath,
 } from '../../utils.ts'
@@ -20,203 +20,187 @@ import {
   sequenceTypes,
 } from './utils.ts'
 
+const options = {
+  type: {
+    type: 'string',
+    short: 't',
+    description: `type of sequence, by default inferred from sequence file\n\nindexedFasta - A FASTA (e.g. .fa or .fasta) file; can optionally specify --faiLocation, and copying, symlinking or moving a FASTA with no .fai generates one\n\nbgzipFasta - A block-gzipped and indexed FASTA (e.g. .fa.gz or .fasta.gz) file; can optionally specify --faiLocation and/or --gziLocation\n\ntwoBit - A twoBit (e.g. .2bit) file\n\nchromSizes - A chromosome sizes (e.g. .chrom.sizes) file\n\ngenbank - A GenBank flat file (e.g. .gbk, .gb, .gbff, optionally gzipped); its features load with add-track on the same file\n\ncustom - Either a JSON file location or inline JSON that defines a custom sequence adapter; must provide --name if using inline JSON`,
+    choices: sequenceTypes,
+  },
+  name: {
+    type: 'string',
+    short: 'n',
+    description:
+      'Name of the assembly; if not specified, will be guessed using the sequence file name',
+  },
+  alias: {
+    type: 'string',
+    short: 'a',
+    description:
+      'An alias for the assembly name (e.g. "hg38" if the name of the assembly is "GRCh38"); can be specified multiple times',
+    multiple: true,
+  },
+  displayName: {
+    type: 'string',
+    description:
+      'The display name to specify for the assembly, e.g. "Homo sapiens (hg38)" while the name can be a shorter identifier like "hg38"',
+  },
+  faiLocation: {
+    type: 'string',
+    description: '[default: <fastaLocation>.fai] FASTA index file or URL',
+  },
+  gziLocation: {
+    type: 'string',
+    description: '[default: <fastaLocation>.gzi] FASTA gzip index file or URL',
+  },
+  refNameAliases: {
+    type: 'string',
+    description:
+      'Reference sequence name aliases file or URL; assumed to be a tab-separated aliases file unless --refNameAliasesType is specified',
+  },
+  refNameAliasesType: {
+    type: 'string',
+    description:
+      'Type of aliases defined by --refNameAliases; if "custom", --refNameAliases is either a JSON file location or inline JSON that defines a custom sequence adapter',
+    choices: ['aliases', 'custom'],
+  },
+  refNameColors: {
+    type: 'string',
+    description:
+      'A comma-separated list of color strings for the reference sequence names; will cycle through colors if there are fewer colors than sequences',
+  },
+  target: {
+    ...configTargetOptions.target,
+    description:
+      'Path to config file in JB2 installation directory to write out to. Creates ./config.json if nonexistent',
+  },
+  out: configTargetOptions.out,
+  load: {
+    type: 'string',
+    short: 'l',
+    description:
+      'Required flag when using a local file. Choose how to manage the data directory. Copy, symlink, or move the data directory to the JBrowse directory. Or use inPlace to modify the config without doing any file operations',
+    choices: loadModes,
+  },
+  force: {
+    type: 'boolean',
+    short: 'f',
+    description: 'Overwrite existing assembly and skip file existence checks',
+  },
+  config: {
+    type: 'string',
+    description: 'Any extra config settings to add to the assembly',
+  },
+} as const
+
+const description = 'Add an assembly to a JBrowse 2 configuration'
+
+const usage = 'jbrowse add-assembly <sequence> [options]'
+
+const notes =
+  '--config takes inline JSON (not a file path) that is merged into the ' +
+  'generated assembly config, so you can set fields the dedicated flags do ' +
+  'not cover. A "sequence" object in it is merged into the generated ' +
+  'ReferenceSequenceTrack rather than replacing it, e.g. --config ' +
+  '\'{"sequence":{"formatAbout":{"hideUris":true}}}\' hides file URIs in the ' +
+  "assembly's About dialog."
+
+const examples = [
+  '# add assembly to installation in current directory, copying GRCh38.fa and GRCh38.fa.fai there; with no GRCh38.fa.fai, one is generated',
+  '$ jbrowse add-assembly GRCh38.fa --load copy',
+  '',
+  '# add assembly to a specific jb2 installation path using --out, and copies the .fa and .fa.fai file to /path/to/jb2',
+  '$ jbrowse add-assembly GRCh38.fa --out /path/to/jb2/ --load copy',
+  '',
+  '# force indexedFasta for add-assembly without relying on file extension',
+  '$ jbrowse add-assembly GRCh38.xyz --type indexedFasta --load copy',
+  '',
+  '# add displayName for an assembly',
+  '$ jbrowse add-assembly myFile.fa.gz --name hg38 --displayName "Homo sapiens (hg38)"',
+  '',
+  '# use chrom.sizes file for assembly instead of a fasta file',
+  '$ jbrowse add-assembly GRCh38.chrom.sizes --load inPlace',
+  '',
+  '# a GenBank file is a whole assembly; add-track on the same file adds its features',
+  '$ jbrowse add-assembly pUC19.gbk --load copy',
+  '',
+  '# add assembly from preconfigured json file, expert option',
+  '$ jbrowse add-assembly GRCh38.config.json --load copy',
+  '',
+  '# add assembly from a 2bit file, also note pointing direct to a URL so no --load flag needed',
+  '$ jbrowse add-assembly https://example.com/data/sample.2bit',
+  '',
+  '# add a bgzip indexed fasta inferred by fa.gz extension. assumes .fa.gz.gzi and .fa.gz.fai files also exists',
+  '$ jbrowse add-assembly myfile.fa.gz --load copy',
+  '',
+  '# hide file URIs in the assembly About dialog',
+  '$ jbrowse add-assembly GRCh38.fa --load copy --config \'{"sequence":{"formatAbout":{"hideUris":true}}}\'',
+]
+
 export async function run(args?: string[]) {
-  const options = {
-    type: {
-      type: 'string',
-      short: 't',
-      description: `type of sequence, by default inferred from sequence file\n\nindexedFasta - A FASTA (e.g. .fa or .fasta) file; can optionally specify --faiLocation, and copying, symlinking or moving a FASTA with no .fai generates one\n\nbgzipFasta - A block-gzipped and indexed FASTA (e.g. .fa.gz or .fasta.gz) file; can optionally specify --faiLocation and/or --gziLocation\n\ntwoBit - A twoBit (e.g. .2bit) file\n\nchromSizes - A chromosome sizes (e.g. .chrom.sizes) file\n\ngenbank - A GenBank flat file (e.g. .gbk, .gb, .gbff, optionally gzipped); its features load with add-track on the same file\n\ncustom - Either a JSON file location or inline JSON that defines a custom sequence adapter; must provide --name if using inline JSON`,
-      choices: sequenceTypes,
-    },
-    name: {
-      type: 'string',
-      short: 'n',
-      description:
-        'Name of the assembly; if not specified, will be guessed using the sequence file name',
-    },
-    alias: {
-      type: 'string',
-      short: 'a',
-      description:
-        'An alias for the assembly name (e.g. "hg38" if the name of the assembly is "GRCh38"); can be specified multiple times',
-      multiple: true,
-    },
-    displayName: {
-      type: 'string',
-      description:
-        'The display name to specify for the assembly, e.g. "Homo sapiens (hg38)" while the name can be a shorter identifier like "hg38"',
-    },
-    faiLocation: {
-      type: 'string',
-      description: '[default: <fastaLocation>.fai] FASTA index file or URL',
-    },
-    gziLocation: {
-      type: 'string',
-      description:
-        '[default: <fastaLocation>.gzi] FASTA gzip index file or URL',
-    },
-    refNameAliases: {
-      type: 'string',
-      description:
-        'Reference sequence name aliases file or URL; assumed to be a tab-separated aliases file unless --refNameAliasesType is specified',
-    },
-    refNameAliasesType: {
-      type: 'string',
-      description:
-        'Type of aliases defined by --refNameAliases; if "custom", --refNameAliases is either a JSON file location or inline JSON that defines a custom sequence adapter',
-      choices: ['aliases', 'custom'],
-    },
-    refNameColors: {
-      type: 'string',
-      description:
-        'A comma-separated list of color strings for the reference sequence names; will cycle through colors if there are fewer colors than sequences',
-    },
-    target: {
-      type: 'string',
-      description:
-        'path to config file in JB2 installation directory to write out to. Creates ./config.json if nonexistent',
-    },
-    out: {
-      type: 'string',
-      description: 'synonym for target',
-    },
-    help: {
-      type: 'boolean',
-      short: 'h',
-      description: 'Display help for command',
-    },
-    load: {
-      type: 'string',
-      short: 'l',
-      description:
-        'Required flag when using a local file. Choose how to manage the data directory. Copy, symlink, or move the data directory to the JBrowse directory. Or use inPlace to modify the config without doing any file operations',
-      choices: loadModes,
-    },
-    force: {
-      type: 'boolean',
-      short: 'f',
-      description: 'Overwrite existing assembly and skip file existence checks',
-    },
-    config: {
-      type: 'string',
-      description: 'Any extra config settings to add to the assembly',
-    },
-  } as const
-  const { positionals, values: runFlags } = parseArgs({
-    args,
+  await parseCommand(args, {
+    description,
+    examples,
+    notes,
+    usage,
     options,
-    allowPositionals: true,
-  })
+    run: async ({ flags: runFlags, positionals }) => {
+      validateLoadOption(runFlags.load)
+      const type = parseSequenceType(runFlags.type)
 
-  const description = 'Add an assembly to a JBrowse 2 configuration'
+      const argsSequence = positionals[0]
+      requirePositional(argsSequence, 'sequence', usage)
+      const flags = { ...runFlags, type }
 
-  const usage = 'jbrowse add-assembly <sequence> [options]'
+      debug(`Sequence location is: ${argsSequence}`)
 
-  const notes =
-    '--config takes inline JSON (not a file path) that is merged into the ' +
-    'generated assembly config, so you can set fields the dedicated flags do ' +
-    'not cover. A "sequence" object in it is merged into the generated ' +
-    'ReferenceSequenceTrack rather than replacing it, e.g. --config ' +
-    '\'{"sequence":{"formatAbout":{"hideUris":true}}}\' hides file URIs in the ' +
-    "assembly's About dialog."
-
-  const examples = [
-    '# add assembly to installation in current directory, copying GRCh38.fa and GRCh38.fa.fai there; with no GRCh38.fa.fai, one is generated',
-    '$ jbrowse add-assembly GRCh38.fa --load copy',
-    '',
-    '# add assembly to a specific jb2 installation path using --out, and copies the .fa and .fa.fai file to /path/to/jb2',
-    '$ jbrowse add-assembly GRCh38.fa --out /path/to/jb2/ --load copy',
-    '',
-    '# force indexedFasta for add-assembly without relying on file extension',
-    '$ jbrowse add-assembly GRCh38.xyz --type indexedFasta --load copy',
-    '',
-    '# add displayName for an assembly',
-    '$ jbrowse add-assembly myFile.fa.gz --name hg38 --displayName "Homo sapiens (hg38)"',
-    '',
-    '# use chrom.sizes file for assembly instead of a fasta file',
-    '$ jbrowse add-assembly GRCh38.chrom.sizes --load inPlace',
-    '',
-    '# a GenBank file is a whole assembly; add-track on the same file adds its features',
-    '$ jbrowse add-assembly pUC19.gbk --load copy',
-    '',
-    '# add assembly from preconfigured json file, expert option',
-    '$ jbrowse add-assembly GRCh38.config.json --load copy',
-    '',
-    '# add assembly from a 2bit file, also note pointing direct to a URL so no --load flag needed',
-    '$ jbrowse add-assembly https://example.com/data/sample.2bit',
-    '',
-    '# add a bgzip indexed fasta inferred by fa.gz extension. assumes .fa.gz.gzi and .fa.gz.fai files also exists',
-    '$ jbrowse add-assembly myfile.fa.gz --load copy',
-    '',
-    '# hide file URIs in the assembly About dialog',
-    '$ jbrowse add-assembly GRCh38.fa --load copy --config \'{"sequence":{"formatAbout":{"hideUris":true}}}\'',
-  ]
-
-  if (runFlags.help) {
-    printHelp({
-      description,
-      examples,
-      notes,
-      usage,
-      options,
-    })
-    return
-  }
-
-  validateLoadOption(runFlags.load)
-  const type = parseSequenceType(runFlags.type)
-
-  const argsSequence = positionals[0]
-  requirePositional(argsSequence, 'sequence', usage)
-  const flags = { ...runFlags, type }
-
-  debug(`Sequence location is: ${argsSequence}`)
-
-  const target = await resolveConfigPath(runFlags.target, runFlags.out)
-  await mkdir(path.dirname(target), { recursive: true })
-  const destDir = path.dirname(target)
-  const {
-    assembly: baseAssembly,
-    filesToLoad: sequenceFiles,
-    faiToGenerate,
-  } = await getAssembly({
-    runFlags: flags,
-    argsSequence,
-    destDir,
-  })
-  const { assembly, filesToLoad: aliasFiles } = await enhanceAssembly(
-    baseAssembly,
-    flags,
-  )
-
-  const configContents = await loadOrCreateConfig(target)
-  await upsertConfigEntry({
-    config: configContents,
-    target,
-    collection: 'assemblies',
-    items: configContents.assemblies ?? [],
-    entry: assembly,
-    idField: 'name',
-    itemType: 'assembly',
-    itemName: assembly.name,
-    force: flags.force,
-    beforeSave: async () => {
-      if (faiToGenerate) {
-        console.log(`No FASTA index found, generating ${faiToGenerate.fai}`)
-        await generateFai({ ...faiToGenerate, force: flags.force })
-      }
-
-      await loadFiles({
-        files: [...sequenceFiles, ...aliasFiles],
+      const target = await resolveConfigPath(runFlags.target, runFlags.out)
+      await mkdir(path.dirname(target), { recursive: true })
+      const destDir = path.dirname(target)
+      const {
+        assembly: baseAssembly,
+        filesToLoad: sequenceFiles,
+        faiToGenerate,
+      } = await getAssembly({
+        runFlags: flags,
+        argsSequence,
         destDir,
-        mode: flags.load,
-        force: flags.force,
       })
+      const { assembly, filesToLoad: aliasFiles } = await enhanceAssembly(
+        baseAssembly,
+        flags,
+      )
+
+      const configContents = await loadOrCreateConfig(target)
+      await upsertConfigEntry({
+        config: configContents,
+        target,
+        collection: 'assemblies',
+        items: configContents.assemblies ?? [],
+        entry: assembly,
+        idField: 'name',
+        itemType: 'assembly',
+        itemName: assembly.name,
+        force: flags.force,
+        beforeSave: async () => {
+          if (faiToGenerate) {
+            console.log(`No FASTA index found, generating ${faiToGenerate.fai}`)
+            await generateFai({ ...faiToGenerate, force: flags.force })
+          }
+
+          await loadFiles({
+            files: [...sequenceFiles, ...aliasFiles],
+            destDir,
+            mode: flags.load,
+            force: flags.force,
+          })
+        },
+      })
+
+      console.log(
+        `\nNext, add tracks to this assembly (replace with your data file):\n` +
+          `  jbrowse add-track myfile.bam -a ${assembly.name} --load copy`,
+      )
     },
   })
-
-  console.log(
-    `\nNext, add tracks to this assembly (replace with your data file):\n` +
-      `  jbrowse add-track myfile.bam -a ${assembly.name} --load copy`,
-  )
 }
