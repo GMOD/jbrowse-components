@@ -31,7 +31,7 @@ The graph view is a beta plugin. We welcome your [feedback](/contact).
 
 ## Prerequisites
 
-- [the GraphGenomeView plugin](#the-graphgenomeview-plugin)
+- [the GraphGenomeView plugin](#install-the-graphgenomeview-plugin)
 - htslib (`bgzip`, `tabix`) and `bcftools`
 - [`gfa-to-tabix`](https://github.com/GMOD/gfa-to-tabix) 5.0.0 or later, for the
   graph's files in format 2, which the configs below read, and the walk files
@@ -85,7 +85,7 @@ wget -c $C.gfa.gz
 
 </details>
 
-## The GraphGenomeView plugin
+## Install the GraphGenomeView plugin
 
 Install GraphGenomeView, which needs JBrowse 5, from the plugin store, at
 **Tools → Plugin store** in JBrowse Web or **Global plugins...** on the JBrowse
@@ -111,7 +111,7 @@ when the store cannot be read
 
 <!-- END GENERATED GRAPH_PLUGIN_CONFIG -->
 
-## Indexing a graph with gfa-to-tabix build {#what-your-graph-can-produce}
+## Index a graph with gfa-to-tabix build {#what-your-graph-can-produce}
 
 The `gfa-to-tabix build` command writes every file below. Without a Rust
 toolchain, take a Linux or macOS binary from its
@@ -196,7 +196,31 @@ Each `.bed.gz` gets a tabix index beside it. `--format 1` writes the index, the
 tier and the contig layout as `.segs.bed.gz` and `.links.bed.gz` pairs, and a
 track reading such a pair leaves out `"format": 2`.
 
-### An rGFA in the contig layout, in three commands {#rgfa-contig-layout}
+To check the index against the graph, query a locus out of it by the graph's
+PanSN name for the reference contig:
+
+```bash
+tabix hprc.graph.bed.gz 'GRCh38#0#chr1:103,690,000-103,700,000' \
+  | awk '$4 == "N"' | head -3
+```
+
+```text output
+GRCh38#0#chr1	103668404	103713477	N	s653929	95	HG00323#2#CM087328.1	104135607	104135610
+GRCh38#0#chr1	103668404	103713477	N	s653930	95	HG00323#2#CM087328.1	104135610	104144685
+GRCh38#0#chr1	103668404	103713477	N	s663586	205	HG02723#2#JAHEOT020000031.1	103971922	104013350
+```
+
+The `awk` keeps the segment rows, which have `N` in column four where a link row
+has `L`. In a segment row, columns one to three give the reference interval the
+command filed it under, five the segment id, six its rank (build order), and
+seven to nine the segment's contig and span.
+
+- **An empty result** over a tiled reference means the query used the wrong
+  name: `chr1` finds nothing where `GRCh38#0#chr1` finds every segment.
+- **Backbone rows with no alleles** mark a place where the graph collapsed, as
+  minigraph does with near-identical segmental duplications.
+
+### Index an rGFA in the contig layout {#rgfa-contig-layout}
 
 The species tutorials index their rGFAs with three commands in place of `build`.
 For an rGFA, `build` writes the anchored layout at the bare prefix
@@ -226,7 +250,7 @@ gfa-to-tabix fold graph.rgfa.gz --below 10000 --layout contig -o graph.fold10000
 The three commands write no `.graph.json` or `.config.json`, so the graph
 track's `coarse` entry names the tier's prefix itself.
 
-### The coarse tier for whole-chromosome views {#a-whole-chromosome-the-bubble-tier}
+### Add the coarse tier for whole-chromosome views {#a-whole-chromosome-the-bubble-tier}
 
 The coarse tier is a copy of the graph with every variant under a threshold
 folded into the reference. It keeps each allele whose length, or the reference
@@ -238,7 +262,7 @@ drew. The threshold is in the file name, 10,000 bp by default for an rGFA;
 single bases. Without a tier, the graph track cuts at most 5 Mb of segments and
 asks you to zoom in past that.
 
-## Configuring the graph track {#the-two-indexes-a-graph-track-reads}
+## Configure the graph track {#the-two-indexes-a-graph-track-reads}
 
 The config's first track is the graph track, whose adapter holds:
 
@@ -301,33 +325,7 @@ named or aliased `sample#haplotype`.
 [The HPRC tutorial](/docs/tutorials/pangenome_hprc#opening-the-haplotype-an-allele-came-from)
 takes that route.
 
-## Checking the index against the graph
-
-Query a locus out of the index, by the graph's PanSN name for the reference
-contig:
-
-```bash
-tabix hprc.graph.bed.gz 'GRCh38#0#chr1:103,690,000-103,700,000' \
-  | awk '$4 == "N"' | head -3
-```
-
-```text output
-GRCh38#0#chr1	103668404	103713477	N	s653929	95	HG00323#2#CM087328.1	104135607	104135610
-GRCh38#0#chr1	103668404	103713477	N	s653930	95	HG00323#2#CM087328.1	104135610	104144685
-GRCh38#0#chr1	103668404	103713477	N	s663586	205	HG02723#2#JAHEOT020000031.1	103971922	104013350
-```
-
-The `awk` keeps the segment rows, which have `N` in column four where a link row
-has `L`. In a segment row, columns one to three give the reference interval the
-command filed it under, five the segment id, six its rank (build order), and
-seven to nine the segment's contig and span.
-
-- **An empty result** over a tiled reference means the query used the wrong
-  name: `chr1` finds nothing where `GRCh38#0#chr1` finds every segment.
-- **Backbone rows with no alleles** mark a place where the graph collapsed, as
-  minigraph does with near-identical segmental duplications.
-
-## Recording which haplotypes pass through each segment {#which-haplotypes-walk-each-segment}
+## Record which haplotypes pass through each segment {#which-haplotypes-walk-each-segment}
 
 The rank in an rGFA is build order, so it names the first assembly a segment
 came from. The full list of haplotypes whose paths pass through each segment
@@ -433,7 +431,7 @@ separately.
 
 <Figure caption="The haplotypes-per-segment track over the pggb E. coli graph near insH21, red for a segment on one strain and grey for a segment on all five." src="/img/pangenome/prepare_graph_haplotypes_per_segment.png" />
 
-## Indexing haplotype walks with gfa-to-tabix {#haplotype-walks-tabix}
+## Index haplotype walks with gfa-to-tabix {#haplotype-walks-tabix}
 
 A **walk** is one haplotype's route through the graph. `gfa-to-tabix --walks`
 writes every walk to one walk file per reference, which the graph track and the
@@ -594,7 +592,7 @@ set when a window is refused with a notice to zoom in:
   haplotypes the track draws, so with fewer haplotypes the track can draw a
   wider window.
 
-## Whole-genome synteny from the walks, as PAF {#walks-as-paf}
+## Convert the walks to PAF for a synteny view {#walks-as-paf}
 
 The track reads the walk files one window at a time. For a whole-genome synteny
 view, a GFA's walks also convert to PAF against the reference walk, one record
