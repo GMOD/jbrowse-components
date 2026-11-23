@@ -40,7 +40,7 @@ for this locus.
   [AlphaGenome API key](https://www.alphagenomedocs.com/installation.html) and
   Python 3.10 or later with `pip install "alphagenome==2.0.*" pyBigWig pysam`
 
-## Loading GRCh38
+## Load the GRCh38 assembly
 
 AlphaGenome 2 predicts from GRCh38 sequence, and the files below use its
 `chr21`-style chromosome names:
@@ -69,7 +69,7 @@ The genes are NCBI's curated RefSeq set from the
 }
 ```
 
-## The credible set as a variant track
+## Load the credible set as a variant track
 
 The credible set is the seven SNPs SuSiE kept from the IBD GWAS (study
 GCST004133) in Stankey et al. (2024). The VCF has each SNP's posterior inclusion
@@ -86,7 +86,7 @@ protective:
 }
 ```
 
-## Predicted expression effects as a BED
+## Facet each SNP's expression effect by cell type
 
 `score_variants` predicts each SNP's effect on every gene within half a
 megabase, once per cell type. The ileum conditions are the seven immune cell
@@ -120,8 +120,6 @@ chr21   38805182    38824955  ETS2   -0.2327  +       Macrophage  rs2836882
 chr21   38805182    38824955  ETS2   -0.2832  +       Monocyte    rs2836882
 chr21   38805182    38824955  ETS2   -0.0023  +       B cell      rs2836882
 ```
-
-## rs2836882's effect on expression in each cell type
 
 The track lays the notebook's heatmap along the chromosome, with a section per
 cell type and each gene a rectangle colored by its score. `filter` keeps
@@ -234,7 +232,7 @@ a section per credible-set SNP in genomic order:
 }
 ```
 
-## Input gradient of ETS2 expression
+## Add the input gradient of ETS2 expression
 
 `predict_interval_gradients` takes the gradient of one gene's predicted
 expression with respect to each base of the megabase centered on its
@@ -296,7 +294,7 @@ has the highest PIP.
 The input gradient's tallest bar in the whole megabase is at rs2836882, 289 kb
 from _ETS2_, taller than any at the _ETS2_ promoter.
 
-## Predicted accessibility at the enhancer
+## Compare enhancer accessibility across cell types
 
 The variant prediction behind the BigWigs below is `predict_variants` with
 `OutputType.SC_ATAC`, one call per cell type, which returns the predicted scATAC
@@ -405,7 +403,7 @@ and in those two rows the protective allele lowers it across the enhancer, most
 near rs2836882. Stankey et al. measured the same direction in primary
 macrophages, where the risk allele has higher accessibility and PU.1 binding.
 
-## Every base change at the enhancer
+## Score every base change at the enhancer
 
 In silico mutagenesis (ISM) scores every single-base change in a window, here
 the 64 bases around rs2836882, for its effect on _ETS2_ in macrophages:
