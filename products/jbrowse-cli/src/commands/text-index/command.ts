@@ -141,7 +141,7 @@ export async function run(args?: string[]) {
     '$ jbrowse text-index -a hg19 --force',
     '',
     '# create index for some files for use in @jbrowse/react-linear-genome-view2 or similar',
-    '$ jbrowse text-index --file myfile.gff3.gz --file myfile.vcfgz --out indexes',
+    '$ jbrowse text-index --file myfile.gff3.gz --file myfile.vcf.gz --out indexes',
   ]
 
   if (flags.help) {
