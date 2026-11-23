@@ -63,7 +63,7 @@ rebuild those results. The counting step takes any GFF3, BED or VCF of your own.
 | RepeatMasker, UCSC's `rmsk` table as BED with a column header  | [rmsk.bed.gz](https://jbrowse.org/ucsc/hg38/rmsk.bed.gz)                                     |
 | Reference lengths, for the bigWig header                       | [hg38.chrom.sizes](https://hgdownload.soe.ucsc.edu/goldenPath/hg38/bigZips/hg38.chrom.sizes) |
 
-## Loading hg38
+## Load the hg38 assembly
 
 We'll load hg38, the assembly the UCSC tables were cut from. Every track below
 names it in `assemblyNames`.
@@ -79,7 +79,7 @@ names it in `assemblyNames`.
 }
 ```
 
-## Counting features per kilobase into a bigWig
+## Count features per kilobase into a bigWig
 
 One bigWig per file holds the number of features starting in each 1 kb bin,
 counted once. `jbrowse make-density` reads the GFF3 and writes it beside the
@@ -188,7 +188,7 @@ The L1 track and the simple-repeat control follow, with the file names swapped:
 }
 ```
 
-## Gene and repeat density along chromosome 1
+## Plot gene and repeat density along chromosome 1
 
 Add the tracks above, then open chromosome 1 with all of them.
 
@@ -196,7 +196,7 @@ Add the tracks above, then open chromosome 1 with all of them.
 
 The gap in every track is the centromere and the 1q12 heterochromatin beside it.
 
-## Zooming in to 1q21 with the genes as features
+## Zoom in to 1q21 with the genes as features
 
 Add the gene file as a track, then type `chr1:150,000,000-160,000,000`, 10 Mb
 over 1q21 to 1q23. At this width the genes in view fit in one fetch, so JBrowse
@@ -223,10 +223,10 @@ draws each gene:
 [`build_gene_density.sh`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/build_gene_density.sh)
 wraps every step above. It:
 
-1. fetches the two UCSC tables and the reference lengths
-2. cuts the RepeatMasker table into the three family BEDs
-3. counts each file per kilobase into a bigWig
-4. writes a JBrowse with the files and their bigWigs as tracks
+- fetches the two UCSC tables and the reference lengths
+- cuts the RepeatMasker table into the three family BEDs
+- counts each file per kilobase into a bigWig
+- writes a JBrowse with the files and their bigWigs as tracks
 
 ```bash
 curl -fO https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/build_gene_density.sh
