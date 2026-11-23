@@ -406,8 +406,12 @@ export function formatFeatWithSubfeatures({
   const frame = { minPos, circularLength }
   const subfeatures = feature.get('subfeatures') ?? []
   const strand = feature.get('strand') ?? 0
-  const key = insdcFeatureKey(`${feature.get('type')}`)
+  const type = feature.get('type')
+  const key = insdcFeatureKey(`${type}`)
   const exons = subfeatures.filter(f => f.get('type') === 'exon')
+  const pieces = subfeatures.filter(
+    f => f.get('type') === type && !f.get('subfeatures')?.length,
+  )
 
   // A gene-group feature with children establishes the symbol, which is threaded
   // down so every part of the gene shares one /gene qualifier. GenBank import
@@ -422,14 +426,18 @@ export function formatFeatWithSubfeatures({
       ? ownName
       : undefined)
 
-  // A spliced transcript is rendered as join() of its exons rather than a
-  // single span, so external tools see the correct intron/exon structure.
-  const segments = exons.length > 0 ? exons : [feature]
+  // A spliced transcript is rendered as join() of its exons, and a feature
+  // over several spans as join() of its pieces, rather than a single span, so
+  // external tools see the correct structure.
+  const segments =
+    exons.length > 0 ? exons : pieces.length > 0 ? pieces : [feature]
   const location = joinLoc(segments, strand, frame)
 
-  const cds = subfeatures.filter(f => f.get('type') === 'CDS')
+  const cds = subfeatures.filter(
+    f => f.get('type') === 'CDS' && !f.get('subfeatures')?.length,
+  )
   const sansCDS = subfeatures.filter(
-    f => f.get('type') !== 'CDS' && f.get('type') !== 'exon',
+    f => !cds.includes(f) && f.get('type') !== 'exon' && !pieces.includes(f),
   )
   const ownCDS = key === 'CDS' && cds.length > 0
   const primary = ownCDS

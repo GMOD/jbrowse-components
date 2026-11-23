@@ -91,6 +91,17 @@ function codingPieces(refName: string, placed: Placed) {
   )
 }
 
+/** A CDS beside other CDS of its gene keeps its own pieces under it */
+function ownCoding(refName: string, placed: Placed) {
+  return feature(
+    refName,
+    'CDS',
+    placed,
+    placed.attributes,
+    codingPieces(refName, placed),
+  )
+}
+
 /** One span is one feature; several are one feature with a child per span */
 function folded(refName: string, placed: Placed) {
   const { entry, spans, attributes } = placed
@@ -179,6 +190,7 @@ export function genbankFeatures(
     LazyGffFeature,
     { feature: LazyGffFeature; spans: Span[] }[]
   >()
+  const geneCoding = new Map<LazyGffFeature, Placed[]>()
   for (const entry of parseFeatureTable(lines)) {
     const spans = featureSpans(entry, refName, length, circular)
     if (spans.length > 0) {
@@ -236,18 +248,28 @@ export function genbankFeatures(
           const fitting = (transcripts.get(gene) ?? []).filter(
             t => t.feature.type === 'mRNA' && fitsExons(t.spans, child.spans),
           )
-          const parent =
+          const mrna =
             fitting.find(
               t => !t.feature.subfeatures.some(f => f.type === 'CDS'),
-            )?.feature ??
-            fitting[0]?.feature ??
-            gene
-          parent.subfeatures.push(...codingPieces(refName, child))
+            )?.feature ?? fitting[0]?.feature
+          if (mrna) {
+            mrna.subfeatures.push(...codingPieces(refName, child))
+          } else {
+            geneCoding.set(gene, [...(geneCoding.get(gene) ?? []), child])
+          }
         } else {
           top.push(folded(refName, placed))
         }
       }
     }
+  }
+  for (const [gene, coding] of geneCoding) {
+    const [only] = coding
+    gene.subfeatures.push(
+      ...(only && coding.length === 1
+        ? codingPieces(refName, only)
+        : coding.map(c => ownCoding(refName, c))),
+    )
   }
   return top.map((f, i) => ({
     start: f.start,

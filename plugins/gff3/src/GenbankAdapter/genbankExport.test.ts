@@ -8,7 +8,7 @@ import { stringifyGBK } from '../../../../packages/core/src/pluggableElementType
 import { sourceRecords } from '../../../../packages/core/src/pluggableElementTypes/models/saveTrackFileTypes/util.ts'
 import GenbankAdapter from './GenbankAdapter.ts'
 import configSchema from './configSchema.ts'
-import { fetch } from './genbank.fixture.ts'
+import { fetch, shape } from './genbank.fixture.ts'
 
 import type { AbstractSessionModel } from '@jbrowse/core/util'
 
@@ -557,5 +557,178 @@ describe('GenBank export line width', () => {
     const { noteLines } = await exportedNote(text)
     expect(noteLines.length).toBeGreaterThan(1)
     expect(noteLines.filter(line => line.length > 79)).toEqual([])
+  })
+})
+
+async function readRecord(
+  text: string,
+  refName: string,
+  end: number,
+  wholeAcrossOrigin?: boolean,
+) {
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'genbank-inline-'))
+  const file = path.join(dir, 'inline.gbk')
+  fs.writeFileSync(file, text)
+  return fetch(
+    new GenbankAdapter(
+      configSchema.create({ genbankLocation: { localPath: file } }),
+    ),
+    refName,
+    0,
+    end,
+    wholeAcrossOrigin,
+  )
+    .then(found => found.map(f => new SimpleFeature(f.toJSON())))
+    .finally(() => {
+      fs.rmSync(dir, { recursive: true, force: true })
+    })
+}
+
+function exportRecord(
+  features: SimpleFeature[],
+  circularLengths = new Map<string, number>(),
+) {
+  return stringifyGBK({
+    features: features.filter(f => f.get('gbkey') !== 'Src'),
+    sourceRecords: sourceRecords(features),
+    circularLengths,
+    regions: [],
+    assemblyName: 'test',
+    session,
+  })
+}
+
+function featureLines(exported: string, key: string) {
+  return exported
+    .split('\n')
+    .filter(line => line.startsWith(`     ${key.padEnd(16)}`))
+}
+
+const qualifierIndent = ' '.repeat(21)
+
+function genbank(locus: string, version: string, features: string[]) {
+  return [
+    locus,
+    `VERSION     ${version}`,
+    'FEATURES             Location/Qualifiers',
+    ...features,
+    '//',
+    '',
+  ].join('\n')
+}
+
+function entry(key: string, location: string, qualifiers: string[]) {
+  return [
+    `     ${key.padEnd(16)}${location}`,
+    ...qualifiers.map(q => `${qualifierIndent}${q}`),
+  ].join('\n')
+}
+
+describe('SARS-CoV-2 NC_045512.2 ORF1ab, a gene with two CDS and no mRNA', () => {
+  const refName = 'NC_045512.2'
+  const text = genbank(
+    'LOCUS       NC_045512              29903 bp ss-RNA     linear   VRL 18-JUL-2020',
+    refName,
+    [
+      entry('source', '1..29903', [
+        '/organism="Severe acute respiratory syndrome coronavirus 2"',
+        '/mol_type="genomic RNA"',
+      ]),
+      entry("5'UTR", '1..265', []),
+      entry('gene', '266..21555', [
+        '/gene="ORF1ab"',
+        '/locus_tag="GU280_gp01"',
+      ]),
+      entry('CDS', 'join(266..13468,13468..21555)', [
+        '/gene="ORF1ab"',
+        '/locus_tag="GU280_gp01"',
+        '/ribosomal_slippage',
+        '/codon_start=1',
+        '/product="ORF1ab polyprotein"',
+        '/protein_id="YP_009724389.1"',
+      ]),
+      entry('CDS', '266..13483', [
+        '/gene="ORF1ab"',
+        '/locus_tag="GU280_gp01"',
+        '/codon_start=1',
+        '/product="ORF1a polyprotein"',
+        '/protein_id="YP_009725295.1"',
+      ]),
+      entry('mat_peptide', 'join(13442..13468,13468..16236)', [
+        '/gene="ORF1ab"',
+        '/locus_tag="GU280_gp01"',
+        '/product="RNA-dependent RNA polymerase"',
+      ]),
+    ],
+  )
+  const gene = (found: SimpleFeature[]) =>
+    found.find(f => f.get('type') === 'gene')!
+  const matPeptide = (found: SimpleFeature[]) =>
+    found.find(f => f.get('type') === 'mat_peptide')!
+
+  test('each CDS is its own feature under the gene, holding its own pieces', async () => {
+    const found = await readRecord(text, refName, 29903)
+    expect(shape(gene(found))).toEqual([
+      'gene',
+      265,
+      21555,
+      1,
+      [
+        [
+          'CDS',
+          265,
+          21555,
+          1,
+          [
+            ['CDS', 265, 13468, 1, 0],
+            ['CDS', 13467, 21555, 1, 0],
+          ],
+        ],
+        ['CDS', 265, 13483, 1, [['CDS', 265, 13483, 1, 0]]],
+      ],
+    ])
+    expect(
+      gene(found)
+        .get('subfeatures')
+        ?.map(f => f.get('product')),
+    ).toEqual(['ORF1ab polyprotein', 'ORF1a polyprotein'])
+  })
+
+  test('export writes each CDS with its own location and qualifiers, and reads back the same', async () => {
+    const found = await readRecord(text, refName, 29903)
+    const exported = await exportRecord(found)
+    expect(featureLines(exported, 'CDS')).toEqual([
+      '     CDS             join(266..13468,13468..21555)',
+      '     CDS             266..13483',
+    ])
+    const cdsBlocks = exported
+      .split(/\n(?= {5}\S)/)
+      .filter(block => block.startsWith('     CDS'))
+    expect(cdsBlocks[0]).toContain('/ribosomal_slippage')
+    expect(cdsBlocks[0]).toContain('/product="ORF1ab polyprotein"')
+    expect(cdsBlocks[1]).not.toContain('/ribosomal_slippage')
+    expect(cdsBlocks[1]).toContain('/product="ORF1a polyprotein"')
+    const reread = await readRecord(exported, refName, 29903)
+    expect(shape(gene(reread))).toEqual(shape(gene(found)))
+  })
+
+  test('a mat_peptide over two spans is written once as their join, and reads back the same', async () => {
+    const found = await readRecord(text, refName, 29903)
+    expect(shape(matPeptide(found))).toEqual([
+      'mat_peptide',
+      13441,
+      16236,
+      1,
+      [
+        ['mat_peptide', 13441, 13468, 1],
+        ['mat_peptide', 13467, 16236, 1],
+      ],
+    ])
+    const exported = await exportRecord(found)
+    expect(featureLines(exported, 'mat_peptide')).toEqual([
+      '     mat_peptide     join(13442..13468,13468..16236)',
+    ])
+    const reread = await readRecord(exported, refName, 29903)
+    expect(shape(matPeptide(reread))).toEqual(shape(matPeptide(found)))
   })
 })
