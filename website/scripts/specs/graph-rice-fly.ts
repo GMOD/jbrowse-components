@@ -131,32 +131,47 @@ const geneCallout = (
   dy: 35,
 })
 
+// Anchored to the segment, so the callout follows the force layout.
+const graphCallout = (
+  species: Species,
+  segment: string,
+  text: string,
+  dx: number,
+  dy: number,
+): Annotation => ({
+  type: 'text',
+  text,
+  fontSize: 18,
+  leader: true,
+  anchor: { trackId: species.graph, graphNode: segment },
+  dx,
+  dy,
+})
+
+const SD1_RECORD = 'chr1:39,013,200'
 const QSW5_RECORD = 'chr5:5,380,100'
 const PUP1_RECORD = 'chr12:15,866,630'
 const CYP28D1_RECORD = 'chr2L:5,211,800'
 
 export const riceFlyGraphSpecs: ScreenshotSpec[] = [
   // The 383 bp record is the sd1-d allele, from inside exon 1 into exon 2's
-  // start on LOC4325003 (SD1).
+  // start on LOC4325003 (SD1): segment s25454, which its carriers skip by
+  // the 1 bp s362635.
   locusSpec({
     name: 'pangenome/rice_sd1',
     species: rice,
     loc: 'chr1:39,008,001-39,020,000',
     sortAt: 39_013_200,
     graphSpan: 12_000,
-    highlight: [
-      {
-        refName: 'chr1',
-        start: 39_013_074,
-        end: 39_013_458,
-        label: '383 bp deletion (sd1-d)',
-        color: 'rgba(255,193,7,0.30)',
-      },
+    annotations: [
+      geneCallout(rice, 'LOC4325003', 'SD1'),
+      rowCallout(rice, SD1_RECORD, 'IR64', 'sd1-d, a 383 bp deletion', 300),
+      graphCallout(rice, 's25454', 'sd1-d: these 383 bp skipped', 200, -60),
     ],
-    annotations: [geneCallout(rice, 'LOC4325003', 'SD1')],
   }),
-  // ALEN 504 (AGIS-1.0's 1,212 bp deletion), 1715 (no deletion), 766 (the
-  // 950 bp deletion).
+  // ALEN 504 (AGIS-1.0's 1,212 bp deletion, segment s98373), 1715 (no
+  // deletion, s98373 then the 445 bp s284387 and the 766 bp s284388), 766
+  // (the 950 bp deletion, s284388 alone).
   locusSpec({
     name: 'pangenome/rice_qsw5',
     species: rice,
@@ -173,6 +188,14 @@ export const riceFlyGraphSpecs: ScreenshotSpec[] = [
         'Balilla',
         "1,212 bp deletion, AGIS-1.0's",
         300,
+      ),
+      graphCallout(rice, 's284387', 'no deletion: 1.2 kb more', 200, -60),
+      graphCallout(
+        rice,
+        's284388',
+        'the 950 bp deletion: 260 bp more',
+        200,
+        60,
       ),
     ],
   }),
@@ -198,7 +221,8 @@ export const riceFlyGraphSpecs: ScreenshotSpec[] = [
     ],
   }),
   // ALEN 1978 (dm6), then 12748 (Canton-S_A1's form), 7257, 17241
-  // (BOG1_A2's), 40016 (BER1_B1's), 8042 (RVC3_B4's), 5256.
+  // (BOG1_A2's), 40016 (BER1_B1's), 8042 (RVC3_B4's), 5256. The 15,246 bp
+  // s81728 is the copy A2 and B1 walk; the 4,853 bp s78371 is A1's alone.
   locusSpec({
     name: 'pangenome/fly_cyp28d1',
     species: fly,
@@ -217,6 +241,8 @@ export const riceFlyGraphSpecs: ScreenshotSpec[] = [
       rowCallout(fly, CYP28D1_RECORD, 'BOG1_A2', 'A2, 15 kb longer', 260, -10),
       rowCallout(fly, CYP28D1_RECORD, 'BER1_B1', 'B1, 38 kb longer', 260, 40),
       rowCallout(fly, CYP28D1_RECORD, 'RVC3_B4', 'B4, 6.1 kb longer', 260, 90),
+      graphCallout(fly, 's81728', "A2's and B1's 15 kb copy", 200, -60),
+      graphCallout(fly, 's78371', 'Canton-S_A1 alone: 4.9 kb', -200, 60),
     ],
   }),
   locusSpec({
@@ -232,6 +258,7 @@ export const riceFlyGraphSpecs: ScreenshotSpec[] = [
         'BDSC_156',
         '7.5 kb insertion (DM412)',
       ),
+      graphCallout(fly, 's120265', "BDSC_156's 7.5 kb DM412 loop", 200, -60),
     ],
   }),
   locusSpec({
@@ -240,5 +267,14 @@ export const riceFlyGraphSpecs: ScreenshotSpec[] = [
     loc: 'chr3R:25,320,001-25,335,000',
     sortAt: 25_326_000,
     graphSpan: 15_000,
+    annotations: [
+      graphCallout(
+        fly,
+        's63071',
+        'the Doc, 4.5 kb, skipped by 7 strains',
+        200,
+        -60,
+      ),
+    ],
   }),
 ]
