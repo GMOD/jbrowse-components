@@ -68,18 +68,19 @@ export function getInsertedBp(feature: Feature) {
   )
 }
 
-const NO_LENGTHS: readonly number[] = []
+const NO_LENGTHS: readonly (number | undefined)[] = []
 
 /**
  * The length each allele of a multiallelic record states, reference first:
  * `INFO/ALEN`, which `minigraph --call` writes beside symbolic `<X:n>` alleles
  * that carry no length of their own. Empty where the record states none, and
- * for a biallelic record, whose key names no allele.
+ * for a biallelic record, whose key names no allele; an allele stated `.` has
+ * none.
  */
 export function getStatedAlleleLengths(feature: Feature, altCount: number) {
   const info = feature.get('INFO') as Record<string, unknown> | undefined
   const alen = altCount > 1 ? info?.ALEN : undefined
   return Array.isArray(alen) && alen.length === altCount + 1
-    ? alen.map(Number)
+    ? alen.map(parseFiniteNumber)
     : NO_LENGTHS
 }

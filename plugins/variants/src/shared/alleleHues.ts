@@ -4,23 +4,23 @@ import { ALT_HUE } from './cellFill.ts'
  * The hue a haplotype's alt allele paints in phased mode, by the allele's
  * frequency rank at its site (`AlleleSummary.altOrder`): the commonest alt
  * takes the alt hue every mode paints, so a biallelic site is one blue, and
- * each alt after it its own hue. The red, green, purple, orange and pink are
- * ColorBrewer Set1's; its yellow and grey are left out for sitting on the
- * no-call and reference fills, and its brown, 15 CIEDE2000 from the red, gives
- * way to the SV preset's.
+ * the second the red a triallelic site always painted. Ranks 2 to 7 (dark
+ * green, lavender, salmon, mint, maroon and navy) take no color of the SV
+ * type preset, since the records band above paints SV classes in those.
  *
  * Every pair here, and every hue against the reference, no-call and unphased
- * fills, is at least 20 CIEDE2000 apart (`alleleHues.test.ts`).
+ * fills, is at least 20 CIEDE2000 apart, and ranks 2 to 7 are as far from
+ * each SV type color (`alleleHues.test.ts`).
  */
 export const ALLELE_HUES: readonly string[] = [
   ALT_HUE,
   '#e41a1c',
-  '#4daf4a',
-  '#984ea3',
-  '#ff7f00',
-  '#17becf',
-  '#f781bf',
-  '#7e6148',
+  '#235c36',
+  '#b089e6',
+  '#fb9a99',
+  '#47e0b0',
+  '#760a1c',
+  '#0a1c76',
 ]
 
 /** The slot every alt ranked past the palette shares, the rarest at a site. */

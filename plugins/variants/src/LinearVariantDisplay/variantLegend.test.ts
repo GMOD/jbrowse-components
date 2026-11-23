@@ -112,18 +112,18 @@ describe('getGenotypeEntries', () => {
       getGenotypeEntries(
         inputs({
           rowsField: 'haplotype',
-          primaryAltName: '<X:1>, 39 bp',
+          primaryAltName: '<X:1>, 39 bp path',
           secondaryAlts: [
-            { slot: 1, name: '<X:7>, 76,586 bp' },
-            { slot: 2, name: '<X:2>, 53,149 bp' },
+            { slot: 1, name: '<X:7>, 76,586 bp path' },
+            { slot: 2, name: '<X:2>, 53,149 bp path' },
           ],
         }),
       ).map(({ label, color }) => [label, color]),
     ).toEqual([
       ['Reference', REFERENCE_COLOR],
-      ['<X:1>, 39 bp', ALT_HUE],
-      ['<X:7>, 76,586 bp', ALLELE_HUES[1]],
-      ['<X:2>, 53,149 bp', ALLELE_HUES[2]],
+      ['<X:1>, 39 bp path', ALT_HUE],
+      ['<X:7>, 76,586 bp path', ALLELE_HUES[1]],
+      ['<X:2>, 53,149 bp path', ALLELE_HUES[2]],
     ])
   })
 

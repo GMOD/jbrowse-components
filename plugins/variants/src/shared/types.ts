@@ -67,8 +67,8 @@ interface VariantFeatureBase {
   // so the key can name the allele a hue stands for.
   altOrder: readonly string[]
   // Each allele's stated length, reference first (`getStatedAlleleLengths`),
-  // empty where the record states none.
-  alleleBp: readonly number[]
+  // empty where the record states none, undefined for an allele stated `.`.
+  alleleBp: readonly (number | undefined)[]
   // The records band's reads off the whole record (`RecordFieldReads`), ''
   // where it reads none: the tooltip's record line, the value its sections
   // split by, and its name and description labels.

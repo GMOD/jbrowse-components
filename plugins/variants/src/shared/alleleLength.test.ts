@@ -1,4 +1,8 @@
-import { getAlleleLength, getInsertedBp } from './alleleLength.ts'
+import {
+  getAlleleLength,
+  getInsertedBp,
+  getStatedAlleleLengths,
+} from './alleleLength.ts'
 
 import type { Feature } from '@jbrowse/core/util'
 
@@ -178,4 +182,10 @@ test('a tandem repeat allele stating no runs falls back to the span', () => {
       }),
     ),
   ).toBe(60)
+})
+
+test('an allele whose ALEN is `.` states no length', () => {
+  expect(
+    getStatedAlleleLengths(feature({ INFO: { ALEN: [39, '.', 53149] } }), 2),
+  ).toEqual([39, undefined, 53149])
 })

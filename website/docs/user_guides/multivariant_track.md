@@ -83,10 +83,13 @@ and how each genotype cell is colored.
   each cell colored reference or alt with no dosage shading, so inherited
   haplotype blocks line up as the vertical bands in the trio matrix above. The
   site's most frequent alt takes the blue of a homozygous-alt cell in per-sample
-  rows, and at a multiallelic site each other alt takes its own color in order
-  of frequency: red for the second, then green, purple, orange, cyan, pink and
-  brown, which the rarest share past eight. The legend lists the colors on
-  screen, and names each allele where one multiallelic record holds them.
+  rows. At a multiallelic site the other alts take a color each in order of
+  frequency: red for the second, then dark green, lavender, salmon, mint, maroon
+  and navy, which the rarest share past eight. The legend lists the colors on
+  screen. A color that one allele of one site paints is labelled with that
+  allele and its `ALEN` path length where the VCF states one. A color that
+  alleles at several sites on screen share is labelled by rank, such as "2nd
+  most common".
 
 Per-haplotype rows draw what the VCF phases:
 

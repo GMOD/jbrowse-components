@@ -43,13 +43,18 @@ export interface KeyedAllele {
 
 type AlleleInfo = Pick<VariantFeatureInfo, 'ref' | 'alt' | 'alleleBp'>
 
-// An allele as the hover's "Alleles" row spells it, with the length the record
-// states for it.
+// An allele as the hover's "Alleles" row spells it, with the path length
+// `INFO/ALEN` states for it: its length through the graph, not the size of an
+// event against the reference.
 function alleleName({ ref, alt, alleleBp }: AlleleInfo, allele: string) {
   const index = Number(allele)
-  const text = getMinimalDesc(ref, alt[index - 1] ?? '')
+  const altText = alt[index - 1] ?? ''
   const bp = alleleBp[index]
-  return bp === undefined ? text : `${text}, ${bp.toLocaleString('en-US')} bp`
+  return altText === '*'
+    ? 'spanning deletion'
+    : bp === undefined
+      ? getMinimalDesc(ref, altText)
+      : `${getMinimalDesc(ref, altText)}, ${bp.toLocaleString('en-US')} bp path`
 }
 
 /**
@@ -80,13 +85,15 @@ function collect(
   keep?: (featureId: string) => boolean,
 ): KeyedVariants {
   let categories = 0
-  // per allele slot, how many records painted it and the last that did
+  // per allele slot, how many records painted it and the last that did, a
+  // record shown in two displayed regions counted once
   const slotRecords = new Uint32Array(LAST_ALLELE_SLOT + 1)
   const slotInfo: (VariantFeatureInfo | undefined)[] = []
   let foldedRecords = 0
   const altColorValues = new Set<string>()
   const recordColorValues = new Set<string>()
   const svTypes = new Set<string>()
+  const counted = new Set<string>()
   for (const { data, spans } of payloads) {
     const {
       featurePositions,
@@ -104,8 +111,10 @@ function collect(
           featurePositions[i * 2]!,
           featurePositions[i * 2 + 1]!,
         ) &&
-        (!keep || keep(featureId))
+        (!keep || keep(featureId)) &&
+        !counted.has(featureId)
       ) {
+        counted.add(featureId)
         const painted = featureCategories[i]!
         const v = featureColorValues[i]!
         categories |= painted

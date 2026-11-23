@@ -190,9 +190,10 @@ symbolic (`<X:1>`, `<X:2>`), and the `ALEN` field lists each allele's length,
 the reference's first. The display config:
 
 - `rows.field: "haplotype"` draws one row per assembly and colors each record's
-  commonest alternate allele blue. Each other alternate allele takes its own
-  color in order of frequency, and the legend names each with its `ALEN` length
-  where one multiallelic record is on screen
+  commonest alternate allele blue, and the other alternate alleles a color each
+  in order of frequency, red for the second. The legend labels a color with its
+  allele and `ALEN` path length while one record on screen paints it, and by
+  rank ("2nd most common") while alleles of several records share it
 - `records.labels.name.show: false` hides each record's ID, which names the
   bubble's end segments
 - `records.labels.description` writes the allele lengths on each record in the

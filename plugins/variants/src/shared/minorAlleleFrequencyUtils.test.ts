@@ -582,12 +582,6 @@ describe('summarizeAlleleCounts', () => {
     ).toEqual(['1', '2'])
   })
 
-  it('shares one order between the sites carrying the same single alt', () => {
-    expect(summarizeAlleleCounts({ '0': 4, '2': 9 }).altOrder).toBe(
-      summarizeAlleleCounts({ '2': 1 }).altOrder,
-    )
-  })
-
   it('reports zero counts for an empty site', () => {
     expect(summarizeAlleleCounts({})).toEqual({
       minorAlleleFrequency: 0,

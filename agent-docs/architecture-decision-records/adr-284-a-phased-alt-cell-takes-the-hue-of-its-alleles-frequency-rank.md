@@ -32,17 +32,26 @@ phase-set hue does.
 
 - **The hue is the allele's frequency rank among the site's alts**
   (`shared/alleleHues.ts`). Rank 0 is `ALT_HUE` and rank 1 the old red, so a
-  biallelic or triallelic site paints exactly as before. Ranks 2 to 7 are
-  green, purple, orange, cyan, pink and brown; an alt ranked past the palette
-  shares the last.
+  biallelic or triallelic site paints exactly as before. Ranks 2 to 7 are dark
+  green, lavender, salmon, mint, maroon and navy; an alt ranked past the
+  palette shares the last.
+- **Ranks 2 to 7 take no color of the SV type preset.** The records band paints
+  SV classes one band above the rows, so a shared color would read as an SV
+  class. `alleleHues.test.ts` holds each of them 20 CIEDE2000 or more from
+  every preset color, from each other and from the reference, no-call and
+  unphased fills. The first draft (green, purple, orange, cyan, pink, brown)
+  failed it: its orange, cyan and brown equalled the inversion, breakend and
+  CNV colors, and its purple sat near the insertion purple.
 - **The order is `AlleleSummary.altOrder`**, which replaces
   `mostFrequentAlt`: carried alts by count over every sample in the file,
   ties in file order, `*` last. It does not follow the rows shown, so hiding
   or filtering rows recolors nothing.
 - **The key lists a row per hue painted on screen**, read off
   `featureCategories` (now 16 bits: a bit per allele slot past the first). A
-  row names its allele, with the length `INFO/ALEN` states for it, where every
-  cell in that hue is one allele of one record; otherwise it names the rank.
+  row names its allele, with the path length `INFO/ALEN` states for it ("766
+  bp path", the allele's length through the graph rather than an event size),
+  where every cell in that hue is one allele of one record; otherwise it names
+  the rank. A spanning deletion `*` is named "spanning deletion".
   The first hue is named only where its one record is multiallelic, so the
   biallelic key is still "Reference, Alt allele".
 - **Sample rows are unchanged.** There lightness is the dosage of one alt hue,
@@ -61,9 +70,12 @@ phase-set hue does.
 - A site with nine or more carried alts still shares one hue among its
   rarest; the hover names those.
 - The tutorial figures' callouts for allele lengths can go once reshot.
-- The second hue stays the SV preset's deletion red, and the brown is its CNV
-  brown. The records band above paints SV classes, so the two can sit one
-  band apart; the key heads each section.
+- A name can turn into a rank label as the view pans: once a second
+  multiallelic record painting the same hue comes into view, that hue stands
+  for two alleles and its row reads "2nd most common".
+- The second hue stays the SV preset's deletion red, so a deletion record in
+  the records band and a rank-1 cell below it can share a color one band apart;
+  the key heads each section.
 
 ## Alternatives
 

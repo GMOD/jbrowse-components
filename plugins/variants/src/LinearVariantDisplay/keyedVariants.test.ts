@@ -105,11 +105,11 @@ function keyedOf(records: [ReturnType<typeof featureInfoOf>, number][]) {
 
 test('the one multiallelic record on screen names the allele each hue stands for', () => {
   const keyed = keyedOf([[pup1, PUP1_PAINTED]])
-  expect(keyed.primaryAltName).toBe('<X:1>, 39 bp')
+  expect(keyed.primaryAltName).toBe('<X:1>, 39 bp path')
   expect(keyed.secondaryAlts).toEqual([
-    { slot: 1, name: '<X:4>, 88,924 bp' },
-    { slot: 2, name: '<X:2>, 53,149 bp' },
-    { slot: 3, name: '<X:3>, 46,260 bp' },
+    { slot: 1, name: '<X:4>, 88,924 bp path' },
+    { slot: 2, name: '<X:2>, 53,149 bp path' },
+    { slot: 3, name: '<X:3>, 46,260 bp path' },
   ])
 })
 
@@ -127,8 +127,8 @@ test('a hue a second record paints stands for a rank, not an allele', () => {
   expect(keyed.primaryAltName).toBeUndefined()
   expect(keyed.secondaryAlts).toEqual([
     { slot: 1 },
-    { slot: 2, name: '<X:2>, 53,149 bp' },
-    { slot: 3, name: '<X:3>, 46,260 bp' },
+    { slot: 2, name: '<X:2>, 53,149 bp path' },
+    { slot: 3, name: '<X:3>, 46,260 bp path' },
   ])
 })
 
@@ -151,5 +151,40 @@ test('the last hue names no allele where a record folds its rarest into it', () 
   expect(keyed.secondaryAlts).toEqual([
     { slot: 1, name: '<X:2>' },
     { slot: 7, folded: true },
+  ])
+})
+
+test('a spanning deletion is named as one, with no length', () => {
+  const keyed = keyedOf([
+    [
+      featureInfoOf('overlapped', {
+        alt: ['T', '*'],
+        altOrder: ['1', '2'],
+        alleleBp: [1, 1, 1],
+      }),
+      ALT | SLOT(1),
+    ],
+  ])
+  expect(keyed.secondaryAlts).toEqual([{ slot: 1, name: 'spanning deletion' }])
+})
+
+test('a record shown in two displayed regions still names its alleles', () => {
+  const payload = () =>
+    cellPayloadOf([pup1], {
+      featureCategories: Uint16Array.from([PUP1_PAINTED]),
+      featurePositions: Uint32Array.from([1500, 1501]),
+    })
+  const keyed = keyedVariantsInWindows(
+    { 0: payload(), 1: payload() },
+    keyWindowsOf([
+      { displayedRegionIndex: 0, refName: 'chr1', start: 1000, end: 2000 },
+      { displayedRegionIndex: 1, refName: 'chr1', start: 1000, end: 2000 },
+    ]),
+  )
+  expect(keyed.primaryAltName).toBe('<X:1>, 39 bp path')
+  expect(keyed.secondaryAlts.map(a => a.name)).toEqual([
+    '<X:4>, 88,924 bp path',
+    '<X:2>, 53,149 bp path',
+    '<X:3>, 46,260 bp path',
   ])
 })

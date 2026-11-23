@@ -33,30 +33,15 @@ export interface AlleleSummary {
   calledAlleleCount: number
 }
 
-// A site's one carried alt, shared so the usual biallelic site allocates none
-const soleAltOrders = new Map<string, readonly string[]>()
-
-function soleAltOrder(alt: string) {
-  let order = soleAltOrders.get(alt)
-  if (!order) {
-    order = [alt]
-    soleAltOrders.set(alt, order)
-  }
-  return order
-}
-
 function altOrderOf(
   alleleCounts: Record<string, number>,
   alts: string[],
   spanningDeletion: string,
 ): readonly string[] {
-  const only = alts[0]
-  return only === undefined
-    ? soleAltOrder('1')
-    : alts.length === 1
-      ? only === spanningDeletion
-        ? ['1', only]
-        : soleAltOrder(only)
+  return alts.length === 0
+    ? ['1']
+    : alts.length === 1 && alts[0] === spanningDeletion
+      ? ['1', spanningDeletion]
       : alts.sort(
           (a, b) =>
             Number(a === spanningDeletion) - Number(b === spanningDeletion) ||

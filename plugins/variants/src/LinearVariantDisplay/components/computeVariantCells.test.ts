@@ -1309,13 +1309,13 @@ describe('a multiallelic site in phased mode', () => {
     )
   })
 
-  test('the key names the allele and stated length each hue stands for', () => {
+  test('the key names the allele and stated path length each hue stands for', () => {
     const keyed = keyedVariantsFetched([result])
-    expect(keyed.primaryAltName).toBe('<X:2>, 53,149 bp')
+    expect(keyed.primaryAltName).toBe('<X:2>, 53,149 bp path')
     expect(keyed.secondaryAlts).toEqual([
-      { slot: 1, name: '<X:1>, 39 bp' },
-      { slot: 2, name: '<X:3>, 46,260 bp' },
-      { slot: 3, name: '<X:4>, 88,924 bp' },
+      { slot: 1, name: '<X:1>, 39 bp path' },
+      { slot: 2, name: '<X:3>, 46,260 bp path' },
+      { slot: 3, name: '<X:4>, 88,924 bp path' },
     ])
   })
 

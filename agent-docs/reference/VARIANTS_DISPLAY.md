@@ -158,6 +158,10 @@ Each channel carries one variable through one scale.
   ties in file order and `*` last, so hiding rows recolors nothing. Sample
   rows keep the one alt hue, where lightness is the dosage. The second hue is
   the SV preset's deletion red, as the one "other alt" fill was before it.
+- **Ranks 2 to 7 take no color of the SV type preset**, because the records
+  band paints SV classes one band above the rows. `alleleHues.test.ts` holds
+  them 20 CIEDE2000 or more from each preset color, from each other and from
+  the reference, no-call and unphased fills.
 
 ## The legend lists what was painted on screen
 
@@ -172,10 +176,12 @@ the view's settled window (ADR-093), since the view fetches wider than it shows:
 site is multiallelic" is not the same claim as "a secondary-alt cell is on
 screen", and the legend makes the second one: `featureCategories` holds a bit
 per allele hue past the first, and the key lists a row for each painted. A row
-names its allele (`<X:3>, 53,149 bp`, the length from `INFO/ALEN` where the
-record states one) where every cell in that hue is one allele of one record,
-and otherwise its rank ("2nd most common"). The first hue is named only where
-its one record is multiallelic, so a biallelic view keeps "Alt allele". The columns layout fetches only
+names its allele (`<X:3>, 53,149 bp path`, the path length from `INFO/ALEN`
+where the record states one; `*` reads "spanning deletion") where every cell in
+that hue is one allele of one record, and otherwise its rank ("2nd most
+common"). A record shown in two displayed regions counts once. The first hue is
+named only where its one record is multiallelic, so a biallelic view keeps "Alt
+allele". The columns layout fetches only
 the visible span, and the tables their own regions, so both read every variant
 fetched. The records band's "SV type" key reads the records the band placed on
 screen (`keyedRecords.svTypes`, over `recordsPlacedOnScreenIds`), so a hidden `records.facet` section or a record
