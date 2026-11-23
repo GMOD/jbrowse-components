@@ -128,6 +128,7 @@ import type {
   AxisArgs,
   ColorArg,
   ComparativeAxis,
+  ComparativeOptions,
   RibbonInterpolation,
   SyntenyOpacitySnapshot,
 } from '@jbrowse/synteny-core'
@@ -694,9 +695,10 @@ export async function multiwayTables(
     SESSION,
     adapterConfig,
   )
+  const headerOpts: ComparativeOptions = { readsLanesAgainstAnchor: true }
   const header: unknown =
     declaresLanes && dataAdapter instanceof BaseFeatureDataAdapter
-      ? await dataAdapter.getHeader()
+      ? await dataAdapter.getHeader(headerOpts)
       : undefined
   host.setFrame({
     lgv: {
@@ -740,7 +742,7 @@ export async function multiwayTables(
   )
   const fetched = await fetch(
     anchorRegions,
-    { mateShape: 'grouped' },
+    { mateShape: 'grouped', readsLanesAgainstAnchor: true },
     haplotypes,
   )
   const features = dedupe(fetched.features, f => f.id())

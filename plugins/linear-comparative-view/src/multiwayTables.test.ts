@@ -3,6 +3,7 @@ import { pathToFileURL } from 'node:url'
 
 import Plugin from '@jbrowse/core/Plugin'
 import PluginManager from '@jbrowse/core/PluginManager'
+import { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
 import { SimpleFeature } from '@jbrowse/core/util'
 import { registerComparativeAdapters } from '@jbrowse/plugin-comparative-adapters/tables'
 
@@ -127,5 +128,37 @@ test('a failed lane-pair fetch fails the export instead of reading as no alignme
     ).rejects.toThrow('pair fetch failed')
   } finally {
     spy.mockRestore()
+  }
+})
+
+test('a header that reads lanes against the anchor only when asked exports each lane against the anchor, fetching no lane pairs', async () => {
+  const header = jest
+    .spyOn(BaseFeatureDataAdapter.prototype, 'getHeader')
+    .mockImplementation(async opts => ({
+      anchorAssemblyName: 'Col-0',
+      ...(opts !== undefined && 'readsLanesAgainstAnchor' in opts
+        ? { lanesReadAgainstAnchor: opts.readsLanesAgainstAnchor }
+        : {}),
+    }))
+  const real = getFeatures.executeMultiWayFeatures
+  const fetches = jest
+    .spyOn(getFeatures, 'executeMultiWayFeatures')
+    .mockImplementation(args => real(args))
+  try {
+    const tables = await multiwayTables(
+      engine(['lanePairsOnAnchor', 'headerLanes']),
+      SYRI,
+    )
+    expect(tables.lanes.assembly[0]).toBe('Col-0')
+    expect(tables.lanes.assembly.length).toBeGreaterThan(1)
+    expect(
+      fetches.mock.calls.map(([args]) => [
+        args.opts?.targetAssemblyName,
+        args.opts?.readsLanesAgainstAnchor,
+      ]),
+    ).toEqual(fetches.mock.calls.map(() => [undefined, true]))
+  } finally {
+    header.mockRestore()
+    fetches.mockRestore()
   }
 })
