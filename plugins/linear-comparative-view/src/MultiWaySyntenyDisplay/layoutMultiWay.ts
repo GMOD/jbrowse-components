@@ -553,10 +553,9 @@ function uncoveredSpans(
  * between the two pieces less the lane bp between them, so each piece of the
  * drawn strand sits under its own anchor stretch; between two fetch windows
  * lies anchor the fetch never read, which opens and states nothing. A right
- * piece stepping back to anchor the left piece also holds, a tandem copy,
- * states the lane bp repeating it as an insertion at the left piece's anchor
- * end; a step back to before the left piece's anchor is a rearrangement and
- * states nothing. A gap's anchor side starts past the anchor that the drawn
+ * piece stepping back to anchor a piece before it holds states nothing:
+ * whether the lane bp between them is a copy or sequence placed past the fetch
+ * the records cannot say. A gap's anchor side starts past the anchor that the drawn
  * pieces before it reached, from its left piece back through each whose
  * anchor the next one starts inside, read on the drawn strand, so a copy
  * leaves the change and the opening after it as the lane without the copy
@@ -630,27 +629,6 @@ function laneGapsOf(
       const net = hi - lo - laneGap
       if (laneGap >= 0 && net >= SPLIT_AT_GAP_BP) {
         openings.push({ at, bp: net })
-      }
-      if (
-        anchorGap < 0 &&
-        startsWithin(right.anchor, left.anchor) &&
-        right.lane.end > left.lane.end
-      ) {
-        const copyBp = Math.min(
-          laneGap - anchorGap,
-          right.lane.end - left.lane.end,
-        )
-        const point = orientation < 0 ? left.anchor.start : left.anchor.end
-        if (copyBp >= SPLIT_AT_GAP_BP) {
-          gaps.push({
-            at: Math.round(at),
-            laneEnd: Math.round(at + copyBp),
-            laneBp: copyBp,
-            anchorBp: 0,
-            kind: 'insertion',
-            anchor: { refName: left.anchor.refName, start: point, end: point },
-          })
-        }
       }
       const laneBp = Math.round(laneGap)
       const anchorBp = Math.round(hi - lo)

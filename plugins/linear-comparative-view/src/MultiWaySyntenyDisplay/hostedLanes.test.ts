@@ -730,6 +730,14 @@ describe('a gap whose anchor another piece of the haplotype places', () => {
   })
 })
 
+describe('a step back states no size', () => {
+  test('R1M-06: HG01123#1 states no insertion for its second copy, which follows 292 kb of contig and ends at a 13 kb deletion', () => {
+    expect(
+      chipsOf(layHosted(hostedWindow('R1M-06-HG01123')), 'HG01123.1'),
+    ).toEqual(['104 kb replaced by 424 kb'])
+  })
+})
+
 describe('a gap holding a piece of the other strand states nothing', () => {
   test('H-MAPT: HG01123#1 states its inversion and the gaps between its inverted pieces, and nothing at the breakpoints', () => {
     expect(chipsOf(layHosted(hostedWindow('H-MAPT')), 'HG01123.1')).toEqual([
