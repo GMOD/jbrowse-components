@@ -96,7 +96,7 @@ test('an insertion that split its record weighs what one inside a record does', 
   expect([...split]).toEqual([...whole])
 })
 
-test('a reversed piece inside an insertion leaves it weighing what it does without one', () => {
+test('a reversed piece inside an insertion leaves it stating nothing, so it weighs nothing', () => {
   const piece = (
     id: string,
     start: number,
@@ -125,9 +125,12 @@ test('a reversed piece inside an insertion leaves it weighing what it does witho
     piece('l', 0, 6000, [0, 6000]),
     piece('r', 6000, 12_000, [26_000, 32_000]),
   ]
-  expect(
-    insertionOf([...flanks, piece('copy', 0, 2000, [10_000, 12_000], -1)]),
-  ).toEqual(insertionOf(flanks))
+  const withCopy = insertionOf([
+    ...flanks,
+    piece('copy', 0, 2000, [10_000, 12_000], -1),
+  ])
+  expect(withCopy.every(bin => bin === 0)).toBe(true)
+  expect(insertionOf(flanks).some(bin => bin > 0)).toBe(true)
 })
 
 const insertedBp = (profile: Float64Array, binBp: number) =>

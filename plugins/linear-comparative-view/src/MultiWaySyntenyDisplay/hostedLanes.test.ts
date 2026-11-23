@@ -16,8 +16,10 @@ import { buildLanes, laneGeometry } from './laneStack.ts'
 import {
   clipGroupToAnchor,
   frameBpPerPx,
+  frameOpenings,
   groupFeatures,
   groupRunsOnRow,
+  laneBpOfOpened,
   laneIndelsOf,
   rowAssembliesOf,
   rowFrameX,
@@ -25,7 +27,12 @@ import {
 import { SEQUENCE_BAR_PX, buildLaneCells } from './multiwayGeometry.ts'
 import { PX_ORIGIN } from './multiwayRenderTypes.ts'
 
-import type { MultiWayGroup, RowFrame } from './layoutMultiWay.ts'
+import type { LaneDecision } from './laneDecision.ts'
+import type {
+  MatePlacement,
+  MultiWayGroup,
+  RowFrame,
+} from './layoutMultiWay.ts'
 import type { SimpleFeatureSerialized } from '@jbrowse/core/util'
 
 /**
@@ -64,13 +71,24 @@ const TRACK_GENOMES = [
 ]
 
 /**
- * The lanes a display draws of `hosted` at its whole window, read against
- * the anchor as the walk file's header asks: the groups filed by the field
- * `auto` picks for a source declaring haplotype lanes, each lane's frame, and
- * the anchor's px
+ * The lanes a display draws of `hosted`, its window panned by `shift` bp,
+ * read against the anchor as the walk file's header asks: the groups filed
+ * by the field `auto` picks for a source declaring haplotype lanes, each
+ * lane's decision and frame, and the anchor's px
  */
-function layHosted({ region, records }: HostedWindow) {
-  const { refName, start, end } = region
+function layHosted(
+  { region, records }: HostedWindow,
+  {
+    shift = 0,
+    previous = new Map<string, LaneDecision | undefined>(),
+  }: {
+    shift?: number
+    previous?: ReadonlyMap<string, LaneDecision | undefined>
+  } = {},
+) {
+  const { refName } = region
+  const start = region.start + shift
+  const end = region.end + shift
   const unitBp = end - start
   const ops = new Map<string, Uint32Array>()
   const features = records
@@ -82,22 +100,28 @@ function layHosted({ region, records }: HostedWindow) {
       }
       return feature
     })
-  const grouped = groupFeatures(features).map(group =>
-    clipGroupToAnchor(group, start, end, ops),
-  )
+  const fetched = groupFeatures(features)
+  const inWindow = (g: MultiWayGroup) =>
+    g.anchor.end > start && g.anchor.start < end
+  const grouped = fetched
+    .filter(inWindow)
+    .map(group => clipGroupToAnchor(group, start, end, ops))
   const field = laneFieldOf(
     'auto',
     TRACK_GENOMES,
     name => name === 'hg38',
     true,
   )
-  const { groups } = groupsOfField(
+  const { groups: filed } = groupsOfField(
     field,
-    grouped,
-    () => copyLaneFiling([], [], name => name),
+    fetched,
+    () => copyLaneFiling([], [], name => name, inWindow),
     unitBp,
   )
-  const { openings, changes } = laneIndelsOf(groups)
+  const groups = filed
+    .filter(inWindow)
+    .map(group => clipGroupToAnchor(group, start, end, ops))
+  const { openings, changes } = laneIndelsOf(filed)
   const lanes = rowAssembliesOf(groups, [])
   const px = (bp: number) => ((bp - start) / unitBp) * WIDTH
   const centre = (g: MultiWayGroup) => (g.anchor.start + g.anchor.end) / 2
@@ -109,7 +133,7 @@ function layHosted({ region, records }: HostedWindow) {
     pxOfAnchor: c => px(c.coord),
     unitBp,
     width: WIDTH,
-    previous: new Map(),
+    previous,
     openingsOf: openings,
     vsAnchor: true,
   })
@@ -135,6 +159,7 @@ function layHosted({ region, records }: HostedWindow) {
     grouped,
     groups,
     lanes,
+    decisions,
     frames,
     openings,
     changes,
@@ -142,6 +167,8 @@ function layHosted({ region, records }: HostedWindow) {
     px,
   }
 }
+
+type Laid = ReturnType<typeof layHosted>
 
 function unionBp(spans: { start: number; end: number }[]) {
   let bp = 0
@@ -153,84 +180,112 @@ function unionBp(spans: { start: number; end: number }[]) {
   return bp
 }
 
+function pushTo<V>(map: Map<string, V[]>, key: string, value: V) {
+  const list = map.get(key)
+  if (list) {
+    list.push(value)
+  } else {
+    map.set(key, [value])
+  }
+}
+
+/**
+ * The part of a placement a lane's frame shows, in lane bp and, in proportion
+ * along it, in anchor bp; none where the lane runs it nowhere
+ */
+function shownPart(
+  group: MultiWayGroup,
+  lane: string,
+  p: MatePlacement,
+  frame: RowFrame | undefined,
+) {
+  const runs =
+    frame &&
+    groupRunsOnRow({ ...group, mates: new Map([[lane, [p]]]) }, lane, frame)
+  if (!frame || !runs?.length) {
+    return undefined
+  }
+  const openings = frameOpenings(frame)
+  const lo = Math.max(p.start, laneBpOfOpened(openings, frame.min))
+  const hi = Math.min(p.end, laneBpOfOpened(openings, frame.max))
+  const perLane =
+    (group.anchor.end - group.anchor.start) / Math.max(p.end - p.start, 1)
+  const [head, tail] =
+    p.orientation < 0 ? [p.end - hi, lo - p.start] : [lo - p.start, p.end - hi]
+  return hi > lo
+    ? {
+        lane: hi - lo,
+        anchor: {
+          start: group.anchor.start + head * perLane,
+          end: group.anchor.end - tail * perLane,
+        },
+      }
+    : undefined
+}
+
 /**
  * Per genome, the anchor bp a record places some of it on and no lane of it
- * draws: a group's anchor counts drawn where a lane of the genome runs one of
- * its placements in its frame (`groupRunsOnRow`), as a ribbon needs
+ * shows: what each lane's frame shows of each placement it runs, so a
+ * placement hanging off the frame counts its part off it
  */
-function undrawnAnchorBp({
-  grouped,
-  groups,
-  frames,
-}: Pick<ReturnType<typeof layHosted>, 'grouped' | 'groups' | 'frames'>) {
+function undrawnAnchorBp({ grouped, groups, frames }: Laid) {
   const held = new Map<string, { start: number; end: number }[]>()
   const drawn = new Map<string, { start: number; end: number }[]>()
-  const add = (
-    map: Map<string, { start: number; end: number }[]>,
-    genome: string,
-    span: { start: number; end: number },
-  ) => {
-    const spans = map.get(genome)
-    if (spans) {
-      spans.push(span)
-    } else {
-      map.set(genome, [span])
-    }
-  }
   for (const group of grouped) {
     for (const genome of group.mates.keys()) {
-      add(held, genome, group.anchor)
+      pushTo(held, genome, group.anchor)
     }
   }
   for (const group of groups) {
-    for (const lane of group.mates.keys()) {
-      const frame = frames.get(lane)
-      if (frame && groupRunsOnRow(group, lane, frame).length > 0) {
-        add(drawn, laneGenome(lane), group.anchor)
+    for (const [lane, placements] of group.mates) {
+      for (const p of placements) {
+        const part = shownPart(group, lane, p, frames.get(lane))
+        if (part) {
+          pushTo(drawn, laneGenome(lane), part.anchor)
+        }
       }
     }
   }
   return new Map(
     [...held].map(([genome, spans]) => {
       const shown = drawn.get(genome) ?? []
-      return [genome, unionBp([...spans, ...shown]) - unionBp(shown)]
+      return [genome, unionBp(spans.concat(shown)) - unionBp(shown)]
     }),
   )
 }
 
 /**
  * Per genome, the bp of its own sequence a record places in the window and
- * no lane of it draws: a placement counts drawn where a lane holding it runs
- * it in its frame. A second copy over anchor another piece holds is counted
+ * no lane of it shows. A second copy over anchor another piece holds counts
  * here, where `undrawnAnchorBp` cannot see it
  */
-function undrawnLaneBp({
-  groups,
-  frames,
-}: Pick<ReturnType<typeof layHosted>, 'groups' | 'frames'>) {
-  const placed = new Map<string, number>()
+function undrawnLaneBp({ groups, frames }: Laid) {
   const undrawn = new Map<string, number>()
   for (const group of groups) {
     for (const [lane, placements] of group.mates) {
       const genome = laneGenome(lane)
-      const frame = frames.get(lane)
       for (const p of placements) {
-        const bp = Math.abs(p.end - p.start)
-        const drawn =
-          frame &&
-          groupRunsOnRow(
-            { ...group, mates: new Map([[lane, [p]]]) },
-            lane,
-            frame,
-          ).length > 0
-        placed.set(genome, (placed.get(genome) ?? 0) + bp)
-        undrawn.set(genome, (undrawn.get(genome) ?? 0) + (drawn ? 0 : bp))
+        const part = shownPart(group, lane, p, frames.get(lane))
+        undrawn.set(
+          genome,
+          (undrawn.get(genome) ?? 0) +
+            Math.abs(p.end - p.start) -
+            (part?.lane ?? 0),
+        )
       }
     }
   }
-  return new Map(
-    [...placed.keys()].map(genome => [genome, undrawn.get(genome) ?? 0]),
-  )
+  return undrawn
+}
+
+/** per genome, 3 px at each end of each of its lanes, in lane bp */
+function pixelSlack({ frames }: Laid) {
+  const slack = new Map<string, number>()
+  for (const [lane, frame] of frames) {
+    const genome = laneGenome(lane)
+    slack.set(genome, (slack.get(genome) ?? 0) + 6 * frameBpPerPx(frame, WIDTH))
+  }
+  return slack
 }
 
 const lanesOf = (laid: ReturnType<typeof layHosted>, genome: string) =>
@@ -250,13 +305,20 @@ function drawnBy(laid: ReturnType<typeof layHosted>, genome: string) {
   })
 }
 
+/** every placement of `genome` shown but for 3 px at each end of a lane */
+function expectAllShown(laid: Laid, genome: string) {
+  const slack = pixelSlack(laid).get(genome) ?? 0
+  expect(undrawnAnchorBp(laid).get(genome) ?? 0).toBeLessThanOrEqual(slack)
+  expect(undrawnLaneBp(laid).get(genome) ?? 0).toBeLessThanOrEqual(slack)
+}
+
 describe('every piece of a haplotype the window places is drawn', () => {
   test('SV-ins-10k-100k: one record across a 54 kb insertion draws both its runs', () => {
     const laid = layHosted(hostedWindow('SV-ins-10k-100k'))
     const drawn = drawnBy(laid, 'HG00097.1')
     expect(drawn).toHaveLength(1)
     expect(drawn[0]!.anchors).toContainEqual([24_001_842, 24_015_404])
-    expect(undrawnAnchorBp(laid).get('HG00097.1')).toBe(0)
+    expectAllShown(laid, 'HG00097.1')
   })
 
   test('R1M-06: a reversed piece 4 Mb along the contig is a row of its own', () => {
@@ -265,7 +327,7 @@ describe('every piece of a haplotype the window places is drawn', () => {
     expect(drawn.map(d => d.refName)).toEqual(['CM094064.1', 'CM094064.1'])
     expect(drawn[1]!.anchors).toEqual([[12_338_568, 12_720_513]])
     expect(laid.frames.get(drawn[0]!.lane)!.flipped).toBe(true)
-    expect(undrawnAnchorBp(laid).get('HG00097.1')).toBe(0)
+    expectAllShown(laid, 'HG00097.1')
   })
 
   test('H-SMN: a haplotype on two contigs draws a row for each', () => {
@@ -275,7 +337,44 @@ describe('every piece of a haplotype the window places is drawn', () => {
         .map(d => d.refName)
         .sort(),
     ).toEqual(['JAHEPA020000001.1', 'JAHEPA020000070.1'])
-    expect(undrawnAnchorBp(laid).get('HG01109.1')).toBe(0)
+    expectAllShown(laid, 'HG01109.1')
+  })
+
+  test.each(['SV-ins-10k-100k', 'H-SMN', 'R1M-06', 'H-MAPT'])(
+    '%s: a pan with the previous decisions held keeps every piece in its frame',
+    name => {
+      const hosted = hostedWindow(name)
+      const { start, end } = hosted.region
+      let laid = layHosted(hosted)
+      for (const shift of [0.1, 0.2, 0.3, 0.2, 0]) {
+        laid = layHosted(hosted, {
+          shift: Math.round((end - start) * shift),
+          previous: laid.decisions,
+        })
+        for (const genome of new Set(laid.lanes.map(laneGenome))) {
+          expectAllShown(laid, genome)
+        }
+      }
+    },
+  )
+
+  test('the counts fail where a placement hangs off its frame', () => {
+    const laid = layHosted(hostedWindow('SV-ins-10k-100k'))
+    const [lane] = lanesOf(laid, 'HG00097.1')
+    const frame = laid.frames.get(lane!)!
+    const cut = (frame.max - frame.min) / 4
+    laid.frames.set(lane!, { ...frame, min: frame.min + cut })
+    expect(undrawnLaneBp(laid).get('HG00097.1')).toBeGreaterThan(cut / 2)
+    expect(undrawnAnchorBp(laid).get('HG00097.1')).toBeGreaterThan(cut / 4)
+  })
+
+  test('H-GSTM1: a haplotype 45 bp longer than the 50 kb window stays at 1×', () => {
+    const laid = layHosted(hostedWindow('H-GSTM1'))
+    for (const genome of ['HG00128.1', 'HG01960.1']) {
+      const [lane] = lanesOf(laid, genome)
+      expect(laid.decisions.get(lane!)?.rung).toBe(1)
+      expectAllShown(laid, genome)
+    }
   })
 
   test('the counts fail where a lane is left undrawn', () => {
@@ -381,9 +480,29 @@ describe('a lane draws its own sequence, and a dashed join across a hole', () =>
     expect(right!.x2 - right!.x1).toBeGreaterThan(
       (104_214_116 - 104_117_700) / bpPerPx - 2,
     )
-    expect(Math.min(...dashes.map(d => d.x1))).toBeCloseTo(left!.x2, 0)
-    expect(Math.max(...dashes.map(d => d.x2))).toBeCloseTo(right!.x1, 0)
+    expect(
+      dashes.reduce((least, d) => Math.min(least, d.x1), Infinity),
+    ).toBeCloseTo(left!.x2, 0)
+    expect(dashes.reduce((most, d) => Math.max(most, d.x2), 0)).toBeCloseTo(
+      right!.x1,
+      0,
+    )
     expect((right!.x1 - left!.x2) * bpPerPx).toBeCloseTo(121_555 - 49_051, -2)
+  })
+
+  test('H-AMY1: a hole running off past the stack still draws its dashes to the edge', () => {
+    const laid = layHosted(hostedWindow('H-AMY1'))
+    const [lane] = lanesOf(laid, 'HG00097.1')
+    const frame = laid.frames.get(lane!)!
+    const span = 50_000
+    const min = 104_117_700 - 0.6 * span
+    laid.frames.set(lane!, { ...frame, min, max: min + span })
+    const { bars, dashes } = sequenceMarks(laid, 'HG00097.1')
+    expect(bars).toHaveLength(1)
+    expect(dashes.length).toBeGreaterThan(0)
+    expect(dashes.reduce((most, d) => Math.max(most, d.x2), 0)).toBeGreaterThan(
+      2 * WIDTH - 7,
+    )
   })
 
   // HG00099#1 holds 33 kb GRCh38 lacks, then lacks 33 kb GRCh38 holds
@@ -395,7 +514,9 @@ describe('a lane draws its own sequence, and a dashed join across a hole', () =>
     expect(bars).toHaveLength(2)
     expect(dashes.length).toBeGreaterThan(0)
     const [, right] = bars.toSorted((a, b) => a.x1 - b.x1)
-    expect(Math.min(...dashes.map(d => d.x1))).toBeLessThan(right!.x1)
+    expect(
+      dashes.reduce((least, d) => Math.min(least, d.x1), Infinity),
+    ).toBeLessThan(right!.x1)
   })
 
   // HG00097#1's walk starts 69% into the window, and its contig before that
@@ -408,6 +529,85 @@ describe('a lane draws its own sequence, and a dashed join across a hole', () =>
     expect(bars).toHaveLength(1)
     expect(bars[0]!.x1).toBeCloseTo(x(13_092_427), 0)
     expect(bars[0]!.x2).toBeCloseTo(x(13_404_348), 0)
+  })
+})
+
+// records A and B flank 300 kb of the anchor that record C places, on the
+// contig 5 Mb on or on another contig
+describe('a gap whose anchor another piece of the haplotype places', () => {
+  const record = (
+    id: string,
+    anchor: [number, number],
+    contig: string,
+    lane: number,
+    recordId = id,
+  ) => ({
+    uniqueId: id,
+    recordId,
+    refName: 'chr1',
+    start: anchor[0],
+    end: anchor[1],
+    strand: 1,
+    assemblyName: 'hg38',
+    mate: {
+      assemblyName: 'HG00097.1',
+      refName: contig,
+      start: lane,
+      end: lane + anchor[1] - anchor[0],
+    },
+  })
+  test.each([
+    ['5 Mb on along the contig', 'ctg', 5_000_000, 'B'],
+    ['on another contig', 'other', 0, 'B'],
+    ['on another contig, A and B one record', 'other', 0, 'A'],
+  ])('states no deletion, C %s', (_, contig, lane, recordB) => {
+    const laid = layHosted({
+      window: 'ABC',
+      region: { refName: 'chr1', start: 0, end: 500_000 },
+      records: [
+        record('A', [0, 100_000], 'ctg', 0),
+        record('B', [400_000, 500_000], 'ctg', 100_000, recordB),
+        record('C', [100_000, 400_000], contig, lane),
+      ],
+    })
+    expect(lanesOf(laid, 'HG00097.1')).toHaveLength(2)
+    expect(chipsOf(laid, 'HG00097.1')).toEqual([])
+    for (const lane of lanesOf(laid, 'HG00097.1')) {
+      expect(laid.openings(lane, laneOf(lane).refName!)).toEqual(
+        recordB === 'A' && laneOf(lane).refName === 'ctg'
+          ? [{ at: 100_000, bp: 300_000 }]
+          : [],
+      )
+    }
+    expectAllShown(laid, 'HG00097.1')
+  })
+})
+
+describe('a gap holding a piece of the other strand states nothing', () => {
+  test('H-MAPT: HG01123#1 states its inversion and the gaps between its inverted pieces, and nothing at the breakpoints', () => {
+    expect(chipsOf(layHosted(hostedWindow('H-MAPT')), 'HG01123.1')).toEqual([
+      '147 bp replaced by 35 kb',
+      '29 kb insertion',
+      '866 kb inversion',
+    ])
+  })
+
+  test('H-SMN: HG00133#1 states the insertions between its pieces, and no 1 Mb replaced by 43 kb', () => {
+    expect(chipsOf(layHosted(hostedWindow('H-SMN')), 'HG00133.1')).toEqual([
+      '20 kb insertion',
+      '41 kb insertion',
+      '102 kb insertion',
+    ])
+  })
+
+  test('verified chips stand: C4 33 kb insertion and amylase 94 kb deletion', () => {
+    expect(chipsOf(layHosted(hostedWindow('H-C4')), 'HG00099.1')).toEqual([
+      '33 kb insertion',
+      '33 kb deletion',
+    ])
+    expect(chipsOf(layHosted(hostedWindow('H-AMY1')), 'HG00133.1')).toEqual([
+      '94 kb deletion',
+    ])
   })
 })
 
@@ -439,8 +639,9 @@ describeDumps('every audit window', () => {
           `${name}\t${JSON.stringify(anchor)}\t${JSON.stringify(lane)}\n`,
         )
       }
-      expect(Object.values(anchor).filter(bp => bp > 0)).toEqual([])
-      expect(Object.values(lane).filter(bp => bp > 0)).toEqual([])
+      for (const genome of Object.keys(anchor)) {
+        expectAllShown(laid, genome)
+      }
     },
   )
 })

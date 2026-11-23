@@ -716,7 +716,7 @@ describe('a lane glyph menu', () => {
   })
 })
 
-test('a lane menu goes to each change its chip names, largest first', () => {
+test('a lane menu goes to each change its chip names, largest first, a stretch replaced framing its whole anchor stretch', () => {
   const changes: LaneChange[] = [
     {
       at: 0,
@@ -734,6 +734,14 @@ test('a lane menu goes to each change its chip names, largest first', () => {
       kind: 'insertion',
       anchor: { refName: 'chr1', start: 5_000_000, end: 5_000_000 },
     },
+    {
+      at: 0,
+      laneEnd: 60_000,
+      laneBp: 15_000,
+      anchorBp: 20_000,
+      kind: 'replacement',
+      anchor: { refName: 'chr1', start: 8_000_000, end: 9_000_000 },
+    },
   ]
   const { model, calls } = headerModel({ changes })
   const goTo = subMenuOf(
@@ -741,11 +749,16 @@ test('a lane menu goes to each change its chip names, largest first', () => {
       item => 'label' in item && item.label === 'Go to',
     ),
   )
-  expect(labelsOf(goTo)).toEqual(['935 kb deletion', '30 kb insertion'])
+  expect(labelsOf(goTo)).toEqual([
+    '935 kb deletion',
+    '30 kb insertion',
+    '20 kb replaced by 15 kb',
+  ])
   goTo.forEach(click)
   expect(calls).toEqual([
     'zoom chr1:1532501..3402500',
     'zoom chr1:4985001..5015000',
+    'zoom chr1:7990001..9010000',
   ])
 })
 

@@ -10,7 +10,6 @@ import {
 import { changeLabel, laneRegion, shownLaneChanges } from './laneHeader.ts'
 import { buildLanes, laneGeometry } from './laneStack.ts'
 import {
-  SPLIT_AT_GAP_BP,
   frameSegments,
   frameSpan,
   groupFeatures,
@@ -861,19 +860,14 @@ describe('an inversion the lane carries against the anchor', () => {
     ])
   })
 
-  test('names no inversion for an inverted copy of a flank, and reads it as the lane’s own', () => {
+  test('names no inversion for an inverted copy of a flank, and states nothing for the gap holding it', () => {
     const copy = [
       run('l', 0, 0, 500_000, 1),
       run('m', 500_000, 100_000, 300_000, -1),
       run('r', 800_000, 500_000, 400_000, 1),
     ]
     expect(named(copy)).toEqual([])
-    expect(stated(copy)).toEqual({
-      openings: [],
-      changes: [
-        { at: at + 500_000, laneBp: 300_000, anchorBp: 0, kind: 'insertion' },
-      ],
-    })
+    expect(stated(copy)).toEqual({ openings: [], changes: [] })
   })
 
   test('states nothing but the inversion between its flanks, as one record each or as two', () => {
@@ -907,7 +901,7 @@ describe('an inversion the lane carries against the anchor', () => {
     ).toEqual(['400 kb inversion'])
   })
 
-  test('states the one breakpoint stretch reaching SPLIT_AT_GAP_BP, its own size where it sits', () => {
+  test('states nothing beyond the inversion for a stretch reaching SPLIT_AT_GAP_BP at one breakpoint', () => {
     expect(
       laneIndelsOf(
         groupFeatures([
@@ -918,20 +912,7 @@ describe('an inversion the lane carries against the anchor', () => {
       )
         .changes('HG01123.1', ref)
         .filter(c => c.kind !== 'inversion'),
-    ).toEqual([
-      {
-        at: at + 40_000,
-        laneEnd: at + 55_000,
-        laneBp: 15_000,
-        anchorBp: 15_000,
-        kind: 'replacement',
-        anchor: {
-          refName: 'chr1',
-          start: WINDOW_START + 40_000,
-          end: WINDOW_START + 55_000,
-        },
-      },
-    ])
+    ).toEqual([])
   })
 
   const gapChanges = (features: SimpleFeature[], reversed = false) =>
@@ -957,28 +938,23 @@ describe('an inversion the lane carries against the anchor', () => {
     },
   })
 
-  test('states each breakpoint stretch reaching SPLIT_AT_GAP_BP where it lies', () => {
+  test('states nothing beyond the inversion for stretches at both breakpoints, and sums none', () => {
     expect(
       gapChanges([
         run('l', 0, 0, 40_000, 1),
         run('m', 55_000, 55_000, 400_000, -1),
         run('r', 470_000, 470_000, 40_000, 1),
       ]),
-    ).toEqual([
-      change([40_000, 55_000], [40_000, 55_000], 15_000, 15_000),
-      change([455_000, 470_000], [455_000, 470_000], 15_000, 15_000),
-    ])
+    ).toEqual([])
   })
 
-  test('pairs the anchor lacking beside a flank with the lane at that flank, with 3 bp of lane overlap or none', () => {
+  test('states nothing for the anchor lacking beside a flank, with 3 bp of lane overlap or none', () => {
     const clean = gapChanges([
       run('l', 0, 0, 40_000, 1),
       run('m', 40_000, 55_000, 400_000, -1),
       run('r', 448_000, 455_000, 40_000, 1),
     ])
-    expect(clean).toEqual([
-      change([40_000, 40_000], [40_000, 55_000], 15_000, 0),
-    ])
+    expect(clean).toEqual([])
     expect(
       gapChanges([
         run('l', 0, 0, 40_000, 1),
@@ -1001,17 +977,17 @@ describe('an inversion the lane carries against the anchor', () => {
     expect(gapChanges(pieces, true)).toEqual(gapChanges(pieces))
   })
 
-  test('states a breakpoint by its own two stretches, leaving out the other breakpoint’s short one', () => {
+  test('states nothing for a stretch at one breakpoint of an inversion', () => {
     expect(
       gapChanges([
         run('l', 0, 0, 40_000, 1),
         run('m', 40_000, 48_000, 400_000, -1),
         run('r', 452_000, 456_000, 40_000, 1),
       ]),
-    ).toEqual([change([440_000, 452_000], [448_000, 456_000], 8_000, 12_000)])
+    ).toEqual([])
   })
 
-  test('states an insertion at one flank and the stretch between two inverted pieces alike on either strand', () => {
+  test('states the stretch between two inverted pieces alike on either strand, and nothing at a flank', () => {
     const pieces = [
       run('l', 0, 0, 100_000, 1),
       run('m1', 112_000, 315_000, 200_000, -1),
@@ -1020,12 +996,11 @@ describe('an inversion the lane carries against the anchor', () => {
     ]
     expect(gapChanges(pieces)).toEqual([
       change([312_000, 320_000], [300_000, 315_000], 15_000, 8_000),
-      change([100_000, 112_000], [100_000, 100_000], 0, 12_000),
     ])
     expect(gapChanges(pieces, true)).toEqual(gapChanges(pieces))
   })
 
-  test('states every lane stretch reaching SPLIT_AT_GAP_BP around two inverted pieces on either strand', () => {
+  test('states the stretch between two inverted pieces on either strand, and nothing at the flanks', () => {
     const pieces = [
       run('l', 0, 0, 40_000, 1),
       run('t0', 55_000, 51_003, 200_000, -1),
@@ -1034,13 +1009,11 @@ describe('an inversion the lane carries against the anchor', () => {
     ]
     expect(gapChanges(pieces)).toEqual([
       change([255_000, 270_000], [51_000, 51_003], 3, 15_000),
-      change([40_000, 55_000], [40_000, 40_000], 0, 15_000),
-      change([281_000, 296_000], [251_003, 251_006], 3, 15_000),
     ])
     expect(gapChanges(pieces, true)).toEqual(gapChanges(pieces))
   })
 
-  test('states the lane’s own bases between two inverted pieces that follow the anchor’s order', () => {
+  test('states nothing for lane bases between two inverted pieces that follow the anchor’s order, inside the inversion', () => {
     expect(
       gapChanges([
         run('l', 0, 0, 40_000, 1),
@@ -1048,10 +1021,10 @@ describe('an inversion the lane carries against the anchor', () => {
         run('m2', 252_000, 240_000, 200_000, -1),
         run('r', 452_000, 440_000, 40_000, 1),
       ]),
-    ).toEqual([change([240_000, 252_000], [40_000, 440_000], 0, 12_000)])
+    ).toEqual([])
   })
 
-  test('keeps each stretch between two parting pieces beside a change of the other strand it shares no held base with', () => {
+  test('states only the stretch between two inverted pieces that follow one another', () => {
     const pieces = [
       run('l', 0, 0, 100_000, 1),
       run('m1', 100_000, 215_000, 100_000, -1),
@@ -1062,25 +1035,18 @@ describe('an inversion the lane carries against the anchor', () => {
     for (const reversed of [false, true]) {
       expect(gapChanges(pieces, reversed)).toEqual([
         change([200_000, 208_000], [200_000, 215_000], 15_000, 8_000),
-        change([308_000, 320_000], [100_000, 427_000], 0, 12_000),
-        change([100_000, 420_000], [315_000, 327_000], 12_000, 0),
       ])
     }
   })
 
-  test('parts a gap at an inverted piece holding SPLIT_AT_GAP_BP, and at none holding less', () => {
+  test('states nothing for a gap holding an inverted piece of any size', () => {
     expect(
       stated([
         run('l', 0, 0, 40_000, 1),
         run('p', 40_000, 46_000, 9_000, -1),
         run('r', 49_000, 61_000, 40_000, 1),
       ]),
-    ).toEqual({
-      openings: [{ at: at + 40_000, bp: 12_000 }],
-      changes: [
-        { at: at + 40_000, laneBp: 0, anchorBp: 12_000, kind: 'deletion' },
-      ],
-    })
+    ).toEqual({ openings: [{ at: at + 40_000, bp: 12_000 }], changes: [] })
     expect(
       stated([
         run('l', 0, 0, 40_000, 1),
@@ -1090,7 +1056,7 @@ describe('an inversion the lane carries against the anchor', () => {
     ).toEqual({ openings: [{ at: at + 40_000, bp: 12_000 }], changes: [] })
   })
 
-  test('parts a gap at an inversion aligned as pieces each under SPLIT_AT_GAP_BP, which follow one another as one run', () => {
+  test('states nothing for a gap holding an inversion aligned as pieces each under SPLIT_AT_GAP_BP', () => {
     expect(
       gapChanges([
         run('l', 0, 0, 40_000, 1),
@@ -1102,7 +1068,7 @@ describe('an inversion the lane carries against the anchor', () => {
     ).toEqual([])
   })
 
-  test('a piece nested in an inverted piece’s lane bp joins no run, holding only its own anchor', () => {
+  test('states nothing for a gap holding a piece nested in an inverted piece', () => {
     expect(
       gapChanges([
         run('l', 0, 0, 40_000, 1),
@@ -1111,10 +1077,10 @@ describe('an inversion the lane carries against the anchor', () => {
         run('m2', 248_000, 250_000, 6_000, -1),
         run('r', 262_000, 464_000, 40_000, 1),
       ]),
-    ).toEqual([change([40_000, 48_000], [40_000, 250_000], 207_000, 8_000)])
+    ).toEqual([])
   })
 
-  test('reads an inverted piece aligned outside the gap’s anchor as the lane’s own, parting nothing', () => {
+  test('states nothing for a gap holding an inverted piece aligned outside its anchor', () => {
     expect(
       gapChanges([
         run('l', 0, 0, 40_000, 1),
@@ -1122,10 +1088,10 @@ describe('an inversion the lane carries against the anchor', () => {
         run('p', 60_000, 20_000, 10_000, -1),
         run('r', 72_000, 70_000, 40_000, 1),
       ]),
-    ).toEqual([change([40_000, 72_000], [40_000, 70_000], 28_000, 30_000)])
+    ).toEqual([])
   })
 
-  test('counts a lane base two small inverted pieces both hold once', () => {
+  test('states nothing for a gap holding two small overlapping inverted pieces', () => {
     expect(
       gapChanges([
         run('l', 0, 0, 40_000, 1),
@@ -1133,10 +1099,10 @@ describe('an inversion the lane carries against the anchor', () => {
         run('p2', 43_000, 47_000, 2_000, -1),
         run('r', 60_000, 60_000, 40_000, 1),
       ]),
-    ).toEqual([change([40_000, 60_000], [40_000, 60_000], 16_000, 17_000)])
+    ).toEqual([])
   })
 
-  test('reads a breakpoint alike 1 bp or 3 bp either side of a bound, and weighs its lane bp at one anchor bin', () => {
+  test('reads a gap holding an inversion alike 1 bp or 3 bp either side of a bound, and weighs its lane bp at one anchor bin', () => {
     type Run = typeof run
     const on =
       (assemblyName: string, refName: string) =>
@@ -1161,52 +1127,46 @@ describe('an inversion the lane carries against the anchor', () => {
             end: lane + length,
           },
         })
-    const pairs: [
-      string,
-      (r: Run) => SimpleFeature[],
-      (r: Run) => SimpleFeature[],
-    ][] = [
+    const pairs: [(r: Run) => SimpleFeature[], (r: Run) => SimpleFeature[]][] =
       [
-        '10 kb replaced by 12 kb',
-        r => [
-          r('l', 0, 0, 40_000, 1),
-          r('m', 40_000, 48_000, 400_000, -1),
-          r('r', 452_000, 458_000, 40_000, 1),
+        [
+          r => [
+            r('l', 0, 0, 40_000, 1),
+            r('m', 40_000, 48_000, 400_000, -1),
+            r('r', 452_000, 458_000, 40_000, 1),
+          ],
+          r => [
+            r('l', 0, 0, 40_000, 1),
+            r('m', 40_000, 48_000, 400_000, -1),
+            r('r', 452_000, 457_999, 40_000, 1),
+          ],
         ],
-        r => [
-          r('l', 0, 0, 40_000, 1),
-          r('m', 40_000, 48_000, 400_000, -1),
-          r('r', 452_000, 457_999, 40_000, 1),
+        [
+          r => [
+            r('l', 0, 0, 40_000, 1),
+            r('m', 52_000, 40_000, 400_000, -1),
+            r('r', 452_000, 440_000, 40_000, 1),
+          ],
+          r => [
+            r('l', 0, 0, 40_000, 1),
+            r('m', 52_000, 40_000, 400_000, -1),
+            r('r', 452_000, 440_003, 40_000, 1),
+          ],
         ],
-      ],
-      [
-        '12 kb insertion',
-        r => [
-          r('l', 0, 0, 40_000, 1),
-          r('m', 52_000, 40_000, 400_000, -1),
-          r('r', 452_000, 440_000, 40_000, 1),
+        [
+          r => [
+            r('l', 0, 0, 40_000, 1),
+            r('m', 40_000, 55_000, 400_000, -1),
+            r('r', 448_000, 455_000, 40_000, 1),
+          ],
+          r => [
+            r('l', 0, 0, 40_000, 1),
+            r('m', 40_003, 55_000, 400_000, -1),
+            r('r', 448_003, 455_000, 40_000, 1),
+          ],
         ],
-        r => [
-          r('l', 0, 0, 40_000, 1),
-          r('m', 52_000, 40_000, 400_000, -1),
-          r('r', 452_000, 440_003, 40_000, 1),
-        ],
-      ],
-      [
-        '15 kb deletion',
-        r => [
-          r('l', 0, 0, 40_000, 1),
-          r('m', 40_000, 55_000, 400_000, -1),
-          r('r', 448_000, 455_000, 40_000, 1),
-        ],
-        r => [
-          r('l', 0, 0, 40_000, 1),
-          r('m', 40_003, 55_000, 400_000, -1),
-          r('r', 448_003, 455_000, 40_000, 1),
-        ],
-      ],
-    ]
-    for (const [label, exact, shifted] of pairs) {
+      ]
+    for (const [exact, shifted] of pairs) {
       const features = [...exact(on('A', 'a')), ...shifted(on('B', 'b'))]
       const { changes } = laneIndelsOf(groupFeatures(features))
       const [first, second] = [changes('A', 'a'), changes('B', 'b')].map(list =>
@@ -1221,21 +1181,17 @@ describe('an inversion the lane carries against the anchor', () => {
             c.anchor.end,
           ]),
       )
-      expect(changes('A', 'a').map(changeLabel)).toContain(label)
-      expect(first).toHaveLength(1)
-      expect(second).toHaveLength(1)
-      expect(
-        Math.max(...first![0]!.map((v, i) => Math.abs(v - second![0]![i]!))),
-      ).toBeLessThanOrEqual(3)
+      expect(first).toEqual([])
+      expect(second).toEqual([])
       const profiles = laneProfiles(features, NO_OPS)
       const insertBand = (lane: string) => {
         const profile = profiles.get(lane)!
         return [...profile.slice((profile.length / 3) * 2)]
       }
       const [a, b] = [insertBand('A'), insertBand('B')]
-      expect(Math.max(...a.map((v, i) => Math.abs(v - b[i]!)))).toBeLessThan(
-        0.01,
-      )
+      expect(
+        a.reduce((most, v, i) => Math.max(most, Math.abs(v - b[i]!)), 0),
+      ).toBeLessThan(0.01)
     }
   })
 
@@ -1264,29 +1220,24 @@ describe('an inversion the lane carries against the anchor', () => {
     })
   })
 
-  test('states a deletion whole across a small inverted piece inside it', () => {
+  test('states nothing for a deletion holding a small inverted piece', () => {
     expect(
       stated([
         run('l', 0, 0, 40_000, 1),
         run('p', 40_000, 49_000, 500, -1),
         run('r', 40_500, 58_500, 40_000, 1),
       ]),
-    ).toEqual({
-      openings: [{ at: at + 40_000, bp: 18_000 }],
-      changes: [
-        { at: at + 40_000, laneBp: 0, anchorBp: 18_000, kind: 'deletion' },
-      ],
-    })
+    ).toEqual({ openings: [{ at: at + 40_000, bp: 18_000 }], changes: [] })
   })
 
-  test('holds the lane bp of an inverted piece aligned inside the gap’s anchor, its part outside the lane’s own', () => {
+  test('states nothing for a gap holding an inverted piece aligned inside its anchor, on either strand', () => {
     expect(
       gapChanges([
         run('l', 0, 0, 40_000, 1),
         run('m', 40_000, 20_000, 100_000, -1),
         run('r', 140_000, 135_000, 40_000, 1),
       ]),
-    ).toEqual([change([120_000, 140_000], [120_000, 135_000], 15_000, 20_000)])
+    ).toEqual([])
     expect(
       gapChanges(
         [
@@ -1296,33 +1247,27 @@ describe('an inversion the lane carries against the anchor', () => {
         ],
         true,
       ),
-    ).toEqual([change([120_000, 140_000], [65_000, 80_000], 15_000, 20_000)])
+    ).toEqual([])
   })
 
-  test('counts a stretch by the bp it labels as, so 9,999.6 bp reaches SPLIT_AT_GAP_BP', () => {
-    const m = new SimpleFeature({
-      uniqueId: 'm',
+  test('counts a gap by the bp it labels as, so 9,999.6 bp reaches SPLIT_AT_GAP_BP', () => {
+    const r = new SimpleFeature({
+      uniqueId: 'r',
       refName: 'chr1',
-      start: WINDOW_START + 45_000,
-      end: WINDOW_START + 345_000,
+      start: WINDOW_START + 49_999.6,
+      end: WINDOW_START + 89_999.6,
+      strand: 1,
       assemblyName: 'hg38',
-      mates: [
-        {
-          assemblyName: 'HG01123.1',
-          refName: ref,
-          start: at + 39_997,
-          end: at + 289_997,
-          orientation: -1,
-        },
-      ],
+      mate: {
+        assemblyName: 'HG01123.1',
+        refName: ref,
+        start: at + 40_000,
+        end: at + 80_000,
+      },
     })
-    expect(
-      gapChanges([
-        run('l', 0, 0, 40_000, 1),
-        m,
-        run('r', 294_997, 354_996, 40_000, 1),
-      ]),
-    ).toEqual([change([289_997, 294_997], [344_996, 354_996], 10_000, 5_000)])
+    expect(gapChanges([run('l', 0, 0, 40_000, 1), r]).map(changeLabel)).toEqual(
+      ['10 kb deletion'],
+    )
   })
 
   test('opens and names the anchor an inverted stretch lacks inside it, beside the inversion', () => {
@@ -1363,7 +1308,7 @@ describe('an inversion the lane carries against the anchor', () => {
     })
   })
 
-  test('names a gap to a frame meeting only the lane’s own bases past its inverted piece', () => {
+  test('names the inversion to a frame meeting only the lane’s own bases past it, and nothing for the gap holding it', () => {
     const changes = laneIndelsOf(
       groupFeatures([
         run('l', 0, 0, 40_000, 1),
@@ -1384,7 +1329,7 @@ describe('an inversion the lane carries against the anchor', () => {
     }
     expect(
       shownLaneChanges({ frame, canon: r => r }, changes).map(changeLabel),
-    ).toEqual(['400 kb inversion', '100 kb replaced by 100 kb'])
+    ).toEqual(['400 kb inversion'])
   })
 
   test('states the lane’s own bases between two inverted pieces once, read on either strand', () => {
@@ -1741,28 +1686,15 @@ describe('a gap of each strand holding a piece of the other', () => {
       .filter(c => c.kind !== 'inversion')
       .map(c => `${changeLabel(c)} at ${c.at}`)
 
-  test('known strand dependence: the lane stretch two parted gaps share is paired by the drawn strand, so it is stated once', () => {
-    expect(labels('fwd', 'fwd', false)).toEqual([
-      '140 kb replaced by 12 kb at 100000',
-      '15 kb replaced by 15 kb at 312000',
-    ])
-    expect(labels('fwd', 'fwd', true)).toEqual([
-      '15 kb replaced by 120 kb at 312000',
-      '15 kb replaced by 20 kb at 482000',
-    ])
-  })
-
-  test('reads alike on either strand once one gap’s flanks are two records with its anchor placed elsewhere', () => {
+  test('states nothing for either strand’s gap, each holding a piece of the other, whichever records bound them', () => {
     for (const reversed of [false, true]) {
-      expect(labels('fwd', 'far', reversed)).toEqual([
-        '15 kb replaced by 120 kb at 312000',
-        '15 kb replaced by 20 kb at 482000',
-      ])
+      expect(labels('fwd', 'fwd', reversed)).toEqual([])
+      expect(labels('fwd', 'far', reversed)).toEqual([])
     }
   })
 })
 
-describe('a gap that thousands of pieces part', () => {
+describe('a gap holding thousands of pieces', () => {
   const hit = (
     id: string,
     lane: number,
@@ -1800,7 +1732,6 @@ describe('a gap that thousands of pieces part', () => {
     const { changes } = laneIndelsOf(groups)
     const elapsedMs = performance.now() - start
     expect(changes('L', 'ctg', true).map(changeLabel)).toEqual([
-      '11 kb replaced by 5 kb',
       '180 Mb inversion',
     ])
     expect(elapsedMs).toBeLessThan(2_000)
@@ -1895,16 +1826,6 @@ describe('one forward gap holding turned pieces, over seeded arrangements', () =
       strand: -p.strand,
     }))
   }
-  const unheld = (placed: readonly Placed[], side: 'lane' | 'anchor') =>
-    placed
-      .toSorted((a, b) => a[side] - b[side])
-      .flatMap((p, i, sorted) => {
-        const next = sorted[i + 1]
-        const start = p[side] + p.length
-        return next && next[side] - start >= SPLIT_AT_GAP_BP
-          ? [{ start, end: next[side] }]
-          : []
-      })
   const labelsOf = (placed: readonly Placed[], reversed: boolean) =>
     laneIndelsOf(groupsOf(placed))
       .changes('L', 'ctg', reversed)
@@ -1928,39 +1849,27 @@ describe('one forward gap holding turned pieces, over seeded arrangements', () =
     expect(differing).toEqual([])
   })
 
-  test('every stretch of SPLIT_AT_GAP_BP no piece holds lies in a stated change', () => {
+  test('states nothing across a gap holding lane bases of the strand other than its flanks’', () => {
     const next = seeded(2)
-    const unstated = Array.from({ length: 200 }, () => arrangementOf(next))
-      .flatMap(placed =>
-        [false, true].map(reversed => {
-          const changes = laneIndelsOf(groupsOf(placed)).changes(
-            'L',
-            'ctg',
-            reversed,
-          )
-          return {
-            placed,
-            reversed,
-            lane: unheld(placed, 'lane').filter(
-              s =>
-                !changes.some(
-                  c => c.laneBp > 0 && c.at <= s.start && c.laneEnd >= s.end,
-                ),
-            ),
-            anchor: unheld(placed, 'anchor').filter(
-              s =>
-                !changes.some(
-                  c =>
-                    c.anchorBp > 0 &&
-                    c.anchor.start <= s.start &&
-                    c.anchor.end >= s.end,
-                ),
-            ),
-          }
-        }),
-      )
-      .filter(({ lane, anchor }) => lane.length + anchor.length > 0)
-    expect(unstated).toEqual([])
+    const across = Array.from({ length: 200 }, () =>
+      arrangementOf(next),
+    ).flatMap(placed =>
+      [false, true].flatMap(reversed =>
+        laneIndelsOf(groupsOf(placed))
+          .changes('L', 'ctg', reversed)
+          .filter(c => c.kind !== 'inversion')
+          .filter(c => {
+            const flank = placed.find(p => p.lane + p.length === c.at)
+            return placed.some(
+              p =>
+                p.strand !== flank?.strand &&
+                Math.min(p.lane + p.length, c.laneEnd) > Math.max(p.lane, c.at),
+            )
+          })
+          .map(c => ({ placed, reversed, c })),
+      ),
+    )
+    expect(across).toEqual([])
   })
 })
 
