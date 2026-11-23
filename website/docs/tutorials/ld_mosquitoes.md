@@ -59,7 +59,7 @@ slice.
 | The sample metadata the population lists come from, `CMgam` (Cameroon) and `GAgam` (Gabon)                                                                                                             | [samples.meta.txt](https://ngs.sanger.ac.uk/production/ag1000g/phase2/AR1/samples/samples.meta.txt)            |
 | The 2La tag SNPs, the ~200 positions whose allele marks which arrangement a chromosome has, which each mosquito's karyotype is scored from ([Love et al. 2019](https://doi.org/10.1534/g3.119.400445)) | [2La_targets.txt](https://raw.githubusercontent.com/rrlove/compkaryo/master/compkaryo/targets/2La_targets.txt) |
 
-## Loading the anoGam3 assembly and genes
+## Load the anoGam3 assembly and genes
 
 The Ag1000G calls are on the AgamP4 reference, whose arms 2L, 2R, 3L, 3R and X
 have the same sequence as UCSC's anoGam3 (AgamP3), so the tracks go on anoGam3.
@@ -116,7 +116,7 @@ that to anoGam3's `chr2L`. The gene track is the hub's too:
 }
 ```
 
-## Precomputing 2L LD with PLINK
+## Precompute 2L LD with PLINK
 
 JBrowse draws LD from a precomputed table: PLINK correlates the variants and
 [`PlinkLDTabixAdapter`](/docs/config/plinkldtabixadapter) reads its output.
@@ -190,7 +190,7 @@ the two metric columns, as its input:
 }
 ```
 
-## The inversion genotyped per mosquito
+## Load the 2La genotypes, faceted by karyotype
 
 The 2La inversion also loads as one `<INV>` record, genotyped across every
 mosquito, that spans the breakpoints. The
@@ -202,6 +202,13 @@ each sample column holds one `GT`:
 #CHROM  POS       ID   REF  ALT    QUAL  FILTER  INFO                     FORMAT  AN0007-C  AN0009-C
 2L      20524058  2La  N    <INV>  .     PASS    SVTYPE=INV;END=42165532  GT      0/0       0/1
 ```
+
+The build script writes the `<INV>` call at the published 2La extent
+([Sharakhov et al. 2006](https://doi.org/10.1073/pnas.0509683103),
+[White et al. 2007](https://doi.org/10.4269/ajtmh.2007.76.334)) and scores each
+mosquito's karyotype as its mean alternate-allele count across the tag SNPs,
+rounded to a genotype, as MalariaGEN does for its Ag3 release. The score is
+trimodal, which the [reproduce script](#reproduce-it-end-to-end) checks.
 
 The samples TSV has a `name` column matching the VCF sample ids and a
 `karyotype` column naming each mosquito's pair of arrangements: `2L+a/2L+a`,
@@ -253,16 +260,7 @@ file names:
 - `https://jbrowse.org/demos/popgen/ag1000g_2La_GAgam.vcf.gz`
 - `https://jbrowse.org/demos/popgen/ag1000g_2La_GAgam_samples.tsv`
 
-### Scoring each mosquito's 2La karyotype from tag SNPs
-
-The build script writes the `<INV>` call at the published 2La extent
-([Sharakhov et al. 2006](https://doi.org/10.1073/pnas.0509683103),
-[White et al. 2007](https://doi.org/10.4269/ajtmh.2007.76.334)) and scores each
-mosquito's karyotype as its mean alternate-allele count across the tag SNPs,
-rounded to a genotype, as MalariaGEN does for its Ag3 release. The score is
-trimodal, which the [reproduce script](#reproduce-it-end-to-end) checks.
-
-## Comparing the 2La LD block with karyotypes in Cameroon and Gabon {#reading-the-2la-ld-block-against-the-karyotype-rows}
+## Compare the 2La LD block with the karyotypes {#reading-the-2la-ld-block-against-the-karyotype-rows}
 
 Open `chr2L` with the r² track of each population over the karyotype track of
 the same population.
