@@ -266,10 +266,13 @@ interface Ctx {
 
 // An assembly's `aliases` are usable wherever its name is.
 function assemblyNamesOf(assembly: Record<string, unknown>) {
-  return [
-    assembly.name,
-    ...(Array.isArray(assembly.aliases) ? assembly.aliases : []),
-  ].filter((n): n is string => typeof n === 'string')
+  return [assembly.name, ...listOf(assembly.aliases)].filter(
+    (n): n is string => typeof n === 'string',
+  )
+}
+
+function listOf(value: unknown): unknown[] {
+  return Array.isArray(value) ? value : []
 }
 
 function checkTrack(
@@ -663,12 +666,8 @@ function sessionContext(
   ctx: Ctx,
 ) {
   const assemblies = [
-    ...(Array.isArray(session.sessionAssemblies)
-      ? session.sessionAssemblies
-      : []),
-    ...(Array.isArray(session.temporaryAssemblies)
-      ? session.temporaryAssemblies
-      : []),
+    ...listOf(session.sessionAssemblies),
+    ...listOf(session.temporaryAssemblies),
   ].filter(isRecord)
   const sessionCtx: Ctx = {
     ...ctx,
