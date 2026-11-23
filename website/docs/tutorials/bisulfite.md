@@ -8,10 +8,14 @@ tutorial_category: Epigenomics & single cell
 ---
 
 Whole-genome bisulfite sequencing (WGBS) and enzymatic methyl sequencing
-(EM-seq) measure DNA methylation with short reads. JBrowse computes each call
-from the C→T changes in a read against the reference as it draws, so an aligned
-BAM is all it needs. In plants, gene bodies and transposons differ in which
-cytosine contexts are methylated. With an _Arabidopsis thaliana_ WGBS run we:
+(EM-seq) measure DNA methylation with short reads. A chemical (sodium bisulfite)
+or enzymatic (APOBEC, in EM-seq) step converts every unmethylated cytosine to
+uracil, which reads as T, and a methylated cytosine still reads as C. JBrowse
+compares each read to the reference as it draws, a C→T change meaning
+unmethylated and a retained C methylated, so an aligned BAM is all it needs.
+Plants methylate in three sequence contexts, CpG, CHG and CHH (H is A, C or T),
+and gene bodies and transposons differ in which they methylate. With an
+_Arabidopsis thaliana_ WGBS run we:
 
 - align the reads with bwameth and load the BAM as an alignments track on the
   TAIR10 hub assembly
@@ -33,7 +37,7 @@ cytosine contexts are methylated. With an _Arabidopsis thaliana_ WGBS run we:
 - `curl`, `unzip` and `python3`, which the build script uses
 - `node`, for the [JBrowse CLI](/docs/cli)
 - [MethylDackel](https://github.com/dpryan79/MethylDackel), for the
-  [conversion-rate check](#checking-the-bisulfite-conversion-rate) and the
+  [conversion-rate check](#check-the-bisulfite-conversion-rate) and the
   optional aggregate track
 - UCSC's `bedGraphToBigWig`, for the optional aggregate track only
 
@@ -72,17 +76,7 @@ the BAM, supply your own bisulfite FASTQ and reference.
 | The TAIR10 reference the reads align to, fetched by accession with the `datasets` CLI | [GCF_000001735.4_TAIR10.1/](https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/000/001/735/GCF_000001735.4_TAIR10.1/) |
 | The WGBS run's paired-end reads                                                       | [DRR029742/](https://ftp.sra.ebi.ac.uk/vol1/fastq/DRR029/DRR029742/)                                            |
 
-## Bisulfite conversion and cytosine contexts
-
-A chemical (sodium bisulfite) or enzymatic (APOBEC, in EM-seq) step converts
-every unmethylated cytosine to uracil, which reads as T, and a methylated
-cytosine still reads as C. JBrowse compares each read to the reference as it
-draws: a C→T change means unmethylated, and a retained C means methylated.
-
-Plants methylate in three sequence contexts: CpG, CHG, and CHH (H is A, C, or
-T). JBrowse colors the reads by one context at a time.
-
-## Producing the BAM
+## Align the reads into a BAM
 
 The [reproduce script](#reproduce-it-end-to-end) trims the reads of
 [`DRR029742`](https://www.ebi.ac.uk/ena/browser/view/DRR029742) with Trim Galore
@@ -107,7 +101,7 @@ samtools index arabidopsis_wgbs.bam
 `bwameth.py index` writes the converted reference beside the original, so that
 directory has to be writable.
 
-### Checking the bisulfite conversion rate
+### Check the bisulfite conversion rate
 
 An unconverted cytosine is indistinguishable from a methylated one, so measure
 the library's conversion rate first. The chloroplast is unmethylated, which
@@ -126,7 +120,7 @@ missed. Modern libraries convert above 99%. For an organism with no plastid, use
 the library's spike-in, usually unmethylated lambda or pUC19, added to the
 reference as an extra contig.
 
-## Loading the TAIR10 hub assembly and the WGBS BAM
+## Load the TAIR10 hub assembly and the WGBS BAM
 
 TAIR10 is a genome hub on [genomes.jbrowse.org](https://genomes.jbrowse.org),
 whose `config.json` holds the 2bit sequence, an alias table and the NCBI RefSeq
@@ -214,7 +208,7 @@ is a color channel for each base, here set from the `bisulfite` field. The
 `context` entry in its [`filter`](/docs/config/pileupbases/#slot-filter) takes
 `CG`, `CHG` or `CHH`, and `{ "field": "context" }` paints every context.
 
-## Aggregate methylation per context with MethylDackel
+## Summarize each context's methylation with MethylDackel
 
 Beside the reads, a per-position fraction summarizes all the reads at each site,
 and a bigWig of it is drawn at any zoom. The track is optional, and the
@@ -282,7 +276,7 @@ as labeled rows, the Aggregate methylation track in the figure below.
 }
 ```
 
-## Coloring the reads by cytosine context
+## Compare a gene with a transposon by context
 
 **Color by → Bisulfite / EM-seq** in the alignments track menu sets
 `pileup.bases` to the `bisulfite` field, which paints each read's methylated
@@ -293,8 +287,6 @@ cytosines red. Two more rows refine it:
 - **Color by → Show unmethylated in blue** also paints converted sites blue,
   separating an unmethylated cytosine from a position with no cytosine. The
   figure and clip further down leave it off
-
-## Gene body methylation and transposon silencing
 
 Plants run two unrelated methylation programs, which differ in the contexts they
 methylate:
@@ -366,13 +358,13 @@ The whole pipeline is wrapped in one script,
 [`build_arabidopsis_wgbs.sh`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/build_arabidopsis_wgbs.sh).
 It:
 
-1. downloads the TAIR10 reference and the DRR029742 WGBS run, then trims and
-   aligns them with bwameth
-2. downloads JBrowse and writes a `config.json` with the hub's TAIR10 assembly
-   and RefSeq genes and the pileup pre-colored Bisulfite / CpG, opening on the
-   window above
-3. with MethylDackel on `PATH`, prints the conversion rate and the per-context
-   fractions (the aggregate bigWig track is left out either way)
+- downloads the TAIR10 reference and the DRR029742 WGBS run, then trims and
+  aligns them with bwameth
+- downloads JBrowse and writes a `config.json` with the hub's TAIR10 assembly
+  and RefSeq genes and the pileup pre-colored Bisulfite / CpG, opening on the
+  window above
+- with MethylDackel on `PATH`, prints the conversion rate and the per-context
+  fractions (the aggregate bigWig track is left out either way)
 
 ```bash
 curl -fO https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/build_arabidopsis_wgbs.sh
