@@ -1184,7 +1184,7 @@ describe('GenBank CDS qualifiers', () => {
       '/codon_start=1',
       '/product="beta-galactosidase"',
       '/protein_id="AAA24053.1"',
-      '/transl_except="(pos:1..3,aa:Met)"',
+      '/transl_except=(pos:1..3,aa:Met)',
       `/translation="${qualifiers.translation}"`,
     ])
   })
@@ -1221,7 +1221,7 @@ describe('GenBank CDS qualifiers', () => {
       '/codon_start=1',
       '/product="beta-galactosidase"',
       '/protein_id="AAA24053.1"',
-      '/transl_except="(pos:1..3,aa:Met)"',
+      '/transl_except=(pos:1..3,aa:Met)',
       `/translation="${qualifiers.translation}"`,
       '/note="whole CDS"',
     ])

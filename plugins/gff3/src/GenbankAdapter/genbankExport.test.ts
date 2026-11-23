@@ -819,3 +819,59 @@ describe('plastid rps12, trans-spliced', () => {
     expect(codingPieces(reread)).toEqual(codingPieces(found))
   })
 })
+
+describe('a partial export', () => {
+  const refName = 'part.1'
+  const text = genbank(
+    'LOCUS       part                    1000 bp    DNA     circular BCT 01-JAN-2024',
+    refName,
+    [
+      entry('source', '1..1000', ['/organism="synthetic construct"']),
+      entry('tRNA', 'complement(301..372)', [
+        '/gene="trnM"',
+        '/anticodon=(pos:complement(335..337),aa:Met,seq:cat)',
+      ]),
+      entry('gene', '501..800', ['/gene="selA"']),
+      entry('CDS', '501..800', [
+        '/gene="selA"',
+        '/transl_except=(pos:600..602,aa:Sec)',
+      ]),
+      entry('CDS', 'join(901..1000,1..99)', [
+        '/locus_tag="wrap"',
+        '/transl_except=(pos:10..12,aa:Sec)',
+      ]),
+    ],
+  )
+
+  async function exported(type: string, start: number, end: number) {
+    const found = await readRecord(text, refName, 1000, true)
+    return exportRecord(
+      found.filter(
+        f =>
+          f.get('type') === type &&
+          f.get('start') < end &&
+          start < f.get('end'),
+      ),
+      new Map([[refName, 1000]]),
+    )
+  }
+
+  test('writes /transl_except and /anticodon unquoted, at their place in the record', async () => {
+    expect(await exported('gene', 450, 850)).toContain(
+      `${qualifierIndent}/transl_except=(pos:100..102,aa:Sec)\n`,
+    )
+    expect(await exported('tRNA', 250, 400)).toContain(
+      `${qualifierIndent}/anticodon=(pos:complement(35..37),aa:Met,seq:cat)\n`,
+    )
+  })
+
+  test('counts a position past the origin from the record’s start', async () => {
+    const wrapping = await exported('CDS', 900, 1100)
+    expect(featureLines(wrapping, 'CDS')).toEqual([
+      '     CDS             1..199',
+    ])
+    expect(wrapping).toContain(
+      `${qualifierIndent}/transl_except=(pos:110..112,aa:Sec)\n`,
+    )
+  })
+})

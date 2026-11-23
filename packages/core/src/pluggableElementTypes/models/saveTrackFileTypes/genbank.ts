@@ -87,10 +87,20 @@ function qualifier(key: string, value: string) {
 }
 
 // `circularLength` is set on a circular record, whose span past the origin is
-// written join(a..L,1..b)
+// written join(a..L,1..b); `genomeLength` on any record of a circular genome
 interface RecordFrame {
   minPos: number
   circularLength?: number
+  genomeLength?: number
+}
+
+// a 1-based genome position as one in the record, which on a circular genome
+// may lie across the origin from it
+function recordPosition(pos: number, { minPos, genomeLength }: RecordFrame) {
+  const shifted = pos - minPos
+  return genomeLength === undefined
+    ? shifted
+    : ((((shifted - 1) % genomeLength) + genomeLength) % genomeLength) + 1
 }
 
 function spans(f: Feature, { minPos, circularLength }: RecordFrame) {
@@ -317,6 +327,21 @@ const QUALIFIER_SPELLING: Record<string, string> = {
   'type-material': 'type_material',
 }
 
+// INSDC writes these unquoted, with a location of the record's own bases
+const LOCATED_QUALIFIERS = new Set(['transl_except', 'anticodon'])
+
+function locatedLines(key: string, value: unknown, frame: RecordFrame) {
+  return attributeValues(value).map(v =>
+    qualifierLine(
+      `/${key}=${v.replace(/(?<=pos:).*?(?=,aa:)/, location =>
+        location.replaceAll(/\d+/g, n =>
+          String(recordPosition(Number(n), frame)),
+        ),
+      )}`,
+    ),
+  )
+}
+
 function attributeValues(value: unknown) {
   return [value].flat().flatMap(v => formatAttributeValue(v) || [])
 }
@@ -340,12 +365,14 @@ function formatTags({
   key,
   label = feature.get('name') ?? feature.get('id'),
   codonStart,
+  frame,
 }: {
   feature: Feature
   gene?: string
   key?: string
   label?: string
   codonStart?: number
+  frame: RecordFrame
 }) {
   const tags: string[] = []
   const written = new Set<string>()
@@ -371,7 +398,11 @@ function formatTags({
   }
   for (const key of Object.keys(feature.toJSON())) {
     if (!coreFields.has(key) && !written.has(key)) {
-      tags.push(...qualifierLines(key, feature.get(key)))
+      tags.push(
+        ...(LOCATED_QUALIFIERS.has(key)
+          ? locatedLines(key, feature.get(key), frame)
+          : qualifierLines(key, feature.get(key))),
+      )
     }
   }
   return tags
@@ -423,6 +454,7 @@ function formatCDS({
         whole.get('name') ??
         whole.get('id'),
       codonStart: codonStart(feats, strand, transSpliced),
+      frame,
     }),
   ]
 }
@@ -431,14 +463,16 @@ export function formatFeatWithSubfeatures({
   feature,
   minPos,
   circularLength,
+  genomeLength,
   geneName,
 }: {
   feature: Feature
   minPos: number
   circularLength?: number
+  genomeLength?: number
   geneName?: string
 }): string {
-  const frame = { minPos, circularLength }
+  const frame = { minPos, circularLength, genomeLength }
   const subfeatures = feature.get('subfeatures') ?? []
   const strand = feature.get('strand') ?? 0
   const type = feature.get('type')
@@ -482,7 +516,7 @@ export function formatFeatWithSubfeatures({
   const ownCDS = key === 'CDS' && cds.length > 0
   const primary = ownCDS
     ? []
-    : [featureLine(key, location), ...formatTags({ feature, gene, key })]
+    : [featureLine(key, location), ...formatTags({ feature, gene, key, frame })]
   const cdsLines =
     cds.length > 0
       ? formatCDS({
@@ -501,6 +535,7 @@ export function formatFeatWithSubfeatures({
         feature: sub,
         minPos,
         circularLength,
+        genomeLength,
         geneName: gene,
       }),
     ),
@@ -847,6 +882,7 @@ async function formatRecord({
           ? span.start - circularLength
           : span.start,
       circularLength: span.circular ? circularLength : undefined,
+      genomeLength: circularLength,
     }),
   )
   return [...header, ...body, ...formatOrigin(contig.join(''))].join('\n')
