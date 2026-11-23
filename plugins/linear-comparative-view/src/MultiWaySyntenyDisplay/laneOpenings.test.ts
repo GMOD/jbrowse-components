@@ -10,6 +10,7 @@ import {
 import { changeLabel, laneRegion, shownLaneChanges } from './laneHeader.ts'
 import { buildLanes, laneGeometry } from './laneStack.ts'
 import {
+  SPLIT_AT_GAP_BP,
   frameSegments,
   frameSpan,
   groupFeatures,
@@ -22,6 +23,7 @@ import {
   glyphHitAt,
 } from './multiwayGeometry.ts'
 import { PX_ORIGIN } from './multiwayRenderTypes.ts'
+import { laneProfiles } from './structureOrder.ts'
 
 import type { LaneDecision } from './laneDecision.ts'
 import type {
@@ -846,6 +848,438 @@ describe('an inversion the lane carries against the anchor', () => {
     ).toEqual({ openings: [], changes: [] })
   })
 
+  test('states nothing but the inversion for an unaligned stretch under SPLIT_AT_GAP_BP at each breakpoint', () => {
+    expect(
+      laneIndelsOf(
+        groupFeatures([
+          run('l', 0, 0, 40_000, 1),
+          run('m', 48_000, 48_000, 400_000, -1),
+          run('r', 456_000, 456_000, 40_000, 1),
+        ]),
+      )
+        .changes('HG01123.1', ref)
+        .map(changeLabel),
+    ).toEqual(['400 kb inversion'])
+  })
+
+  test('states the one breakpoint stretch reaching SPLIT_AT_GAP_BP, its own size where it sits', () => {
+    expect(
+      laneIndelsOf(
+        groupFeatures([
+          run('l', 0, 0, 40_000, 1),
+          run('m', 55_000, 55_000, 400_000, -1),
+          run('r', 463_000, 463_000, 40_000, 1),
+        ]),
+      )
+        .changes('HG01123.1', ref)
+        .filter(c => c.kind !== 'inversion'),
+    ).toEqual([
+      {
+        at: at + 40_000,
+        laneEnd: at + 55_000,
+        laneBp: 15_000,
+        anchorBp: 15_000,
+        kind: 'replacement',
+        anchor: {
+          refName: 'chr1',
+          start: WINDOW_START + 40_000,
+          end: WINDOW_START + 55_000,
+        },
+      },
+    ])
+  })
+
+  const gapChanges = (features: SimpleFeature[], reversed = false) =>
+    laneIndelsOf(groupFeatures(features))
+      .changes('HG01123.1', ref, reversed)
+      .filter(c => c.kind !== 'inversion')
+  const change = (
+    lane: [number, number],
+    anchor: [number, number],
+    anchorBp: number,
+    laneBp: number,
+  ) => ({
+    at: at + lane[0],
+    laneEnd: at + lane[1],
+    laneBp,
+    anchorBp,
+    kind:
+      laneBp === 0 ? 'deletion' : anchorBp === 0 ? 'insertion' : 'replacement',
+    anchor: {
+      refName: 'chr1',
+      start: WINDOW_START + anchor[0],
+      end: WINDOW_START + anchor[1],
+    },
+  })
+
+  test('states each breakpoint stretch reaching SPLIT_AT_GAP_BP where it lies', () => {
+    expect(
+      gapChanges([
+        run('l', 0, 0, 40_000, 1),
+        run('m', 55_000, 55_000, 400_000, -1),
+        run('r', 470_000, 470_000, 40_000, 1),
+      ]),
+    ).toEqual([
+      change([40_000, 55_000], [40_000, 55_000], 15_000, 15_000),
+      change([455_000, 470_000], [455_000, 470_000], 15_000, 15_000),
+    ])
+  })
+
+  test('pairs the anchor lacking beside a flank with the lane at that flank, with 3 bp of lane overlap or none', () => {
+    const clean = gapChanges([
+      run('l', 0, 0, 40_000, 1),
+      run('m', 40_000, 55_000, 400_000, -1),
+      run('r', 448_000, 455_000, 40_000, 1),
+    ])
+    expect(clean).toEqual([
+      change([40_000, 40_000], [40_000, 55_000], 15_000, 0),
+    ])
+    expect(
+      gapChanges([
+        run('l', 0, 0, 40_000, 1),
+        run('m', 39_997, 55_000, 400_003, -1),
+        run('r', 448_000, 455_003, 40_000, 1),
+      ]),
+    ).toEqual(clean)
+  })
+
+  test('states the same change of two inverted pieces whichever way the lane is drawn', () => {
+    const pieces = [
+      run('l', 0, 0, 100_000, 1),
+      run('m1', 100_000, 315_000, 200_000, -1),
+      run('m2', 308_000, 100_000, 200_000, -1),
+      run('r', 508_000, 515_003, 100_000, 1),
+    ]
+    expect(gapChanges(pieces)).toEqual([
+      change([300_000, 308_000], [300_000, 315_000], 15_000, 8_000),
+    ])
+    expect(gapChanges(pieces, true)).toEqual(gapChanges(pieces))
+  })
+
+  test('states a breakpoint by its own two stretches, leaving out the other breakpoint’s short one', () => {
+    expect(
+      gapChanges([
+        run('l', 0, 0, 40_000, 1),
+        run('m', 40_000, 48_000, 400_000, -1),
+        run('r', 452_000, 456_000, 40_000, 1),
+      ]),
+    ).toEqual([change([440_000, 452_000], [448_000, 456_000], 8_000, 12_000)])
+  })
+
+  test('states an insertion at one flank and the stretch between two inverted pieces alike on either strand', () => {
+    const pieces = [
+      run('l', 0, 0, 100_000, 1),
+      run('m1', 112_000, 315_000, 200_000, -1),
+      run('m2', 320_000, 100_000, 200_000, -1),
+      run('r', 520_000, 515_000, 100_000, 1),
+    ]
+    expect(gapChanges(pieces)).toEqual([
+      change([312_000, 320_000], [300_000, 315_000], 15_000, 8_000),
+      change([100_000, 112_000], [100_000, 100_000], 0, 12_000),
+    ])
+    expect(gapChanges(pieces, true)).toEqual(gapChanges(pieces))
+  })
+
+  test('states every lane stretch reaching SPLIT_AT_GAP_BP around two inverted pieces on either strand', () => {
+    const pieces = [
+      run('l', 0, 0, 40_000, 1),
+      run('t0', 55_000, 51_003, 200_000, -1),
+      run('t1', 270_000, 40_000, 11_000, -1),
+      run('r', 296_000, 251_006, 40_000, 1),
+    ]
+    expect(gapChanges(pieces)).toEqual([
+      change([255_000, 270_000], [51_000, 51_003], 3, 15_000),
+      change([40_000, 55_000], [40_000, 40_000], 0, 15_000),
+      change([281_000, 296_000], [251_003, 251_006], 3, 15_000),
+    ])
+    expect(gapChanges(pieces, true)).toEqual(gapChanges(pieces))
+  })
+
+  test('states the lane’s own bases between two inverted pieces that follow the anchor’s order', () => {
+    expect(
+      gapChanges([
+        run('l', 0, 0, 40_000, 1),
+        run('m1', 40_000, 40_000, 200_000, -1),
+        run('m2', 252_000, 240_000, 200_000, -1),
+        run('r', 452_000, 440_000, 40_000, 1),
+      ]),
+    ).toEqual([change([240_000, 252_000], [40_000, 440_000], 0, 12_000)])
+  })
+
+  test('keeps each stretch between two parting pieces beside a change of the other strand it shares no held base with', () => {
+    const pieces = [
+      run('l', 0, 0, 100_000, 1),
+      run('m1', 100_000, 215_000, 100_000, -1),
+      run('m2', 208_000, 100_000, 100_000, -1),
+      run('m3', 320_000, 327_000, 100_000, -1),
+      run('r', 420_000, 427_000, 100_000, 1),
+    ]
+    for (const reversed of [false, true]) {
+      expect(gapChanges(pieces, reversed)).toEqual([
+        change([200_000, 208_000], [200_000, 215_000], 15_000, 8_000),
+        change([308_000, 320_000], [100_000, 427_000], 0, 12_000),
+        change([100_000, 420_000], [315_000, 327_000], 12_000, 0),
+      ])
+    }
+  })
+
+  test('parts a gap at an inverted piece holding SPLIT_AT_GAP_BP, and at none holding less', () => {
+    expect(
+      stated([
+        run('l', 0, 0, 40_000, 1),
+        run('p', 40_000, 46_000, 9_000, -1),
+        run('r', 49_000, 61_000, 40_000, 1),
+      ]),
+    ).toEqual({
+      openings: [{ at: at + 40_000, bp: 12_000 }],
+      changes: [
+        { at: at + 40_000, laneBp: 0, anchorBp: 12_000, kind: 'deletion' },
+      ],
+    })
+    expect(
+      stated([
+        run('l', 0, 0, 40_000, 1),
+        run('p', 40_000, 46_000, 11_000, -1),
+        run('r', 51_000, 63_000, 40_000, 1),
+      ]),
+    ).toEqual({ openings: [{ at: at + 40_000, bp: 12_000 }], changes: [] })
+  })
+
+  test('parts a gap at an inversion aligned as pieces each under SPLIT_AT_GAP_BP, which follow one another as one run', () => {
+    expect(
+      gapChanges([
+        run('l', 0, 0, 40_000, 1),
+        run('m1', 48_000, 60_000, 6_000, -1),
+        run('m2', 54_000, 54_000, 6_000, -1),
+        run('m3', 60_000, 48_000, 6_000, -1),
+        run('r', 74_000, 74_000, 40_000, 1),
+      ]),
+    ).toEqual([])
+  })
+
+  test('a piece nested in an inverted piece’s lane bp joins no run, holding only its own anchor', () => {
+    expect(
+      gapChanges([
+        run('l', 0, 0, 40_000, 1),
+        run('m1', 48_000, 256_000, 200_000, -1),
+        run('n', 100_000, 50_000, 3_000, -1),
+        run('m2', 248_000, 250_000, 6_000, -1),
+        run('r', 262_000, 464_000, 40_000, 1),
+      ]),
+    ).toEqual([change([40_000, 48_000], [40_000, 250_000], 207_000, 8_000)])
+  })
+
+  test('reads an inverted piece aligned outside the gap’s anchor as the lane’s own, parting nothing', () => {
+    expect(
+      gapChanges([
+        run('l', 0, 0, 40_000, 1),
+        run('t', 42_000, 60_000, 2_000, -1),
+        run('p', 60_000, 20_000, 10_000, -1),
+        run('r', 72_000, 70_000, 40_000, 1),
+      ]),
+    ).toEqual([change([40_000, 72_000], [40_000, 70_000], 28_000, 30_000)])
+  })
+
+  test('counts a lane base two small inverted pieces both hold once', () => {
+    expect(
+      gapChanges([
+        run('l', 0, 0, 40_000, 1),
+        run('p1', 42_000, 50_000, 2_000, -1),
+        run('p2', 43_000, 47_000, 2_000, -1),
+        run('r', 60_000, 60_000, 40_000, 1),
+      ]),
+    ).toEqual([change([40_000, 60_000], [40_000, 60_000], 16_000, 17_000)])
+  })
+
+  test('reads a breakpoint alike 1 bp or 3 bp either side of a bound, and weighs its lane bp at one anchor bin', () => {
+    type Run = typeof run
+    const on =
+      (assemblyName: string, refName: string) =>
+      (
+        id: string,
+        lane: number,
+        anchor: number,
+        length: number,
+        orientation: number,
+      ) =>
+        new SimpleFeature({
+          uniqueId: `${assemblyName}-${id}`,
+          refName: 'chr1',
+          start: anchor,
+          end: anchor + length,
+          strand: orientation,
+          assemblyName: 'hg38',
+          mate: {
+            assemblyName,
+            refName,
+            start: lane,
+            end: lane + length,
+          },
+        })
+    const pairs: [
+      string,
+      (r: Run) => SimpleFeature[],
+      (r: Run) => SimpleFeature[],
+    ][] = [
+      [
+        '10 kb replaced by 12 kb',
+        r => [
+          r('l', 0, 0, 40_000, 1),
+          r('m', 40_000, 48_000, 400_000, -1),
+          r('r', 452_000, 458_000, 40_000, 1),
+        ],
+        r => [
+          r('l', 0, 0, 40_000, 1),
+          r('m', 40_000, 48_000, 400_000, -1),
+          r('r', 452_000, 457_999, 40_000, 1),
+        ],
+      ],
+      [
+        '12 kb insertion',
+        r => [
+          r('l', 0, 0, 40_000, 1),
+          r('m', 52_000, 40_000, 400_000, -1),
+          r('r', 452_000, 440_000, 40_000, 1),
+        ],
+        r => [
+          r('l', 0, 0, 40_000, 1),
+          r('m', 52_000, 40_000, 400_000, -1),
+          r('r', 452_000, 440_003, 40_000, 1),
+        ],
+      ],
+      [
+        '15 kb deletion',
+        r => [
+          r('l', 0, 0, 40_000, 1),
+          r('m', 40_000, 55_000, 400_000, -1),
+          r('r', 448_000, 455_000, 40_000, 1),
+        ],
+        r => [
+          r('l', 0, 0, 40_000, 1),
+          r('m', 40_003, 55_000, 400_000, -1),
+          r('r', 448_003, 455_000, 40_000, 1),
+        ],
+      ],
+    ]
+    for (const [label, exact, shifted] of pairs) {
+      const features = [...exact(on('A', 'a')), ...shifted(on('B', 'b'))]
+      const { changes } = laneIndelsOf(groupFeatures(features))
+      const [first, second] = [changes('A', 'a'), changes('B', 'b')].map(list =>
+        list
+          .filter(c => c.kind !== 'inversion')
+          .map(c => [
+            c.at,
+            c.laneEnd,
+            c.laneBp,
+            c.anchorBp,
+            c.anchor.start,
+            c.anchor.end,
+          ]),
+      )
+      expect(changes('A', 'a').map(changeLabel)).toContain(label)
+      expect(first).toHaveLength(1)
+      expect(second).toHaveLength(1)
+      expect(
+        Math.max(...first![0]!.map((v, i) => Math.abs(v - second![0]![i]!))),
+      ).toBeLessThanOrEqual(3)
+      const profiles = laneProfiles(features, NO_OPS)
+      const insertBand = (lane: string) => {
+        const profile = profiles.get(lane)!
+        return [...profile.slice((profile.length / 3) * 2)]
+      }
+      const [a, b] = [insertBand('A'), insertBand('B')]
+      expect(Math.max(...a.map((v, i) => Math.abs(v - b[i]!)))).toBeLessThan(
+        0.01,
+      )
+    }
+  })
+
+  test('opens the net of short deletions at both breakpoints of an inversion, stating none', () => {
+    expect(
+      stated([
+        run('l', 0, 0, 40_000, 1),
+        run('m', 40_000, 48_000, 400_000, -1),
+        run('r', 440_000, 456_000, 40_000, 1),
+      ]),
+    ).toEqual({ openings: [{ at: at + 40_000, bp: 16_000 }], changes: [] })
+  })
+
+  test('states a deletion that a piece clipped to no lane bp would part', () => {
+    expect(
+      stated([
+        run('l', 0, 0, 40_000, 1),
+        run('p', 39_000, 48_000, 2_000, -1),
+        run('r', 40_000, 58_000, 40_000, 1),
+      ]),
+    ).toEqual({
+      openings: [{ at: at + 40_000, bp: 18_000 }],
+      changes: [
+        { at: at + 40_000, laneBp: 0, anchorBp: 18_000, kind: 'deletion' },
+      ],
+    })
+  })
+
+  test('states a deletion whole across a small inverted piece inside it', () => {
+    expect(
+      stated([
+        run('l', 0, 0, 40_000, 1),
+        run('p', 40_000, 49_000, 500, -1),
+        run('r', 40_500, 58_500, 40_000, 1),
+      ]),
+    ).toEqual({
+      openings: [{ at: at + 40_000, bp: 18_000 }],
+      changes: [
+        { at: at + 40_000, laneBp: 0, anchorBp: 18_000, kind: 'deletion' },
+      ],
+    })
+  })
+
+  test('holds the lane bp of an inverted piece aligned inside the gap’s anchor, its part outside the lane’s own', () => {
+    expect(
+      gapChanges([
+        run('l', 0, 0, 40_000, 1),
+        run('m', 40_000, 20_000, 100_000, -1),
+        run('r', 140_000, 135_000, 40_000, 1),
+      ]),
+    ).toEqual([change([120_000, 140_000], [120_000, 135_000], 15_000, 20_000)])
+    expect(
+      gapChanges(
+        [
+          run('l', 0, 160_000, 40_000, -1),
+          run('m', 40_000, 80_000, 100_000, 1),
+          run('r', 140_000, 25_000, 40_000, -1),
+        ],
+        true,
+      ),
+    ).toEqual([change([120_000, 140_000], [65_000, 80_000], 15_000, 20_000)])
+  })
+
+  test('counts a stretch by the bp it labels as, so 9,999.6 bp reaches SPLIT_AT_GAP_BP', () => {
+    const m = new SimpleFeature({
+      uniqueId: 'm',
+      refName: 'chr1',
+      start: WINDOW_START + 45_000,
+      end: WINDOW_START + 345_000,
+      assemblyName: 'hg38',
+      mates: [
+        {
+          assemblyName: 'HG01123.1',
+          refName: ref,
+          start: at + 39_997,
+          end: at + 289_997,
+          orientation: -1,
+        },
+      ],
+    })
+    expect(
+      gapChanges([
+        run('l', 0, 0, 40_000, 1),
+        m,
+        run('r', 294_997, 354_996, 40_000, 1),
+      ]),
+    ).toEqual([change([289_997, 294_997], [344_996, 354_996], 10_000, 5_000)])
+  })
+
   test('opens and names the anchor an inverted stretch lacks inside it, beside the inversion', () => {
     const lacking = [
       run('l', 0, 0, 40_000, 1),
@@ -856,7 +1290,7 @@ describe('an inversion the lane carries against the anchor', () => {
     expect(stated(lacking)).toEqual({
       openings: [{ at: at + 40_000, bp: 100_000 }],
       changes: [
-        { at: at + 40_000, laneBp: 0, anchorBp: 100_000, kind: 'deletion' },
+        { at: at + 440_000, laneBp: 0, anchorBp: 100_000, kind: 'deletion' },
       ],
     })
     expect(named(lacking)).toEqual([
@@ -879,7 +1313,7 @@ describe('an inversion the lane carries against the anchor', () => {
     expect(stated(overlapping)).toEqual({
       openings: [{ at: at + 40_000, bp: 100_000 }],
       changes: [
-        { at: at + 40_000, laneBp: 0, anchorBp: 100_000, kind: 'deletion' },
+        { at: at + 440_000, laneBp: 0, anchorBp: 99_997, kind: 'deletion' },
       ],
     })
   })
@@ -1063,6 +1497,267 @@ describe('a lane with pieces on both strands', () => {
         kind: 'inversion',
       },
     ])
+  })
+})
+
+describe('a gap of each strand holding a piece of the other', () => {
+  const record = (
+    id: string,
+    lane: number,
+    anchor: number,
+    length: number,
+    strand: number,
+    recordId: string,
+  ) =>
+    new SimpleFeature({
+      uniqueId: id,
+      recordId,
+      refName: 'chr1',
+      start: anchor,
+      end: anchor + length,
+      strand,
+      assemblyName: 'hg38',
+      mate: {
+        assemblyName: 'L',
+        refName: 'ctg',
+        start: lane,
+        end: lane + length,
+      },
+    })
+  const labels = (forward: string, forwardFar: string, reversed: boolean) =>
+    laneIndelsOf(
+      groupFeatures([
+        record('a', 0, 0, 100_000, 1, forward),
+        record('b', 112_000, 240_000, 200_000, -1, 'rev'),
+        record('c', 327_000, 455_000, 100_000, 1, forwardFar),
+        record('x', 432_000, 175_000, 50_000, 1, 'x'),
+        record('d', 502_000, 110_000, 50_000, -1, 'rev'),
+      ]),
+    )
+      .changes('L', 'ctg', reversed)
+      .filter(c => c.kind !== 'inversion')
+      .map(c => `${changeLabel(c)} at ${c.at}`)
+
+  test('known strand dependence: the lane stretch two parted gaps share is paired by the drawn strand, so it is stated once', () => {
+    expect(labels('fwd', 'fwd', false)).toEqual([
+      '140 kb replaced by 12 kb at 100000',
+      '15 kb replaced by 15 kb at 312000',
+    ])
+    expect(labels('fwd', 'fwd', true)).toEqual([
+      '15 kb replaced by 120 kb at 312000',
+      '15 kb replaced by 20 kb at 482000',
+    ])
+  })
+
+  test('reads alike on either strand once one gap’s flanks are two records with its anchor placed elsewhere', () => {
+    for (const reversed of [false, true]) {
+      expect(labels('fwd', 'far', reversed)).toEqual([
+        '15 kb replaced by 120 kb at 312000',
+        '15 kb replaced by 20 kb at 482000',
+      ])
+    }
+  })
+})
+
+describe('a gap that thousands of pieces part', () => {
+  const hit = (
+    id: string,
+    lane: number,
+    anchor: number,
+    length: number,
+    strand: number,
+  ) =>
+    new SimpleFeature({
+      uniqueId: id,
+      refName: 'chr1',
+      start: anchor,
+      end: anchor + length,
+      strand,
+      assemblyName: 'hg38',
+      mate: {
+        assemblyName: 'L',
+        refName: 'ctg',
+        start: lane,
+        end: lane + length,
+      },
+    })
+
+  // merging the held spans once per segment takes 29 s here, once per side 58 ms
+  test('reads 20,000 collinear pieces between two reverse hits in time linear in the pieces', () => {
+    const PIECES = 20_000
+    const at = (i: number) => (i + 1) * 10_000
+    const groups = groupFeatures([
+      hit('first', 0, at(PIECES + 1), 5_000, -1),
+      ...Array.from({ length: PIECES }, (_, i) =>
+        hit(`f${i}`, at(i), at(i), 9_000, 1),
+      ),
+      hit('last', at(PIECES), 0, 5_000, -1),
+    ])
+    const start = performance.now()
+    const { changes } = laneIndelsOf(groups)
+    const elapsedMs = performance.now() - start
+    expect(changes('L', 'ctg', true).map(changeLabel)).toEqual([
+      '11 kb replaced by 5 kb',
+      '180 Mb inversion',
+    ])
+    expect(elapsedMs).toBeLessThan(2_000)
+  })
+})
+
+describe('one forward gap holding turned pieces, over seeded arrangements', () => {
+  const FLANK_BP = 100_000
+  const GAPS = [-3, 0, 3, 4_000, 8_000, 9_999, 10_000, 12_000, 15_000, 30_000]
+  interface Placed {
+    lane: number
+    anchor: number
+    length: number
+    strand: number
+  }
+  const seeded = (seed: number) => {
+    let state = seed
+    return () => {
+      state = (state + 0x6d2b79f5) | 0
+      const mixed = Math.imul(state ^ (state >>> 15), 1 | state)
+      const again =
+        (mixed + Math.imul(mixed ^ (mixed >>> 7), 61 | mixed)) ^ mixed
+      return ((again ^ (again >>> 14)) >>> 0) / 4_294_967_296
+    }
+  }
+  const arrangementOf = (next: () => number) => {
+    const gap = () => GAPS[Math.floor(next() * GAPS.length)]!
+    const sizes = Array.from({ length: 1 + Math.floor(next() * 3) }, () =>
+      Math.round(500 * 400 ** next()),
+    )
+    const inPlace = next() < 0.5
+    const anchorOrder = sizes.map((_, i) => sizes.length - 1 - i)
+    if (!inPlace) {
+      for (let i = anchorOrder.length - 1; i > 0; i--) {
+        const j = Math.floor(next() * (i + 1))
+        const held = anchorOrder[i]!
+        anchorOrder[i] = anchorOrder[j]!
+        anchorOrder[j] = held
+      }
+    }
+    let lane = FLANK_BP
+    const lanes = sizes.map(size => {
+      const start = lane + gap()
+      lane = start + size
+      return start
+    })
+    const laneEnd = lane + gap()
+    let anchor = FLANK_BP
+    const anchors = new Map<number, number>()
+    for (const i of anchorOrder) {
+      const start = anchor + gap()
+      anchors.set(i, start)
+      anchor = start + sizes[i]!
+    }
+    const turned = sizes.map((length, i) => ({
+      lane: lanes[i]!,
+      anchor: anchors.get(i)!,
+      length,
+      strand: -1,
+    }))
+    return [
+      { lane: 0, anchor: 0, length: FLANK_BP, strand: 1 },
+      ...turned,
+      { lane: laneEnd, anchor: anchor + gap(), length: FLANK_BP, strand: 1 },
+    ]
+  }
+  const groupsOf = (placed: readonly Placed[]) =>
+    groupFeatures(
+      placed.map(
+        ({ lane, anchor, length, strand }, i) =>
+          new SimpleFeature({
+            uniqueId: `p${i}`,
+            refName: 'chr1',
+            start: anchor,
+            end: anchor + length,
+            strand,
+            assemblyName: 'hg38',
+            mate: {
+              assemblyName: 'L',
+              refName: 'ctg',
+              start: lane,
+              end: lane + length,
+            },
+          }),
+      ),
+    )
+  const mirrored = (placed: readonly Placed[]) => {
+    const total = Math.max(...placed.map(p => p.lane + p.length))
+    return placed.map(p => ({
+      ...p,
+      lane: total - p.lane - p.length,
+      strand: -p.strand,
+    }))
+  }
+  const unheld = (placed: readonly Placed[], side: 'lane' | 'anchor') =>
+    placed
+      .toSorted((a, b) => a[side] - b[side])
+      .flatMap((p, i, sorted) => {
+        const next = sorted[i + 1]
+        const start = p[side] + p.length
+        return next && next[side] - start >= SPLIT_AT_GAP_BP
+          ? [{ start, end: next[side] }]
+          : []
+      })
+  const labelsOf = (placed: readonly Placed[], reversed: boolean) =>
+    laneIndelsOf(groupsOf(placed))
+      .changes('L', 'ctg', reversed)
+      .map(changeLabel)
+      .toSorted()
+
+  test('labels do not depend on the strand the lane is drawn on, nor on which way its contig runs', () => {
+    const next = seeded(1)
+    const differing = Array.from({ length: 200 }, () => arrangementOf(next))
+      .map(placed => ({
+        placed,
+        forward: labelsOf(placed, false),
+        reversed: labelsOf(placed, true),
+        mirror: labelsOf(mirrored(placed), true),
+      }))
+      .filter(
+        ({ forward, reversed, mirror }) =>
+          forward.join(',') !== reversed.join(',') ||
+          forward.join(',') !== mirror.join(','),
+      )
+    expect(differing).toEqual([])
+  })
+
+  test('every stretch of SPLIT_AT_GAP_BP no piece holds lies in a stated change', () => {
+    const next = seeded(2)
+    const unstated = Array.from({ length: 200 }, () => arrangementOf(next))
+      .flatMap(placed =>
+        [false, true].map(reversed => {
+          const changes = laneIndelsOf(groupsOf(placed)).changes(
+            'L',
+            'ctg',
+            reversed,
+          )
+          return {
+            placed,
+            reversed,
+            lane: unheld(placed, 'lane').filter(
+              s =>
+                !changes.some(
+                  c => c.laneBp > 0 && c.at <= s.start && c.laneEnd >= s.end,
+                ),
+            ),
+            anchor: unheld(placed, 'anchor').filter(
+              s =>
+                !changes.some(
+                  c =>
+                    c.anchorBp > 0 &&
+                    c.anchor.start <= s.start &&
+                    c.anchor.end >= s.end,
+                ),
+            ),
+          }
+        }),
+      )
+      .filter(({ lane, anchor }) => lane.length + anchor.length > 0)
+    expect(unstated).toEqual([])
   })
 })
 

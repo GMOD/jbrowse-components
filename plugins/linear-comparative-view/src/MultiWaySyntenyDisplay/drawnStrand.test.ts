@@ -34,9 +34,10 @@ function record(
 }
 
 // R reads reversed throughout and lacks 50 kb of the anchor between its third
-// and fourth pieces. I is reversed but for its middle, and reads the stretch
-// between its flanks as 20 kb replaced by 30 kb on its flanks' strand and as
-// a 30 kb insertion on its middle's.
+// and fourth pieces. I is reversed but for two forward pieces aligned outside
+// the anchor between their neighbours, so the stretch holding them reads as
+// 120 kb replaced by 130 kb on the reversed strand, and the 30 kb between
+// them as a 30 kb insertion on the forward one.
 const features = [
   record('r1', R, [550_000, 600_000], [0, 50_000], -1),
   record('r2', R, [500_000, 550_000], [50_000, 100_000], -1),
@@ -46,8 +47,8 @@ const features = [
   record('r6', R, [250_000, 300_000], [250_000, 300_000], -1),
   record('i1', I, [230_000, 240_000], [0, 10_000], -1),
   record('i2', I, [220_000, 230_000], [10_000, 20_000], -1),
-  record('i3', I, [100_000, 150_000], [20_000, 70_000], 1),
-  record('i4', I, [150_000, 200_000], [100_000, 150_000], 1),
+  record('i3', I, [400_000, 410_000], [20_000, 30_000], 1),
+  record('i4', I, [410_000, 420_000], [60_000, 70_000], 1),
   record('i5', I, [90_000, 100_000], [150_000, 160_000], -1),
   record('i6', I, [80_000, 90_000], [160_000, 170_000], -1),
 ]
@@ -82,7 +83,7 @@ test('a lane drawn reversed opens the holes and leads with the changes of the st
   expect(frameOf(display, R)?.openings).toEqual([{ at: 150_000, bp: 50_000 }])
   expect(
     display.laneHeaderRows.find(row => row.assemblyName === I)?.changes?.text,
-  ).toBe('100 kb inversion, 20 kb replaced by 30 kb')
+  ).toBe('120 kb replaced by 130 kb')
 })
 
 test('a frozen lane drawn reversed slides across its hole as far as the nudge', async () => {

@@ -235,15 +235,30 @@ every cost is linear in lanes.
   lists the same. Each gap between two consecutive pieces of one strand of a lane
   contig, cut in one fetch window (`clipWindow`; between two windows lies anchor
   the fetch never read), within one record or across two where the lane places
-  the rest nowhere, states one change once either side reaches
-  `SPLIT_AT_GAP_BP`: the anchor stretch no piece inside it holds against the
-  lane bp no piece holds, a deletion, an insertion or "54 kb replaced by 37 kb".
-  A piece of the other strand counts by its part inside the gap. The chip states
-  the drawn strand's gaps, then each gap of the other strand sharing no anchor
-  base and no lane base with one of them, and lists a change while the frame
-  meets any of its lane stretch (`at` to `laneEnd`). The hole opens at the net of
-  the two sides, so what follows sits under its own anchor stretch. Netting the
-  chip into one deletion or one shift infers an allele
+  the rest nowhere, states the anchor stretch no piece inside it holds against
+  the lane bp no piece holds, a deletion, an insertion or "54 kb replaced by
+  37 kb", once either side reaches `SPLIT_AT_GAP_BP` at its rounded size. A
+  piece of the other strand holds what its part inside the gap aligns to of
+  the gap's anchor stretch, and the rest of that part is the lane's own. Such
+  pieces part the gap where a run of them, each following the last along their
+  strand, spans `SPLIT_AT_GAP_BP` on either side (`partingOf`). A parted gap
+  states one change at each breakpoint, the lane stretch beside a flank against
+  the anchor stretch beside that flank's anchor edge, and each stretch between
+  two parting pieces alone. An inversion with 15 kb unaligned at each
+  breakpoint therefore states two 15 kb changes where they lie, and one with
+  8 kb at each states only the inversion. The chip states the drawn strand's
+  unparted gaps, then each of the other strand's sharing no anchor base and no
+  lane base with one of them, then the parted gaps' changes sharing none with
+  one already kept, the drawn strand's first; two changes share a side only
+  where both hold bp on it (`sameGap`). Where a parted gap of each strand ends
+  at one lane stretch, the stretch is paired by the drawn strand and the labels
+  differ with it: a known strand dependence, accepted so that no stretch is
+  stated twice. The chip lists a change while the frame meets any of its lane
+  stretch (`at` to `laneEnd`). The hole opens at the net of the whole gap's two
+  sides, so what follows sits under its own anchor stretch. An inversion whose
+  breakpoints each lack 8 kb of anchor opens 16 kb and names nothing: the hole
+  is geometry keeping the flanks under their anchor, not a statement. Netting
+  the chip into one deletion or one shift infers an allele
   ([ADR-137](../architecture-decision-records/adr-137-jbrowse-shows-sv-evidence-and-does-not-infer-alleles.md)).
 - **The chip names an inversion** by the anchor it holds where a run of the
   other strand sits between two runs, inside their outer anchor ends and mostly
