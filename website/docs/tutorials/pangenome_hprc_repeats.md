@@ -76,12 +76,15 @@ rebuild those results. The tandem-repeat VCF step takes a cut of your own graph
 over your own array, and the TRGT step your own aligned HiFi reads and repeat
 catalogue.
 
-| What it is                                                                   | File                                                                                                                                                                     |
-| ---------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| TRGT's genotypes over the Genome in a Bottle repeat catalogue, a TRGTdb      | [adotto_hprc.tdb.tar](https://zenodo.org/records/8329210/files/adotto_hprc.tdb.tar)                                                                                      |
-| The catalogue itself                                                         | [adotto_repeats.hg38.bed.gz](https://zenodo.org/records/8329210/files/adotto_repeats.hg38.bed.gz)                                                                        |
-| The assemblies, for the amylase build                                        | [assemblies_release2_v1.0.index.csv](https://raw.githubusercontent.com/human-pangenomics/hprc_intermediate_assembly/main/data_tables/assemblies_release2_v1.0.index.csv) |
-| The graph cut over the KIV-2 array, eight haplotypes' walks with their bases | [hprc-v2.1-mc-grch38.kiv2.eight-haplotypes.gfa](https://jbrowse.org/demos/hprc/hprc-v2.1-mc-grch38.kiv2.eight-haplotypes.gfa)                                            |
+| What it is                                                                        | File                                                                                                                                                                 |
+| --------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| TRGT's genotypes over the Genome in a Bottle repeat catalogue, a TRGTdb           | [adotto_hprc.tdb.tar](https://zenodo.org/records/8329210/files/adotto_hprc.tdb.tar)                                                                                  |
+| The catalogue itself                                                              | [adotto_repeats.hg38.bed.gz](https://zenodo.org/records/8329210/files/adotto_repeats.hg38.bed.gz)                                                                    |
+| HG01361's paternal assembly, for the amylase build, streamed and never downloaded | [HG01361_pat_hprc_r2_v1.0.1.fa.gz](https://s3-us-west-2.amazonaws.com/human-pangenomics/working/HPRC/HG01361/assemblies/release2/HG01361_pat_hprc_r2_v1.0.1.fa.gz)   |
+| HG00133's first haplotype, the same way                                           | [HG00133_hap1_hprc_r2_v1.0.1.fa.gz](https://s3-us-west-2.amazonaws.com/human-pangenomics/working/HPRC/HG00133/assemblies/release2/HG00133_hap1_hprc_r2_v1.0.1.fa.gz) |
+| NA18608's second haplotype, the same way                                          | [NA18608_hap2_hprc_r2_v1.0.1.fa.gz](https://s3-us-west-2.amazonaws.com/human-pangenomics/working/HPRC/NA18608/assemblies/release2/NA18608_hap2_hprc_r2_v1.0.1.fa.gz) |
+| HG00232's first haplotype, the same way                                           | [HG00232_hap1_hprc_r2_v1.0.1.fa.gz](https://s3-us-west-2.amazonaws.com/human-pangenomics/working/HPRC/HG00232/assemblies/release2/HG00232_hap1_hprc_r2_v1.0.1.fa.gz) |
+| The graph cut over the KIV-2 array, eight haplotypes' walks with their bases      | [hprc-v2.1-mc-grch38.kiv2.eight-haplotypes.gfa](https://jbrowse.org/demos/hprc/hprc-v2.1-mc-grch38.kiv2.eight-haplotypes.gfa)                                        |
 
 <details>
 <summary>Read by URL (no download needed)</summary>
@@ -108,8 +111,9 @@ segment's position on the ruler and in the color of its node below.
 
 <Figure caption="LPA over the force-directed graph track. The KIV-2 array is the haloed knot of loops on the right." src="/img/pangenome/hprc_lpa_kiv2.png" />
 
-Each loop in the knot is a different number of copies. Click the array's purple
-label to lay the bubble's segments out alone, with a button back to the window.
+Each loop in the knot is a different number of copies. Click the array's label,
+**3–175 kb repeat array (KIV-2)**, to lay the bubble's segments out alone, with
+a button back to the window.
 
 ## Haplotypes' routes through the KIV-2 array {#one-haplotypes-copies}
 
@@ -449,7 +453,9 @@ Yilmaz et al. (2024) name each structure by its _AMY1_ count:
 
 Walk rows show copy number, and a synteny stack shows which copy of one
 haplotype matches which copy of its neighbour. The commands below run on any
-`gfa-to-tabix --walks` file and any bgzipped, indexed assembly.
+`gfa-to-tabix --walks` file, which
+[Indexing haplotype walks](/docs/tutorials/pangenome_prepare_graph#haplotype-walks-tabix)
+builds from a graph's W lines, and any bgzipped, indexed assembly.
 
 Fetch the script that reads a window's walks, then the walk reader it imports:
 
@@ -585,7 +591,8 @@ duckdb -json -c "
     allele_number, spanning_reads
   from read_parquet('hprc_100.tdb/sample.*.pq', filename = true)
   where LocusID = (select LocusID from read_parquet('hprc_100.tdb/locus.pq')
-    where chrom = 'chr19' and start = 1049407)"
+    where chrom = 'chr19' and start = 1049407 and \"end\" = 1050096)
+  order by sample"
 ```
 
 The amylase build runs the commands under
