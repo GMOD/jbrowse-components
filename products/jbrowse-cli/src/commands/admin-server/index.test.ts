@@ -192,7 +192,7 @@ test('blocks relative path traversal attempts in updateConfig', async () => {
       },
       body: JSON.stringify(payload),
     })
-    expect(response.status).toBe(401)
+    expect(response.status).toBe(400)
     expect(await response.text()).toMatch(/Cannot perform directory traversal/)
     await killServer({ stdout })
   })
@@ -213,7 +213,7 @@ test('refuses to write a configPath that is not a .json file', async () => {
         config: { foo: 'bar' },
       }),
     })
-    expect(response.status).toBe(401)
+    expect(response.status).toBe(400)
     expect(await response.text()).toMatch(/must be a .json file/)
     expect(fs.existsSync(path.join(ctx.dir, 'notes.txt'))).toBe(false)
     await killServer({ stdout })

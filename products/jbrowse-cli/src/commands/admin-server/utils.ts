@@ -144,7 +144,7 @@ function queryValue(params: URLSearchParams, name: string) {
 // checked the flag has configPath without asserting it is there
 type ParamValidation =
   | { ok: true; configPath: string }
-  | { ok: false; error: string }
+  | { ok: false; status: 400 | 401; error: string }
 
 function validateAndExtractParams({
   body,
@@ -163,7 +163,7 @@ function validateAndExtractParams({
     asString(body.adminKey) || asString(queryValue(query, 'adminKey'))
 
   if (adminKey !== key) {
-    return { ok: false, error: 'Invalid admin key' }
+    return { ok: false, status: 401, error: 'Invalid admin key' }
   }
 
   // a configPath that is there but is not a string (a JSON number, an object, a
@@ -172,7 +172,7 @@ function validateAndExtractParams({
   const rawConfigPath = body.configPath || queryValue(query, 'config')
   const configPathParam = asString(rawConfigPath)
   if (rawConfigPath !== undefined && configPathParam === undefined) {
-    return { ok: false, error: 'Failed to validate config path' }
+    return { ok: false, status: 400, error: 'Failed to validate config path' }
   }
 
   const configPath = configPathParam
@@ -182,9 +182,9 @@ function validateAndExtractParams({
   const relPath = path.relative(path.normalize(baseDir), configPath)
 
   return relPath.startsWith('..') || path.isAbsolute(relPath)
-    ? { ok: false, error: 'Cannot perform directory traversal' }
+    ? { ok: false, status: 400, error: 'Cannot perform directory traversal' }
     : configPathParam && !configPathParam.endsWith('.json')
-      ? { ok: false, error: 'Config path must be a .json file' }
+      ? { ok: false, status: 400, error: 'Config path must be a .json file' }
       : { ok: true, configPath }
 }
 
@@ -238,7 +238,7 @@ function updateConfig({
       }
     }
   } else {
-    sendText(res, 401, `Error: ${validation.error}`)
+    sendText(res, validation.status, `Error: ${validation.error}`)
   }
 }
 
