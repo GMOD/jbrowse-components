@@ -45,12 +45,12 @@ The graph view is a beta plugin. We welcome your [feedback](/contact).
   [install it from the plugin store](/docs/user_guides/plugin_store); the
   [portal page](https://genomes.jbrowse.org/pangenomes/bovine) already loads it
 - `python3` and htslib (`bgzip`, `tabix`), to build the
-  [OMIA track](#the-celtic-polled-allele)
+  [OMIA track](#open-the-celtic-polled-allele-at-polled)
 - [`vg`](https://github.com/vgteam/vg), to
-  [deconstruct](#hspa1a-in-the-graph-and-the-callset) the graph into a callset
+  [deconstruct](#load-the-callset-under-the-graph-at-hspa1a) the graph into a callset
 - [`gfatools`](https://github.com/lh3/gfatools) and
   [`gfa-to-tabix`](https://github.com/GMOD/gfa-to-tabix) 5.0.0 or later, to
-  [index the graph](#building-the-bovine-graph-files)
+  [index the graph](#build-the-bovine-graph-files)
 
 <!-- BEGIN GENERATED TUTORIAL_INSTALL htslib,vg,gfatools,gfa-to-tabix -->
 
@@ -69,7 +69,7 @@ cargo install gfa-to-tabix
 
 The graph and callset tracks read the hosted files by URL, and the OMIA track
 reads a file you build from OMIA's dump with
-[the script under The Celtic polled allele](#the-celtic-polled-allele).
+[the script under The Celtic polled allele](#open-the-celtic-polled-allele-at-polled).
 
 | What it is                                                    | File                                               |
 | ------------------------------------------------------------- | -------------------------------------------------- |
@@ -92,7 +92,7 @@ reads a file you build from OMIA's dump with
 
 We'll load the reference the graph is anchored to, then the graph track. Swap
 the prefix in `uri` for the one your
-[indexing commands](#building-the-bovine-graph-files) wrote, which name the
+[indexing commands](#build-the-bovine-graph-files) wrote, which name the
 tabix-indexed segments and links and the overview.
 
 ```json addassembly
@@ -160,7 +160,7 @@ the graph:
 }
 ```
 
-## Overview of chr23 with small variants folded {#overview-of-chr23-with-one-node-per-variant-region}
+## Open chr23 with small variants folded {#overview-of-chr23-with-one-node-per-variant-region}
 
 Turn on **NCBI RefSeq genes (bosTau9)**, **Bovine super-pangenome: variability
 (segments per bubble)** and **Bovine super-pangenome (rGFA segments)** in the
@@ -172,7 +172,7 @@ genes. The curve of segments per bubble marks where the assemblies differ most.
 
 <Figure caption="Chromosome 23 with RefSeq genes, segments per bubble as a curve, and the graph track, which at this zoom folds variants under 483 kb into the reference." src="/img/pangenome/bovine_whole_chromosome.png" />
 
-## HSPA1A in the graph and the callset
+## Load the callset under the graph at HSPA1A
 
 ARS-UCD1.2 lacks an 11 kb segment beside the heat shock gene _HSPA1A_, which
 contains _HSPA1B_, its near-identical copy. Leonard et al. (2022) recovered it
@@ -299,12 +299,12 @@ Type `chr23:27,508,000-27,536,000` to draw the graph around _HSPA1A_. Then:
 
 <Figure caption="HSPA1A with the deconstructed callset, one row per assembly, over the graph track. The graph draws the insertion as the charcoal loop. At its record, bison's cell is red and gaur's dark green, two more alleles of the insertion, which the key names with their lengths." src="/img/pangenome/bovine_bola.png" />
 
-## Published variants in the callset
+## Open published variants in the callset
 
 Each locus below is a structural variant a paper reported in one of these breeds
 or species. The rows of assemblies without it are the control.
 
-### The Celtic polled allele
+### Open the Celtic polled allele at POLLED
 
 Angus cattle are born without horns. Medugorac et al. (2012) traced the Celtic
 form of polledness to a 202 bp duplication and insertion on chromosome 1, which
@@ -346,7 +346,7 @@ allele.
 
 <Figure caption="The POLLED locus with OMIA's record of the Celtic polled allele above the callset, in which Angus alone has the 202 bp insertion." src="/img/pangenome/bovine_polled.png" />
 
-### A repeat upstream of KIT in white-headed cattle
+### Open the repeat upstream of KIT
 
 Simmental and Hereford cattle have white heads. Milia et al. (2025) tied the
 trait to a 14.3 kb segment repeated in tandem upstream of _KIT_: white-headed
@@ -360,7 +360,7 @@ for the record's second allele, which the key names with its length, 16,923 bp
 longer than the Hereford reference's, so Simmental has more copies of the repeat
 than the reference.
 
-### A deletion of TAS2R46 in gaur
+### Open the TAS2R46 deletion in gaur
 
 _TAS2R46_ encodes a bitter taste receptor. Leonard et al. (2022) found a 17 kb
 deletion in gaur that removes it. Open `chr5:98,575,000-98,615,000`.
@@ -371,7 +371,7 @@ Angus, Piedmontese, Brahman and Nellore, two taurine and two indicine breeds,
 have an allele slightly longer than the reference's, in blue. The gaur's allele,
 in red, lacks the span.
 
-## Building the bovine graph files
+## Build the bovine graph files
 
 The archive holds one [minigraph](https://github.com/lh3/minigraph) graph (Li et
 al. 2020) per autosome. Before indexing, the build script joins them and
