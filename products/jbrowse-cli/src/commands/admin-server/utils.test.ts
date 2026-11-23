@@ -4,7 +4,7 @@
 
 import http from 'node:http'
 
-import { parsePort, startServer } from './utils.ts'
+import { adminUrl, parsePort, startServer } from './utils.ts'
 
 test('defaults when no port string is given', () => {
   expect(parsePort({ portStr: undefined })).toBe(9090)
@@ -50,4 +50,20 @@ test('binds loopback unless --host widens it', async () => {
   jest.spyOn(console, 'log').mockImplementation(() => {})
   expect(await bind()).toBe('127.0.0.1')
   expect(await bind('0.0.0.0')).toBe('0.0.0.0')
+})
+
+test.each([
+  ['127.0.0.1', 'localhost'],
+  ['127.0.0.2', 'localhost'],
+  ['0.0.0.0', 'localhost'],
+  ['::', 'localhost'],
+  ['::1', 'localhost'],
+  ['localhost', 'localhost'],
+  ['192.168.4.40', '192.168.4.40'],
+  ['myhost.example.org', 'myhost.example.org'],
+  ['fe80::1', '[fe80::1]'],
+])('the startup URL for --host %s names %s', (host, reachable) => {
+  expect(adminUrl({ host, port: 9090, key: 'k' })).toBe(
+    `http://${reachable}:9090?adminKey=k`,
+  )
 })

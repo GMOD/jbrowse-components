@@ -386,6 +386,27 @@ export function createRequestHandler({
   }
 }
 
+const LOOPBACK_OR_WILDCARD = /^(0\.0\.0\.0|::|::1|localhost|127(\.\d+){3})$/
+
+// the browser URL for a server bound to `host`: a wildcard or loopback bind is
+// reached as localhost, a bind to one interface only answers on that address
+export function adminUrl({
+  host,
+  port,
+  key,
+}: {
+  host: string
+  port: number
+  key: string
+}) {
+  const reachable = LOOPBACK_OR_WILDCARD.test(host)
+    ? 'localhost'
+    : host.includes(':')
+      ? `[${host}]`
+      : host
+  return `http://${reachable}:${port}?adminKey=${key}`
+}
+
 export function startServer({
   server,
   port,
@@ -405,7 +426,7 @@ export function startServer({
     console.log(
       `Admin server started on ${host}:${port}\n\n` +
         `To access the admin interface, open your browser to:\n` +
-        `http://localhost:${port}?adminKey=${key}\n\n` +
+        `${adminUrl({ host, port, key })}\n\n` +
         `Admin key: ${key}\n` +
         `Config file: ${outFile}\n\n` +
         `To stop the server, press Ctrl+C`,
