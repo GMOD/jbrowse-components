@@ -2874,6 +2874,7 @@
         "adapterTypes",
         "applyClassifiedFiles",
         "applyPrimaryFile",
+        "applySequenceFile",
         "applyTwoBitFile",
         "buildAssemblyConf",
         "classifyAssemblyFiles",
@@ -2895,6 +2896,7 @@
         "isSequenceRole",
         "makeSetField",
         "partitionExtraLocations",
+        "primaryLocation",
         "sidecarRoles",
         "sidecars",
         "urlTextToLocations"

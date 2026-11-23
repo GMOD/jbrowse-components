@@ -3228,8 +3228,9 @@ Open the feature widget on the feature behind one instance of a
 `CoreGetEncodedLayers` answer. A display holds channels, not records, so it
 sends `CoreGetEncodedFeature` the request the instance's region came back under,
 and the worker answers the entry of `layer`'s list that the instance's
-`featureIndex` names: the record as the adapter wrote it, or the bin or run the
-steps made. A second click aborts the first request.
+`featureIndex` names: the record as the adapter wrote it, whole across a
+circular origin, or the bin or run the steps made. A second click aborts the
+first request.
 
 ```ts
 import { selectEncodedFeature } from '@jbrowse/core/util/selectEncodedFeature'

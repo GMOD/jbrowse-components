@@ -44,7 +44,7 @@ Adapter slots go inside the track's `adapter`: `"adapter": { "type": "FromConfig
 <!-- prettier-ignore -->
 | Slot | Description |
 | --- | --- |
-| <span id="slot-adapterid">**adapterId**</span><br>[`string`](/docs/config_guides/slot_types#string) = <code>''</code> | stable identifier used as the adapter cache key; avoids hashing the (potentially large) features array. optional — falls back to hash. |
+| <span id="slot-adapterid">**adapterId**</span><br>[`string`](/docs/config_guides/slot_types#string) = <code>''</code> | leave unset, so the adapter cache keys on a hash of the config and changed features are a new adapter. Code that builds a large config sets it with `withAdapterId`, which stamps that hash in. A hand-written value replaces the hash, so the same value over different features serves the first ones |
 | <span id="slot-features">**features**</span><br>[`frozen`](/docs/config_guides/slot_types#frozen) = <code>[]</code> | the features themselves, as an array of plain objects. Each needs a `uniqueId`, `refName`, `start` and `end` (0-based half-open); anything else — `name`, `type`, `score`, `strand`, nested `subfeatures` — is copied onto the feature unchanged. |
 
 ## Retired keys

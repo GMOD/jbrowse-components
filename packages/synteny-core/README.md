@@ -467,6 +467,22 @@ function nameColorCss(
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/synteny-core/src/colorFunctions.ts)
 
+### noStrandLevel
+
+The color under `paint` of a record with no one strand, the strand scale's `0`
+level, and the name `names` gives it, if any.
+
+```ts
+import { noStrandLevel } from '@jbrowse/synteny-core'
+
+function noStrandLevel(
+  paint: SyntenyColorPaint,
+  names?: readonly string[],
+): { value: string; color: string; label: string | undefined }
+```
+
+[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/synteny-core/src/colorRamps.ts)
+
 ### opacityFadeOf
 
 The part of `encoding.opacity` the color pass reads: undefined for the constant,
@@ -614,9 +630,9 @@ name `names` gives it, if any.
 import { strandLevels } from '@jbrowse/synteny-core'
 
 function strandLevels(
-  opts: SyntenyColorPaint,
+  paint: SyntenyColorPaint,
   names?: readonly string[],
-): { value: '-1' | '1'; color: string; label: string | undefined }[]
+): { value: string; color: string; label: string | undefined }[]
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/synteny-core/src/colorRamps.ts)
