@@ -231,6 +231,28 @@ test('--load move across devices copies the file and removes the source', async 
     )
   })
 })
+test('two sources with the same file name fail before any file is loaded', async () => {
+  await runInTmpDir(async ctx => {
+    await initctx(ctx)
+    await mkdir(ctxDir(ctx, 's1'))
+    await mkdir(ctxDir(ctx, 's2'))
+    await writeFile(ctxDir(ctx, 's1/cov.bw'), 'one')
+    await writeFile(ctxDir(ctx, 's2/cov.bw'), 'two')
+    const { error } = await runCommand([
+      'add-track',
+      '--multiwig',
+      's1/cov.bw,s2/cov.bw',
+      '--load',
+      'copy',
+      '--trackId',
+      'multi',
+    ])
+    expect(error?.message).toMatch(/both be loaded to/)
+    expect(exists(ctxDir(ctx, 'cov.bw'))).toBe(false)
+    expect(readConf(ctx).tracks.some(t => t.trackId === 'multi')).toBe(false)
+  })
+})
+
 test('cannot add a track if there is no config file', async () => {
   await runInTmpDir(async () => {
     const { error } = await runCommand([

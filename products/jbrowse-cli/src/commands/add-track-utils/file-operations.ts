@@ -162,11 +162,24 @@ export async function loadFiles({
     if (missing) {
       throw new Error(missingSourceMessage(missing))
     }
+    const sourceOf = new Map<string, string>()
+    for (const src of sources) {
+      const dest = destinationOf({ src, destDir, subDir })
+      const other = sourceOf.get(dest)
+      if (other !== undefined && path.resolve(other) !== path.resolve(src)) {
+        throw new Error(
+          `${other} and ${src} would both be loaded to ${dest}; rename one of them so their file names differ`,
+        )
+      }
+      sourceOf.set(dest, src)
+    }
     if (subDir) {
       fs.mkdirSync(path.join(destDir, subDir), { recursive: true })
     }
     await Promise.all(
-      sources.map(src => loadFile({ src, destDir, mode, subDir, force })),
+      [...sourceOf.values()].map(src =>
+        loadFile({ src, destDir, mode, subDir, force }),
+      ),
     )
   }
 }
