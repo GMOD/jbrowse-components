@@ -1,14 +1,17 @@
 ---
 name: per-gene-isoform-refinement
-description: Refine the fit ladder's one global isoform count per gene, so a lone gene in a sparse column keeps the transcripts a crowded column's neighbour cannot. At 8.18ms per drag frame it runs off the drag path, once the height settles.
+description: Refine the fit ladder's one global isoform count per gene, so a lone gene in a sparse column keeps the transcripts a crowded column's neighbour cannot. At 8.18ms per drag frame it waits on a per-gene probe cheap enough to run on the drag path.
 ---
 
 # Per-gene isoform refinement
 
 ## Ruling
 
-Refine off the drag path, once the height has held still, and measure the
-visible reflow after a drag first.
+Wait for the per-gene probe, and build only once it fits a drag frame. The
+probe gives the same picture during the drag that the reader ends up looking
+at. Regrowing the trimmed transcripts after a pan or resize settles is
+declined: the stack visibly reflows after the drag stops, and reactive regrowth
+that shifts content on each pan was declined before.
 
 The fit ladder's `isoforms` rung solves ONE count and applies it to every gene
 on screen (ADR-092). That is the count the busiest column needs, and a lone gene
@@ -46,18 +49,13 @@ upload or the paint. Every pan settle and every resize-drag frame re-solves, so
 this is a per-frame cost, not a one-off. At a 16.7ms budget it is not affordable
 as written.
 
-## What would make it affordable
+## What would make it affordable: a per-gene probe
 
-- **A per-gene probe.** The 8.18ms is 66 whole-region packs to answer 22
-  one-gene questions. A gene's own count only moves its own column, so a probe
-  that re-packs the affected bp span rather than the region would cut it by
-  roughly the ratio of one gene's span to the viewport's.
-- **Refine off the drag path.** The global count is what a drag frame needs; the
-  refinement is a settled-state improvement. Solving it once the height has held
-  still — the cadence `coarseBpPerPx` already uses for zoom — costs a drag frame
-  nothing and still gives the reader the fuller stack they end up looking at.
-  The cost is a visible reflow after the drag stops, which is the thing to
-  measure before building it.
+The 8.18ms is 66 whole-region packs to answer 22 one-gene questions. A gene's
+own count only moves its own column, so a probe that re-packs the affected bp
+span rather than the region would cut it by roughly the ratio of one gene's
+span to the viewport's.
 
-Re-measure before either: the numbers above are a jest process, so treat them as
-a ratio rather than as wall-clock in the app.
+The number that decides it is the probe's refinement cost per drag frame,
+measured in the app: the numbers above are a jest process, so treat them as a
+ratio rather than as wall-clock.

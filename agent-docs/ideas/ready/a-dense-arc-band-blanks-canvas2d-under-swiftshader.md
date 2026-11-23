@@ -1,14 +1,19 @@
 ---
 name: a-dense-arc-band-blanks-canvas2d-under-swiftshader
-description: A headless Canvas2D capture under SwiftShader loses an alignments display's coverage and pileup once its arc band strokes thousands of arcs. The painter strokes same-style arcs as one path, then the replay is re-run.
+description: A headless Canvas2D capture under SwiftShader loses an alignments display's coverage and pileup once its arc band strokes thousands of arcs. The fix is in the capture harness, which stops pairing the Canvas2D pin with SwiftShader.
 ---
 
 # A dense arc band blanks Canvas2D under SwiftShader
 
 ## Ruling
 
-Stroke same-style arcs as one path, which cuts the draw count on every
-backend, then re-run the replay to see whether it also clears this defect.
+Fix it in the capture harness, not the painter: a capture pinned to
+`renderer=canvas2d` launches Chrome without `--use-angle=swiftshader`, since
+the table below shows Chrome's software canvas draws the frame. The launchers
+are `website/scripts/screenshot-browser.ts` and
+`products/jbrowse-web/browser-tests/runner.ts`; re-run the replay through the
+changed launch to confirm. Stroking same-color arcs as one path is declined: it
+would change stroke z-order where arcs of different colors cross.
 
 Found on 2026-10-08 driving HG008-T Illumina at SUZ12 with
 `readConnections: 'arc'` and `&renderer=canvas2d`. Past about 30 kb the arc
@@ -49,9 +54,10 @@ yet.
 
 ## The options
 
-- **In the painter (ruled):** stroke same-style arcs as one path, which also cuts the
-  draw count on every backend. Untested against this defect.
-- **In the harness:** stop pairing the Canvas2D pin with
+- **In the harness (ruled):** stop pairing the Canvas2D pin with
   `--use-angle=swiftshader`, since Chrome's software canvas draws the frame.
   Untested in the app.
+- **In the painter (declined):** stroke same-style arcs as one path. It
+  reorders strokes where arcs of different colors cross, and is untested
+  against this defect.
 - **Neither:** note it where the capture flags are documented and move on.

@@ -8,7 +8,13 @@ description: AssemblyManager is an MST model whose one property an autorun rebui
 ## Ruling
 
 Do it, and export a named `Assembly` type from core so Apollo's next build
-compiles.
+compiles. Two conditions:
+
+- The landing commit adds an entry to the ledger in
+  `reference/PLUGIN_ABI_STABILITY.md` ("Ledger: behavior changes external
+  plugins inherit"): an assembly is no longer an MST node, with the opt-out.
+- Apollo hears about the new `Assembly` type export before the release. That
+  message is outward-facing, so Colin sends it.
 
 ## What it is today
 

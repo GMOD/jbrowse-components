@@ -7,10 +7,11 @@ description: The breakpoint split view refetches variant records through its own
 
 ## Ruling
 
-Build both halves: the canvas variant display emits junction ends, and the
-link mark's region table takes a row index so a mark may span views. One
-derivation removes a second RPC. Measure the payload on
-`breast_cancer_sniffles_hg19` first.
+Build the data half now: the canvas variant display emits junction ends and
+the split view reads them off it, which drops the second RPC. Measure the
+payload on `breast_cancer_sniffles_hg19` first. Move the drawing onto the link
+mark only if it reproduces today's glyph exactly; a restyle of the variant
+curve was rejected.
 
 The breakpoint split view gets its two kinds of evidence two ways:
 
@@ -52,9 +53,15 @@ The payload change is the cost; measure it on a large SV callset
 
 ## Draw the overlay through the link mark
 
-The variant curve already copies the link mark's look (its default color,
-breakend feet, the connector cubic), and the read curves compute their
-control points through `bezierConnectorPath`, the connector shader's JS twin.
+The variant curve does not look like the link mark.
+`buildJunctionPath` (`overlayUtils.tsx`) draws a foot from each breakend's
+tick, then a straight line between the two points when they sit in different
+rows, using `bezierConnectorPath` (the connector shader's JS twin) only when
+both are in one row; `Variants.tsx` strokes it 5 px wide in
+`palette.variantCall` (`green[800]`). The read curves compute their control
+points through `bezierConnectorPath`. The link mark would have to draw that
+glyph as it is: the straight cross-row line, the feet, the width and the
+color.
 
 - One canvas over the stacked panels draws both through render-core, each
   instance placing its two feet through its own row's region table.

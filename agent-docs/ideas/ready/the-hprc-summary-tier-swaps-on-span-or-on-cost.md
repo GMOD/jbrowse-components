@@ -7,8 +7,8 @@ description: The hosted HPRC summary tier is built but stays off for `hprc_maf.j
 
 ## Ruling
 
-The summary tier swaps on cost, the byte gate's verdict, for ADR-102's own
-reason: span is a proxy for cost, and a bad one. With that, the tier can be
+The summary tier swaps on cost, the byte gate's verdict, because span is a
+proxy for cost, and a bad one. With that, the tier can be
 switched on for `hprc_maf.json`, since an 83 kb detail read of 3.50 MB is under
 its 5 MB budget and keeps the per-haplotype rows.
 

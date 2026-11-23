@@ -13,6 +13,10 @@ capped canvas no single scalar is right either way. This amends
 [ADR-098](../../architecture-decision-records/adr-098-one-ramp-one-unit-and-the-build-checks-it.md)'s
 Decision, which names `getDpr()`; uncapped, both scales equal it.
 
+Before landing, take whole-view before/after captures of a capped canvas: a
+track dragged past about 4096 CSS px tall at dpr 2. A change to an antialias
+ramp needs them.
+
 What a display writes into a shader's `devicePixelRatio` uniform, which sizes
 antialias ramps, pads and stroke floors (`aaPx`, `flooredStrokeWidthPx`):
 

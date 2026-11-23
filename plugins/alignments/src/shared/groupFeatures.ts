@@ -517,7 +517,8 @@ export interface FacetDimension<K extends ReadDimension = ReadDimension> {
 // pinned to its own key, because `pickFacetOptions` maps to that field and a
 // plain Record would accept one naming a sibling. Insertion order is the menu
 // order. Labels live in the React-free facetLabels.ts (see its header),
-// joined to this registry by `pickFacetOptions` alone.
+// joined to this registry by `pickFacetOptions` alone. A column facet keying
+// each read by its base at one position was declined (2026-11-22).
 export const FACET_DIMENSIONS: {
   [K in ReadDimension]: FacetDimension<K>
 } = {

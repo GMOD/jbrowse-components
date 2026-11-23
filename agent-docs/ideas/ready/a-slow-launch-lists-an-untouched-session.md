@@ -8,8 +8,9 @@ description: Web autosave counts any snapshot change after the first 400ms tick 
 ## Ruling
 
 Take the second candidate: a write is not an edit when the only views whose
-snapshot changed are ones whose `launch` was cleared in it. It can only err
-toward edited, which loses no work.
+snapshot changed are ones whose `launch` was cleared in it. It errs toward edited with one exception:
+an edit to the same view inside the same write that clears its launch counts
+as unedited.
 
 ## The mechanism
 

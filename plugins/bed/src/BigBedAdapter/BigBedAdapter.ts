@@ -186,6 +186,8 @@ export default class BigBedAdapter extends BaseFeatureDataAdapter<BigBedAdapterC
   }) {
     const { statusCallback } = opts
     const scoreColumn = this.getConf('scoreColumn')
+    // Picking this field from the autoSql column names was declined
+    // (2026-11-22): a schema names no label column, so it would be a guess
     const aggregateField = this.getConf('aggregateField')
     const disableGeneHeuristic = this.getConf('disableGeneHeuristic')
     const { parser, bigbed, positionalItemRgb } = await this.configure(opts)

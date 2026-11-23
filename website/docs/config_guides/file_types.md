@@ -156,6 +156,14 @@ transcripts sharing a `gene_id` under a gene.
 attribute that labels the gene, and `jbrowse sort-gff` sorts a GTF for tabix too
 ([quickstart](/docs/quickstart_web#gff3-and-gtf)).
 
+### BigBed gene models
+
+A BigBed adapter groups transcripts into genes by
+[`aggregateField`](/docs/config/bigbedadapter/#slot-aggregatefield). In
+GENCODE's bigGenePred (UCSC's knownGene) `geneName2` holds each isoform's
+UniProt accession, so set `"aggregateField": "geneName"` to group by gene
+symbol.
+
 ### GenBank
 
 A GenBank flat file (`.gb`, `.gbk` or `.gbff`, plain or gzipped) holds a genome
