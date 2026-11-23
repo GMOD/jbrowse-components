@@ -3,7 +3,7 @@ import path from 'node:path'
 import { syntenyAdapterTypes } from '@jbrowse/launch-args'
 
 import { isURL } from '../../types/common.ts'
-import { parseCommaSeparatedString } from '../../utils.ts'
+import { isRecord, parseCommaSeparatedString } from '../../utils.ts'
 import {
   displayDefaultSlots,
   displayDefaultsForTrackType,
@@ -21,14 +21,10 @@ export function mapLocationForFiles(
 ): string {
   return !p || isURL(p) || load === 'inPlace'
     ? p
-    : path.join(subDir || '', path.basename(p))
+    : path.posix.join(subDir || '', path.basename(p))
 }
 
 type Json = Record<string, unknown>
-
-function isPlainObject(value: unknown): value is Json {
-  return typeof value === 'object' && value !== null && !Array.isArray(value)
-}
 
 // Plain objects merge key by key; arrays and scalars in `override` replace.
 export function deepMerge<T extends Json>(base: T, override: Json): T {
@@ -36,9 +32,7 @@ export function deepMerge<T extends Json>(base: T, override: Json): T {
   for (const [key, value] of Object.entries(override)) {
     const existing = merged[key]
     merged[key] =
-      isPlainObject(existing) && isPlainObject(value)
-        ? deepMerge(existing, value)
-        : value
+      isRecord(existing) && isRecord(value) ? deepMerge(existing, value) : value
   }
   return merged as T
 }
@@ -102,7 +96,9 @@ export function mergeDisplayDefaults({
   const fromJson = displayDefaults
     ? parseJsonFlag(displayDefaults, '--displayDefaults')
     : {}
-  const existing = (configObj?.displayDefaults ?? {}) as Record<string, unknown>
+  const existing = isRecord(configObj?.displayDefaults)
+    ? configObj.displayDefaults
+    : {}
   const typed: Record<string, unknown> = {}
   if (height !== undefined) {
     const asNumber = Number(height)
