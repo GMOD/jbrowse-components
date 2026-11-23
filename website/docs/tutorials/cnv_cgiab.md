@@ -64,6 +64,17 @@ chmod +x ~/.local/bin/bedGraphToBigWig
 
 <!-- END GENERATED TUTORIAL_INSTALL bcftools,htslib,bedGraphToBigWig,megadepth,hificnv -->
 
+Without conda, megadepth and HiFiCNV install from their release binaries:
+
+```bash
+wget https://github.com/ChristopherWilks/megadepth/releases/download/1.2.0/megadepth
+chmod +x megadepth && sudo mv megadepth /usr/local/bin/
+# --strip-components=1: drop the top-level folder of the release tarball
+# --wildcards '*/hificnv': extract the binary alone
+curl -L https://github.com/PacificBiosciences/HiFiCNV/releases/download/v1.0.1/hificnv-v1.0.1-x86_64-unknown-linux-gnu.tar.gz \
+  | tar xz --strip-components=1 -C /usr/local/bin --wildcards '*/hificnv'
+```
+
 ## The data
 
 The copy-number call sets are on the C-GIAB FTP, and the tracks over them read
@@ -81,20 +92,7 @@ first, or follow the same commands on your own reads.
 | The earlier Wakhan run's Clair3 tumor small-variant calls                        | [merge_output_tumor.vcf.gz](https://ftp-trace.ncbi.nlm.nih.gov/ReferenceSamples/giab/data_somatic/HG008/Liss_lab/analysis/NIH_HiFi_Wakhan-CNA_20240308/vcf_inputs/merge_output_tumor.vcf.gz)                                                  |
 | The normal's germline calls                                                      | [HG008-N-P.GRCh38.deepvariant.phased.vcf.gz](https://ftp-trace.ncbi.nlm.nih.gov/ReferenceSamples/giab/data_somatic/HG008/Liss_lab/analysis/PacBio_Revio_20240125/pacbio-wgs-wdl_germline_20240206/HG008-N-P.GRCh38.deepvariant.phased.vcf.gz) |
 
-## Installing megadepth and HiFiCNV
-
-Two prerequisites install from release binaries:
-
-```bash
-wget https://github.com/ChristopherWilks/megadepth/releases/download/1.2.0/megadepth
-chmod +x megadepth && sudo mv megadepth /usr/local/bin/
-# --strip-components=1: drop the top-level folder of the release tarball
-# --wildcards '*/hificnv': extract the binary alone
-curl -L https://github.com/PacificBiosciences/HiFiCNV/releases/download/v1.0.1/hificnv-v1.0.1-x86_64-unknown-linux-gnu.tar.gz \
-  | tar xz --strip-components=1 -C /usr/local/bin --wildcards '*/hificnv'
-```
-
-## Coverage bigWigs from the CRAMs
+## Compute coverage bigWigs from the CRAMs
 
 megadepth writes each CRAM's per-base coverage as a bigWig, which the
 driver-gene tracks below read:
@@ -105,7 +103,7 @@ driver-gene tracks below read:
 megadepth HG008-T.cram --bigwig
 ```
 
-## Copy number from the published callsets
+## Load the four published copy-number callsets
 
 C-GIAB publishes copy-number calls on this pair from four groups, each reporting
 a different quantity:
@@ -121,7 +119,7 @@ Read the other callsets against the benchmark CNV BED that
 [part 1](/docs/tutorials/sv_visualization_cgiab#the-benchmark-sv-and-cnv-calls)
 adds, whose copy numbers are absolute, so CN 2 marks a diploid region.
 
-### Loading DRAGEN copy-number segments
+### Load DRAGEN's copy-number segments
 
 DRAGEN's CNV calls load as an indexed VCF, one record per segment. Record IDs
 read `DRAGEN:CNLOH:chr9:22631070-22939213` (copy-neutral loss of
@@ -143,7 +141,7 @@ heterozygosity), so the label shows the class from the second field:
 }
 ```
 
-### NYGC copy-number segments and log2 copy ratio
+### Load NYGC's segments and log2 copy ratio
 
 C-GIAB publishes the NYGC CNV output in two forms.
 `HG008-T--HG008-N.cnv.annotated.v7.final.bed` loads as is, because the adapter
@@ -215,7 +213,7 @@ total read counts and HG008-T is hypodiploid.
 }
 ```
 
-### Loading Wakhan copy number per haplotype
+### Load Wakhan's copy number per haplotype
 
 Wakhan's `HG008_HiFi_HiC_copynumbers_segments.bed` is long format, one row per
 haplotype, with no `#` on its column-name line:
@@ -275,7 +273,7 @@ A `copynumber_state` of `0` marks a haplotype lost across an arm (LOH), and `1`
 is the normal single copy. **Advanced → Edit plot...** in the track menu shows
 `rows` and `encoding` as text and applies edits to the open track.
 
-### Building depth-per-bin and B-allele frequency tracks
+## Build depth-per-bin and B-allele frequency tracks {#building-depth-per-bin-and-b-allele-frequency-tracks}
 
 [HiFiCNV](https://github.com/PacificBiosciences/HiFiCNV) writes a binned depth
 track from the tumor reads:
@@ -358,8 +356,6 @@ UCSC's cytobands as a track:
 
 <Figure caption="Chromosome 3: the segmented copy ratio, the HiFiCNV depth and B-allele frequency over the benchmark CNV calls." src="/img/sv_cgiab/cnv_depth_baf.png" />
 
-#### Drawing individual BAF points when zoomed out
-
 Zoomed out, the default bigWig summary paints an LOH arm as a solid block of
 full height. A small
 [`resolutionMultiplier`](/docs/config/bigwigadapter/#slot-resolutionmultiplier)
@@ -386,7 +382,7 @@ makes the adapter fetch raw per-site values at the zoom levels of these figures:
 }
 ```
 
-## Checking copy number at four pancreatic cancer driver genes
+## Check copy number at four pancreatic cancer drivers
 
 In pancreatic ductal adenocarcinoma the recurrently altered genes are _KRAS_,
 _CDKN2A_, _TP53_ and _SMAD4_
@@ -452,7 +448,7 @@ number steps, and BAF shows the allelic balance across each step.
 
 <Figure caption="Chromosome 5: the segmented copy ratio, tumor and normal coverage as overlapping scatter, the BAF and the benchmark CNV calls." src="/img/sv_cgiab/cnv_with_bed_track.png" />
 
-### CDKN2A: homozygous deletion
+### Find the homozygous deletion at CDKN2A
 
 Navigate to `CDKN2A` on chr9. The benchmark calls a focal ~20 kb homozygous
 deletion over the gene (`SV_75`, CN 0, no copies left), inside a larger
@@ -520,7 +516,7 @@ several hundred kilobases right to read CN 2 against it.
 
 <Figure caption="Tumor and normal coverage, the pileup and the CNV calls over CDKN2A." src="/img/sv_cgiab/driver_cdkn2a_deletion.png" />
 
-### Chromosome 17: two kinds of loss of heterozygosity
+### Separate two kinds of LOH on chromosome 17
 
 Chromosome 17 has two LOH states, split partway along the q-arm. Open it whole
 with the depth track above the BAF:
@@ -544,7 +540,7 @@ Together, depth and BAF separate these states:
 The benchmark BED's `hap1_copy_number` and `hap2_copy_number` columns hold the
 `1+0` and `2+0` splits. Click a CNV feature to see both.
 
-### KRAS gain and SMAD4 loss
+### Read the KRAS gain and the SMAD4 loss
 
 Navigate to _KRAS_ on chr12. It sits in a gain (`SV_101`, CN 3, 2+1): a 2 Mb
 tandem duplication that includes the G12V-mutated copy
