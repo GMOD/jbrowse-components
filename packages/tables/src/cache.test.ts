@@ -99,6 +99,27 @@ test('a call finishing keeps the adapters a call still running holds', async () 
   await running
 })
 
+test('clearing during a call keeps the adapters that call holds', async () => {
+  const cache = engineCache()
+  let release = () => {}
+  const held = new Promise<void>(resolve => {
+    release = resolve
+  })
+  let reading = () => {}
+  const read = new Promise<void>(resolve => {
+    reading = resolve
+  })
+  const running = cache.within(async () => {
+    await tablesAdapter(tablesPluginManager(), DOG_VCF.adapterConfig, undefined)
+    reading()
+    await held
+  })
+  await read
+  expect((await engine.clearCache()).adapters).toBe(1)
+  release()
+  await running
+})
+
 test('every engine shares one budget and one set of caches', async () => {
   await engine.cache({ limit: 32 * 2 ** 20 })
   const other = createTablesEngine()

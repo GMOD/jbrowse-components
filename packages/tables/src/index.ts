@@ -864,7 +864,7 @@ export function createTablesEngine() {
       limit === undefined ? cache.held() : cache.setLimit(limit),
     /**
      * Empties every cache, resolved assemblies included, so the next call
-     * reads its files again.
+     * reads its files again; a call still running keeps the adapters it read.
      */
     clearCache: () => cache.clear(),
   }

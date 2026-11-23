@@ -169,7 +169,10 @@ const cache = {
     return held()
   },
   async clear() {
-    await keepAdapters('tables', () => false)
+    await keepAdapters(
+      'tables',
+      (_, lastRequest) => lastRequest > (running[0] ?? Infinity),
+    )
     clearCache()
     wholeFileBytes.clear()
     forgetAssemblies()
