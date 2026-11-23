@@ -412,12 +412,25 @@ describe('a gap with bases on both sides is worded by both, at its size', () => 
   })
 })
 
+// contig lengths from the hosted session's chrom.sizes of each genome
+const HOSTED_CONTIGS: Record<string, Record<string, number>> = {
+  'HG00097.1': { 'CM094073.1': 49_121_287, 'CM094064.1': 145_118_621 },
+  'HG01109.1': {
+    'JAHEPA020000001.1': 111_063_775,
+    'JAHEPA020000070.1': 71_090_094,
+  },
+}
+
+function hostedContigOf(lane: string, refName: string) {
+  const end = HOSTED_CONTIGS[laneGenome(lane)]?.[refName]
+  return end === undefined ? undefined : { start: 0, end }
+}
+
 /**
- * The bars and dashed joins a lane of `genome` draws under its ribbons, in
- * lane px, with the session holding no assembly of it
+ * The bars and dashed joins lane `laneName` draws under its ribbons, in lane
+ * px, with the session holding each genome's assembly as the hosted one does
  */
-function sequenceMarks(laid: ReturnType<typeof layHosted>, genome: string) {
-  const [laneName] = lanesOf(laid, genome)
+function sequenceMarks(laid: ReturnType<typeof layHosted>, laneName: string) {
   const stack = buildLanes({
     assemblyNames: ['hg38', ...laid.lanes],
     groups: laid.groups,
@@ -432,7 +445,7 @@ function sequenceMarks(laid: ReturnType<typeof layHosted>, genome: string) {
     axisSpansOf: (_ref, start, end) => [[laid.px(start), laid.px(end)]],
     anchorRegionSpans: [],
     anchorBpPerPx: 1,
-    contigOf: () => undefined,
+    contigOf: hostedContigOf,
     refNameAliasOf: () => undefined,
     width: WIDTH,
     geometry: laneGeometry(800, 1 + laid.lanes.length),
@@ -457,7 +470,7 @@ function sequenceMarks(laid: ReturnType<typeof layHosted>, genome: string) {
     x2: glyphs.rectPositions[2 * i + 1]! - PX_ORIGIN,
     height: glyphs.rectHeights[i]!,
   }))
-  const frame = laid.frames.get(laneName!)!
+  const frame = laid.frames.get(laneName)!
   return {
     bars: rects.filter(r => r.height === SEQUENCE_BAR_PX),
     dashes: rects.filter(r => r.height === 1),
@@ -470,9 +483,10 @@ describe('a lane draws its own sequence, and a dashed join across a hole', () =>
   // HG00097#1 replaces 122 kb of GRCh38 with 49 kb of its own, between its
   // walk's two records: a 72.5 kb hole, then the 49 kb no ribbon pairs
   test('H-AMY1: the bar covers the 49 kb, and the dashes the hole', () => {
+    const laid = layHosted(hostedWindow('H-AMY1'))
     const { bars, dashes, x, bpPerPx } = sequenceMarks(
-      layHosted(hostedWindow('H-AMY1')),
-      'HG00097.1',
+      laid,
+      lanesOf(laid, 'HG00097.1')[0]!,
     )
     expect(bars).toHaveLength(2)
     const [left, right] = bars.toSorted((a, b) => a.x1 - b.x1)
@@ -497,7 +511,7 @@ describe('a lane draws its own sequence, and a dashed join across a hole', () =>
     const span = 50_000
     const min = 104_117_700 - 0.6 * span
     laid.frames.set(lane!, { ...frame, min, max: min + span })
-    const { bars, dashes } = sequenceMarks(laid, 'HG00097.1')
+    const { bars, dashes } = sequenceMarks(laid, lane!)
     expect(bars).toHaveLength(1)
     expect(dashes.length).toBeGreaterThan(0)
     expect(dashes.reduce((most, d) => Math.max(most, d.x2), 0)).toBeGreaterThan(
@@ -507,10 +521,8 @@ describe('a lane draws its own sequence, and a dashed join across a hole', () =>
 
   // HG00099#1 holds 33 kb GRCh38 lacks, then lacks 33 kb GRCh38 holds
   test('H-C4: one bar runs on under no ribbon, and one dashed join crosses the deletion', () => {
-    const { bars, dashes } = sequenceMarks(
-      layHosted(hostedWindow('H-C4')),
-      'HG00099.1',
-    )
+    const laid = layHosted(hostedWindow('H-C4'))
+    const { bars, dashes } = sequenceMarks(laid, lanesOf(laid, 'HG00099.1')[0]!)
     expect(bars).toHaveLength(2)
     expect(dashes.length).toBeGreaterThan(0)
     const [, right] = bars.toSorted((a, b) => a.x1 - b.x1)
@@ -519,17 +531,39 @@ describe('a lane draws its own sequence, and a dashed join across a hole', () =>
     ).toBeLessThan(right!.x1)
   })
 
-  // HG00097#1's walk starts 69% into the window, and its contig before that
-  // is not loaded here
+  // HG00097#1's walk starts 69% into the window, though its contig runs on
   test('R1M-05: no bar past what the records place', () => {
-    const { bars, x } = sequenceMarks(
-      layHosted(hostedWindow('R1M-05')),
-      'HG00097.1',
-    )
+    const laid = layHosted(hostedWindow('R1M-05'))
+    const { bars, x } = sequenceMarks(laid, lanesOf(laid, 'HG00097.1')[0]!)
     expect(bars).toHaveLength(1)
     expect(bars[0]!.x1).toBeCloseTo(x(13_092_427), 0)
     expect(bars[0]!.x2).toBeCloseTo(x(13_404_348), 0)
   })
+
+  test.each([
+    ['R1M-06', 'HG00097.1'],
+    ['H-SMN', 'HG01109.1'],
+  ])(
+    '%s: each of %s lanes bars only the hull its records place',
+    (name, genome) => {
+      const laid = layHosted(hostedWindow(name))
+      for (const lane of lanesOf(laid, genome)) {
+        const { bars, x } = sequenceMarks(laid, lane)
+        const frame = laid.frames.get(lane)!
+        const placed = laid.groups.flatMap(g =>
+          (g.mates.get(lane) ?? []).filter(p => p.refName === frame.refName),
+        )
+        const xs = placed.flatMap(p => [x(p.start), x(p.end)])
+        const lo = xs.reduce((a, b) => Math.min(a, b), Infinity)
+        const hi = xs.reduce((a, b) => Math.max(a, b), -Infinity)
+        expect(bars.length).toBeGreaterThan(0)
+        for (const bar of bars) {
+          expect(bar.x1).toBeGreaterThanOrEqual(lo - 1)
+          expect(bar.x2).toBeLessThanOrEqual(hi + 1)
+        }
+      }
+    },
+  )
 })
 
 // records A and B flank 300 kb of the anchor that record C places, on the
