@@ -2,14 +2,13 @@
 // session model: a connection's own connect() against the track union, the
 // session's assemblies and its snackbar.
 import PluginManager from '@jbrowse/core/PluginManager'
-import { readConfObject } from '@jbrowse/core/configuration'
 import { when } from 'mobx'
 
 import corePlugins from './corePlugins.ts'
 import rootModelFactory from './rootModel/rootModel.ts'
 import sessionModelFactory from './sessionModel/index.ts'
 
-import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
+import type { TrackConfigEntry } from '@jbrowse/core/configuration'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
 jest.mock('./makeWorkerInstance', () => () => {})
@@ -582,14 +581,17 @@ describe('a UCSC hub', () => {
     await settled(session)
 
     const tracks = session.connectionInstances.flatMap(c =>
-      c.tracks.map((t: AnyConfigurationModel) => ({
-        name: readConfObject(t, 'name'),
-        adapter: readConfObject(t, ['adapter', 'type']),
-        description: readConfObject(t, 'description'),
+      c.tracks.map((t: TrackConfigEntry) => ({
+        name: t.name,
+        adapter: t.adapter,
+        description: t.description,
       })),
     )
     expect(tracks).toEqual([
-      expect.objectContaining({ name: 'genes', adapter: 'BigBedAdapter' }),
+      expect.objectContaining({
+        name: 'genes',
+        adapter: expect.objectContaining({ type: 'BigBedAdapter' }),
+      }),
       expect.objectContaining({
         name: 'local (Unsupported)',
         description: expect.stringContaining(
