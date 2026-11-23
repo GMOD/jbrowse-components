@@ -134,16 +134,27 @@ function altEntries(
   ]
 }
 
-const ORDINALS = ['', '2nd', '3rd', '4th', '5th', '6th', '7th', '8th']
+// One strip of the hues painted past the first.
+function alleleStrip(label: string, alleles: readonly KeyedAllele[]) {
+  return {
+    ...entry(label, ALLELE_HUES[alleles[0]!.slot]),
+    swatches: alleles.map(({ slot }) => ({ color: ALLELE_HUES[slot]! })),
+  }
+}
 
-// A row per allele hue past the first: the allele it stands for where that is
-// one allele of one record on screen, else its frequency rank at its site.
+// The allele hues past the first: a row naming each allele where one record
+// painted them all, else one strip, since a hue then stands for a different
+// allele at each site (ADR-284).
 function secondaryAltEntries(alleles: readonly KeyedAllele[]) {
-  return alleles.map(({ slot, name, folded }) => ({
-    value: `alt${slot + 1}`,
-    label: name ?? `${ORDINALS[slot]} most common${folded ? ' and rarer' : ''}`,
-    color: ALLELE_HUES[slot],
-  }))
+  return alleles.length === 0
+    ? []
+    : alleles.every((a): a is Required<KeyedAllele> => a.name !== undefined)
+      ? alleles.map(({ slot, name }) => ({
+          value: `alt${slot + 1}`,
+          label: name,
+          color: ALLELE_HUES[slot],
+        }))
+      : [alleleStrip('Other alt alleles at each site, by frequency', alleles)]
 }
 
 // The genotype scale: the constant alt hue or a plain CSS color from
@@ -250,15 +261,10 @@ function getCellColorScale(
           : []),
         ...(inputs.secondaryAlts.length > 0
           ? [
-              {
-                ...entry(
-                  'Other alt alleles, no phase set',
-                  ALLELE_HUES[inputs.secondaryAlts[0]!.slot],
-                ),
-                swatches: inputs.secondaryAlts.map(({ slot }) => ({
-                  color: ALLELE_HUES[slot]!,
-                })),
-              },
+              alleleStrip(
+                'Other alt alleles, no phase set',
+                inputs.secondaryAlts,
+              ),
             ]
           : []),
         ...(inputs.hasUnphased ? [entry('Unphased', UNPHASED_COLOR)] : []),

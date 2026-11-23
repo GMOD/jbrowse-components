@@ -90,20 +90,28 @@ describe('getGenotypeEntries', () => {
     ).toEqual(['Reference', 'Alt allele', 'No call'])
   })
 
-  it('phased mode keys each allele hue painted past the first by its rank', () => {
+  it('phased mode keys the unnamed allele hues past the first as one strip', () => {
     expect(
       getGenotypeEntries(
         inputs({
           rowsField: 'haplotype',
-          secondaryAlts: [{ slot: 1 }, { slot: 3 }, { slot: 7, folded: true }],
+          secondaryAlts: [{ slot: 1 }, { slot: 3 }, { slot: 7 }],
+          hasNoCall: true,
         }),
-      ).map(({ label, color }) => [label, color]),
+      ).map(({ label, color, swatches }) => [label, color, swatches]),
     ).toEqual([
-      ['Reference', REFERENCE_COLOR],
-      ['Most common alt allele', ALT_HUE],
-      ['2nd most common', ALLELE_HUES[1]],
-      ['4th most common', ALLELE_HUES[3]],
-      ['8th most common and rarer', ALLELE_HUES[7]],
+      ['Reference', REFERENCE_COLOR, undefined],
+      ['Most common alt allele', ALT_HUE, undefined],
+      [
+        'Other alt alleles at each site, by frequency',
+        ALLELE_HUES[1],
+        [
+          { color: ALLELE_HUES[1] },
+          { color: ALLELE_HUES[3] },
+          { color: ALLELE_HUES[7] },
+        ],
+      ],
+      ['No call', NO_CALL_COLOR, undefined],
     ])
   })
 

@@ -113,7 +113,7 @@ test('the one multiallelic record on screen names the allele each hue stands for
   ])
 })
 
-test('a hue a second record paints stands for a rank, not an allele', () => {
+test('where two records paint hues past the first, the key names no allele', () => {
   const snv = featureInfoOf('snv')
   const triallelic = featureInfoOf('tri', {
     alt: ['G', 'C'],
@@ -125,11 +125,44 @@ test('a hue a second record paints stands for a rank, not an allele', () => {
     [triallelic, ALT | SLOT(1)],
   ])
   expect(keyed.primaryAltName).toBeUndefined()
+  expect(keyed.secondaryAlts).toEqual([{ slot: 1 }, { slot: 2 }, { slot: 3 }])
+})
+
+// rice qSW5's shape: one multiallelic record among biallelic neighbours
+test('biallelic neighbours sharing the first hue leave the one multiallelic record named past it', () => {
+  const keyed = keyedOf([
+    [featureInfoOf('left'), ALT],
+    [pup1, PUP1_PAINTED],
+    [featureInfoOf('right'), ALT],
+  ])
+  expect(keyed.primaryAltName).toBeUndefined()
   expect(keyed.secondaryAlts).toEqual([
-    { slot: 1 },
+    { slot: 1, name: '<X:4>, 88,924 bp path' },
     { slot: 2, name: '<X:2>, 53,149 bp path' },
     { slot: 3, name: '<X:3>, 46,260 bp path' },
   ])
+})
+
+test('sequence alleles of near lengths read apart, by ALT index and exact length', () => {
+  const ref = 'A'.repeat(2419)
+  const keyed = keyedOf([
+    [
+      featureInfoOf('vntr', {
+        ref,
+        alt: ['A'.repeat(2391), 'A'.repeat(2393), 'C'.repeat(2419), 'A'],
+        altOrder: ['3', '1', '2', '4'],
+      }),
+      ALT | SLOT(1) | SLOT(2) | SLOT(3),
+    ],
+  ])
+  const names = [keyed.primaryAltName, ...keyed.secondaryAlts.map(a => a.name)]
+  expect(names).toEqual([
+    'ALT 3, 2,419 bp (0 bp)',
+    'ALT 1, 2,391 bp (-28 bp)',
+    'ALT 2, 2,393 bp (-26 bp)',
+    'ALT 4, 1 bp (-2,418 bp)',
+  ])
+  expect(new Set(names).size).toBe(names.length)
 })
 
 test('a biallelic record names no allele', () => {
@@ -138,7 +171,7 @@ test('a biallelic record names no allele', () => {
   expect(keyed.secondaryAlts).toEqual([])
 })
 
-test('the last hue names no allele where a record folds its rarest into it', () => {
+test('no hue names an allele where a record folds its rarest into the last', () => {
   const keyed = keyedOf([
     [
       featureInfoOf('str', {
@@ -148,10 +181,7 @@ test('the last hue names no allele where a record folds its rarest into it', () 
       ALT | SLOT(1) | SLOT(7) | (1 << CELL_ALT_FOLDED),
     ],
   ])
-  expect(keyed.secondaryAlts).toEqual([
-    { slot: 1, name: '<X:2>' },
-    { slot: 7, folded: true },
-  ])
+  expect(keyed.secondaryAlts).toEqual([{ slot: 1 }, { slot: 7 }])
 })
 
 test('a spanning deletion is named as one, with no length', () => {

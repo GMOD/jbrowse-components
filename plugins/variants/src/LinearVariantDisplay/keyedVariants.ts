@@ -1,6 +1,6 @@
 import { touchesAny, windowsByRegion } from '@jbrowse/display-kit/keyWindows'
 
-import { getMinimalDesc } from '../VcfFeature/util.ts'
+import { ABBREVIATE_ALLELE_THRESHOLD, isSymbolic } from '../VcfFeature/util.ts'
 import { LAST_ALLELE_SLOT } from '../shared/alleleHues.ts'
 import {
   ALLELE_SLOT_BIT,
@@ -32,29 +32,40 @@ const EVERYWHERE = [{ start: 0, end: Number.POSITIVE_INFINITY }]
 
 /**
  * An allele hue past the first (`alleleHues.ts`) that a cell painted. `name`
- * is the allele it stands for, where every cell in the hue is one allele of
- * one record. `folded` where alleles ranked past the palette share it.
+ * is the allele it stands for, which every row carries or none does: all of
+ * them where one record painted every hue past the first, one allele to a
+ * hue.
  */
 export interface KeyedAllele {
   slot: number
   name?: string
-  folded?: boolean
 }
 
 type AlleleInfo = Pick<VariantFeatureInfo, 'ref' | 'alt' | 'alleleBp'>
 
-// An allele as the hover's "Alleles" row spells it, with the path length
-// `INFO/ALEN` states for it: its length through the graph, not the size of an
-// event against the reference.
+function signedBp(bp: number) {
+  return `${bp > 0 ? '+' : ''}${bp.toLocaleString('en-US')} bp`
+}
+
+// An allele by its ALT index and exact length beside the reference's, so no
+// two of a record read alike however close their lengths; a short
+// substitution by its bases. A symbolic allele keeps its own name, with the
+// path length `INFO/ALEN` states for it: its length through the graph, not
+// the size of an event against the reference.
 function alleleName({ ref, alt, alleleBp }: AlleleInfo, allele: string) {
   const index = Number(allele)
   const altText = alt[index - 1] ?? ''
   const bp = alleleBp[index]
   return altText === '*'
     ? 'spanning deletion'
-    : bp === undefined
-      ? getMinimalDesc(ref, altText)
-      : `${getMinimalDesc(ref, altText)}, ${bp.toLocaleString('en-US')} bp path`
+    : isSymbolic(altText)
+      ? bp === undefined
+        ? altText
+        : `${altText}, ${bp.toLocaleString('en-US')} bp path`
+      : altText.length === ref.length &&
+          altText.length < ABBREVIATE_ALLELE_THRESHOLD
+        ? `ALT ${index}, ${altText}`
+        : `ALT ${index}, ${altText.length.toLocaleString('en-US')} bp (${signedBp(altText.length - ref.length)})`
 }
 
 /**
@@ -67,7 +78,7 @@ export interface KeyedVariants {
   // the allele hues painted past the first, in slot order
   secondaryAlts: KeyedAllele[]
   // The allele the first hue stands for, where the one record painting it is
-  // one whose other alleles the key names too.
+  // the one whose other alleles the key names.
   primaryAltName?: string
   hasAltWithoutPhaseSet: boolean
   hasUnphased: boolean
@@ -85,11 +96,12 @@ function collect(
   keep?: (featureId: string) => boolean,
 ): KeyedVariants {
   let categories = 0
-  // per allele slot, how many records painted it and the last that did, a
-  // record shown in two displayed regions counted once
-  const slotRecords = new Uint32Array(LAST_ALLELE_SLOT + 1)
-  const slotInfo: (VariantFeatureInfo | undefined)[] = []
-  let foldedRecords = 0
+  // How many records painted the first hue and how many a hue past it, and
+  // the last of those, a record shown in two displayed regions counted once
+  let primaryRecords = 0
+  let secondaryRecords = 0
+  let secondaryPainted = 0
+  let secondaryInfo: VariantFeatureInfo | undefined
   const altColorValues = new Set<string>()
   const recordColorValues = new Set<string>()
   const svTypes = new Set<string>()
@@ -118,21 +130,13 @@ function collect(
         const painted = featureCategories[i]!
         const v = featureColorValues[i]!
         categories |= painted
+        if (painted & (1 << CELL_ALT)) {
+          primaryRecords++
+        }
         if (painted & (1 << CELL_ALT_SECONDARY)) {
-          for (let slot = 0; slot <= LAST_ALLELE_SLOT; slot++) {
-            if (
-              painted &
-              (1 << (slot === 0 ? CELL_ALT : ALLELE_SLOT_BIT + slot))
-            ) {
-              slotRecords[slot]!++
-              slotInfo[slot] = info
-            }
-          }
-          if (painted & (1 << CELL_ALT_FOLDED)) {
-            foldedRecords++
-          }
-        } else if (painted & (1 << CELL_ALT)) {
-          slotRecords[0]!++
+          secondaryRecords++
+          secondaryPainted = painted
+          secondaryInfo = info
         }
         if (v > 0) {
           recordColorValues.add(colorValues[v - 1]!)
@@ -146,26 +150,25 @@ function collect(
       }
     }
   }
-  const nameOf = (slot: number) => {
-    const info = slotInfo[slot]
-    const allele = info?.altOrder[slot]
-    return info && allele !== undefined && slotRecords[slot] === 1
-      ? alleleName(info, allele)
+  const named =
+    secondaryRecords === 1 && (secondaryPainted & (1 << CELL_ALT_FOLDED)) === 0
+      ? secondaryInfo
       : undefined
+  const nameOf = (slot: number) => {
+    const allele = named?.altOrder[slot]
+    return named && allele !== undefined ? alleleName(named, allele) : undefined
   }
   const secondaryAlts: KeyedAllele[] = []
   for (let slot = 1; slot <= LAST_ALLELE_SLOT; slot++) {
-    if (slotRecords[slot]! > 0) {
-      const folded = slot === LAST_ALLELE_SLOT && foldedRecords > 0
-      const name = folded ? undefined : nameOf(slot)
-      secondaryAlts.push({
-        slot,
-        ...(name === undefined ? {} : { name }),
-        ...(folded ? { folded } : {}),
-      })
+    if (categories & (1 << (ALLELE_SLOT_BIT + slot))) {
+      const name = nameOf(slot)
+      secondaryAlts.push(name === undefined ? { slot } : { slot, name })
     }
   }
-  const primaryAltName = nameOf(0)
+  const primaryAltName =
+    primaryRecords === 1 && secondaryPainted & (1 << CELL_ALT)
+      ? nameOf(0)
+      : undefined
   return {
     secondaryAlts,
     ...(primaryAltName === undefined ? {} : { primaryAltName }),

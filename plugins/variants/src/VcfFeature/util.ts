@@ -11,14 +11,14 @@ import {
 
 import type VCF from '@gmod/vcf'
 
-function isSymbolic(alt: string) {
+export function isSymbolic(alt: string) {
   return alt.startsWith('<') || isBreakend(alt)
 }
 
 // Render an allele sequence verbatim when short enough to read, otherwise a
 // compact base-pair count. Single source of the abbreviation threshold so ref
 // and alt never disagree within one rendered string.
-const ABBREVIATE_ALLELE_THRESHOLD = 10
+export const ABBREVIATE_ALLELE_THRESHOLD = 10
 export function abbreviateAllele(seq: string) {
   return seq.length >= ABBREVIATE_ALLELE_THRESHOLD
     ? getBpDisplayStr(seq.length)
