@@ -28,6 +28,7 @@ the fruit flies as a lineage with one copy. We:
   them as a PAF track
 - open a gene's orthogroup as a protein alignment under its gene tree, beside
   the genome, with the MSA view plugin
+- run the same build on a FASTA and GFF3 per genome of your own
 
 ## Prerequisites
 
@@ -84,9 +85,10 @@ configs name, or follow the same commands on
 | **`drosophila`**: melanogaster, simulans, yakuba, pseudoobscura, virilis | [GCF_000001215.4](https://www.ncbi.nlm.nih.gov/datasets/genome/GCF_000001215.4/), [GCF_016746395.2](https://www.ncbi.nlm.nih.gov/datasets/genome/GCF_016746395.2/), [GCF_016746365.2](https://www.ncbi.nlm.nih.gov/datasets/genome/GCF_016746365.2/), [GCF_009870125.1](https://www.ncbi.nlm.nih.gov/datasets/genome/GCF_009870125.1/), [GCF_030788295.1](https://www.ncbi.nlm.nih.gov/datasets/genome/GCF_030788295.1/)   |
 | **`solanaceae`**: tomato, potato, pepper, tobacco, coffee                | [GCF_036512215.1](https://www.ncbi.nlm.nih.gov/datasets/genome/GCF_036512215.1/), [GCA_020169535.1](https://www.ncbi.nlm.nih.gov/datasets/genome/GCA_020169535.1/), [GCF_002878395.1](https://www.ncbi.nlm.nih.gov/datasets/genome/GCF_002878395.1/), [GCF_001879085.1](https://www.ncbi.nlm.nih.gov/datasets/genome/GCF_001879085.1/), [GCA_900059795.1](https://www.ncbi.nlm.nih.gov/datasets/genome/GCA_900059795.1/)   |
 
-## The wheat set: genomes of one polyploid history {#wheat}
+## Run OrthoFinder and build the blocks table {#producing-the-blocks-table}
 
-The `wheat` set is the genomes of wheat's polyploid history:
+The build commands here produce the `wheat` set, the genomes of wheat's
+polyploid history:
 
 - **Aegilops tauschii**, diploid D donor
 - **bread wheat**, hexaploid, A+B+D
@@ -94,10 +96,7 @@ The `wheat` set is the genomes of wheat's polyploid history:
 - **durum**, domesticated tetraploid, A+B
 - **wild emmer**, durum's wild tetraploid ancestor
 
-## Running OrthoFinder and building the blocks table {#producing-the-blocks-table}
-
-The build commands here produce the `wheat` set; the other four differ only in
-the proteomes used:
+The other four sets differ only in the proteomes used:
 
 <!-- from: scripts/build_orthofinder_synteny.sh -->
 
@@ -130,7 +129,7 @@ orthologs2jbrowse orthofinder Orthogroups.tsv -o tauschii.blocks \
   --assembly wheat=bread_wheat
 ```
 
-### Duplicated genes: one ribbon, two ribbons or none {#what-to-do-with-a-duplicated-gene}
+### Choose how a duplicated gene is drawn {#what-to-do-with-a-duplicated-gene}
 
 In `Orthogroups.tsv` each cell lists one genome's genes in an orthogroup, so two
 genes in one cell have no single ribbon. `--pick` chooses among three
@@ -153,14 +152,14 @@ orthologs2jbrowse orthofinder Orthogroups.tsv -o tauschii.blocks \
   --pick single --max-copies 2
 ```
 
-### Matching gene ids between the table and the BEDs
+### Match gene ids between the table and the BEDs
 
 Column 4 of each BED must match the ids in the table exactly. The build script
 keeps each gene's longest protein and names it by the gene id, so OrthoFinder
 sees one protein per gene under the id the BED has. `--bed name=file` reports
 the share of ids placed, and the conversion stops if it places none.
 
-## Loading the wheat orthogroups as a synteny track
+## Load the wheat orthogroups as a synteny track
 
 One track backs each pair of adjacent rows in the stack:
 
@@ -188,7 +187,7 @@ One track backs each pair of adjacent rows in the stack:
 A mismatch between `blockAssemblies` and the column order the conversion printed
 raises a track error naming both lists.
 
-### Assemblies from a chrom.sizes
+### Load each assembly from a chrom.sizes
 
 A gene-level synteny view needs only sequence names and lengths, so each
 assembly is a [`ChromSizesAdapter`](/docs/config/chromsizesadapter) over a
@@ -200,7 +199,7 @@ name:
 { "name": "wheat", "uri": "wheat.chrom.sizes" }
 ```
 
-### Gene tracks, one per genome
+### Add a gene track per genome
 
 The multi-way display draws a lane per genome, with gene models from a gene
 track on that genome's assembly in the config, open or not
@@ -223,7 +222,7 @@ assembly's refNames, indexed with `tabix -C`:
 }
 ```
 
-## Stacking tauschii over wheat {#stacking-the-wheat-genomes}
+## Stack tauschii over wheat {#stacking-the-wheat-genomes}
 
 We'll stack the D-genome donor over bread wheat: **Add → Linear synteny view**,
 pick `wheat_orthogroups` and add tauschii above wheat; the
@@ -270,7 +269,7 @@ An orthogroup holds a gene's A, B and D copies (homoeologs) together, and
 `--pick expand` draws a link to each, so every tauschii chromosome fans out to
 the three wheat chromosomes of its group.
 
-### Wheat 4A against the D genome
+### Narrow wheat to 4A against the D genome
 
 Navigate the wheat row to `4A` alone, keeping **Query sequence**:
 
@@ -280,7 +279,7 @@ Other chromosomes appear on 4A only as single genes. The runs from tauschii 5
 and 7 are the 4AL/5AL and 4AL/7BS translocations (Devos et al. 1995; Dvorak et
 al. 2018).
 
-## Grasses: one rice region in two maize copies {#grasses}
+## Open rice against two maize copies {#grasses}
 
 The other four sets build with `bash build_orthofinder_synteny.sh <set>`
 ([Reproduce it end to end](#reproduce-it-end-to-end)), and each has a hosted
@@ -290,7 +289,7 @@ Maize went through a whole-genome duplication after it split from sorghum
 (Schnable et al. 2009), so one rice region pairs with one sorghum region and two
 maize regions.
 
-### One rice locus against both maize copies
+### Stack one rice locus between sorghum and maize
 
 Open the `grasses` config and stack sorghum over rice over maize, with
 `grasses_orthogroups` in each band. Then:
@@ -305,7 +304,7 @@ Sorghum shares the ancestry and lacks the duplication, so it is the control.
 
 <Figure caption="One rice locus between sorghum and maize from the grasses orthogroups track, a gene track under each row." src="/img/orthofinder_synteny/grasses_maize_wgd.png" />
 
-### A rice window against four grasses
+### Open a rice window against four grasses
 
 Open the same five grasses as a
 [multi-way synteny track](/docs/user_guides/multiway_synteny_display) on rice.
@@ -345,7 +344,7 @@ grass.
 
 <Video src="/media/synteny/multiway_launch_stack.mp4" caption="Launching a stack from the lane track: the track menu entry, the dialog's row checkboxes, and Replace current view." />
 
-## Vertebrates: one gar chromosome in two zebrafish copies {#vertebrates}
+## Open gar against two zebrafish copies {#vertebrates}
 
 The teleost fishes, zebrafish among them, descend from a genome duplication that
 spotted gar branched off before (Braasch et al. 2016). Open the `vertebrates`
@@ -360,7 +359,7 @@ Then:
 
 <Figure caption="Gar LG11 over the whole zebrafish genome from the vertebrates orthogroups track, each link colored by its zebrafish chromosome." src="/img/orthofinder_synteny/vertebrates.png" />
 
-### The human HOXD cluster against four vertebrates
+### Open human HOXD against four vertebrates
 
 Open human at `2:176,090,000-176,290,000`, the _HOXD_ cluster of body-axis
 patterning genes, with the orthogroups track on the
@@ -370,7 +369,7 @@ frog, gar and zebrafish under the human genes.
 
 <Figure caption="The human HOXD cluster over four vertebrate lanes from one orthogroups track, each lane with the genes annotated in that genome." src="/img/multiway_synteny/vertebrate_hox_lanes.png" />
 
-## Nightshades: one coffee region in three tomato copies {#nightshades}
+## Open coffee against three tomato copies {#nightshades}
 
 Tomato, potato and pepper share a whole-genome triplication that coffee lacks
 (Tomato Genome Consortium 2012; Denoeud et al. 2014). Open the `solanaceae`
@@ -390,7 +389,7 @@ in both bands. Then:
 Each copy has lost genes since the triplication, so most coffee genes link to
 one of the three.
 
-## Drosophila: one copy, rearranged {#drosophila}
+## Stack the flies around melanogaster {#drosophila}
 
 The `drosophila` set stacks _D. melanogaster_ with close relatives _D. simulans_
 and _D. yakuba_ and the distant _D. pseudoobscura_ and _D. virilis_, which share
@@ -414,7 +413,7 @@ one fly against melanogaster, with `drosophila_orthogroups` in each band. Then:
 
 <Figure caption="Four flies stacked with melanogaster between each pair, ribbons colored by melanogaster arm." src="/img/orthofinder_synteny/drosophila.png" />
 
-### Gene order in one 3L window across the flies
+### Compare gene order in one 3L window
 
 Open melanogaster at `3L:5,789,000-5,931,000` with the
 [multi-way synteny display](/docs/user_guides/multiway_synteny_display), which
@@ -423,7 +422,7 @@ this window.
 
 <Figure caption="Melanogaster 3L over four Drosophila lanes from one orthogroups track." src="/img/multiway_synteny/drosophila_lanes.png" />
 
-### Collinear blocks from the same orthogroups {#collinear-blocks}
+### Chain the orthogroups into collinear blocks {#collinear-blocks}
 
 An orthogroup is an unordered list of related genes.
 [MCScanX](https://github.com/wyp1125/MCScanX)'s `MCScanX_h` chains ortholog
@@ -506,7 +505,7 @@ every band:
 
 <Figure caption="The same stack from the drosophila_blocks track, one ribbon per collinear block." src="/img/orthofinder_synteny/drosophila_blocks.png" />
 
-## An orthogroup's alignment and gene tree {#orthogroup-alignments}
+## Open an orthogroup's alignment and gene tree {#orthogroup-alignments}
 
 Run past the orthogroup step, OrthoFinder also aligns each orthogroup and infers
 a gene tree for every one of four or more genes, and the
@@ -610,6 +609,34 @@ How the plugin matches a gene to its protein, including the ids OrthoFinder
 rewrites, is in its
 [OrthoFinder docs](https://github.com/GMOD/jbrowse-plugin-msaview/blob/main/docs/your-own-alignments.md#an-orthofinder-run).
 
+## Run it on your own genomes {#your-own-genomes}
+
+The [build script](#reproduce-it-end-to-end) maps a set name to the NCBI
+assemblies it downloads. Your own genomes
+need a FASTA and a GFF3 per genome.
+[gffread](https://github.com/gpertea/gffread) translates each CDS into the
+proteome and prints the transcript-to-gene map and FASTA index alongside.
+
+Name the files in a manifest, one line per genome:
+
+```bash
+cat > my_genomes.tsv <<'EOF'
+# name    genome                    annotation              aliases
+speciesA  data/speciesA.fa.gz       data/speciesA.gff3.gz
+speciesB  https://host/B.fa.gz      https://host/B.gff3.gz  GCF_000001405.40
+EOF
+
+bash build_orthofinder_synteny.sh my_genomes.tsv
+npx --yes serve orthofinder_my_genomes_build/jbrowse2  # then open the printed URL
+```
+
+- Column 1 names the assembly, and columns 2 and 3 take a local path or URL.
+- Column 4 is optional. An INSDC accession fetches NCBI's sequence report for
+  chromosome names, and a file name supplies a two-column alias table.
+- Column 2 also takes a proteome directly, which skips translation; its headers
+  then need a `gene:<id>` tag matching `ID=gene:<id>` in the GFF3.
+- A manifest needs at least two genomes.
+
 ## Reproduce it end to end
 
 [`build_orthofinder_synteny.sh`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/build_orthofinder_synteny.sh)
@@ -665,33 +692,6 @@ Two environment variables set the cuts:
 ```bash
 MAXSEQ=60 MAXCOPIES=6 bash build_orthofinder_synteny.sh wheat
 ```
-
-## Your own genomes
-
-The script maps a set name to the NCBI assemblies it downloads. Your own genomes
-need a FASTA and a GFF3 per genome.
-[gffread](https://github.com/gpertea/gffread) translates each CDS into the
-proteome and prints the transcript-to-gene map and FASTA index alongside.
-
-Name the files in a manifest, one line per genome:
-
-```bash
-cat > my_genomes.tsv <<'EOF'
-# name    genome                    annotation              aliases
-speciesA  data/speciesA.fa.gz       data/speciesA.gff3.gz
-speciesB  https://host/B.fa.gz      https://host/B.gff3.gz  GCF_000001405.40
-EOF
-
-bash build_orthofinder_synteny.sh my_genomes.tsv
-npx --yes serve orthofinder_my_genomes_build/jbrowse2  # then open the printed URL
-```
-
-- Column 1 names the assembly, and columns 2 and 3 take a local path or URL.
-- Column 4 is optional. An INSDC accession fetches NCBI's sequence report for
-  chromosome names, and a file name supplies a two-column alias table.
-- Column 2 also takes a proteome directly, which skips translation; its headers
-  then need a `gene:<id>` tag matching `ID=gene:<id>` in the GFF3.
-- A manifest needs at least two genomes.
 
 ## See also
 
