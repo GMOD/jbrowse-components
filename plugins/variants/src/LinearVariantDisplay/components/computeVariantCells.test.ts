@@ -2,18 +2,25 @@ import VcfParser from '@gmod/vcf'
 import Flatbush from '@jbrowse/core/util/flatbush'
 
 import VcfFeature from '../../VcfFeature/index.ts'
+import { ALLELE_HUES } from '../../shared/alleleHues.ts'
 import { cellHueOf } from '../../shared/cellHue.ts'
+import { REFERENCE_COLOR } from '../../shared/constants.ts'
 import {
   buildSampleIndex,
   decodeGenotype,
   internGenotype,
 } from '../../shared/genotypeCodec.ts'
 import {
+  compileSiteFilter,
+  filterVariant,
+} from '../../shared/minorAlleleFrequencyUtils.ts'
+import {
   CELL_ALT,
   CELL_ALT_NO_PHASE_SET,
   CELL_ALT_SECONDARY,
   CELL_NO_CALL,
 } from '../../shared/variantCellStyles.ts'
+import { getCachedABGR } from '../../shared/variantWebglUtils.ts'
 import { keyedVariantsFetched } from '../keyedVariants.ts'
 import {
   paintCellColors,
@@ -132,7 +139,7 @@ describe('computeVariantCells phased genotypes', () => {
   test('featureInfo genotypes keyed by sampleName not HP-suffixed name', () => {
     const args = genotypeArgs([feature])
     const result = computeVariantCells({
-      filteredVariants: [{ feature, mostFrequentAlt: '1' }],
+      filteredVariants: [{ feature, altOrder: ['1'] }],
       sources,
       rowsField: 'haplotype',
       showReference: false,
@@ -175,7 +182,7 @@ describe('computeVariantCells phased no-call vs unphased', () => {
     const { BLACK_ABGR, NO_CALL_COLOR } =
       await import('../../shared/constants.ts')
     const result = computeVariantCells({
-      filteredVariants: [{ feature, mostFrequentAlt: '1' }],
+      filteredVariants: [{ feature, altOrder: ['1'] }],
       sources,
       rowsField: 'haplotype',
       showReference: false,
@@ -224,7 +231,7 @@ describe('computeVariantCells haploid genotypes in phased mode', () => {
       await import('../../shared/constants.ts')
     const { ALT_HUE } = await import('../../shared/cellFill.ts')
     const result = computeVariantCells({
-      filteredVariants: [{ feature, mostFrequentAlt: '1' }],
+      filteredVariants: [{ feature, altOrder: ['1'] }],
       sources,
       rowsField: 'haplotype',
       showReference: true,
@@ -267,7 +274,7 @@ describe('computeVariantCells mixed ploidy in phased mode', () => {
 
   test('a haplotype row the sample does not have draws no cell', () => {
     const result = computeVariantCells({
-      filteredVariants: [{ feature, mostFrequentAlt: '1' }],
+      filteredVariants: [{ feature, altOrder: ['1'] }],
       sources,
       rowsField: 'haplotype',
       showReference: true,
@@ -297,7 +304,7 @@ describe('computeVariantCells insertion bounds', () => {
       end: 101,
     })
     const result = computeVariantCells({
-      filteredVariants: [{ feature, mostFrequentAlt: '1' }],
+      filteredVariants: [{ feature, altOrder: ['1'] }],
       sources,
       rowsField: 'sample',
       showReference: false,
@@ -320,7 +327,7 @@ describe('computeVariantCells insertion bounds', () => {
       end: 101,
     })
     const result = computeVariantCells({
-      filteredVariants: [{ feature, mostFrequentAlt: '1' }],
+      filteredVariants: [{ feature, altOrder: ['1'] }],
       sources,
       rowsField: 'sample',
       showReference: false,
@@ -352,7 +359,7 @@ describe('computeVariantCells per-variant hue', () => {
   const override = 'rgb(1,2,3)'
   const cells = () =>
     computeVariantCells({
-      filteredVariants: [{ feature, mostFrequentAlt: '1' }],
+      filteredVariants: [{ feature, altOrder: ['1'] }],
       sources,
       rowsField: 'sample',
       showReference: true,
@@ -420,7 +427,7 @@ describe('insertion glyph inputs', () => {
 
   function run(feature: ReturnType<typeof makeFeature>) {
     return computeVariantCells({
-      filteredVariants: [{ feature, mostFrequentAlt: '1' }],
+      filteredVariants: [{ feature, altOrder: ['1'] }],
       sources,
       rowsField: 'haplotype',
       showReference: true,
@@ -484,8 +491,8 @@ describe('spatial index', () => {
 
   const result = computeVariantCells({
     filteredVariants: [
-      { feature: near, mostFrequentAlt: '1' },
-      { feature: far, mostFrequentAlt: '1' },
+      { feature: near, altOrder: ['1'] },
+      { feature: far, altOrder: ['1'] },
     ],
     sources,
     rowsField: 'sample',
@@ -568,8 +575,8 @@ describe('cell bucket ordering', () => {
   test('drawing reference: both buckets sorted, boundary at refCellCount', () => {
     const result = computeVariantCells({
       filteredVariants: [
-        { feature: a, mostFrequentAlt: '1' },
-        { feature: b, mostFrequentAlt: '1' },
+        { feature: a, altOrder: ['1'] },
+        { feature: b, altOrder: ['1'] },
       ],
       sources,
       rowsField: 'sample',
@@ -588,8 +595,8 @@ describe('cell bucket ordering', () => {
   test('skipping reference: empty ref bucket, all cells sorted', () => {
     const result = computeVariantCells({
       filteredVariants: [
-        { feature: a, mostFrequentAlt: '1' },
-        { feature: b, mostFrequentAlt: '1' },
+        { feature: a, altOrder: ['1'] },
+        { feature: b, altOrder: ['1'] },
       ],
       sources,
       rowsField: 'sample',
@@ -622,8 +629,8 @@ describe('cell bucket ordering', () => {
     )
     const result = computeVariantCells({
       filteredVariants: [
-        { feature: a, mostFrequentAlt: '1' },
-        { feature: sparse, mostFrequentAlt: '1' },
+        { feature: a, altOrder: ['1'] },
+        { feature: sparse, altOrder: ['1'] },
       ],
       sources,
       rowsField: 'sample',
@@ -662,7 +669,7 @@ describe('phase-set coloring is opt-in', () => {
 
   function altColors(colorByPhaseSet: boolean) {
     const result = computeVariantCells({
-      filteredVariants: [{ feature, mostFrequentAlt: '1' }],
+      filteredVariants: [{ feature, altOrder: ['1'] }],
       sources,
       rowsField: 'haplotype',
       showReference: false,
@@ -692,8 +699,8 @@ describe('phase-set coloring is opt-in', () => {
     const run = (colorByPhaseSet: boolean) =>
       computeVariantCells({
         filteredVariants: [
-          { feature, mostFrequentAlt: '1' },
-          { feature: other, mostFrequentAlt: '1' },
+          { feature, altOrder: ['1'] },
+          { feature: other, altOrder: ['1'] },
         ],
         sources,
         rowsField: 'haplotype',
@@ -727,7 +734,7 @@ test('a site with no ALT alleles reports an empty alt list', () => {
     end: 101,
   })
   const result = computeVariantCells({
-    filteredVariants: [{ feature, mostFrequentAlt: '1' }],
+    filteredVariants: [{ feature, altOrder: ['1'] }],
     sources: [{ name: 'S1', sampleName: 'S1' }],
     rowsField: 'sample',
     showReference: true,
@@ -757,7 +764,7 @@ test('each record carries its SV class and which alleles are structural', () => 
   const result = computeVariantCells({
     filteredVariants: features.map(feature => ({
       feature,
-      mostFrequentAlt: '1',
+      altOrder: ['1'],
     })),
     sources: [{ name: 'S1', sampleName: 'S1' }],
     rowsField: 'sample',
@@ -792,7 +799,7 @@ describe('featureInfo records every genotype, not only painted ones', () => {
   const args = genotypeArgs([feature])
   const run = (showReference: boolean) =>
     computeVariantCells({
-      filteredVariants: [{ feature, mostFrequentAlt: '1' }],
+      filteredVariants: [{ feature, altOrder: ['1'] }],
       sources,
       rowsField: 'sample',
       showReference,
@@ -821,7 +828,7 @@ describe('featureInfo records every genotype, not only painted ones', () => {
   // anchored sort reads.
   test('a sample the display is not drawing still has its genotype recorded', () => {
     const result = computeVariantCells({
-      filteredVariants: [{ feature, mostFrequentAlt: '1' }],
+      filteredVariants: [{ feature, altOrder: ['1'] }],
       sources: [{ name: 'S2', sampleName: 'S2' }],
       rowsField: 'sample',
       showReference: false,
@@ -844,7 +851,7 @@ describe('featureInfo records every genotype, not only painted ones', () => {
     })
     const phasedArgs = genotypeArgs([phasedFeature])
     const result = computeVariantCells({
-      filteredVariants: [{ feature: phasedFeature, mostFrequentAlt: '1' }],
+      filteredVariants: [{ feature: phasedFeature, altOrder: ['1'] }],
       sources: [
         { name: 'S1 HP1', sampleName: 'S1', HP: 0 },
         { name: 'S1 HP2', sampleName: 'S1', HP: 1 },
@@ -898,7 +905,7 @@ describe('computeVariantCells cellAltDosage', () => {
     rowsField: VariantRowsField,
   ) {
     const result = computeVariantCells({
-      filteredVariants: [{ feature: f, mostFrequentAlt: '1' }],
+      filteredVariants: [{ feature: f, altOrder: ['1'] }],
       sources: srcs,
       rowsField,
       showReference: true,
@@ -1004,7 +1011,7 @@ test.each([
     const result = computeVariantCells({
       filteredVariants: [reference, feature].map(f => ({
         feature: f,
-        mostFrequentAlt: '1',
+        altOrder: ['1'],
       })),
       sources: [{ name: 'S1', sampleName: 'S1' }],
       rowsField: 'sample',
@@ -1049,7 +1056,7 @@ describe('phase-set coloring classifies from the allele, not the color', () => {
 
   function run() {
     const result = computeVariantCells({
-      filteredVariants: [{ feature, mostFrequentAlt: '1' }],
+      filteredVariants: [{ feature, altOrder: ['1'] }],
       sources,
       rowsField: 'haplotype',
       showReference: true,
@@ -1093,7 +1100,7 @@ test('phase-set coloring still files reference cells in the reference bucket', (
     ['S1', 'S2'],
   )
   const result = computeVariantCells({
-    filteredVariants: [{ feature, mostFrequentAlt: '1' }],
+    filteredVariants: [{ feature, altOrder: ['1'] }],
     sources,
     rowsField: 'haplotype',
     showReference: true,
@@ -1120,7 +1127,7 @@ test('phase-set coloring files a secondary alt with no phase set as one', () => 
       ['S1'],
     )
     return computeVariantCells({
-      filteredVariants: [{ feature, mostFrequentAlt: '1' }],
+      filteredVariants: [{ feature, altOrder: ['1'] }],
       sources,
       rowsField: 'haplotype',
       showReference: true,
@@ -1146,7 +1153,7 @@ test('phase-set coloring honors reference cells off', () => {
     'S1',
   ])
   const result = computeVariantCells({
-    filteredVariants: [{ feature, mostFrequentAlt: '1' }],
+    filteredVariants: [{ feature, altOrder: ['1'] }],
     sources,
     rowsField: 'haplotype',
     showReference: false,
@@ -1166,7 +1173,7 @@ describe('the painted record reports what this pass emitted', () => {
     { name: 'S1 HP1', sampleName: 'S1', HP: 0 },
     { name: 'S1 HP2', sampleName: 'S1', HP: 1 },
   ]
-  const run = (gt: string, mostFrequentAlt = '1') => {
+  const run = (gt: string, altOrder = ['1']) => {
     const feature = makeFeature({
       genotypes: { S1: gt },
       FORMAT: [],
@@ -1179,7 +1186,7 @@ describe('the painted record reports what this pass emitted', () => {
       end: 101,
     })
     return computeVariantCells({
-      filteredVariants: [{ feature, mostFrequentAlt }],
+      filteredVariants: [{ feature, altOrder }],
       sources,
       rowsField: 'haplotype',
       showReference: false,
@@ -1231,8 +1238,8 @@ describe('the painted record reports what this pass emitted', () => {
     )
     const result = computeVariantCells({
       filteredVariants: [
-        { feature: carried, mostFrequentAlt: '1' },
-        { feature: homRef, mostFrequentAlt: '1' },
+        { feature: carried, altOrder: ['1'] },
+        { feature: homRef, altOrder: ['1'] },
       ],
       sources: [{ name: 'S1', sampleName: 'S1' }],
       rowsField: 'sample',
@@ -1248,5 +1255,81 @@ describe('the painted record reports what this pass emitted', () => {
         keyOf: v => v,
       }),
     ).toEqual(['HIGH'])
+  })
+})
+
+// A `minigraph --call` record: one haploid call per assembly, symbolic alleles
+// and their lengths in INFO/ALEN. <X:2> is the commonest alt, then <X:1>, then
+// <X:3> and <X:4>, each carried once, in file order.
+describe('a multiallelic site in phased mode', () => {
+  const samples = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H']
+  const feature = vcfFeature(
+    `1\t101\tv1\tN\t<X:1>,<X:2>,<X:3>,<X:4>\t60\tPASS\tALEN=39,39,53149,46260,88924\tGT\t${[
+      '0',
+      '1',
+      '2',
+      '2',
+      '3',
+      '4',
+      '1',
+      '2',
+    ].join('\t')}`,
+    samples,
+  )
+  const variant = filterVariant(feature, compileSiteFilter(undefined))!
+  const sources: ProcessedSource[] = samples.map(name => ({
+    name: `${name} HP1`,
+    sampleName: name,
+    HP: 0,
+  }))
+  const result = computeVariantCells({
+    filteredVariants: [variant],
+    sources,
+    rowsField: 'haplotype',
+    showReference: true,
+    ...genotypeArgs([feature]),
+  })
+
+  test('each allele takes its own hue, dealt by frequency', () => {
+    expect(variant.altOrder).toEqual(['2', '1', '3', '4'])
+    const colorOfRow = new Map(
+      [...result.cellRowIndices].map((row, i) => [row, result.cellColors[i]]),
+    )
+    expect(samples.map((_, row) => colorOfRow.get(row))).toEqual(
+      [
+        REFERENCE_COLOR,
+        ALLELE_HUES[1]!,
+        ALLELE_HUES[0]!,
+        ALLELE_HUES[0]!,
+        ALLELE_HUES[2]!,
+        ALLELE_HUES[3]!,
+        ALLELE_HUES[1]!,
+        ALLELE_HUES[0]!,
+      ].map(getCachedABGR),
+    )
+  })
+
+  test('the key names the allele and stated length each hue stands for', () => {
+    const keyed = keyedVariantsFetched([result])
+    expect(keyed.primaryAltName).toBe('<X:2>, 53,149 bp')
+    expect(keyed.secondaryAlts).toEqual([
+      { slot: 1, name: '<X:1>, 39 bp' },
+      { slot: 2, name: '<X:3>, 46,260 bp' },
+      { slot: 3, name: '<X:4>, 88,924 bp' },
+    ])
+  })
+
+  test('sample rows keep the one alt hue, where lightness is the dosage', () => {
+    const bySample = computeVariantCells({
+      filteredVariants: [variant],
+      sources: samples.map(name => ({ name, sampleName: name })),
+      rowsField: 'sample',
+      showReference: false,
+      ...genotypeArgs([feature]),
+    })
+    expect(new Set(bySample.cellColors)).toEqual(
+      new Set([getCachedABGR(ALLELE_HUES[0]!)]),
+    )
+    expect(keyedVariantsFetched([bySample]).secondaryAlts).toEqual([])
   })
 })

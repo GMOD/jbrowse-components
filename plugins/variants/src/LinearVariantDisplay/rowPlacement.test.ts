@@ -49,7 +49,7 @@ function regularCellData(rowNames: string[]): CellDataResult {
         cellFeatureIndices: new Uint32Array(numCells),
         numCells,
         refCellCount: 0,
-        featureCategories: new Uint8Array(1),
+        featureCategories: new Uint16Array(1),
         colorValues: [],
         featureInfo: [featureInfoOf('v0', { length: 100 })],
         featurePositions: Uint32Array.from([100, 200]),

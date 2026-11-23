@@ -31,7 +31,7 @@ interface AlleleBuckets {
 // the GT column, and that string splits to `['']` — which fell through to
 // `otherCounts` as an allele named ''. Two consequences, both silent: it entered
 // the MAF denominator as a *called* allele, and once empties outnumbered the
-// real alt it became `mostFrequentAlt`, so every genuine alt cell compared
+// real alt it led `altOrder`, so every genuine alt cell compared
 // unequal and painted as "other alt allele". `readAltDosages` already reads the
 // same string as missing, so this is what puts the counters on its answer.
 function countStringAllele(allele: string, b: AlleleBuckets) {

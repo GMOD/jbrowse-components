@@ -1,9 +1,5 @@
-import { ALT_HUE } from './cellFill.ts'
-import {
-  NO_CALL_COLOR,
-  REFERENCE_COLOR,
-  SECONDARY_ALT_COLOR,
-} from './constants.ts'
+import { ALLELE_HUES, alleleSlot } from './alleleHues.ts'
+import { NO_CALL_COLOR, REFERENCE_COLOR } from './constants.ts'
 
 // The color preset field for the phase set. A FORMAT value, per (feature,
 // sample), so the worker hands the cell loops a flag rather than a per-variant
@@ -90,7 +86,8 @@ export function altDosageByte(genotype: string) {
 export function getPhasedColor(
   alleles: string[],
   HP: number,
-  mostFrequentAlt: string,
+  // the site's carried alts, most frequent first (`AlleleSummary.altOrder`)
+  altOrder: readonly string[],
   // PS is Type=Integer in the spec and a string id is equally legal
   PS?: string | number,
   drawReference = true,
@@ -116,5 +113,5 @@ export function getPhasedColor(
     const hue = Number.isFinite(ps) ? Math.round((ps * 137.508) % 360) : 0
     return `hsl(${hue}, ${PS_SATURATION}%, ${PS_LIGHTNESS}%)`
   }
-  return allele === mostFrequentAlt ? ALT_HUE : SECONDARY_ALT_COLOR
+  return ALLELE_HUES[alleleSlot(altOrder.indexOf(allele))]!
 }

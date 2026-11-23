@@ -428,7 +428,6 @@ export function analyzeVariants({
       alleleCounts,
       Array.isArray(alt) ? alt : undefined,
     )
-    const { mostFrequentAlt } = summary
     const keptUncalled =
       keepUncalledSites &&
       summary.calledAlleleCount === 0 &&
@@ -438,7 +437,7 @@ export function analyzeVariants({
           Object.keys(record).length === 0))
     if (keptUncalled || passesSite(summary)) {
       const featureId = feature.id()
-      filteredVariants.push({ feature, mostFrequentAlt })
+      filteredVariants.push({ feature, altOrder: summary.altOrder })
       if (codes) {
         featureGenotypeCodes.set(featureId, codes)
       } else if (record) {

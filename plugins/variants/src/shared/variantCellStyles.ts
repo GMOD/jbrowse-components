@@ -1,4 +1,5 @@
 import { buildSourceSampleIndices } from '../VariantRPC/analyzeVariants.ts'
+import { alleleFolds, alleleSlot } from './alleleHues.ts'
 import { BLACK_ABGR, NO_CALL_COLOR } from './constants.ts'
 import { getAlleleColor } from './drawAlleleCount.ts'
 import {
@@ -27,9 +28,9 @@ interface VariantCellStyle {
   isAlt: boolean
   // 0-255 alt dosage; 0 for ref and no-call (see `altDosageByte`)
   altDosage: number
-  // a `CELL_*` index; the cell loops OR `1 << category` into the mask the
-  // legend lists
-  category: number
+  // the `featureCategories` bits the cell sets: its `CELL_*` category's, and
+  // for an alt past the site's most frequent its allele slot's
+  painted: number
 }
 
 const CELL_REF = 0
@@ -39,13 +40,28 @@ export const CELL_NO_CALL = 3
 export const CELL_UNPHASED = 4
 // an alt in its plain hue under phase-set coloring, its call naming no PS
 export const CELL_ALT_NO_PHASE_SET = 5
+// an alt ranked past the allele palette, sharing its last slot
+export const CELL_ALT_FOLDED = 6
+// `ALLELE_SLOT_BIT + slot` for the allele slots past the first
+// (`alleleHues.ts`), which `CELL_ALT_SECONDARY` cells paint
+export const ALLELE_SLOT_BIT = 8
+
+// The bits a cell carrying the alt at `rank` in its site's order sets while it
+// paints its allele hue.
+function alleleBits(rank: number) {
+  return rank === 0
+    ? 1 << CELL_ALT
+    : (1 << CELL_ALT_SECONDARY) |
+        (1 << (ALLELE_SLOT_BIT + alleleSlot(rank))) |
+        (alleleFolds(rank) ? 1 << CELL_ALT_FOLDED : 0)
+}
 
 // Classified from the ALLELE, never the color: a mode that blends its no-call
 // to a hex would read as alt-carrying (see `altDosageByte`).
 function styleForAllele(
   color: string,
   allele: string | undefined,
-  secondary = false,
+  altOrder: readonly string[],
 ): VariantCellStyle | null {
   if (!color) {
     return null
@@ -59,13 +75,11 @@ function styleForAllele(
     // per haplotype, so a drawn marker is full strength; the rows carry the
     // zygosity
     altDosage: isAlt ? 255 : 0,
-    category: isRef
-      ? CELL_REF
-      : !isAlt
-        ? CELL_NO_CALL
-        : secondary
-          ? CELL_ALT_SECONDARY
-          : CELL_ALT,
+    painted: isRef
+      ? 1 << CELL_REF
+      : isAlt
+        ? alleleBits(altOrder.indexOf(allele))
+        : 1 << CELL_NO_CALL,
   }
 }
 
@@ -90,7 +104,7 @@ function buildAlleleCountStyle(
     isRef,
     isAlt,
     altDosage,
-    category: isRef ? CELL_REF : isAlt ? CELL_ALT : CELL_NO_CALL,
+    painted: 1 << (isRef ? CELL_REF : isAlt ? CELL_ALT : CELL_NO_CALL),
   }
 }
 
@@ -106,7 +120,7 @@ function buildAlleleCountStyle(
  */
 function buildPhasedStyles(
   genotype: string,
-  mostFrequentAlt: string,
+  altOrder: readonly string[],
   numHaplotypes: number,
   drawRef: boolean,
 ): (VariantCellStyle | null)[] {
@@ -116,9 +130,9 @@ function buildPhasedStyles(
     for (let hp = 0; hp < numHaplotypes; hp++) {
       const allele = alleles[hp]
       out[hp] = styleForAllele(
-        getPhasedColor(alleles, hp, mostFrequentAlt, undefined, drawRef),
+        getPhasedColor(alleles, hp, altOrder, undefined, drawRef),
         allele,
-        allele !== mostFrequentAlt,
+        altOrder,
       )
     }
     return out
@@ -135,14 +149,14 @@ const NO_CALL_STYLE: VariantCellStyle = {
   isRef: false,
   isAlt: false,
   altDosage: 0,
-  category: CELL_NO_CALL,
+  painted: 1 << CELL_NO_CALL,
 }
 const UNPHASED_STYLE: VariantCellStyle = {
   abgr: BLACK_ABGR,
   isRef: false,
   isAlt: false,
   altDosage: 0,
-  category: CELL_UNPHASED,
+  painted: 1 << CELL_UNPHASED,
 }
 
 function uncalledStyle(genotype: string) {
@@ -165,12 +179,12 @@ function makePhaseSetStyler() {
     isRef: false,
     isAlt: false,
     altDosage: 0,
-    category: CELL_REF,
+    painted: 1 << CELL_REF,
   }
   return function phaseSetStyle(
     genotype: string,
     HP: number,
-    mostFrequentAlt: string,
+    altOrder: readonly string[],
     phaseSet: string | number | undefined,
     drawRef: boolean,
   ): VariantCellStyle | null {
@@ -179,13 +193,7 @@ function makePhaseSetStyler() {
     }
     const alleles = splitPhasedAlleles(genotype)
     const allele = alleles[HP]
-    const color = getPhasedColor(
-      alleles,
-      HP,
-      mostFrequentAlt,
-      phaseSet,
-      drawRef,
-    )
+    const color = getPhasedColor(alleles, HP, altOrder, phaseSet, drawRef)
     if (!color) {
       return null
     }
@@ -195,15 +203,16 @@ function makePhaseSetStyler() {
     scratch.isRef = isRef
     scratch.isAlt = isAlt
     scratch.altDosage = isAlt ? 255 : 0
-    scratch.category = isRef
-      ? CELL_REF
+    const rank = isAlt && phaseSet === undefined ? altOrder.indexOf(allele) : 0
+    scratch.painted = isRef
+      ? 1 << CELL_REF
       : !isAlt
-        ? CELL_NO_CALL
+        ? 1 << CELL_NO_CALL
         : phaseSet !== undefined
-          ? CELL_ALT
-          : allele === mostFrequentAlt
-            ? CELL_ALT_NO_PHASE_SET
-            : CELL_ALT_SECONDARY
+          ? 1 << CELL_ALT
+          : rank === 0
+            ? 1 << CELL_ALT_NO_PHASE_SET
+            : alleleBits(rank)
     return scratch
   }
 }
@@ -229,7 +238,7 @@ function countHaplotypes(sources: { HP?: number }[]) {
  *
  * The per-genotype memos are indexed by genotype code. The phased one clears
  * per site, for the codes the site used, since its entries bake in that site's
- * most frequent alt.
+ * alt order.
  *
  * `styleAt` may return `makePhaseSetStyler`'s scratch, so a caller reads the
  * style into its cell arrays before the next call.
@@ -265,17 +274,17 @@ export function makeSiteStyler({
   )
   const touchedCodes: number[] = []
   let codes: Uint32Array = new Uint32Array(0)
-  let mostFrequentAlt = ''
+  let altOrder: readonly string[] = []
   let byPhaseSet = false
 
   return {
     site(
       feature: Feature,
       siteCodes: Uint32Array,
-      siteMostFrequentAlt: string,
+      siteAltOrder: readonly string[],
     ) {
       codes = siteCodes
-      mostFrequentAlt = siteMostFrequentAlt
+      altOrder = siteAltOrder
       for (let t = 0; t < touchedCodes.length; t++) {
         phasedStyles[touchedCodes[t]!] = undefined
       }
@@ -307,7 +316,7 @@ export function makeSiteStyler({
         return phaseSetStyle(
           genotypeDict[code - 1]!,
           HP,
-          mostFrequentAlt,
+          altOrder,
           phaseSets.present[si] ? phaseSets.value[si] : undefined,
           drawRef,
         )
@@ -316,7 +325,7 @@ export function makeSiteStyler({
       if (byHp === undefined) {
         byHp = buildPhasedStyles(
           genotypeDict[code - 1]!,
-          mostFrequentAlt,
+          altOrder,
           numHaplotypes,
           drawRef,
         )

@@ -124,7 +124,7 @@ describe('calculateAlleleCounts', () => {
   // @gmod/vcf reports '' for a sample whose FORMAT fields stop before the GT
   // column. It used to land in the counts as an allele named '', which entered
   // the MAF denominator as a called allele and — once the empties outnumbered
-  // the real alt — became `mostFrequentAlt`, so every genuine alt cell painted
+  // the real alt — led `altOrder`, so every genuine alt cell painted
   // as "other alt allele".
   it('counts an empty genotype as a no-call, not an allele', () => {
     const result = calculateAlleleCounts({
@@ -134,7 +134,7 @@ describe('calculateAlleleCounts', () => {
       sample4: '',
     })
     expect(result).toEqual({ '.': 2, '0': 3, '1': 1 })
-    expect(summarizeAlleleCounts(result).mostFrequentAlt).toBe('1')
+    expect(summarizeAlleleCounts(result).altOrder[0]).toBe('1')
     expect(summarizeAlleleCounts(result).calledAlleleCount).toBe(4)
   })
 })
@@ -350,7 +350,7 @@ describe('filterVariant with compileSiteFilter', () => {
     expect(result[0]!.feature.id()).toBe('snp1')
   })
 
-  it('returns mostFrequentAlt correctly', () => {
+  it('leads altOrder with the most frequent alt', () => {
     const features = [
       createMockFeature('snp1', 100, 101, {
         s1: '0/1',
@@ -367,7 +367,7 @@ describe('filterVariant with compileSiteFilter', () => {
     })
 
     expect(result).toHaveLength(1)
-    expect(result[0]!.mostFrequentAlt).toBe('1')
+    expect(result[0]!.altOrder[0]).toBe('1')
   })
 
   it('handles multiallelic and returns most frequent alt', () => {
@@ -388,7 +388,7 @@ describe('filterVariant with compileSiteFilter', () => {
 
     expect(result).toHaveLength(1)
     // Allele 2 appears 5 times (most frequent alt), allele 1 appears 2 times
-    expect(result[0]!.mostFrequentAlt).toBe('2')
+    expect(result[0]!.altOrder[0]).toBe('2')
   })
 
   it('filters monomorphic sites (MAF = 0)', () => {
@@ -425,8 +425,8 @@ describe('filterVariant with compileSiteFilter', () => {
 
     expect(result.map(r => r.feature.id())).toEqual(['allRef', 'allAlt'])
     // An all-ref site has no alt allele to name, and nothing that reads
-    // mostFrequentAlt has an alt cell to compare it against
-    expect(result[0]!.mostFrequentAlt).toBe('1')
+    // altOrder has an alt cell to compare it against
+    expect(result[0]!.altOrder[0]).toBe('1')
   })
 
   it('drops a site with no called allele in any sample', () => {
@@ -551,27 +551,48 @@ describe('summarizeAlleleCounts', () => {
     expect(summarizeAlleleCounts({ '0': 5, '1': 3, '2': 1, '.': 3 })).toEqual({
       minorAlleleFrequency: 3 / 9,
       missingness: 3 / 12,
-      mostFrequentAlt: '1',
+      altOrder: ['1', '2'],
       calledAlleleCount: 9,
     })
   })
 
   it('names the most frequent alt even when ref is not the major allele', () => {
-    const { mostFrequentAlt, minorAlleleFrequency } = summarizeAlleleCounts({
+    const { altOrder, minorAlleleFrequency } = summarizeAlleleCounts({
       '0': 1,
       '1': 2,
       '2': 7,
     })
-    expect(mostFrequentAlt).toBe('2')
+    expect(altOrder).toEqual(['2', '1'])
     // second-most-common called allele is 1's 2 of 10
     expect(minorAlleleFrequency).toBe(0.2)
+  })
+
+  it('orders the carried alts by count, ties in file order and the spanning deletion last', () => {
+    expect(
+      summarizeAlleleCounts(
+        { '0': 4, '1': 2, '2': 9, '3': 5, '4': 5, '10': 5, '5': 1 },
+        ['A', '*', 'C', 'G', 'T', 'AA', 'AC', 'AG', 'AT', 'CA'],
+      ).altOrder,
+    ).toEqual(['3', '4', '10', '1', '5', '2'])
+  })
+
+  it('never leads with the spanning deletion, even as the one alt carried', () => {
+    expect(
+      summarizeAlleleCounts({ '0': 4, '2': 9 }, ['A', '*']).altOrder,
+    ).toEqual(['1', '2'])
+  })
+
+  it('shares one order between the sites carrying the same single alt', () => {
+    expect(summarizeAlleleCounts({ '0': 4, '2': 9 }).altOrder).toBe(
+      summarizeAlleleCounts({ '2': 1 }).altOrder,
+    )
   })
 
   it('reports zero counts for an empty site', () => {
     expect(summarizeAlleleCounts({})).toEqual({
       minorAlleleFrequency: 0,
       missingness: 0,
-      mostFrequentAlt: '1',
+      altOrder: ['1'],
       calledAlleleCount: 0,
     })
   })

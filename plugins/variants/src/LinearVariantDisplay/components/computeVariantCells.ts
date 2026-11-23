@@ -2,7 +2,10 @@ import { SV_TYPE_FIELD } from '@jbrowse/core/util/categoricalField'
 import Flatbush from '@jbrowse/core/util/flatbush'
 import { svClassOfAlt } from '@jbrowse/core/util/svAlt'
 
-import { getInsertedBp } from '../../shared/alleleLength.ts'
+import {
+  getInsertedBp,
+  getStatedAlleleLengths,
+} from '../../shared/alleleLength.ts'
 import { makeHueValueTable } from '../../shared/cellHue.ts'
 import { NO_RECORD_FIELD_READERS } from '../../shared/recordFields.ts'
 import { makeSiteStyler } from '../../shared/variantCellStyles.ts'
@@ -43,9 +46,10 @@ export interface VariantCellData extends CellHueValues {
   // spatial index over `featurePositions`, one interval per feature rather than
   // per cell (variantCellLookup.ts)
   featureIndexData: ArrayBuffer
-  // `1 << CELL_*` for every cell-color category each variant painted, which
+  // `1 << CELL_*` for every cell-color category each variant painted and
+  // `1 << (ALLELE_SLOT_BIT + slot)` for every allele hue past the first, which
   // the key reads for the variants on screen (`keyedVariants`)
-  featureCategories: Uint8Array
+  featureCategories: Uint16Array
 }
 
 // the per-allele half of `svClassOf`, which named the record's class
@@ -110,7 +114,7 @@ export function computeVariantCells({
   const featureInfo: VariantFeatureInfo[] = []
   const featurePositions = new Uint32Array(numFeatures * 2)
   const featureColorValues = new Uint32Array(numFeatures)
-  const featureCategories = new Uint8Array(numFeatures)
+  const featureCategories = new Uint16Array(numFeatures)
   const hueValues = makeHueValueTable()
 
   // The cursors cannot collide before the buffer is full: every genotype
@@ -148,18 +152,18 @@ export function computeVariantCells({
   }
 
   let featureIdx = 0
-  for (const { feature, mostFrequentAlt } of filteredVariants) {
+  for (const { feature, altOrder } of filteredVariants) {
     report?.()
     const featureId = feature.id()
     const start = feature.get('start')
     const end = feature.get('end')
     const codes = featureGenotypeCodes.get(featureId)!
-    styler.site(feature, codes, mostFrequentAlt)
+    styler.site(feature, codes, altOrder)
     let categories = 0
     for (let j = 0; j < numSources; j++) {
       const style = styler.styleAt(j)
       if (style) {
-        categories |= 1 << style.category
+        categories |= style.painted
         addCell(j, style.abgr, style.isRef, style.altDosage, featureIdx)
       }
     }
@@ -185,6 +189,8 @@ export function computeVariantCells({
       type: feature.get('type') ?? '',
       svType: typeof svType === 'string' ? svType : '',
       svAlleles: svType ? svAlleles(alt, ref, feature) : [],
+      altOrder,
+      alleleBp: getStatedAlleleLengths(feature, alt.length),
       tooltip: recordFields.tooltip(feature),
       groupKey: recordFields.groupKey(feature),
       labelName: recordFields.labelName(feature),

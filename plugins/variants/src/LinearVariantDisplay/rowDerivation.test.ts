@@ -90,7 +90,7 @@ function landCells(display: Display) {
           genotypeCodes: codes(gts),
         })),
         featureColorValues: new Uint32Array(Object.keys(GENOTYPES).length),
-        featureCategories: new Uint8Array(Object.keys(GENOTYPES).length),
+        featureCategories: new Uint16Array(Object.keys(GENOTYPES).length),
         featurePositions: Uint32Array.from(
           Object.keys(GENOTYPES).flatMap(id => [
             Number(id.slice(1)),

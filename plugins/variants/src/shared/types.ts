@@ -62,6 +62,13 @@ interface VariantFeatureBase {
   // an SV record carries one of these, not a small allele beside them at an
   // un-decomposed site. Empty for a record with no SV class.
   svAlleles: boolean[]
+  // The ALT indices a sample carries, most frequent first
+  // (`AlleleSummary.altOrder`): the order phased mode deals its allele hues in,
+  // so the key can name the allele a hue stands for.
+  altOrder: readonly string[]
+  // Each allele's stated length, reference first (`getStatedAlleleLengths`),
+  // empty where the record states none.
+  alleleBp: readonly number[]
   // The records band's reads off the whole record (`RecordFieldReads`), ''
   // where it reads none: the tooltip's record line, the value its sections
   // split by, and its name and description labels.

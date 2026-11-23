@@ -5,7 +5,7 @@ import { recordsByBlock } from './executeVariantCellData.ts'
 function record(id: string, start: number, end: number) {
   return {
     feature: new SimpleFeature({ id, data: { refName: 'ctgA', start, end } }),
-    mostFrequentAlt: '1',
+    altOrder: ['1'],
   }
 }
 

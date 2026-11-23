@@ -15,7 +15,7 @@ import {
 test('a phase-set hue is a whole degree, so the color strings are bounded', () => {
   const colors = new Set<string>()
   for (let ps = 1; ps <= 50000; ps++) {
-    colors.add(getPhasedColor(['1', '0'], 0, '1', String(ps)))
+    colors.add(getPhasedColor(['1', '0'], 0, ['1'], String(ps)))
   }
   expect(colors.size).toBeLessThanOrEqual(361)
 })
@@ -25,7 +25,7 @@ test('consecutive phase sets still land far apart on the wheel', () => {
   // neighbours onto each other
   const hue = (ps: number) =>
     Number(
-      /hsl\((\d+)/.exec(getPhasedColor(['1', '0'], 0, '1', String(ps)))![1],
+      /hsl\((\d+)/.exec(getPhasedColor(['1', '0'], 0, ['1'], String(ps)))![1],
     )
   for (let ps = 1; ps < 20; ps++) {
     const gap = Math.abs(hue(ps + 1) - hue(ps))
@@ -34,7 +34,9 @@ test('consecutive phase sets still land far apart on the wheel', () => {
 })
 
 test('a non-numeric phase set falls back to hue 0 rather than NaN', () => {
-  expect(getPhasedColor(['1', '0'], 0, '1', 'notanumber')).toMatch(/^hsl\(0, /)
+  expect(getPhasedColor(['1', '0'], 0, ['1'], 'notanumber')).toMatch(
+    /^hsl\(0, /,
+  )
 })
 
 // The wheel and the absent-data colors are different scales, so no turn of it
@@ -44,9 +46,9 @@ test('a non-numeric phase set falls back to hue 0 rather than NaN', () => {
 test('no phase set can paint the no-call color', () => {
   const colors = new Set<string>()
   for (let ps = 1; ps <= 50000; ps++) {
-    colors.add(getPhasedColor(['1', '0'], 0, '1', String(ps)))
+    colors.add(getPhasedColor(['1', '0'], 0, ['1'], String(ps)))
   }
-  colors.add(getPhasedColor(['1', '0'], 0, '1', 'notanumber'))
+  colors.add(getPhasedColor(['1', '0'], 0, ['1'], 'notanumber'))
   for (const color of colors) {
     expect(colord(color).toHex()).not.toBe(colord(NO_CALL_COLOR).toHex())
   }
@@ -95,9 +97,9 @@ describe('splitPhasedAlleles', () => {
 
   it('gives a three-digit haploid alt no second haplotype to paint', () => {
     const alleles = splitPhasedAlleles('123')
-    expect(getPhasedColor(alleles, 0, '123')).toBe(
-      getPhasedColor(['123'], 0, '123'),
+    expect(getPhasedColor(alleles, 0, ['123'])).toBe(
+      getPhasedColor(['123'], 0, ['123']),
     )
-    expect(getPhasedColor(alleles, 1, '123')).toBe('')
+    expect(getPhasedColor(alleles, 1, ['123'])).toBe('')
   })
 })

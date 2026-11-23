@@ -24,6 +24,8 @@ const featureInfo: VariantFeatureInfo = {
   type: 'breakend',
   svType: '',
   svAlleles: [],
+  altOrder: ['1'],
+  alleleBp: [],
   tooltip: '',
   groupKey: '',
   labelName: '',

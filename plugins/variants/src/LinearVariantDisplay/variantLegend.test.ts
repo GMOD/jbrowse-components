@@ -1,6 +1,7 @@
 import { SV_TYPE_FIELD } from '@jbrowse/core/util/categoricalField'
 import { cssColorToABGR } from '@jbrowse/core/util/colorBits'
 
+import { ALLELE_HUES } from '../shared/alleleHues.ts'
 import { ALT_HUE, HET_DOSAGE, shadeByDosage } from '../shared/cellFill.ts'
 import { cellHueOf } from '../shared/cellHue.ts'
 import { NO_CALL_COLOR, REFERENCE_COLOR } from '../shared/constants.ts'
@@ -31,7 +32,7 @@ function entriesOf(scale: ColorScale | undefined) {
 const inputs = (over: Partial<VariantLegendInputs> = {}): VariantLegendInputs =>
   ({
     rowsField: 'sample',
-    hasSecondaryAlt: false,
+    secondaryAlts: [],
     hasUnphased: false,
     hasNoCall: false,
     paintedDomain: [],
@@ -57,8 +58,14 @@ describe('getGenotypeEntries', () => {
 
   it('sample rows have no secondary-alt swatch: which alt is not on hue', () => {
     expect(
-      getGenotypeEntries(inputs({ hasSecondaryAlt: true })).map(i => i.label),
-    ).not.toContain('Other alt allele')
+      getGenotypeEntries(inputs({ secondaryAlts: [{ slot: 1 }] })).map(
+        i => i.label,
+      ),
+    ).toEqual([
+      'Homozygous reference',
+      'Alt, half dosage (het)',
+      'Alt, full dosage (hom)',
+    ])
   })
 
   it('the ramp swatches are the ones the cells take', () => {
@@ -83,12 +90,49 @@ describe('getGenotypeEntries', () => {
     ).toEqual(['Reference', 'Alt allele', 'No call'])
   })
 
-  it('phased mode names the other alt only when one was painted', () => {
+  it('phased mode keys each allele hue painted past the first by its rank', () => {
     expect(
       getGenotypeEntries(
-        inputs({ rowsField: 'haplotype', hasSecondaryAlt: true }),
+        inputs({
+          rowsField: 'haplotype',
+          secondaryAlts: [{ slot: 1 }, { slot: 3 }, { slot: 7, folded: true }],
+        }),
+      ).map(({ label, color }) => [label, color]),
+    ).toEqual([
+      ['Reference', REFERENCE_COLOR],
+      ['Most common alt allele', ALT_HUE],
+      ['2nd most common', ALLELE_HUES[1]],
+      ['4th most common', ALLELE_HUES[3]],
+      ['8th most common and rarer', ALLELE_HUES[7]],
+    ])
+  })
+
+  it('phased mode names the alleles of the one multiallelic record on screen', () => {
+    expect(
+      getGenotypeEntries(
+        inputs({
+          rowsField: 'haplotype',
+          primaryAltName: '<X:1>, 39 bp',
+          secondaryAlts: [
+            { slot: 1, name: '<X:7>, 76,586 bp' },
+            { slot: 2, name: '<X:2>, 53,149 bp' },
+          ],
+        }),
+      ).map(({ label, color }) => [label, color]),
+    ).toEqual([
+      ['Reference', REFERENCE_COLOR],
+      ['<X:1>, 39 bp', ALT_HUE],
+      ['<X:7>, 76,586 bp', ALLELE_HUES[1]],
+      ['<X:2>, 53,149 bp', ALLELE_HUES[2]],
+    ])
+  })
+
+  it('a biallelic view keeps its one Alt allele row, whatever the name', () => {
+    expect(
+      getGenotypeEntries(
+        inputs({ rowsField: 'haplotype', primaryAltName: 'A -> G' }),
       ).map(i => i.label),
-    ).toContain('Other alt allele')
+    ).toEqual(['Reference', 'Alt allele'])
   })
 })
 
@@ -406,7 +450,7 @@ describe('getVariantColorScales', () => {
     const sections = getVariantColorScales({
       ...inputs({
         rowsField: 'haplotype',
-        hasSecondaryAlt: true,
+        secondaryAlts: [{ slot: 1 }],
         hasNoCall: true,
       }),
       color: '#E69F00',
@@ -472,11 +516,13 @@ describe('phase-set legend section', () => {
       ...base,
       rowsField: 'haplotype',
       color: PHASE_SET,
-      hasSecondaryAlt: true,
+      secondaryAlts: [{ slot: 1 }, { slot: 2 }],
     })
-    expect(entriesOf(section)!.map(i => i.label)).toContain(
-      'Other alt allele, no phase set',
-    )
+    expect(
+      entriesOf(section)!.find(
+        i => i.label === 'Other alt alleles, no phase set',
+      )?.swatches,
+    ).toEqual([{ color: ALLELE_HUES[1] }, { color: ALLELE_HUES[2] }])
   })
 
   test('keys an alt painted its plain hue with no phase set', () => {

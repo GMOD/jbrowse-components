@@ -19,7 +19,7 @@ function setup() {
           [featureInfoOf('onScreen'), featureInfoOf('buffered')],
           {
             featurePositions: Uint32Array.from([100, 101, 5000, 5001]),
-            featureCategories: Uint8Array.from([
+            featureCategories: Uint16Array.from([
               1 << CELL_ALT,
               (1 << CELL_ALT) | (1 << CELL_NO_CALL),
             ]),

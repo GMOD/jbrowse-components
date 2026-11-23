@@ -83,7 +83,7 @@ function painted(records: PaintedRecord[], showReference = false) {
         id,
         data: { refName: 'ctgA', start, end, REF: 'A', ALT: ['T'] },
       }),
-      mostFrequentAlt: '1',
+      altOrder: ['1'],
     })),
   }).get(0)!
   const cells = computeVariantCells({

@@ -226,7 +226,8 @@ export function variantDataKeyViews(self: VariantDataKeyHost) {
         colorSetting: self.colorSetting,
         cells: () => ({
           rowsField: self.rowsField,
-          hasSecondaryAlt: self.keyedVariants.hasSecondaryAlt,
+          secondaryAlts: self.keyedVariants.secondaryAlts,
+          primaryAltName: self.keyedVariants.primaryAltName,
           hasAltWithoutPhaseSet: self.keyedVariants.hasAltWithoutPhaseSet,
           hasUnphased: self.keyedVariants.hasUnphased,
           hasNoCall: self.keyedVariants.hasNoCall,

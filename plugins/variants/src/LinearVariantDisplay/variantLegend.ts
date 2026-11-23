@@ -11,6 +11,7 @@ import {
 } from '@jbrowse/core/util/legendCandidates'
 import { identityKeyEntries } from '@jbrowse/display-kit/colorConfigSchema'
 
+import { ALLELE_HUES } from '../shared/alleleHues.ts'
 import { ALT_HUE, HET_DOSAGE, shadeByDosage } from '../shared/cellFill.ts'
 import {
   cellHueField,
@@ -20,12 +21,12 @@ import {
 import {
   NO_CALL_COLOR,
   REFERENCE_COLOR,
-  SECONDARY_ALT_COLOR,
   UNPHASED_COLOR,
 } from '../shared/constants.ts'
 import { PHASE_SET_FIELD } from '../shared/getPhasedColor.ts'
 
 import type { VariantRowsField } from '../shared/constants.ts'
+import type { KeyedAllele } from './keyedVariants.ts'
 import type {
   CategoricalEntry,
   CategoricalScale,
@@ -56,7 +57,10 @@ export interface VariantLegendInputs {
   // Painted, not possible: each is true only where the cell loops emitted a
   // cell of that category anywhere in the fetched cell data (see
   // `paintedLegendFlags`).
-  hasSecondaryAlt: boolean
+  // the allele hues past the first that phased cells painted, and the allele
+  // the first stands for where the key names it (`KeyedVariants`)
+  secondaryAlts: readonly KeyedAllele[]
+  primaryAltName?: string
   hasAltWithoutPhaseSet?: boolean
   hasUnphased: boolean
   hasNoCall: boolean
@@ -116,9 +120,13 @@ function dosageShaded(inputs: VariantLegendInputs) {
 // a row is a haplotype and there is no dosage to show. The labels name the
 // dosage, not the zygosity: the ramp is continuous, and a triploid `0/0/1`
 // paints at a third, which "Heterozygous alt" did not list.
-function altEntries(hue: string, inputs: VariantLegendInputs) {
+function altEntries(
+  hue: string,
+  inputs: VariantLegendInputs,
+  label = 'Alt allele',
+) {
   if (inputs.rowsField === 'haplotype') {
-    return [entry('Alt allele', hue)]
+    return [entry(label, hue)]
   }
   return [
     entry('Alt, half dosage (het)', shadeByDosage(hue, HET_DOSAGE)),
@@ -126,23 +134,41 @@ function altEntries(hue: string, inputs: VariantLegendInputs) {
   ]
 }
 
+const ORDINALS = ['', '2nd', '3rd', '4th', '5th', '6th', '7th', '8th']
+
+// A row per allele hue past the first: the allele it stands for where that is
+// one allele of one record on screen, else its frequency rank at its site.
+function secondaryAltEntries(alleles: readonly KeyedAllele[]) {
+  return alleles.map(({ slot, name, folded }) => ({
+    value: `alt${slot + 1}`,
+    label: name ?? `${ORDINALS[slot]} most common${folded ? ' and rarer' : ''}`,
+    color: ALLELE_HUES[slot],
+  }))
+}
+
 // The genotype scale: the constant alt hue or a plain CSS color from
-// `encoding.color`, plus, in phased mode, the fill for an alt other than the
-// site's most frequent. An override paints every alt, so that entry never keys beside one,
-// even while the flags are still the previous coloring's.
+// `encoding.color`, plus, in phased mode, the hue of each alt past its site's
+// most frequent. An override paints every alt, so those rows never key beside
+// one, even while the payload is still the previous coloring's.
 export function getGenotypeEntries(
   inputs: VariantLegendInputs,
   altColorOverride?: string,
 ): CategoricalEntry[] {
   const [reference, ...rest] = absentDataEntries(inputs)
   const secondary =
-    inputs.rowsField === 'haplotype' &&
-    !altColorOverride &&
-    inputs.hasSecondaryAlt
+    inputs.rowsField === 'haplotype' && !altColorOverride
+      ? inputs.secondaryAlts
+      : []
   return [
     reference!,
-    ...altEntries(altColorOverride || ALT_HUE, inputs),
-    ...(secondary ? [entry('Other alt allele', SECONDARY_ALT_COLOR)] : []),
+    ...altEntries(
+      altColorOverride || ALT_HUE,
+      inputs,
+      secondary.length > 0
+        ? (inputs.primaryAltName ?? 'Most common alt allele')
+        : undefined,
+    ),
+    ...secondaryAltEntries(secondary),
     ...rest,
   ]
 }
@@ -222,8 +248,18 @@ function getCellColorScale(
         ...(inputs.hasAltWithoutPhaseSet
           ? [entry('Alt allele, no phase set', ALT_HUE)]
           : []),
-        ...(inputs.hasSecondaryAlt
-          ? [entry('Other alt allele, no phase set', SECONDARY_ALT_COLOR)]
+        ...(inputs.secondaryAlts.length > 0
+          ? [
+              {
+                ...entry(
+                  'Other alt alleles, no phase set',
+                  ALLELE_HUES[inputs.secondaryAlts[0]!.slot],
+                ),
+                swatches: inputs.secondaryAlts.map(({ slot }) => ({
+                  color: ALLELE_HUES[slot]!,
+                })),
+              },
+            ]
           : []),
         ...(inputs.hasUnphased ? [entry('Unphased', UNPHASED_COLOR)] : []),
         ...(inputs.hasNoCall ? [entry('No call', NO_CALL_COLOR)] : []),

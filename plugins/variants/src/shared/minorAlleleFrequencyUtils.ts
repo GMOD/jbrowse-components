@@ -21,14 +21,48 @@ export interface AlleleSummary {
   // Fraction of all alleles that are no-call ('.'); high on sparse multi-sample
   // panels where many samples lack a genotype at a site.
   missingness: number
-  // Most common ALT index, never that of `*`, the spanning deletion, which
-  // marks an overlapping deletion's carrier rather than this site's variant.
-  // It only ever selects "primary alt" vs "other alt" coloring (getAlleleColor
-  // / getPhasedColor), so a site carrying no other alt reports '1'.
-  mostFrequentAlt: string
+  // The ALT indices a sample carries, most frequent first and ties in file
+  // order, which phased mode's allele hues are dealt in (`alleleHues.ts`).
+  // `*`, the spanning deletion, is last whatever its count: it marks an
+  // overlapping deletion's carrier rather than this site's variant, so it
+  // never takes the first hue, and a site carrying no other alt leads with
+  // '1'.
+  altOrder: readonly string[]
   // Called (non-'.') alleles across every sample. 0 means the site has no
   // genotype data at all — every sample no-call, or a sites-only VCF.
   calledAlleleCount: number
+}
+
+// A site's one carried alt, shared so the usual biallelic site allocates none
+const soleAltOrders = new Map<string, readonly string[]>()
+
+function soleAltOrder(alt: string) {
+  let order = soleAltOrders.get(alt)
+  if (!order) {
+    order = [alt]
+    soleAltOrders.set(alt, order)
+  }
+  return order
+}
+
+function altOrderOf(
+  alleleCounts: Record<string, number>,
+  alts: string[],
+  spanningDeletion: string,
+): readonly string[] {
+  const only = alts[0]
+  return only === undefined
+    ? soleAltOrder('1')
+    : alts.length === 1
+      ? only === spanningDeletion
+        ? ['1', only]
+        : soleAltOrder(only)
+      : alts.sort(
+          (a, b) =>
+            Number(a === spanningDeletion) - Number(b === spanningDeletion) ||
+            alleleCounts[b]! - alleleCounts[a]! ||
+            Number(a) - Number(b),
+        )
 }
 
 // One pass over the allele counts yields everything the filter chokepoint and
@@ -41,10 +75,9 @@ export function summarizeAlleleCounts(
   const spanningDeletion = String((alt?.indexOf('*') ?? -1) + 1)
   let firstMax = 0
   let secondMax = 0
-  let altMax = 0
   let called = 0
   let missing = 0
-  let mostFrequentAlt = '1'
+  const alts: string[] = []
   for (const key in alleleCounts) {
     const count = alleleCounts[key]!
     if (key === '.') {
@@ -57,9 +90,8 @@ export function summarizeAlleleCounts(
       } else if (count > secondMax) {
         secondMax = count
       }
-      if (key !== '0' && key !== spanningDeletion && count > altMax) {
-        altMax = count
-        mostFrequentAlt = key
+      if (key !== '0') {
+        alts.push(key)
       }
     }
   }
@@ -67,7 +99,7 @@ export function summarizeAlleleCounts(
   return {
     minorAlleleFrequency: called > 0 ? secondMax / called : 0,
     missingness: total > 0 ? missing / total : 0,
-    mostFrequentAlt,
+    altOrder: altOrderOf(alleleCounts, alts, spanningDeletion),
     calledAlleleCount: called,
   }
 }
@@ -86,7 +118,7 @@ export function calculateMissingnessFrequency(
 
 export interface FilteredVariant {
   feature: Feature
-  mostFrequentAlt: string
+  altOrder: readonly string[]
 }
 
 function computeAlleleCounts(feature: Feature) {
@@ -176,6 +208,6 @@ export function filterVariant(
   }
   const summary = siteSummaryOf(feature)
   return passesSite(summary)
-    ? { feature, mostFrequentAlt: summary.mostFrequentAlt }
+    ? { feature, altOrder: summary.altOrder }
     : undefined
 }

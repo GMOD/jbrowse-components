@@ -2,7 +2,9 @@ import { keyWindowsOf } from '@jbrowse/display-kit/keyWindows'
 
 import { cellPayloadOf, featureInfoOf } from '../shared/cellData.fixture.ts'
 import {
+  ALLELE_SLOT_BIT,
   CELL_ALT,
+  CELL_ALT_FOLDED,
   CELL_ALT_SECONDARY,
   CELL_NO_CALL,
   CELL_UNPHASED,
@@ -15,6 +17,9 @@ import {
 const REF_ONLY = 1
 const ALT = 1 << CELL_ALT
 const NO_CALL = 1 << CELL_NO_CALL
+// the bits a cell in allele slot `slot`, past the first, paints
+const SLOT = (slot: number) =>
+  (1 << CELL_ALT_SECONDARY) | (1 << (ALLELE_SLOT_BIT + slot))
 
 // on screen: chr1:1000-2000 of displayed region 0
 const windows = keyWindowsOf([
@@ -32,9 +37,9 @@ function region() {
     ],
     {
       featurePositions: Uint32Array.from([1500, 1501, 500, 501, 900, 1100]),
-      featureCategories: Uint8Array.from([
+      featureCategories: Uint16Array.from([
         ALT,
-        ALT | NO_CALL | (1 << CELL_ALT_SECONDARY) | (1 << CELL_UNPHASED),
+        ALT | NO_CALL | SLOT(1) | (1 << CELL_UNPHASED),
         REF_ONLY,
       ]),
       featureColorValues: Uint32Array.from([1, 2, 3]),
@@ -46,7 +51,7 @@ function region() {
 test('a category painted only off screen keys nothing', () => {
   const keyed = keyedVariantsInWindows({ 0: region() }, windows)
   expect(keyed.hasNoCall).toBe(false)
-  expect(keyed.hasSecondaryAlt).toBe(false)
+  expect(keyed.secondaryAlts).toEqual([])
   expect(keyed.hasUnphased).toBe(false)
 })
 
@@ -70,8 +75,81 @@ test('a region with no window on screen keys nothing', () => {
 test('a fetch that is what is shown keys every variant', () => {
   const keyed = keyedVariantsFetched([region()])
   expect(keyed.hasNoCall).toBe(true)
-  expect(keyed.hasSecondaryAlt).toBe(true)
+  expect(keyed.secondaryAlts.map(a => a.slot)).toEqual([1])
   expect(keyed.hasUnphased).toBe(true)
   expect(keyed.altColorValues).toEqual(['HIGH', 'LOW'])
   expect(keyed.svTypes).toEqual(['DEL', 'INV'])
+})
+
+// rice Pup1's shape: <X:1> the commonest of four carried alts, ALEN reference
+// first
+const pup1 = featureInfoOf('pup1', {
+  ref: 'N',
+  alt: ['<X:1>', '<X:2>', '<X:3>', '<X:4>'],
+  altOrder: ['1', '4', '2', '3'],
+  alleleBp: [39, 39, 53149, 46260, 88924],
+})
+const PUP1_PAINTED = ALT | SLOT(1) | SLOT(2) | SLOT(3)
+
+function keyedOf(records: [ReturnType<typeof featureInfoOf>, number][]) {
+  return keyedVariantsFetched([
+    cellPayloadOf(
+      records.map(([info]) => info),
+      {
+        featureCategories: Uint16Array.from(records.map(([, bits]) => bits)),
+        featurePositions: Uint32Array.from(records.flatMap(() => [10, 11])),
+      },
+    ),
+  ])
+}
+
+test('the one multiallelic record on screen names the allele each hue stands for', () => {
+  const keyed = keyedOf([[pup1, PUP1_PAINTED]])
+  expect(keyed.primaryAltName).toBe('<X:1>, 39 bp')
+  expect(keyed.secondaryAlts).toEqual([
+    { slot: 1, name: '<X:4>, 88,924 bp' },
+    { slot: 2, name: '<X:2>, 53,149 bp' },
+    { slot: 3, name: '<X:3>, 46,260 bp' },
+  ])
+})
+
+test('a hue a second record paints stands for a rank, not an allele', () => {
+  const snv = featureInfoOf('snv')
+  const triallelic = featureInfoOf('tri', {
+    alt: ['G', 'C'],
+    altOrder: ['2', '1'],
+  })
+  const keyed = keyedOf([
+    [pup1, PUP1_PAINTED],
+    [snv, ALT],
+    [triallelic, ALT | SLOT(1)],
+  ])
+  expect(keyed.primaryAltName).toBeUndefined()
+  expect(keyed.secondaryAlts).toEqual([
+    { slot: 1 },
+    { slot: 2, name: '<X:2>, 53,149 bp' },
+    { slot: 3, name: '<X:3>, 46,260 bp' },
+  ])
+})
+
+test('a biallelic record names no allele', () => {
+  const keyed = keyedOf([[featureInfoOf('snv'), ALT]])
+  expect(keyed.primaryAltName).toBeUndefined()
+  expect(keyed.secondaryAlts).toEqual([])
+})
+
+test('the last hue names no allele where a record folds its rarest into it', () => {
+  const keyed = keyedOf([
+    [
+      featureInfoOf('str', {
+        alt: Array.from({ length: 12 }, (_, i) => `<X:${i + 1}>`),
+        altOrder: Array.from({ length: 12 }, (_, i) => String(i + 1)),
+      }),
+      ALT | SLOT(1) | SLOT(7) | (1 << CELL_ALT_FOLDED),
+    ],
+  ])
+  expect(keyed.secondaryAlts).toEqual([
+    { slot: 1, name: '<X:2>' },
+    { slot: 7, folded: true },
+  ])
 })

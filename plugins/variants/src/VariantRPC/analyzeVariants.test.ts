@@ -48,7 +48,7 @@ function makeFeature(
     },
     toJSON: () => ({}),
   } as unknown as Feature
-  return { feature, mostFrequentAlt: '1' }
+  return { feature, altOrder: ['1'] }
 }
 
 // Read a feature's codes back the way the client does: by sample NAME, through
@@ -383,9 +383,9 @@ describe('the spanning deletion allele', () => {
   it('is never the most frequent alt', () => {
     const features = vcfFeatures(samples, lines)
     const [v1] = analyzeVariants({ features }).filteredVariants
-    expect(v1!.mostFrequentAlt).toBe('1')
+    expect(v1!.altOrder[0]).toBe('1')
     expect(features[0]!.alleleSummary()).toMatchObject({
-      mostFrequentAlt: '1',
+      altOrder: ['1', '2'],
       // three `0` of nine called alleles, four of them `*`
       minorAlleleFrequency: 3 / 9,
     })
@@ -414,7 +414,7 @@ function makeRecordFeature(
       k === 'genotypes' ? genotypes : k === 'ALT' ? ['A'] : undefined,
     toJSON: () => ({}),
   } as unknown as Feature
-  return { feature, mostFrequentAlt: '1' }
+  return { feature, altOrder: ['1'] }
 }
 
 // `hasPhasedOrHaploid` is what gates the "Phased" rendering-mode entry, and it

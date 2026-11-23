@@ -1,13 +1,18 @@
 import { touchesAny, windowsByRegion } from '@jbrowse/display-kit/keyWindows'
 
+import { getMinimalDesc } from '../VcfFeature/util.ts'
+import { LAST_ALLELE_SLOT } from '../shared/alleleHues.ts'
 import {
+  ALLELE_SLOT_BIT,
   CELL_ALT,
+  CELL_ALT_FOLDED,
   CELL_ALT_NO_PHASE_SET,
   CELL_ALT_SECONDARY,
   CELL_NO_CALL,
   CELL_UNPHASED,
 } from '../shared/variantCellStyles.ts'
 
+import type { VariantFeatureInfo } from '../shared/types.ts'
 import type { VariantCellData } from './components/computeVariantCells.ts'
 import type { KeyWindow } from '@jbrowse/display-kit/keyWindows'
 
@@ -26,13 +31,39 @@ const ALT_CELLS =
 const EVERYWHERE = [{ start: 0, end: Number.POSITIVE_INFINITY }]
 
 /**
- * What the key reads off the variants it lists: the absent-data and
- * secondary categories their cells painted, the color values of those that
+ * An allele hue past the first (`alleleHues.ts`) that a cell painted. `name`
+ * is the allele it stands for, where every cell in the hue is one allele of
+ * one record. `folded` where alleles ranked past the palette share it.
+ */
+export interface KeyedAllele {
+  slot: number
+  name?: string
+  folded?: boolean
+}
+
+type AlleleInfo = Pick<VariantFeatureInfo, 'ref' | 'alt' | 'alleleBp'>
+
+// An allele as the hover's "Alleles" row spells it, with the length the record
+// states for it.
+function alleleName({ ref, alt, alleleBp }: AlleleInfo, allele: string) {
+  const index = Number(allele)
+  const text = getMinimalDesc(ref, alt[index - 1] ?? '')
+  const bp = alleleBp[index]
+  return bp === undefined ? text : `${text}, ${bp.toLocaleString('en-US')} bp`
+}
+
+/**
+ * What the key reads off the variants it lists: the absent-data categories
+ * and the allele hues their cells painted, the color values of those that
  * painted an alt cell and of every one (what the records band paints), and
  * their SV classes.
  */
 export interface KeyedVariants {
-  hasSecondaryAlt: boolean
+  // the allele hues painted past the first, in slot order
+  secondaryAlts: KeyedAllele[]
+  // The allele the first hue stands for, where the one record painting it is
+  // one whose other alleles the key names too.
+  primaryAltName?: string
   hasAltWithoutPhaseSet: boolean
   hasUnphased: boolean
   hasNoCall: boolean
@@ -49,6 +80,10 @@ function collect(
   keep?: (featureId: string) => boolean,
 ): KeyedVariants {
   let categories = 0
+  // per allele slot, how many records painted it and the last that did
+  const slotRecords = new Uint32Array(LAST_ALLELE_SLOT + 1)
+  const slotInfo: (VariantFeatureInfo | undefined)[] = []
+  let foldedRecords = 0
   const altColorValues = new Set<string>()
   const recordColorValues = new Set<string>()
   const svTypes = new Set<string>()
@@ -61,7 +96,8 @@ function collect(
       featureInfo,
     } = data
     for (let i = 0; i < featureCategories.length; i++) {
-      const { svType, featureId } = featureInfo[i]!
+      const info = featureInfo[i]!
+      const { svType, featureId } = info
       if (
         touchesAny(
           spans,
@@ -73,6 +109,22 @@ function collect(
         const painted = featureCategories[i]!
         const v = featureColorValues[i]!
         categories |= painted
+        if (painted & (1 << CELL_ALT_SECONDARY)) {
+          for (let slot = 0; slot <= LAST_ALLELE_SLOT; slot++) {
+            if (
+              painted &
+              (1 << (slot === 0 ? CELL_ALT : ALLELE_SLOT_BIT + slot))
+            ) {
+              slotRecords[slot]!++
+              slotInfo[slot] = info
+            }
+          }
+          if (painted & (1 << CELL_ALT_FOLDED)) {
+            foldedRecords++
+          }
+        } else if (painted & (1 << CELL_ALT)) {
+          slotRecords[0]!++
+        }
         if (v > 0) {
           recordColorValues.add(colorValues[v - 1]!)
           if (painted & ALT_CELLS) {
@@ -85,8 +137,29 @@ function collect(
       }
     }
   }
+  const nameOf = (slot: number) => {
+    const info = slotInfo[slot]
+    const allele = info?.altOrder[slot]
+    return info && allele !== undefined && slotRecords[slot] === 1
+      ? alleleName(info, allele)
+      : undefined
+  }
+  const secondaryAlts: KeyedAllele[] = []
+  for (let slot = 1; slot <= LAST_ALLELE_SLOT; slot++) {
+    if (slotRecords[slot]! > 0) {
+      const folded = slot === LAST_ALLELE_SLOT && foldedRecords > 0
+      const name = folded ? undefined : nameOf(slot)
+      secondaryAlts.push({
+        slot,
+        ...(name === undefined ? {} : { name }),
+        ...(folded ? { folded } : {}),
+      })
+    }
+  }
+  const primaryAltName = nameOf(0)
   return {
-    hasSecondaryAlt: (categories & (1 << CELL_ALT_SECONDARY)) !== 0,
+    secondaryAlts,
+    ...(primaryAltName === undefined ? {} : { primaryAltName }),
     hasAltWithoutPhaseSet: (categories & (1 << CELL_ALT_NO_PHASE_SET)) !== 0,
     hasUnphased: (categories & (1 << CELL_UNPHASED)) !== 0,
     hasNoCall: (categories & (1 << CELL_NO_CALL)) !== 0,

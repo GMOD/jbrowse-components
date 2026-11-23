@@ -94,10 +94,6 @@ export const LD_CONNECTOR_STROKE_PX = 1
 export const NO_CALL_COLOR = 'hsl(50,50%,50%)'
 export const UNPHASED_COLOR = 'black'
 
-// Phased mode's fill for a haplotype carrying any alt but the site's most
-// frequent, which takes the alt hue every mode paints a full dose in
-export const SECONDARY_ALT_COLOR = '#e41a1c'
-
 // Pre-packed ABGR for the unphased "black" fill — lets the hot per-cell loop
 // skip the colord cache lookup.
 export const BLACK_ABGR = 0xff000000
