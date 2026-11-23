@@ -14,6 +14,8 @@
 //        [--timeout 120] [--out dir] [--list] [--clean] [--min-free-gb 150]
 //        [--cli main|released] [--env <prefix>]
 //
+// HEAVY_BUILDS take most of a day, so they run only when `--only` names them.
+//
 // `--clean` deletes each run's files after it finishes, keeping run.log.
 //
 // `--env` puts a tool environment's bin first on PATH, the one
@@ -46,6 +48,11 @@ const NEEDS_READER_INPUT: Record<string, string> = {
     "takes the reader's genome.fa and RepeatMasker .out",
 }
 
+const HEAVY_BUILDS: Record<string, string> = {
+  'build_fly_pangenome.sh': 'takes most of a day; name it with --only',
+  'build_rice_pangenome.sh': 'takes most of a day; name it with --only',
+}
+
 interface Run {
   id: string
   script: string
@@ -60,6 +67,7 @@ interface RunOptions {
   clean: boolean
   jbrowseCli: string
   pathPrefix: string
+  only: string[] | undefined
 }
 
 interface Result {
@@ -79,6 +87,12 @@ interface Result {
   seconds: number
   bytes: number
   configs: string[]
+}
+
+function matches(run: Run, list: string[]) {
+  return list.some(
+    o => run.script === `${o}.sh` || run.pages.includes(o) || run.id === o,
+  )
 }
 
 const ENV_ASSIGNMENT = /^(\w+)=("[^"]*"|'[^']*'|\S+)\s+/
@@ -241,7 +255,11 @@ async function runOne(run: Run, options: RunOptions) {
     bytes: 0,
     configs: [],
   }
-  const reason = NEEDS_READER_INPUT[run.script]
+  const reason =
+    NEEDS_READER_INPUT[run.script] ??
+    (options.only && matches(run, options.only)
+      ? undefined
+      : HEAVY_BUILDS[run.script])
   if (reason) {
     return { ...base, status: 'skipped', detail: reason } satisfies Result
   }
@@ -389,10 +407,6 @@ async function main() {
   })
   const names = (list?: string) =>
     list?.split(',').map(s => s.trim().replace(/\.sh$/, ''))
-  const matches = (run: Run, list: string[]) =>
-    list.some(
-      o => run.script === `${o}.sh` || run.pages.includes(o) || run.id === o,
-    )
   const only = names(values.only)
   const skip = names(values.skip) ?? []
   const runs = collectRuns().filter(
@@ -423,6 +437,7 @@ async function main() {
     pathPrefix: values.env
       ? `${path.join(path.resolve(values.env), 'bin')}${path.delimiter}`
       : '',
+    only,
   }
   const queue = [...runs]
   const results: Result[] = []
