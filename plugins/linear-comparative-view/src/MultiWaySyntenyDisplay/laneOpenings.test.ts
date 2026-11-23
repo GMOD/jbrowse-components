@@ -1471,10 +1471,10 @@ describe('a tandem copy the lane carries against the anchor', () => {
     expect(
       changes([
         run('p3', 0, 100_000, 100_000, -1),
-        run('p2', 100_000, 70_000, 30_000, -1),
+        run('p2', 100_000, 100_000, 30_000, -1),
         run('p1', 130_000, 0, 100_000, -1),
       ]),
-    ).toEqual([insertion(130_000, 70_000, 30_000)])
+    ).toEqual([insertion(100_000, 100_000, 30_000)])
   })
 
   test('states the overlap two pieces repeat, and nothing under SPLIT_AT_GAP_BP', () => {
@@ -1484,6 +1484,47 @@ describe('a tandem copy the lane carries against the anchor', () => {
     expect(
       changes([run('p1', 0, 0, 100_000), run('p2', 100_000, 95_000, 100_000)]),
     ).toEqual([])
+  })
+
+  test('states nothing for two pieces overlapping alike in lane and anchor', () => {
+    expect(
+      changes([run('p1', 0, 0, 100_000), run('p2', 85_000, 85_000, 100_000)]),
+    ).toEqual([])
+  })
+
+  test('states nothing for a step back to before the left piece’s anchor, on either strand', () => {
+    expect(
+      changes([
+        run('p1', 0, 100_000, 100_000),
+        run('p2', 100_000, 80_000, 100_000),
+      ]),
+    ).toEqual([])
+    expect(
+      changes([
+        run('p1', 0, 100_000, 100_000, -1),
+        run('p2', 100_000, 120_000, 100_000, -1),
+      ]),
+    ).toEqual([])
+  })
+
+  test('states the deletion after a copy from inside the left piece, as without the copy', () => {
+    const deletion = (lane: number) => ({
+      lane: [lane, lane],
+      anchor: 100_000,
+      laneBp: 0,
+      anchorBp: 50_000,
+      kind: 'deletion',
+    })
+    expect(
+      changes([run('p1', 0, 0, 100_000), run('p3', 100_000, 150_000, 100_000)]),
+    ).toEqual([deletion(100_000)])
+    expect(
+      changes([
+        run('p1', 0, 0, 100_000),
+        run('p2', 100_000, 40_000, 30_000),
+        run('p3', 130_000, 150_000, 100_000),
+      ]),
+    ).toEqual([insertion(100_000, 100_000, 30_000), deletion(130_000)])
   })
 })
 

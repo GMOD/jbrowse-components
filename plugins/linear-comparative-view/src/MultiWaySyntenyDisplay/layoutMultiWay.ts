@@ -687,7 +687,11 @@ function segmentsOf(
  * which opens and states nothing. A right piece stepping back to anchor the
  * left piece also holds, a tandem copy, states the lane bp repeating it as an
  * insertion at the left piece's anchor end; a step back to before the left
- * piece's anchor is a rearrangement and states nothing. Named records are genes, whose spacing says
+ * piece's anchor is a rearrangement and states nothing. A gap's anchor side
+ * starts past the anchor that the drawn pieces before it reached, from its
+ * left piece back through each whose anchor the next one starts inside, read
+ * on the drawn strand, so a copy leaves the change after it as the lane
+ * without the copy states it. Named records are genes, whose spacing says
  * nothing. An array record, of either strand, bounds gaps as a piece of the
  * drawn strand does, and a gap it bounds opens and states nothing, since its
  * anchor stretch is only where its copies lie.
@@ -707,11 +711,28 @@ function laneGapsOf(
   const openings: LaneOpening[] = []
   const unparted: LaneChange[] = []
   const parted: LaneChange[] = []
+  type Stretch = { refName: string; start: number; end: number }
+  const startsWithin = (anchor: Stretch, held: Stretch) =>
+    anchor.refName === held.refName &&
+    (orientation < 0
+      ? anchor.end <= held.end && anchor.end >= held.start
+      : anchor.start >= held.start && anchor.start <= held.end)
+  let reached = { refName: '', start: 0, end: 0 }
   forEachLaneGap(drawn, (left, right, laneGap, anchorGap) => {
+    const { anchor } = left
+    reached = arrayPiece(left)
+      ? reached
+      : startsWithin(anchor, reached)
+        ? {
+            refName: anchor.refName,
+            start: Math.min(reached.start, anchor.start),
+            end: Math.max(reached.end, anchor.end),
+          }
+        : anchor
     const [lo, hi] =
       orientation < 0
-        ? [right.anchor.end, left.anchor.start]
-        : [left.anchor.end, right.anchor.start]
+        ? [right.anchor.end, Math.max(right.anchor.end, reached.start)]
+        : [Math.min(right.anchor.start, reached.end), right.anchor.start]
     const inGap = turned.filter(
       p =>
         p.anchor.refName === left.anchor.refName &&
@@ -737,14 +758,15 @@ function laneGapsOf(
       if (laneGap >= 0 && net >= SPLIT_AT_GAP_BP) {
         openings.push({ at, bp: net })
       }
-      const repeatsLeft =
-        orientation < 0
-          ? right.anchor.end <= left.anchor.end
-          : right.anchor.start >= left.anchor.start
-      if (anchorGap < 0 && repeatsLeft && right.lane.end > left.lane.end) {
-        const laneBp =
-          Math.max(0, laneGap) +
-          Math.min(-anchorGap, right.lane.end - right.lane.start)
+      if (
+        anchorGap < 0 &&
+        startsWithin(right.anchor, left.anchor) &&
+        right.lane.end > left.lane.end
+      ) {
+        const laneBp = Math.min(
+          laneGap - anchorGap,
+          right.lane.end - left.lane.end,
+        )
         const point = orientation < 0 ? left.anchor.start : left.anchor.end
         if (laneBp >= SPLIT_AT_GAP_BP) {
           unparted.push({
