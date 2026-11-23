@@ -61,7 +61,7 @@ own calls.
 Add the assembly first. The hosted FASTA names its contigs bare (`1`) while the
 VCF uses `chr1`, so pass the alias file to map one onto the other.
 
-```json addassembly
+```json addassembly genome=hg38
 {
   "name": "hg38",
   "uri": "https://jbrowse.org/genomes/GRCh38/fasta/hg38.prefix.fa.gz",

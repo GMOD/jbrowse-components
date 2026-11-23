@@ -53,7 +53,7 @@ export function parseSequenceType(type?: string): SequenceType | undefined {
   return type
 }
 
-interface AssemblyFlags {
+export interface AssemblyFlags {
   type?: SequenceType
   name?: string
   alias?: string[]

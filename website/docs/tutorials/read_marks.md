@@ -64,7 +64,7 @@ rebuild those results. The marks and the scan step take your own CRAM or BAM.
 JBrowse decodes the CRAM against the assembly the track is added to, so the
 assembly must be the GRCh38 sequence the reads were aligned to.
 
-```json addassembly
+```json addassembly genome=hg38
 {
   "name": "hg38",
   "uri": "https://jbrowse.org/genomes/GRCh38/fasta/hg38.prefix.fa.gz",

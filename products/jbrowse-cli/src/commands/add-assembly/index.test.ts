@@ -9,6 +9,7 @@ import {
   ctxDir,
   dataDir,
   mockFetch,
+  mockGlobalFetch,
   readConf,
   readConfAlt,
   runCommand,
@@ -588,5 +589,133 @@ test('can use --out to write to a file', async () => {
       'out/testing.json',
     ])
     expect(readConfAlt(ctx, 'out', 'testing.json').assemblies.length).toBe(1)
+  })
+})
+
+describe('--genome', () => {
+  afterEach(() => {
+    jest.restoreAllMocks()
+  })
+
+  const hubUrl = 'https://jbrowse.org/ucsc/hg38/config.json'
+  const hubAssembly = {
+    name: 'hg38',
+    displayName: 'Human (hg38)',
+    sequence: {
+      type: 'ReferenceSequenceTrack',
+      trackId: 'hg38-refseq',
+      metadata: { ucsc: { chromSizes: 'hg38.chrom.sizes.txt' } },
+      adapter: {
+        type: 'TwoBitAdapter',
+        uri: 'https://hgdownload.soe.ucsc.edu/goldenPath/hg38/bigZips/hg38.2bit',
+        chromSizes: 'hg38.chrom.sizes',
+      },
+    },
+    refNameAliases: {
+      adapter: { type: 'RefNameAliasAdapter', uri: 'hg38.chromAlias.txt' },
+    },
+  }
+  const serveHub = () =>
+    mockGlobalFetch(url =>
+      url === hubUrl
+        ? { json: { assemblies: [structuredClone(hubAssembly)] } }
+        : undefined,
+    )
+
+  test('copies the hosted assembly, resolving its relative files against the hub but not its metadata', async () => {
+    await runInTmpDir(async ctx => {
+      serveHub()
+      const { error } = await runCommand(['add-assembly', '--genome', 'hg38'])
+      expect(error).toBeUndefined()
+      expect(readConf(ctx).assemblies).toEqual([
+        {
+          ...hubAssembly,
+          sequence: {
+            ...hubAssembly.sequence,
+            trackId: 'hg38-ReferenceSequenceTrack',
+            adapter: {
+              ...hubAssembly.sequence.adapter,
+              chromSizes: 'https://jbrowse.org/ucsc/hg38/hg38.chrom.sizes',
+            },
+          },
+          refNameAliases: {
+            adapter: {
+              type: 'RefNameAliasAdapter',
+              uri: 'https://jbrowse.org/ucsc/hg38/hg38.chromAlias.txt',
+            },
+          },
+        },
+      ])
+    })
+  })
+
+  test('applies --name and --alias to the hosted assembly', async () => {
+    await runInTmpDir(async ctx => {
+      serveHub()
+      await runCommand([
+        'add-assembly',
+        '--genome',
+        'hg38',
+        '--name',
+        'GRCh38',
+        '--alias',
+        'hg38',
+      ])
+      const [assembly] = readConf(ctx).assemblies
+      expect(assembly.name).toBe('GRCh38')
+      expect(assembly.sequence.trackId).toBe('GRCh38-ReferenceSequenceTrack')
+      expect(assembly.aliases).toEqual(['hg38'])
+    })
+  })
+
+  test('fetches a GenArk accession from its hub path', async () => {
+    await runInTmpDir(async ctx => {
+      const accession = 'GCF_000001405.40'
+      mockGlobalFetch(url =>
+        url ===
+        `https://jbrowse.org/hubs/genark/GCF/000/001/405/${accession}/config.json`
+          ? { json: { assemblies: [{ ...hubAssembly, name: accession }] } }
+          : undefined,
+      )
+      await runCommand(['add-assembly', '--genome', accession])
+      expect(readConf(ctx).assemblies[0].name).toBe(accession)
+    })
+  })
+
+  test('fails when the hub has no assembly by that name', async () => {
+    await runInTmpDir(async () => {
+      mockGlobalFetch({ json: { assemblies: [{ name: 'other' }] } })
+      const { error } = await runCommand(['add-assembly', '--genome', 'hg38'])
+      expect(error?.message).toBe(
+        `Error: ${hubUrl} has no assembly named "hg38". See https://genomes.jbrowse.org for the available assemblies.`,
+      )
+    })
+  })
+
+  test('fails when given a sequence as well', async () => {
+    const { error } = await runCommand([
+      'add-assembly',
+      dataDir('simple.2bit'),
+      '--genome',
+      'hg38',
+    ])
+    expect(error?.message).toMatch(/--genome hg38 takes no sequence argument/)
+  })
+
+  test.each([
+    [['--load', 'copy'], '--load'],
+    [['--type', 'twoBit'], '--type'],
+    [
+      ['--faiLocation', 'x.fai', '--gziLocation', 'x.gzi'],
+      '--faiLocation, --gziLocation',
+    ],
+  ])('fails when given %j', async (extra, named) => {
+    const { error } = await runCommand([
+      'add-assembly',
+      '--genome',
+      'hg38',
+      ...extra,
+    ])
+    expect(error?.message).toContain(`${named} does not apply to --genome`)
   })
 })

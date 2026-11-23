@@ -20,6 +20,10 @@
 //     isn't standalone JSON;
 //   * a whole config (one with `assemblies`) opens with the `$schema` line an
 //     editor validates it by, at the URL the CLI's generated schema names;
+//   * an `addassembly` fence's `genome=` names a genomes.jbrowse.org hub whose
+//     assembly carries the fence's name, so the Hosted tab's assembly is one
+//     the page's tracks attach to. It reads the hub out of the digest
+//     `pnpm gen:hosted-configs` writes, so a new `genome=` needs a regen;
 //   * every key a track/assembly block names is one its type declares, checked
 //     with `jbrowse validate`'s own checker. Nothing else covered this:
 //     check-doc-slots reads `displayDefaults` keys and slot VALUES, and
@@ -40,6 +44,7 @@ import remarkParse from 'remark-parse'
 import { unified } from 'unified'
 import { visit } from 'unist-util-visit'
 
+import { genomeConfigUrl } from '../../packages/launch-args/src/genome.ts'
 import {
   configSchemaUrl,
   schemaProblems,
@@ -52,8 +57,10 @@ import {
   isAddtrack,
   isSession,
 } from '../src/lib/remark-config-cli-tabs.ts'
+import { hostedConfigs } from '../src/lib/spec-recipe/hostedConfigs.generated.ts'
 import { docsMatching, reportProblems } from './check-utils.ts'
 import { configBlockShape } from './configBlockShape.ts'
+import { hostedGenomeFences } from './hosted-genome-fences.ts'
 import { docRelative, docsDir } from './paths.ts'
 
 // A doc block is one track or one assembly, so wrap it in the smallest config
@@ -241,6 +248,26 @@ for (const { file, text } of docsMatching(docsDir, JSON_FENCE)) {
       )
     }
   })
+}
+
+for (const { where, genome, name } of hostedGenomeFences()) {
+  const url = genomeConfigUrl(genome)
+  const names = Object.hasOwn(hostedConfigs, url)
+    ? (hostedConfigs[url]?.assemblies ?? []).map(a => a.name)
+    : undefined
+  if (names === undefined) {
+    problems.push(
+      `  ${where}`,
+      `    → genome=${genome}: ${url} is not in hostedConfigs.generated.ts.`,
+      `      Run \`pnpm gen:hosted-configs\`; if it fails, the genome is not hosted.\n`,
+    )
+  } else if (name === undefined || !names.includes(name)) {
+    problems.push(
+      `  ${where}`,
+      `    → genome=${genome}: the hub has no assembly named ${String(name)} (it has ${names.join(', ') || 'none'}),`,
+      `      so the page's tracks would not attach to it. Drop genome= for a custom assembly.\n`,
+    )
+  }
 }
 
 if (problems.length) {

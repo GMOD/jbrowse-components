@@ -13,6 +13,11 @@ import { loadModes, validateLoadOption } from '../add-track-utils/validators.ts'
 import { upsertConfigEntry } from '../shared/config-operations.ts'
 import { generateFai } from './generateFai.ts'
 import {
+  getHostedAssembly,
+  renameHostedAssembly,
+  validateHostedFlags,
+} from './hosted.ts'
+import {
   enhanceAssembly,
   getAssembly,
   loadOrCreateConfig,
@@ -20,7 +25,14 @@ import {
   sequenceTypes,
 } from './utils.ts'
 
+import type { AssemblyFlags } from './utils.ts'
+
 const options = {
+  genome: {
+    type: 'string',
+    description:
+      'A genome hosted on genomes.jbrowse.org, named by its UCSC database name (e.g. hg38) or GenArk accession (e.g. GCF_000001405.40), whose assembly is copied in place of a sequence file; its files stay on their servers, so it takes no --load',
+  },
   type: {
     type: 'string',
     short: 't',
@@ -95,7 +107,8 @@ const options = {
 
 const description = 'Add an assembly to a JBrowse 2 configuration'
 
-const usage = 'jbrowse add-assembly <sequence> [options]'
+const usage =
+  'jbrowse add-assembly <sequence> [options]\n       jbrowse add-assembly --genome <name> [options]'
 
 const notes =
   '--config takes inline JSON (not a file path) that is merged into the ' +
@@ -106,6 +119,9 @@ const notes =
   "assembly's About dialog."
 
 const examples = [
+  '# add the hg38 assembly genomes.jbrowse.org hosts, with no reference download',
+  '$ jbrowse add-assembly --genome hg38',
+  '',
   '# add assembly to installation in current directory, copying GRCh38.fa and GRCh38.fa.fai there; with no GRCh38.fa.fai, one is generated',
   '$ jbrowse add-assembly GRCh38.fa --load copy',
   '',
@@ -137,6 +153,31 @@ const examples = [
   '$ jbrowse add-assembly GRCh38.fa --load copy --config \'{"sequence":{"formatAbout":{"hideUris":true}}}\'',
 ]
 
+async function resolveBaseAssembly({
+  flags,
+  argsSequence,
+  destDir,
+}: {
+  flags: AssemblyFlags & { genome?: string }
+  argsSequence?: string
+  destDir: string
+}) {
+  const { genome } = flags
+  if (genome === undefined) {
+    requirePositional(argsSequence, 'sequence', usage)
+    debug(`Sequence location is: ${argsSequence}`)
+    return getAssembly({ runFlags: flags, argsSequence, destDir })
+  } else {
+    validateHostedFlags({ genome, sequence: argsSequence, flags })
+    const assembly = await getHostedAssembly(genome)
+    return {
+      assembly: renameHostedAssembly(assembly, flags.name ?? assembly.name),
+      filesToLoad: [],
+      faiToGenerate: undefined,
+    }
+  }
+}
+
 export async function run(args?: string[]) {
   await parseCommand(args, {
     description,
@@ -147,25 +188,17 @@ export async function run(args?: string[]) {
     run: async ({ flags: runFlags, positionals }) => {
       validateLoadOption(runFlags.load)
       const type = parseSequenceType(runFlags.type)
-
-      const argsSequence = positionals[0]
-      requirePositional(argsSequence, 'sequence', usage)
       const flags = { ...runFlags, type }
-
-      debug(`Sequence location is: ${argsSequence}`)
+      const argsSequence = positionals[0]
 
       const target = await resolveConfigPath(runFlags.target, runFlags.out)
-      await mkdir(path.dirname(target), { recursive: true })
       const destDir = path.dirname(target)
       const {
         assembly: baseAssembly,
         filesToLoad: sequenceFiles,
         faiToGenerate,
-      } = await getAssembly({
-        runFlags: flags,
-        argsSequence,
-        destDir,
-      })
+      } = await resolveBaseAssembly({ flags, argsSequence, destDir })
+      await mkdir(destDir, { recursive: true })
       const { assembly, filesToLoad: aliasFiles } = await enhanceAssembly(
         baseAssembly,
         flags,

@@ -8,16 +8,20 @@
 // video names, so the site build reads them without a network fetch.
 // `check-spec-recipes` fails when a figure names a track this file never looked
 // up. It also fetches each default config (`src/lib/default-configs.ts`) with
-// every trackId, which `check-session-urls` tests a fence's track against.
+// every trackId, which `check-session-urls` tests a fence's track against, and
+// the hub of every `addassembly` fence's `genome=`, whose assembly
+// `check-config-blocks` holds the fence's name to.
 import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
+import { genomeConfigUrl } from '../../packages/launch-args/src/genome.ts'
 import { defaultConfigs } from '../src/lib/default-configs.ts'
 import {
   figureLiveRefs,
   videoLiveRefs,
 } from '../src/lib/liveLinks.generated.ts'
 import { checkOrWrite } from './check-utils.ts'
+import { hostedGenomeFences } from './hosted-genome-fences.ts'
 import { hostedReferences } from './hosted-references.ts'
 
 import type {
@@ -55,7 +59,12 @@ const references = hostedReferences([
   ...Object.values(videoLiveRefs),
 ])
 
-for (const [assembly, url] of Object.entries(defaultConfigs)) {
+for (const [assembly, url] of [
+  ...Object.entries(defaultConfigs),
+  ...hostedGenomeFences().flatMap(({ genome, name }) =>
+    [genome, ...(name ? [name] : [])].map(n => [n, genomeConfigUrl(genome)]),
+  ),
+]) {
   const entry = references.get(url) ?? {
     trackIds: new Set<string>(),
     assemblyNames: new Set<string>(),

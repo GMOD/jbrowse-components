@@ -85,6 +85,20 @@ test('an addassembly fence no command expresses is the fence alone', () => {
   expect(out).not.toContain('CLI:')
 })
 
+test('an addassembly fence with genome= names the hosted routes before its CLI', () => {
+  const open = '```json addassembly genome=hg38'
+  const body = `${open}\n{ "name": "hg38", "uri": "https://example.com/hg38.fa.gz" }\n\`\`\`\n`
+  const out = emit(body, [fenceAt(body, open)])
+  expect(out).not.toContain('genome=')
+  const hosted = out.indexOf('Hosted: genomes.jbrowse.org hosts `hg38`')
+  expect(hosted).toBeGreaterThan(0)
+  expect(out).toContain(
+    '- On the web, open [hg38 on genomes.jbrowse.org](https://genomes.jbrowse.org/ucsc/hg38/).',
+  )
+  expect(out).toContain('`jbrowse add-assembly --genome hg38`')
+  expect(out.indexOf('CLI:')).toBeGreaterThan(hosted)
+})
+
 test('a json live fence keeps a plain json fence, then the config it opens on', () => {
   const open = '```json live config=test_data/volvox/config.json'
   const spec = '{ "views": [{ "assembly": "volvox", "loc": "ctgA:1-100" }] }'

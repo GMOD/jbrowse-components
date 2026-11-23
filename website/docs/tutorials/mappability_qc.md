@@ -250,7 +250,7 @@ A synteny view between the two assemblies draws each chain as a ribbon. The
 hosted hg38 config has the track and loads hs1 with it. On another JBrowse, load
 the hs1 assembly and the chain file, whose query is the genome it lifts to:
 
-```json addassembly
+```json addassembly genome=hs1
 {
   "name": "hs1",
   "uri": "https://hgdownload.soe.ucsc.edu/goldenPath/hs1/bigZips/hs1.2bit"

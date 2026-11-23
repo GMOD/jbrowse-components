@@ -203,6 +203,14 @@ no em-dashes.
   what it loads. A page building its assembly from FASTA links none until it
   loads the hub; a staging.genomes.jbrowse.org link stands until v5 ships, and
   the page says so.
+  - **A tutorial on a hosted genome tags its `addassembly` fence `genome=`**
+    (` ```json addassembly genome=hg38 `), and the widget leads with a Hosted
+    tab: Desktop's start screen, the genomes.jbrowse.org page and
+    `jbrowse add-assembly --genome`. The fence's JSON stays as the fuller
+    example. Tag only an assembly the hub names the same and whose tracks
+    resolve through the hub's own aliases; a custom name or a custom alias
+    table (`circular_synteny.md`) stays untagged. A new genome needs
+    `pnpm gen:hosted-configs` before `check-config-blocks` passes.
   - Take the assembly and gene track verbatim from the hub:
     `scripts/hosted_assembly.py` for a build script, its absolutized output
     for a page's fence (`ld_mosquitoes.md`).

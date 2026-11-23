@@ -65,7 +65,7 @@ that maps the chromosome names in the BAM and the gene models to the assembly's.
 Then we add the stranded paired-end reads and the RefSeq gene models, each with
 its index beside it:
 
-```json addassembly
+```json addassembly genome=hg19
 {
   "name": "hg19",
   "uri": "https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz",

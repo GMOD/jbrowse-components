@@ -75,7 +75,7 @@ genome FASTA as arguments and runs the same steps on them.
 
 We'll load hg38, the assembly the RepeatMasker coordinates are on.
 
-```json addassembly
+```json addassembly genome=hg38
 {
   "name": "hg38",
   "uri": "https://jbrowse.org/genomes/GRCh38/fasta/hg38.prefix.fa.gz",

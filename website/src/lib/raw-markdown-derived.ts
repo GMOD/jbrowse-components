@@ -6,6 +6,7 @@ import { fenceMeta, sessionConfigUrl } from './derive-session-url.ts'
 import { deriveSetDefaultSession } from './derive-set-default-session.ts'
 import { trackConfigUrl, trackLocation } from './derive-track-url.ts'
 import { figureLiveTargets, videoLiveRef } from './figure-live-links.ts'
+import { hostedGenome, hostedGenomeLines } from './hosted-genome.ts'
 import { parseAttrs } from './inline-html.ts'
 import {
   isAddassembly,
@@ -90,7 +91,11 @@ function fenceLines(node: Code, parsed: unknown) {
       trackLocation(node.meta),
     )
   } else if (isAddassembly(node)) {
-    return cliLines(deriveAddAssembly(config))
+    const genome = hostedGenome(node.meta)
+    return [
+      ...(genome === undefined ? [] : hostedGenomeLines(genome)),
+      ...cliLines(deriveAddAssembly(config)),
+    ]
   } else if (isSession(node)) {
     return cliLines(
       deriveSetDefaultSession(config, node.value),

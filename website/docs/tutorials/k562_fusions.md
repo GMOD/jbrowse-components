@@ -120,7 +120,7 @@ bgzip calls.hg38.vcf && tabix -f -C -p vcf calls.hg38.vcf.gz
 The lifted DNA breakpoints and the Iso-Seq molecules are on hg38, so we load
 that assembly first.
 
-```json addassembly
+```json addassembly genome=hg38
 {
   "name": "hg38",
   "uri": "https://jbrowse.org/genomes/GRCh38/fasta/hg38.prefix.fa.gz",

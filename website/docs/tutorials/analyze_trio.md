@@ -89,7 +89,7 @@ script fetches everything itself.
 The trio calls are on GRCh38, and the hap-ibd blocks below use its chr1
 coordinates, so we load that assembly first:
 
-```json addassembly
+```json addassembly genome=hg38
 {
   "name": "hg38",
   "uri": "https://jbrowse.org/genomes/GRCh38/fasta/hg38.prefix.fa.gz",

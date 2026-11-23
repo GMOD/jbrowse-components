@@ -109,7 +109,7 @@ whatever your locale.
 The painting and Manhattan tracks both use the `mm10` assembly, whose chromosome
 names the marker positions follow:
 
-```json addassembly
+```json addassembly genome=mm10
 {
   "name": "mm10",
   "aliases": ["GRCm38"],

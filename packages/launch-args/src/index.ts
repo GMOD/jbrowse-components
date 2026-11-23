@@ -18,7 +18,7 @@ export {
   makeLocation,
   trackFlags,
 } from './fileInput.ts'
-export { genomeConfigUrl } from './genome.ts'
+export { genomeConfigUrl, isGenArkAccession } from './genome.ts'
 export { HOSTED_HINT, fetchJson } from './fetchJson.ts'
 export { type HostedConfig, hostedComparative } from './hostedGenomes.ts'
 export {

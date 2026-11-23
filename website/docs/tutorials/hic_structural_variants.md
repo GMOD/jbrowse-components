@@ -57,7 +57,7 @@ under _Adding the Hi-C and contact-domain tracks_.
 ENCODE aligned both Hi-C libraries to GRCh38, so we load that assembly before
 adding any track.
 
-```json addassembly
+```json addassembly genome=hg38
 {
   "name": "hg38",
   "uri": "https://jbrowse.org/genomes/GRCh38/fasta/hg38.prefix.fa.gz",

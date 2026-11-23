@@ -106,7 +106,7 @@ own.
 We'll load dm6 and its RefSeq genes from the UCSC hub on jbrowse.org, whose
 alias table maps dm6's NCBI names onto `chr2L` and the rest:
 
-```json addassembly
+```json addassembly genome=dm6
 {
   "name": "dm6",
   "uri": "https://hgdownload.soe.ucsc.edu/goldenPath/dm6/bigZips/dm6.2bit",

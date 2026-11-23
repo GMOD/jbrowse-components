@@ -6,4 +6,6 @@ export const APP_TAB = { kind: 'desktop', label: 'In the app' } as const
 
 export const CLI_TAB = { kind: 'cli', label: 'CLI' } as const
 
+export const HOSTED_TAB = { kind: 'hosted', label: 'Hosted' } as const
+
 export const JSON_TAB_KIND = 'config'

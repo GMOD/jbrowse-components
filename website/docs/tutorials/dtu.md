@@ -234,7 +234,7 @@ test could not separate has no value to color and stays grey.
 GENCODE v29 is a GRCh38 annotation and the coverage is on GRCh38, so we load the
 hg38 assembly before either track.
 
-```json addassembly
+```json addassembly genome=hg38
 {
   "name": "hg38",
   "uri": "https://jbrowse.org/genomes/GRCh38/fasta/hg38.prefix.fa.gz",

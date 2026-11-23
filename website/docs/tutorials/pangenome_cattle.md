@@ -95,7 +95,7 @@ the prefix in `uri` for the one your
 [indexing commands](#build-the-bovine-graph-files) wrote, which name the
 tabix-indexed segments and links and the overview.
 
-```json addassembly
+```json addassembly genome=bosTau9
 {
   "name": "bosTau9",
   "aliases": ["ARS-UCD1.2"],

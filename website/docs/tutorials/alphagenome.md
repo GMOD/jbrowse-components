@@ -89,7 +89,7 @@ default. To use your own, the page or app that embeds JBrowse calls
 AlphaGenome predicts from hg38 sequence, so we load that assembly, the RefSeq
 genes and the oncogenic _TAL1_ variants:
 
-```json addassembly
+```json addassembly genome=hg38
 {
   "name": "hg38",
   "uri": "https://hgdownload.soe.ucsc.edu/goldenPath/hg38/bigZips/hg38.2bit",

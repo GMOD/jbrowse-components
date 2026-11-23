@@ -120,7 +120,7 @@ of both merged files, as in the Roadmap track config below.
 The Broad and Roadmap releases are both on hg19, so we load that assembly and a
 RefSeq gene track:
 
-```json addassembly
+```json addassembly genome=hg19
 {
   "name": "hg19",
   "uri": "https://hgdownload.soe.ucsc.edu/goldenPath/hg19/bigZips/hg19.2bit",

@@ -1590,6 +1590,8 @@ export const hostedConfigs: Record<string, HostedConfig> = {
       "hg38-metamorf",
       "hg38-methaDory",
       "hg38-microsat",
+      "hg38-mirBaseV22_1",
+      "hg38-mirGeneDbV3_0",
       "hg38-missenseByGene",
       "hg38-missenseByTranscriptV4_1_1",
       "hg38-mitoMapDiseaseMuts",
@@ -1990,6 +1992,21 @@ export const hostedConfigs: Record<string, HostedConfig> = {
       "hg38_to_xipMac1_liftOver",
       "hg38_to_zonAlb1_liftOver"
     ]
+  },
+  "https://jbrowse.org/ucsc/hs1/config.json": {
+    "assemblies": [
+      {
+        "name": "hs1",
+        "sequence": {
+          "trackId": "hs1-ReferenceSequenceTrack",
+          "adapter": {
+            "type": "TwoBitAdapter"
+          }
+        }
+      }
+    ],
+    "tracks": [],
+    "absent": []
   },
   "https://jbrowse.org/ucsc/mm10/config.json": {
     "assemblies": [

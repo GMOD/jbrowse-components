@@ -62,7 +62,7 @@ JBrowse decodes the CRAMs against the assembly's sequence, so it must be the
 GRCh38 sequence the reads were aligned to, with the chromosome names the VCF
 uses.
 
-```json addassembly
+```json addassembly genome=hg38
 {
   "name": "hg38",
   "uri": "https://jbrowse.org/genomes/GRCh38/fasta/hg38.prefix.fa.gz",

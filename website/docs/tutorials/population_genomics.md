@@ -173,7 +173,7 @@ a locus against the genome-wide background of all the lines.
 We load dm6 from UCSC, whose reference names the arms `chr2L`. The alias file
 maps them to the bare `2L` the scans use:
 
-```json addassembly
+```json addassembly genome=dm6
 {
   "name": "dm6",
   "aliases": ["BDGP6"],

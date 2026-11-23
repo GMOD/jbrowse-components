@@ -12,11 +12,12 @@ import {
 } from './derive-session-url.ts'
 import { deriveSetDefaultSession } from './derive-set-default-session.ts'
 import { deriveTrackLinks, liveLinks, specUrl } from './derive-track-url.ts'
+import { hostedGenome, hostedGenomeNodes } from './hosted-genome.ts'
 import { escapeAttr } from './inline-html.ts'
 import { desktopLinkHtml } from './desktop-link.ts'
 import { panels } from './spec-recipe/html.ts'
 import { buildRecipe } from './spec-recipe/recipe.ts'
-import { APP_TAB, CLI_TAB, JSON_TAB_KIND } from './tab-kinds.ts'
+import { APP_TAB, CLI_TAB, HOSTED_TAB, JSON_TAB_KIND } from './tab-kinds.ts'
 
 import type { LiveLinks } from './derive-track-url.ts'
 import type {
@@ -38,7 +39,9 @@ import type { Plugin } from 'unified'
 // leaves a stray JSON block under a paragraph they cannot act on.
 //
 // A `live` fence, a `session` fence carrying `config=<url>` and an `addtrack`
-// fence carrying `config=` or `loc=` get an "Open in JBrowse" tab. When that
+// fence carrying `config=` or `loc=` get an "Open in JBrowse" tab, and an
+// `addassembly` fence carrying `genome=` leads with a Hosted tab
+// (hosted-genome.ts). When that
 // link is a `spec-` session, the figure recipe's tabs the fence has no
 // equivalent of (Notebook, Image) follow it.
 //
@@ -262,6 +265,8 @@ interface TagEntry {
     // the trackIds the page's sessions open
     sessionTrackIds: Set<string>,
   ) => Tab[] | undefined
+  // a tab placed before the JSON one, checked when the page loads
+  lead?: (meta: string | null | undefined) => Tab | undefined
   refusal: string
   // the "Open in JBrowse" tab, whose links are undefined when the fence has
   // none; `warn` reports one left out
@@ -327,6 +332,12 @@ const TAGS: TagEntry[] = [
       const tab = assemblyCliTab(config)
       const desktop = desktopAssemblyNodes(config)
       return tab && [tab, ...(desktop ? [desktopTab(desktop)] : [])]
+    },
+    lead: meta => {
+      const genome = hostedGenome(meta)
+      return genome === undefined
+        ? undefined
+        : { ...HOSTED_TAB, nodes: hostedGenomeNodes(genome) }
     },
     refusal:
       'has no add-assembly equivalent (see derive-add-assembly.ts); leave it untagged',
@@ -429,7 +440,9 @@ export function configCliTabs(
       return undefined
     }
     const gid = `cfgtab-${(widgets += 1)}`
+    const lead = entry.lead?.(meta)
     const fenceTabs: Tab[] = [
+      ...(lead ? [lead] : []),
       {
         kind: JSON_TAB_KIND,
         label: entry.label,

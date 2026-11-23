@@ -45,7 +45,7 @@ for this locus.
 AlphaGenome 2 predicts from GRCh38 sequence, and the files below use its
 `chr21`-style chromosome names:
 
-```json addassembly
+```json addassembly genome=hg38
 {
   "name": "hg38",
   "uri": "https://jbrowse.org/genomes/GRCh38/fasta/hg38.prefix.fa.gz",

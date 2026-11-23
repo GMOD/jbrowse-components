@@ -169,7 +169,7 @@ can still use `chimp`:
 read `chr19`. Human is the exception: UCSC serves GRCh38 as `hg38` with no
 GenArk hub, so the human lane is [hg38](https://genomes.jbrowse.org/ucsc/hg38/):
 
-```json addassembly
+```json addassembly genome=hg38
 {
   "name": "hg38",
   "uri": "https://jbrowse.org/genomes/GRCh38/fasta/hg38.prefix.fa.gz",

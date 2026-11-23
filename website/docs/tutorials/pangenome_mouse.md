@@ -160,7 +160,7 @@ file prefix the indexing commands under
 write, and the `uri`s below are our hosted copy, so swap the prefix for your own
 build.
 
-```json addassembly
+```json addassembly genome=mm39
 {
   "name": "mm39",
   "aliases": ["GRCm39"],

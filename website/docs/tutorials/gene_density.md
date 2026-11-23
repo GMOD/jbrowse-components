@@ -68,7 +68,7 @@ rebuild those results. The counting step takes any GFF3, BED or VCF of your own.
 We'll load hg38, the assembly the UCSC tables were cut from. Every track below
 names it in `assemblyNames`.
 
-```json addassembly
+```json addassembly genome=hg38
 {
   "name": "hg38",
   "uri": "https://jbrowse.org/genomes/GRCh38/fasta/hg38.prefix.fa.gz",

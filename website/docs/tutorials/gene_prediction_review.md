@@ -75,7 +75,7 @@ annotations. Each annotation is a GFF3 that is bgzipped, sorted and
 tabix-indexed with its `.tbi` beside it
 ([prep](/docs/quickstart_web#gff3-and-gtf)), and uses the assembly's refNames.
 
-```json addassembly
+```json addassembly genome=hg38
 {
   "name": "hg38",
   "uri": "https://jbrowse.org/genomes/GRCh38/fasta/hg38.prefix.fa.gz",

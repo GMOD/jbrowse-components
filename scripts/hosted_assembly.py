@@ -27,6 +27,10 @@ Writes the assembly and any named hub tracks, leaving `tracks` otherwise empty
 for the caller to append its own to. Existing content is preserved except for
 the two keys it sets, so it is safe to re-run.
 
+`jbrowse add-assembly --genome <genome>` does the same assembly copy from the
+CLI, absolute file references included; this file stays for the build scripts
+that also want hub tracks or several genomes in one config.
+
 A build script writing several genomes' entries into its own config imports
 `hub_parts(hub, label, alias)` instead: the hub's assembly entry, relabelled and
 given a short-name alias, and its gene track. `hub` is a UCSC name (`hg38`) or
@@ -70,12 +74,13 @@ def fetch_hub(hub, cache_dir=None):
 
 
 def absolutize(node, base):
-    """Resolve a hub's relative file references against the hub's own url."""
+    """Resolve a hub's relative file references against the hub's own url,
+    leaving `metadata` alone: its `ucsc.chromSizes` is UCSC's path, not ours."""
     if isinstance(node, dict):
         for k, v in node.items():
             if k in ('uri', 'chromSizes') and isinstance(v, str) and '://' not in v:
                 node[k] = urllib.parse.urljoin(base, v)
-            else:
+            elif k != 'metadata':
                 absolutize(v, base)
     elif isinstance(node, list):
         for v in node:

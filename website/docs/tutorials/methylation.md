@@ -67,7 +67,7 @@ shows.
 The track's `assemblyNames` has to name the assembly the reads were aligned to,
 GRCh38.
 
-```json addassembly
+```json addassembly genome=hg38
 {
   "name": "hg38",
   "uri": "https://jbrowse.org/genomes/GRCh38/fasta/hg38.prefix.fa.gz",

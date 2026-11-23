@@ -79,7 +79,7 @@ own.
 
 The copy-number bins are on GRCh38, so the tracks attach to hg38:
 
-```json addassembly
+```json addassembly genome=hg38
 {
   "name": "hg38",
   "uri": "https://jbrowse.org/genomes/GRCh38/fasta/hg38.prefix.fa.gz",

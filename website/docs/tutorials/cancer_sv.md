@@ -93,7 +93,7 @@ The ONT reads are aligned to GRCh38, so we load that assembly and the two read
 tracks. Each read file needs its index beside it, a `.crai` for the CRAM and a
 `.bai` for the BAM; for your own sample, swap the `uri`:
 
-```json addassembly
+```json addassembly genome=hg38
 {
   "name": "hg38",
   "uri": "https://jbrowse.org/genomes/GRCh38/fasta/hg38.prefix.fa.gz",

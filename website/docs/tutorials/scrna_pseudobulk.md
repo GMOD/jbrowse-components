@@ -98,7 +98,7 @@ assembly that spells them the same way. JBrowse draws a BigWig empty when its
 names differ from the assembly's, such as Ensembl's `1` against `chr1`, unless
 the assembly has a name-alias table.
 
-```json addassembly
+```json addassembly genome=hg38
 {
   "name": "hg38",
   "uri": "https://jbrowse.org/genomes/GRCh38/fasta/hg38.prefix.fa.gz",

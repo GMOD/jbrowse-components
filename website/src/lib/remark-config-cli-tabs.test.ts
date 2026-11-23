@@ -376,3 +376,30 @@ test("a session fence's live tab carries a Desktop link for its json- session", 
   const desktop = hrefs.find(h => h.startsWith('jbrowse://'))!
   expect(new URL(desktop).searchParams.get('url')).toBe(web)
 })
+
+test('genome= on an addassembly fence leads with the checked Hosted tab', () => {
+  const hg38 = { name: 'hg38', uri: 'https://example.com/hg38.fa.gz' }
+  const { html, kinds } = render('addassembly genome=hg38', hg38)
+  expect(kinds).toEqual(['hosted', 'config', 'cli', 'desktop'])
+  expect(html).toMatch(/data-tab-kind="hosted" checked/)
+  const hosted = html.slice(0, html.indexOf('data-tab-kind="config"'))
+  expect(hosted).toContain('click hg38 on the start screen')
+  expect(hosted).toContain('jbrowse-desktop --genome hg38')
+  expect(hosted).toContain(
+    '[hg38 on genomes.jbrowse.org](https://genomes.jbrowse.org/ucsc/hg38/)',
+  )
+  expect(hosted).toContain('jbrowse add-assembly --genome hg38')
+  expect(html.slice(html.indexOf('data-tab-kind="desktop"'))).toContain(
+    'is one of the genomes JBrowse Desktop hosts',
+  )
+})
+
+test('a hosted genome off the start screen is picked from Browse hosted genomes', () => {
+  const { html } = render('addassembly genome=mm39', {
+    name: 'mm39',
+    uri: 'https://example.com/mm39.fa.gz',
+  })
+  expect(html).toContain(
+    'click Browse hosted genomes on the start screen and pick mm39',
+  )
+})

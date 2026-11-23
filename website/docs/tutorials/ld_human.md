@@ -77,7 +77,7 @@ VCF in place of the 1000 Genomes slice.
 The tables, the Fst track and the haplotypes all use GRCh38 coordinates on chr2,
 so the tracks below go on that assembly.
 
-```json addassembly
+```json addassembly genome=hg38
 {
   "name": "hg38",
   "uri": "https://jbrowse.org/genomes/GRCh38/fasta/hg38.prefix.fa.gz",
