@@ -49,6 +49,35 @@ function stagePx({ layout, originPx }: AnchorStage, coord: AnchorCoord) {
 }
 
 /**
+ * `blocks` cut at content px `rightPx`, the canvas's right edge, which the
+ * track outline insets from the view's, so a fit spans the bp a lane's unit
+ * does
+ */
+export function canvasBlocks<
+  B extends {
+    start: number
+    end: number
+    offsetPx: number
+    widthPx: number
+    reversed?: boolean
+  },
+>(blocks: readonly B[], rightPx: number, bpPerPx: number) {
+  return blocks.flatMap(block => {
+    const keptPx = Math.min(block.widthPx, rightPx - block.offsetPx)
+    const bp = keptPx * bpPerPx
+    return keptPx <= 0
+      ? []
+      : keptPx >= block.widthPx
+        ? [block]
+        : [
+            block.reversed
+              ? { ...block, start: block.end - bp, widthPx: keptPx }
+              : { ...block, end: block.start + bp, widthPx: keptPx },
+          ]
+  })
+}
+
+/**
  * The groups the window's regions meet: `shown` cut only at a displayed
  * region's end, and `fit` cut to the hull of the window regions each meets,
  * which each lane's frame fits

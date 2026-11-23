@@ -3275,7 +3275,7 @@ test('identity ribbons key their ramp only when a record carries an identity', (
   ])
 })
 
-test('the fit sees a record cut to the viewport, the picture sees it whole', () => {
+test('the fit sees a record cut to the canvas, the picture sees it whole', () => {
   const display = createDisplay()
   const overhang = new SimpleFeature({
     uniqueId: 'r1',
@@ -3298,11 +3298,16 @@ test('the fit sees a record cut to the viewport, the picture sees it whole', () 
   expect(display.visibleGroups.map(g => g.mates.get('volvox_random'))).toEqual([
     [{ refName: 'ctgB', start: 5000, end: 6000, orientation: 1, feature }],
   ])
-  expect(display.fitGroups.map(g => g.mates.get('volvox_random'))).toEqual([
-    [{ refName: 'ctgB', start: 5000, end: 5800, orientation: 1, feature }],
-  ])
+  // the canvas is the 800 px view less the 2 px track outline
+  const canvasBp = display.canvasWidthPx * display.lgv.bpPerPx
+  expect(canvasBp).toBe(798)
+  expect(
+    display.fitGroups.map(g =>
+      g.mates.get('volvox_random')?.map(({ start, end }) => [start, end]),
+    ),
+  ).toEqual([[[5000, 5000 + canvasBp]]])
   expect(display.fitGroups.map(g => g.anchor)).toEqual([
-    { refName: 'ctgA', start: 0, end: 800 },
+    { refName: 'ctgA', start: 0, end: canvasBp },
   ])
 })
 
@@ -3328,7 +3333,7 @@ test('a record running off the viewport aligns its lane on the part it shows', (
     display.anchorStageAt(lgv.offsetPx, lgv.bpPerPx),
     display.fitGroups,
   )
-  expect(anchorAbsX.get('r1')?.x).toBe(400)
+  expect(anchorAbsX.get('r1')?.x).toBe(display.canvasWidthPx / 2)
   const decision = decideLaneFrames({
     groups: display.fitGroups,
     openingsOf: display.laneOpenings,

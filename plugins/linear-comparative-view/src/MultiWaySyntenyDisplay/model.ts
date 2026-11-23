@@ -185,6 +185,7 @@ import {
 import { laneUniverseOf } from './laneSelection.ts'
 import { gutterNearViewport, laneGeometry, stackReach } from './laneStack.ts'
 import {
+  canvasBlocks,
   decideLanesOn,
   laneFrameOn,
   laneStackOn,
@@ -1146,7 +1147,11 @@ export function stateModelFactory(
           ? windowGroupsOn(
               { layout: view, canon: self.anchorCanon },
               self.groups,
-              view.settledDynamicBlocks,
+              canvasBlocks(
+                view.settledDynamicBlocks,
+                view.coarseOffsetPx + self.canvasWidthPx,
+                view.coarseBpPerPx,
+              ),
               self.featureOps,
             )
           : { shown: [], fit: [] }
