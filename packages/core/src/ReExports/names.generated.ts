@@ -236,7 +236,7 @@ const names: Record<string, string[]> = {
   '@jbrowse/core/ui/InfoDialog': ['default'],
   '@jbrowse/core/ui/JexlFilterDialog': ['default'],
   '@jbrowse/core/ui/LabeledCheckbox': ['default'],
-  '@jbrowse/core/ui/legendSpec': ['MAX_LEGEND_CANDIDATES', 'MAX_LEGEND_ITEMS', 'legendDistinguishesColors', 'legendEntries', 'legendIsReadable', 'legendSummary', 'legendSwatches', 'nonEmptyLegendSections'],
+  '@jbrowse/core/ui/legendSpec': ['MAX_LEGEND_CANDIDATES', 'MAX_LEGEND_ITEMS', 'legendDistinguishesColors', 'legendEntries', 'legendIsReadable', 'legendSummary', 'legendSwatchColumns', 'legendSwatches', 'nonEmptyLegendSections'],
   '@jbrowse/core/ui/LegendSwatchGlyph': ['LegendSwatchGlyph'],
   '@jbrowse/core/ui/loadErrorHint': ['loadErrorHint'],
   '@jbrowse/core/ui/LoadingEllipses': ['default'],

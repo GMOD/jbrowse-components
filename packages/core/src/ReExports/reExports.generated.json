@@ -2010,6 +2010,7 @@
         "legendEntries",
         "legendIsReadable",
         "legendSummary",
+        "legendSwatchColumns",
         "legendSwatches",
         "nonEmptyLegendSections"
       ],
