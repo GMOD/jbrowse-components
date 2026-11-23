@@ -1428,6 +1428,193 @@ describe('validateConfig', () => {
     })
   })
 
+  describe('what a session declares for itself', () => {
+    const sessionWith = (extra: Record<string, unknown>) => ({
+      name: 'mine',
+      sessionAssemblies: [
+        {
+          name: 'extra',
+          sequence: {
+            type: 'ReferenceSequenceTrack',
+            trackId: 'extra-ref',
+            adapter: { type: 'BgzipFastaAdapter', uri: 'extra.fa.gz' },
+          },
+        },
+      ],
+      sessionTracks: [
+        {
+          type: 'FeatureTrack',
+          trackId: 'mine',
+          name: 'Mine',
+          assemblyNames: ['extra'],
+          adapter: { type: 'Gff3TabixAdapter', uri: 'mine.gff3.gz' },
+        },
+      ],
+      views: [
+        {
+          type: 'LinearGenomeView',
+          assembly: 'extra',
+          tracks: ['mine'],
+        },
+      ],
+      ...extra,
+    })
+
+    it('registers its assemblies and tracks for its own views', () => {
+      const config = { ...baseConfig(), defaultSession: sessionWith({}) }
+      expect(errorsOf(config)).toEqual([])
+    })
+
+    it('registers temporaryAssemblies and assembly aliases too', () => {
+      const [assembly] = sessionWith({}).sessionAssemblies
+      const config = {
+        ...baseConfig(),
+        defaultSession: sessionWith({
+          sessionAssemblies: undefined,
+          temporaryAssemblies: [{ ...assembly, aliases: ['alias'] }],
+          views: [
+            { type: 'LinearGenomeView', assembly: 'alias', tracks: ['mine'] },
+          ],
+        }),
+      }
+      expect(errorsOf(config)).toEqual([])
+    })
+
+    it('checks its tracks under the session', () => {
+      const config = {
+        ...baseConfig(),
+        defaultSession: sessionWith({
+          sessionTracks: [
+            {
+              type: 'FeatureTrack',
+              trackId: 'mine',
+              assemblyNames: ['nowhere'],
+              adapter: { type: 'Gff3TabixAdapter', uri: 'mine.gff3.gz' },
+            },
+          ],
+        }),
+      }
+      expect(errorsOf(config).map(e => e.where)).toEqual([
+        'defaultSession.sessionTracks[0].assemblyNames',
+      ])
+    })
+
+    it('keeps one session from seeing the next one tracks', () => {
+      const config = {
+        ...baseConfig(),
+        preConfiguredSessions: [
+          sessionWith({}),
+          { ...sessionWith({}), sessionTracks: [], sessionAssemblies: [] },
+        ],
+      }
+      expect(errorsOf(config).map(e => e.where)).toEqual([
+        'preConfiguredSessions[1].views[0].assembly',
+        'preConfiguredSessions[1].views[0].tracks[0]',
+      ])
+    })
+  })
+
+  it('checks every preConfiguredSessions entry, under its own path', () => {
+    const config = {
+      ...baseConfig(),
+      preConfiguredSessions: [
+        baseConfig().defaultSession,
+        {
+          name: 'bad',
+          views: [
+            { type: 'LinearGenomeView', assembly: 'hg38', tracks: ['nope'] },
+          ],
+        },
+      ],
+    }
+    expect(errorsOf(config).map(e => e.where)).toEqual([
+      'preConfiguredSessions[1].views[0].tracks[0]',
+    ])
+  })
+
+  it('checks the references of a synteny row written without a type', () => {
+    const config = baseConfig()
+    config.defaultSession.views = [
+      {
+        type: 'LinearSyntenyView',
+        views: [{ assembly: 'hg19x', tracks: ['nope'] }],
+      },
+    ]
+    expect(errorsOf(config).map(e => e.where)).toEqual([
+      'defaultSession.views[0].views[0].assembly',
+      'defaultSession.views[0].views[0].tracks[0]',
+    ])
+  })
+
+  it('keeps the level and the position of a synteny track in its path', () => {
+    const config = baseConfig()
+    config.defaultSession.views = [
+      {
+        type: 'LinearSyntenyView',
+        tracks: [['sample_bam'], ['sample_bam', 'nope']],
+      },
+    ]
+    expect(errorsOf(config).map(e => e.where)).toEqual([
+      'defaultSession.views[0].tracks[1][1]',
+    ])
+  })
+
+  it('checks the types of internetAccounts', () => {
+    const config = {
+      ...baseConfig(),
+      internetAccounts: [
+        { type: 'NopeInternetAccount', internetAccountId: 'x' },
+      ],
+    }
+    expect(warningsOf(config).map(w => w.where)).toEqual([
+      'internetAccounts[0].type',
+    ])
+  })
+
+  it('takes the sequence trackId an assembly writes over the derived one', () => {
+    const config = baseConfig()
+    config.defaultSession.views = [
+      {
+        type: 'LinearGenomeView',
+        assembly: 'hg38',
+        tracks: ['hg38-ref', 'hg38-ReferenceSequenceTrack'],
+      },
+    ]
+    expect(errorsOf(config).map(e => e.where)).toEqual([
+      'defaultSession.views[0].tracks[1]',
+    ])
+  })
+
+  it('takes the derived sequence trackId when none is written', () => {
+    const config = baseConfig()
+    delete (config.assemblies[0]!.sequence as Record<string, unknown>).trackId
+    config.defaultSession.views = [
+      {
+        type: 'LinearGenomeView',
+        assembly: 'hg38',
+        tracks: ['hg38-ReferenceSequenceTrack'],
+      },
+    ]
+    expect(errorsOf(config)).toEqual([])
+  })
+
+  it('does not read a singular "assembly" as the assemblies', () => {
+    const { assemblies, ...rest } = baseConfig()
+    expect(
+      errorsOf({ ...rest, assembly: assemblies[0] }).map(e => e.where),
+    ).toContain('assemblies')
+  })
+
+  it('warns on a flag field tested by anything but a boolean equal', () => {
+    const config = baseConfig()
+    Object.assign(config.tracks[0]!, {
+      displayDefaults: { filter: [{ field: 'flags.DUP', equal: 0 }] },
+    })
+    expect(warningsOf(config).map(p => p.message)).toEqual([
+      'flags.DUP takes equal: true or false, not {"field":"flags.DUP","equal":0}',
+    ])
+  })
+
   it('reports a config with no assemblies', () => {
     expect(errorsOf({ tracks: [] }).map(e => e.where)).toContain('assemblies')
   })

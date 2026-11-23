@@ -264,14 +264,21 @@ interface Ctx {
   schema: SchemaValidator
 }
 
+// An assembly's `aliases` are usable wherever its name is.
+function assemblyNamesOf(assembly: Record<string, unknown>) {
+  return [
+    assembly.name,
+    ...(Array.isArray(assembly.aliases) ? assembly.aliases : []),
+  ].filter((n): n is string => typeof n === 'string')
+}
+
 function checkTrack(
   track: Record<string, unknown>,
-  index: number,
+  where: string,
   manifest: ConfigManifest,
   report: Report,
   ctx: Ctx,
 ) {
-  const where = `tracks[${index}]`
   const loose = isLooseTrackConfig(track)
 
   const trackId = track.trackId
@@ -542,12 +549,14 @@ function checkViewReferences(
   if (!Array.isArray(view.tracks)) {
     return
   }
-  // A LinearSyntenyView's `tracks` is one array per level, so flatten one level
-  // before reading entries.
-  const entries = view.tracks.flatMap((t: unknown) =>
-    Array.isArray(t) ? (t as unknown[]) : [t],
+  // A LinearSyntenyView's `tracks` is one array per level, so each level's
+  // entries keep the level index in their path.
+  const entries = view.tracks.flatMap((t: unknown, level) =>
+    Array.isArray(t)
+      ? t.map((entry: unknown, k) => ({ at: `[${level}][${k}]`, entry }))
+      : [{ at: `[${level}]`, entry: t }],
   )
-  for (const [j, entry] of entries.entries()) {
+  for (const { at, entry } of entries) {
     // A built track snapshot names its config through `configuration` rather
     // than `trackId`, and is state MST restores rather than a reference to open.
     if (isRecord(entry) && !('trackId' in entry)) {
@@ -563,11 +572,11 @@ function checkViewReferences(
       const message = `trackId "${trackId}" is not defined in this config${didYouMean(trackId, [...ctx.seenTrackIds, ...ctx.sequenceTrackIds])}`
       if (ctx.declaresPlugins) {
         report.warn(
-          `${where}.tracks[${j}]`,
+          `${where}.tracks${at}`,
           `${message} — a plugin it declares may create it`,
         )
       } else {
-        report.error(`${where}.tracks[${j}]`, message)
+        report.error(`${where}.tracks${at}`, message)
       }
     }
   }
@@ -620,34 +629,78 @@ function checkSessionView(
   // parent launcher's business.
   if (Array.isArray(view.views)) {
     for (const [i, row] of view.views.entries()) {
-      if (isRecord(row) && typeof row.type === 'string') {
-        checkSessionView(row, manifest, `${where}.views[${i}]`, report, ctx)
+      if (isRecord(row)) {
+        if (typeof row.type === 'string') {
+          checkSessionView(row, manifest, `${where}.views[${i}]`, report, ctx)
+        } else {
+          checkViewReferences(row, `${where}.views[${i}]`, report, ctx)
+        }
       }
     }
   }
 }
 
-function checkSession(
-  session: unknown,
+// A session's own tracks and assemblies are visible to its views and to no
+// other session, so they land in a copy of the config's context.
+function sessionContext(
+  session: Record<string, unknown>,
+  where: string,
   manifest: ConfigManifest,
   report: Report,
   ctx: Ctx,
 ) {
-  if (!isRecord(session) || !Array.isArray(session.views)) {
-    return
+  const assemblies = [
+    ...(Array.isArray(session.sessionAssemblies)
+      ? session.sessionAssemblies
+      : []),
+    ...(Array.isArray(session.temporaryAssemblies)
+      ? session.temporaryAssemblies
+      : []),
+  ].filter(isRecord)
+  const sessionCtx: Ctx = {
+    ...ctx,
+    assemblyNames: new Set([
+      ...ctx.assemblyNames,
+      ...assemblies.flatMap(a => assemblyNamesOf(a)),
+    ]),
+    seenTrackIds: new Set(ctx.seenTrackIds),
+    trackAliases: new Map(ctx.trackAliases),
   }
-  for (const [i, view] of session.views.entries()) {
-    checkSessionViewTracks(view, manifest, `defaultSession.views[${i}]`, report)
-  }
-  for (const [i, view] of session.views.entries()) {
-    if (isRecord(view)) {
-      checkSessionView(
-        view,
+  const tracks = Array.isArray(session.sessionTracks)
+    ? session.sessionTracks
+    : []
+  for (const [i, track] of tracks.entries()) {
+    if (isRecord(track)) {
+      checkTrack(
+        track,
+        `${where}.sessionTracks[${i}]`,
         manifest,
-        `defaultSession.views[${i}]`,
         report,
-        ctx,
+        sessionCtx,
       )
+    }
+  }
+  return sessionCtx
+}
+
+function checkSession(
+  session: unknown,
+  where: string,
+  manifest: ConfigManifest,
+  report: Report,
+  configCtx: Ctx,
+) {
+  if (isRecord(session)) {
+    const ctx = sessionContext(session, where, manifest, report, configCtx)
+    if (Array.isArray(session.views)) {
+      for (const [i, view] of session.views.entries()) {
+        checkSessionViewTracks(view, manifest, `${where}.views[${i}]`, report)
+      }
+      for (const [i, view] of session.views.entries()) {
+        if (isRecord(view)) {
+          checkSessionView(view, manifest, `${where}.views[${i}]`, report, ctx)
+        }
+      }
     }
   }
 }
@@ -1418,39 +1471,29 @@ export function validateConfig(
   )
 
   const assemblies = (
-    Array.isArray(config.assemblies)
-      ? config.assemblies
-      : isRecord(config.assembly)
-        ? [config.assembly]
-        : []
+    Array.isArray(config.assemblies) ? config.assemblies : []
   ).filter(isRecord)
   if (assemblies.length === 0) {
     report.error('assemblies', 'no assemblies — a config needs at least one')
   }
 
   const ctx: Ctx = {
-    // An assembly's `aliases` are usable wherever its name is.
-    assemblyNames: new Set(
-      assemblies
-        .flatMap(a => [a.name, ...(Array.isArray(a.aliases) ? a.aliases : [])])
-        .filter((n): n is string => typeof n === 'string'),
-    ),
+    assemblyNames: new Set(assemblies.flatMap(a => assemblyNamesOf(a))),
     assemblyCount: assemblies.length,
     seenTrackIds: new Set(),
     trackAliases: new Map(),
     declaresPlugins,
     schema,
-    // Both the written trackId and the one the `{name, uri}` shorthand derives,
-    // since a config using the shorthand still gets the derived id at runtime.
+    // The written trackId wins at runtime, and the `{name, uri}` shorthand
+    // derives one only when none is written.
     sequenceTrackIds: new Set(
       assemblies.flatMap(a => {
         const declared = isRecord(a.sequence) ? a.sequence.trackId : undefined
-        return [
-          ...(typeof declared === 'string' ? [declared] : []),
-          ...(typeof a.name === 'string'
+        return typeof declared === 'string'
+          ? [declared]
+          : typeof a.name === 'string'
             ? [`${a.name}-ReferenceSequenceTrack`]
-            : []),
-        ]
+            : []
       }),
     ),
   }
@@ -1463,42 +1506,41 @@ export function validateConfig(
     ? config.tracks.filter(isRecord)
     : []
   for (const [i, track] of tracks.entries()) {
-    checkTrack(track, i, manifest, report, ctx)
+    checkTrack(track, `tracks[${i}]`, manifest, report, ctx)
   }
   checkTrackAliases(tracks, report, ctx)
   checkTableColumns(configuration, tracks, report)
 
-  const connections = Array.isArray(config.connections)
-    ? config.connections
-    : []
-  for (const [i, connection] of connections.entries()) {
-    checkPluggable(
-      connection,
-      manifest.connections,
-      'connection',
-      `connections[${i}]`,
-      report,
-      manifest,
-    )
-  }
-
-  const aggregate = Array.isArray(config.aggregateTextSearchAdapters)
-    ? config.aggregateTextSearchAdapters
-    : []
-  for (const [i, adapter] of aggregate.entries()) {
-    checkPluggable(
-      adapter,
-      manifest.textSearchAdapters,
-      'text search adapter',
-      `aggregateTextSearchAdapters[${i}]`,
-      report,
-      manifest,
-    )
+  const pluggableLists = [
+    { key: 'connections', group: manifest.connections, label: 'connection' },
+    {
+      key: 'internetAccounts',
+      group: manifest.internetAccounts,
+      label: 'internet account',
+    },
+    {
+      key: 'aggregateTextSearchAdapters',
+      group: manifest.textSearchAdapters,
+      label: 'text search adapter',
+    },
+  ]
+  for (const { key, group, label } of pluggableLists) {
+    const list = config[key]
+    for (const [i, item] of (Array.isArray(list) ? list : []).entries()) {
+      checkPluggable(item, group, label, `${key}[${i}]`, report, manifest)
+    }
   }
 
   // Tracks are registered before the session is checked, so a session may
   // reference any track in the file regardless of declaration order.
-  checkSession(config.defaultSession, manifest, report, ctx)
+  checkSession(config.defaultSession, 'defaultSession', manifest, report, ctx)
+  const preConfigured = config.preConfiguredSessions
+  for (const [i, session] of (Array.isArray(preConfigured)
+    ? preConfigured
+    : []
+  ).entries()) {
+    checkSession(session, `preConfiguredSessions[${i}]`, manifest, report, ctx)
+  }
   checkMarkDisplays(config, manifest, '', report, schema)
 
   return report.result()
