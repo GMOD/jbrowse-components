@@ -162,18 +162,75 @@ test('a symlink left by --load symlink is not taken as the copy --load copy asks
   })
 })
 
-// setting up a test for move difficult currently, because it would literally
-// move the file in our test data...
-//
-//   .do(initctx)
-//   .do(async ctx => {
-//     await fsPromises.copyFile(simpleBam, path.join(ctx.dir, 'new.bam'))
-//     await fsPromises.copyFile(simpleBai, path.join(ctx.dir, 'new.bam.bai'))
-//   })
-//   runCommand(['add-track', 'new.bam', '--load', 'move'])
-//   runCommand(['add-track', 'new.bam', '--load', 'move', '--force'])
-//   .it('use force to overwrite a moved file')
+async function writeMoveSource(ctx: { dir: string }) {
+  await mkdir(ctxDir(ctx, 'incoming'))
+  await writeFile(ctxDir(ctx, 'incoming/moved.bed'), 'ctgA\t0\t10\n')
+}
 
+test('--load move refuses to overwrite a file already in place', async () => {
+  await runInTmpDir(async ctx => {
+    await initctx(ctx)
+    await writeMoveSource(ctx)
+    await writeFile(ctxDir(ctx, 'moved.bed'), 'already here')
+    const { error } = await runCommand([
+      'add-track',
+      'incoming/moved.bed',
+      '--load',
+      'move',
+    ])
+    expect(error?.message).toMatch(/EEXIST/)
+    expect(exists(ctxDir(ctx, 'incoming/moved.bed'))).toBe(true)
+    expect(fs.readFileSync(ctxDir(ctx, 'moved.bed'), 'utf8')).toBe(
+      'already here',
+    )
+  })
+})
+
+test('--load move --force overwrites the file already in place', async () => {
+  await runInTmpDir(async ctx => {
+    await initctx(ctx)
+    await writeMoveSource(ctx)
+    await writeFile(ctxDir(ctx, 'moved.bed'), 'already here')
+    const { error } = await runCommand([
+      'add-track',
+      'incoming/moved.bed',
+      '--load',
+      'move',
+      '--force',
+    ])
+    expect(error).toBeUndefined()
+    expect(exists(ctxDir(ctx, 'incoming/moved.bed'))).toBe(false)
+    expect(fs.readFileSync(ctxDir(ctx, 'moved.bed'), 'utf8')).toBe(
+      'ctgA\t0\t10\n',
+    )
+  })
+})
+
+test('--load move across devices copies the file and removes the source', async () => {
+  await runInTmpDir(async ctx => {
+    await initctx(ctx)
+    await writeMoveSource(ctx)
+    const crossDevice = Object.assign(new Error('EXDEV'), { code: 'EXDEV' })
+    const rename = jest
+      .spyOn(fs.promises, 'rename')
+      .mockRejectedValueOnce(crossDevice)
+    try {
+      const { error } = await runCommand([
+        'add-track',
+        'incoming/moved.bed',
+        '--load',
+        'move',
+      ])
+      expect(error).toBeUndefined()
+    } finally {
+      rename.mockRestore()
+    }
+    expect(exists(ctxDir(ctx, 'incoming/moved.bed'))).toBe(false)
+    expect(fs.readFileSync(ctxDir(ctx, 'moved.bed'), 'utf8')).toBe(
+      'ctgA\t0\t10\n',
+    )
+  })
+})
 test('cannot add a track if there is no config file', async () => {
   await runInTmpDir(async () => {
     const { error } = await runCommand([

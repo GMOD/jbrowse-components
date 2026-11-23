@@ -2,9 +2,9 @@ import { Buffer } from 'node:buffer'
 import fs from 'node:fs'
 import path from 'node:path'
 
-import { ignoreNotFound } from '../../utils.ts'
+import { ignoreNotFound, isRecord } from '../../utils.ts'
 
-const { copyFile, rename, symlink, unlink } = fs.promises
+const { copyFile, symlink, unlink } = fs.promises
 const { COPYFILE_EXCL } = fs.constants
 
 // A GenBank file is an assembly and a track at once, so `add-assembly x.gbk
@@ -49,6 +49,41 @@ async function sameChunks(src: string, dest: string) {
   }
 }
 
+async function moveFile(src: string, dest: string, force: boolean) {
+  const taken =
+    !force &&
+    (await fs.promises.lstat(dest).then(
+      () => true,
+      () => false,
+    ))
+  if (taken) {
+    throw Object.assign(
+      new Error(`EEXIST: file already exists, move '${src}' -> '${dest}'`),
+      { code: 'EEXIST' },
+    )
+  }
+  await fs.promises.rename(src, dest).catch(async (error: unknown) => {
+    if (isRecord(error) && error.code === 'EXDEV') {
+      await copyFile(src, dest)
+      await unlink(src)
+    } else {
+      throw error
+    }
+  })
+}
+
+function destinationOf({
+  src,
+  destDir,
+  subDir = '',
+}: {
+  src: string
+  destDir: string
+  subDir?: string
+}) {
+  return path.join(destDir, subDir, path.basename(src))
+}
+
 async function loadFile({
   src,
   destDir,
@@ -65,7 +100,7 @@ async function loadFile({
   if (mode === 'inPlace') {
     return
   }
-  const dest = path.join(destDir, subDir, path.basename(src))
+  const dest = destinationOf({ src, destDir, subDir })
   // the file already sits where the config wants it (add-track run from inside
   // the install dir), so there is nothing to copy/move/link. Bailing before the
   // force-unlink matters: dest and src are the same file, so unlinking it
@@ -85,7 +120,7 @@ async function loadFile({
     return copyFile(src, dest, force ? 0 : COPYFILE_EXCL)
   }
   if (mode === 'move') {
-    return rename(src, dest)
+    return moveFile(src, dest, force)
   }
   if (mode === 'symlink') {
     return symlink(path.resolve(src), dest)
