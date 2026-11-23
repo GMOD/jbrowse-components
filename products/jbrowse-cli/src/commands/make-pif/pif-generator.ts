@@ -346,10 +346,10 @@ export function spawnPifIndexer(
   const outputFd = openSync(outputFile, 'w')
   const bgzip = spawn('bgzip', ['-@', `${threads}`], {
     env: cLocaleEnv(),
-    stdio: ['pipe', outputFd, process.stderr],
+    stdio: [sort.stdout, outputFd, process.stderr],
   })
   closeSync(outputFd)
-  sort.stdout.pipe(bgzip.stdin)
+  sort.stdout.destroy()
 
   const done = async () => {
     const [sortExit, bgzipExit] = await Promise.all([

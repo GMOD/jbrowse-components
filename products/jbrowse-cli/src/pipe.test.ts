@@ -4,6 +4,7 @@
 
 import { spawnSync } from 'node:child_process'
 import fs from 'node:fs'
+import os from 'node:os'
 import path from 'node:path'
 
 import { diedOfSigpipe } from './commands/process-utils.ts'
@@ -147,4 +148,16 @@ describe('"-" reads JSON from stdin', () => {
       })
     })
   })
+})
+
+test('make-pif run as a process finishes its index before exiting', () => {
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'pif-'))
+  const out = path.join(dir, 'o.pif.gz')
+  const { status, stderr } = pipe(
+    `node ${bin} make-pif ${dataDir('volvox_inv_indels.paf')} --out ${out}`,
+  )
+  expect(stderr).toBe('')
+  expect(status).toBe(0)
+  expect(fs.readdirSync(dir).sort()).toEqual(['o.pif.gz', 'o.pif.gz.tbi'])
+  fs.rmSync(dir, { recursive: true })
 })
