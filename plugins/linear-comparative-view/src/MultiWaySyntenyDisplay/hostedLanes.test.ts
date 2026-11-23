@@ -12,13 +12,18 @@ import {
 } from './copyLane.ts'
 import { decideLaneFrames, frameFromDecision } from './laneDecision.ts'
 import { changeLabel } from './laneHeader.ts'
+import { buildLanes, laneGeometry } from './laneStack.ts'
 import {
   clipGroupToAnchor,
+  frameBpPerPx,
   groupFeatures,
   groupRunsOnRow,
   laneIndelsOf,
   rowAssembliesOf,
+  rowFrameX,
 } from './layoutMultiWay.ts'
+import { SEQUENCE_BAR_PX, buildLaneCells } from './multiwayGeometry.ts'
+import { PX_ORIGIN } from './multiwayRenderTypes.ts'
 
 import type { MultiWayGroup, RowFrame } from './layoutMultiWay.ts'
 import type { SimpleFeatureSerialized } from '@jbrowse/core/util'
@@ -125,7 +130,17 @@ function layHosted({ region, records }: HostedWindow) {
       )
     }
   }
-  return { field, grouped, groups, lanes, frames, openings, changes, ops }
+  return {
+    field,
+    grouped,
+    groups,
+    lanes,
+    frames,
+    openings,
+    changes,
+    ops,
+    px,
+  }
 }
 
 function unionBp(spans: { start: number; end: number }[]) {
@@ -295,6 +310,104 @@ describe('a gap with bases on both sides is worded by both, at its size', () => 
     expect(
       chipsOf(layHosted(hostedWindow('SV-rep-10k-100k')), 'HG02055.1'),
     ).toEqual(['13 kb replaced by 13 bp'])
+  })
+})
+
+/**
+ * The bars and dashed joins a lane of `genome` draws under its ribbons, in
+ * lane px, with the session holding no assembly of it
+ */
+function sequenceMarks(laid: ReturnType<typeof layHosted>, genome: string) {
+  const [laneName] = lanesOf(laid, genome)
+  const stack = buildLanes({
+    assemblyNames: ['hg38', ...laid.lanes],
+    groups: laid.groups,
+    anchorSpans: new Map(
+      laid.groups.map(g => [
+        g.key,
+        [laid.px(g.anchor.start), laid.px(g.anchor.end)],
+      ]),
+    ),
+    rowFrames: laid.frames,
+    axisSpanOf: (_ref, start, end) => [laid.px(start), laid.px(end)],
+    axisSpansOf: (_ref, start, end) => [[laid.px(start), laid.px(end)]],
+    anchorRegionSpans: [],
+    anchorBpPerPx: 1,
+    contigOf: () => undefined,
+    refNameAliasOf: () => undefined,
+    width: WIDTH,
+    geometry: laneGeometry(800, 1 + laid.lanes.length),
+  })
+  const lane = stack.lanes.find(l => l.assemblyName === laneName)!
+  const fills = { fill: () => ({ css: 'gold', packed: 0 }), utr: () => 0 }
+  const { glyphs } = buildLaneCells({
+    lane,
+    genes: [],
+    glyphHeight: stack.glyphHeight,
+    width: WIDTH,
+    colors: {
+      genes: fills,
+      boxes: fills,
+      stroke: '#222',
+      divider: '#ccc',
+      sequence: '#888',
+    },
+  })
+  const rects = Array.from({ length: glyphs.rectHeights.length }, (_, i) => ({
+    x1: glyphs.rectPositions[2 * i]! - PX_ORIGIN,
+    x2: glyphs.rectPositions[2 * i + 1]! - PX_ORIGIN,
+    height: glyphs.rectHeights[i]!,
+  }))
+  const frame = laid.frames.get(laneName!)!
+  return {
+    bars: rects.filter(r => r.height === SEQUENCE_BAR_PX),
+    dashes: rects.filter(r => r.height === 1),
+    x: (bp: number) => rowFrameX(frame, bp, WIDTH),
+    bpPerPx: frameBpPerPx(frame, WIDTH),
+  }
+}
+
+describe('a lane draws its own sequence, and a dashed join across a hole', () => {
+  // HG00097#1 replaces 122 kb of GRCh38 with 49 kb of its own, between its
+  // walk's two records: a 72.5 kb hole, then the 49 kb no ribbon pairs
+  test('H-AMY1: the bar covers the 49 kb, and the dashes the hole', () => {
+    const { bars, dashes, x, bpPerPx } = sequenceMarks(
+      layHosted(hostedWindow('H-AMY1')),
+      'HG00097.1',
+    )
+    expect(bars).toHaveLength(2)
+    const [left, right] = bars.toSorted((a, b) => a.x1 - b.x1)
+    expect(left!.x2).toBeCloseTo(x(104_117_700), 0)
+    expect(right!.x2 - right!.x1).toBeGreaterThan(
+      (104_214_116 - 104_117_700) / bpPerPx - 2,
+    )
+    expect(Math.min(...dashes.map(d => d.x1))).toBeCloseTo(left!.x2, 0)
+    expect(Math.max(...dashes.map(d => d.x2))).toBeCloseTo(right!.x1, 0)
+    expect((right!.x1 - left!.x2) * bpPerPx).toBeCloseTo(121_555 - 49_051, -2)
+  })
+
+  // HG00099#1 holds 33 kb GRCh38 lacks, then lacks 33 kb GRCh38 holds
+  test('H-C4: one bar runs on under no ribbon, and one dashed join crosses the deletion', () => {
+    const { bars, dashes } = sequenceMarks(
+      layHosted(hostedWindow('H-C4')),
+      'HG00099.1',
+    )
+    expect(bars).toHaveLength(2)
+    expect(dashes.length).toBeGreaterThan(0)
+    const [, right] = bars.toSorted((a, b) => a.x1 - b.x1)
+    expect(Math.min(...dashes.map(d => d.x1))).toBeLessThan(right!.x1)
+  })
+
+  // HG00097#1's walk starts 69% into the window, and its contig before that
+  // is not loaded here
+  test('R1M-05: no bar past what the records place', () => {
+    const { bars, x } = sequenceMarks(
+      layHosted(hostedWindow('R1M-05')),
+      'HG00097.1',
+    )
+    expect(bars).toHaveLength(1)
+    expect(bars[0]!.x1).toBeCloseTo(x(13_092_427), 0)
+    expect(bars[0]!.x2).toBeCloseTo(x(13_404_348), 0)
   })
 })
 

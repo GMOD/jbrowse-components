@@ -41,6 +41,7 @@ export function bandInk() {
   const ink = getContrastText(BAND_GROUND_COLOR)
   return {
     text: alpha(ink, 0.87),
+    sequence: alpha(ink, 0.45),
     divider: alpha(ink, 0.12),
     gridline: alpha(ink, 0.12),
     stripe: alpha(ink, 0.04),

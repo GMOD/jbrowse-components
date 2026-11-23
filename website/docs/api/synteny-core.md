@@ -78,6 +78,7 @@ import { bandInk } from '@jbrowse/synteny-core'
 
 function bandInk(): {
   text: string
+  sequence: string
   divider: string
   gridline: string
   stripe: string

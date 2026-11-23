@@ -204,6 +204,7 @@ import {
   laneColorKey,
   laneFieldKey,
   ribbonColorScales,
+  laneSequenceKey,
   stackGeneKey,
 } from './legend.ts'
 import { laneLocusMenuItems, multiWayTrackMenuItems } from './menus.ts'
@@ -215,6 +216,7 @@ import {
   buildLaneCells,
   buildRibbonGeometry,
   buildTickGeometry,
+  drawsSequenceBar,
   glyphHitAt,
   glyphsKey,
   mismatchCss,
@@ -233,6 +235,7 @@ import {
 } from './multiwayRenderTypes.ts'
 import { RIBBON_GREY } from './ribbonColorConfigSchema.ts'
 import { RIBBON_OPACITY } from './ribbonPaint.ts'
+import { headerDeclaresHaplotypeLanes } from './sourceShape.ts'
 
 import type { SyntenyRenderState } from '../LinearSyntenyDisplay/syntenyRenderingBackendTypes.ts'
 import type { SyntenyInstanceData } from '../LinearSyntenyRPC/buildSyntenyGeometry.ts'
@@ -2125,6 +2128,7 @@ export function stateModelFactory(
             boxes: boxColors,
             stroke: ink.text,
             divider: ink.divider,
+            sequence: ink.sequence,
           }
           const genes = laneGenes.get(lane.assemblyName)?.genes ?? NO_GENES
           const prev = previous[row]
@@ -2134,7 +2138,8 @@ export function stateModelFactory(
             prev.colors.genes === colors.genes &&
             prev.colors.boxes === colors.boxes &&
             prev.colors.stroke === colors.stroke &&
-            prev.colors.divider === colors.divider
+            prev.colors.divider === colors.divider &&
+            prev.colors.sequence === colors.sequence
           ) {
             return prev
           }
@@ -2485,7 +2490,23 @@ export function stateModelFactory(
             },
           ),
         ]
-        return scales.filter(scale => !colorScaleIsEmpty(scale))
+        return [...scales, ...this.laneSequenceScales].filter(
+          scale => !colorScaleIsEmpty(scale),
+        )
+      },
+      /**
+       * #getter
+       * the key to an alignment lane's sequence bar and, where one is drawn,
+       * the dashed join across a hole
+       */
+      get laneSequenceScales(): ColorScale[] {
+        return laneSequenceKey(
+          self.laneStack.lanes.filter(drawsSequenceBar),
+          headerDeclaresHaplotypeLanes(self.adapterHeader)
+            ? 'haplotype'
+            : 'lane',
+          bandInk().sequence,
+        )
       },
       /** #getter */
       get legendRight(): number {

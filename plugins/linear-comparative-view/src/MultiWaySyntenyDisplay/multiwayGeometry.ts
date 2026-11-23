@@ -1079,6 +1079,56 @@ export interface LaneGlyphColors {
   boxes: GeneColors
   stroke: string
   divider: string
+  /** an alignment lane's own sequence, the bar under its ribbons */
+  sequence: string
+}
+
+/** px thick, an alignment lane's sequence bar */
+export const SEQUENCE_BAR_PX = 3
+const JOIN_DASH_PX = 4
+const JOIN_GAP_PX = 3
+
+/**
+ * Whether a lane draws its sequence as a bar: a mate lane placing alignments,
+ * whose baseline is its own contig. A gene lane's baseline is its gene row's
+ * centre line.
+ */
+export function drawsSequenceBar(lane: Lane) {
+  return (
+    !lane.isAnchor &&
+    lane.frame !== undefined &&
+    [...lane.placements.values()].some(
+      ({ group }) => !isNamedRecord(group.feature),
+    )
+  )
+}
+
+/**
+ * An alignment lane's baseline: a bar over each stretch of its sequence, and
+ * across each hole between two stretches a dashed join, the ends either side
+ * being adjacent bases of the lane
+ */
+function addSequenceBar(
+  glyphs: GlyphBuilder,
+  baseline: readonly Span[],
+  centerY: number,
+  bar: number,
+  join: number,
+) {
+  const spans = baseline.toSorted((a, b) => a[0] - b[0])
+  for (const [k, [x1, x2]] of spans.entries()) {
+    glyphs.rect(x1, x2, centerY - SEQUENCE_BAR_PX / 2, SEQUENCE_BAR_PX, bar)
+    const next = spans[k + 1]
+    for (let x = x2; next && x < next[0]; x += JOIN_DASH_PX + JOIN_GAP_PX) {
+      glyphs.rect(
+        x,
+        Math.min(x + JOIN_DASH_PX, next[0]),
+        centerY - 0.5,
+        1,
+        join,
+      )
+    }
+  }
 }
 
 function onCanvas(span: Span, [left, right]: Span) {
@@ -1251,8 +1301,18 @@ export function buildLaneCells({
   const reach = laneReachPx(lane, width)
   boxes.outlineColor = stroke
   const divider = cssColorToABGR(colors.divider)
-  for (const [x1, x2] of lane.baseline) {
-    glyphs.line(x1, x2, centerY, glyphHeight, 0, divider)
+  if (genes.length === 0 && drawsSequenceBar(lane)) {
+    addSequenceBar(
+      glyphs,
+      lane.baseline,
+      centerY,
+      cssColorToABGR(colors.sequence),
+      stroke,
+    )
+  } else {
+    for (const [x1, x2] of lane.baseline) {
+      glyphs.line(x1, x2, centerY, glyphHeight, 0, divider)
+    }
   }
 
   const drawn: DrawnGene[] = []

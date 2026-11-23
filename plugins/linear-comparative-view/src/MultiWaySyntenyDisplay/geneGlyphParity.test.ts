@@ -150,7 +150,13 @@ function render(gene: SimpleFeature, geneGlyphMode: 'all' | 'representative') {
     genes: [new LaneGene(gene, config)],
     glyphHeight: HEIGHT,
     width: 1000,
-    colors: { genes: fills, boxes: fills, stroke: '#222', divider: '#ccc' },
+    colors: {
+      genes: fills,
+      boxes: fills,
+      stroke: '#222',
+      divider: '#ccc',
+      sequence: '#888',
+    },
   })
   return { track, lane, trackTop: Math.min(...track.rectYs) }
 }

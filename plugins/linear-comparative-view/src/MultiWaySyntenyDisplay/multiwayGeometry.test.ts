@@ -191,6 +191,7 @@ const colors = {
   boxes: fills,
   stroke: 'black',
   divider: 'rgba(0,0,0,0.1)',
+  sequence: 'grey',
 }
 
 describe('the ribbons', () => {

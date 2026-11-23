@@ -246,3 +246,37 @@ export function ribbonColorScales(
     },
   ]
 }
+
+/**
+ * The key to an alignment lane's sequence bar, `noun` naming what the lanes
+ * are, and, where a lane draws one, the dashed join across a hole
+ */
+export function laneSequenceKey(
+  barred: readonly { baseline: readonly Span[] }[],
+  noun: string,
+  color: string,
+): ColorScale[] {
+  return barred.length
+    ? [
+        {
+          kind: 'categorical',
+          id: 'lane-sequence',
+          entries: [
+            {
+              value: 'sequence',
+              label: `${noun[0]!.toUpperCase()}${noun.slice(1)} sequence`,
+              color,
+            },
+            ...(barred.some(lane => lane.baseline.length > 1)
+              ? [
+                  {
+                    value: 'join',
+                    label: `Dashed: no ${noun} sequence; the ends are adjacent`,
+                  },
+                ]
+              : []),
+          ],
+        },
+      ]
+    : []
+}

@@ -2084,7 +2084,13 @@ describe('a gene on a lane with a hole', () => {
       genes,
       glyphHeight: GLYPH_HEIGHT,
       width: WIDTH,
-      colors: { genes: fills, boxes: fills, stroke: '#222', divider: '#ccc' },
+      colors: {
+        genes: fills,
+        boxes: fills,
+        stroke: '#222',
+        divider: '#ccc',
+        sequence: '#888',
+      },
     })
     const pairs = (positions: Uint32Array, keep: (i: number) => boolean) =>
       Array.from({ length: positions.length / 2 }, (_, i) => i)

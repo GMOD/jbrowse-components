@@ -1,5 +1,6 @@
 import { clamp } from '@jbrowse/core/util'
 
+import { isNamedRecord } from '../syntenyMate.ts'
 import { inlineNameRise } from './laneHeader.ts'
 import { GENE_LABEL_FONT_PX, GENE_LABEL_GAP_PX } from './laneLabels.ts'
 import { shownFrame } from './laneMotion.ts'
@@ -218,6 +219,37 @@ function clipSpan([a, b]: Span, [lo, hi]: Span): Span[] {
   return left < right ? [[left, right]] : []
 }
 
+const WHOLE = { start: Number.NEGATIVE_INFINITY, end: Number.POSITIVE_INFINITY }
+
+/**
+ * The stretch of a lane's contig its baseline draws: the whole contig where
+ * the session holds its assembly; else, on a lane placing alignments, the
+ * hull of what it places, since past that the records state nothing of the
+ * contig; else the whole frame, a gene row's centre line
+ */
+function sequenceExtent(
+  contig: { start: number; end: number } | undefined,
+  placements: ReadonlyMap<string, LaneGroup>,
+) {
+  let start = Number.POSITIVE_INFINITY
+  let end = Number.NEGATIVE_INFINITY
+  let aligned = false
+  for (const { group, intervals } of placements.values()) {
+    aligned ||= !isNamedRecord(group.feature)
+    for (const interval of intervals) {
+      start = Math.min(start, interval.start)
+      end = Math.max(end, interval.end)
+    }
+  }
+  return contig
+    ? [contig]
+    : !aligned
+      ? [WHOLE]
+      : end > start
+        ? [{ start, end }]
+        : []
+}
+
 export function buildLanes({
   assemblyNames,
   groups,
@@ -320,12 +352,11 @@ export function buildLanes({
         baseline: isAnchor
           ? anchorRegionSpans.flatMap(span => clipSpan(span, reach))
           : frame
-            ? frameSegments(
-                frame,
-                contig?.start ?? Number.NEGATIVE_INFINITY,
-                contig?.end ?? Number.POSITIVE_INFINITY,
-                width,
-              ).flatMap(({ px }) => clipSpan(px, clip))
+            ? sequenceExtent(contig, placements).flatMap(({ start, end }) =>
+                frameSegments(frame, start, end, width).flatMap(({ px }) =>
+                  clipSpan(px, clip),
+                ),
+              )
             : [clip],
         strandRows: !strandRows
           ? undefined

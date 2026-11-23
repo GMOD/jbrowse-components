@@ -224,6 +224,7 @@ From [TrackHeightMixin](../trackheightmixin): <span id="volatile-scrolltop">[`sc
 | <span id="getter-genetextof">**geneTextOf**</span><br><code>(feature: Feature) =&gt; string &#124; undefined</code> |  |
 | <span id="getter-genecolorscales">**geneColorScales**</span><br><code>ColorScale[]</code> | keys every lane, over the settled window, or the anchor lane alone where every lane's values are too many to list |
 | <span id="getter-colorscales">**colorScales**</span><br><code>ColorScale[]</code> |  |
+| <span id="getter-lanesequencescales">**laneSequenceScales**</span><br><code>ColorScale[]</code> | the key to an alignment lane's sequence bar and, where one is drawn, the dashed join across a hole |
 | <span id="getter-legendright">**legendRight**</span><br><code>number</code> |  |
 | <span id="getter-legendtop">**legendTop**</span><br><code>number</code> | the anchor lane's foot, so the key sits in the gutter under it rather than over the genes every lane is read against |
 | <span id="getter-lanelayerplacements">**laneLayerPlacements**</span><br><code>LaneLayerPlacement[]</code> | each payload's region placed in its lane's own frame; a payload whose lane or contig no longer draws is left out |

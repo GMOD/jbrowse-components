@@ -152,6 +152,7 @@ const colors = {
   boxes: { fill: () => painted, utr: () => painted.packed },
   stroke: 'black',
   divider: 'grey',
+  sequence: 'grey',
 }
 
 function geometryAll() {

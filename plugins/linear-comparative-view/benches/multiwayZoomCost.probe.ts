@@ -329,6 +329,7 @@ for (let step = 0; step < 19; step++, span *= 1.35) {
           boxes: fills,
           stroke: '#000',
           divider: '#ccc',
+          sequence: '#888',
         },
       })
     }

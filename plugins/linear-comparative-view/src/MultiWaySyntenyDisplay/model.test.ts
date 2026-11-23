@@ -38,7 +38,7 @@ import { laneResetLabel } from './laneSelection.ts'
 import { MIN_LANE_PITCH } from './laneStack.ts'
 import * as laneStage from './laneStage.ts'
 import { laneHeaderMenuItems, lanesMenuItem } from './menus.ts'
-import { boxesKey, glyphsKey } from './multiwayGeometry.ts'
+import { SEQUENCE_BAR_PX, boxesKey, glyphsKey } from './multiwayGeometry.ts'
 import { createDisplay, createDisplayWithSession } from './testEnv.ts'
 
 import type { MultiWaySyntenyDisplayModel } from './model.ts'
@@ -2232,10 +2232,12 @@ describe('two lanes sharing an insertion the anchor lacks', () => {
     )
     return display
   }
-  test('the lanes draw no mark for it, and their pair link crosses it in one color', () => {
+  test('the lanes draw no mark for it but their own sequence, and their pair link crosses it in one color', () => {
     const display = setUp()
     const glyphs = display.laneCells.cells.get(glyphsKey(1))
-    expect(glyphs?.kind === 'glyphs' && glyphs.data.rectColors.length).toBe(0)
+    expect(
+      glyphs?.kind === 'glyphs' && [...new Set(glyphs.data.rectHeights)],
+    ).toEqual([SEQUENCE_BAR_PX])
     expect(display.colorScales.map(scale => scale.id)).not.toContain(
       'offAnchor',
     )

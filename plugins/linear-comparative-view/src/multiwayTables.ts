@@ -16,6 +16,7 @@ import { colorSnapshotOf } from '@jbrowse/display-kit/colorConfigSchema'
 import { types } from '@jbrowse/mobx-state-tree'
 import {
   PRESET_ATTRIBUTES,
+  bandInk,
   comparativeFrame,
   declaredAttributes,
   declaredLanesOf,
@@ -92,12 +93,17 @@ import {
   rowAssembliesOf,
   tickIntervalFor,
 } from './MultiWaySyntenyDisplay/layoutMultiWay.ts'
-import { ribbonColorScales } from './MultiWaySyntenyDisplay/legend.ts'
+import {
+  laneSequenceKey,
+  ribbonColorScales,
+} from './MultiWaySyntenyDisplay/legend.ts'
 import {
   buildRibbonGeometry,
+  drawsSequenceBar,
   mismatchCss,
 } from './MultiWaySyntenyDisplay/multiwayGeometry.ts'
 import { MULTIWAY_FADE_THIN } from './MultiWaySyntenyDisplay/multiwayRenderTypes.ts'
+import { headerDeclaresHaplotypeLanes } from './MultiWaySyntenyDisplay/sourceShape.ts'
 import { getMate, getRecordName, isArrayRecord } from './syntenyMate.ts'
 
 import type { WindowDeletion } from './MultiWaySyntenyDisplay/MultiWayGetFeatures.ts'
@@ -1082,7 +1088,15 @@ export async function multiwayTables(
         against,
         repeats: features.some(isArrayRecord),
         mismatch: geometry.mismatches ? mismatchCss(ribbon.field) : undefined,
-      }),
+      }).concat(
+        laneSequenceKey(
+          stack.lanes.filter(drawsSequenceBar),
+          headerDeclaresHaplotypeLanes(host.adapterHeader)
+            ? 'haplotype'
+            : 'lane',
+          bandInk().sequence,
+        ),
+      ),
     ),
     height: laneGeom.contentHeight,
     tickInterval: tickIntervalFor(unitBp),

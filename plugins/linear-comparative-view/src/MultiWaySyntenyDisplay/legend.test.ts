@@ -16,6 +16,7 @@ import { geneColorConfigSchema } from './geneColorConfigSchema.ts'
 import {
   laneColorKey,
   laneFieldKey,
+  laneSequenceKey,
   ribbonColorKey,
   ribbonColorScales,
   stackGeneKey,
@@ -179,6 +180,31 @@ test('the strand key names the genome each lane is read against', () => {
   expect(
     ribbonColorKey('strand', {}, { against: 'hg38' }).map(e => e.label),
   ).toEqual(['Same orientation as hg38', 'Inverted vs hg38'])
+})
+
+test('the lane key names the sequence bar, and the dashed join only where a hole is drawn', () => {
+  const labels = (baselines: [number, number][][]) =>
+    laneSequenceKey(
+      baselines.map(baseline => ({ baseline })),
+      'haplotype',
+      'grey',
+    ).flatMap(scale =>
+      scale.kind === 'categorical' ? scale.entries.map(e => e.label) : [],
+    )
+  expect(labels([])).toEqual([])
+  expect(labels([[[0, 100]]])).toEqual(['Haplotype sequence'])
+  expect(
+    labels([
+      [[0, 100]],
+      [
+        [0, 40],
+        [60, 100],
+      ],
+    ]),
+  ).toEqual([
+    'Haplotype sequence',
+    'Dashed: no haplotype sequence; the ends are adjacent',
+  ])
 })
 
 test('the ribbon key names a drawn mismatch, and only while one is drawn', () => {
