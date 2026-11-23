@@ -162,11 +162,15 @@ the graph:
 
 ## Overview of chr23 with small variants folded {#overview-of-chr23-with-one-node-per-variant-region}
 
-Type `chr23` into the location box. Over the whole chromosome, the graph track
-draws its coarse tier, in which every variant under 10 kb is folded into the
-reference.
+Turn on **NCBI RefSeq genes (bosTau9)**, **Bovine super-pangenome: variability
+(segments per bubble)** and **Bovine super-pangenome (rGFA segments)** in the
+track selector, then type `chr23` into the location box. Over the whole
+chromosome, the graph track reads its coarse tier, in which every variant under
+10 kb is folded into the reference. As it draws, it also folds each variant
+narrower than 10 pixels, which at this zoom leaves chr23 as one line with its
+genes. The curve of segments per bubble marks where the assemblies differ most.
 
-<Figure caption="Chromosome 23 with RefSeq genes, segments per bubble as a curve, and the graph with variants under 10 kb folded into the reference." src="/img/pangenome/bovine_whole_chromosome.png" />
+<Figure caption="Chromosome 23 with RefSeq genes, segments per bubble as a curve, and the graph track, which at this zoom folds variants under 483 kb into the reference." src="/img/pangenome/bovine_whole_chromosome.png" />
 
 BoLA, the cattle major histocompatibility complex (immune genes that vary a lot
 between breeds), contains the heat shock gene _HSPA1A_, the subject of the next
@@ -198,10 +202,11 @@ vg deconstruct -p chr1 -a -t 8 chr1.vg > chr1.vcf
 ```
 
 `vg deconstruct` reads each assembly's path from a P line, which these published
-graphs hold. A minigraph rGFA has no P lines, so for one of your own, map each
-assembly back through the graph with `minigraph --call`, as
+graphs hold. A minigraph rGFA has no P lines, so for one of your own,
+`minigraph --call` maps each assembly back through the graph and writes its
+allele at every bubble, which
 [the paths section of the graph-hosting tutorial](/docs/tutorials/pangenome_prepare_graph#which-haplotypes-walk-each-segment)
-shows.
+loads as a track with one row per assembly.
 
 The VCF's CHROM column is the `-p` path name, which has to equal the assembly's
 refName. Its sample names are the three-letter codes on each assembly's path,
@@ -213,10 +218,6 @@ name	breed	lineage
 ANG	Angus	taurine
 BIS	Bison	bison
 ```
-
-The track below names the graph's twelve assemblies, but the Hereford reference
-has no row: `-p` makes its path the reference, so the VCF has a column for each
-of the other assemblies.
 
 In [grammar-of-graphics](/docs/config_guides/mark_display) terms, `rows.color`
 in the track config is a color scale on each row's label bar, mapping the sample
@@ -380,8 +381,8 @@ recovers their rGFA tags:
   converts them back into `SN`/`SO`/`SR` tags (each segment's contig, offset and
   rank).
 
-Three commands then write the segment and link index, the bubbles and the coarse
-tier, all in the contig layout. The graph track's `uri` is the prefix the first
+The commands below write the segment and link index and the coarse tier, in the
+contig layout, and the bubbles. The graph track's `uri` is the prefix the first
 command writes.
 [The graph-hosting tutorial](/docs/tutorials/pangenome_prepare_graph#rgfa-contig-layout)
 lists how these files differ from the ones `gfa-to-tabix build` writes.
@@ -391,10 +392,20 @@ lists how these files differ from the ones `gfa-to-tabix build` writes.
 ```bash
 # --layout contig: each segment under its coordinate on its source contig
 gfa-to-tabix bovine-arsucd12-minigraph.rgfa.gz --layout contig -o bovine-arsucd12-minigraph
+```
+
+<!-- from: scripts/build_bovine_pangenome.sh -->
+
+```bash
 # gfatools bubble writes the bubbles unsorted
 gzip -dc bovine-arsucd12-minigraph.rgfa.gz | gfatools bubble - | sort -k1,1 -k2,2n |
   bgzip > bovine-arsucd12-minigraph.bubbles.bed.gz
 tabix -f -C -p bed bovine-arsucd12-minigraph.bubbles.bed.gz
+```
+
+<!-- from: scripts/build_bovine_pangenome.sh -->
+
+```bash
 # --below: fold variants under 10 kb into the reference, in the same layout
 gfa-to-tabix fold bovine-arsucd12-minigraph.rgfa.gz --below 10000 --layout contig -o bovine-arsucd12-minigraph.fold10000
 ```
@@ -410,7 +421,7 @@ colors by count.
 
 [`build_bovine_pangenome.sh`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/build_bovine_pangenome.sh)
 builds every hosted file on Linux, since it needs GNU tools. It downloads the 12
-GB Zenodo archive and takes about half an hour after that. It:
+GB Zenodo archive, then:
 
 - joins the autosomes' graphs and recovers their rGFA tags, and stops if the
   reference path's chromosome lengths differ from bosTau9's

@@ -1,5 +1,11 @@
 import { sessionSpec } from '../screenshot-spec-helpers.ts'
-import { GRAPH_DRAWN, cutNear, graphTrack, local } from './graph-fixtures.ts'
+import {
+  GRAPH_DRAWN,
+  cutNear,
+  graphCutDrawn,
+  graphTrack,
+  local,
+} from './graph-fixtures.ts'
 
 import type {
   ScreenshotSpec,
@@ -221,19 +227,17 @@ export const mouseCattleGraphSpecs: ScreenshotSpec[] = [
           tracks: [
             'bosTau9_ncbiRefSeq_ucsc',
             'bovine_bubble_score',
-            {
-              trackId: 'bovine_minigraph_tier',
-              type: 'LinearBasicDisplay',
-              labels: { name: { show: false }, description: { show: false } },
-              height: 60,
-            },
+            // Past the adapter's aboveBpPerPx, the graph display cuts the
+            // coarse tier; the feature display reads only the fine pair.
+            graphTrack('bovine_minigraph_segments', { paneHeight: 260 }),
           ],
         },
       ],
     }),
+    readySelector: graphCutDrawn('coarse'),
     readyTimeout: 300000,
     viewportWidth: 1400,
-    viewportHeight: 550,
+    viewportHeight: 760,
     tooltip: 'hide',
     annotations: [
       {
