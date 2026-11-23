@@ -1,4 +1,4 @@
-import { promises as fsPromises, readFileSync } from 'node:fs'
+import { existsSync, promises as fsPromises, readFileSync } from 'node:fs'
 import path from 'node:path'
 import zlib from 'node:zlib'
 
@@ -128,9 +128,9 @@ export async function readInlineOrFileJson<T>(inlineOrFileName: string) {
   try {
     result = JSON.parse(inlineOrFileName)
   } catch (error) {
-    // an argument that opens like an object or array was meant as inline JSON,
-    // so its parse error is the useful one, not an ENOENT for a file named '{...'
-    if (/^\s*[{[]/.test(inlineOrFileName)) {
+    // an argument that opens like an object or array and names no file was
+    // meant as inline JSON, so its parse error beats an ENOENT for '{...'
+    if (/^\s*[{[]/.test(inlineOrFileName) && !existsSync(inlineOrFileName)) {
       throw error
     }
     debug(

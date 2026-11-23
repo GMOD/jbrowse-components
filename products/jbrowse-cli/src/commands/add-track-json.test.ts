@@ -37,6 +37,19 @@ test('malformed inline JSON reports the parse error, not a missing file', async 
   })
 })
 
+test('a file whose name opens with a bracket is still read as a file', async () => {
+  await runInTmpDir(async ctx => {
+    await initctx(ctx)
+    await writeFile(
+      ctxDir(ctx, '[v2]track.json'),
+      JSON.stringify({ ...track, trackId: 'bracketed' }),
+    )
+    const { error } = await runCommand(['add-track-json', '[v2]track.json'])
+    expect(error).toBeUndefined()
+    expect(readConf(ctx).tracks?.map(t => t.trackId)).toContain('bracketed')
+  })
+})
+
 test('adds a track from a JSON file', async () => {
   await runInTmpDir(async ctx => {
     await initctx(ctx)
