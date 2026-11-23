@@ -183,28 +183,29 @@
 <!-- althue -->
 <g id="node17" class="node">
 <title>althue</title>
-<polygon fill="none" stroke="black" points="453,-36 371,-36 371,0 453,0 453,-36"/>
-<text xml:space="preserve" text-anchor="middle" x="412" y="-14.88" font-family="monospace" font-size="10.00">the alt hue</text>
+<polygon fill="none" stroke="black" points="459,-36 377,-36 377,0 459,0 459,-36"/>
+<text xml:space="preserve" text-anchor="middle" x="418" y="-14.88" font-family="monospace" font-size="10.00">the alt hue</text>
 </g>
 <!-- alt&#45;&gt;althue -->
 <g id="edge16" class="edge">
 <title>alt&#45;&gt;althue</title>
-<path fill="none" stroke="black" d="M454.97,-88.28C446.74,-75.02 436.9,-59.15 428.72,-45.95"/>
-<polygon fill="black" stroke="black" points="431.88,-44.41 423.63,-37.75 425.93,-48.1 431.88,-44.41"/>
-<text xml:space="preserve" text-anchor="middle" x="450.7" y="-56.7" font-family="monospace" font-size="9.00"> yes</text>
+<path fill="none" stroke="black" d="M456.38,-87.77C449.06,-74.64 440.36,-59.07 433.11,-46.06"/>
+<polygon fill="black" stroke="black" points="436.31,-44.63 428.38,-37.6 430.2,-48.04 436.31,-44.63"/>
+<text xml:space="preserve" text-anchor="middle" x="453.88" y="-56.7" font-family="monospace" font-size="9.00"> yes</text>
 </g>
 <!-- secondary -->
 <g id="node18" class="node">
 <title>secondary</title>
-<polygon fill="none" stroke="black" points="595,-36 471,-36 471,0 595,0 595,-36"/>
-<text xml:space="preserve" text-anchor="middle" x="533" y="-14.88" font-family="monospace" font-size="10.00">secondary alt fill</text>
+<polygon fill="none" stroke="black" points="577,-36 477,-36 477,0 577,0 577,-36"/>
+<text xml:space="preserve" text-anchor="middle" x="527" y="-21.25" font-family="monospace" font-size="10.00">the hue of its</text>
+<text xml:space="preserve" text-anchor="middle" x="527" y="-8.5" font-family="monospace" font-size="10.00">frequency rank</text>
 </g>
 <!-- alt&#45;&gt;secondary -->
 <g id="edge17" class="edge">
 <title>alt&#45;&gt;secondary</title>
-<path fill="none" stroke="black" d="M489.32,-88.28C497.68,-75.02 507.68,-59.15 516.01,-45.95"/>
-<polygon fill="black" stroke="black" points="518.81,-48.07 521.18,-37.75 512.89,-44.34 518.81,-48.07"/>
-<text xml:space="preserve" text-anchor="middle" x="517.63" y="-56.7" font-family="monospace" font-size="9.00"> no</text>
+<path fill="none" stroke="black" d="M487.91,-87.77C495.37,-74.64 504.22,-59.07 511.61,-46.06"/>
+<polygon fill="black" stroke="black" points="514.53,-48.02 516.43,-37.6 508.44,-44.56 514.53,-48.02"/>
+<text xml:space="preserve" text-anchor="middle" x="513.92" y="-56.7" font-family="monospace" font-size="9.00"> no</text>
 </g>
 <!-- override&#45;&gt;alt -->
 <g id="edge15" class="edge">
@@ -281,5 +282,5 @@
 <polygon fill="black" stroke="black" points="719.5,-822.04 716,-812.04 712.5,-822.04 719.5,-822.04"/>
 </g>
 </g>
-<!-- diagram-source-sha256 b858429eb525b15f45d835991dbeeee3f4f9fbdaa9bba9a5193c38a090bd783d -->
+<!-- diagram-source-sha256 1e544d97c4fd333947e59dafd2824c4b5e95d2a1c2d2fcdac85ceb83b3e97c1c -->
 </svg>

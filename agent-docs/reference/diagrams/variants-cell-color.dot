@@ -42,7 +42,7 @@ digraph variant_cell_color {
   alt -> althue    [label=" yes"]
   alt -> secondary [label=" no"]
   althue    [label="the alt hue"]
-  secondary [label="secondary alt fill"]
+  secondary [label="the hue of its\nfrequency rank"]
 
   called [label="any allele called"]
   called -> nocallcol [label=" no"]

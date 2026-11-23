@@ -149,9 +149,15 @@ Each channel carries one variable through one scale.
 - **The absent-data colors are off every wheel.** The phase-set hue band is
   saturation/lightness the no-call yellow is not on, or a phase set paints a
   called haplotype the "missing" color.
-- **Cross-mode identity**: INS takes `palette.insertion`, and the phased allele
-  colors come from a palette the SV scale does not touch — red cannot mean
-  "deletion" in one mode and "secondary alt" in another.
+- **Cross-mode identity**: INS takes `palette.insertion`.
+- **A phased alt's hue is its allele's frequency rank at the site**
+  (`shared/alleleHues.ts`, ADR-284): the commonest alt takes the alt hue, so a
+  biallelic site is the one blue every mode paints, and each alt after it its
+  own of eight hues, the alts ranked past the palette sharing the last. The
+  order is `AlleleSummary.altOrder`, counted over every sample in the file,
+  ties in file order and `*` last, so hiding rows recolors nothing. Sample
+  rows keep the one alt hue, where lightness is the dosage. The second hue is
+  the SV preset's deletion red, as the one "other alt" fill was before it.
 
 ## The legend lists what was painted on screen
 
@@ -161,14 +167,22 @@ the cells do. The cell loop records, per variant, the `CELL_*` categories its
 cells painted (`featureCategories`, one bit each). `keyedVariants.ts` reads
 those, the color values and the SV classes off the variants whose span touches
 the view's settled window (ADR-093), since the view fetches wider than it shows:
-`hasSecondaryAlt`, `hasAltWithoutPhaseSet`, `hasUnphased` and `hasNoCall`, and
+`secondaryAlts`, `hasAltWithoutPhaseSet`, `hasUnphased` and `hasNoCall`, and
 `paintedDomain`, the values a variant on screen with an alt cell carried. "The
 site is multiallelic" is not the same claim as "a secondary-alt cell is on
-screen", and the legend makes the second one. The columns layout fetches only
+screen", and the legend makes the second one: `featureCategories` holds a bit
+per allele hue past the first, and the key lists a row for each painted. A row
+names its allele (`<X:3>, 53,149 bp`, the length from `INFO/ALEN` where the
+record states one) where every cell in that hue is one allele of one record,
+and otherwise its rank ("2nd most common"). The first hue is named only where
+its one record is multiallelic, so a biallelic view keeps "Alt allele". The columns layout fetches only
 the visible span, and the tables their own regions, so both read every variant
 fetched. The records band's "SV type" key reads the records the band placed on
 screen (`keyedRecords.svTypes`, over `recordsPlacedOnScreenIds`), so a hidden `records.facet` section or a record
 behind "+N hidden" keys nothing; the tables, with no layout, key every record.
+It draws only while a named class is among them: `svClassOf` files a symbolic
+allele it cannot name (minigraph's `<X:1>`) under OTHER, and a key whose one
+row is "Other / mixed" says nothing.
 
 ## Mixed ploidy: five consumers, one contract
 

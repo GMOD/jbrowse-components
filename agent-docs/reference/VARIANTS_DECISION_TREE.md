@@ -60,8 +60,9 @@ packed colors it produces.
 - **Phased mode**: a row is one haplotype. Phase-set coloring wins on an alt
   where it is on and the sample has a PS; otherwise the allele on that haplotype
   picks the fill — reference, no-call, or an alt, which takes the override if
-  one resolved, else the alt hue for the site's most frequent alt (never `*`,
-  the spanning deletion) and the secondary fill for any other. A genotype
+  one resolved, else the hue of its frequency rank among the site's alts: the
+  alt hue for the most frequent (never `*`, the spanning deletion) and one of
+  seven more for each after it, the rarest sharing the last (ADR-284). A genotype
   written with `/` paints one fill across every haplotype row of that sample,
   `1/1` included: phased mode draws what the file phased, not what its alleles
   imply.

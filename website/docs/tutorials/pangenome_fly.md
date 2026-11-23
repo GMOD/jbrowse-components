@@ -178,8 +178,9 @@ allele, and one haploid genotype per assembly. Its alleles are symbolic
 reference's first. The display config:
 
 - `rows.field: "haplotype"` draws one row per assembly and colors each record's
-  commonest alternate allele blue. Every other alternate allele shares one red,
-  so the callouts below, or the `ALEN` in a cell's details, tell those apart
+  commonest alternate allele blue. Each other alternate allele takes its own
+  color in order of frequency, and the legend names each with its `ALEN` length
+  where one multiallelic record is on screen
 - `records.labels.name.show: false` hides each record's ID, which names the
   bubble's end segments
 - `records.labels.description` writes the allele lengths on each record in the
