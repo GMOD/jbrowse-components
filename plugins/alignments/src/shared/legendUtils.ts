@@ -228,7 +228,11 @@ function scaleOf(
  * they merge with the arcs.
  *
  * `plainFill` says every read is drawn in one color, whose lone row says
- * something only when no other section keys anything.
+ * something only when no other section keys anything. Its converse: while
+ * every connection drawn is in that same color (mates joined by a normal
+ * insert, under a plain fill), the connection rows say nothing the read row
+ * does not, so they go, and with them the merged heading and the insert-size
+ * range, which the hover still gives.
  */
 export function getAlignmentsColorScales(model: {
   ramps?: readonly RampScale[]
@@ -240,7 +244,12 @@ export function getAlignmentsColorScales(model: {
   junctionLegend: JunctionLegend
 }): ColorScale[] {
   const listedReads = model.legendItems()
-  const drawnArcs = model.arcLegendItems()
+  const plainColor = model.plainFill ? listedReads[0]?.color : undefined
+  const connections = model.arcLegendItems()
+  const drawnArcs =
+    plainColor !== undefined && connections.every(a => a.color === plainColor)
+      ? []
+      : connections
   const { arcs, junctions } = keyJunctionSplitsWithArcs(
     drawnArcs,
     model.junctionLegend,

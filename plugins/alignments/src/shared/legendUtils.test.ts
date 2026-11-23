@@ -1017,6 +1017,39 @@ describe('getAlignmentsColorScales', () => {
     ])
   })
 
+  test('connections all in the plain read color key nothing of their own', () => {
+    const plain = { color: '#d3d3d3', label: 'Reads' }
+    const overlap = { color: '#b4b4b4', label: 'Mates overlap here' }
+    const normal = { color: '#d3d3d3', label: 'Normal (155–928 bp)' }
+    const long = { color: '#f00', label: 'Long insert' }
+    const plainModel = (arcs: LegendItem[]) => ({
+      ...model([plain, overlap], arcs),
+      arcLegendTitle: 'Connector colors',
+      plainFill: true,
+    })
+    expect(shown(getAlignmentsColorScales(plainModel([normal])))).toEqual([
+      ['Read colors', ['Reads', 'Mates overlap here']],
+    ])
+    // beside a category, the normal grey is a contrast and keeps its row
+    expect(shown(getAlignmentsColorScales(plainModel([normal, long])))).toEqual(
+      [
+        [
+          'Read and connector colors',
+          ['Reads', 'Mates overlap here', 'Normal (155–928 bp)', 'Long insert'],
+        ],
+      ],
+    )
+    // a field's reads keep the rule out, plain-looking or not
+    expect(
+      shown(getAlignmentsColorScales(model([plain, overlap], [normal]))),
+    ).toEqual([
+      [
+        'Read and arc colors',
+        ['Reads', 'Mates overlap here', 'Normal (155–928 bp)'],
+      ],
+    ])
+  })
+
   test('an insertion split row joins the short insert row', () => {
     const split = { color: 'teal', label: 'Split read (insertion)' }
     expect(
