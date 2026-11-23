@@ -369,14 +369,14 @@ test('a moving lane names the frame it is drawn nearer to', async () => {
   const header = () =>
     display.laneHeaderRows.find(r => r.assemblyName === C)!.label
   const before = header()
-  expect(before).not.toContain('[rev]')
+  expect(before).not.toContain('reversed vs')
   display.flipLane(C)
   const { startMs } = display.laneTransitions.get(C)!
   expect(header()).toBe(before)
   display.advanceAnimation(startMs + MORPH_DURATION_MS * 0.45)
   expect(header()).toBe(before)
   display.advanceAnimation(startMs + MORPH_DURATION_MS * 0.55)
-  expect(header()).toContain('[rev]')
+  expect(header()).toContain('reversed vs volvox')
 })
 
 test('a Flip lane moves the lane rather than snapping it', async () => {

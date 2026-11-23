@@ -1167,6 +1167,60 @@ export function placementMateInterval(
   ).mate
 }
 
+interface RefStretch {
+  refName: string
+  start: number
+  end: number
+}
+
+/**
+ * The stretch of a lane's contig from the first to the last base its
+ * placements match to the anchor's `window`, each cut along its record's ops
+ * (`placementMateInterval`) and held to `bounds`. An array record pairs no
+ * base, so it counts whole where it meets the window. `canon` spells a
+ * group's anchor contig as the window does.
+ */
+export function laneMatchedInterval(
+  groups: readonly PlacedGroup[],
+  lane: string,
+  refName: string,
+  ops: AlignmentOpsById,
+  window: readonly RefStretch[],
+  bounds: { start: number; end: number },
+  canon: (refName: string) => string = name => name,
+) {
+  let start = Number.POSITIVE_INFINITY
+  let end = Number.NEGATIVE_INFINITY
+  for (const { anchor, mates } of groups) {
+    if (anchor) {
+      for (const p of mates.get(lane) ?? []) {
+        for (const w of window) {
+          const from = Math.max(anchor.start, w.start)
+          const to = Math.min(anchor.end, w.end)
+          if (
+            p.refName === refName &&
+            canon(anchor.refName) === w.refName &&
+            to > from
+          ) {
+            const mate = isArrayRecord(p.feature)
+              ? p
+              : placementMateInterval(anchor, p, ops, from, to)
+            const lo = Math.max(Math.min(mate.start, mate.end), bounds.start)
+            const hi = Math.min(Math.max(mate.start, mate.end), bounds.end)
+            if (hi > lo) {
+              start = Math.min(start, lo)
+              end = Math.max(end, hi)
+            }
+          }
+        }
+      }
+    }
+  }
+  return end > start
+    ? { start: Math.round(start), end: Math.round(end) }
+    : undefined
+}
+
 export function clipGroupToAnchor(
   group: MultiWayGroup,
   start: number,

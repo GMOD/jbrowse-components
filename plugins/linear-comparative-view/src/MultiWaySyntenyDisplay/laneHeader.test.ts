@@ -3,6 +3,7 @@ import {
   headerText,
   labelBoxTop,
   laneHeaderRows,
+  laneRegion,
 } from './laneHeader.ts'
 
 import type { Lane } from './laneStack.ts'
@@ -52,8 +53,26 @@ const anchorLane = {
   frame: undefined,
 } as Lane
 
-const rowOf = (lane: Lane, visibleBpSpan = 2000) =>
-  laneHeaderRows([lane], visibleBpSpan, 'chr1:1..2,000')[0]!
+// the whole frame matched to the window, unless a test says what is
+const rowOf = (
+  lane: Lane,
+  visibleBpSpan = 2000,
+  matchedOf: (
+    lane: Lane,
+  ) => { start: number; end: number } | undefined = laneRegion,
+) =>
+  laneHeaderRows(
+    [anchorLane, lane],
+    visibleBpSpan,
+    'chr1:1..2,000',
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    matchedOf,
+  ).at(-1)!
 
 test('the header never prints a negative coordinate', () => {
   const row = rowOf(mateLane({}))
@@ -61,9 +80,18 @@ test('the header never prints a negative coordinate', () => {
   expect(row.label).not.toContain('-40')
 })
 
+test('the interval is the stretch matched to the window, not the frame drawn around it', () => {
+  const row = rowOf(mateLane({}), 2000, () => ({ start: 300, end: 900 }))
+  expect(row.label).toBe('peach  Pp1:301..900')
+})
+
+test('a lane with a frame and nothing matched to the window names no interval', () => {
+  expect(rowOf(mateLane({}), 2000, () => undefined).label).toBe('peach')
+})
+
 describe('the label', () => {
   test('names the anchor lane by where the view is', () => {
-    const row = rowOf(anchorLane)
+    const row = laneHeaderRows([anchorLane], 2000, 'chr1:1..2,000')[0]!
     expect(row.label).toBe('grape  chr1:1..2,000')
     expect(row.isAnchor).toBe(true)
   })
@@ -85,9 +113,9 @@ describe('the label', () => {
     )
   })
 
-  test('says [rev] on a lane drawn flipped', () => {
+  test('says the lane is reversed against the anchor where it is drawn flipped', () => {
     expect(rowOf(mateLane({ frame: { flipped: true } })).label).toBe(
-      'peach  Pp1:1..1,960 [rev]',
+      'peach  Pp1:1..1,960 reversed vs grape',
     )
   })
 
@@ -122,8 +150,11 @@ describe('the label', () => {
 
 describe('the scale', () => {
   test('is the visible span on the anchor lane', () => {
-    expect(rowOf(anchorLane, 2000).scale).toBe('2Kbp')
-    expect(rowOf(anchorLane, 0).scale).toBe('')
+    const anchorRow = (span: number) =>
+      laneHeaderRows([anchorLane], span, '')[0]!
+    expect(anchorRow(2000).scale).toBe('2Kbp')
+    expect(anchorRow(0).scale).toBe('')
+    expect(anchorRow(2000).scaleTitle).toMatch(/^The span of the window/)
   })
 
   test('is nothing for a lane drawn at the anchor scale, or within rounding of it', () => {
@@ -133,24 +164,23 @@ describe('the scale', () => {
     )
   })
 
-  test('states how many times the lane is squeezed once it holds more than the anchor window', () => {
+  test('states how many times the lane is squeezed, and no bp figure of the frame', () => {
     expect(rowOf(mateLane({ frame: { min: 0, max: 3000 } }), 2000).scale).toBe(
-      '3Kbp, squeezed 1.5×',
+      'squeezed 1.5×',
     )
     expect(
       rowOf(mateLane({ frame: { min: 0, max: 40_000 } }), 2000).scale,
-    ).toBe('40Kbp, squeezed 20×')
+    ).toBe('squeezed 20×')
   })
 
-  test('prints the range the label names, the holes left out, and the squeeze of the axis', () => {
+  test('reads the squeeze off the axis alone, holes and all', () => {
     const holed = mateLane({
       frame: { min: 0, max: 3000, openings: [{ at: 1000, bp: 500 }] },
     })
     const row = rowOf(holed, 2000)
-    expect(row.label).toBe('peach  Pp1:1..2,500')
-    expect(row.scale).toBe('2.5Kbp, squeezed 1.5×')
+    expect(row.scale).toBe('squeezed 1.5×')
     expect(row.scaleTitle).toBe(
-      "This lane holds 2.5Kbp of its own and room for 500bp of the anchor it lacks across the anchor's 2Kbp window, so it is drawn 1.5× smaller to fit.",
+      'This lane is drawn 1.5× smaller than the ruler.',
     )
   })
 
@@ -168,12 +198,7 @@ describe('the scale', () => {
   test('explains itself in a hover title wherever it prints', () => {
     expect(
       rowOf(mateLane({ frame: { min: 0, max: 3000 } }), 2000).scaleTitle,
-    ).toBe(
-      "This lane holds 3Kbp across the anchor's 2Kbp window, so it is drawn 1.5× smaller to fit.",
-    )
-    expect(rowOf(anchorLane, 2000).scaleTitle).toMatch(
-      /^The span of the window/,
-    )
+    ).toBe('This lane is drawn 1.5× smaller than the ruler.')
     expect(rowOf(mateLane({}), 2000).scaleTitle).toBeUndefined()
   })
 
@@ -198,7 +223,7 @@ describe('a name on the gene row', () => {
   test('prints the genome and its flip, without coordinates', () => {
     expect(inlineRow(mateLane({}), 10).label).toBe('peach')
     expect(inlineRow(mateLane({ frame: { flipped: true } }), 10).label).toBe(
-      'peach [rev]',
+      'peach reversed vs the anchor',
     )
     expect(inlineRow(anchorLane, 10).label).toBe('grape')
   })

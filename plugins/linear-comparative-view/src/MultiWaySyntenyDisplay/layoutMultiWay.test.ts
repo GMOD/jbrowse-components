@@ -1,3 +1,4 @@
+import { CIGAR_I, CIGAR_M } from '@jbrowse/cigar-utils'
 import { SimpleFeature } from '@jbrowse/core/util'
 
 import { resolvePanel } from '../LaunchSyntenyView/resolvePanel.ts'
@@ -22,6 +23,7 @@ import {
   groupFeatures,
   groupRunSpansOnRow,
   laneIndelsOf,
+  laneMatchedInterval,
   mergeContiguousRegions,
   rowAssembliesOf,
   rowFrameX,
@@ -1774,5 +1776,54 @@ describe('a record with a one-sided deletion crossing the viewport edge', () => 
 
   test('a reverse-strand mate is cut from its far end', () => {
     expect(mateCut(-1)).toEqual([503_000, 504_000])
+  })
+})
+
+describe('the stretch of a lane matched to the window', () => {
+  // chr1:100-900 against Pp1:1100-2000, 100 bp of the lane's own after 200
+  const record = pairFeature({
+    uniqueId: 'r1',
+    start: 100,
+    end: 900,
+    mate: { assemblyName: 'peach', refName: 'Pp1', start: 1100, end: 2000 },
+  })
+  const groups = groupFeatures([record])
+  const ops = new Map([
+    [
+      'r1',
+      Uint32Array.from([
+        (200 << 4) | CIGAR_M,
+        (100 << 4) | CIGAR_I,
+        (500 << 4) | CIGAR_M,
+      ]),
+    ],
+  ])
+  const window = (start: number, end: number) => [
+    { refName: 'chr1', start, end },
+  ]
+  const wide = { start: 0, end: 10_000 }
+
+  test('cuts each record along its ops at the window, past the lane bases it holds of its own', () => {
+    expect(
+      laneMatchedInterval(groups, 'peach', 'Pp1', ops, window(400, 500), wide),
+    ).toEqual({ start: 1500, end: 1600 })
+  })
+
+  test('is held to the frame it is drawn in', () => {
+    expect(
+      laneMatchedInterval(groups, 'peach', 'Pp1', ops, window(400, 500), {
+        start: 1550,
+        end: 5000,
+      }),
+    ).toEqual({ start: 1550, end: 1600 })
+  })
+
+  test('is nothing where the window matches none of the contig', () => {
+    expect(
+      laneMatchedInterval(groups, 'peach', 'Pp1', ops, window(950, 990), wide),
+    ).toBeUndefined()
+    expect(
+      laneMatchedInterval(groups, 'peach', 'Pp2', ops, window(400, 500), wide),
+    ).toBeUndefined()
   })
 })

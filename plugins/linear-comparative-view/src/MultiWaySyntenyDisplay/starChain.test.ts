@@ -78,7 +78,7 @@ test('each lane of a three-mate star takes its strand against the anchor', async
     [B, C, D].map(lane => display.laneDecisions.get(lane)?.flipped),
   ).toEqual([false, true, true])
   expect(
-    display.laneHeaderRows.map(row => row.label.includes('[rev]')),
+    display.laneHeaderRows.map(row => row.label.includes('reversed vs')),
   ).toEqual([false, false, true, true])
 
   expect(display.laneLinksFetchSpecs).toEqual([])

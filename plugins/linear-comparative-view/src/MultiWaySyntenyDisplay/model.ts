@@ -127,6 +127,7 @@ import {
 import {
   LABEL_FONT_SIZE,
   laneHeaderRows,
+  laneRegion,
   shownLaneChanges,
 } from './laneHeader.ts'
 import { releaseLaneAssembly } from './laneHolders.ts'
@@ -189,6 +190,7 @@ import {
   frameBpPerPx,
   laneFetchRegion,
   laneFetchRegionMaxBp,
+  laneMatchedInterval,
   laneTemplateRegion,
   mergeContiguousRegions,
   tickIntervalFor,
@@ -1865,7 +1867,27 @@ export function stateModelFactory(
           assemblyName => self.placelessOf(assemblyName),
           assemblyName => self.laneColor(assemblyName),
           (assemblyName, refName) => self.laneRepeats(assemblyName, refName),
+          lane => this.laneMatchedOf(lane),
         )
+      },
+      /**
+       * #method
+       * the stretch of a lane's contig from the first to the last base its
+       * records match to the settled window, inside its frame
+       */
+      laneMatchedOf(lane: Pick<Lane, 'frame' | 'canon' | 'assemblyName'>) {
+        const region = laneRegion(lane)
+        return lane.frame && region
+          ? laneMatchedInterval(
+              self.groups,
+              lane.assemblyName,
+              lane.frame.refName,
+              self.featureOps,
+              self.lgv.settledDynamicBlocks,
+              region,
+              self.anchorCanon,
+            )
+          : undefined
       },
       /**
        * #method

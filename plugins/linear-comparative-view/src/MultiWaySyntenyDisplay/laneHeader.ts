@@ -199,36 +199,22 @@ export function blockLocString(
 }
 
 function scaleOf(lane: Lane, visibleBpSpan: number) {
-  const windowSpan = getBpDisplayStr(visibleBpSpan)
   const { frame } = lane
   const laneSpan = frame ? frame.max - frame.min : 0
-  const region = laneRegion(lane)
-  const shown = region ? region.end - region.start : 0
-  const openings = frame ? frameOpenings(frame) : []
-  const opened = frame
-    ? Math.round(
-        laneSpan -
-          (laneBpOfOpened(openings, frame.max) -
-            laneBpOfOpened(openings, frame.min)),
-      )
-    : 0
   const multiple = visibleBpSpan > 0 ? laneSpan / visibleBpSpan : 1
   const times = `${Number(multiple.toFixed(1))}×`
-  const holds = opened
-    ? `${getBpDisplayStr(shown)} of its own and room for ${getBpDisplayStr(opened)} of the anchor it lacks`
-    : getBpDisplayStr(shown)
   return lane.isAnchor
     ? visibleBpSpan > 0
       ? {
-          text: windowSpan,
+          text: getBpDisplayStr(visibleBpSpan),
           title:
             'The span of the window. Other lanes share this scale unless marked squeezed.',
         }
       : { text: '' }
     : multiple > 1.02
       ? {
-          text: `${getBpDisplayStr(shown)}, squeezed ${times}`,
-          title: `This lane holds ${holds} across the anchor's ${windowSpan} window, so it is drawn ${times} smaller to fit.`,
+          text: `squeezed ${times}`,
+          title: `This lane is drawn ${times} smaller than the ruler.`,
         }
       : { text: '' }
 }
@@ -256,11 +242,17 @@ export function laneHeaderRows(
     assemblyName: string,
     refName: string,
   ) => readonly LaneRepeat[] = () => [],
+  /** the stretch of a lane's contig matched to the window, which the label names */
+  matchedOf: (lane: Lane) => { start: number; end: number } | undefined = () =>
+    undefined,
 ): LaneHeaderRow[] {
   const inline = inlineGlyphHeight !== undefined
   const anchor = lanes.find(lane => lane.isAnchor)?.label
+  const reversed = `reversed vs ${anchor ?? 'the anchor'}`
   return lanes.map(lane => {
-    const region = laneRegion(lane)
+    const matched = lane.frame && matchedOf(lane)
+    const region = lane.frame &&
+      matched && { refName: lane.canon(lane.frame.refName), ...matched }
     const loc = region && assembleLocString(region)
     // a copy lane's label names its contig already
     const shownRegion =
@@ -269,7 +261,10 @@ export function laneHeaderRows(
         : loc
     const where = lane.isAnchor
       ? anchorWhere
-      : lane.frame && `${shownRegion}${lane.frame.flipped ? ' [rev]' : ''}`
+      : lane.frame &&
+        [shownRegion, lane.frame.flipped ? reversed : undefined]
+          .filter(part => !!part)
+          .join(' ')
     const more = lane.frame?.alsoOnMore
       ? ` and ${lane.frame.alsoOnMore} more`
       : ''
@@ -293,7 +288,7 @@ export function laneHeaderRows(
     return {
       assemblyName: lane.assemblyName,
       label: inline
-        ? `${lane.label}${lane.frame?.flipped ? ' [rev]' : ''}`
+        ? `${lane.label}${lane.frame?.flipped ? ` ${reversed}` : ''}`
         : [lane.label, where, alsoAt].filter(part => !!part).join('  '),
       alsoOn: inline ? undefined : alsoOn,
       scale: scale.text,
