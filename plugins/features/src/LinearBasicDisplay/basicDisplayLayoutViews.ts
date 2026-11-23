@@ -140,6 +140,14 @@ export function basicDisplayGlyphViews(self: BasicDisplayGlyphHost) {
 
     /**
      * #getter
+     * `arrows.show`.
+     */
+    get showArrows(): boolean {
+      return getConf(self, ['arrows', 'show'])
+    },
+
+    /**
+     * #getter
      * `chevrons.show`, over the base's hook.
      */
     get showChevrons(): boolean {

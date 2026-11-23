@@ -186,6 +186,7 @@ function processTranscriptLayout(
   emitStrandArrow(
     {
       feature: transcriptFeature,
+      ctx,
       topPx: transcriptTopPx,
       height: transcript.height,
       stroke,
@@ -379,6 +380,7 @@ function processMatureProteinLayout(
   emitStrandArrow(
     {
       feature: layout.feature,
+      ctx,
       topPx: baseTopPx,
       height: layout.height,
       stroke: THEMED_STROKE,
@@ -773,6 +775,7 @@ export function processFeatureRecord(
     description:
       ctx.config.tooltip === DEFAULT_TOOLTIP ? description : undefined,
     strand: strand !== 0 ? strand : undefined,
+    hideArrow: ctx.config.hideArrows ? true : undefined,
     groupKey,
     // A standalone transcript registers no SubfeatureInfo, so its exon bounds
     // ride here instead.

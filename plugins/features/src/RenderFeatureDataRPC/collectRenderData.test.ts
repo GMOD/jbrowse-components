@@ -483,6 +483,28 @@ describe('collectRenderData intron chevrons', () => {
   })
 })
 
+describe('collectRenderData strand arrows', () => {
+  const stranded = () =>
+    boxLayout(mockFeature({ id: 'f1', start: 100, end: 200, strand: 1 }))
+
+  it('draws an arrow past a stranded feature by default', () => {
+    const result = collect(stranded())
+    expect(result.arrowXs).toHaveLength(1)
+    expect(result.flatbushItems[0]!.hideArrow).toBeUndefined()
+  })
+
+  it('draws none and reserves none under hideArrows, keeping the strand', () => {
+    const result = collect(stranded(), {
+      config: mockDisplayConfig({ hideArrows: true }),
+    })
+    expect(result.arrowXs).toHaveLength(0)
+    expect(result.flatbushItems[0]).toMatchObject({
+      strand: 1,
+      hideArrow: true,
+    })
+  })
+})
+
 // gene → two mRNA transcripts, each with two CDS exons, stacked at their own y.
 function geneWithTwoTranscripts(
   txAttributes: Record<string, Record<string, unknown>> = {},

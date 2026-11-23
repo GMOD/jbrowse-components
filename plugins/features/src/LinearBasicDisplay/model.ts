@@ -204,6 +204,10 @@ export default function stateModelFactory(
         )
       },
 
+      setShowArrows(value: boolean) {
+        setConf(self, ['arrows', 'show'], value)
+      },
+
       setShowChevrons(value: boolean) {
         setConf(self, ['chevrons', 'show'], value)
       },
@@ -272,6 +276,9 @@ export default function stateModelFactory(
         showSubmenuCheckboxItems() {
           return [
             ...superShowSubmenuCheckboxItems(),
+            toggleItem('Show arrows', self.showArrows, show => {
+              self.setShowArrows(show)
+            }),
             toggleItem('Show chevrons', self.showChevrons, show => {
               self.setShowChevrons(show)
             }),

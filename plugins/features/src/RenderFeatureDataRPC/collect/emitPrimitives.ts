@@ -198,6 +198,7 @@ export function pushBoxRect(
 export function emitStrandArrow(
   args: {
     feature: Feature
+    ctx: RenderContext
     topPx: number
     height: number
     stroke: PackedColor
@@ -207,10 +208,10 @@ export function emitStrandArrow(
   collector: Collector,
 ) {
   const { feature, topPx, height, stroke, flatbushIdx } = args
-  const { labelRowsAbove } = args
+  const { labelRowsAbove, ctx } = args
   const { arrows } = collector
   const strand = feature.get('strand') ?? 0
-  if (strand !== 0) {
+  if (strand !== 0 && !ctx.config.hideArrows) {
     const start = feature.get('start')
     const end = feature.get('end')
     arrows.push({
@@ -241,6 +242,7 @@ export function emitTopLevelStrandArrow(
     emitStrandArrow(
       {
         feature,
+        ctx,
         topPx: place.baseTopPx,
         height: layout.height,
         stroke: THEMED_STROKE,

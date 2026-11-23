@@ -208,6 +208,7 @@ describe('feature track menu shape', () => {
     expect(show.map(labelOf)).toEqual([
       'Show names',
       'Show descriptions',
+      'Show arrows',
       'Show chevrons',
     ])
     expect(

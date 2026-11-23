@@ -200,7 +200,7 @@ function gatherFeatureGeometry(
           heightPx: item.featureHeightPx,
           labelRows: item.labelRows,
           stack: item.isoformStack,
-          strand: item.strand ?? 0,
+          strand: item.hideArrow ? 0 : (item.strand ?? 0),
           hasReversed: reversed,
           hasNonReversed: !reversed,
           densityFade: item.densityFade,

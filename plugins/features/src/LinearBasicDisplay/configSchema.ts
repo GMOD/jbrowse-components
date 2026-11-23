@@ -114,6 +114,25 @@ export default function configSchemaFactory(pluginManager?: PluginManager) {
         { plot: true, closed: true },
       ),
       /**
+       * #slot arrows
+       * The arrow past the 3' end of a stranded feature.
+       */
+      arrows: ConfigurationSchema(
+        'FeatureArrows',
+        {
+          /**
+           * #slot arrows.show
+           */
+          show: {
+            type: 'boolean',
+            description:
+              "draw an arrow past the 3' end of a stranded feature, pointing the way it reads",
+            defaultValue: true,
+          },
+        },
+        { closed: true },
+      ),
+      /**
        * #slot chevrons
        * The arrows on a feature's intron lines.
        */

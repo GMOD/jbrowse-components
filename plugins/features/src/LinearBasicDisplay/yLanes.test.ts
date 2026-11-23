@@ -90,6 +90,7 @@ const flatbushLanes = {
   name: 'other',
   description: 'other',
   strand: 'other',
+  hideArrow: 'other',
   groupKey: 'other',
   densityFade: 'other',
   gene: 'other',

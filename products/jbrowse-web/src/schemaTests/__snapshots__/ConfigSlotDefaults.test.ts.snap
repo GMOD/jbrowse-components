@@ -562,6 +562,7 @@ exports[`every registered schema slot default 1`] = `
     "unit": "stringEnum = "read" of ["read","chain"]",
   },
   "display: LinearBasicDisplay": {
+    "arrows.show": "boolean = true",
     "chevrons.show": "boolean = true",
     "containers.types": "stringArray = ["proteoform_orf"]",
     "displayMode": "stringEnum = "normal" of ["normal","compact","superCompact","collapsed"]",

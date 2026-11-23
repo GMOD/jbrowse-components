@@ -14,7 +14,10 @@ import type { Instance } from '@jbrowse/mobx-state-tree'
 
 /** What {@link geneGlyphRequestViews} reads. */
 export interface GeneGlyphRequestHost {
-  conf: Pick<LinearBasicDisplayConfig, 'transcripts' | 'containers' | 'utrs'>
+  conf: Pick<
+    LinearBasicDisplayConfig,
+    'transcripts' | 'containers' | 'utrs' | 'arrows'
+  >
   effectiveSubfeatureLabels: SubfeatureLabels
 }
 
@@ -32,8 +35,9 @@ export function geneGlyphRequestViews(self: GeneGlyphRequestHost) {
      * worker's to evaluate per feature.
      */
     get geneGlyphSettings(): GeneGlyphSettings {
-      const { transcripts, containers, utrs } = self.conf
+      const { transcripts, containers, utrs, arrows } = self.conf
       return {
+        ...(arrows.show ? {} : { hideArrows: true }),
         subfeatureLabels: self.effectiveSubfeatureLabels,
         transcriptTypes: [...transcripts.types],
         canonicalTranscriptField: transcripts.field,

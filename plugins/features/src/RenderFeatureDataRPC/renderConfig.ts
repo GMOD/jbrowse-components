@@ -78,6 +78,9 @@ export type DisplayConfig = {
   // round-trip. Track height is not sent either — the fit ladder trims isoforms
   // where it can see the packing.
   geneGlyphMode: 'auto' | 'all' | 'representative'
+  // `arrows.show` off; unset draws the strand arrows, so a display that does
+  // not declare the slot sends nothing.
+  hideArrows?: boolean
   // The `facetField` each feature's `groupKey` is stamped from; absent for a
   // strand facet, which the stamped strand answers without a refetch.
   facetField?: string
@@ -117,6 +120,7 @@ export type GeneGlyphSettings = Pick<
   | 'canonicalTranscriptTags'
   | 'containerTypes'
   | 'utrColor'
+  | 'hideArrows'
 >
 
 export const GENE_GLYPH_DEFAULTS: GeneGlyphSettings = {

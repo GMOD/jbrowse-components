@@ -690,6 +690,7 @@ exports[`each call answers the tables and columns a host reads by name 1`] = `
       "y": "array",
     },
     "config": {
+      "arrows": "object",
       "chevrons": "object",
       "containers": "object",
       "displayMode": "string",

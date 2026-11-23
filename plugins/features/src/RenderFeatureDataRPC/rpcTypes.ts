@@ -263,6 +263,9 @@ export interface FlatbushItem extends HitItemBase {
   // `mouseover` slot is overridden, since that text replaces the default.
   description?: string
   strand?: number
+  // Set when `arrows.show` is off: the strand stays for a strand facet, but
+  // no arrow draws, so layout and hit-testing reserve and reach none.
+  hideArrow?: boolean
   // The feature's value of `facetField`, '' when it carries none; absent
   // unless a facet other than strand asked for it.
   groupKey?: string
