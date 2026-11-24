@@ -44,7 +44,12 @@ once per display that embeds it, so read the trend, not the size.
 surface on one page, its first table each path whose members differ between
 displays or a display's parts, with the ruling on each.
 
-- The last shared-path change is `arrows` (2026-11-23, +3 shared,
+- The last shared-path change is the wiggle display's byte gate
+  (2026-11-23, +2 shared, 27068f9c00): `LinearWiggleDisplay.fetchSizeLimit`
+  and `forceLoad`, the shared gate fields spelled as every other gated
+  display spells them, so a zoomed-out GC track asks before reading the
+  chromosome. Additive.
+- Before it, `arrows` (2026-11-23, +3 shared,
   52131e11cc): `LinearBasicDisplay.arrows` and `arrows.show`, with
   `FeatureTrack.displayDefaults.arrows`, so a strand-less track drops the
   arrow past each feature's 3' end. Additive.
@@ -156,8 +161,8 @@ displays or a display's parts, with the ruling on each.
      calls.
 2. **Plugin ABI.** The served list leaves out render-core's shader subpaths.
    `@jbrowse/tables` and `@jbrowse/launch-args` ship with v5 at its version,
-   betas included (Colin, 2026-10-27). Left: baseline
-   `reExports.generated.json` and the exports map at the release candidate
+   betas included (Colin, 2026-10-27). No baseline is taken at the release
+   candidate: `abiPreviousRelease.json` stays on 4.3.0 until 5.0.0 ships
    (`reference/PLUGIN_ABI_STABILITY.md`).
 3. **Plugin types are checked only with a plugin manifest.**
    `scripts/generateConfigManifest.ts --plugin <esm bundle> --out <file>`
