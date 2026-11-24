@@ -2,9 +2,13 @@
 // because what it documents is that specific launcher; the other two take the
 // same gene menu on the local build, where the workspace tiling actions and the
 // launch dialog's split button are both readable.
+import { deflateSync } from 'node:zlib'
+
 import { RELEASED_CODE_BASE } from '../../src/lib/code-base.ts'
+import { UCSC_HG38_CONFIG } from '../screenshot-spec-helpers.ts'
 import { proteinLaunchFixtures } from '../specs/features.ts'
 import { proteinTourFixtures } from '../specs/msa.ts'
+import { readSession } from '../specs/protein_variants.ts'
 
 import type { VideoSpec, VideoStep } from '../video-spec-types.ts'
 
@@ -23,7 +27,73 @@ const hoverAt = (locus: string, hold: number, say?: string): VideoStep => ({
   ...(say ? { say } : {}),
 })
 
+const R248_LOCUS = 'chr17:7,674,221'
+
+// The Protein Browser's TP53 session without its alignment: the genome view
+// and the DNA-bound structure, coloured by AlphaMissense, half the width each.
+const hero = readSession('protein_browser_tp53.session.json')
+const heroSession = {
+  ...hero,
+  views: hero.views
+    .filter(v => v.type !== 'MsaView')
+    .map(v =>
+      v.type === 'LinearGenomeView'
+        ? { ...v, loc: 'chr17:7674150-7674390[rev]', axis: { grid: true } }
+        : v,
+    ),
+  layout: {
+    id: 'branch-root',
+    direction: 'row',
+    size: 1,
+    children: [
+      {
+        id: 'panel-left',
+        size: 50,
+        activeTabId: 'tab-left',
+        tabs: [{ id: 'tab-left', viewIds: ['lgv-TP53'] }],
+      },
+      {
+        id: 'panel-right',
+        size: 50,
+        activeTabId: 'tab-right',
+        tabs: [{ id: 'tab-right', viewIds: ['protein-TP53-3kmd'] }],
+      },
+    ],
+  },
+}
+const HERO_URL = `?config=${encodeURIComponent(UCSC_HG38_CONFIG)}&session=encoded-${deflateSync(
+  JSON.stringify(heroSession),
+).toString('base64url')}`
+
 export const proteinVideos: VideoSpec[] = [
+  // Two views rather than three: each gets half the frame, wide enough to read
+  // a codon in the genome and a residue on the fold. `tiled_views` below is the
+  // three-view tour.
+  {
+    name: 'proteins/variant_to_residue',
+    description:
+      'TP53 exon 7 in the genome view over ClinVar and AlphaMissense, beside the DNA-bound p53 structure: hovering the R248 codon lights that residue in the fold',
+    goal: 'Hover a cancer-hotspot codon in the genome and see the residue in the structure',
+    url: HERO_URL,
+    viewportHeight: 780,
+    readySelector: '[data-testid="protein-view-ready"]',
+    readyTimeout: 300000,
+    steps: [
+      { type: 'delay', ms: 1500 },
+      {
+        type: 'hover',
+        anchor: { trackId: 'hg38-ncbiRefSeqSelect', loc: R248_LOCUS },
+        hold: 3500,
+        say: 'Hover the R248 codon, the commonest cancer hotspot in TP53',
+      },
+      {
+        type: 'delay',
+        ms: 3500,
+        say: 'One base of the genome, one residue on the DNA-bound structure',
+      },
+    ],
+    tailMs: 1200,
+  },
   // Filmed on the RELEASED app, and the layout is why: protein3d's
   // `maybeLaunchSideBySide` needs two workspace actions the release lacks, so
   // it stacks the views full width where main splits them into half-width
