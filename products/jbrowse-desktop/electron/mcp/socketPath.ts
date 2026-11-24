@@ -12,6 +12,9 @@ import path from 'node:path'
 //   when it passes the ownership test below. Named from the uid alone and not
 //   from $XDG_RUNTIME_DIR, which an MCP client strips from the shim's
 //   environment: the app and the shim then build the same list.
+// - on macOS, a directory under ~/Library/Caches. Named from $HOME, which an
+//   MCP client keeps, and not from $TMPDIR, which it strips: the shim would
+//   otherwise look under /tmp while the app serves under /var/folders.
 // - the per-user directory under tmpdir, where the same test keeps out one
 //   another account planted on a shared /tmp.
 //
@@ -26,6 +29,10 @@ function tmpSocketDir() {
   return path.join(os.tmpdir(), `jbrowse-desktop-mcp-${label()}`)
 }
 
+function homeSocketDir() {
+  return path.join(os.homedir(), 'Library', 'Caches', 'jbrowse-desktop-mcp')
+}
+
 function logindRuntimeDir() {
   return `/run/user/${process.getuid?.()}`
 }
@@ -33,6 +40,7 @@ function logindRuntimeDir() {
 export function socketDirs(runtimeDir = logindRuntimeDir()) {
   const runtime = process.platform === 'linux' && socketDirStatus(runtimeDir)
   return [
+    ...(process.platform === 'darwin' ? [homeSocketDir()] : []),
     ...(runtime && !runtime.unsafe
       ? [path.join(runtimeDir, 'jbrowse-desktop-mcp')]
       : []),

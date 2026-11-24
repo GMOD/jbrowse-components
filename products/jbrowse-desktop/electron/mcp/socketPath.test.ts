@@ -142,3 +142,51 @@ onLinux('the rendezvous on Linux', () => {
     }
   })
 })
+
+describe('the rendezvous on macOS', () => {
+  const savedTmpdir = process.env.TMPDIR
+  const savedPlatform = Object.getOwnPropertyDescriptor(process, 'platform')
+
+  function onDarwinWithHome() {
+    const home = tempDir()
+    fs.mkdirSync(path.join(home, 'Library', 'Caches'), { recursive: true })
+    Object.defineProperty(process, 'platform', {
+      ...savedPlatform,
+      value: 'darwin',
+    })
+    jest.spyOn(os, 'homedir').mockReturnValue(home)
+    return home
+  }
+
+  afterEach(() => {
+    Object.defineProperty(process, 'platform', savedPlatform ?? {})
+    if (savedTmpdir === undefined) {
+      delete process.env.TMPDIR
+    } else {
+      process.env.TMPDIR = savedTmpdir
+    }
+  })
+
+  it('is found by a shim whose client stripped TMPDIR', () => {
+    const home = onDarwinWithHome()
+    process.env.TMPDIR = tempDir()
+    const served = defaultSocketPath()
+    delete process.env.TMPDIR
+    expect(served).toBe(
+      path.join(home, 'Library', 'Caches', 'jbrowse-desktop-mcp', 'mcp.sock'),
+    )
+    expect(socketPaths()[0]).toBe(served)
+    expect(path.dirname(path.dirname(socketPaths().at(-1) ?? ''))).toBe('/tmp')
+  })
+
+  it('is created 0700 and refused when another account can enter it', () => {
+    onDarwinWithHome()
+    const dir = path.dirname(defaultSocketPath())
+    ensureSocketDir(dir)
+    expect(fs.statSync(dir).mode & 0o777).toBe(0o700)
+    fs.chmodSync(dir, 0o755)
+    expect(() => {
+      ensureSocketDir(dir)
+    }).toThrow(`${dir} has mode 0755`)
+  })
+})
