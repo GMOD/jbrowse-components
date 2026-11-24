@@ -28,12 +28,14 @@ were not reshot, so the gene-label item below is unchecked for them.
 
 ## Next
 
-- **Move the fly walk file to jbrowse.org before ada prunes it.** The thread
-  specs read `extra_test_data/flywalks/fly_walks.json`, which exists only as
-  untracked files in the `ada:~/jbshoot/` worktree that shot `730f394478`
-  (`fly-dm6-mc.dm6.walks.gz`, its `.idx`, the config). `jb-ada-prune` removes
-  a jb-shoot worktree idle for 7 days. Upload beside the fly demo, repoint
-  `WALKS_CONFIG` in `website/scripts/specs/graph-rice-fly.ts`, reshoot.
+- **Move the fly walk file to jbrowse.org.** The thread specs read
+  `extra_test_data/flywalks/fly_walks.json`, untracked files in the
+  `ada:~/jbshoot/` worktree that shot `730f394478`, which `jb-ada-prune`
+  removes after 7 idle days. A copy that survives the prune is in
+  `ada:/mnt/sdb/cdiesh/flyPangenome/walks-for-figures/`
+  (`fly-dm6-mc.dm6.walks.gz`, its `.idx`, the config). Upload beside the fly
+  demo, repoint `WALKS_CONFIG` in `website/scripts/specs/graph-rice-fly.ts`,
+  reshoot.
 - **Write the "follow each assembly" section of `pangenome_fly.md` for Cyp28d1
   and Strn-Mlck**, from `pangenome/fly_cyp28d1_threads` and
   `pangenome/fly_strn_mlck_threads`. Both shoot cleanly and were read after
