@@ -21,6 +21,7 @@ import {
   getSession,
 } from '@jbrowse/core/util'
 import { copyText } from '@jbrowse/core/util/copyText'
+import { bandChipsShown } from '@jbrowse/display-kit/BandChips'
 import CoarseTierMixin from '@jbrowse/display-kit/CoarseTierMixin'
 import ColorWritesMixin from '@jbrowse/display-kit/ColorWritesMixin'
 import { ContextMenuMixin } from '@jbrowse/display-kit/ContextMenuMixin'
@@ -76,6 +77,7 @@ import {
   buildMafTrackMenuItems,
   zoomGatedItem,
 } from './trackMenuItems.ts'
+import { mafValueScales } from './valueScales.ts'
 
 import type {
   MafRegionData,
@@ -102,6 +104,7 @@ import type {
 import type { IndexedRegion } from '@jbrowse/display-kit/planRegionFetch'
 import type { ExportSvgDisplayOptions } from '@jbrowse/display-kit/types'
 import type { Instance } from '@jbrowse/mobx-state-tree'
+import type { ValueScale } from '@jbrowse/wiggle-core'
 
 /**
  * The row under the pointer, published as `hoveredFeature` so another display
@@ -595,6 +598,25 @@ export default function stateModelFactory(
       .views(mafOverlayViews)
       .views(mafRefNameRankViews)
       .views(mafLegendViews)
+      .views(self => ({
+        /**
+         * #getter
+         * The scales the chrome places the axes from: coverage over its
+         * autoscaled depth, and conservation over a fixed 0-100%, each
+         * standing past its band's chip.
+         */
+        get valueScales(): ValueScale[] {
+          return mafValueScales({
+            topBands: self.topBands,
+            coverageDomain: self.coverageDepthDomain,
+            coverageTicks: () => self.coverageTicks,
+            scaleType: self.scaleType,
+            symlogConstant: self.symlogConstant,
+            guide: self.axisGuide,
+            chips: bandChipsShown(self) ? self.bandLabels : [],
+          })
+        },
+      }))
       .views(mafRowsEncodeViews)
       .views(mafEncodedUploadViews)
       .views(mafCodonGlyphViews)

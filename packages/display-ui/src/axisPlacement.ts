@@ -103,39 +103,6 @@ export function numbersGrowRight(axis: Pick<YAxis, 'side'>, exported = false) {
  */
 export const ONSCREEN_LEFT_AXIS_INSET_PX = 1
 
-const ONSCREEN_LEFT_AXIS_PX = Math.ceil(
-  ONSCREEN_LEFT_AXIS_INSET_PX +
-    TICK_LABEL_X_PX +
-    measureText('0000', AXIS_FONT_PX),
-)
-
-/**
- * Px a left-side axis takes from the display's left edge on screen, so a chip
- * over its band starts past it: room for a four-digit label, or a captioned
- * axis's whole gutter, which holds the caption past the labels; 0 when no
- * left-side axis draws. The uncaptioned width is fixed rather than measured,
- * so an autoscale that widens the labels never moves the chips.
- */
-export function onScreenLeftAxisWidth(
-  axes: readonly Pick<
-    YAxis,
-    'side' | 'height' | 'bandTops' | 'showAxis' | 'ticks' | 'caption'
-  >[],
-) {
-  let width = 0
-  for (const axis of axes) {
-    if (axis.side !== 'right' && axisDrawn(axis)) {
-      width = Math.max(
-        width,
-        axis.caption
-          ? ONSCREEN_LEFT_AXIS_INSET_PX + axisGutterWidth(axis)
-          : ONSCREEN_LEFT_AXIS_PX,
-      )
-    }
-  }
-  return width
-}
-
 function bandsOverlap(
   a: Pick<YAxis, 'height' | 'bandTops'>,
   b: Pick<YAxis, 'height' | 'bandTops'>,

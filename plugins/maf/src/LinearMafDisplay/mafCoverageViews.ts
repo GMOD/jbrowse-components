@@ -12,7 +12,6 @@ import { getPaletteHost } from '@jbrowse/core/util'
 
 import { mafCoverageBandColors } from '../LinearMafRenderer/coverageBandColors.ts'
 import { coverageTooltipBinAt } from './coverageTooltipBin.ts'
-import { mafValueScales } from './valueScales.ts'
 
 import type { MafRegionData } from '../LinearMafRenderer/mafRenderingBackendTypes.ts'
 import type { MafTopBands } from './mafTopBands.ts'
@@ -69,21 +68,6 @@ export function mafCoverageViews(self: MafCoverageHost) {
      */
     get scoreRulesDrawn(): boolean {
       return self.topBands.reserved.coverage > 0
-    },
-    /**
-     * #getter
-     * The scales the chrome places the axes from: coverage over its
-     * autoscaled depth, and conservation over a fixed 0-100%.
-     */
-    get valueScales(): ValueScale[] {
-      return mafValueScales({
-        topBands: self.topBands,
-        coverageDomain: self.coverageDepthDomain,
-        coverageTicks: () => self.coverageTicks,
-        scaleType: self.scaleType,
-        symlogConstant: self.symlogConstant,
-        guide: self.axisGuide,
-      })
     },
     /**
      * #getter

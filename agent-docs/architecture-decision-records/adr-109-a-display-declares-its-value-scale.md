@@ -111,8 +111,7 @@ content edge.
   spine 50 px in and the numbers over the plot's first 50 px. A band's chips
   come first and its axis stands past them, the chips declared as the panel
   at the scale's `left` (`bandChipRowWidth`); a chip right of the numbers read
-  as distracting. MAF's band chips still start past the numbers
-  (`onScreenLeftAxisWidth`). The export does not follow it (2026-11-10): its margin is the
+  as distracting. The alignments and MAF bands both do so. The export does not follow it (2026-11-10): its margin is the
   gutter, so every exported left-side axis keeps its spine on the plot's edge
   and its numbers outside, the multi-wiggle's drawn as the alignments' is
   rather than as a bracket standing off the plot. The rule reads `left`, which

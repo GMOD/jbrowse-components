@@ -1,8 +1,4 @@
-import {
-  numbersGrowRight,
-  onScreenLeftAxisWidth,
-  rightAxisStackInsets,
-} from './axisPlacement.ts'
+import { numbersGrowRight, rightAxisStackInsets } from './axisPlacement.ts'
 import { AXIS_GUTTER_WIDTH_PX } from './yScaleTicks.ts'
 
 import type { AxisSide } from './valueScale.ts'
@@ -51,14 +47,4 @@ test('every axis grows its numbers right on screen, and an exported left-side ax
   }
   expect(numbersGrowRight({ side: 'left' }, true)).toBe(false)
   expect(numbersGrowRight({ side: 'right' }, true)).toBe(true)
-})
-
-test('chips clear a left-side axis by its labels, a captioned one by its whole gutter, a right-side one not at all', () => {
-  const labels = onScreenLeftAxisWidth([axis('left', [0])])
-  expect(labels).toBeGreaterThan(0)
-  expect(labels).toBeLessThan(AXIS_GUTTER_WIDTH_PX)
-  expect(
-    onScreenLeftAxisWidth([{ ...axis('left', [0]), caption: 'TLEN' }]),
-  ).toBeGreaterThan(AXIS_GUTTER_WIDTH_PX)
-  expect(onScreenLeftAxisWidth([axis('right', [0])])).toBe(0)
 })

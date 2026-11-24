@@ -1,3 +1,5 @@
+import { bandChipRowWidth } from '@jbrowse/display-kit/groupLabelStyle'
+
 import { mafTopBands } from './mafTopBands.ts'
 import { mafValueScales } from './valueScales.ts'
 
@@ -20,6 +22,7 @@ function inputs(
     scaleType: 'linear',
     symlogConstant: 1,
     guide: { caption: 'Depth', grid: false, showAxis: true },
+    chips: [],
     ...overrides,
   }
 }
@@ -69,4 +72,15 @@ test('a band drawn at no height lays out no ticks', () => {
     inputs({ coverage: false, conservation: true }, { coverageTicks }),
   )
   expect(coverageTicks).not.toHaveBeenCalled()
+})
+
+test('each axis stands past its band chip', () => {
+  const [coverage, conservation] = mafValueScales(
+    inputs(
+      { coverage: true, conservation: true },
+      { chips: [{ band: 'coverage', text: 'Coverage' }] },
+    ),
+  )
+  expect(coverage?.left).toBe(bandChipRowWidth(['Coverage']))
+  expect(conservation?.left).toBe(0)
 })

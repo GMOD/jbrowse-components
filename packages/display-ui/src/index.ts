@@ -154,7 +154,6 @@ export {
   axisGutterLeft,
   axisGutterWidth,
   leftAxisGutterWidth,
-  onScreenLeftAxisWidth,
   rightAxisStackInsets,
 } from './axisPlacement.ts'
 export { default as AxisGutter } from './AxisGutter.tsx'
