@@ -108,7 +108,7 @@ The other three exist only because renderer JavaScript cannot express them:
 contract and reports the session's error notifications; one image pixel per CSS
 pixel whatever the display's density, so the two capture routes and every
 machine agree), `open` (recovery path that works with no session or a broken
-renderer; waits for the new session identity before answering; bare form lists
+renderer; waits for the load it started to announce itself; bare form lists
 recent sessions), and `docs` (`live-model`, `recipes`, `hosted-data`,
 `session-spec`, `plots`, `automating`, plus `model:<Name>` / `config:<Name>` for
 every documented type, compact pages `pnpm autogen` writes to

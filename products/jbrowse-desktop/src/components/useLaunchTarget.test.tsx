@@ -22,9 +22,11 @@ const pluginManager = { id: 'pm' } as unknown as PluginManager
 function setup(overrides: Partial<Parameters<typeof useLaunchTarget>[0]> = {}) {
   // the swap under test is the real one's contract, not its behavior: run the
   // loader it is handed and resolve
-  const swap = jest.fn(async (load: () => Promise<PluginManager>) => {
-    await load()
-  })
+  const swap = jest.fn(
+    async (load: () => Promise<PluginManager>, _request?: string) => {
+      await load()
+    },
+  )
   const load = jest.fn(async (_target: LaunchTarget) => pluginManager)
   const onError = jest.fn()
 
@@ -74,6 +76,16 @@ test('swaps to the pushed file', async () => {
 
   await waitFor(() => {
     expect(load).toHaveBeenCalledWith(file)
+  })
+})
+
+test('swaps with the request the push carried', async () => {
+  const { deliver, swap } = setup()
+
+  deliver({ ...file, request: 'mcp-open-1' })
+
+  await waitFor(() => {
+    expect(swap).toHaveBeenCalledWith(expect.any(Function), 'mcp-open-1')
   })
 })
 

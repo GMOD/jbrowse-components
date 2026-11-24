@@ -43,6 +43,9 @@ export function buildAppUrl(
   if (target?.type === 'plan') {
     url.searchParams.set('launchPlan', JSON.stringify(target.plan))
   }
+  if (target?.request) {
+    url.searchParams.set('request', target.request)
+  }
   if (renderer) {
     url.searchParams.set('renderer', renderer)
   }

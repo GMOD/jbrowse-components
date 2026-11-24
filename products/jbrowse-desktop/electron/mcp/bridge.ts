@@ -1,3 +1,4 @@
+import { randomUUID } from 'node:crypto'
 import fs from 'node:fs'
 import net from 'node:net'
 import path from 'node:path'
@@ -329,25 +330,19 @@ export function startMcpBridge({
   // load), not when the new session is up — and a load that fails leaves the
   // old session open by design. Answering then would let the very next call
   // read the previous config's tracks as if they were the new one's, so this
-  // waits for the renderer to announce a new install. NOT the session's own id:
-  // that is persisted with the session, so reopening a saved one restores the
-  // id it was saved under and would never look like a change.
-  //
-  // A new install id is where the wait STARTS, not where it ends. Loading a
-  // link with nothing open navigates the window, and the page that lands
-  // announces on mount with an id of its own before it has fetched a byte — so
-  // the id alone answered every agent's first `open` in a quarter second, with
-  // a blank app and `settled: true`. The phase is what says the session
-  // arrived, and it says so for the load that failed too.
+  // waits for the renderer to announce a phase carrying this call's own
+  // request. Anything else is some other page: the start screen a cold start
+  // shows before its target arrives, or the session an earlier navigation
+  // left. The phase is what says the session arrived, and it says so for the
+  // load that failed too.
   async function openAndWait(
     target: Parameters<BridgeDeps['openTarget']>[0],
     opened: string,
   ): Promise<BridgeToolResult> {
     watchWindow()
-    const before = listening?.install
-    const failedBefore = listening?.launchError?.attempt ?? 0
+    const request = randomUUID()
     const crashesBefore = crashes
-    await openTarget(target)
+    await openTarget({ ...target, request })
     const deadline = Date.now() + OPEN_WAIT_MS
     while (Date.now() < deadline) {
       watchWindow()
@@ -358,12 +353,12 @@ export function startMcpBridge({
         }
       }
       const failed = listening?.launchError
-      if (failed && failed.attempt > failedBefore) {
+      if (failed?.request === request) {
         return {
           error: `${opened} did not load: ${failed.message}. The session that was open is still open.`,
         }
       }
-      if (listening && listening.install !== before) {
+      if (listening?.request === request) {
         if (listening.phase === 'startScreen') {
           return {
             error: `${opened} did not load — the app fell back to the start screen. Its error notification says why.`,

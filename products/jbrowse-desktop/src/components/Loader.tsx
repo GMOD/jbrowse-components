@@ -4,7 +4,6 @@ import { deleteQueryParams, useQueryParam } from '@jbrowse/app-core'
 import { StyleThemeProvider } from '@jbrowse/core/ui/PaletteContext'
 import { resolveStyleTheme } from '@jbrowse/core/ui/styleTheme'
 import { createJBrowseThemeFromArgs } from '@jbrowse/core/ui/theme'
-import { nanoid } from '@jbrowse/core/util/nanoid'
 import { useEventCallback } from '@jbrowse/core/util/useEventCallback'
 import { storedThemeArgs } from '@jbrowse/product-core'
 import { setGpuOverride } from '@jbrowse/render-core/gpuDevice'
@@ -47,7 +46,7 @@ prewarmGraphics()
 // failed to build) they have to leave the address bar, or the next read reopens
 // it. Cleared together because at most one was ever set.
 function clearTarget() {
-  deleteQueryParams(['config', 'specLink', 'launchPlan'])
+  deleteQueryParams(['config', 'specLink', 'launchPlan', 'request'])
 }
 
 function loadLaunchTarget(target: LaunchTarget) {
@@ -72,6 +71,7 @@ const LoaderContents = observer(function LoaderContents() {
   const [specLink] = useQueryParam('specLink')
   // files, a genome and a location named on the command line
   const [launchPlan] = useQueryParam('launchPlan')
+  const [request] = useQueryParam('request')
   const notifyError = useNotifyError()
 
   // The installed manager, readable synchronously. Replacing one is a side
@@ -81,12 +81,9 @@ const LoaderContents = observer(function LoaderContents() {
   // can resolve before a re-render, and the second must still see what the
   // first installed.
   const installedRef = useRef<PluginManager | undefined>(undefined)
-  // Changes on every install, including back to the start screen. The MCP
-  // bridge watches it to tell "the app is showing something new" from "the same
-  // session was restored with the id it was saved under".
-  const [install, setInstall] = useState(() => nanoid(10))
   const [launchError, setLaunchError] =
     useState<McpReadyState['launchError']>(undefined)
+  const [answered, setAnswered] = useState<McpReadyState['request']>(undefined)
 
   // Install a manager, tearing down whatever it replaces so its worker pool and
   // autosave loop don't leak. undefined installs nothing, which is what
@@ -98,7 +95,6 @@ const LoaderContents = observer(function LoaderContents() {
     }
     installedRef.current = pm
     setPluginManager(pm)
-    setInstall(nanoid(10))
     // The main process holds the window's close only while there is a session
     // to flush, so this has to be told both ways round — including on the way
     // back to the start screen, or closing from there would wait for a flush
@@ -158,11 +154,18 @@ const LoaderContents = observer(function LoaderContents() {
     }
   })
 
+  const installLaunch = useEventCallback(
+    (pm: PluginManager, launchRequest?: string) => {
+      handleSetPluginManager(pm)
+      setAnswered(launchRequest)
+    },
+  )
+
   const { swap, swapping } = useSessionSwap({
     flush: useEventCallback(async () => {
       await desktopRootModel(installedRef.current)?.flushSession()
     }),
-    onLoad: handleSetPluginManager,
+    onLoad: installLaunch,
   })
 
   // A launch that arrived while a session is already open (a jbrowse:// link, an
@@ -178,10 +181,10 @@ const LoaderContents = observer(function LoaderContents() {
       // why the MCP bridge has to be told separately: nothing else about this
       // page changes, and `open` would poll out its whole deadline waiting for
       // a session that is not coming.
-      setLaunchError(previous => ({
-        attempt: (previous?.attempt ?? 0) + 1,
+      setLaunchError({
+        request: target.request,
         message: e instanceof Error ? e.message : String(e),
-      }))
+      })
       notifyError(
         e,
         target.type === 'file' ? removeRecentAction(target.path) : undefined,
@@ -195,13 +198,13 @@ const LoaderContents = observer(function LoaderContents() {
 
   useMcpRequests(
     () => installedRef.current,
-    install,
     pluginManager?.rootModel?.session
       ? 'session'
       : target
         ? 'loading'
         : 'startScreen',
     launchError,
+    answered,
   )
 
   const loadTarget = useEventCallback((source: string) =>
@@ -216,6 +219,7 @@ const LoaderContents = observer(function LoaderContents() {
 
   const handleTargetError = useEventCallback((e: unknown) => {
     notifyError(e, config ? removeRecentAction(config) : undefined)
+    setAnswered(request)
     // fall back to the start screen so the user can pick another session
     clearTarget()
   })
@@ -223,7 +227,9 @@ const LoaderContents = observer(function LoaderContents() {
   usePluginManagerLoad(
     target,
     loadTarget,
-    handleSetPluginManager,
+    useEventCallback((pm: PluginManager) => {
+      installLaunch(pm, request)
+    }),
     handleTargetError,
   )
 

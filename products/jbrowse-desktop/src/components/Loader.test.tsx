@@ -1,7 +1,8 @@
 import { act, render, screen } from '@testing-library/react'
 
+import { useMcpRequests } from '../mcp/useMcpRequests.ts'
 import Loader from './Loader.tsx'
-import { destroyPluginManager } from './StartScreen/util.tsx'
+import { destroyPluginManager, loadPluginManager } from './StartScreen/util.tsx'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
 
@@ -66,4 +67,45 @@ test('a start-screen launch that lands after a session opened is dropped', async
 
   expect(screen.getByText('session recent')).toBeTruthy()
   expect(jest.mocked(destroyPluginManager).mock.calls).toEqual([[hub]])
+})
+
+describe('what the MCP bridge is told about an open it asked for', () => {
+  function lastAnnouncement() {
+    const [, phase, , request] =
+      jest.mocked(useMcpRequests).mock.calls.at(-1) ?? []
+    return { phase, request }
+  }
+
+  beforeEach(() => {
+    window.history.replaceState(
+      null,
+      '',
+      '/?config=%2Fhome%2Fme%2Fmy.jbrowse&request=mcp-open-1',
+    )
+  })
+
+  test('the session it loaded answers with its request', async () => {
+    jest
+      .mocked(loadPluginManager)
+      .mockResolvedValue(fakePluginManager('opened'))
+    render(<Loader />)
+    await screen.findByText('session opened')
+
+    expect(lastAnnouncement()).toEqual({
+      phase: 'session',
+      request: 'mcp-open-1',
+    })
+  })
+
+  test('the start screen it fell back to answers with its request', async () => {
+    jest.mocked(loadPluginManager).mockRejectedValue(new Error('no such file'))
+    jest.spyOn(console, 'error').mockImplementation(() => {})
+    render(<Loader />)
+    await screen.findByText('start screen')
+
+    expect(lastAnnouncement()).toEqual({
+      phase: 'startScreen',
+      request: 'mcp-open-1',
+    })
+  })
 })

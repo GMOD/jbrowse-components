@@ -41,7 +41,8 @@ function setup(overrides: Partial<Parameters<typeof useSessionSwap>[0]> = {}) {
     flush,
     order,
     load,
-    swap: (fn: () => Promise<PluginManager> = load) => result.current.swap(fn),
+    swap: (fn: () => Promise<PluginManager> = load, request?: string) =>
+      result.current.swap(fn, request),
     swapping: () => result.current.swapping,
   }
 }
@@ -71,7 +72,7 @@ test('flushes between loading the replacement and installing it', async () => {
 
   await swap()
 
-  expect(onLoad).toHaveBeenCalledWith(pluginManagerA)
+  expect(onLoad).toHaveBeenCalledWith(pluginManagerA, undefined)
   expect(order).toEqual(['load', 'flush', 'onLoad'])
 })
 
@@ -80,8 +81,16 @@ test('installs the loaded manager without destroying it', async () => {
 
   await swap()
 
-  expect(onLoad).toHaveBeenCalledWith(pluginManagerA)
+  expect(onLoad).toHaveBeenCalledWith(pluginManagerA, undefined)
   expect(mockDestroy).not.toHaveBeenCalled()
+})
+
+test('installs with the request of the launch that asked for it', async () => {
+  const { swap, load, onLoad } = setup()
+
+  await swap(load, 'mcp-open-1')
+
+  expect(onLoad).toHaveBeenCalledWith(pluginManagerA, 'mcp-open-1')
 })
 
 // Nothing has been torn down when the load fails, so the session that was open
@@ -113,7 +122,7 @@ test('a superseded swap is destroyed rather than installed', async () => {
       }),
   )
   await swap(() => Promise.resolve(pluginManagerB))
-  expect(onLoad).toHaveBeenCalledWith(pluginManagerB)
+  expect(onLoad).toHaveBeenCalledWith(pluginManagerB, undefined)
 
   // the first one lands late; it must not overwrite the second
   resolveFirst(pluginManagerA)
@@ -121,7 +130,7 @@ test('a superseded swap is destroyed rather than installed', async () => {
 
   expect(mockDestroy).toHaveBeenCalledWith(pluginManagerA)
   expect(onLoad).toHaveBeenCalledTimes(1)
-  expect(onLoad).toHaveBeenCalledWith(pluginManagerB)
+  expect(onLoad).toHaveBeenCalledWith(pluginManagerB, undefined)
 })
 
 // The generation was only checked after the load, and the flush that follows it
@@ -155,14 +164,14 @@ test('a swap superseded during its own flush is destroyed rather than installed'
 
   // the second swap loads and flushes while the first is still inside its flush
   await swap(() => Promise.resolve(pluginManagerB))
-  expect(onLoad).toHaveBeenCalledWith(pluginManagerB)
+  expect(onLoad).toHaveBeenCalledWith(pluginManagerB, undefined)
 
   releaseFirstFlush()
   await first
 
   expect(mockDestroy).toHaveBeenCalledWith(pluginManagerA)
   expect(onLoad).toHaveBeenCalledTimes(1)
-  expect(onLoad).toHaveBeenCalledWith(pluginManagerB)
+  expect(onLoad).toHaveBeenCalledWith(pluginManagerB, undefined)
 })
 
 // The pushed route keeps the open session on screen while it loads, so without
@@ -248,7 +257,7 @@ describe('the in-flight flag the Loader shows a progress bar for', () => {
       resolveSecond(pluginManagerB)
       await second
     })
-    expect(onLoad).toHaveBeenCalledWith(pluginManagerB)
+    expect(onLoad).toHaveBeenCalledWith(pluginManagerB, undefined)
     expect(swapping()).toBe(false)
   })
 })

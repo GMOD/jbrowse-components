@@ -79,12 +79,16 @@ export interface LoadedSession {
  * graph into the renderer's typecheck, which is the thing the note at the top
  * of this file exists to prevent.
  */
-export type LaunchTarget =
+export type LaunchTarget = (
   | { type: 'file'; path: string }
   // a JBrowse Web https link, unwrapped from a jbrowse:// url
   | { type: 'link'; url: string }
   // data files, a genome and a location named on the command line
   | { type: 'plan'; plan: LaunchPlanJson }
+) & {
+  /** The MCP `open` call this launch answers, echoed back in McpReadyState. */
+  request?: string
+}
 
 /**
  * `@jbrowse/launch-args`'s `LaunchPlan`, restated so this file stays
@@ -184,18 +188,22 @@ export interface McpBridgeResponse {
  * answer from — it looks identical to success from the main process.
  */
 export interface McpReadyState {
-  install: string
   phase: 'loading' | 'session' | 'startScreen'
+  /**
+   * The `request` of the launch that put this phase on screen, so `open`
+   * answers only for its own load and not for a start screen or session that
+   * announced while its target was still on the way.
+   */
+  request?: string
   /**
    * The launch the renderer was pushed and could not load.
    *
    * A pushed launch that throws leaves the session it failed to replace open,
-   * so no plugin manager is installed and `install` never changes — and `open`
-   * polled out its whole 90 s deadline for a session that was never coming,
-   * over a renderer that had known within a second. `attempt` counts them, so a
-   * second failure reads as new rather than as the first one still standing.
+   * so no plugin manager is installed and nothing else about the page changes
+   * — and `open` polled out its whole 90 s deadline for a session that was
+   * never coming, over a renderer that had known within a second.
    */
-  launchError?: { attempt: number; message: string }
+  launchError?: { request?: string; message: string }
 }
 
 export interface IpcChannels extends ElectronMainChannels {
@@ -278,11 +286,6 @@ export interface IpcChannels extends ElectronMainChannels {
   // The renderer announcing that its mcpRequest listener is subscribed. A push
   // to a page with no listener is discarded silently and never retried, so the
   // bridge holds relays until this arrives rather than spending the whole relay
-  // timeout on a message nobody received. `install` is a fresh id per installed
-  // plugin manager, giving `open` something that changes on every load — the
-  // session's own id is persisted, so reopening a saved session restores it
-  // unchanged and says nothing about whether the load happened. `phase` is the
-  // other half: a page announces on mount, so a changed `install` alone means
-  // the navigation happened, not that anything loaded.
+  // timeout on a message nobody received.
   mcpReady: { args: [state: McpReadyState]; return: void }
 }

@@ -45,38 +45,40 @@ export function useSessionSwap({
   // to it as well helps nobody.
   flush: () => Promise<void>
   // install the loaded manager, tearing down the one it replaces
-  onLoad: (pluginManager: PluginManager) => void
+  onLoad: (pluginManager: PluginManager, request?: string) => void
 }) {
   const generation = useRef(0)
   const [swapping, setSwapping] = useState(false)
 
-  const swap = useEventCallback(async (load: () => Promise<PluginManager>) => {
-    const launch = ++generation.current
-    setSwapping(true)
-    try {
-      const pluginManager = await load()
-      // checked again after the flush, not only after the load: the flush is a
-      // disk write over IPC, and a swap started during it took the generation
-      // while this one was still going to install unconditionally on the far
-      // side. Whichever of the two flushes finished last won, so the newer
-      // session could be installed and then replaced by the older one it
-      // superseded — with the newer manager's tree destroyed as the "previous".
-      if (launch === generation.current) {
-        await flush()
+  const swap = useEventCallback(
+    async (load: () => Promise<PluginManager>, request?: string) => {
+      const launch = ++generation.current
+      setSwapping(true)
+      try {
+        const pluginManager = await load()
+        // checked again after the flush, not only after the load: the flush is a
+        // disk write over IPC, and a swap started during it took the generation
+        // while this one was still going to install unconditionally on the far
+        // side. Whichever of the two flushes finished last won, so the newer
+        // session could be installed and then replaced by the older one it
+        // superseded — with the newer manager's tree destroyed as the "previous".
+        if (launch === generation.current) {
+          await flush()
+        }
+        if (launch !== generation.current) {
+          destroyPluginManager(pluginManager)
+          return
+        }
+        onLoad(pluginManager, request)
+      } finally {
+        // only the swap still current clears the flag: a superseded one finishing
+        // must not report that the swap behind it is done
+        if (launch === generation.current) {
+          setSwapping(false)
+        }
       }
-      if (launch !== generation.current) {
-        destroyPluginManager(pluginManager)
-        return
-      }
-      onLoad(pluginManager)
-    } finally {
-      // only the swap still current clears the flag: a superseded one finishing
-      // must not report that the swap behind it is done
-      if (launch === generation.current) {
-        setSwapping(false)
-      }
-    }
-  })
+    },
+  )
 
   // `swapping` is what the Loader runs a progress bar off. The pushed route
   // keeps the open session on screen while it loads, so without it the window

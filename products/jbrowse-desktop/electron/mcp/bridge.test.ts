@@ -20,7 +20,11 @@ import { ipcMain } from 'electron'
 
 import { startMcpBridge } from './bridge.ts'
 
-import type { McpBridgeRequest, McpReadyState } from '../ipc/channelTypes.ts'
+import type {
+  LaunchTarget,
+  McpBridgeRequest,
+  McpReadyState,
+} from '../ipc/channelTypes.ts'
 import type { AppPaths } from '../paths.ts'
 import type { BrowserWindow } from 'electron'
 
@@ -69,7 +73,7 @@ function start(openTarget: () => Promise<unknown> = () => Promise.resolve()) {
   const recentSessionsPath = path.join(dir, 'recent.json')
   const socketPath = path.join(dir, 'mcp.sock')
   const pushed: { channel: string; payload: McpBridgeRequest }[] = []
-  const launched: unknown[] = []
+  const launched: LaunchTarget[] = []
   // server.close() leaves established connections open, and the jest worker
   // then cannot exit — "failed to exit gracefully" with every test green
   const clients: net.Socket[] = []
@@ -185,6 +189,7 @@ function start(openTarget: () => Promise<unknown> = () => Promise.resolve()) {
     // tool call and a cancel both look like from here
     lastPush: () => pushed.at(-1)!.payload,
     pushedTools: () => pushed.map(p => p.payload.tool),
+    requested: () => launched.at(-1)?.request,
   }
 }
 
@@ -285,7 +290,7 @@ describe('relaying a tool call', () => {
     const b = bridge()
     const c = b.connect()
     await settle()
-    b.ready({ install: 'first', phase: 'session' })
+    b.ready({ phase: 'session' })
     const answered = c.send(1, 'run_javascript', { code: 'return 1' })
     await settle()
     expect(b.lastPush().tool).toBe('run_javascript')
@@ -299,7 +304,7 @@ describe('relaying a tool call', () => {
     const b = bridge()
     const c = b.connect()
     await settle()
-    b.ready({ install: 'first', phase: 'session' })
+    b.ready({ phase: 'session' })
     expect(await c.send(1, 'docs')).toEqual({
       id: 1,
       error: 'Unknown tool: docs',
@@ -352,7 +357,7 @@ it('settles the calls a page took with it when it navigated', async () => {
   const b = bridge()
   const c = b.connect()
   await settle()
-  b.ready({ install: 'first', phase: 'session' })
+  b.ready({ phase: 'session' })
   const answered = c.send(1, 'run_javascript', { code: 'return 1' })
   await settle()
   b.navigate()
@@ -368,13 +373,13 @@ it('stops trusting a page that reloaded before the first call', async () => {
   const b = bridge()
   const c = b.connect()
   await settle()
-  b.ready({ install: 'first', phase: 'startScreen' })
+  b.ready({ phase: 'startScreen' })
   b.navigate()
   void c.send(1, 'run_javascript', { code: 'return 1' })
   await settle()
   expect(b.pushed).toHaveLength(0)
 
-  b.ready({ install: 'second', phase: 'session' })
+  b.ready({ phase: 'session' })
   await settle()
   expect(b.lastPush()).toMatchObject({ tool: 'run_javascript' })
 })
@@ -386,7 +391,7 @@ it('stops trusting a page that reloaded before its window was named', async () =
   const c = b.connect()
   await settle()
   b.setNamed(false)
-  b.ready({ install: 'first', phase: 'startScreen' })
+  b.ready({ phase: 'startScreen' })
   b.setNamed(true)
   b.navigate()
   void c.send(1, 'run_javascript', { code: 'return 1' })
@@ -398,7 +403,7 @@ it('keeps trusting a page whose navigation never commits', async () => {
   const b = bridge()
   const c = b.connect()
   await settle()
-  b.ready({ install: 'first', phase: 'session' })
+  b.ready({ phase: 'session' })
   const inFlight = c.send(1, 'run_javascript', { code: 'return 1' })
   await settle()
   const relayId = b.lastPush().id
@@ -418,7 +423,7 @@ it('answers at once while the page is crashed, and relays again once reloaded', 
   const b = bridge()
   const c = b.connect()
   await settle()
-  b.ready({ install: 'first', phase: 'session' })
+  b.ready({ phase: 'session' })
   const inFlight = c.send(1, 'run_javascript', { code: 'return 1' })
   await settle()
   b.crash()
@@ -433,7 +438,7 @@ it('answers at once while the page is crashed, and relays again once reloaded', 
   })
   expect(b.pushed).toHaveLength(pushes)
 
-  b.ready({ install: 'second', phase: 'session' })
+  b.ready({ phase: 'session' })
   void c.send(3, 'run_javascript', { code: 'return 3' })
   await settle()
   expect(b.pushed).toHaveLength(pushes + 1)
@@ -460,7 +465,7 @@ it('stops trusting a page a failed load replaced, but not a cancelled one', asyn
   const b = bridge()
   const c = b.connect()
   await settle()
-  b.ready({ install: 'first', phase: 'session' })
+  b.ready({ phase: 'session' })
   const inFlight = c.send(1, 'run_javascript', { code: 'return 1' })
   await settle()
   const relayId = b.lastPush().id
@@ -482,7 +487,7 @@ it('a screenshot of a crashed page says so rather than capturing', async () => {
   const b = bridge()
   const c = b.connect()
   await settle()
-  b.ready({ install: 'first', phase: 'session' })
+  b.ready({ phase: 'session' })
   void c.send(1, 'run_javascript', { code: 'return 1' })
   await settle()
   b.crash()
@@ -497,7 +502,7 @@ it('a screenshot of a window that yields no image says why', async () => {
   const b = bridge()
   const c = b.connect()
   await settle()
-  b.ready({ install: 'first', phase: 'session' })
+  b.ready({ phase: 'session' })
   const shot = c.send(1, 'screenshot')
   await settle()
   b.answer(b.lastPush().id, { result: { settled: true } })
@@ -517,7 +522,7 @@ it('a zoomed page captures the crop box in window units', async () => {
   const b = bridge()
   const c = b.connect()
   await settle()
-  b.ready({ install: 'first', phase: 'session' })
+  b.ready({ phase: 'session' })
   b.setZoom(2)
   void c.send(1, 'screenshot', {
     rect: { x: 10, y: 20, width: 100, height: 50 },
@@ -535,7 +540,7 @@ it('cancels the code of a client that exits mid-call', async () => {
   const b = bridge()
   const gone = b.connect()
   await settle()
-  b.ready({ install: 'first', phase: 'session' })
+  b.ready({ phase: 'session' })
   void gone.send(1, 'run_javascript', { code: 'x' })
   await settle()
   const relayId = b.lastPush().id
@@ -557,7 +562,7 @@ it('survives a client that exits while its call is in flight', async () => {
   const b = bridge()
   const gone = b.connect()
   await settle()
-  b.ready({ install: 'first', phase: 'session' })
+  b.ready({ phase: 'session' })
   void gone.send(1, 'run_javascript', { code: 'x' })
   await settle()
   const relayId = b.lastPush().id
@@ -576,15 +581,51 @@ it('survives a client that exits while its call is in flight', async () => {
 describe('open', () => {
   const url = 'https://example.org/config.json'
 
+  it('waits past a start screen that announced before its target loaded', async () => {
+    const b = bridge()
+    const c = b.connect()
+    await settle()
+    let outcome: Record<string, unknown> | undefined
+    void c.send(1, 'open', { target: url }).then(o => {
+      outcome = o
+    })
+    await settle()
+    b.ready({ phase: 'startScreen' })
+    await settle(400)
+    expect(outcome).toBeUndefined()
+    b.ready({ phase: 'session', request: b.requested() })
+    await settle(400)
+    b.answer(b.lastPush().id, { result: { settled: true } })
+    await settle()
+    expect(outcome).toEqual({ id: 1, result: { opened: url, settled: true } })
+  })
+
+  it('does not take the previous session for the one it opened', async () => {
+    const b = bridge()
+    const c = b.connect()
+    await settle()
+    let outcome: Record<string, unknown> | undefined
+    void c.send(1, 'open', { target: url }).then(o => {
+      outcome = o
+    })
+    await settle()
+    b.ready({ phase: 'session' })
+    await settle(400)
+    expect(b.pushedTools()).not.toContain('wait_ready')
+    expect(outcome).toBeUndefined()
+  })
+
   it('waits for the new session, then for it to settle', async () => {
     const b = bridge()
     const c = b.connect()
     await settle()
-    b.ready({ install: 'first', phase: 'session' })
+    b.ready({ phase: 'session' })
     const answered = c.send(1, 'open', { target: url })
     await settle()
-    expect(b.launched).toEqual([{ type: 'link', url }])
-    b.ready({ install: 'second', phase: 'session' })
+    expect(b.launched).toEqual([
+      { type: 'link', url, request: expect.any(String) },
+    ])
+    b.ready({ phase: 'session', request: b.requested() })
     await settle(400)
     expect(b.lastPush().tool).toBe('wait_ready')
     b.answer(b.lastPush().id, { result: { settled: true } })
@@ -600,10 +641,10 @@ describe('open', () => {
     const b = bridge()
     const c = b.connect()
     await settle()
-    b.ready({ install: 'first', phase: 'session' })
+    b.ready({ phase: 'session' })
     const answered = c.send(1, 'open', { target: url })
     await settle()
-    b.ready({ install: 'second', phase: 'loading' })
+    b.ready({ phase: 'loading', request: b.requested() })
     b.crash()
     expect((await answered).error).toBe(
       `${url} did not load: the app's page crashed (oom); use the open tool to reload it`,
@@ -614,10 +655,10 @@ describe('open', () => {
     const b = bridge()
     const c = b.connect()
     await settle()
-    b.ready({ install: 'first', phase: 'session' })
+    b.ready({ phase: 'session' })
     const answered = c.send(1, 'open', { target: url })
     await settle()
-    b.ready({ install: 'second', phase: 'startScreen' })
+    b.ready({ phase: 'startScreen', request: b.requested() })
     expect((await answered).error).toMatch(/fell back to the start screen/)
   })
 
@@ -629,13 +670,15 @@ describe('open', () => {
     const b = bridge()
     const c = b.connect()
     await settle()
-    b.ready({ install: 'first', phase: 'session' })
+    b.ready({ phase: 'session' })
     const answered = c.send(1, 'open', { target: url })
     await settle()
     b.ready({
-      install: 'first',
       phase: 'session',
-      launchError: { attempt: 1, message: 'Unexpected token < in JSON' },
+      launchError: {
+        request: b.requested(),
+        message: 'Unexpected token < in JSON',
+      },
     })
     const outcome = await answered
     expect(outcome.error).toMatch(/Unexpected token < in JSON/)
@@ -648,13 +691,12 @@ describe('open', () => {
     const c = b.connect()
     await settle()
     b.ready({
-      install: 'first',
       phase: 'session',
-      launchError: { attempt: 1, message: 'an earlier one' },
+      launchError: { request: 'an earlier open', message: 'an earlier one' },
     })
     const answered = c.send(1, 'open', { target: url })
     await settle(400)
-    b.ready({ install: 'second', phase: 'session' })
+    b.ready({ phase: 'session', request: b.requested() })
     await settle(400)
     b.answer(b.lastPush().id, { result: { settled: true } })
     expect(await answered).toEqual({
@@ -717,7 +759,7 @@ describe('cancel', () => {
     const b = bridge()
     const c = b.connect()
     await settle()
-    b.ready({ install: 'first', phase: 'session' })
+    b.ready({ phase: 'session' })
     const { relayId } = await inFlight(b, c, 5)
     void c.send(6, 'cancel', { id: 5 })
     await settle()
@@ -739,7 +781,7 @@ describe('cancel', () => {
       id: 6,
       result: { cancelled: true },
     })
-    b.ready({ install: 'first', phase: 'session' })
+    b.ready({ phase: 'session' })
     expect(await answered).toMatchObject({
       error: expect.stringContaining('cancelled before it was sent'),
     })
@@ -750,7 +792,7 @@ describe('cancel', () => {
     const b = bridge()
     const c = b.connect()
     await settle()
-    b.ready({ install: 'first', phase: 'session' })
+    b.ready({ phase: 'session' })
     expect(await c.send(1, 'cancel', { id: 404 })).toEqual({
       id: 1,
       result: { cancelled: false },
@@ -764,7 +806,7 @@ describe('cancel', () => {
     const first = b.connect()
     const second = b.connect()
     await settle()
-    b.ready({ install: 'first', phase: 'session' })
+    b.ready({ phase: 'session' })
     const mine = await inFlight(b, first, 5)
     const theirs = await inFlight(b, second, 5)
     expect(mine.relayId).not.toBe(theirs.relayId)

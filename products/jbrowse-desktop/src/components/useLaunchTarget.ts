@@ -18,12 +18,12 @@ export function useLaunchTarget({
   load,
   onError,
 }: {
-  swap: (load: () => Promise<PluginManager>) => Promise<void>
+  swap: (load: () => Promise<PluginManager>, request?: string) => Promise<void>
   load: (target: LaunchTarget) => Promise<PluginManager>
   onError: (error: unknown, target: LaunchTarget) => void
 }) {
   useIpc('openLaunchTarget', target => {
-    swap(() => load(target)).catch((e: unknown) => {
+    swap(() => load(target), target.request).catch((e: unknown) => {
       console.error(e)
       onError(e, target)
     })
