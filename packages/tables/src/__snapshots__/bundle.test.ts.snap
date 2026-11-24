@@ -1130,6 +1130,8 @@ exports[`each call answers the tables and columns a host reads by name 1`] = `
     "config": {
       "data": "object",
       "encoding": "object",
+      "fetchSizeLimit": "number",
+      "forceLoad": "boolean",
       "height": "number",
       "legend": "object",
       "mark": "object",
