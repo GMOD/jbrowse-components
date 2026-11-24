@@ -665,7 +665,7 @@ export function renderConfig(
             ? unionNesting(header.name, slots)
             : slotNesting(header.name, category, isBase, links),
           shorthandLine(header.name, category, isBase),
-          writesLine(header.name),
+          writesLine(writesSchemaByConfig.get(header.name) ?? header.name),
           `Slot types (\`fileLocation\`, \`frozen\`, ...) are explained in the [config slot types reference](${SLOT_TYPES_GUIDE}). Slots a base configuration contributes are listed here too, so this table is the whole surface.`,
         ]
           .filter(Boolean)
@@ -836,6 +836,41 @@ function resolveInheritedSlotMeta(
       if (inherited.length) {
         inheritSlotMeta(slot, inherited.reverse())
       }
+    }
+  }
+}
+
+// A sub-schema no display holds by its own name is missing from the manifest,
+// so its page states the writes of the schema it shares them with: a base it
+// inherits them from, else a derived schema that inherits them from it.
+const writesSchemaByConfig = new Map<string, string>()
+
+function resolveInheritedWrites(
+  configs: ConfigWithHeader[],
+  index: ConfigIndex,
+) {
+  const declaresWrites = (c: Config) => /^\s*writes:/m.test(c.source ?? '')
+  const statesWrites = (c: ConfigWithHeader) => writesLine(c.header.name) !== ''
+  for (const config of configs.filter(c => !statesWrites(c))) {
+    const chain = [config, ...collectBaseConfigs(config, index)]
+    const end = chain.findIndex(declaresWrites)
+    const base = chain
+      .slice(0, end === -1 ? undefined : end + 1)
+      .find(statesWrites)
+    const derived = base
+      ? undefined
+      : configs.find(d => {
+          const bases = collectBaseConfigs(d, index)
+          const at = bases.indexOf(config)
+          return (
+            at !== -1 &&
+            statesWrites(d) &&
+            ![d, ...bases.slice(0, at)].some(declaresWrites)
+          )
+        })
+    const from = base ?? derived
+    if (from) {
+      writesSchemaByConfig.set(config.header.name, from.header.name)
     }
   }
 }
@@ -1063,6 +1098,7 @@ export function linkedConfigs(
     }
   }
   resolveInheritedSlotMeta(withHeader, index)
+  resolveInheritedWrites(withHeader, index)
   linkSlotSchemas(withHeader, index)
   return { withHeader, index }
 }
