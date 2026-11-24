@@ -31,7 +31,10 @@ every cost is linear in lanes.
 - **Alignment records split at large indels.** `SPLIT_AT_GAP_BP` rides the anchor
   and pair fetches through `clipFeatureToRegion`, so each gap-free run is its own
   group (runs as placements of one group would draw a cross product). Every
-  gutter draws the ops of the record it places.
+  gutter draws the ops of the record it places. `liftAlignmentOps` cuts each
+  piece again with this build's splitter, since a plugin bundling an older
+  synteny-core leaves an indel beside a cut on its run, and the gap then reads
+  as a deletion or insertion where both sides hold bases.
 - **A gutter draws only what its source states** (`rowsVsAnchor`). A source
   whose header names an anchor and answers no lane pairs holds each lane against
   the anchor alone, so every gutter draws its lower lane against the anchor: the

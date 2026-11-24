@@ -1,8 +1,11 @@
 import { appendFileSync, readFileSync, readdirSync } from 'node:fs'
 import path from 'node:path'
 
+import { CIGAR_EQ, CIGAR_M, CIGAR_RUN, CIGAR_X } from '@jbrowse/cigar-utils'
 import { SimpleFeature } from '@jbrowse/core/util'
 
+import { getMate } from '../syntenyMate.ts'
+import { liftAlignmentOps, multiWayFeaturesOf } from './MultiWayGetFeatures.ts'
 import {
   copyLaneFiling,
   copyLaneName,
@@ -38,7 +41,7 @@ import type {
   MultiWayGroup,
   RowFrame,
 } from './layoutMultiWay.ts'
-import type { SimpleFeatureSerialized } from '@jbrowse/core/util'
+import type { Feature, SimpleFeatureSerialized } from '@jbrowse/core/util'
 
 /**
  * One audit window of the hosted HPRC v2.1 walk file, its lane records as the
@@ -101,16 +104,18 @@ function layHosted(
   const start = region.start + shift
   const end = region.end + shift
   const unitBp = end - start
-  const ops = new Map<string, Uint32Array>()
-  const features = records
-    .filter(record => !record.spansWindow)
-    .map(({ alignmentOps, ...data }) => {
-      const feature = new SimpleFeature(data)
-      if (alignmentOps) {
-        ops.set(feature.id(), Uint32Array.from(alignmentOps))
-      }
-      return feature
-    })
+  const { features, ops } = multiWayFeaturesOf(
+    liftAlignmentOps(
+      records.map(
+        ({ alignmentOps, ...data }) =>
+          new SimpleFeature(
+            alignmentOps
+              ? { ...data, alignmentOps: Uint32Array.from(alignmentOps) }
+              : data,
+          ),
+      ),
+    ),
+  )
   const fetched = groupFeatures(features)
   const inWindow = (g: MultiWayGroup) =>
     g.anchor.end > start && g.anchor.start < end
@@ -170,6 +175,7 @@ function layHosted(
   return {
     window: { refName, start, end },
     field,
+    features,
     grouped,
     groups,
     pieces,
@@ -586,8 +592,8 @@ describe('a gap reaching past the window states nothing', () => {
   })
 })
 
-// Records cut as jbrowse-components' splitSyntenyFeatureAtGaps cuts them since
-// 48e3d77f08, an indel beside a cut counted in its gap
+// The hosted plugin's splitter leaves an indel beside a cut on its run, so
+// these records read as deletions until the display cuts them again
 describe('a gap with bases on both sides is worded by both, at its size', () => {
   test('F2-chr3: HG01960#1 replaces 114 kb of GRCh38 with 8 bp of its own', () => {
     expect(chipsOf(layHosted(hostedWindow('F2-chr3')), 'HG01960.1')).toEqual([
@@ -600,6 +606,94 @@ describe('a gap with bases on both sides is worded by both, at its size', () => 
       chipsOf(layHosted(hostedWindow('SV-rep-10k-100k')), 'HG02055.1'),
     ).toEqual(['13 kb replaced by 13 bp'])
   })
+
+  test("SV-rep-10k-100k: HG02055#1's change has the VCF's sizes, 13,267 bp of GRCh38 against 13 bp", () => {
+    const laid = layHosted(hostedWindow('SV-rep-10k-100k'))
+    expect(
+      lanesOf(laid, 'HG02055.1').flatMap(lane => {
+        const frame = laid.frames.get(lane)
+        return frame
+          ? laid
+              .changes(lane, frame.refName, frame.flipped)
+              .map(({ kind, anchorBp, laneBp }) => ({ kind, anchorBp, laneBp }))
+          : []
+      }),
+    ).toEqual([{ kind: 'replacement', anchorBp: 13_267, laneBp: 13 }])
+  })
+})
+
+/** the ops of a piece in order, a run op's second word folded into it */
+function opCodes(ops: Uint32Array) {
+  const codes: number[] = []
+  for (let k = 0; k < ops.length; k++) {
+    const op = ops[k]! & 0xf
+    codes.push(op)
+    k += op === CIGAR_RUN ? 1 : 0
+  }
+  return codes
+}
+
+const ALIGNED_OPS = new Set([CIGAR_M, CIGAR_EQ, CIGAR_X, CIGAR_RUN])
+
+/**
+ * every deletion or insertion `laid` states, with whether each of its two
+ * pieces meets the gap on an aligned base: a gap stated from piece extents
+ * that end on an indel leaves that indel out of its sizes
+ */
+function gapEdges(laid: Laid) {
+  return laid.lanes.flatMap(lane => {
+    const frame = laid.frames.get(lane)
+    const genome = laneOf(lane).assemblyName
+    const piecesOf = (at: number, side: 'start' | 'end') =>
+      laid.features.filter(f => {
+        const mate = getMate(f)
+        return (
+          mate?.assemblyName === genome &&
+          mate.refName === frame?.refName &&
+          mate[side] === at
+        )
+      })
+    const edgeOp = (f: Feature, laneSide: 'start' | 'end') => {
+      const codes = opCodes(laid.ops.get(f.id()) ?? new Uint32Array())
+      const last = (f.get('strand') === -1) === (laneSide === 'start')
+      return last ? codes.at(-1) : codes[0]
+    }
+    return frame
+      ? laid
+          .changes(lane, frame.refName, frame.flipped)
+          .filter(c => c.kind === 'deletion' || c.kind === 'insertion')
+          .map(c => {
+            const left = piecesOf(c.at, 'end')
+            const right = piecesOf(c.laneEnd, 'start')
+            return {
+              lane,
+              at: c.at,
+              kind: c.kind,
+              pieces: [left.length, right.length],
+              aligned: [
+                left.every(f => ALIGNED_OPS.has(edgeOp(f, 'end') ?? -1)),
+                right.every(f => ALIGNED_OPS.has(edgeOp(f, 'start') ?? -1)),
+              ],
+            }
+          })
+      : []
+  })
+}
+
+describe('a deletion or an insertion is bounded by aligned bases', () => {
+  const fixtures = readdirSync(path.join(__dirname, 'test_data', 'hosted'))
+    .filter(name => name.endsWith('.json'))
+    .map(name => name.slice(0, -5))
+
+  test.each(fixtures)(
+    '%s: both pieces of each meet its gap on a match',
+    name => {
+      const edges = gapEdges(layHosted(hostedWindow(name)))
+      expect(
+        edges.filter(e => e.pieces.includes(0) || e.aligned.includes(false)),
+      ).toEqual([])
+    },
+  )
 })
 
 // contig lengths from the hosted session's chrom.sizes of each genome

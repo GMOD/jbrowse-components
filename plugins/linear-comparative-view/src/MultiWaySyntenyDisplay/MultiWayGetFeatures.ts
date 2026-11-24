@@ -2,6 +2,7 @@ import { getFeatureAdapterOrThrow } from '@jbrowse/core/data_adapters/getFeature
 import RpcMethodTypeWithRenameRegions from '@jbrowse/core/pluggableElementTypes/RpcMethodTypeWithRenameRegions'
 import { SimpleFeature } from '@jbrowse/core/util'
 import { rpcResult, unwrapRpcResult } from '@jbrowse/core/util/librpc'
+import { splitSyntenyFeatureAtGaps } from '@jbrowse/synteny-core'
 import { firstValueFrom } from 'rxjs'
 import { toArray } from 'rxjs/operators'
 
@@ -150,14 +151,56 @@ export function multiWayFeaturesOf({
   return { features: placed, ops: new Map(ops), deletions }
 }
 
+/**
+ * A piece cut again by this build's splitter, since a source bundling an
+ * older one leaves an indel beside a cut on the run next to it: `13I 13267D`
+ * arrived as a run ending in 13I and read as a 13 kb deletion. One run keeps
+ * the piece's id; several are numbered as a record's runs are.
+ */
+function recutAtGaps(
+  id: string,
+  data: SimpleFeatureSerialized,
+  ops: Uint32Array,
+) {
+  const { mate } = data
+  return mate === undefined
+    ? [{ id, ops: ops.slice(), data }]
+    : splitSyntenyFeatureAtGaps(
+        ops,
+        data.start,
+        mate.start,
+        mate.end,
+        data.strand === -1 ? -1 : 1,
+        SPLIT_AT_GAP_BP,
+      ).map(({ start, end, mateStart, mateEnd, cigar }, i, runs) => {
+        const suffix = runs.length > 1 ? `/${i}` : ''
+        return {
+          id: `${id}${suffix}`,
+          ops: cigar,
+          data: {
+            ...data,
+            uniqueId: `${id}${suffix}`,
+            start,
+            end,
+            mate: { ...mate, start: mateStart, end: mateEnd },
+            ...(data.syntenyId === undefined
+              ? {}
+              : { syntenyId: `${String(data.syntenyId)}${suffix}` }),
+          },
+        }
+      })
+}
+
 export function liftAlignmentOps(found: Feature[]): MultiWayFeaturesWire {
   const ops: [string, Uint32Array][] = []
-  const features = found.map(feature => {
+  const features = found.flatMap(feature => {
     const { alignmentOps, ...data } = feature.toJSON()
-    if (alignmentOps instanceof Uint32Array) {
-      ops.push([feature.id(), alignmentOps.slice()])
-    }
-    return data
+    return alignmentOps instanceof Uint32Array
+      ? recutAtGaps(feature.id(), data, alignmentOps).map(run => {
+          ops.push([run.id, run.ops])
+          return run.data
+        })
+      : [data]
   })
   return { features, ops }
 }
