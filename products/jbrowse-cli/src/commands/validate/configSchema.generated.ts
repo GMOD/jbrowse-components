@@ -13115,7 +13115,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
               }
             },
             "field": {
-              "description": "impact, the most severe SnpEff/VEP consequence tier; svType, the structural-variant class; phaseSet, the FORMAT PS block, painting only under rows haplotype; or any record field, INFO.CLNSIG say, or a jexl expression over feature, whose values each paint one range color with a key. A record with no value keeps the default alt color.",
+              "description": "impact, the most severe SnpEff/VEP consequence tier; svType, the structural-variant class; strand; score, a ramp; phaseSet, the FORMAT PS block, painting only under rows haplotype; or any record field, INFO.CLNSIG say, or a jexl expression over feature, whose values each paint one range color with a key. A record with no value keeps the default alt color.",
               "default": "",
               "if": {
                 "type": "null"
@@ -15685,7 +15685,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "x-closed": true,
       "properties": {
         "show": {
-          "description": "draw this part.",
+          "description": "draw this part: under \`inversions\`, the hatching over each block a species aligns on the strand opposite its other blocks on that chromosome; under \`frames\`, each species' CDS reading-frame strip from the adapter's \`framesAdapter\`.",
           "default": false,
           "if": {
             "type": "null"
