@@ -106,10 +106,9 @@ const callouts: Annotation[] = [
   {
     type: 'text',
     text: '84.7 kb deletion',
-    leader: true,
     fontSize: CALLOUT_FONT,
     anchor: { graphNode: DELETION_NODE, alignX: 'left', alignY: 'top' },
-    dx: -150,
+    dx: -270,
     dy: -130,
   },
 ]
