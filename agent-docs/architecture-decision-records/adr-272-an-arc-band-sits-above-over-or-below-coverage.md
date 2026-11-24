@@ -19,6 +19,11 @@ the same day, and step 5 of
 [ADR-232](adr-232-a-predicate-lives-where-what-it-selects-lives.md), which hid
 the sashimi placement row with coverage hidden.
 
+Amended 2026-11-18: the `sashimi` band is now `junctions`, so the slot below is
+`junctions.placement` and the modifiers are `junctions:`
+([ADR-231](adr-231-an-alignments-band-is-one-config-object.md), commit
+992e825a59).
+
 ## Context
 
 - **An arc band had two places.** Sashimi arcs drew over the coverage

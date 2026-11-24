@@ -3,7 +3,7 @@ status: Accepted
 summary: "A VCF adapter's `pedigreeLocation` gives samples family, parent, sex and relationship attributes, which label and band rows; the in-app Mendelian check and the assembly's `transmission` slot it read were removed before release, and bcftools `+mendelian2`'s `INFO/MERR` is colored and filtered as any INFO field"
 ---
 
-# ADR-279: A pedigree feeds a per-site Mendelian check, and the assembly states transmission
+# ADR-279: A pedigree gives samples family attributes, and bcftools' Mendelian check reads as any INFO field
 
 ## Status
 
