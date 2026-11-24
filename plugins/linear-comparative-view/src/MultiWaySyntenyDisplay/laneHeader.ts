@@ -195,7 +195,7 @@ function laneChanges(
 }
 
 export function changesTitle(anchor: string) {
-  return `Changes against ${anchor} of ${bpText(SPLIT_AT_GAP_BP)} or more. Not listed: smaller ones, any gap reaching past the window, and any gap holding a piece of the other strand, such as an inversion's breakpoints.`
+  return `Changes against ${anchor} of ${bpText(SPLIT_AT_GAP_BP)} or more. Not listed: smaller ones, any gap reaching past the window, any gap holding a piece of the other strand, such as an inversion's breakpoints, and any step back to anchor an earlier piece holds, as a copy's.`
 }
 
 /** Clamps, since a live pan can put the frame's `min` below zero. */

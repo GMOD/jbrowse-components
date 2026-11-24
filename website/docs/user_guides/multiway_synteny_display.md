@@ -47,8 +47,9 @@ Each lane has a separate scale, printed in its header:
   the anchor's scale prints nothing
 - **Changes chip:** deletions, insertions, stretches replaced
   (`122 kb replaced by 49 kb`) and inversions of 10 kb or more against the
-  anchor. A gap reaching past the window, or holding a piece of the other
-  strand, such as an inversion's breakpoints, states nothing
+  anchor. A gap reaching past the window, holding a piece of the other strand,
+  such as an inversion's breakpoints, or stepping back to anchor an earlier
+  piece holds, as a copy does, states nothing
 - **Ticks** fall at one interval shared by every lane
 - **`also at`** names a second stretch the window aligns to, a window or more
   away from the one the lane draws
@@ -57,7 +58,11 @@ A haplotype lane from a walk file draws every piece of the haplotype the window
 places, each a row of its own under the haplotype's name and contig: one on
 another contig, or a window or more along the same one. A lane placing
 alignments draws its own sequence as a grey bar under its ribbons, and a dashed
-line across a hole, where the bases either side are adjacent in the lane.
+line across a hole, where the bases either side are adjacent in the lane. Where
+no haplotype has sequence placed in the window, a line under the anchor says so.
+
+A pin or a hidden lane made on a piece holds for that piece's contig after a
+reload.
 
 A lane with no readable gene track (GFF3, GTF, BigBed or BED) on its assembly
 outlines gene spans from the table where it has them, labeled `no annotation`.
