@@ -3,6 +3,7 @@ import {
   laneGenome,
   laneOf,
   lanesPlacedIn,
+  nearestPiece,
   pieceContig,
 } from './copyLane.ts'
 import { rowAssembliesOf, sortedLanes } from './layoutMultiWay.ts'
@@ -239,9 +240,12 @@ export function laneRowsOf({
     keyOf,
     placeless,
   )
+  const held = new Set(rows.map(keyOf))
   const drawn = drawnLaneTest(
     heldPieces(selection, rows, keyOf),
-    heldPieces(hidden, rows, keyOf) ?? [],
+    hidden.flatMap(name =>
+      held.has(keyOf(name)) ? [name] : [nearestPiece(name, rows) ?? name],
+    ),
     keyOf,
   )
   return rows.filter(name => keyOf(name) !== anchorKey && drawn(name))

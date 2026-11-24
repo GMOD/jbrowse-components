@@ -1,4 +1,4 @@
-import { isPieceLane, pieceContig } from './copyLane.ts'
+import { isPieceLane, nearestPiece } from './copyLane.ts'
 
 /** the reader's pick of where a lane draws: a contig, and on it a block */
 export interface LanePlacePin {
@@ -28,21 +28,20 @@ export function isFlipPin(pin: LanePin): pin is LaneFlipPin {
   return 'flipped' in pin
 }
 
-/** Whether `pin` is the one `lane` holds of its kind under `anchor`. */
-function pinHolds(pin: LanePin, lane: string, anchor: string, keyOf: KeyOf) {
+/** Whether `pin` holds under `anchor`: a flip pin names the anchor it was made against, or none */
+function holdsUnder(pin: LanePin, anchor: string, keyOf: KeyOf) {
   return (
-    keyOf(pin.lane) === keyOf(lane) &&
-    (!isFlipPin(pin) ||
-      pin.anchor === undefined ||
-      keyOf(pin.anchor) === keyOf(anchor))
+    !isFlipPin(pin) ||
+    pin.anchor === undefined ||
+    keyOf(pin.anchor) === keyOf(anchor)
   )
 }
 
 /**
  * The row `pin` belongs to: the one spelled as the pin is, else one the pin
  * names by another spelling, since two spellings of an assembly can both be
- * rows, else, for a piece no row holds, named by another fetch, the first
- * row on its contig.
+ * rows, else, for a piece no row holds, named by another filing, the piece of
+ * its contig whose first base is nearest the name's.
  */
 export function pinnedRowOf(
   pin: LanePin,
@@ -50,19 +49,11 @@ export function pinnedRowOf(
   anchor: string,
   keyOf: KeyOf,
 ) {
-  const holds = (name: string) => pinHolds(pin, name, anchor, keyOf)
-  const contig = pieceContig(pin.lane)
-  return (
-    lanes.find(name => name === pin.lane && holds(name)) ??
-    lanes.find(holds) ??
-    (contig === undefined
-      ? undefined
-      : lanes.find(
-          name =>
-            pieceContig(name) === contig &&
-            pinHolds({ ...pin, lane: name }, name, anchor, keyOf),
-        ))
-  )
+  return holdsUnder(pin, anchor, keyOf)
+    ? (lanes.find(name => name === pin.lane) ??
+        lanes.find(name => keyOf(name) === keyOf(pin.lane)) ??
+        nearestPiece(pin.lane, lanes))
+    : undefined
 }
 
 /** The pins that hold under `anchor`, each naming its lane as `lanes` spell it. */

@@ -94,6 +94,28 @@ export function pieceContig(name: string) {
     : copyLaneName(assemblyName, refName)
 }
 
+/**
+ * The lane among `lanes` that a piece name from another filing stands for:
+ * the piece of its contig whose first base is nearest the name's
+ */
+export function nearestPiece(name: string, lanes: readonly string[]) {
+  const contig = pieceContig(name)
+  const base = laneOf(name).piece ?? 0
+  return contig === undefined
+    ? undefined
+    : lanes
+        .filter(lane => pieceContig(lane) === contig)
+        .reduce<string | undefined>(
+          (nearest, lane) =>
+            nearest === undefined ||
+            Math.abs((laneOf(lane).piece ?? 0) - base) <
+              Math.abs((laneOf(nearest).piece ?? 0) - base)
+              ? lane
+              : nearest,
+          undefined,
+        )
+}
+
 export function laneGenome(lane: string) {
   return laneOf(lane).assemblyName
 }

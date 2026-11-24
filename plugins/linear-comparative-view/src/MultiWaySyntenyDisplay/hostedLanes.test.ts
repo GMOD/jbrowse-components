@@ -5,6 +5,7 @@ import { SimpleFeature } from '@jbrowse/core/util'
 
 import {
   copyLaneFiling,
+  copyLaneName,
   groupsOfField,
   laneFieldOf,
   laneGenome,
@@ -483,6 +484,33 @@ describe('a piece keeps its name across a refetch', () => {
       expect(rows([named!])).not.toContain(lane)
     },
   )
+
+  test('R1M-06: a pin and a hide named by another filing take the one piece of their contig whose first base is nearest', () => {
+    const laid = layHosted(hostedWindow('R1M-06'))
+    const pieces = lanesOf(laid, 'HG00097.1')
+    expect(pieces).toHaveLength(2)
+    for (const piece of pieces) {
+      const { assemblyName, refName, piece: base } = laneOf(piece)
+      const named = copyLaneName(assemblyName, refName!, base! + 3000)
+      expect(laid.lanes).not.toContain(named)
+      const pin = { lane: named, refName: refName!, flipped: true }
+      expect(pinsInForceOf([pin], laid.lanes, 'hg38', name => name)).toEqual([
+        { ...pin, lane: piece },
+      ])
+      const rows = laneRowsOf({
+        groups: laid.groups,
+        placeless: [],
+        anchor: 'hg38',
+        preferred: [],
+        selection: undefined,
+        hidden: [named],
+        keyOf: name => name,
+      })
+      expect(rows.toSorted()).toEqual(
+        laid.lanes.filter(lane => lane !== piece).toSorted(),
+      )
+    }
+  })
 
   // the piece fits its rung exactly, so its frame re-centres as the pan moves
   // its ends: what survives is the lane, its pin and its previous decision
