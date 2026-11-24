@@ -32,8 +32,35 @@ const R248_LOCUS = 'chr17:7,674,220'
 // The Protein Browser's TP53 session without its alignment: the genome view
 // and the DNA-bound structure, coloured by AlphaMissense, half the width each.
 const hero = readSession('protein_browser_tp53.session.json')
+// CGG on the reverse strand: the first codon base is the higher coordinate
+const R248_CHANGES = [
+  { name: 'R248W (c.742C>T)', start: 7674220, color: '#d1007a' },
+  { name: 'R248G (c.742C>G)', start: 7674220, color: '#8a8f98' },
+  { name: 'R248Q (c.743G>A)', start: 7674219, color: '#d1007a' },
+  { name: 'R248L (c.743G>T)', start: 7674219, color: '#8a8f98' },
+  { name: 'R248P (c.743G>C)', start: 7674219, color: '#8a8f98' },
+]
+const R248_TRACK = {
+  type: 'FeatureTrack',
+  trackId: 'tp53-r248',
+  name: 'Codon 248 single-base missense changes',
+  assemblyNames: ['hg38'],
+  adapter: {
+    type: 'FromConfigAdapter',
+    features: R248_CHANGES.map((c, i) => ({
+      uniqueId: `r248-${i}`,
+      refName: 'chr17',
+      start: c.start,
+      end: c.start + 1,
+      name: c.name,
+      color: c.color,
+    })),
+  },
+}
+
 const heroSession = {
   ...hero,
+  sessionTracks: [R248_TRACK],
   highlights: [
     {
       assemblyName: 'hg38',
@@ -50,7 +77,15 @@ const heroSession = {
         ? {
             ...v,
             loc: 'chr17:7674176-7674266[rev]',
-            tracks: ['hg38-ncbiRefSeqSelect', 'hg38-clinvarMain'],
+            tracks: [
+              { trackId: 'hg38-ncbiRefSeqSelect', height: 60 },
+              {
+                trackId: 'tp53-r248',
+                type: 'LinearBasicDisplay',
+                height: 150,
+                encoding: { color: { value: "jexl:get(feature,'color')" } },
+              },
+            ],
           }
         : {
             ...v,
@@ -94,14 +129,13 @@ export const proteinVideos: VideoSpec[] = [
   {
     name: 'proteins/variant_to_residue',
     description:
-      'TP53 exon 7 in the genome view over ClinVar, beside the p53 core domain: hovering the R248 codon marks that residue in the fold',
+      'TP53 exon 7 in the genome view over the five single-base missense changes at codon 248, beside the p53 core domain: hovering the R248 codon marks that residue in the fold',
     goal: 'Hover a cancer-hotspot codon in the genome and see the residue in the structure',
     url: HERO_URL,
     viewportHeight: 700,
     readySelector: '[data-testid="protein-view-ready"]',
     readyTimeout: 300000,
     steps: [
-      { type: 'click', selector: '[aria-label="Hide legend"]' },
       { type: 'delay', ms: 4000 },
       { type: 'click', selector: 'button[title="Reset Zoom"]' },
       { type: 'delay', ms: 2500 },
