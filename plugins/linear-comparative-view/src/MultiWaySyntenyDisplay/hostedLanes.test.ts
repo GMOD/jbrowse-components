@@ -12,6 +12,8 @@ import {
 } from './copyLane.ts'
 import { decideLaneFrames, frameFromDecision } from './laneDecision.ts'
 import { changeLabel, changesInView, shownLaneChanges } from './laneHeader.ts'
+import { pinsInForceOf } from './lanePins.ts'
+import { laneRowsOf } from './laneSelection.ts'
 import { buildLanes, laneGeometry } from './laneStack.ts'
 import {
   clipGroupToAnchor,
@@ -434,6 +436,53 @@ describe('a piece keeps its name across a refetch', () => {
       expect(after.decisions.get(lane)?.refName).toBe(laneOf(lane).refName)
     }
   })
+
+  // a reload files with no filing before it, and a pan away and back loses
+  // the filing that named the piece
+  test.each([
+    ['a reload', () => undefined],
+    [
+      'a pan away and back',
+      (before: Laid) =>
+        layHosted(hostedWindow('R100k-09'), {
+          previous: before.decisions,
+          pieces: before.pieces,
+        }),
+    ],
+  ])(
+    'SV-ins-10k-100k: a flip pin and a hidden lane named by an earlier fetch hold after %s',
+    (_, away) => {
+      const before = layHosted(hostedWindow('SV-ins-10k-100k-fetchA'))
+      const [named] = lanesOf(before, 'HG00097.1')
+      const between = away(before)
+      const after = layHosted(hostedWindow('SV-ins-10k-100k-fetchB'), {
+        previous: between?.decisions,
+        pieces: between?.pieces,
+      })
+      const [lane] = lanesOf(after, 'HG00097.1')
+      expect(lane).not.toBe(named)
+      const pin = {
+        lane: named!,
+        refName: laneOf(named!).refName!,
+        flipped: true,
+      }
+      expect(pinsInForceOf([pin], after.lanes, 'hg38', name => name)).toEqual([
+        { ...pin, lane },
+      ])
+      const rows = (hidden: string[]) =>
+        laneRowsOf({
+          groups: after.groups,
+          placeless: [],
+          anchor: 'hg38',
+          preferred: [],
+          selection: undefined,
+          hidden,
+          keyOf: name => name,
+        })
+      expect(rows([])).toContain(lane)
+      expect(rows([named!])).not.toContain(lane)
+    },
+  )
 
   // the piece fits its rung exactly, so its frame re-centres as the pan moves
   // its ends: what survives is the lane, its pin and its previous decision

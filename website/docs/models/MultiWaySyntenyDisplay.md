@@ -57,6 +57,7 @@ From [BaseDisplay](../basedisplay): <span id="property-id">[`id`](../basedisplay
 | <span id="volatile-lanetransitions">**laneTransitions**</span><br><code>Map&lt;string, LaneTransition&gt;</code> |  |
 | <span id="volatile-lanemotionclockms">**laneMotionClockMs**</span><br><code>number</code> |  |
 | <span id="volatile-heldlaneorder">**heldLaneOrder**</span><br><code>HeldLaneOrder &#124; undefined</code> | the structure order graph haplotype lanes stack by while nothing pins one, with the window and lane selection it was worked out on |
+| <span id="volatile-filedpieces">**filedPieces**</span><br><code>readonly FiledPiece[]</code> | the piece lanes as last filed, whose names a refetch's pieces take |
 | <span id="volatile-lanemotionhalfway">**laneMotionHalfway**</span><br><code>ReadonlySet&lt;string&gt;</code> |  |
 | <span id="volatile-lanedragpx">**laneDragPx**</span><br><code>ReadonlyMap&lt;string, number&gt;</code> |  |
 
@@ -336,6 +337,7 @@ From [BaseDisplay](../basedisplay): <span id="method-renderingprops">[`rendering
 | --- | --- |
 | <span id="action-setfeatures">**setFeatures**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>(features, anchor?, lanes?, ops?, deletions?) =&gt; void</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>(features: Feature[], anchor?: string, lanes?: string[], ops?: AlignmentOpsById, deletions?: readonly WindowDeletion[]) =&gt; void</code></pre></dialog></span> |  |
 | <span id="action-cleardisplayspecificdata">**clearDisplaySpecificData**</span><br><code>() =&gt; void</code> | `GlobalFetchMixin`'s hook: the ortholog records were fetched for the old displayed regions. The lane fetches stay, each held under the key its own window stamps. |
+| <span id="action-setfiledpieces">**setFiledPieces**</span><br><code>(pieces: readonly FiledPiece[]) =&gt; void</code> |  |
 | <span id="action-begindescribinglanes">**beginDescribingLanes**</span><br><code>(names: string[]) =&gt; void</code> |  |
 | <span id="action-enddescribinglanes">**endDescribingLanes**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>(names: string[], descriptions: Record&lt;…&gt;) =&gt; void</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>(names: string[], descriptions: Record&lt;string, AssemblyDescription&gt;) =&gt; void</code></pre></dialog></span> |  |
 | <span id="action-forgetundescribedlanes">**forgetUndescribedLanes**</span><br><code>() =&gt; void</code> |  |

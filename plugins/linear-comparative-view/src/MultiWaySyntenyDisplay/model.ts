@@ -244,7 +244,7 @@ import type { SyntenyInstanceData } from '../LinearSyntenyRPC/buildSyntenyGeomet
 import type { WindowDeletion } from './MultiWayGetFeatures.ts'
 import type { AlignmentOpsById, LaneLinks } from './alignmentOps.ts'
 import type { MultiWaySyntenyDisplayConfigModel } from './configSchema.ts'
-import type { LaneAssemblies, LaneRowsField } from './copyLane.ts'
+import type { FiledPiece, LaneAssemblies, LaneRowsField } from './copyLane.ts'
 import type { GeneColors } from './geneColor.ts'
 import type { LaneGene } from './geneGlyph.ts'
 import type { FrozenLanes, LaneDecision } from './laneDecision.ts'
@@ -362,6 +362,7 @@ interface MultiWayVolatiles {
   laneMotionHalfway: ReadonlySet<string>
   laneDragPx: ReadonlyMap<string, number>
   heldLaneOrder: HeldLaneOrder | undefined
+  filedPieces: readonly FiledPiece[]
 }
 
 const NO_GENES: LaneGene[] = []
@@ -488,6 +489,11 @@ export function stateModelFactory(
        * one, with the window and lane selection it was worked out on
        */
       heldLaneOrder: undefined,
+      /**
+       * #volatile
+       * the piece lanes as last filed, whose names a refetch's pieces take
+       */
+      filedPieces: [],
       /** #volatile */
       laneMotionHalfway: new Set(),
       /** #volatile */
@@ -523,6 +529,10 @@ export function stateModelFactory(
          */
         clearDisplaySpecificData() {
           self.fetchedFeatures = undefined
+        },
+        /** #action */
+        setFiledPieces(pieces: readonly FiledPiece[]) {
+          self.filedPieces = pieces
         },
         /** #action */
         beginDescribingLanes(names: string[]) {

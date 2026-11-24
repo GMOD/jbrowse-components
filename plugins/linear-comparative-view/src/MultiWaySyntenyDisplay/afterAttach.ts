@@ -465,7 +465,32 @@ function installLaneDescriptions(self: MultiWaySyntenyDisplayModel) {
   )
 }
 
+/** a refetch's pieces take the names of the pieces filed before it */
+function installFiledPieces(self: MultiWaySyntenyDisplayModel) {
+  addDisposer(
+    self,
+    reaction(
+      () => self.filedGroups.pieces,
+      pieces => {
+        self.setFiledPieces(pieces)
+      },
+      {
+        equals: (a, b) =>
+          a.length === b.length &&
+          a.every(
+            (piece, i) =>
+              piece.lane === b[i]!.lane &&
+              piece.lo === b[i]!.lo &&
+              piece.hi === b[i]!.hi,
+          ),
+        name: 'MultiWayFiledPieces',
+      },
+    ),
+  )
+}
+
 export function doAfterAttach(self: MultiWaySyntenyDisplayModel) {
+  installFiledPieces(self)
   installClearHoverOnSurfaceMove(self, {
     transform: () => self.ribbonGeometry.targets,
     clear: () => {

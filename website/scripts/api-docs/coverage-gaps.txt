@@ -1072,6 +1072,7 @@ MultiWaySyntenyDisplay.selectFeature
 MultiWaySyntenyDisplay.selectHovered
 MultiWaySyntenyDisplay.selectionInk
 MultiWaySyntenyDisplay.setFeatures
+MultiWaySyntenyDisplay.setFiledPieces
 MultiWaySyntenyDisplay.setHideUnlabelled
 MultiWaySyntenyDisplay.setHoverTarget
 MultiWaySyntenyDisplay.setInlineLaneNames

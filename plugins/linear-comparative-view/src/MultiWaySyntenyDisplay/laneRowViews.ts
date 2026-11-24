@@ -95,6 +95,7 @@ export interface LaneRowInputs extends ConfigSlotSelf {
   hiddenLaneNames: readonly string[] | undefined
   lanePins: readonly LanePin[] | undefined
   heldLaneOrder: HeldLaneOrder | undefined
+  filedPieces: readonly FiledPiece[]
 }
 
 export type LaneGroupHost = ConfigSlotSelf &
@@ -150,9 +151,9 @@ export function laneGroupViews(self: LaneGroupHost) {
 }
 
 export function filedGroupViews(
-  self: ReturnType<typeof laneGroupViews> & Pick<LaneRowInputs, 'lgv'>,
+  self: ReturnType<typeof laneGroupViews> &
+    Pick<LaneRowInputs, 'lgv' | 'filedPieces'>,
 ) {
-  let lastPieces: readonly FiledPiece[] = []
   return {
     /**
      * #getter
@@ -160,7 +161,7 @@ export function filedGroupViews(
      * lanes the floor drops
      */
     get filedGroups() {
-      const filed = groupsOfField(
+      return groupsOfField(
         self.laneField,
         self.groupedFeatures,
         () => self.copyFiling(),
@@ -168,10 +169,8 @@ export function filedGroupViews(
           (bp, block) => bp + block.end - block.start,
           0,
         ),
-        lastPieces,
+        self.filedPieces,
       )
-      lastPieces = filed.pieces
-      return filed
     },
   }
 }

@@ -86,6 +86,14 @@ export function isPieceLane(lane: string) {
   return laneOf(lane).piece !== undefined
 }
 
+/** a piece lane's contig, as its copy lane is named; none for another lane */
+export function pieceContig(name: string) {
+  const { assemblyName, refName, piece } = laneOf(name)
+  return piece === undefined || refName === undefined
+    ? undefined
+    : copyLaneName(assemblyName, refName)
+}
+
 export function laneGenome(lane: string) {
   return laneOf(lane).assemblyName
 }

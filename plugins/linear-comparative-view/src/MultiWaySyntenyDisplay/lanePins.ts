@@ -1,4 +1,4 @@
-import { isPieceLane } from './copyLane.ts'
+import { isPieceLane, pieceContig } from './copyLane.ts'
 
 /** the reader's pick of where a lane draws: a contig, and on it a block */
 export interface LanePlacePin {
@@ -41,7 +41,8 @@ function pinHolds(pin: LanePin, lane: string, anchor: string, keyOf: KeyOf) {
 /**
  * The row `pin` belongs to: the one spelled as the pin is, else one the pin
  * names by another spelling, since two spellings of an assembly can both be
- * rows.
+ * rows, else, for a piece no row holds, named by another fetch, the first
+ * row on its contig.
  */
 export function pinnedRowOf(
   pin: LanePin,
@@ -50,8 +51,17 @@ export function pinnedRowOf(
   keyOf: KeyOf,
 ) {
   const holds = (name: string) => pinHolds(pin, name, anchor, keyOf)
+  const contig = pieceContig(pin.lane)
   return (
-    lanes.find(name => name === pin.lane && holds(name)) ?? lanes.find(holds)
+    lanes.find(name => name === pin.lane && holds(name)) ??
+    lanes.find(holds) ??
+    (contig === undefined
+      ? undefined
+      : lanes.find(
+          name =>
+            pieceContig(name) === contig &&
+            pinHolds({ ...pin, lane: name }, name, anchor, keyOf),
+        ))
   )
 }
 

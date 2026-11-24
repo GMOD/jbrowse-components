@@ -113,6 +113,7 @@ import type {
 } from './MultiWaySyntenyDisplay/alignmentOps.ts'
 import type { ConfigSlotSelf } from './MultiWaySyntenyDisplay/configSlotViews.ts'
 import type {
+  FiledPiece,
   LaneAssemblies,
   LaneRowsSetting,
 } from './MultiWaySyntenyDisplay/copyLane.ts'
@@ -385,6 +386,9 @@ const MultiWayTablesHost = types
     },
     get anchorRecordsLoaded() {
       return self.fetched !== undefined
+    },
+    get filedPieces(): readonly FiledPiece[] {
+      return []
     },
   }))
   .views(self => ({

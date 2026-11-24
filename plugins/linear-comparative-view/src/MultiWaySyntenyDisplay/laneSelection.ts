@@ -1,9 +1,9 @@
 import {
-  copyLaneName,
   isCopyLane,
   laneGenome,
   laneOf,
   lanesPlacedIn,
+  pieceContig,
 } from './copyLane.ts'
 import { rowAssembliesOf, sortedLanes } from './layoutMultiWay.ts'
 
@@ -193,13 +193,6 @@ export function laneColorOf(
   )
 }
 
-function contigOfPiece(name: string) {
-  const { assemblyName, refName, piece } = laneOf(name)
-  return piece === undefined || refName === undefined
-    ? undefined
-    : copyLaneName(assemblyName, refName)
-}
-
 /** a piece no row holds, named by another fetch, stands for its contig's rows */
 function heldPieces(
   selection: readonly string[] | undefined,
@@ -208,10 +201,10 @@ function heldPieces(
 ) {
   const held = new Set(rows.map(keyOf))
   return selection?.flatMap(name => {
-    const contig = contigOfPiece(name)
+    const contig = pieceContig(name)
     return contig === undefined || held.has(keyOf(name))
       ? [name]
-      : rows.filter(row => contigOfPiece(row) === contig)
+      : rows.filter(row => pieceContig(row) === contig)
   })
 }
 
@@ -246,7 +239,11 @@ export function laneRowsOf({
     keyOf,
     placeless,
   )
-  const drawn = drawnLaneTest(heldPieces(selection, rows, keyOf), hidden, keyOf)
+  const drawn = drawnLaneTest(
+    heldPieces(selection, rows, keyOf),
+    heldPieces(hidden, rows, keyOf) ?? [],
+    keyOf,
+  )
   return rows.filter(name => keyOf(name) !== anchorKey && drawn(name))
 }
 
