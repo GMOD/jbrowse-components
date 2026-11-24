@@ -2890,22 +2890,22 @@ export const figureFrames: Record<
   },
   "paper/hprc_lanes_graph_stacked_force": {
     "width": 930,
-    "height": 998,
+    "height": 1046,
     "timeout": 240000
   },
   "paper/hprc_rows_graph_vs_minimap2": {
     "width": 900,
-    "height": 700,
+    "height": 748,
     "timeout": 240000
   },
   "paper/cohort_views": {
     "width": 930,
-    "height": 1030,
+    "height": 1078,
     "timeout": 300000
   },
   "paper/drosophila_blocks": {
     "width": 870,
-    "height": 412,
+    "height": 460,
     "timeout": 240000
   },
   "grant/drosophila_blocks": {
@@ -2963,17 +2963,17 @@ export const figureFrames: Record<
   },
   "paper/ecoli_synteny": {
     "width": 870,
-    "height": 492,
+    "height": 508,
     "timeout": 120000
   },
   "paper/sv_junction_scaffold": {
     "width": 820,
-    "height": 552,
+    "height": 690,
     "timeout": 180000
   },
   "paper/sv_scaffold_overview": {
     "width": 820,
-    "height": 378,
+    "height": 478,
     "timeout": 180000
   },
   "pangenome/pggb_bubble_tier": {

@@ -48,7 +48,7 @@ export const paperEcoliSpecs: ScreenshotSpec[] = [
       config: `${FROZEN}/ecoli_pangenome/config.json`,
     }),
     viewportWidth: 870,
-    viewportHeight: 492,
+    viewportHeight: 508,
     readySelector: displayPainted('synteny_canvas'),
     readyTimeout: 120000,
     hideSelectors: [

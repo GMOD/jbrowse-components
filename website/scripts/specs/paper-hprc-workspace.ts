@@ -137,11 +137,8 @@ export const paperHprcWorkspaceSpecs: ScreenshotSpec[] = [
     url: session('force', 280, 50, 416, 'overlay'),
     // the paper prints it at its full text width
     viewportWidth: 930,
-    viewportHeight: 998,
-    hideSelectors: [
-      'header.MuiAppBar-root',
-      '[data-testid="graph-layout-switch"]',
-    ],
+    viewportHeight: 1046,
+    hideSelectors: ['[data-testid="graph-layout-switch"]'],
     ...gates,
     annotations: callouts,
   },

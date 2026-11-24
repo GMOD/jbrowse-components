@@ -1,7 +1,7 @@
 // The JBrowse 2 v5 paper's structural variant figure, which the paper repo
-// syncs from figures.lock. Its two parts are SV tutorial figures without the
-// app bar, narrower and with larger callouts, since the paper prints the figure
-// at its full text width.
+// syncs from figures.lock. Its two parts are SV tutorial figures, narrower and
+// with larger callouts, since the paper prints the figure at its full text
+// width. Part a keeps the app bar and part b, below it, does not repeat it.
 import {
   BAND,
   READS,
@@ -37,7 +37,7 @@ export const partLabel = (part: number, text: string): Annotation => ({
   },
 })
 
-const PAPER = { hideAppBar: true, hideViewHeader: true, width: 820 }
+const PAPER = { width: 820 }
 
 export const paperSvSpecs: ScreenshotSpec[] = [
   junctionScaffold('paper/sv_junction_scaffold', {
@@ -47,7 +47,6 @@ export const paperSvSpecs: ScreenshotSpec[] = [
     readRowHeight: 3,
     readArcs: 60,
     coverage: 20,
-    trim: 90,
     annotations: [
       rowLabel('hap1', 1, FONT),
       // facing each other over the chromosome boundary, above the read curves
@@ -74,8 +73,8 @@ export const paperSvSpecs: ScreenshotSpec[] = [
   }),
   scaffoldOverview('paper/sv_scaffold_overview', {
     ...PAPER,
+    hideAppBar: true,
     level: 60,
-    trim: 100,
     annotations: [
       rowLabel('hap2', 0, FONT),
       rowLabel('GRCh38', 1, FONT),

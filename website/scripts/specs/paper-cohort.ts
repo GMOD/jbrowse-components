@@ -145,9 +145,8 @@ export const paperCohortSpecs: ScreenshotSpec[] = [
     readyTimeout: 300000,
     // the paper prints it at its full text width
     viewportWidth: 930,
-    viewportHeight: 1030,
+    viewportHeight: 1078,
     hideSelectors: [
-      'header.MuiAppBar-root',
       // the HGSVC blurb sits where this chip draws
       '[data-testid="show_genotypes_chip"]',
       '[data-testid="graph-layout-switch"]',
