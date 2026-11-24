@@ -70,6 +70,7 @@ a file, and fails on a key it does not know.
 | `LDTrackDisplay`, `LinearHicDisplay`, `LinearMafDisplay`, `LinearManhattanDisplay`, `LinearMarkDisplay`, `LinearMultiRowFeatureDisplay`, `LinearWiggleDisplay`, `MultiWaySyntenyDisplay` | `mouseover` | dropped |
 | `LGVSyntenyDisplay` | `colorBy` | `encoding.color.field` |
 |  | `colorBy` (session), `colorBySetting` (session) | `encoding.color.field` |
+|  | `showArcs` (session) | dropped |
 | `LGVSyntenyDisplay`, `LinearAlignmentsDisplay` | `autoscale` | `coverage.encoding.y.scale.fenceQuantile` |
 |  | `featureHeight` | `pileup.mark.height` |
 |  | `hideMismatches` | `pileup.mismatches.show` |
@@ -91,6 +92,7 @@ a file, and fails on a key it does not know.
 |  | `hideMismatchesSetting` (session) | `pileup.mismatches.show` |
 |  | `PileupDisplay` (session) | `encoding.color.field`, `pileup.maxLayoutHeight` |
 |  | `scale` (session) | `coverage.encoding.y.scale.type` |
+|  | `showSoftClipping` (session) | `pileup.softclips.show` |
 |  | `SNPCoverageDisplay` (session) | `coverage.encoding.y.axis.grid`, `coverage.encoding.y.scale.type` |
 |  | `snpCovHeight` (session) | `coverage.height` |
 |  | `sortedBy` (session) | `sort.field`, `sort.pos`, `sort.refName` |
@@ -104,6 +106,7 @@ a file, and fails on a key it does not know.
 |  | type `LinearReadCloudDisplay` | `LinearAlignmentsDisplay` with `pileup.show: false`, `coverage.show: false`, `junctions.show: false`, `readConnections.show: true`, `readConnections.mark: "rule"` |
 |  | type `LinearSNPCoverageDisplay` | `LinearAlignmentsDisplay` with `pileup.show: false` |
 |  | `colorBy` (session), `colorBySetting` (session) | `encoding.color.field`, `pileup.bases.encoding.color.field`, `pileup.bases.show` |
+|  | `showArcs` (session) | `junctions.show` |
 | `LinearArcDisplay` | `color`, `renderer` | dropped |
 | `LinearBasicDisplay` | `color3` | `utrs.encoding.color.value` |
 |  | `containerTypes` | `containers.types` |
@@ -182,12 +185,16 @@ a file, and fails on a key it does not know.
 |  | `scale` (session) | `encoding.y.scale.type` |
 |  | `summaryScoreMode` (session) | `encoding.y.field`, `mark.extent` |
 | `MultiLinearWiggleDisplay` | `defaultRendering` | `mark.interpolate`, `mark.type`, `rows.field` on `LinearWiggleDisplay` |
+| `CircularView` | `trackSelectorType` (session) | dropped |
 | `DotplotView` | `alpha` (session) | `encoding.opacity` |
 |  | `colorBy` (session) | `encoding.color.field` |
 |  | `drawCigar` (session) | `indels.show` |
+|  | `trackSelectorType` (session) | dropped |
+| `LinearGenomeView` | `trackSelectorType` (session) | dropped |
 | `LinearSyntenyView` | `alpha` (session) | `encoding.opacity` |
 |  | `colorBy` (session) | `encoding.color.field` |
 |  | `drawCigar` (session) | `indels.show` |
 |  | `tracks` (session) | `levels[0].tracks` |
+|  | `trackSelectorType` (session) | dropped |
 
 <!-- END GENERATED V4_CONFIG_MIGRATION -->

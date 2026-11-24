@@ -12711,7 +12711,8 @@ export const configManifest: ConfigManifest = {
         "bpPerPx",
         "colorByCDS",
         "offsetPx",
-        "showCytobandsSetting"
+        "showCytobandsSetting",
+        "trackSelectorType"
       ]
     },
     "CircularView": {
@@ -12746,6 +12747,9 @@ export const configManifest: ConfigManifest = {
         "autoDiagonalize",
         "displayedRegionNames",
         "tracks"
+      ],
+      "passThrough": [
+        "trackSelectorType"
       ]
     },
     "DotplotView": {
@@ -12780,7 +12784,8 @@ export const configManifest: ConfigManifest = {
       "passThrough": [
         "alpha",
         "colorBy",
-        "drawCigar"
+        "drawCigar",
+        "trackSelectorType"
       ]
     },
     "LinearSyntenyView": {
@@ -12819,7 +12824,8 @@ export const configManifest: ConfigManifest = {
       "passThrough": [
         "alpha",
         "colorBy",
-        "drawCigar"
+        "drawCigar",
+        "trackSelectorType"
       ],
       "builtTracksAt": "levels[0].tracks"
     },
@@ -12911,7 +12917,9 @@ export const configManifest: ConfigManifest = {
       "filterBySetting",
       "hideMismatchesSetting",
       "scale",
+      "showArcs",
       "showLegend",
+      "showSoftClipping",
       "snpCovHeight",
       "sortedBy",
       "trackMaxHeight"
@@ -12930,7 +12938,9 @@ export const configManifest: ConfigManifest = {
       "filterBySetting",
       "hideMismatchesSetting",
       "scale",
+      "showArcs",
       "showLegend",
+      "showSoftClipping",
       "snpCovHeight",
       "sortedBy",
       "trackMaxHeight"

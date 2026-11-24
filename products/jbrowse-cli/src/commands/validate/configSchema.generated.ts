@@ -25643,7 +25643,15 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "deprecated": true,
           "description": "Legacy display-instance key: a migration lifts it onto the setting that replaced it."
         },
+        "showArcs": {
+          "deprecated": true,
+          "description": "Legacy display-instance key: a migration lifts it onto the setting that replaced it."
+        },
         "showLegend": {
+          "deprecated": true,
+          "description": "Legacy display-instance key: a migration lifts it onto the setting that replaced it."
+        },
+        "showSoftClipping": {
           "deprecated": true,
           "description": "Legacy display-instance key: a migration lifts it onto the setting that replaced it."
         },
@@ -25969,7 +25977,15 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "deprecated": true,
           "description": "Legacy display-instance key: a migration lifts it onto the setting that replaced it."
         },
+        "showArcs": {
+          "deprecated": true,
+          "description": "Legacy display-instance key: a migration lifts it onto the setting that replaced it."
+        },
         "showLegend": {
+          "deprecated": true,
+          "description": "Legacy display-instance key: a migration lifts it onto the setting that replaced it."
+        },
+        "showSoftClipping": {
           "deprecated": true,
           "description": "Legacy display-instance key: a migration lifts it onto the setting that replaced it."
         },
@@ -28493,6 +28509,10 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         "colorByCDS": {
           "deprecated": true,
           "description": "Legacy spelling the view's own preProcessSnapshot converts."
+        },
+        "trackSelectorType": {
+          "deprecated": true,
+          "description": "Legacy spelling the view's own preProcessSnapshot converts."
         }
       }
     },
@@ -29566,6 +29586,10 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         },
         "autoDiagonalize": {
           "description": "Launch key, resolved by the CircularView launcher on open."
+        },
+        "trackSelectorType": {
+          "deprecated": true,
+          "description": "Legacy spelling the view's own preProcessSnapshot converts."
         }
       }
     },
@@ -29986,6 +30010,10 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         "drawCigar": {
           "deprecated": true,
           "description": "Legacy spelling the view's own preProcessSnapshot converts."
+        },
+        "trackSelectorType": {
+          "deprecated": true,
+          "description": "Legacy spelling the view's own preProcessSnapshot converts."
         }
       }
     },
@@ -30378,6 +30406,10 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "description": "Legacy spelling the view's own preProcessSnapshot converts."
         },
         "drawCigar": {
+          "deprecated": true,
+          "description": "Legacy spelling the view's own preProcessSnapshot converts."
+        },
+        "trackSelectorType": {
           "deprecated": true,
           "description": "Legacy spelling the view's own preProcessSnapshot converts."
         }

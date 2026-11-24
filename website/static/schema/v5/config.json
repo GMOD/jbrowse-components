@@ -24719,7 +24719,15 @@
           "deprecated": true,
           "description": "Legacy display-instance key: a migration lifts it onto the setting that replaced it."
         },
+        "showArcs": {
+          "deprecated": true,
+          "description": "Legacy display-instance key: a migration lifts it onto the setting that replaced it."
+        },
         "showLegend": {
+          "deprecated": true,
+          "description": "Legacy display-instance key: a migration lifts it onto the setting that replaced it."
+        },
+        "showSoftClipping": {
           "deprecated": true,
           "description": "Legacy display-instance key: a migration lifts it onto the setting that replaced it."
         },
@@ -25035,7 +25043,15 @@
           "deprecated": true,
           "description": "Legacy display-instance key: a migration lifts it onto the setting that replaced it."
         },
+        "showArcs": {
+          "deprecated": true,
+          "description": "Legacy display-instance key: a migration lifts it onto the setting that replaced it."
+        },
         "showLegend": {
+          "deprecated": true,
+          "description": "Legacy display-instance key: a migration lifts it onto the setting that replaced it."
+        },
+        "showSoftClipping": {
           "deprecated": true,
           "description": "Legacy display-instance key: a migration lifts it onto the setting that replaced it."
         },
@@ -27413,6 +27429,10 @@
         "colorByCDS": {
           "deprecated": true,
           "description": "Legacy spelling the view's own preProcessSnapshot converts."
+        },
+        "trackSelectorType": {
+          "deprecated": true,
+          "description": "Legacy spelling the view's own preProcessSnapshot converts."
         }
       }
     },
@@ -28437,6 +28457,10 @@
         },
         "autoDiagonalize": {
           "description": "Launch key, resolved by the CircularView launcher on open."
+        },
+        "trackSelectorType": {
+          "deprecated": true,
+          "description": "Legacy spelling the view's own preProcessSnapshot converts."
         }
       }
     },
@@ -28850,6 +28874,10 @@
         "drawCigar": {
           "deprecated": true,
           "description": "Legacy spelling the view's own preProcessSnapshot converts."
+        },
+        "trackSelectorType": {
+          "deprecated": true,
+          "description": "Legacy spelling the view's own preProcessSnapshot converts."
         }
       }
     },
@@ -29235,6 +29263,10 @@
           "description": "Legacy spelling the view's own preProcessSnapshot converts."
         },
         "drawCigar": {
+          "deprecated": true,
+          "description": "Legacy spelling the view's own preProcessSnapshot converts."
+        },
+        "trackSelectorType": {
           "deprecated": true,
           "description": "Legacy spelling the view's own preProcessSnapshot converts."
         }
