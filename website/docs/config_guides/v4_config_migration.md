@@ -123,12 +123,12 @@ a file, and fails on a key it does not know.
 | `LinearBasicDisplay`, `LinearHicDisplay`, `LinearManhattanDisplay`, `LinearMarkDisplay`, `LinearMultiRowFeatureDisplay`, `LinearVariantDisplay` | `jexlFilters` | `filter` |
 | `LinearBasicDisplay`, `LinearVariantDisplay` | `color1` | `encoding.color.value` |
 |  | `jexlFiltersSetting` (session) | `filter` |
-| `LinearHicDisplay` | `activeNormalization` (session) | `data.normalization` |
+| `LinearHicDisplay` | `fetchSizeLimit` | dropped |
+|  | `activeNormalization` (session) | `data.normalization` |
 |  | `colorScheme` (session) | `encoding.color.scale.reverse`, `encoding.color.scale.scheme` |
 |  | `useLogScale` (session) | `encoding.color.scale.type` |
 |  | `mode` (session) | dropped |
-| `LinearHicDisplay`, `LinearWiggleDisplay` | `fetchSizeLimit` | dropped |
-|  | `resolution` (session) | `data.resolution` |
+| `LinearHicDisplay`, `LinearWiggleDisplay` | `resolution` (session) | `data.resolution` |
 | `LinearMafDisplay`, `LinearVariantDisplay`, `LinearWiggleDisplay` | `subtreeFilter` (session) | `rows.kept` |
 |  | `treeAreaWidth` (session) | `rows.axis.width` |
 | `LinearMarkDisplay` | type `LinearArcDisplay` | `LinearMarkDisplay` with `marks: [{"mark":"link"}]` |

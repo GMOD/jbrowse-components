@@ -385,14 +385,19 @@ const LIFTED_DISPLAY_KEYS: Record<string, readonly string[]>
 
 ### LIFTED_VIEW_KEYS
 
-The view keys `liftSyntenyViewSettings` converts, which the linear synteny and
-dotplot views name as their launch keys' `passThrough` so a validator accepts
-them.
+The view keys `liftSyntenyViewSettings` converts or drops, which the linear
+synteny and dotplot views name as their launch keys' `passThrough` so a
+validator accepts them.
 
 ```ts
 import { LIFTED_VIEW_KEYS } from '@jbrowse/synteny-core'
 
-const LIFTED_VIEW_KEYS: readonly ['colorBy', 'alpha', 'drawCigar']
+const LIFTED_VIEW_KEYS: readonly [
+  'colorBy',
+  'alpha',
+  'drawCigar',
+  'trackSelectorType',
+]
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/synteny-core/src/liftSyntenyViewSettings.ts)
@@ -404,7 +409,8 @@ view: `colorBy` (a mode string), `alpha` and `minAlignmentLength` sat on each
 synteny display, and land as `encoding.color`, `encoding.opacity` and a `filter`
 predicate on `length`. An older genomes-portal launch link puts the mode string
 on the view itself, which lifts the same way. The dotplot's own `drawCigar`
-lands as the `indels` part.
+lands as the `indels` part. `trackSelectorType`, which every v2.10–v4.3.0 view
+saved and nothing read, drops.
 
 ```ts
 import { liftSyntenyViewSettings } from '@jbrowse/synteny-core'

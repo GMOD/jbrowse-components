@@ -103,6 +103,8 @@ Display slots go on a display entry: `"displays": [{ "type": "LinearWiggleDispla
 | <span id="slot-data">**data**</span><br>[WiggleData](../wiggledata) | What the fetch reads, a [](/docs/config/wiggledata) object: `resolution` is the points per pixel asked of a tiered file. |
 | <span id="slot-legend">**legend**</span><br>[Legend](../legend) | The key: density's score color ramp, a threshold's bands, or the source colors where several share one plot. |
 | <span id="slot-height">**height**</span><br>[`number`](/docs/config_guides/slot_types#number) = <code>100</code> | default height for the track |
+| <span id="slot-fetchsizelimit">**fetchSizeLimit**</span><br>[`number`](/docs/config_guides/slot_types#number) = <code>1000000</code> | bytes a region may fetch before the display asks first; an adapter that sets its own limit takes precedence over this<br>_advanced_ |
+| <span id="slot-forceload">**forceLoad**</span><br>[`boolean`](/docs/config_guides/slot_types#boolean) = <code>false</code> | Declarative equivalent of the "Force load" button on the "too much data" banner: when true the display always renders, however large the region or dense the features. Off by default (the gate guards against huge downloads). Set it on a view with no user interaction, such as an embedded or notebook view or a screenshot, where the region is known and should draw without a click.<br>_advanced_ |
 | <span id="slot-origin">**origin**</span><br>[`number`](/docs/config_guides/slot_types#number) = <code>0</code> | The value bars grow from and a line drops to across a gap; a threshold color scale with no `domain` cut splits its two colors there |
 
 ## Retired keys
@@ -114,7 +116,6 @@ An older config may still write these. Each loads without an error, and `jbrowse
 | --- | --- |
 | `maxFeatureScreenDensity` | ignored |
 | `maxDisplayedBpPerPx` | ignored |
-| `fetchSizeLimit` | ignored |
 | `mouseover` | ignored |
 | `jexlFilters` | moved into a current slot |
 | `displayCrossHatches` | moved into a current slot |

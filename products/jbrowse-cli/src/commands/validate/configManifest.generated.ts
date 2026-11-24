@@ -8021,6 +8021,14 @@ export const configManifest: ConfigManifest = {
           "type": "number"
         },
         {
+          "name": "fetchSizeLimit",
+          "type": "number"
+        },
+        {
+          "name": "forceLoad",
+          "type": "boolean"
+        },
+        {
           "name": "encoding",
           "type": "WiggleEncodingConfigurationSchema",
           "subSlots": [
@@ -8266,7 +8274,6 @@ export const configManifest: ConfigManifest = {
       "legacyKeys": [
         "maxFeatureScreenDensity",
         "maxDisplayedBpPerPx",
-        "fetchSizeLimit",
         "mouseover",
         "jexlFilters",
         "displayCrossHatches",

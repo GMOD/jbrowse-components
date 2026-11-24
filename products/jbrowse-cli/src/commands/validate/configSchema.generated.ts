@@ -14951,6 +14951,26 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "type": "number"
           }
         },
+        "fetchSizeLimit": {
+          "description": "bytes a region may fetch before the display asks first; an adapter that sets its own limit takes precedence over this.",
+          "default": 1000000,
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "number"
+          }
+        },
+        "forceLoad": {
+          "description": "Declarative equivalent of the \\"Force load\\" button on the \\"too much data\\" banner: when true the display always renders, however large the region or dense the features. Off by default (the gate guards against huge downloads). Set it on a view with no user interaction, such as an embedded or notebook view or a screenshot, where the region is known and should draw without a click.",
+          "default": false,
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "boolean"
+          }
+        },
         "encoding": {
           "if": {
             "type": "null"
@@ -14990,10 +15010,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "description": "Legacy key: dropped when the config loads, since nothing reads it now."
         },
         "maxDisplayedBpPerPx": {
-          "deprecated": true,
-          "description": "Legacy key: dropped when the config loads, since nothing reads it now."
-        },
-        "fetchSizeLimit": {
           "deprecated": true,
           "description": "Legacy key: dropped when the config loads, since nothing reads it now."
         },
@@ -18073,6 +18089,9 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
                   "$ref": "#/$defs/LinearBasicDisplaySlots/properties/forceLoad"
                 },
                 {
+                  "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/forceLoad"
+                },
+                {
                   "$ref": "#/$defs/LinearManhattanDisplaySlots/properties/forceLoad"
                 },
                 {
@@ -20129,6 +20148,26 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
                 }
               ]
             },
+            "fetchSizeLimit": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/fetchSizeLimit"
+                },
+                {
+                  "$ref": "#/$defs/LinearMarkDisplaySlots/properties/fetchSizeLimit"
+                }
+              ]
+            },
+            "forceLoad": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/forceLoad"
+                },
+                {
+                  "$ref": "#/$defs/LinearMarkDisplaySlots/properties/forceLoad"
+                }
+              ]
+            },
             "encoding": {
               "anyOf": [
                 {
@@ -20183,16 +20222,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
                 }
               ],
               "deprecated": true
-            },
-            "fetchSizeLimit": {
-              "anyOf": [
-                {
-                  "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/fetchSizeLimit"
-                },
-                {
-                  "$ref": "#/$defs/LinearMarkDisplaySlots/properties/fetchSizeLimit"
-                }
-              ]
             },
             "mouseover": {
               "anyOf": [
@@ -20255,9 +20284,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "defaultRendering": {
               "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/defaultRendering",
               "deprecated": true
-            },
-            "forceLoad": {
-              "$ref": "#/$defs/LinearMarkDisplaySlots/properties/forceLoad"
             },
             "marks": {
               "$ref": "#/$defs/LinearMarkDisplaySlots/properties/marks"
@@ -20502,6 +20528,26 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
                 }
               ]
             },
+            "fetchSizeLimit": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/fetchSizeLimit"
+                },
+                {
+                  "$ref": "#/$defs/LinearMarkDisplaySlots/properties/fetchSizeLimit"
+                }
+              ]
+            },
+            "forceLoad": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/forceLoad"
+                },
+                {
+                  "$ref": "#/$defs/LinearMarkDisplaySlots/properties/forceLoad"
+                }
+              ]
+            },
             "encoding": {
               "anyOf": [
                 {
@@ -20556,16 +20602,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
                 }
               ],
               "deprecated": true
-            },
-            "fetchSizeLimit": {
-              "anyOf": [
-                {
-                  "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/fetchSizeLimit"
-                },
-                {
-                  "$ref": "#/$defs/LinearMarkDisplaySlots/properties/fetchSizeLimit"
-                }
-              ]
             },
             "mouseover": {
               "anyOf": [
@@ -20628,9 +20664,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "defaultRendering": {
               "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/defaultRendering",
               "deprecated": true
-            },
-            "forceLoad": {
-              "$ref": "#/$defs/LinearMarkDisplaySlots/properties/forceLoad"
             },
             "marks": {
               "$ref": "#/$defs/LinearMarkDisplaySlots/properties/marks"
@@ -20860,6 +20893,12 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "height": {
               "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/height"
             },
+            "fetchSizeLimit": {
+              "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/fetchSizeLimit"
+            },
+            "forceLoad": {
+              "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/forceLoad"
+            },
             "encoding": {
               "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/encoding"
             },
@@ -20878,10 +20917,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             },
             "maxDisplayedBpPerPx": {
               "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/maxDisplayedBpPerPx",
-              "deprecated": true
-            },
-            "fetchSizeLimit": {
-              "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/fetchSizeLimit",
               "deprecated": true
             },
             "mouseover": {
