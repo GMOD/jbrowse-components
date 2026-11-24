@@ -208,8 +208,8 @@ describe('plain feature adapter fallback', () => {
 
     const [first] = await run({})
 
-    expect(first!.sources.map(({ name, hap1 }) => ({ name, hap1 }))).toEqual([
-      { name: 'b', hap1: '22 kb deletion' },
+    expect(first!.sources).toEqual([
+      expect.objectContaining({ name: 'b', hap1: '22 kb deletion' }),
     ])
     expect(scoresOf(first!, 'b')).toEqual([2])
     expect(first!.warnings).toEqual(['a is not in the table'])
