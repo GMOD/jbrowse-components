@@ -339,3 +339,63 @@ test.each([
     expect.arrayContaining(['scale', 'constraints', 'displayCrossHatches']),
   )
 })
+
+// A v4.3.0 instance as a session loads it: its state lifted, then its retired
+// type's bands, onto the display's config
+function v4Conf(v4: Record<string, unknown>) {
+  const pluginManager = new PluginManager([new AlignmentsPlugin()])
+  pluginManager.createPluggableElements()
+  pluginManager.configure()
+  const displayType = pluginManager.getDisplayType('LinearAlignmentsDisplay')
+  const lifted = retiredState.lift(v4)
+  const retired = displayType.retiredTypes.find(r => r.type === v4.type)
+  return displayType.configSchema.create({
+    type: 'LinearAlignmentsDisplay',
+    displayId: 'd',
+    ...(retired?.migrate?.(lifted) ?? lifted),
+  })
+}
+
+// v4.3.0's pileup held "Show soft clipping" and its SNP coverage "Show sashimi
+// arcs" as instance state
+test('v4.3.0 soft clipping and arcs lift off the nested sub-nodes', () => {
+  const conf = v4Conf({
+    type: 'LinearAlignmentsDisplay',
+    configuration: 't-LinearAlignmentsDisplay',
+    PileupDisplay: {
+      type: 'LinearPileupDisplay',
+      configuration: 't-LinearAlignmentsDisplay-LinearPileupDisplay',
+      showSoftClipping: true,
+    },
+    SNPCoverageDisplay: {
+      type: 'LinearSNPCoverageDisplay',
+      configuration: 't-LinearAlignmentsDisplay-LinearSNPCoverageDisplay',
+      showArcs: false,
+    },
+  })
+  expect(readConfObject(conf, ['pileup', 'softclips', 'show'])).toBe(true)
+  expect(readConfObject(conf, ['junctions', 'show'])).toBe(false)
+  expect(retiredState.keys).toEqual(
+    expect.arrayContaining(['showSoftClipping', 'showArcs']),
+  )
+})
+
+test("a standalone v4.3.0 pileup's soft clipping lifts", () => {
+  const conf = v4Conf({
+    type: 'LinearPileupDisplay',
+    configuration: 't-LinearPileupDisplay',
+    showSoftClipping: true,
+  })
+  expect(readConfObject(conf, ['pileup', 'softclips', 'show'])).toBe(true)
+  expect(readConfObject(conf, ['coverage', 'show'])).toBe(false)
+})
+
+test("a standalone v4.3.0 SNP coverage's hidden arcs stay hidden", () => {
+  const conf = v4Conf({
+    type: 'LinearSNPCoverageDisplay',
+    configuration: 't-LinearSNPCoverageDisplay',
+    showArcs: false,
+  })
+  expect(readConfObject(conf, ['junctions', 'show'])).toBe(false)
+  expect(readConfObject(conf, ['pileup', 'show'])).toBe(false)
+})

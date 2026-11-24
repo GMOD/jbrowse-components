@@ -365,6 +365,10 @@ const INSTANCE_SLOTS: Record<string, (value: unknown) => DisplayEntry> = {
   hideMismatchesSetting: value => ({
     pileup: { mismatches: { show: !value } },
   }),
+  showSoftClipping: value =>
+    typeof value === 'boolean'
+      ? { pileup: { softclips: { show: value } } }
+      : {},
   // the read cloud's "Show singletons" and "Show proper pairs"
   drawSingletons: value =>
     value === false ? { filter: { alone: 'exclude' } } : {},
@@ -379,12 +383,14 @@ const INSTANCE_SLOTS: Record<string, (value: unknown) => DisplayEntry> = {
 const NESTED_SUBNODES = ['PileupDisplay', 'SNPCoverageDisplay']
 
 // v4.3.0 built the SNP coverage display on the wiggle display, whose axis
-// state the coverage band's y scale took over
-const COVERAGE_AXIS_KEYS = [
+// state the coverage band's y scale took over; its sashimi arcs are the
+// junctions band
+const COVERAGE_STATE_KEYS = [
   'scale',
   'autoscale',
   'constraints',
   'displayCrossHatches',
+  'showArcs',
 ]
 const coverageScaleOf = valueScaleOf(COVERAGE_Y_PATHS.members)
 const { displayCrossHatches: coverageGridOf } = retiredAxisSpellings(
@@ -402,11 +408,16 @@ function mergedTrees(a: DisplayEntry, b: DisplayEntry): DisplayEntry {
   return out
 }
 
-function coverageAxisOf(source: DisplayEntry) {
+function coverageStateOf(source: DisplayEntry) {
   return mergedTrees(
-    coverageScaleOf(source),
-    typeof source.displayCrossHatches === 'boolean'
-      ? coverageGridOf(source.displayCrossHatches)
+    mergedTrees(
+      coverageScaleOf(source),
+      typeof source.displayCrossHatches === 'boolean'
+        ? coverageGridOf(source.displayCrossHatches)
+        : {},
+    ),
+    typeof source.showArcs === 'boolean'
+      ? { junctions: { show: source.showArcs } }
       : {},
   )
 }
@@ -427,7 +438,7 @@ function instanceSlotsOf(source: DisplayEntry) {
 export const retiredState: RetiredDisplayState = {
   keys: [
     ...Object.keys(INSTANCE_SLOTS),
-    ...COVERAGE_AXIS_KEYS,
+    ...COVERAGE_STATE_KEYS,
     ...NESTED_SUBNODES,
   ],
   lift: instance => {
@@ -436,10 +447,10 @@ export const retiredState: RetiredDisplayState = {
     const { filter, ...slots } = underEntry(
       underEntry(
         mergedTrees(
-          coverageAxisOf(
+          coverageStateOf(
             isObject(SNPCoverageDisplay) ? SNPCoverageDisplay : {},
           ),
-          coverageAxisOf(instance),
+          coverageStateOf(instance),
         ),
         subNode ? instanceSlotsOf(subNode) : {},
       ),
