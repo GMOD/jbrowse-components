@@ -204,16 +204,18 @@ describe('a modifier lands only where the display declares its slot', () => {
   })
 
   test('force: is skipped unsaid on a display that never gates', () => {
-    for (const displayType of ['LinearWiggleDisplay', 'LinearHicDisplay']) {
+    expect(
+      buildDisplaySnapshot('LinearHicDisplay', ['force:true'], warn).snap,
+    ).toEqual({})
+    expect(warn).not.toHaveBeenCalled()
+    for (const displayType of [
+      'LinearAlignmentsDisplay',
+      'LinearWiggleDisplay',
+    ]) {
       expect(
         buildDisplaySnapshot(displayType, ['force:true'], warn).snap,
-      ).toEqual({})
+      ).toEqual({ forceLoad: true })
     }
-    expect(warn).not.toHaveBeenCalled()
-    expect(
-      buildDisplaySnapshot('LinearAlignmentsDisplay', ['force:true'], warn)
-        .snap,
-    ).toEqual({ forceLoad: true })
   })
 
   test('the same modifiers still write where the display declares them', () => {
