@@ -17,8 +17,11 @@ inputs:
     required: true
 
 # One copy of the upload order and cache headers for the per-ref deploy in
-# push.yml and the latest/ deploy in release.yml. Two copies had drifted:
-# latest/ shipped source maps and never pruned a chunk.
+# push.yml and the latest/ deploy in release.yml.
+#
+# Source maps ship beside their chunks and are pruned with them: the error
+# report dialog resolves a user's stack through them, and without them every
+# report from jbrowse.org arrives as minified frames.
 #
 # The sync carries all of test_data, unlike the zip: the docs' and gallery's
 # live links are `<code base>?config=test_data/…`, so they resolve out of what
@@ -42,8 +45,8 @@ runs:
         DEST=s3://jbrowse.org/$PREFIX
         delete=()
         if [ "$DELETE" = true ]; then delete=(--delete); fi
-        aws s3 sync --size-only --exclude="*.map" --cache-control "public, max-age=31536000, immutable" static "$DEST/static"
-        aws s3 sync "${delete[@]}" --exclude="*.map" --exclude="static/*" --exclude=index.html --exclude=config.json . "$DEST"
+        aws s3 sync --size-only --cache-control "public, max-age=31536000, immutable" static "$DEST/static"
+        aws s3 sync "${delete[@]}" --exclude="static/*" --exclude=index.html --exclude=config.json . "$DEST"
         aws s3 cp --cache-control no-cache config.json "$DEST/config.json"
         aws s3 cp --cache-control no-cache index.html "$DEST/index.html"
     - uses: ./.github/actions/prune-s3-chunks

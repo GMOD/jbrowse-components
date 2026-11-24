@@ -40,7 +40,7 @@ runs:
         cutoff=$(date -u -d '30 days ago' +%Y%m%dT%H%M%SZ)
         cutoff_iso=$(date -u -d '30 days ago' +%Y-%m-%dT%H:%M:%SZ)
 
-        find . -type f ! -name '*.map' | sed "s|^\./|$PREFIX|" | sort > "$work/current.txt"
+        find . -type f | sed "s|^\./|$PREFIX|" | sort > "$work/current.txt"
         if [ ! -s "$work/current.txt" ]; then
           echo "::error::No chunks under $PWD; refusing to prune $PREFIX against an empty build."
           exit 1
