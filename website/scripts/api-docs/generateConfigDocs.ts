@@ -1077,6 +1077,17 @@ function linkSlotSchemas(configs: ConfigWithHeader[], index: ConfigIndex) {
     string,
     { name: string; page: string; firstSlot: string }
   >()
+  const declaredByDerived = new Map<Item, { type: string }>()
+  for (const config of configs) {
+    for (const base of collectBaseConfigs(config, index)) {
+      for (const slot of base.slots) {
+        const declared = manifestSlot(config.header.name, slot.name)
+        if (declared && !declaredByDerived.has(slot)) {
+          declaredByDerived.set(slot, declared)
+        }
+      }
+    }
+  }
   for (const config of configs) {
     const { header, slots } = config
     const pageSlots = [
@@ -1101,7 +1112,9 @@ function linkSlotSchemas(configs: ConfigWithHeader[], index: ConfigIndex) {
         slot.schemaPage = {
           name: schema.header.name,
           id: schema.header.id,
-          list: declared ? declared.type.endsWith('[]') : !!list,
+          list:
+            (declared ?? declaredByDerived.get(slot))?.type.endsWith('[]') ??
+            !!list,
         }
       }
       if (first) {
