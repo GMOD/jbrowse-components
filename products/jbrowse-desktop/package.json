@@ -92,7 +92,7 @@
     "@jbrowse/text-indexing-core": "workspace:^",
     "@mui/icons-material": "catalog:",
     "@mui/material": "catalog:",
-    "@mui/system": "^9.5.0",
+    "@mui/system": "^9.6.0",
     "electron-updater": "^6.8.11",
     "mobx": "catalog:",
     "mobx-react": "catalog:",
@@ -107,7 +107,7 @@
     "electron": "^45.4.1",
     "electron-chromedriver": "^45.4.1",
     "esbuild": "^0.28.2",
-    "selenium-webdriver": "^4.53.0"
+    "selenium-webdriver": "^4.54.0"
   },
   "browserslist": [
     "last 1 chrome version"

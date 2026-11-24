@@ -13,8 +13,8 @@ packages:
 # example-plugins/score-example keeps literals, since plugin authors copy it.
 catalog:
   '@jbrowse/mobx-state-tree': ^6.10.1
-  '@mui/icons-material': ^9.5.0
-  '@mui/material': ^9.5.0
+  '@mui/icons-material': ^9.6.0
+  '@mui/material': ^9.6.0
   mobx: ^7.1.7
   mobx-react: ^10.0.4
   rxjs: ^7.8.2

@@ -36,7 +36,7 @@
     "@jbrowse/sv-core": "workspace:^",
     "@mui/icons-material": "catalog:",
     "@mui/material": "catalog:",
-    "@mui/system": "^9.5.0",
+    "@mui/system": "^9.6.0",
     "mobx": "catalog:",
     "mobx-react": "catalog:"
   },
