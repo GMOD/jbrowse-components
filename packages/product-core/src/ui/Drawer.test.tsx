@@ -1,6 +1,6 @@
 import { createJBrowseTheme } from '@jbrowse/core/ui'
 import { ThemeProvider } from '@mui/material'
-import { fireEvent, render, screen } from '@testing-library/react'
+import { fireEvent, render } from '@testing-library/react'
 
 import Drawer from './Drawer.tsx'
 
@@ -33,12 +33,30 @@ function renderDrawer(session: DrawerChromeSession) {
   if (!root) {
     throw new Error('drawer did not render')
   }
-  const [paper, handle] = root.children
-  if (paper !== screen.getByTestId('drawer-widget')) {
-    throw new Error('the paper is no longer the first of the drawer two boxes')
+  const [slot, handle] = root.children
+  const paper = slot?.firstElementChild
+  if (
+    !(paper instanceof HTMLElement) ||
+    paper.dataset.testid !== 'drawer-widget'
+  ) {
+    throw new Error('the paper is no longer in the first of the drawer boxes')
   }
-  return { root, handle }
+  return { root, handle, paper }
 }
+
+test('a widget asking for an overlay width slides the paper out over the views from the drawer edge, leaving the column as it is', () => {
+  const { paper } = renderDrawer(
+    stubSession({ visibleWidget: { overlayDrawerWidth: 1200 } }),
+  )
+  const style = window.getComputedStyle(paper)
+  expect(style.position).toBe('absolute')
+  expect(style.width).toBe('1200px')
+  expect(style.right).toBe('0px')
+
+  const left = renderDrawer(stubSession({ drawerPosition: 'left' }))
+  expect(window.getComputedStyle(left.paper).left).toBe('0px')
+  expect(window.getComputedStyle(left.paper).width).toBe('100%')
+})
 
 test('the handle sits beside the paper, not over it', () => {
   const { root, handle } = renderDrawer(stubSession())

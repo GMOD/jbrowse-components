@@ -308,7 +308,7 @@ test('the list toggles switch between all tracks, favorites and recent, and pres
   expect(getByTestId('list-recent')).toBe(recent)
 })
 
-test('in table mode a button slides the drawer out wide to show every column, and back to the width it had', () => {
+test('in table mode a button slides the table out over the views, leaving the drawer column its width, and back', () => {
   const { model } = setup()
   const { getByTestId, queryByTestId } = render(
     <ThemeProvider theme={createJBrowseTheme()}>
@@ -329,10 +329,16 @@ test('in table mode a button slides the drawer out wide to show every column, an
   })
   fireEvent.click(getByTestId('table-bump-out'))
   expect(model.tableWide).toBe(true)
-  expect(model.preferredDrawerWidth).toBe(1200)
-  expect(model.trackTable.wideColumns).toContain('description')
+  expect(model.overlayDrawerWidth).toBe(1200)
+  expect(model.preferredDrawerWidth).toBe(400)
 
   fireEvent.click(getByTestId('table-bump-out'))
   expect(model.tableWide).toBe(false)
-  expect(model.preferredDrawerWidth).toBe(400)
+  expect(model.overlayDrawerWidth).toBeUndefined()
+
+  fireEvent.click(getByTestId('table-bump-out'))
+  act(() => {
+    model.closeTable()
+  })
+  expect(model.overlayDrawerWidth).toBeUndefined()
 })

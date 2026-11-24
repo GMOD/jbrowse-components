@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react'
+import { useRef } from 'react'
 
 import ResizeHandle from '@jbrowse/core/ui/ResizeHandle'
 import { DRAWER_Z_INDEX } from '@jbrowse/core/ui/zIndexes'
@@ -19,6 +19,7 @@ export interface DrawerChromeSession {
   /** the width the drawer is drawn at, when it can differ from `drawerWidth` */
   effectiveDrawerWidth?: number
   updateDrawerWidth: (drawerWidth: number, availableWidth?: number) => number
+  visibleWidget?: { overlayDrawerWidth?: number }
 }
 
 const useStyles = makeStyles()(theme => ({
@@ -36,17 +37,27 @@ const useStyles = makeStyles()(theme => ({
     height: '100%',
     minWidth: 0,
   },
-  paper: {
-    overflowY: 'auto',
-    height: '100%',
+  // the paper's place in the column; a widget asking for an overlay width
+  // slides the paper out from here over the views, which keep their width
+  slot: {
     flex: 1,
     minWidth: 0,
-    // widgets position their own overlays against this
     position: 'relative',
+  },
+  paper: {
+    overflowY: 'auto',
+    position: 'absolute',
+    top: 0,
+    bottom: 0,
+    width: '100%',
     zIndex: DRAWER_Z_INDEX,
     outline: 'none',
     background: theme.palette.background.default,
+    transition: 'width 200ms ease-out',
+    '@media (prefers-reduced-motion: reduce)': { transition: 'none' },
   },
+  paperForLeftDrawer: { left: 0 },
+  paperForRightDrawer: { right: 0 },
   resizeHandle: { flexShrink: 0 },
   handleForLeftDrawer: { order: 1 },
   handleForRightDrawer: { order: -1 },
@@ -67,37 +78,34 @@ const Drawer = observer(function Drawer({
   ref?: React.Ref<HTMLDivElement>
 }) {
   const { drawerPosition } = session
+  const overlayWidth = session.visibleWidget?.overlayDrawerWidth
   const { classes, cx } = useStyles()
   const rootRef = useRef<HTMLDivElement>(null)
-  const [dragging, setDragging] = useState(false)
 
   return (
-    <div
-      ref={rootRef}
-      className={classes.root}
-      data-drawer-column
-      data-drawer-dragging={dragging || undefined}
-    >
-      <Paper
-        ref={ref}
-        className={classes.paper}
-        elevation={16}
-        square
-        data-testid="drawer-widget"
-      >
-        {children}
-      </Paper>
+    <div ref={rootRef} className={classes.root} data-drawer-column>
+      <div className={classes.slot}>
+        <Paper
+          ref={ref}
+          className={cx(
+            classes.paper,
+            drawerPosition === 'left'
+              ? classes.paperForLeftDrawer
+              : classes.paperForRightDrawer,
+          )}
+          style={overlayWidth ? { width: overlayWidth } : undefined}
+          elevation={16}
+          square
+          data-testid="drawer-widget"
+        >
+          {children}
+        </Paper>
+      </div>
       <ResizeHandle
         value={session.effectiveDrawerWidth ?? session.drawerWidth}
         // the handle is on the drawer's inner edge, so toward a right drawer
         // narrows it
         reverse={drawerPosition === 'right'}
-        onDragStart={() => {
-          setDragging(true)
-        }}
-        onDragEnd={() => {
-          setDragging(false)
-        }}
         onChange={width => {
           // the width the drawer and the main area share: both are columns of
           // the grid this is an item of, and the clamp needs the container

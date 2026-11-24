@@ -82,16 +82,18 @@ found none of the six "Fiber-seq Compendium - THP-1 …" tracks.
   at the drawer's current width: Colin found widening the drawer on open
   presumptive (2026-11-18).
 - **Slid out wide, the table shows every column.** In table mode a button
-  beside the tree and grid toggle slides the drawer out to 80% of the room it
-  shares with the views, and there the table draws every field the user has
-  not hidden, the adapter only when shown, each at its measured width,
-  scrolling sideways; the same button slides it back to the width it had.
-  Colin asked for an easy way to see every metadata column, recalling the
-  JBrowse 1 faceted selector's drawer that slid outwards (2026-11-24). Unlike
-  widening on open, the user asks for it. A wide pop-out modal was built
-  first and dropped for the slide, which keeps the view in sight. The chips
-  stay the drawer's, and a sort on a column only the wide table shows pins
-  that column when it narrows, so narrowing never hides the order.
+  beside the tree and grid toggle slides the drawer's paper out over the
+  views to 80% of the room they share with the drawer, while the drawer's
+  column and the views keep their widths (the widget's
+  `overlayDrawerWidth`). There the table draws every field the user has not
+  hidden, the adapter only when shown, each at its measured width, scrolling
+  sideways; the same button slides it back. Colin asked for an easy way to
+  see every metadata column, recalling the JBrowse 1 faceted selector, which
+  slid out over the genome browser (2026-11-24). A wide pop-out modal and
+  then a drawer column that widened, squeezing the view, were built first and
+  dropped for the overlay. The chips stay the drawer's, and a sort on a
+  column only the wide table shows pins that column when it narrows, so
+  narrowing never hides the order.
 - **`configuration.hierarchical.table.columns` ranks columns first** for a
   hub whose metadata has many keys of which a few matter. It is a string list
   of field paths (`category`, `kind`, `description`, `adapter`,

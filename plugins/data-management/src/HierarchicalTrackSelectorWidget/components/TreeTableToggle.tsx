@@ -94,8 +94,9 @@ const TreeTableToggle = observer(function TreeTableToggle({
             data-testid="table-bump-out"
             onChange={event => {
               model.setTableWide(
-                !model.tableWide,
-                measureDrawerRow(event.currentTarget),
+                model.tableWide
+                  ? undefined
+                  : measureDrawerRow(event.currentTarget),
               )
             }}
           >

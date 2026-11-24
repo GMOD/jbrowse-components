@@ -578,6 +578,8 @@ export interface Widget extends IStateTreeNode {
   /** a drawer width drawn in place of the saved one, without changing it */
   preferredDrawerWidth?: number
   setPreferredDrawerWidth?: (width: number) => void
+  /** a width the drawer slides out to over the views, which keep theirs */
+  overlayDrawerWidth?: number
 }
 
 /** Minimal map interface compatible with both native Map and MST IMSTMap */

@@ -242,15 +242,10 @@ export default function stateTreeFactory(pluginManager: PluginManager) {
       tableDrawerWidth: undefined as number | undefined,
       /**
        * #volatile
-       * the table's drawer width before it slid out wide to show every
-       * column, restored when it slides back; undefined while not wide
+       * the width the table slides out to over the views, showing every
+       * column; undefined while it sits in the drawer
        */
-      narrowTableDrawerWidth: undefined as number | undefined,
-      /**
-       * #volatile
-       * whether the table has slid the drawer out wide to show every column
-       */
-      tableWide: false,
+      tableOverlayWidth: undefined as number | undefined,
       /**
        * #volatile
        * which tracks the tree and the table list: all of them, or only the
@@ -301,6 +296,19 @@ export default function stateTreeFactory(pluginManager: PluginManager) {
        */
       get preferredDrawerWidth() {
         return self.showTable ? self.tableDrawerWidth : undefined
+      },
+      /**
+       * #getter
+       */
+      get tableWide() {
+        return self.showTable && self.tableOverlayWidth !== undefined
+      },
+      /**
+       * #getter
+       * the width the drawer's paper slides out to over the views
+       */
+      get overlayDrawerWidth() {
+        return this.tableWide ? self.tableOverlayWidth : undefined
       },
     }))
     .views(self => {
@@ -474,25 +482,20 @@ export default function stateTreeFactory(pluginManager: PluginManager) {
       closeTable() {
         self.tableViewId = undefined
         self.tableDrawerWidth = undefined
-        self.narrowTableDrawerWidth = undefined
-        self.tableWide = false
+        self.tableOverlayWidth = undefined
       },
       /**
        * #action
-       * slides the drawer out across most of the window, where the table
-       * shows every column, or back to the width it had
-       * @param availableWidth - the width the drawer and the views share
+       * slides the table out over the views to 80% of the room they share
+       * with the drawer, or back into the drawer
+       * @param availableWidth - the width the drawer and the views share;
+       * absent slides it back
        */
-      setTableWide(wide: boolean, availableWidth?: number) {
-        if (wide && availableWidth !== undefined) {
-          self.narrowTableDrawerWidth = self.tableDrawerWidth
-          self.tableDrawerWidth = Math.round(availableWidth * 0.8)
-          self.tableWide = true
-        } else if (!wide) {
-          self.tableDrawerWidth = self.narrowTableDrawerWidth
-          self.narrowTableDrawerWidth = undefined
-          self.tableWide = false
-        }
+      setTableWide(availableWidth?: number) {
+        self.tableOverlayWidth =
+          availableWidth === undefined
+            ? undefined
+            : Math.round(availableWidth * 0.8)
       },
       /**
        * #action

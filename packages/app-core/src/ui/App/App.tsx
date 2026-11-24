@@ -35,12 +35,6 @@ const useStyles = makeStyles()(theme => ({
     gridTemplateRows: 'minmax(0, 1fr)',
     width: '100%',
     colorScheme: theme.palette.mode,
-    // a widget that asks for a wider drawer, such as the track table
-    // showing every column, slides it out; a drag of its edge follows the
-    // pointer instead
-    transition: 'grid-template-columns 200ms ease-out',
-    '&:has([data-drawer-dragging])': { transition: 'none' },
-    '@media (prefers-reduced-motion: reduce)': { transition: 'none' },
   },
   appContainer: {
     gridColumn: 'main',
