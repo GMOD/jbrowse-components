@@ -5696,7 +5696,6 @@
         "formatScore",
         "isLiveModel",
         "leftAxisGutterWidth",
-        "onScreenLeftAxisWidth",
         "plainChromeOverlays",
         "plainTrackControl",
         "resolveOverlays",
@@ -5729,7 +5728,6 @@
         "axisShown",
         "leftAxisGutterWidth",
         "numbersGrowRight",
-        "onScreenLeftAxisWidth",
         "rightAxisStackInsets",
         "rulesABand"
       ],
