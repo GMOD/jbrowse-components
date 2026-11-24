@@ -465,9 +465,17 @@ describe('columns and facets', () => {
     expect(table.shownColumns(10)).not.toContain('adapter')
   })
 
-  test('the wide pop-out shows every field the user has not hidden, the adapter only when shown, and a sort on one pins it in the drawer', () => {
+  test('slid out wide, the table adds each field at least half the tracks have, a sparse one only when shown, and a sort on one pins it in the drawer', () => {
     const { session, table } = setup()
     addAssayTracks(session, ['DNase', 'DNase', 'ChIP', 'ChIP', 'ChIP', 'ChIP'])
+    session.addSessionTrackConf({
+      trackId: 'rare',
+      name: 'rare',
+      metadata: { rare: 'x' },
+      assemblyNames: ['volMyt1'],
+      type: 'FeatureTrack',
+      adapter: { type: 'FromConfigAdapter', features: [] },
+    })
     expect(table.wideColumns).toEqual([
       'name',
       'category',
@@ -488,8 +496,10 @@ describe('columns and facets', () => {
     ])
 
     table.setColumnVisible('metadata.url', false)
+    table.setColumnVisible('metadata.rare', true)
     table.setColumnVisible('adapter', true)
     expect(table.wideColumns).not.toContain('metadata.url')
+    expect(table.wideColumns).toContain('metadata.rare')
     expect(table.wideColumns).toContain('adapter')
 
     table.setSort('metadata.format', true)

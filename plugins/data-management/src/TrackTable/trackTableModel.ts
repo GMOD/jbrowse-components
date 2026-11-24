@@ -636,16 +636,21 @@ export function trackTableModelFactory() {
       },
       /**
        * #getter
-       * every column the wide pop-out shows: the candidate columns, then every
-       * other field the user has not hidden, the adapter only when shown
+       * the columns the table shows slid out wide: the candidate columns, then
+       * each other field at least half the tracks have a value for and the
+       * user has not hidden, so a hub's sparse keys wait in Manage columns
        */
       get wideColumns() {
-        const { shown, hidden } = self.chosenColumns
+        const { hidden } = self.chosenColumns
+        const rows = self.columnRows
+        const widelySet = (field: string) =>
+          rows.filter(row => getRowStr(field, row) !== '').length >=
+          rows.length / 2
         return [
           ...new Set([
             ...this.candidateColumns,
             ...self.fields.filter(
-              f => !hidden.has(f) && (f !== 'adapter' || shown.includes(f)),
+              f => f !== 'adapter' && !hidden.has(f) && widelySet(f),
             ),
           ]),
         ]

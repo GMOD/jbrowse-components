@@ -78,7 +78,8 @@ const TrackTree = observer(function TrackTree({
  * One header over both modes, so the filter box and the Tree | Table toggle
  * keep their focus across a switch; the body below is measured once for
  * either the tree's height or the table's width. Slid out wide, the table
- * shows every column at its measured width and scrolls sideways
+ * adds the fields most tracks have, each at its measured width, scrolling
+ * sideways
  */
 const HierarchicalTrackSelector = observer(function HierarchicalTrackSelector({
   model,

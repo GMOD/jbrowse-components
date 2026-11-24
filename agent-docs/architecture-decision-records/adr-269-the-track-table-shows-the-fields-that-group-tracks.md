@@ -12,7 +12,7 @@ tree shares; amended 2026-11-17 by ADR-271, which moves Manage columns to the
 track selector's ☰ menu in the drawer and a columns button in the folder
 dialog; amended 2026-11-18, when the name's share went from half the table
 to two thirds (The width decides how many show); amended 2026-11-24, when
-a table slid out wide started showing every column (Slid out wide); amended 2026-11-18, when
+a table slid out wide started showing more columns (Slid out wide); amended 2026-11-18, when
 opening the table stopped widening the drawer and a dragged name column
 started keeping its width; amended 2026-11-19, after Colin found the table
 "confusing": category leads the columns, the rows list
@@ -81,13 +81,17 @@ found none of the six "Fiber-seq Compendium - THP-1 …" tracks.
   its edge is dragged, which gives it a width of its own, and the table opens
   at the drawer's current width: Colin found widening the drawer on open
   presumptive (2026-11-18).
-- **Slid out wide, the table shows every column.** In table mode a button
+- **Slid out wide, the table shows the fields most tracks have.** In table mode a button
   beside the tree and grid toggle slides the drawer's paper out over the
   views to 80% of the room they share with the drawer, while the drawer's
   column and the views keep their widths (the widget's
-  `overlayDrawerWidth`). There the table draws every field the user has not
-  hidden, the adapter only when shown, each at its measured width, scrolling
-  sideways; the same button slides it back. Colin asked for an easy way to
+  `overlayDrawerWidth`). There the table adds each field at least half the
+  tracks have a value for, as a chip of its own needs, unless the user hid
+  it; a sparser one shows only when picked in Manage columns. Each column
+  keeps its measured width and the table scrolls sideways; the same button
+  slides it back. Every field at once was tried first: on hosted hg38 every
+  metadata key but `ucsc` is set on under 8% of the 557 tracks, so most
+  columns stood empty (Colin, 2026-11-24). Colin asked for an easy way to
   see every metadata column, recalling the JBrowse 1 faceted selector, which
   slid out over the genome browser (2026-11-24). A wide pop-out modal and
   then a drawer column that widened, squeezing the view, were built first and

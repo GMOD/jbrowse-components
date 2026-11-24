@@ -83,12 +83,12 @@ const TreeTableToggle = observer(function TreeTableToggle({
       isSessionWithDrawerWidgets(session) &&
       session.drawerVisible ? (
         <Tooltip
-          title={model.tableWide ? 'Show fewer columns' : 'Show every column'}
+          title={model.tableWide ? 'Show fewer columns' : 'Show more columns'}
         >
           <ToggleButton
             value="wide"
             size="small"
-            aria-label="Show every column"
+            aria-label="Show more columns"
             selected={model.tableWide}
             className={classes.button}
             data-testid="table-bump-out"
