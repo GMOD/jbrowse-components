@@ -63,7 +63,8 @@ export default class GCContentAdapter extends BaseFeatureDataAdapter<GCContentAd
    * track meets the display's region-too-large gate instead of reading and
    * scanning the whole chromosome. A sequence adapter reports no estimate of
    * its own, so this counts what the scan holds rather than what the wire
-   * carries.
+   * carries. The gate compares the largest region, so a whole-genome view of
+   * a fragmented assembly still scans every contig.
    */
   public async getRegionByteSize(regions: Region[]) {
     const width = this.getConf('window')

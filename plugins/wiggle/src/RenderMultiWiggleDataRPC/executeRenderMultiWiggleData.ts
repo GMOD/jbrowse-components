@@ -58,7 +58,7 @@ export async function executeRenderMultiWiggleData({
   const bytes =
     byteLimit === undefined
       ? []
-      : await updateStatus('Downloading index', statusCallback, () =>
+      : await updateStatus('Measuring region', statusCallback, () =>
           perRegionBytes(dataAdapter, regions, { signal, statusCallback }),
         )
   checkAbortSignal(signal)

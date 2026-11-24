@@ -14,7 +14,9 @@ export abstract class BaseSequenceAdapter<
   implements RegionsAdapter
 {
   // No getRegionByteSize: a sequence adapter caps what it returns at screen
-  // resolution, so it reports no byte estimate and is never byte-gated.
+  // resolution, so it reports no byte estimate. An adapter computing from the
+  // sequence (GC content, the reference scans) reads every base it is asked
+  // for, so it answers one byte per base and is gated.
 
   /**
    * Fetches a list of 'regions' with refName, start, and extends

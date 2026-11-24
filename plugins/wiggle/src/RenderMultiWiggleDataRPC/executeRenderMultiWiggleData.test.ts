@@ -1,12 +1,14 @@
+import { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
 import { getFeatureAdapterOrThrow } from '@jbrowse/core/data_adapters/getFeatureAdapter'
 import { ungatedResult } from '@jbrowse/core/rpc/byteBudget'
 import { SimpleFeature } from '@jbrowse/core/util'
+import { ObservableCreate } from '@jbrowse/core/util/rxjs'
 
 import { executeRenderMultiWiggleData } from './executeRenderMultiWiggleData.ts'
 
 import type { RawFeatureArrays } from '../util.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
-import type { Region, StatusCallback } from '@jbrowse/core/util'
+import type { Feature, Region, StatusCallback } from '@jbrowse/core/util'
 import type { WiggleDataResult } from '@jbrowse/wiggle-core'
 
 jest.mock('@jbrowse/core/data_adapters/getFeatureAdapter')
@@ -338,13 +340,22 @@ describe('single-source typed-array adapter', () => {
 // for, so the budget is checked before anything is read.
 describe('a byte budget', () => {
   function gcLikeAdapter(bytesPerRegion: number) {
-    const getFeatureArrays = jest.fn().mockResolvedValue([raw([1]), raw([2])])
-    jest.mocked(getFeatureAdapterOrThrow).mockResolvedValue({
-      getZoomRange: async () => undefined,
-      getValueDomain: async () => undefined,
-      getRegionByteSize: async () => bytesPerRegion,
-      getFeatureArrays,
-    } as never)
+    const getFeatureArrays = jest.fn(async () => [raw([1]), raw([2])])
+    class GCLikeAdapter extends BaseFeatureDataAdapter {
+      getFeatureArrays = getFeatureArrays
+      async getRefNames() {
+        return []
+      }
+      getFeatures() {
+        return ObservableCreate<Feature>(observer => {
+          observer.complete()
+        })
+      }
+      async getRegionByteSize() {
+        return bytesPerRegion
+      }
+    }
+    jest.mocked(getFeatureAdapterOrThrow).mockResolvedValue(new GCLikeAdapter())
     return getFeatureArrays
   }
 

@@ -268,7 +268,7 @@ export const GATE_OPT_IN_SITES: Record<string, string> = {
   'plugins/variants/src/LinearVariantDisplay/model.ts':
     'VcfTabixAdapter/SplitVcfTabixAdapter declare 5 Mb',
   'plugins/wiggle/src/LinearWiggleDisplay/model.ts':
-    "GCContentTrack: its LinearWiggleDisplay raises the budget to 10 Mb; elsewhere MultiWiggleAdapter's subadapters inherit baseLinearDisplayConfigSchema, and a bigWig answers no estimate",
+    "GCContentTrack: its LinearWiggleDisplay raises the budget to 10 Mb; elsewhere the wiggle display spreads regionTooLargeConfigSchemaFields at 1 Mb, which MultiWiggleAdapter's subadapters inherit, and a bigWig answers no estimate",
   'plugins/circular-view/src/ChordVariantDisplay/models/stateModelFactory.ts':
     'VcfTabixAdapter/SplitVcfTabixAdapter declare 5 Mb, measured over the whole fetch since the circle holds every region',
 }
