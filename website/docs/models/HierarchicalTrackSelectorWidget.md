@@ -31,6 +31,8 @@ favorites and recently used tracks, and a group for each connection.
 | <span id="volatile-categorymode">**categoryMode**</span><br><code>ObservableMap&lt;string, CategoryMode&gt;</code> | per-category rendering mode; absent means expanded. Collapsed and folder are mutually exclusive by construction, so un-foldering a category can't reveal a stale collapse underneath it |
 | <span id="volatile-tableviewid">**tableViewId**</span><br><code>string &#124; undefined</code> | the view whose tracks the drawer shows as a table in place of the tree. Keyed by view because every view's selector is this one widget, so table mode opened for one view stays with it |
 | <span id="volatile-tabledrawerwidth">**tableDrawerWidth**</span><br><code>number &#124; undefined</code> | the drawer width the table asks for, read by the session as `preferredDrawerWidth` and never written into its saved width |
+| <span id="volatile-narrowtabledrawerwidth">**narrowTableDrawerWidth**</span><br><code>number &#124; undefined</code> | the table's drawer width before it slid out wide to show every column, restored when it slides back; undefined while not wide |
+| <span id="volatile-tablewide">**tableWide**</span><br><code>boolean</code> | whether the table has slid the drawer out wide to show every column |
 | <span id="volatile-tracklist">**trackList**</span><br><code>TrackList</code> | which tracks the tree and the table list: all of them, or only the favorites or the recently used |
 | <span id="volatile-tracktable">**trackTable**</span><br><code>TrackTableModel</code> | the filter box, facet filters, sort and columns the tree and the table share |
 
@@ -103,6 +105,7 @@ favorites and recently used tracks, and a group for each connection.
 | <span id="action-setfiltertext">**setFilterText**</span><br><code>(newText: string) =&gt; void</code> |  |
 | <span id="action-opentable">**openTable**</span><br><code>(drawerWidth?: number) =&gt; void</code> | shows this view's tracks as a table in the drawer, at the drawer's current width |
 | <span id="action-closetable">**closeTable**</span><br><code>() =&gt; void</code> |  |
+| <span id="action-settablewide">**setTableWide**</span><br><code>(wide: boolean, availableWidth?: number) =&gt; void</code> | slides the drawer out across most of the window, where the table shows every column, or back to the width it had |
 | <span id="action-setpreferreddrawerwidth">**setPreferredDrawerWidth**</span><br><code>(width: number) =&gt; void</code> | a drag of the drawer edge while the table is open resizes the table's width, so closing it returns to the user's own |
 | <span id="action-setcategorycollapsed">**setCategoryCollapsed**</span><br><code>(id: string, collapsed: boolean) =&gt; void</code> | the single gate on accordion state: a folder is a mode the user picked, not an accordion that happens to be shut, so every collapse/expand — one row, a bulk menu item, or "expand all" — passes it by |
 | <span id="action-setfoldercategory">**setFolderCategory**</span><br><code>(id: string, isFolder: boolean) =&gt; void</code> | folder and collapsed are the same slot, so leaving folder mode always yields an expanded category |

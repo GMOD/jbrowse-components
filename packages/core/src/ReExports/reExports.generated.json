@@ -2643,6 +2643,7 @@
         "isSessionWithAddSessionTrack",
         "isSessionWithAddTracks",
         "isSessionWithDeleteTrackConf",
+        "isSessionWithDrawerWidgets",
         "isSessionWithMultipleViews",
         "isSessionWithPermanentPlugins",
         "isSessionWithPublishTrackConf",
@@ -4367,6 +4368,7 @@
         "isSessionWithAddTracks",
         "isSessionWithBaseTrackConfig",
         "isSessionWithDeleteTrackConf",
+        "isSessionWithDrawerWidgets",
         "isSessionWithEditableTrackConfig",
         "isSessionWithMultipleViews",
         "isSessionWithPermanentPlugins",
@@ -5092,6 +5094,7 @@
     "@jbrowse/display-kit/groupLabelStyle": {
       "package": "@jbrowse/display-kit",
       "names": [
+        "BAND_CHIP_GAP_PX",
         "CHIPLESS_SECTION_GAP_PX",
         "GROUP_LABEL_FONT_SIZE",
         "GROUP_LABEL_FONT_WEIGHT",
@@ -5101,6 +5104,7 @@
         "GROUP_LABEL_PADDING_X",
         "GROUP_LABEL_RADIUS",
         "GROUP_LABEL_TINT",
+        "bandChipRowWidth",
         "groupChipTop",
         "groupChipTops",
         "groupSectionLabel",
