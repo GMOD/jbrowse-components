@@ -42,7 +42,7 @@ const TrackListToggle = observer(function TrackListToggle({
       aria-label="Which tracks"
       className={classes.group}
       value={model.trackList}
-      onChange={(_event, value) => {
+      onChange={(_event, value: unknown) => {
         if (value === 'all' || value === 'favorites' || value === 'recent') {
           model.setTrackList(value)
         }
