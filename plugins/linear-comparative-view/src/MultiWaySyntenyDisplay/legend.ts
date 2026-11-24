@@ -1,7 +1,9 @@
+import { cssColorToABGR } from '@jbrowse/core/util/colorBits'
 import {
   MAX_LEGEND_ENTRIES,
   derivedColorScale,
 } from '@jbrowse/core/util/legendCandidates'
+import { measureText } from '@jbrowse/core/util/measureText'
 import { getFeatureName } from '@jbrowse/plugin-features'
 import {
   colorByScales,
@@ -271,7 +273,7 @@ export function laneSequenceKey(
               ? [
                   {
                     value: 'join',
-                    label: `Dashed: no ${noun} sequence; the ends are adjacent`,
+                    label: `Dashed: ends adjacent, no ${noun} sequence`,
                   },
                 ]
               : []),
@@ -279,4 +281,82 @@ export function laneSequenceKey(
         },
       ]
     : []
+}
+
+// the one-line key: its font and line, a swatch and the gap after it, and
+// the gap after an entry
+export const KEY_FONT_PX = 10
+export const KEY_LINE_PX = 14
+export const KEY_SWATCH_PX = 10
+export const KEY_SWATCH_GAP_PX = 4
+export const KEY_ITEM_GAP_PX = 12
+const KEY_ENTRY_CHROME_PX = KEY_SWATCH_PX + KEY_SWATCH_GAP_PX + KEY_ITEM_GAP_PX
+
+/** the lines `text` takes wrapped at its spaces, and a word at any letter, in `width` */
+function wrappedLines(text: string, width: number) {
+  const space = measureText(' ', KEY_FONT_PX)
+  return text.split(' ').reduce(
+    ({ lines, x }, word) => {
+      const w = measureText(word, KEY_FONT_PX)
+      return w > width
+        ? {
+            lines: lines + (x > 0 ? 1 : 0) + Math.ceil(w / width) - 1,
+            x: w % width,
+          }
+        : x > 0 && x + space + w > width
+          ? { lines: lines + 1, x: w }
+          : { lines, x: x > 0 ? x + space + w : w }
+    },
+    { lines: 1, x: 0 },
+  ).lines
+}
+
+/**
+ * The lines `labels`, each a swatch and its label, take in `width`: laid left
+ * to right and wrapped whole, an entry wider than a whole line on lines of its
+ * own with its label wrapped
+ */
+export function keyRowsOf(labels: readonly string[], width: number) {
+  return labels.reduce(
+    ({ rows, x }, label) => {
+      const w = KEY_ENTRY_CHROME_PX + measureText(label, KEY_FONT_PX)
+      return w > width
+        ? {
+            rows:
+              rows +
+              (x > 0 ? 1 : 0) +
+              wrappedLines(label, width - KEY_ENTRY_CHROME_PX) -
+              1,
+            x: width,
+          }
+        : x > 0 && x + w > width
+          ? { rows: rows + 1, x: w }
+          : { rows, x: x + w }
+    },
+    { rows: 1, x: 0 },
+  ).rows
+}
+
+// entries listed by what they key, not by a ribbon's fill: an array record's
+// copies and a mismatch tile, each listed only where one is drawn
+const KEYED_APART = new Set(['repeat', 'mismatch'])
+
+/** the ribbon section listing only the fills `drawn` holds, alpha left out */
+export function drawnRibbonScales(
+  scales: readonly ColorScale[],
+  drawn: ReadonlySet<number>,
+) {
+  return scales.map(scale =>
+    scale.id === 'ribbons' && scale.kind === 'categorical'
+      ? {
+          ...scale,
+          entries: scale.entries.filter(
+            entry =>
+              KEYED_APART.has(entry.value) ||
+              (entry.color !== undefined &&
+                drawn.has(cssColorToABGR(entry.color) & 0xffffff)),
+          ),
+        }
+      : scale,
+  )
 }

@@ -14,6 +14,7 @@ import {
 
 import { geneColorConfigSchema } from './geneColorConfigSchema.ts'
 import {
+  keyRowsOf,
   laneColorKey,
   laneFieldKey,
   laneSequenceKey,
@@ -195,7 +196,7 @@ test('the lane key names the sequence bar, and the dashed join only where a hole
   expect(labels([[]])).toEqual(['Haplotype sequence'])
   expect(labels([[], [[40, 60]]])).toEqual([
     'Haplotype sequence',
-    'Dashed: no haplotype sequence; the ends are adjacent',
+    'Dashed: ends adjacent, no haplotype sequence',
   ])
 })
 
@@ -419,4 +420,19 @@ test('a jexl color names a gene that carries only an ID by its ID', () => {
       [0, 800],
     ).map(e => e.label),
   ).toEqual(['GSTT2B', 'GSTT4'])
+})
+
+test('the one-line key wraps whole entries to a further line only where they overrun the width, and wraps the label of an entry wider than a line', () => {
+  const marks = [
+    'Same orientation as hg38',
+    'Inverted vs hg38',
+    'Haplotype sequence',
+    'Dashed: ends adjacent, no haplotype sequence',
+  ]
+  expect(keyRowsOf(marks, 1400)).toBe(1)
+  expect(keyRowsOf(marks, 400)).toBe(2)
+  expect(keyRowsOf(marks, 300)).toBe(3)
+  expect(keyRowsOf(['Dashed: ends adjacent, no haplotype sequence'], 120)).toBe(
+    3,
+  )
 })

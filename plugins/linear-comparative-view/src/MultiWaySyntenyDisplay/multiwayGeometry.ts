@@ -333,6 +333,8 @@ export interface RibbonGeometry {
   records: Map<string, ReadonlyMap<number, Feature>>
   /** whether a ribbon draws a stretch differing from its mate over equal length */
   mismatches: boolean
+  /** each drawn ribbon's color, its alpha left out */
+  colors: ReadonlySet<number>
 }
 
 /** the 1-based feature id the passes compare for `ref`, or 0 for none */
@@ -613,6 +615,7 @@ export function buildRibbonGeometry({
   const anchor = lanes[anchorRow]
   const nextRows = nextPlacedRows(lanes)
   let mismatches = false
+  const colors = new Set<number>()
   const targetOfGroup = (key: string, group: PlacedGroup) => {
     let idx = groupTarget.get(key)
     if (idx === undefined) {
@@ -701,6 +704,7 @@ export function buildRibbonGeometry({
             })
             const fill = paintBlockOf(block, reversed ? -1 : 1)
             if (fill !== undefined) {
+              colors.add(fill & 0xffffff)
               const own = {
                 refName: block.get('refName'),
                 start: block.get('start'),
@@ -738,6 +742,7 @@ export function buildRibbonGeometry({
             }
           }
           if (painted !== undefined) {
+            colors.add(painted & 0xffffff)
             const target = targetOfGroup(key, group)
             const fill = bridged
               ? withAbgrAlpha(
@@ -792,6 +797,7 @@ export function buildRibbonGeometry({
       const fill =
         s1 && s2 ? paintOf(link, link.get('strand') === -1 ? -1 : 1) : undefined
       if (s1 && s2 && fill !== undefined) {
+        colors.add(fill & 0xffffff)
         const idx = targets.length
         linkTarget.set(link.id(), idx)
         targets.push({
@@ -890,6 +896,7 @@ export function buildRibbonGeometry({
     linkTarget,
     records,
     mismatches,
+    colors,
   }
 }
 

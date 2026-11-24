@@ -61,8 +61,15 @@ alignments draws its own sequence as a grey bar under its ribbons, and a dashed
 line across a hole, where the bases either side are adjacent in the lane. Where
 no haplotype has sequence placed in the window, a line under the anchor says so.
 
-A pin or a hidden lane made on a piece holds for that piece's contig after a
-reload.
+The marks every lane draws alike, the ribbons' orientation, a mismatch, the grey
+sequence bar and its dashed join, are keyed in one row above the anchor lane,
+listing only what is drawn. In a pane too narrow for one line the row takes as
+many as its entries need, and a label wider than the pane wraps within it.
+Colors picked by data, such as a gene's or a ribbon field's, are keyed in the
+floating legend under the anchor lane. Either × hides both.
+
+A pin or a hidden lane made on a piece holds after a reload, on the piece of its
+contig whose start is nearest the one it was made on.
 
 A lane with no readable gene track (GFF3, GTF, BigBed or BED) on its assembly
 outlines gene spans from the table where it has them, labeled `no annotation`.

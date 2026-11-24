@@ -178,6 +178,8 @@ From [TrackHeightMixin](../trackheightmixin): <span id="volatile-scrolltop">[`sc
 | <span id="getter-canreanchor">**canReanchor**</span><br><code>boolean</code> |  |
 | <span id="getter-visiblebpspan">**visibleBpSpan**</span><br><code>number</code> | the bp the canvas spans: a lane's bpPerPx is this times its rung over `canvasWidthPx`, so the two read one width or every lane but the anchor is scaled against a box it doesn't fill |
 | <span id="getter-windowgroups">**windowGroups**</span><br><code>{ shown: MultiWayGroup[]; fit: MultiWayGroup[]; }</code> | the groups the settled blocks meet, cut as `windowGroupsOn` cuts them |
+| <span id="getter-keyrows">**keyRows**</span><br><code>number</code> | the lines the key row takes: the marks every lane source draws alike, whose longest list is known before a draw (the ribbons' orientation, a mismatch, a lane's sequence and its dashed join), laid across the canvas. None where no lane is placed, so a pan that draws more or less moves no lane |
+| <span id="getter-keybandpx">**keyBandPx**</span><br><code>number</code> | the band above the anchor lane the key row stands in, which no lane enters |
 | <span id="getter-visiblegroups">**visibleGroups**</span><br><code>MultiWayGroup[]</code> | uncut at the viewport edge, cut only at a displayed region's end |
 | <span id="getter-fitgroups">**fitGroups**</span><br><code>MultiWayGroup[]</code> | the visible groups cut to the viewport, which each lane's frame fits |
 | <span id="getter-tickintervalbp">**tickIntervalBp**</span><br><code>number</code> |  |
@@ -227,8 +229,10 @@ From [TrackHeightMixin](../trackheightmixin): <span id="volatile-scrolltop">[`sc
 | <span id="getter-genecolorscales">**geneColorScales**</span><br><code>ColorScale[]</code> | keys every lane, over the settled window, or the anchor lane alone where every lane's values are too many to list |
 | <span id="getter-colorscales">**colorScales**</span><br><code>ColorScale[]</code> |  |
 | <span id="getter-lanesequencescales">**laneSequenceScales**</span><br><code>ColorScale[]</code> | the key to an alignment lane's sequence bar and, where one is drawn, the dashed join across a hole |
+| <span id="getter-keyrowscales">**keyRowScales**</span><br><code>ColorScale[]</code> | the scales the key row lists: the marks every lane source draws alike |
+| <span id="getter-legendspec">**legendSpec**</span><br><code>LegendSpec</code> | the floating key: every scale the key row leaves out, the colors data picks, such as a gene's or a ribbon field's |
 | <span id="getter-legendright">**legendRight**</span><br><code>number</code> |  |
-| <span id="getter-legendtop">**legendTop**</span><br><code>number</code> | the anchor lane's foot, so the key sits in the gutter under it rather than over the genes every lane is read against |
+| <span id="getter-legendtop">**legendTop**</span><br><code>number</code> | the anchor lane's foot, so the floating key sits in the gutter under it rather than over the genes every lane is read against |
 | <span id="getter-lanelayerplacements">**laneLayerPlacements**</span><br><code>LaneLayerPlacement[]</code> | each payload's region placed in its lane's own frame; a payload whose lane or contig no longer draws is left out |
 | <span id="getter-lanelayerdomains">**laneLayerDomains**</span><br><code>([number, number] &#124; undefined)[]</code> | undefined for a layer no drawn lane holds values for yet |
 | <span id="getter-lanelayercolors">**laneLayerColors**</span><br><code>ColorSource[][]</code> | where each lane layer's marks take their color from, one per mark, read the way the mark display reads its colors |
@@ -260,7 +264,7 @@ From [TrackHeightMixin](../trackheightmixin): <span id="volatile-scrolltop">[`sc
 | <span id="getter-hoveredfeature">**hoveredFeature**</span><br><code>Feature &#124; undefined</code> |  |
 
 <details class="inherited-members" data-pagefind-ignore>
-<summary>71 inherited getters from 11 models</summary>
+<summary>70 inherited getters from 11 models</summary>
 
 From [LodTierInfoMixin](../lodtierinfomixin): <span id="getter-adapterheader">[`adapterHeader`](../lodtierinfomixin#getter-adapterheader)</span>, <span id="getter-lodtierinfo">[`lodTierInfo`](../lodtierinfomixin#getter-lodtierinfo)</span>
 
@@ -268,7 +272,7 @@ From [ColorWritesMixin](../colorwritesmixin): <span id="getter-writtencolor">[`w
 
 From [ParkedColorMixin](../parkedcolormixin): <span id="getter-parkedcolor">[`parkedColor`](../parkedcolormixin#getter-parkedcolor)</span>, <span id="getter-parkedidentity">[`parkedIdentity`](../parkedcolormixin#getter-parkedidentity)</span>
 
-From [LegendMixin](../legendmixin): <span id="getter-showlegend">[`showLegend`](../legendmixin#getter-showlegend)</span>, <span id="getter-legendspec">[`legendSpec`](../legendmixin#getter-legendspec)</span>, <span id="getter-haslegendkey">[`hasLegendKey`](../legendmixin#getter-haslegendkey)</span>, <span id="getter-keydrawnbyhost">[`keyDrawnByHost`](../legendmixin#getter-keydrawnbyhost)</span>
+From [LegendMixin](../legendmixin): <span id="getter-showlegend">[`showLegend`](../legendmixin#getter-showlegend)</span>, <span id="getter-haslegendkey">[`hasLegendKey`](../legendmixin#getter-haslegendkey)</span>, <span id="getter-keydrawnbyhost">[`keyDrawnByHost`](../legendmixin#getter-keydrawnbyhost)</span>
 
 From [GlobalFetchMixin](../globalfetchmixin): <span id="getter-host">[`host`](../globalfetchmixin#getter-host)</span>, <span id="getter-canvaswidthpx">[`canvasWidthPx`](../globalfetchmixin#getter-canvaswidthpx)</span>, <span id="getter-staticblocksignature">[`staticBlockSignature`](../globalfetchmixin#getter-staticblocksignature)</span>, <span id="getter-dynamicblocksignature">[`dynamicBlockSignature`](../globalfetchmixin#getter-dynamicblocksignature)</span>, <span id="getter-viewportempty">[`viewportEmpty`](../globalfetchmixin#getter-viewportempty)</span>, <span id="getter-canrender">[`canRender`](../globalfetchmixin#getter-canrender)</span>, <span id="getter-renderscanvas">[`rendersCanvas`](../globalfetchmixin#getter-renderscanvas)</span>, <span id="getter-paintinert">[`paintInert`](../globalfetchmixin#getter-paintinert)</span>, <span id="getter-svgready">[`svgReady`](../globalfetchmixin#getter-svgready)</span>, <span id="getter-displayphase">[`displayPhase`](../globalfetchmixin#getter-displayphase)</span>
 

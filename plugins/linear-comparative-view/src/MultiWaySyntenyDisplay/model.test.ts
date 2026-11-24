@@ -34,6 +34,7 @@ import {
   specsCoverMate,
   staleLaneSpecs,
 } from './laneFetch.ts'
+import { labelBoxTop } from './laneHeader.ts'
 import { laneResetLabel } from './laneSelection.ts'
 import { MIN_LANE_PITCH } from './laneStack.ts'
 import * as laneStage from './laneStage.ts'
@@ -539,8 +540,39 @@ test('the key names the anchor lane genes a name-hashed color slot draws', () =>
   const entries = geneKeyOf(display)
   expect(entries.map(i => i.label)).toEqual(['atpA', 'atpB'])
   expect(new Set(entries.map(i => i.color)).size).toBe(2)
-  expect(display.colorScales.map(s => s.id)).toEqual(['genes', 'ribbons'])
+  expect(display.colorScales.map(s => s.id)).toEqual(['genes'])
   expect(display.hasLegendKey).toBe(true)
+})
+
+test('gene colors, as primate_orthologs paints by cluster, key in the floating legend whole, and the key row holds only the marks every lane draws', () => {
+  const display = createDisplay()
+  setConf(display, ['encoding', 'color'], {
+    value: "jexl:randomColor(get(feature,'name'))",
+  })
+  display.setLaneGenes(
+    new Map([
+      [
+        'volvox',
+        {
+          key: display.laneGenesFetchSpecs[0]!.key,
+          genes: Array.from({ length: 30 }, (_, i) =>
+            namedGene(`g${i}`, `gene${i}`, 100 + i * 20, 110 + i * 20),
+          ),
+        },
+      ],
+    ]),
+    display.laneGenesFetchSpecs,
+    display.anchorAssemblyName,
+  )
+  drawOneRibbon(display, 1)
+  const genes = display.colorScales.find(scale => scale.id === 'genes')
+  const geneLabels =
+    genes?.kind === 'categorical' ? genes.entries.map(e => e.label) : []
+  expect(geneLabels.length).toBeGreaterThan(0)
+  expect(display.keyRowScales.map(scale => scale.id)).not.toContain('genes')
+  const floating = display.legendSpec.sections.find(s => s.id === 'genes')
+  expect(floating?.items.map(item => item.label)).toEqual(geneLabels)
+  expect(display.legendSpec.sections.map(s => s.id)).toEqual(['genes'])
 })
 
 test('a flat color slot has nothing to key', () => {
@@ -837,6 +869,21 @@ function drawOneRibbon(
   )
 }
 
+test('the ribbon key lists only the orientations a ribbon draws, and nothing where none is drawn', () => {
+  const display = createDisplay()
+  const ribbonLabels = () =>
+    display.colorScales
+      .filter(scale => scale.id === 'ribbons')
+      .flatMap(scale =>
+        scale.kind === 'categorical' ? scale.entries.map(e => e.label) : [],
+      )
+  expect(ribbonLabels()).toEqual([])
+  drawOneRibbon(display, 1)
+  expect(ribbonLabels()).toEqual(['Same orientation as lane above'])
+  drawOneRibbon(display, -1)
+  expect(ribbonLabels()).toEqual(['Inverted vs lane above'])
+})
+
 test('a window no lane places says so only on records fetched for it, with no lane placed however many are hidden, and not after a failed fetch', () => {
   const display = createDisplay()
   const note = () => display.noLanesNote?.text
@@ -888,10 +935,15 @@ test('the strand ribbon mode adds its own section', () => {
     display.laneGenesFetchSpecs,
     display.anchorAssemblyName,
   )
-  expect(display.colorScales.map(s => s.id)).toEqual(['genes', 'ribbons'])
+  drawOneRibbon(display, 1)
+  expect(display.colorScales.map(s => s.id)).toEqual([
+    'genes',
+    'ribbons',
+    'lane-sequence',
+  ])
 
   display.setRibbonColorValue('grey')
-  expect(display.colorScales.map(s => s.id)).toEqual(['genes'])
+  expect(display.colorScales.map(s => s.id)).toEqual(['genes', 'lane-sequence'])
 })
 
 test('ribbons color by strand until the setting names a field or a color', () => {
@@ -1131,8 +1183,9 @@ describe('the lane stack scrolls once lanes would crush', () => {
     expect(display.scrollableHeight).toBe(0)
     stageManyMates(display)
     const pitch = MIN_LANE_PITCH + display.geneLabelPx
-    expect(display.scrollContentHeight).toBe((MATES + 1) * pitch)
-    expect(display.scrollableHeight).toBe((MATES + 1) * pitch - display.height)
+    const content = display.keyBandPx + (MATES + 1) * pitch
+    expect(display.scrollContentHeight).toBe(content)
+    expect(display.scrollableHeight).toBe(content - display.height)
   })
 
   test('setScrollTop clamps into the scrollable range', () => {
@@ -1144,17 +1197,18 @@ describe('the lane stack scrolls once lanes would crush', () => {
     expect(display.scrollTop).toBe(0)
   })
 
-  test('the key sits under the anchor lane, and rises with it on scroll', () => {
+  test('the key takes fixed lines above the anchor lane that no lane header enters, whatever the lanes draw', () => {
     const display = createDisplay()
     stageManyMates(display)
-    const { lanes, glyphHeight } = display.laneStack
-    const anchor = lanes.find(l => l.isAnchor)!
-    const foot = anchor.glyphTop + glyphHeight + display.geneLabelPx
-    expect(display.legendTop).toBe(foot)
-    display.setScrollTop(10)
-    expect(display.legendTop).toBe(foot - 10)
-    display.setScrollTop(1e6)
-    expect(display.legendTop).toBe(0)
+    const { keyRows, keyBandPx } = display
+    expect(keyRows).toBeGreaterThan(0)
+    for (const row of display.laneHeaderRows) {
+      expect(labelBoxTop(row.y)).toBeGreaterThanOrEqual(keyBandPx)
+    }
+    display.setLaneFrames(0, new Map([['mate0', decisionOn('ctgB', 200)]]))
+    expect(display.keyBandPx).toBe(keyBandPx)
+    display.setShowLegend(false)
+    expect(display.keyBandPx).toBe(0)
   })
 
   test('the render state carries the scroll and hitTest undoes it', () => {
@@ -3156,6 +3210,10 @@ test('a ribbonColorDomain moves the label table, and the key with it', () => {
   }
   display.setRibbonColorField('group')
   display.setFeatures([row('f1', 'B1'), row('f2', 'A1a'), row('f3', 'C1')])
+  display.setLaneFrames(
+    0,
+    new Map([['volvox_random', decisionOn('ctgB', 200)]]),
+  )
   expect(labels()).toEqual(['B1', 'A1a', 'C1'])
 
   setConf(display, ['ribbons', 'encoding', 'color', 'scale', 'domain'], ['C1'])
@@ -3196,6 +3254,10 @@ test("the ribbon color's range paints the domain, and names and title name its k
   }
   display.configuration.ribbons.encoding.setSubschema('color', color)
   display.setFeatures([row('f1', 'B1'), row('f2', 'C1')])
+  display.setLaneFrames(
+    0,
+    new Map([['volvox_random', decisionOn('ctgB', 200)]]),
+  )
   const mode = resolveCategoricalMode('group', display.ribbonAttributeRanges)!
   expect(categoricalColor(mode, 'C1')).toBe('#ff0000')
   const ribbons = display.colorScales.find(scale => scale.id === 'ribbons')

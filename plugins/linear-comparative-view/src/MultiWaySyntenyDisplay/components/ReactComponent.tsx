@@ -12,6 +12,7 @@ import { observer } from 'mobx-react'
 import { MultiWayRenderer } from '../MultiWayRenderer.ts'
 import LaneGeneLabels from './LaneGeneLabels.tsx'
 import LaneHeaders from './LaneHeaders.tsx'
+import LaneKeyRow from './LaneKeyRow.tsx'
 import LaneLayerTitles from './LaneLayerTitles.tsx'
 import { useLaneSlide } from './useLaneSlide.ts'
 
@@ -58,6 +59,7 @@ const MultiWayBody = observer(function MultiWayBody({
         <LaneGeneLabels model={model} />
         <LaneLayerTitles model={model} />
         <LaneHeaders model={model} />
+        <LaneKeyRow model={model} />
       </div>
       <VerticalScrollbar model={model} controlsId={canvasId} />
       <PointerLayer mouseTracker={mouseTracker}>

@@ -225,10 +225,16 @@ every cost is linear in lanes.
   declares (`lanes[].color`, `anchorColor` for the anchor), else draws none
   (`laneColorOf`, ADR-257's 2026-11-17 amendment). It draws in both label
   placements and the SVG export; a lane menu's Color... writes the pin.
-- **The color key** floats in the gutter under the anchor lane (`legendTop`),
-  since at the top corner it hid the anchor's genes. Where that gutter is shorter
-  than the key it covers the second lane's changes chip instead; its close button
-  clears either.
+- **The color key** comes in two parts. The marks every lane source draws alike,
+  the ribbons' orientation, a mismatch, a lane's sequence bar and its dashed
+  join, stand in one row above the anchor lane (`LaneKeyRow`, `keyRowScales`),
+  in a band of fixed lines (`keyRows`) counted from the longest list those marks
+  can take, so a draw never moves a lane; a label wider than a line wraps, and
+  the row lists only marks drawn. Colors data picks, a gene's or a ribbon
+  field's, keep the floating key in the gutter under the anchor lane
+  (`legendSpec` less the row's scales, `legendTop`), which scrolls and names
+  what lies below; where that gutter is shorter than the key it covers the
+  second lane's changes chip. Either close button hides both.
 - **Lane changes chip**: the header lists what the records state across the gaps
   the shown frame meets, largest first, two then a count, in the HPRC portal's
   words (`laneIndelsOf`'s `changes`, `laneHeaderRows`); the lane menu's Go to

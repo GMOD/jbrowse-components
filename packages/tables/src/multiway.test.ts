@@ -96,7 +96,6 @@ test('an all-vs-all PAF stacks a lane per genome, with ribbons down each gutter'
   expect(column(t.alignments, 'identity')[linked]).toBe(1)
   expect(t.legend.label).toEqual([
     'Same orientation as lane above',
-    'Inverted vs lane above',
     'Lane sequence',
   ])
   expect(t.legendAlpha).toBe(1)
@@ -323,7 +322,6 @@ test('ribbons color by strand, keyed against the lane above', async () => {
   })
   expect(t.legend.label).toEqual([
     'Same orientation as lane above',
-    'Inverted vs lane above',
     'Lane sequence',
   ])
   expect(new Set(t.ribbons.color)).toEqual(new Set([t.legend.color[0]]))
@@ -450,7 +448,10 @@ test('a lane reading backwards against the anchor flips, its ribbons run straigh
   expect(t.lanes.flipped).toEqual([false, true])
   expect([t.segments.x1[1], t.segments.x2[1]]).toEqual([720, 0])
   expect(t.ribbons.upperX1).toEqual(t.ribbons.lowerX1)
-  expect(new Set(t.ribbons.color)).toEqual(new Set([t.legend.color[1]]))
+  expect(t.legend.label).not.toContain('Same orientation as lane above')
+  expect(new Set(t.ribbons.color)).toEqual(
+    new Set([t.legend.color[t.legend.label.indexOf('Inverted vs lane above')]]),
+  )
   expect(new Set(t.ribbons.gutter)).toEqual(new Set([0]))
 })
 

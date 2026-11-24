@@ -159,7 +159,9 @@ function multiwayParity(
         adapterConfig: fixture.adapterConfig,
         assemblies: fixture.assemblies,
         anchor: fixture.anchor,
-        settings: display,
+        // the on-screen key takes a band over the anchor lane, which the
+        // export, keying in a gutter of its own, lays no lane under
+        settings: { ...display, legend: { show: false } },
         pins,
         hidden,
       })

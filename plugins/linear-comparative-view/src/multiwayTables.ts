@@ -94,6 +94,7 @@ import {
   tickIntervalFor,
 } from './MultiWaySyntenyDisplay/layoutMultiWay.ts'
 import {
+  drawnRibbonScales,
   laneSequenceKey,
   ribbonColorScales,
 } from './MultiWaySyntenyDisplay/legend.ts'
@@ -1082,25 +1083,28 @@ export async function multiwayTables(
       attributeRanges,
     ),
     ...ribbonKey(
-      ribbonColorScales(ribbon.field, attributeRanges, {
-        domain: settings.domain,
-        hideUnlabelled: ribbon.hideUnlabelled,
-        slotColor: ribbon.value,
-        names: settings.names,
-        title: settings.title,
-        descending: settings.descending,
-        paint: ribbon.paint,
-        against,
-        repeats: features.some(isArrayRecord),
-        mismatch: geometry.mismatches ? mismatchCss(ribbon.field) : undefined,
-      }).concat(
-        laneSequenceKey(
-          stack.lanes.filter(drawsSequenceBar),
-          headerDeclaresHaplotypeLanes(host.adapterHeader)
-            ? 'haplotype'
-            : 'lane',
-          bandInk().sequence,
+      drawnRibbonScales(
+        ribbonColorScales(ribbon.field, attributeRanges, {
+          domain: settings.domain,
+          hideUnlabelled: ribbon.hideUnlabelled,
+          slotColor: ribbon.value,
+          names: settings.names,
+          title: settings.title,
+          descending: settings.descending,
+          paint: ribbon.paint,
+          against,
+          repeats: features.some(isArrayRecord),
+          mismatch: geometry.mismatches ? mismatchCss(ribbon.field) : undefined,
+        }).concat(
+          laneSequenceKey(
+            stack.lanes.filter(drawsSequenceBar),
+            headerDeclaresHaplotypeLanes(host.adapterHeader)
+              ? 'haplotype'
+              : 'lane',
+            bandInk().sequence,
+          ),
         ),
+        geometry.colors,
       ),
     ),
     height: laneGeom.contentHeight,

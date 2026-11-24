@@ -76,16 +76,19 @@ export function laneGeometry(
   geneLabelPx = 0,
   layerPx = 0,
   inlineNames = false,
+  keyBandPx = 0,
 ): LaneGeometry {
-  const contentHeight = laneContentHeight(
-    height,
-    rowCount,
-    geneLabelPx,
-    layerPx,
-    inlineNames,
-  )
+  const contentHeight =
+    keyBandPx +
+    laneContentHeight(
+      height - keyBandPx,
+      rowCount,
+      geneLabelPx,
+      layerPx,
+      inlineNames,
+    )
   const above = (inlineNames ? 0 : LABEL_HEIGHT) + layerPx
-  const share = contentHeight / rowCount - above - geneLabelPx
+  const share = (contentHeight - keyBandPx) / rowCount - above - geneLabelPx
   const room = share - 6
   const strandRows = splitStrands && room >= MIN_SPLIT_GLYPH_PX
   const glyphHeight = strandRows
@@ -94,13 +97,14 @@ export function laneGeometry(
       : Math.min(room, COMPACT_SPLIT_GLYPH_PX)
     : clamp(room, MIN_GLYPH_PX, MAX_GLYPH_PX)
   // room for the top lane's name where it stands taller than its genes
-  const top = above + (inlineNames ? inlineNameRise(glyphHeight) : 0)
+  const top =
+    keyBandPx + above + (inlineNames ? inlineNameRise(glyphHeight) : 0)
   const usable = contentHeight - top - glyphHeight - geneLabelPx - 4
   const glyphTop = (row: number) =>
     top + (rowCount === 1 ? 0 : (row * usable) / (rowCount - 1))
   const bandStart = (row: number) =>
     row === 0
-      ? 0
+      ? keyBandPx
       : (glyphTop(row - 1) +
           glyphHeight +
           geneLabelPx +

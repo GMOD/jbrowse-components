@@ -12,7 +12,11 @@ import {
   legendDistinguishesColors,
   pushLaunchViewMenuItem,
 } from '@jbrowse/core/ui'
-import { colorScaleIsEmpty, summarizePast } from '@jbrowse/core/ui/colorScale'
+import {
+  colorScaleIsEmpty,
+  legendSpecOf,
+  summarizePast,
+} from '@jbrowse/core/ui/colorScale'
 import { featureDefaultColor } from '@jbrowse/core/ui/palette'
 import {
   animationAllowed,
@@ -209,6 +213,9 @@ import {
   laneFieldKey,
   ribbonColorScales,
   laneSequenceKey,
+  KEY_LINE_PX,
+  drawnRibbonScales,
+  keyRowsOf,
   stackGeneKey,
 } from './legend.ts'
 import { laneLocusMenuItems, multiWayTrackMenuItems } from './menus.ts'
@@ -300,6 +307,7 @@ import type {
 } from '@jbrowse/core/configuration'
 import type { ContextMenuAnchor, MenuItem, MouseState } from '@jbrowse/core/ui'
 import type { ColorScale } from '@jbrowse/core/ui/colorScale'
+import type { LegendSpec } from '@jbrowse/core/ui/legendSpec'
 import type { Feature } from '@jbrowse/core/util'
 import type { EncodedChannels } from '@jbrowse/core/util/markEncoding'
 import type {
@@ -401,6 +409,9 @@ function ribbonChannelNames(adapterConfig: Record<string, unknown>) {
 // the widest a lane header's scale reads, so the key clears it at any zoom
 const SCALE_COLUMN_PX =
   Math.ceil(measureText('8.88Mbp, squeezed 88.8×', LABEL_FONT_SIZE)) + 4
+
+// one line of the key's row, and the close button at its end
+const KEY_CLOSE_PX = 16
 
 /**
  * #stateModel MultiWaySyntenyDisplay
@@ -1172,6 +1183,57 @@ export function stateModelFactory(
     .views(self => ({
       /**
        * #getter
+       * the lines the key row takes: the marks every lane source draws alike,
+       * whose longest list is known before a draw (the ribbons' orientation,
+       * a mismatch, a lane's sequence and its dashed join), laid across the
+       * canvas. None where no lane is placed, so a pan that draws more or less
+       * moves no lane
+       */
+      get keyRows(): number {
+        const noun = headerDeclaresHaplotypeLanes(self.adapterHeader)
+          ? 'haplotype'
+          : 'lane'
+        const marks = [
+          ...(self.ribbonColorField === 'strand'
+            ? ribbonColorScales('strand', self.ribbonAttributeRanges, {
+                paint: self.ribbonPaint,
+                names: getConf(self, [
+                  'ribbons',
+                  'encoding',
+                  'color',
+                  'scale',
+                  'names',
+                ]),
+                against: self.againstAnchor,
+                repeats: self.features.some(isArrayRecord),
+                mismatch: bandInk().sequence,
+              })
+            : []),
+          ...laneSequenceKey([{ holes: [[0, 0]] }], noun, bandInk().sequence),
+        ]
+        return self.showLegend && lanesPlacedIn(self.groups).size > 0
+          ? keyRowsOf(
+              marks.flatMap(scale =>
+                scale.kind === 'categorical'
+                  ? scale.entries.map(entry => entry.label)
+                  : [],
+              ),
+              self.canvasWidthPx - KEY_CLOSE_PX,
+            )
+          : 0
+      },
+      /**
+       * #getter
+       * the band above the anchor lane the key row stands in, which no lane
+       * enters
+       */
+      get keyBandPx(): number {
+        return this.keyRows * KEY_LINE_PX
+      },
+    }))
+    .views(self => ({
+      /**
+       * #getter
        * uncut at the viewport edge, cut only at a displayed region's end
        */
       get visibleGroups() {
@@ -1200,6 +1262,7 @@ export function stateModelFactory(
           self.geneLabelPx,
           self.layerPx,
           self.inlineLaneNames,
+          self.keyBandPx,
         )
       },
       /** #getter */
@@ -2546,9 +2609,10 @@ export function stateModelFactory(
             },
           ),
         ]
-        return [...scales, ...this.laneSequenceScales].filter(
-          scale => !colorScaleIsEmpty(scale),
-        )
+        return drawnRibbonScales(
+          [...scales, ...this.laneSequenceScales],
+          self.ribbonGeometry.colors,
+        ).filter(scale => !colorScaleIsEmpty(scale))
       },
       /**
        * #getter
@@ -2568,14 +2632,41 @@ export function stateModelFactory(
           bandInk().sequence,
         )
       },
+      /**
+       * #getter
+       * the scales the key row lists: the marks every lane source draws alike
+       */
+      get keyRowScales(): ColorScale[] {
+        const orientation = self.ribbonColorField === 'strand'
+        return this.colorScales.filter(
+          scale =>
+            scale.id === 'lane-sequence' ||
+            (orientation && scale.id === 'ribbons'),
+        )
+      },
+      /**
+       * #getter
+       * the floating key: every scale the key row leaves out, the colors data
+       * picks, such as a gene's or a ribbon field's
+       */
+      get legendSpec(): LegendSpec {
+        const row = new Set(this.keyRowScales.map(scale => scale.id))
+        return legendSpecOf(
+          this.colorScales.filter(
+            scale =>
+              !row.has(scale.id) &&
+              !self.dismissedLegendSections.includes(scale.id),
+          ),
+        )
+      },
       /** #getter */
       get legendRight(): number {
         return SCALE_COLUMN_PX
       },
       /**
        * #getter
-       * the anchor lane's foot, so the key sits in the gutter under it rather
-       * than over the genes every lane is read against
+       * the anchor lane's foot, so the floating key sits in the gutter under
+       * it rather than over the genes every lane is read against
        */
       get legendTop(): number {
         const { rows, glyphHeight } = self.stackGeometry
