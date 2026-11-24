@@ -2,6 +2,7 @@ import { FatalErrorDialog } from '@jbrowse/core/ui'
 import { Button } from '@mui/material'
 import { observer } from 'mobx-react'
 
+import packageJSON from '../../package.json' with { type: 'json' }
 import {
   globalPluginSafeMode,
   reloadInSafeMode,
@@ -13,6 +14,7 @@ const PlatformSpecificErrorDialog = observer(
     return (
       <FatalErrorDialog
         {...props}
+        version={packageJSON.version}
         onFactoryReset={factoryReset}
         // A global plugin loads into every session, so one that throws leaves the
         // user here with no way back to the start screen that could uninstall it.

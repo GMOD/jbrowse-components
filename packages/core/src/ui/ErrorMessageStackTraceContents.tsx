@@ -58,7 +58,9 @@ const ErrorMessageStackTraceContents = observer(
 
     return (
       <div className={classes.stack}>
-        <pre className={classes.pre}>{displayText}</pre>
+        <pre className={classes.pre} data-testid="error-report-text">
+          {displayText}
+        </pre>
         <TextField
           label="What were you doing when this happened? (optional)"
           multiline

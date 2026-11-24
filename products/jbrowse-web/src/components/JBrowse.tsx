@@ -67,6 +67,14 @@ const JBrowse = observer(function JBrowse({
         'window.jb drives this app programmatically — read jb.help, then orient with jb.sessionSummary()',
       )
     }
+    // a fatal error unmounts this and the rootModel is destroyed a task later;
+    // a global left pointing at it makes every reader, the error report dialog
+    // included, throw on a dead tree
+    return () => {
+      window.JBrowseRootModel = undefined
+      window.JBrowseSession = undefined
+      window.jb = undefined
+    }
   }, [id, pluginManager, rootModel, session])
 
   useEffect(() => {

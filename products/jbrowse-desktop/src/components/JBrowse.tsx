@@ -25,6 +25,12 @@ const JBrowseNonNullRoot = observer(function JBrowseNonNullRoot({
   useEffect(() => {
     window.JBrowseRootModel = rootModel
     window.JBrowseSession = session
+    // the start screen and a fatal error both unmount this, and the rootModel
+    // is destroyed after; a global left pointing at it is a dead tree
+    return () => {
+      window.JBrowseRootModel = undefined
+      window.JBrowseSession = undefined
+    }
   }, [rootModel, session])
 
   if (error) {

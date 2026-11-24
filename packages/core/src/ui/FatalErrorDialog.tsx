@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { Suspense, lazy, useState } from 'react'
 
 import {
   Button,
@@ -10,8 +10,10 @@ import {
 import { observer } from 'mobx-react'
 
 import ErrorBanner from './ErrorBanner.tsx'
-import ErrorMessageStackTraceContents from './ErrorMessageStackTraceContents.tsx'
+import { ErrorBoundary } from './ErrorBoundary.tsx'
 import FactoryResetDialog from './FactoryResetDialog.tsx'
+
+const ErrorReport = lazy(() => import('./ErrorReport.tsx'))
 
 const ResetComponent = observer(function ResetComponent({
   onFactoryReset,
@@ -51,11 +53,15 @@ const FatalErrorDialog = observer(function FatalErrorDialog({
   onFactoryReset,
   resetButtonText = 'Factory Reset',
   extraActions,
+  version,
+  gitCommit,
 }: {
   componentStack?: string
   error?: unknown
   onFactoryReset: () => void
   resetButtonText?: string
+  version?: string
+  gitCommit?: string
   // recovery offers narrower than a factory reset, which only some products
   // have: Desktop puts "Disable global plugins and reload" here, so a plugin
   // that crashes on load can be undone without discarding the user's sessions
@@ -66,11 +72,18 @@ const FatalErrorDialog = observer(function FatalErrorDialog({
       <DialogTitle>Fatal error</DialogTitle>
       <DialogContent>
         <ErrorBanner error={error} />
-        {componentStack ? (
-          <ErrorMessageStackTraceContents
-            text={`${error}\n${componentStack}`}
-          />
-        ) : null}
+        {/* a fatal error is often a chunk that failed to load, and this one
+            can fail the same way; the banner above already offers the refresh */}
+        <ErrorBoundary FallbackComponent={() => null}>
+          <Suspense fallback={null}>
+            <ErrorReport
+              error={error}
+              componentStack={componentStack}
+              version={version}
+              gitCommit={gitCommit}
+            />
+          </Suspense>
+        </ErrorBoundary>
       </DialogContent>
       <DialogActions>
         {extraActions}

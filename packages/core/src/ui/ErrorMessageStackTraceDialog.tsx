@@ -1,24 +1,10 @@
-import { effectiveRenderer } from '@jbrowse/render-core/graphicsCapabilities'
-import { useGraphicsCapabilities } from '@jbrowse/render-core/useGraphicsCapabilities'
 import { observer } from 'mobx-react'
 
-import { useFetch } from '../util/useFetch.ts'
 import CopyToClipboardButton from './CopyToClipboardButton.tsx'
 import ErrorMessageStackTraceContents from './ErrorMessageStackTraceContents.tsx'
 import InfoDialog from './InfoDialog.tsx'
 import LoadingEllipses from './LoadingEllipses.tsx'
-import { withoutSharePassword } from './errorReport.ts'
-import { formatErrorStack } from './formatErrorStack.ts'
-import { mapStackTrace } from './mapStackTrace.ts'
-
-interface SessionGlobal {
-  version?: string
-  rpcManager: {
-    driverName: string
-  }
-}
-
-const MAX_ERR_LEN = 10_000
+import { useErrorReportText } from './useErrorReportText.ts'
 
 const ErrorMessageStackTraceDialog = observer(
   function ErrorMessageStackTraceDialog({
@@ -30,60 +16,7 @@ const ErrorMessageStackTraceDialog = observer(
     error: unknown
     extra?: unknown
   }) {
-    const graphicsCapabilities = useGraphicsCapabilities()
-    const errorText = error ? `${error}` : ''
-    const stackTrace = formatErrorStack(error)
-
-    const { data: mappedStackTrace, isLoading } = useFetch(
-      ['mappedStackTrace', stackTrace],
-      () => mapStackTrace(stackTrace),
-    )
-
-    // The rung createGpuHal built, not a list of the ones available: it already
-    // says which rungs exist, since Canvas2D means neither and WebGL2 means no
-    // WebGPU. It also honours the GPU banner's "disable GPU", which matters most
-    // in exactly this dialog — a user reporting a rendering bug has often already
-    // clicked it.
-    const graphicsInfo = graphicsCapabilities
-      ? `Graphics: ${effectiveRenderer(graphicsCapabilities)}`
-      : ''
-    const gpuInfo = graphicsCapabilities?.gpuVendor
-      ? `GPU: ${graphicsCapabilities.gpuVendor}${graphicsCapabilities.gpuArchitecture ? ` (${graphicsCapabilities.gpuArchitecture})` : ''}`
-      : ''
-    // Local only, and the one field that explains a "JBrowse is slow" report with
-    // nothing else wrong in it: WebGL on a software rasterizer is ~25x Canvas2D on
-    // the main thread. Marked so a reader who doesn't recognize the driver string
-    // still sees it.
-    const glRendererInfo = graphicsCapabilities?.glRenderer
-      ? `GL renderer: ${graphicsCapabilities.glRenderer}${graphicsCapabilities.softwareWebgl ? ' (SOFTWARE RASTERIZER)' : ''}`
-      : ''
-
-    const session = (window as unknown as { JBrowseSession?: SessionGlobal })
-      .JBrowseSession
-    const version = session?.version
-    const rpcManager = session?.rpcManager
-    const rpcInfo = rpcManager ? `RPC: ${rpcManager.driverName}` : ''
-    const errorBoxText = [
-      errorText.length > MAX_ERR_LEN
-        ? `${errorText.slice(0, MAX_ERR_LEN)}...`
-        : errorText,
-      mappedStackTrace || stackTrace || 'No stack trace available',
-      '--- environment ---',
-      version ? `JBrowse ${version}` : '',
-      graphicsInfo,
-      gpuInfo,
-      glRendererInfo,
-      rpcInfo,
-      `Cross-origin isolated: ${crossOriginIsolated}`,
-      `CPU cores: ${navigator.hardwareConcurrency}`,
-      `Device pixel ratio: ${window.devicePixelRatio}`,
-      `Window size: ${window.innerWidth}x${window.innerHeight}`,
-      `URL: ${withoutSharePassword(window.location.href)}`,
-      `User agent: ${navigator.userAgent}`,
-    ]
-      .filter(Boolean)
-      .join('\n')
-
+    const { text, isLoading } = useErrorReportText({ error })
     return (
       <InfoDialog
         open
@@ -96,7 +29,7 @@ const ErrorMessageStackTraceDialog = observer(
           <CopyToClipboardButton
             variant="contained"
             color="secondary"
-            value={errorBoxText}
+            value={text}
             copiedLabel="Copied!"
           >
             Copy stack trace to clipboard
@@ -106,7 +39,7 @@ const ErrorMessageStackTraceDialog = observer(
         {isLoading ? (
           <LoadingEllipses variant="h6" />
         ) : (
-          <ErrorMessageStackTraceContents text={errorBoxText} extra={extra} />
+          <ErrorMessageStackTraceContents text={text} extra={extra} />
         )}
       </InfoDialog>
     )
