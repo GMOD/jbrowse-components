@@ -27,19 +27,41 @@ const hoverAt = (locus: string, hold: number, say?: string): VideoStep => ({
   ...(say ? { say } : {}),
 })
 
-const R248_LOCUS = 'chr17:7,674,221'
+const R248_LOCUS = 'chr17:7,674,220'
 
 // The Protein Browser's TP53 session without its alignment: the genome view
 // and the DNA-bound structure, coloured by AlphaMissense, half the width each.
 const hero = readSession('protein_browser_tp53.session.json')
 const heroSession = {
   ...hero,
+  highlights: [
+    {
+      assemblyName: 'hg38',
+      refName: 'chr17',
+      start: 7674218,
+      end: 7674221,
+      label: 'R248',
+    },
+  ],
   views: hero.views
     .filter(v => v.type !== 'MsaView')
     .map(v =>
       v.type === 'LinearGenomeView'
-        ? { ...v, loc: 'chr17:7674150-7674390[rev]', axis: { grid: true } }
-        : v,
+        ? {
+            ...v,
+            loc: 'chr17:7674176-7674266[rev]',
+            tracks: ['hg38-ncbiRefSeqSelect', 'hg38-clinvarMain'],
+          }
+        : {
+            ...v,
+            height: 440,
+            colorScheme: undefined,
+            structures: (v.structures as object[]).map(st => ({
+              ...st,
+              pdbId: '2xwr',
+              initialTranscriptResidues: [{ start: 248, end: 248 }],
+            })),
+          },
     ),
   layout: {
     id: 'branch-root',
@@ -72,24 +94,27 @@ export const proteinVideos: VideoSpec[] = [
   {
     name: 'proteins/variant_to_residue',
     description:
-      'TP53 exon 7 in the genome view over ClinVar and AlphaMissense, beside the DNA-bound p53 structure: hovering the R248 codon lights that residue in the fold',
+      'TP53 exon 7 in the genome view over ClinVar, beside the p53 core domain: hovering the R248 codon marks that residue in the fold',
     goal: 'Hover a cancer-hotspot codon in the genome and see the residue in the structure',
     url: HERO_URL,
-    viewportHeight: 780,
+    viewportHeight: 700,
     readySelector: '[data-testid="protein-view-ready"]',
     readyTimeout: 300000,
     steps: [
-      { type: 'delay', ms: 1500 },
+      { type: 'click', selector: '[aria-label="Hide legend"]' },
+      { type: 'delay', ms: 4000 },
+      { type: 'click', selector: 'button[title="Reset Zoom"]' },
+      { type: 'delay', ms: 2500 },
       {
         type: 'hover',
         anchor: { trackId: 'hg38-ncbiRefSeqSelect', loc: R248_LOCUS },
         hold: 3500,
-        say: 'Hover the R248 codon, the commonest cancer hotspot in TP53',
+        say: 'Hover the R248 codon, a cancer hotspot in TP53',
       },
       {
         type: 'delay',
         ms: 3500,
-        say: 'One base of the genome, one residue on the DNA-bound structure',
+        say: 'One codon in the genome, one residue on the structure',
       },
     ],
     tailMs: 1200,

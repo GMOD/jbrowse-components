@@ -258,7 +258,7 @@ are residues. The view opens with these tracks on:
 With just the genome view and the structure side by side, each gets half the
 window, wide enough to read a codon beside the residue it encodes.
 
-<Video src="/media/proteins/variant_to_residue.mp4" caption="TP53 exon 7 over ClinVar and AlphaMissense beside the DNA-bound structure. Hovering the R248 codon in the genome marks residue 248 in the fold." />
+<Video src="/media/proteins/variant_to_residue.mp4" caption="TP53 exon 7 over ClinVar beside the p53 core domain. Hovering the R248 codon in the genome marks residue 248 in the fold." />
 
 Launch an alignment from the same right-click menu too, and each panel's menu
 has **Arrange all views → Side by side**, which puts the genome, alignment and
