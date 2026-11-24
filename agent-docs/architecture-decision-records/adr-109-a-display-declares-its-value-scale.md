@@ -108,9 +108,11 @@ content edge.
   or against the panel at its `left` (2026-10-09: the multi-wiggle's row labels
   sit left of the scalebar). Since 2026-11-24 the single wiggle and the
   alignments coverage draw as the multi-wiggle does, rather than with the
-  spine 50 px in and the numbers over the plot's first 50 px, and a band chip
-  starts past the numbers (`onScreenLeftAxisWidth`) rather than past that
-  gutter. The export does not follow it (2026-11-10): its margin is the
+  spine 50 px in and the numbers over the plot's first 50 px. A band's chips
+  come first and its axis stands past them, the chips declared as the panel
+  at the scale's `left` (`bandChipRowWidth`); a chip right of the numbers read
+  as distracting. MAF's band chips still start past the numbers
+  (`onScreenLeftAxisWidth`). The export does not follow it (2026-11-10): its margin is the
   gutter, so every exported left-side axis keeps its spine on the plot's edge
   and its numbers outside, the multi-wiggle's drawn as the alignments' is
   rather than as a bracket standing off the plot. The rule reads `left`, which

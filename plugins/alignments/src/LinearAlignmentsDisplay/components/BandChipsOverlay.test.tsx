@@ -4,8 +4,8 @@ import { getSession } from '@jbrowse/core/util'
 import {
   GROUP_LABEL_HEIGHT,
   GROUP_LABEL_INSET_X,
+  bandChipRowWidth,
 } from '@jbrowse/display-kit/groupLabelStyle'
-import { onScreenLeftAxisWidth } from '@jbrowse/display-ui'
 import { ThemeProvider } from '@mui/material'
 import {
   cleanup,
@@ -137,7 +137,7 @@ test('each band draws its chip at its own top', () => {
   )
 })
 
-test('the band chips share one column past the coverage axis numbers', () => {
+test('the band chips start at the edge and the coverage axis stands past its chip', () => {
   const { display } = createTestAlignmentsDisplay()
   display.setRpcData(
     0,
@@ -158,10 +158,10 @@ test('the band chips share one column past the coverage axis numbers', () => {
     display.view.displayedRegions[0]!,
   )
   renderOverlays(display)
-  const left = `${onScreenLeftAxisWidth(display.axes) + GROUP_LABEL_INSET_X}px`
-  expect(onScreenLeftAxisWidth(display.axes)).toBeGreaterThan(0)
-  expect(screen.getByTestId('band_chips_coverage').style.left).toBe(left)
-  expect(screen.getByTestId('band_chips_pileup').style.left).toBe(left)
+  const edge = `${GROUP_LABEL_INSET_X}px`
+  expect(screen.getByTestId('band_chips_coverage').style.left).toBe(edge)
+  expect(screen.getByTestId('band_chips_pileup').style.left).toBe(edge)
+  expect(display.axes[0]?.left).toBe(bandChipRowWidth(['Coverage']))
 })
 
 test('the read arcs chip hides the read connections band', () => {

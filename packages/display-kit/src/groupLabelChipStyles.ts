@@ -2,6 +2,7 @@ import { alpha } from '@jbrowse/core/ui/palette'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 
 import {
+  BAND_CHIP_GAP_PX,
   GROUP_LABEL_FONT_SIZE,
   GROUP_LABEL_FONT_WEIGHT,
   GROUP_LABEL_HEIGHT,
@@ -66,7 +67,7 @@ export const useGroupLabelStyles = makeStyles()(theme => {
       left: GROUP_LABEL_INSET_X,
       display: 'flex',
       alignItems: 'center',
-      gap: 3,
+      gap: BAND_CHIP_GAP_PX,
       zIndex: 6,
       // The row is only as wide as its chips, but it still sits over the left
       // edge of the band; without this the gap around the chips swallowed the

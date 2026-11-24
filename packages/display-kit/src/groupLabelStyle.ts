@@ -1,3 +1,5 @@
+import { measureText } from '@jbrowse/core/util/measureText'
+
 /**
  * The section-label chip is drawn twice, as an interactive HTML overlay on
  * screen and as a static SVG twin on export, so both read these constants and
@@ -16,6 +18,32 @@ export const GROUP_LABEL_ICON_SIZE = 14
 
 // Left inset of the chip row from the content edge, on both paths.
 export const GROUP_LABEL_INSET_X = 4
+
+// A semibold label sets wider than `measureText`'s regular-weight table.
+const SEMIBOLD_WIDTH = 1.05
+
+// The hide button's 12 px icon, less the 2 px it overlaps the pill's padding.
+const HIDE_BUTTON_PX = 10
+
+// The gap between two chips in a row, and past the last before what follows.
+export const BAND_CHIP_GAP_PX = 3
+
+/**
+ * Px a row of band chips takes from the content edge, the inset and a gap
+ * past the last chip included, for what a display draws beside the row
+ * rather than under it.
+ */
+export function bandChipRowWidth(labels: readonly string[]) {
+  let width = GROUP_LABEL_INSET_X
+  for (const label of labels) {
+    width +=
+      2 * GROUP_LABEL_PADDING_X +
+      measureText(label, GROUP_LABEL_FONT_SIZE) * SEMIBOLD_WIDTH +
+      HIDE_BUTTON_PX +
+      BAND_CHIP_GAP_PX
+  }
+  return Math.ceil(width)
+}
 
 /**
  * Vertical space one chip occupies, and so the least a labelled section can

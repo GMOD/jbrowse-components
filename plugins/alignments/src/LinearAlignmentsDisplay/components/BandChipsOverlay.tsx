@@ -3,11 +3,7 @@ import {
   BandChipRow,
   bandChipsShown,
 } from '@jbrowse/display-kit/BandChips'
-import {
-  GROUP_LABEL_HEIGHT,
-  GROUP_LABEL_INSET_X,
-} from '@jbrowse/display-kit/groupLabelStyle'
-import { onScreenLeftAxisWidth } from '@jbrowse/display-ui'
+import { GROUP_LABEL_HEIGHT } from '@jbrowse/display-kit/groupLabelStyle'
 import { observer } from 'mobx-react'
 
 import { bandChipLabel } from '../bandChips.ts'
@@ -47,9 +43,10 @@ export const BandRowChips = observer(function BandRowChips({
 })
 
 /**
- * Each band's chip at its top-left, past a left-side axis's numbers, but for
- * the row the topmost section chip carries (`GroupLabelsOverlay`). A row
- * scrolling under that chip, which pins to the canvas top, is not drawn.
+ * Each band's chip at its top-left, ahead of a left-side axis, which stands
+ * past it (`valueScales`), but for the row the topmost section chip carries
+ * (`GroupLabelsOverlay`). A row scrolling under that chip, which pins to the
+ * canvas top, is not drawn.
  */
 const BandChipsOverlay = observer(function BandChipsOverlay({
   model,
@@ -57,19 +54,13 @@ const BandChipsOverlay = observer(function BandChipsOverlay({
   model: LinearAlignmentsDisplayModel
 }) {
   const { bandChips, scrollModel: scroll, showsGroupLabels } = model
-  const left = onScreenLeftAxisWidth(model.axes) + GROUP_LABEL_INSET_X
   const minTop = showsGroupLabels ? GROUP_LABEL_HEIGHT + 1 : 0
   const rows = bandChipsShown(model) ? bandChips.rows : []
   return rows.map(row => {
     const top = bandScreenTop(row.top, scroll) + 1
     return top < minTop ||
       top + GROUP_LABEL_HEIGHT > scroll.canvasHeight ? null : (
-      <BandChipRow
-        key={row.band}
-        top={top}
-        left={left}
-        testid={`band_chips_${row.band}`}
-      >
+      <BandChipRow key={row.band} top={top} testid={`band_chips_${row.band}`}>
         <BandRowChips model={model} row={row} />
       </BandChipRow>
     )

@@ -32,6 +32,7 @@ import {
 } from '@jbrowse/core/util'
 import { basePaintedAt } from '@jbrowse/core/util/Base1DUtils'
 import { predicatesOf } from '@jbrowse/core/util/fieldPredicate'
+import { bandChipsShown } from '@jbrowse/display-kit/BandChips'
 import ColorWritesMixin, {
   writtenColorOf,
 } from '@jbrowse/display-kit/ColorWritesMixin'
@@ -46,6 +47,7 @@ import { colorForField } from '@jbrowse/display-kit/colorConfigSchema'
 import { onDisplayedRegionsChange } from '@jbrowse/display-kit/displayAutoruns'
 import { fetchEachRegion } from '@jbrowse/display-kit/fetchEachRegion'
 import { groupByPlotOf } from '@jbrowse/display-kit/groupByMenu'
+import { bandChipRowWidth } from '@jbrowse/display-kit/groupLabelStyle'
 import { keyWindowsOf } from '@jbrowse/display-kit/keyWindows'
 import {
   editPlotMenuItems,
@@ -80,6 +82,7 @@ import {
   readPaletteViews,
 } from './alignmentsColorViews.ts'
 import { sortOf } from './alignmentsSortConfigSchema.ts'
+import { bandChipLabel } from './bandChips.ts'
 import {
   bandStackViews,
   dragStripHeight,
@@ -171,6 +174,7 @@ import type {
   SortColumn,
   SortSetting,
 } from '../shared/types'
+import type { BandChipKey } from './bandChips.ts'
 import type {
   BaseLinearAlignmentsDisplayConfigModel,
   BaseLinearAlignmentsDisplayConfigSchema,
@@ -1112,7 +1116,7 @@ function stateModelFactory(
          * #getter
          * The scales the chrome places the axes from. Coverage rules one band
          * per section, on the right wherever the group label chips take the
-         * left edge. The read cloud's insert-size scale rules each section's arc band,
+         * left edge; a left-side axis stands past its band's chips. The read cloud's insert-size scale rules each section's arc band,
          * captioned TLEN, with a line at each end of the insert-size band the
          * pairs are classed by (pinned, else the one the arcs pool). Each band
          * projects through its section's own scroll;
@@ -1120,6 +1124,17 @@ function stateModelFactory(
          */
         get valueScales(): ValueScale[] {
           const { scrollModel: scroll, renderSections } = self
+          const chipRows = bandChipsShown(self) ? self.bandChips.rows : []
+          const chipsLeft = (band: BandChipKey) => {
+            const row = chipRows.find(r => r.band === band)
+            return row
+              ? bandChipRowWidth(
+                  row.chips.map(key =>
+                    bandChipLabel(key, self.readConnectionsMark),
+                  ),
+                )
+              : 0
+          }
           const scales: ValueScale[] = []
           if (self.coverageBandHeight > 0 && self.coverageDepthDomain) {
             scales.push({
@@ -1128,6 +1143,7 @@ function stateModelFactory(
               height: self.coverageBandHeight,
               ticks: self.coverageTicks,
               side: self.showsGroupLabels ? 'right' : 'left',
+              left: chipsLeft('coverage'),
               symlogConstant: self.symlogConstant,
               ...self.axisGuide,
               bandTops: renderSections.map(section =>
@@ -1156,6 +1172,7 @@ function stateModelFactory(
                   self.readConnectionsPlacement === 'overlay'
                     ? 'right'
                     : 'left',
+                left: chipsLeft('readConnections'),
                 caption: 'TLEN',
                 rules: normalBand
                   ? [{ value: normalBand.lower }, { value: normalBand.upper }]
