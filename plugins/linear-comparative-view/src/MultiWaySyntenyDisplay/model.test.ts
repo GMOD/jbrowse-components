@@ -811,6 +811,42 @@ test('a ribbon color pick keeps the ramp the config declares', () => {
   expect(display.ribbonPaint).toMatchObject(ramp)
 })
 
+function drawOneRibbon(
+  display: ReturnType<typeof createDisplay>,
+  strand: number,
+) {
+  display.setFeatures([
+    new SimpleFeature({
+      uniqueId: 'one',
+      refName: 'ctgA',
+      start: 100,
+      end: 300,
+      strand,
+      mate: {
+        assemblyName: 'volvox_random',
+        refName: 'ctgB',
+        start: 100,
+        end: 300,
+      },
+    }),
+  ])
+  display.setLaneFrames(
+    0,
+    new Map([['volvox_random', decisionOn('ctgB', 200)]]),
+  )
+}
+
+test('a window no lane places says so in one line once its records land', () => {
+  const display = createDisplay()
+  expect(display.noLanesNote).toBeUndefined()
+  display.setFeatures([])
+  expect(display.noLanesNote?.text).toBe(
+    'No genome has sequence placed in this window',
+  )
+  drawOneRibbon(display, 1)
+  expect(display.noLanesNote).toBeUndefined()
+})
+
 test('the strand ribbon mode adds its own section', () => {
   const display = createDisplay()
   setConf(display, ['encoding', 'color'], {

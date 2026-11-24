@@ -317,6 +317,15 @@ const LaneHeaders = observer(function LaneHeaders({
           }}
         />
       ) : null}
+      {model.noLanesNote ? (
+        <GutterNote
+          testId="multiway-no-lanes"
+          top={model.noLanesNote.y - scrollTop}
+          width={width}
+        >
+          {model.noLanesNote.text}
+        </GutterNote>
+      ) : null}
       {model.loadingGutterYs.map(y => (
         <GutterNote
           key={`loading-${y}`}

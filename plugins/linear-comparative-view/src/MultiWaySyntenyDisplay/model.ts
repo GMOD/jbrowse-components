@@ -1956,6 +1956,27 @@ export function stateModelFactory(
       },
       /**
        * #getter
+       * where the stack says that no lane but the anchor's has sequence placed
+       * in the window, once its records have landed
+       */
+      get noLanesNote(): { y: number; text: string } | undefined {
+        const { lanes, glyphHeight } = self.laneStack
+        const anchor = lanes.find(lane => lane.isAnchor)
+        return self.anchorRecordsLoaded &&
+          anchor &&
+          lanes.every(lane => lane.isAnchor)
+          ? {
+              y:
+                anchor.glyphTop +
+                glyphHeight +
+                self.geneLabelPx +
+                2 * LABEL_FONT_SIZE,
+              text: `No ${headerDeclaresHaplotypeLanes(self.adapterHeader) ? 'haplotype' : 'genome'} has sequence placed in this window`,
+            }
+          : undefined
+      },
+      /**
+       * #getter
        * the centre, in stack px, of each gutter whose lane pair was asked for
        * and has not landed
        */
