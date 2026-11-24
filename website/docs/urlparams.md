@@ -521,6 +521,8 @@ restores natively:
   declared property, but the view converts it on the way in, so a v4 link or
   saved spec naming it still works; write `showCytobands` in a new one.
 - `colorByCDS` is the old name of `colorByFrame`, converted the same way.
+- `trackSelectorType` is a key every v2.10–v4.3.0 view saved and nothing read.
+  The view accepts it and drops it, so an old link or session still opens.
 
 #### Live example: alignments display settings
 
@@ -684,6 +686,8 @@ restores natively:
 
 `bpPerPx` and `offsetRadians` are the circle's zoom and rotation; pairing them
 with `autoFit: false` stops the first resize refitting over them.
+`trackSelectorType`, which v2.10–v4.3.0 saved on every view, is accepted and
+dropped.
 
 ### Dotplot view
 
@@ -873,6 +877,8 @@ restores natively:
 
 `levels` is accepted because the view declares it; `tracks` fills it and
 `levelHeights` sizes them, so use `levels` only to author a band's full state.
+`trackSelectorType`, which v2.10–v4.3.0 saved on every view, is accepted and
+dropped.
 
 #### Linear synteny view (multi-way)
 

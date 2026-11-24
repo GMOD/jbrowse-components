@@ -54,7 +54,7 @@ import { docRelative, docsDir } from './paths.ts'
 // `stringArray` slot, and every sub-schema, which then reads as "no schema
 // defines this".
 const SLOT_ROW =
-  /id="slot-[a-z0-9.]+">\*\*([A-Za-z0-9.]+)\*\*<\/span><br>(?:\[?`(\w+)`(?:\]\([^)]*\))?(?:\s*\(([^)]*)\))?|<code>|\[\w+\]\(\.\.\/)/
+  /id="slot-[a-z0-9.]+">\*\*([A-Za-z0-9.]+)\*\*<\/span><br>(?:\[?`(\w+)`(?:\]\([^)]*\))?(?:\s*\(([^)]*)\))?|<code>|\[[\w ]+\]\(\.\.\/)/
 
 // the kind a row with no kind cell declares: a sub-schema, whose value is its
 // object or the string its shorthand lifts
