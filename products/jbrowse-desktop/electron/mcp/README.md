@@ -79,6 +79,9 @@ while it is closed return a message saying to launch it. **Help, Connect an AI
 agent...** in the app shows both forms above for the running install, with a
 copy button for each (`mcp/clientConfig.ts`).
 
+On macOS the socket is found through HOME, so the MCP client must give the shim
+the same HOME the app has; clients that strip the environment keep HOME.
+
 ## Tools
 
 Deliberately four. `run_javascript` is the interface: Claude-authored async JS

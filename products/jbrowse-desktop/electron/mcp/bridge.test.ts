@@ -613,6 +613,11 @@ describe('open', () => {
     await settle(400)
     expect(b.pushedTools()).not.toContain('wait_ready')
     expect(outcome).toBeUndefined()
+    b.ready({ phase: 'session', request: b.requested() })
+    await settle(400)
+    b.answer(b.lastPush().id, { result: { settled: true } })
+    await settle()
+    expect(outcome).toEqual({ id: 1, result: { opened: url, settled: true } })
   })
 
   it('waits for the new session, then for it to settle', async () => {

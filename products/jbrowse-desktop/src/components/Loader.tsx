@@ -71,7 +71,7 @@ const LoaderContents = observer(function LoaderContents() {
   const [specLink] = useQueryParam('specLink')
   // files, a genome and a location named on the command line
   const [launchPlan] = useQueryParam('launchPlan')
-  const [request] = useQueryParam('request')
+  const [urlRequest] = useQueryParam('request')
   const notifyError = useNotifyError()
 
   // The installed manager, readable synchronously. Replacing one is a side
@@ -83,7 +83,8 @@ const LoaderContents = observer(function LoaderContents() {
   const installedRef = useRef<PluginManager | undefined>(undefined)
   const [launchError, setLaunchError] =
     useState<McpReadyState['launchError']>(undefined)
-  const [answered, setAnswered] = useState<McpReadyState['request']>(undefined)
+  const [announcedRequest, setAnnouncedRequest] =
+    useState<McpReadyState['request']>(undefined)
 
   // Install a manager, tearing down whatever it replaces so its worker pool and
   // autosave loop don't leak. undefined installs nothing, which is what
@@ -157,7 +158,7 @@ const LoaderContents = observer(function LoaderContents() {
   const installLaunch = useEventCallback(
     (pm: PluginManager, launchRequest?: string) => {
       handleSetPluginManager(pm)
-      setAnswered(launchRequest)
+      setAnnouncedRequest(launchRequest)
     },
   )
 
@@ -204,7 +205,7 @@ const LoaderContents = observer(function LoaderContents() {
         ? 'loading'
         : 'startScreen',
     launchError,
-    answered,
+    announcedRequest,
   )
 
   const loadTarget = useEventCallback((source: string) =>
@@ -219,7 +220,7 @@ const LoaderContents = observer(function LoaderContents() {
 
   const handleTargetError = useEventCallback((e: unknown) => {
     notifyError(e, config ? removeRecentAction(config) : undefined)
-    setAnswered(request)
+    setAnnouncedRequest(urlRequest)
     // fall back to the start screen so the user can pick another session
     clearTarget()
   })
@@ -228,7 +229,7 @@ const LoaderContents = observer(function LoaderContents() {
     target,
     loadTarget,
     useEventCallback((pm: PluginManager) => {
-      installLaunch(pm, request)
+      installLaunch(pm, urlRequest)
     }),
     handleTargetError,
   )

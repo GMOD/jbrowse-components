@@ -54,8 +54,9 @@ export function resultFields(result: unknown) {
  * one too old to serve the bridge at all. 4.3.0 has no `--mcp` handling, so
  * pointing a client at it launches the GUI and serves nothing; the app is then
  * on screen, in front of the user, while the only advice on offer was to launch
- * it. Every candidate is named, since an app whose TMPDIR put its socket
- * somewhere this process does not look is the other way to be "not there".
+ * it. Every candidate is named, since an app whose TMPDIR (HOME on macOS) put
+ * its socket somewhere this process does not look is the other way to be "not
+ * there".
  */
 export function unreachableMessage(
   failures: { socketPath: string; error: Error }[],
@@ -68,7 +69,9 @@ export function unreachableMessage(
     : `Could not reach JBrowse Desktop (${failures.map(({ error }) => error.message).join('; ')}). Launch the JBrowse Desktop app, then try again.${
         process.platform === 'win32'
           ? ''
-          : " If it is already running, it and this server see different TMPDIR values: give this server the app's, in the MCP client's env for it."
+          : process.platform === 'darwin'
+            ? " If it is already running, it and this server see different HOME values: give this server the app's, in the MCP client's env for it."
+            : " If it is already running, it and this server see different TMPDIR values: give this server the app's, in the MCP client's env for it."
       }`
 }
 

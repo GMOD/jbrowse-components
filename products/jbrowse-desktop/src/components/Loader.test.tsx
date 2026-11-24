@@ -84,6 +84,11 @@ describe('what the MCP bridge is told about an open it asked for', () => {
     )
   })
 
+  afterEach(() => {
+    jest.mocked(loadPluginManager).mockReset()
+    jest.restoreAllMocks()
+  })
+
   test('the session it loaded answers with its request', async () => {
     jest
       .mocked(loadPluginManager)
