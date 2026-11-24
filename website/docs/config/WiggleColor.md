@@ -76,7 +76,7 @@ A copy-number heatmap, white at two copies, blue losses and red gains:
 
 ## Preset fields
 
-A `field` named here paints through its own scale while `scale.type` is unset, and `range` and `names` index its levels in order while `domain` is unwritten. Any other field is threshold.
+A `field` named here paints through its own scale while `scale.type` is unset, and `range` and `names` index its levels in order while `domain` is unwritten. `score` is threshold.
 
 <!-- prettier-ignore -->
 | Field | Scale | Levels | Names | Other defaults |

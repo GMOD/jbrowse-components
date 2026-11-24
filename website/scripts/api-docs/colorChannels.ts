@@ -48,6 +48,22 @@ function presetEntries(
   }).filter(([field]) => field !== '*')
 }
 
+// A channel whose `field` is an enum names the fields its fallback scale
+// takes, rather than "any other field", which reads as an open field
+function otherFieldsSentence(name: string, presets: FieldPresets<string>) {
+  const fallback = presets['*']?.scale.type
+  const others = fieldEnumOf(name)?.filter(
+    field => field !== '' && !Object.hasOwn(presets, field),
+  )
+  return !fallback
+    ? ''
+    : others
+      ? others.length
+        ? ` ${levelList(others)} ${others.length > 1 ? 'are' : 'is'} ${fallback}.`
+        : ''
+      : ` Any other field is ${fallback}.`
+}
+
 export function presetFieldsSection(name: string) {
   const presets = fieldPresetsOf(name)
   if (!presets) {
@@ -67,7 +83,7 @@ export function presetFieldsSection(name: string) {
   }
   return section(
     '## Preset fields',
-    `A \`field\` named here paints through its own scale while \`scale.type\` is unset, and \`range\` and \`names\` index its levels in order while \`domain\` is unwritten.${presets['*'] ? ` Any other field is ${presets['*'].scale.type}.` : ''}`,
+    `A \`field\` named here paints through its own scale while \`scale.type\` is unset, and \`range\` and \`names\` index its levels in order while \`domain\` is unwritten.${otherFieldsSentence(name, presets)}`,
     markdownTable(
       ['Field', 'Scale', 'Levels', 'Names', 'Other defaults'],
       rows,
@@ -88,16 +104,36 @@ export function schemaJsonPath(
 ) {
   return `website/static/schema/v${version.split('.')[0]}/config.json`
 }
-let schemaDefs: Record<string, { properties?: Record<string, unknown> }>
+interface FieldSchema {
+  else?: { allOf?: { enum?: string[] }[] }
+}
+let schemaDefs: Record<
+  string,
+  {
+    properties?: Record<string, unknown>
+    anyOf?: { properties?: { field?: FieldSchema } }[]
+  }
+>
 
-function scaleTypesOf(scaleSchema: string | undefined) {
+function loadSchemaDefs() {
   schemaDefs ??= (
     JSON.parse(fs.readFileSync(schemaJsonPath(), 'utf8')) as {
       $defs: typeof schemaDefs
     }
   ).$defs
+  return schemaDefs
+}
+
+function fieldEnumOf(schema: string) {
+  const field = loadSchemaDefs()[schema]?.anyOf?.find(
+    variant => variant.properties?.field,
+  )?.properties?.field
+  return field?.else?.allOf?.find(part => part.enum)?.enum
+}
+
+function scaleTypesOf(scaleSchema: string | undefined) {
   const type = scaleSchema
-    ? (schemaDefs[scaleSchema]?.properties?.type as
+    ? (loadSchemaDefs()[scaleSchema]?.properties?.type as
         | { else?: { enum?: string[]; const?: string } }
         | undefined)
     : undefined
