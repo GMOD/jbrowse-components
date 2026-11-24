@@ -27,6 +27,7 @@ import {
 } from '@jbrowse/core/util'
 import { fieldReader } from '@jbrowse/core/util/fieldReader'
 import { valueText } from '@jbrowse/core/util/groupKeys'
+import { isDataCurrent } from '@jbrowse/core/util/isDataCurrent'
 import { isJexl } from '@jbrowse/core/util/jexlStrings'
 import { runLazyAfterAttach } from '@jbrowse/core/util/lazyAfterAttach'
 import { MAX_LEGEND_ENTRIES } from '@jbrowse/core/util/legendCandidates'
@@ -107,6 +108,7 @@ import {
 import {
   laneGenome,
   laneKeyIn,
+  lanesPlacedIn,
   readsCopies,
   touchesWindow,
 } from './copyLane.ts'
@@ -1956,15 +1958,18 @@ export function stateModelFactory(
       },
       /**
        * #getter
-       * where the stack says that no lane but the anchor's has sequence placed
-       * in the window, once its records have landed
+       * where the stack says that no lane has sequence placed in the window:
+       * only on records fetched for this window and every lane, whatever is
+       * hidden
        */
       get noLanesNote(): { y: number; text: string } | undefined {
         const { lanes, glyphHeight } = self.laneStack
         const anchor = lanes.find(lane => lane.isAnchor)
-        return self.anchorRecordsLoaded &&
-          anchor &&
-          lanes.every(lane => lane.isAnchor)
+        return anchor &&
+          isDataCurrent(self.loadedFetchKey, self.currentFetchKey) &&
+          !self.error &&
+          self.laneSelection === undefined &&
+          lanesPlacedIn(self.groups).size === 0
           ? {
               y:
                 anchor.glyphTop +

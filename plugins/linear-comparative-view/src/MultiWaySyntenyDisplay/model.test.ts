@@ -42,6 +42,7 @@ import { SEQUENCE_BAR_PX, boxesKey, glyphsKey } from './multiwayGeometry.ts'
 import { createDisplay, createDisplayWithSession } from './testEnv.ts'
 
 import type { MultiWaySyntenyDisplayModel } from './model.ts'
+import type { Feature } from '@jbrowse/core/util'
 
 const geneKeyOf = (display: MultiWaySyntenyDisplayModel) => {
   const scale = display.colorScales.find(s => s.id === 'genes')
@@ -836,15 +837,34 @@ function drawOneRibbon(
   )
 }
 
-test('a window no lane places says so in one line once its records land', () => {
+test('a window no lane places says so only on records fetched for it, with no lane placed however many are hidden, and not after a failed fetch', () => {
   const display = createDisplay()
-  expect(display.noLanesNote).toBeUndefined()
-  display.setFeatures([])
-  expect(display.noLanesNote?.text).toBe(
-    'No genome has sequence placed in this window',
-  )
+  const note = () => display.noLanesNote?.text
+  const commit = (features: Feature[]) => {
+    display.commitFetchResult(() => {
+      display.setFeatures(features)
+    }, display.currentFetchKey!)
+  }
+  expect(note()).toBeUndefined()
+  commit([])
+  expect(note()).toBe('No genome has sequence placed in this window')
+
+  display.lgv.zoomTo(display.lgv.bpPerPx / 2)
+  expect(display.currentFetchKey).not.toEqual(display.loadedFetchKey)
+  expect(note()).toBeUndefined()
+
+  commit([])
+  expect(note()).toBe('No genome has sequence placed in this window')
+  display.setError(new Error('the walk file could not be read'))
+  expect(note()).toBeUndefined()
+  display.setError(undefined)
+
   drawOneRibbon(display, 1)
-  expect(display.noLanesNote).toBeUndefined()
+  commit(display.features)
+  expect(note()).toBeUndefined()
+  display.hideLane('volvox_random')
+  expect(display.rowAssemblies).toEqual([])
+  expect(note()).toBeUndefined()
 })
 
 test('the strand ribbon mode adds its own section', () => {
