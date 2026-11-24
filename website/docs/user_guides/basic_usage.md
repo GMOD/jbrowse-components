@@ -234,10 +234,10 @@ from the ☰ menu.
 
 ## Favorite and recently used tracks
 
-Mark favorites from the Track menu. The All | Favorites | Recent toggle at the
-top of Available tracks narrows the tree, or the table, to your favorites or to
-the tracks you opened recently; the menu at the left of the filter box clears
-either list.
+Mark favorites from the Track menu. In Available tracks, the three small buttons
+at the right of the filter chips pick all tracks, your favorites (the star) or
+the tracks you opened recently (the clock), in the tree or the table. The ☰
+menu at the left of the filter box clears either list.
 
 <Figure caption="Adding a track to the favorites from its track menu, and the favorites list." src="/img/favorite_tracks.png" />
 
@@ -386,13 +386,13 @@ the left or right side.
 
 ## Track table
 
-The Tree | Table toggle at the top of "Available tracks" shows all tracks as a
-filterable table. The rows follow the tree's order, with each track's category
-in the column beside its name, until you click a column header to sort; a search
-lists the tracks whose name matches first. The filter chips stay set when you
-switch between the tree and the table. In table mode, the track selector's ☰
-menu shows or hides any column through Manage columns. Tracks with `metadata`
-fields get extra columns:
+The tree and table buttons at the right of the filter box in "Available tracks"
+switch to a filterable table of all tracks. The rows follow the tree's order,
+with each track's category in the column beside its name, until you click a
+column header to sort; a search lists the tracks whose name matches first. The
+filter chips stay set when you switch between the tree and the table. In table
+mode, the track selector's ☰ menu shows or hides any column through Manage
+columns. Tracks with `metadata` fields get extra columns:
 
 ```json
 {

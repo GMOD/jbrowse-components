@@ -12,7 +12,7 @@ import FacetFilter from './FacetFilter.tsx'
 import { facetLabel } from './util.ts'
 
 import type { TrackTableModel } from '../trackTableModel.ts'
-import type { RefObject } from 'react'
+import type { ReactNode, RefObject } from 'react'
 
 const useStyles = makeStyles()(theme => {
   const accent =
@@ -65,16 +65,19 @@ function selectionText(label: string, selected: string[]) {
  * a chip only while it filters, so a filter is never hidden. A chip opens its
  * facet's values; an active chip names its selection and clears with its ×.
  * A cleared chip that goes away hands focus to "More filters", or to the
- * filter box when that goes too.
+ * filter box when that goes too. `trailing` ends the row,
+ * at its right edge
  */
 const FacetChips = observer(function FacetChips({
   table,
   filterBoxRef,
   omit = [],
+  trailing,
 }: {
   table: TrackTableModel
   filterBoxRef: RefObject<HTMLInputElement | null>
   omit?: string[]
+  trailing?: ReactNode
 }) {
   const { classes } = useStyles()
   const [open, setOpen] = useState<{ el: HTMLElement; field?: string }>()
@@ -87,7 +90,7 @@ const FacetChips = observer(function FacetChips({
   const moreFacets = table.moreFacets.filter(kept)
   const chips = filterFacets.filter(f => chipFacets.has(f) || f === open?.field)
   const listed = open ? (open.field ? [open.field] : moreFacets) : []
-  return chips.length || moreFacets.length ? (
+  return trailing || chips.length || moreFacets.length ? (
     <div className={classes.row}>
       {chips.map(field => {
         const label = facetLabel(field, nonMetadataFieldSet)
@@ -148,6 +151,7 @@ const FacetChips = observer(function FacetChips({
           }}
         />
       ) : null}
+      {trailing}
       <Popover
         open={!!open}
         anchorEl={open?.el}

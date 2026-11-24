@@ -6,6 +6,8 @@ import { observer } from 'mobx-react'
 import FacetChips from '../../../TrackTable/components/FacetChips.tsx'
 import TrackFilterBox from '../../../TrackTable/components/TrackFilterBox.tsx'
 import ShoppingCart from '../ShoppingCart.tsx'
+import TrackListToggle from '../TrackListToggle.tsx'
+import TreeTableToggle from '../TreeTableToggle.tsx'
 import HamburgerMenu from './HamburgerMenu.tsx'
 
 import type { HierarchicalTrackSelectorModel } from '../../model.ts'
@@ -17,15 +19,17 @@ const useStyles = makeStyles()(theme => ({
     alignItems: 'center',
   },
   searchBox: {
-    margin: theme.spacing(2),
+    margin: theme.spacing(2, 1, 2, 2),
     flexGrow: 1,
   },
 }))
 
 /**
- * The ☰ menu, cart, filter box and filter chips the tree and the table share.
- * The table adds its rows to the ☰ menu, which depend on the columns that fit.
- * The tree's own headings are its category filter, so it has no category chip
+ * The ☰ menu, cart, filter box, Tree | Table toggle and filter chips the tree
+ * and the table share. The table adds its rows to the ☰ menu, which depend on
+ * the columns that fit. The tree's own headings are its category filter, so
+ * it has no category chip. The chip row ends in the Favorites and Recently
+ * used toggle
  */
 const HierarchicalTrackSelectorHeader = observer(
   function HierarchicalTrackSelectorHeader({
@@ -51,11 +55,13 @@ const HierarchicalTrackSelectorHeader = observer(
             className={classes.searchBox}
             inputRef={filterBoxRef}
           />
+          <TreeTableToggle model={model} />
         </div>
         <FacetChips
           table={trackTable}
           filterBoxRef={filterBoxRef}
           omit={model.showTable ? [] : ['category']}
+          trailing={<TrackListToggle model={model} />}
         />
       </>
     )

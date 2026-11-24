@@ -34,8 +34,7 @@ and proposal captures side by side:
   filtered set still reaches the cart's "Create multi-row track".
 - The tree has no category chip unless a category filter is set, since its
   headings are its category facet.
-- Rows indent by how many drawn rows they sit under, so Favorites and Recent
-  start at the left edge.
+- Rows indent by how many drawn rows they sit under.
 
 Amended 2026-11-20: a table row answers a click as a tree row does. Colin found
 the table's checkboxes showed no pointer and its names ignored a plain click.
@@ -75,6 +74,19 @@ Amended 2026-11-24: the config's own tracks draw their "Tracks" group row even
 with no connection. Without it a track with no category, such as Reference
 sequence, sat loose above the first category bar on hosted hg38 (Colin), and
 the group row's menu already carried Collapse / Expand all categories.
+
+Amended 2026-11-24: the filter box is the drawer's first row. The All |
+Favorites | Recent toggle row went: All tracks, Favorites and Recently used
+are three 16 px icon toggles (layers, star, clock) at the right end of the
+chip row. A two-icon version, where pressing the list that was on went back
+to All, left no visible way back (Colin). In the tree a list draws under one
+group row, "Favorite tracks" or "Recently used tracks", as the config's tracks
+draw under "Tracks", and an empty list says so inside that group. Tree | Table became two icon buttons
+(a tree and a grid) at the right of the filter box. The header mounts once
+above both modes, so the toggles and the filter box keep focus across a
+switch; the Kind chip stays. Radio rows in the ☰ with an active "Favorites ×"
+chip were built first and dropped for the toggles, which show the list without
+opening a menu.
 
 ## Context
 

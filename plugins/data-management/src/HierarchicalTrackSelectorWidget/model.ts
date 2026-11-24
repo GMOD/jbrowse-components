@@ -51,6 +51,11 @@ const MAX_RECENTLY_USED = 10
 // the group holding the config's own tracks, as opposed to a connection's
 const mainGroupId = 'Tracks'
 
+const listGroupNames = {
+  favorites: 'Favorite tracks',
+  recent: 'Recently used tracks',
+} as const
+
 type CategoryModes = ReadonlyMap<string, CategoryMode>
 
 function recentlyUsedK(assemblyNames: string[]) {
@@ -812,14 +817,22 @@ export default function stateTreeFactory(pluginManager: PluginManager) {
                       ]
                     : []
                 })
-              : this.flatList,
+              : [
+                  {
+                    name: listGroupNames[trackList],
+                    id: trackList,
+                    type: 'category' as const,
+                    nestingLevel: 0,
+                    children: this.flatList,
+                  },
+                ],
         }
       },
       /**
        * #getter
        * the favorites or recently used tracks as a flat list in the list's own
-       * order, newest first for recent, with no category tree or group header:
-       * the toggle above already names the list
+       * order, newest first for recent, with no category tree; hierarchy puts
+       * them under one group row named for the list
        */
       get flatList(): TreeNode[] {
         const { trackList, listedTrackOrder = [] } = self

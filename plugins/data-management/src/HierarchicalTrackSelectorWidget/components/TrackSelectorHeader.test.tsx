@@ -134,7 +134,7 @@ test('closing the selector leaves table mode, so reopening it shows the tree', (
   expect(session.effectiveDrawerWidth).toBe(session.drawerWidth)
 })
 
-test('the recent list is flat, newest first, with no category tree or group header', () => {
+test('the recent list is flat, newest first, under one group row with no category tree', () => {
   const { model } = setup()
   model.addToRecentlyUsed('genes')
   model.addToRecentlyUsed('chromatin')
@@ -143,7 +143,27 @@ test('the recent list is flat, newest first, with no category tree or group head
     model.rows.map(({ item }) =>
       item.type === 'track' ? item.trackId : `[${item.name}]`,
     ),
-  ).toEqual(['chromatin', 'genes'])
+  ).toEqual(['[Recently used tracks]', 'chromatin', 'genes'])
+})
+
+test('an empty favorites list draws its group row with the message under it', () => {
+  const { model } = setup()
+  const { getByText } = render(
+    <ThemeProvider theme={createJBrowseTheme()}>
+      <HierarchicalTrackSelector model={model} />
+    </ThemeProvider>,
+  )
+  act(() => {
+    model.setTrackList('favorites')
+  })
+  expect(model.rows.map(r => r.item.name)).toEqual(['Favorite tracks'])
+  const message = getByText(
+    'No favorite tracks yet. Add one from a track’s menu.',
+  )
+  expect(
+    getByText('Favorite tracks').compareDocumentPosition(message) &
+      Node.DOCUMENT_POSITION_FOLLOWING,
+  ).toBeTruthy()
 })
 
 test('the table lists the recent tracks newest first, as the tree does', () => {
@@ -194,7 +214,6 @@ test('the favorites list narrows the tree and the table to favorite tracks, and 
   act(() => {
     model.addToFavorites('genes')
   })
-  expect(getByTestId('list-favorites').textContent).toBe('Favorites')
   expect(model.listedTrackConfigurations.map(t => t.trackId)).toEqual(['genes'])
   expect(
     model.rows.flatMap(({ item }) =>
@@ -266,4 +285,25 @@ test('a favorites list none of whose tracks this view can show says so', async (
       'None of your favorite tracks can show in this view. Add one from a track’s menu.',
     ),
   ).toBeTruthy()
+})
+
+test('the list toggles switch between all tracks, favorites and recent, and pressing the one on keeps it', () => {
+  const { model } = setup()
+  const { getByTestId } = render(
+    <ThemeProvider theme={createJBrowseTheme()}>
+      <HierarchicalTrackSelector model={model} />
+    </ThemeProvider>,
+  )
+  expect(getByTestId('list-all').getAttribute('aria-pressed')).toBe('true')
+  const recent = getByTestId('list-recent')
+  fireEvent.click(recent)
+  expect(model.trackList).toBe('recent')
+  fireEvent.click(recent)
+  expect(model.trackList).toBe('recent')
+
+  fireEvent.click(getByTestId('list-favorites'))
+  expect(model.trackList).toBe('favorites')
+  fireEvent.click(getByTestId('list-all'))
+  expect(model.trackList).toBe('all')
+  expect(getByTestId('list-recent')).toBe(recent)
 })
