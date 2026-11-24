@@ -779,16 +779,10 @@ export default function stateTreeFactory(pluginManager: PluginManager) {
       },
       /**
        * #getter
-       * whether the All list draws a row for each group: only once a
-       * connection adds a group beside the config's own tracks
-       */
-      get groupRowsDrawn() {
-        return self.allTracks.length > 1
-      },
-      /**
-       * #getter
-       * a group is kept even when no track in it survives the filter, so an
-       * empty connection still shows in the tree
+       * a connection's group is kept even when no track in it survives the
+       * filter, since clicking it is what loads it; the config's own group
+       * goes, so a filter that keeps nothing says so instead of drawing a
+       * lone "Tracks" row
        */
       get hierarchy() {
         const { trackList } = self
@@ -799,18 +793,25 @@ export default function stateTreeFactory(pluginManager: PluginManager) {
           type: 'category' as const,
           children:
             trackList === 'all'
-              ? self.allTracks.map(s => ({
-                  name: s.group,
-                  id: s.id,
-                  type: 'category' as const,
-                  nestingLevel: 0,
-                  defaultCollapsed: s.defaultCollapsed,
-                  loading: s.loading,
-                  children: generateHierarchy(
+              ? self.allTracks.flatMap(s => {
+                  const children = generateHierarchy(
                     s.tracks.filter(t => keptIds?.has(t.conf.trackId) ?? true),
                     s.id,
-                  ),
-                }))
+                  )
+                  return s.connectionId || children.length > 0
+                    ? [
+                        {
+                          name: s.group,
+                          id: s.id,
+                          type: 'category' as const,
+                          nestingLevel: 0,
+                          defaultCollapsed: s.defaultCollapsed,
+                          loading: s.loading,
+                          children,
+                        },
+                      ]
+                    : []
+                })
               : this.flatList,
         }
       },
@@ -852,11 +853,8 @@ export default function stateTreeFactory(pluginManager: PluginManager) {
        * every rendered row, in order, with its height and scroll offset
        */
       get rows() {
-        const { children } = self.hierarchy
         return buildRows(
-          self.trackList === 'all' && !self.groupRowsDrawn
-            ? children[0]!.children
-            : children,
+          self.hierarchy.children,
           self.categoryMode,
           self.filterActive,
         )

@@ -8,6 +8,8 @@ exports[`configuration preference - collapse categorized tracks 1`] = `
 
 exports[`configuration preference - sorting categories 1`] = `
 [
+  "Tracks",
+  "",
   "cat1",
   "",
   "cat2",
@@ -21,6 +23,8 @@ exports[`configuration preference - sorting categories 1`] = `
 
 exports[`configuration preference - sorting track names 1`] = `
 [
+  "Tracks",
+  "",
   "cat1",
   "",
   "cat2",

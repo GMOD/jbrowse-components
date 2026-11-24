@@ -1968,9 +1968,10 @@ test("a visitor deletes a connection they added, and not one the site's config d
   expect(model.removableConnection('connection-conn1')).toBeUndefined()
 })
 
-// with no connection the config's own tracks are the only group, so the tree
-// draws no row for it and its collapse pair moves to the ☰ menu
-test('a lone group gets no row, and the ☰ menu collapses its categories', async () => {
+// with no connection the config's own tracks still draw their group row, so a
+// track with no category sits under a heading rather than loose above the
+// first category bar
+test('a lone group still draws its row, which collapses its categories', async () => {
   const session = addTestDataWithDeepCategories(
     createTestSession({ adminMode: true }),
   )
@@ -1980,15 +1981,17 @@ test('a lone group gets no row, and the ☰ menu collapses its categories', asyn
     ],
   })
   const model = view.activateTrackSelector() as HierarchicalTrackSelectorModel
-  expect(model.rows.some(r => r.item.id === 'Tracks')).toBe(false)
-  expect(model.rows[0]!.depth).toBe(0)
+  expect(model.rows[0]!.item.id).toBe('Tracks')
+  expect(
+    model.rows.find(r => r.item.name === 'Reference sequence (volMyt1)')!.depth,
+  ).toBe(1)
 
   const { findByTestId, findByText } = render(
     <ThemeProvider theme={createJBrowseTheme()}>
       <HierarchicalTrackSelector model={model} toolbarHeight={20} />
     </ThemeProvider>,
   )
-  fireEvent.click(await findByTestId('track-selector-hamburger'))
+  fireEvent.click(await findByTestId('htsCategoryMenu-Tracks'))
   fireEvent.click(await findByText('Collapse all categories'))
   expect(model.categoryMode.get('Tracks-Epigenomics')).toBe('collapsed')
   expect(trackNames(model)).toEqual(['Reference sequence (volMyt1)'])

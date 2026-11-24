@@ -34,10 +34,8 @@ and proposal captures side by side:
   filtered set still reaches the cart's "Create multi-row track".
 - The tree has no category chip unless a category filter is set, since its
   headings are its category facet.
-- With no connection the config's own tracks are the only group, and the tree
-  draws no row for it: categories start at the left edge, and Collapse all /
-  Expand all categories sit in the ☰. Rows indent by how many drawn rows they
-  sit under, so Favorites and Recent start at the left edge too.
+- Rows indent by how many drawn rows they sit under, so Favorites and Recent
+  start at the left edge.
 
 Amended 2026-11-20: a table row answers a click as a tree row does. Colin found
 the table's checkboxes showed no pointer and its names ignored a plain click.
@@ -72,6 +70,11 @@ named as the plain text its table cell shows. An excluded term hides a track for
 value the row does not draw, as the table already did. A typed `field:value` is
 still a literal term: it waits on the filter predicates in
 `waiting-on-a-call/the-track-list-config-speaks-the-grammar.md`.
+
+Amended 2026-11-24: the config's own tracks draw their "Tracks" group row even
+with no connection. Without it a track with no category, such as Reference
+sequence, sat loose above the first category bar on hosted hg38 (Colin), and
+the group row's menu already carried Collapse / Expand all categories.
 
 ## Context
 
@@ -109,7 +112,7 @@ on the way back, and the tree could not filter by metadata at all.
   - Delete connections...: "Delete connection..." on the connection's own
     group row, through the same confirm.
   - Collapse: "Collapse all categories" / "Expand all categories" on a group
-    row's menu (in the ☰ when a lone group draws no row), which drops "Open
+    row's menu, which drops "Open
     as table..." for the Tree | Table toggle; config `defaultCollapsed.*`
     still sets the first load.
   - Sort: deleted (Status).
@@ -143,6 +146,7 @@ on the way back, and the tree could not filter by metadata at all.
 | A show-all header checkbox on an unfiltered list | One stray click turned on every track of a hub; it appears with "N of M" |
 | A track's ⋯ shown only on hover | Colin wants it always on (2026-11-18); a new user should see that a row has a menu |
 | "1 shown" at the right of a closed category whose tracks are on | Built and declined from today/proposal captures on hg38, where the one shown track sat inside a closed bar (Colin, 2026-11-20) |
+| No "Tracks" row when the config's tracks are the only group | Built 2026-11-18 and reverted 2026-11-24: an uncategorized track read as orphaned above the teal category bars (Colin) |
 | The drawer's table without its outline and the rule under each row | Declined from the same captures; Colin asked for less wasted width instead, and the checkbox column of every table went from 40 px to 28 |
 
 ## Consequences
