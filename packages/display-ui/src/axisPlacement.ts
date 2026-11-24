@@ -88,18 +88,52 @@ export function leftAxisGutterWidth(
 }
 
 /**
- * Whether an axis's numbers grow rightward from its spine: a right-side axis
- * keeps them inside the plot's right edge, and on screen a left-side axis set
- * past a panel keeps its spine against the panel. Every other left-side axis
- * grows them leftward, out of the plot: on screen one at the display's own
- * edge, and in an export all of them, since the export margin is the gutter
- * and the panel is parked past it.
+ * Whether an axis's numbers grow rightward from its spine: on screen every
+ * axis's do, facing the plot, and in an export a right-side axis's do, inside
+ * the plot's right edge. An exported left-side axis grows them leftward into
+ * the export margin, which is the gutter, with the panel parked past it.
  */
-export function numbersGrowRight(
-  axis: Pick<YAxis, 'side' | 'left'>,
-  exported = false,
+export function numbersGrowRight(axis: Pick<YAxis, 'side'>, exported = false) {
+  return axis.side === 'right' || !exported
+}
+
+/**
+ * Px an on-screen left-side axis stands in from its edge: the track outline
+ * covers a display's first px, and would hide a spine drawn on it.
+ */
+export const ONSCREEN_LEFT_AXIS_INSET_PX = 1
+
+const ONSCREEN_LEFT_AXIS_PX = Math.ceil(
+  ONSCREEN_LEFT_AXIS_INSET_PX +
+    TICK_LABEL_X_PX +
+    measureText('0000', AXIS_FONT_PX),
+)
+
+/**
+ * Px a left-side axis takes from the display's left edge on screen, so a chip
+ * over its band starts past it: room for a four-digit label, or a captioned
+ * axis's whole gutter, which holds the caption past the labels; 0 when no
+ * left-side axis draws. The uncaptioned width is fixed rather than measured,
+ * so an autoscale that widens the labels never moves the chips.
+ */
+export function onScreenLeftAxisWidth(
+  axes: readonly Pick<
+    YAxis,
+    'side' | 'height' | 'bandTops' | 'showAxis' | 'ticks' | 'caption'
+  >[],
 ) {
-  return axis.side === 'right' || (!exported && (axis.left ?? 0) > 0)
+  let width = 0
+  for (const axis of axes) {
+    if (axis.side !== 'right' && axisDrawn(axis)) {
+      width = Math.max(
+        width,
+        axis.caption
+          ? ONSCREEN_LEFT_AXIS_INSET_PX + axisGutterWidth(axis)
+          : ONSCREEN_LEFT_AXIS_PX,
+      )
+    }
+  }
+  return width
 }
 
 function bandsOverlap(
@@ -155,7 +189,7 @@ export const AXIS_RIGHT_INSET_PX = 4
  * gutter inside the plot's right edge, less `rightInset` (the vertical
  * scrollbar a display may mount on screen; a margin in an export). A left-side
  * axis takes the gutter at the display's left edge, past whatever panel the
- * scale's `left` reserves — except in an export, whose margin is the gutter:
+ * scale's `left` reserves and `ONSCREEN_LEFT_AXIS_INSET_PX` — except in an export, whose margin is the gutter:
  * the export parks that panel left of the margin, so the axis sits between
  * the two with its numbers outside the plot.
  */
@@ -170,5 +204,5 @@ export function axisGutterLeft(
   }
   return exportContentLeft !== undefined
     ? exportContentLeft - AXIS_GUTTER_WIDTH_PX
-    : (axis.left ?? 0)
+    : (axis.left ?? 0) + ONSCREEN_LEFT_AXIS_INSET_PX
 }

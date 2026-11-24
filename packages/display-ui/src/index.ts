@@ -149,10 +149,12 @@ export {
 export {
   AXIS_RIGHT_INSET_PX,
   COMPACT_AXIS_HEIGHT,
+  ONSCREEN_LEFT_AXIS_INSET_PX,
   axisDrawn,
   axisGutterLeft,
   axisGutterWidth,
   leftAxisGutterWidth,
+  onScreenLeftAxisWidth,
   rightAxisStackInsets,
 } from './axisPlacement.ts'
 export { default as AxisGutter } from './AxisGutter.tsx'

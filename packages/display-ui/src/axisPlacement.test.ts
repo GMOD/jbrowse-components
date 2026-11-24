@@ -41,9 +41,10 @@ test('left-side and captioned axes take no room on the right', () => {
   ).toEqual([0, 0, 0])
 })
 
-test('a left-side axis past a panel grows its numbers right on screen and left in an export', () => {
-  const pastPanel = { side: 'left' as const, left: 40 }
-  expect(numbersGrowRight(pastPanel)).toBe(true)
-  expect(numbersGrowRight(pastPanel, true)).toBe(false)
+test('every axis grows its numbers right on screen, and an exported left-side axis grows them left', () => {
+  for (const side of ['left', 'right'] as const) {
+    expect(numbersGrowRight({ side })).toBe(true)
+  }
+  expect(numbersGrowRight({ side: 'left' }, true)).toBe(false)
   expect(numbersGrowRight({ side: 'right' }, true)).toBe(true)
 })

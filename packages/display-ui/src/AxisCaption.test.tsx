@@ -29,8 +29,8 @@ function axisLabelled(labels: string[], caption: string): YAxis {
 function drawn(axis: YAxis, height: number) {
   const { container } = render(
     <svg>
-      <AxisGutter axis={axis} />
-      <AxisCaption axis={axis} bandTops={[0]} height={height} />
+      <AxisGutter axis={axis} exported />
+      <AxisCaption axis={axis} bandTops={[0]} height={height} exported />
     </svg>,
   )
   const spine = Number(

@@ -1,7 +1,11 @@
 import { resolvePalette } from '@jbrowse/core/ui/palette'
 import { useMouseState } from '@jbrowse/core/ui/useMouseTracking'
 import { measureText } from '@jbrowse/core/util/measureText'
-import { DEFAULT_RULE_COLOR, TrackOverlaySlot } from '@jbrowse/display-ui'
+import {
+  DEFAULT_RULE_COLOR,
+  ONSCREEN_LEFT_AXIS_INSET_PX,
+  TrackOverlaySlot,
+} from '@jbrowse/display-ui'
 import { types } from '@jbrowse/mobx-state-tree'
 import {
   isGpuRenderingDisabled,
@@ -885,7 +889,7 @@ describe('the y axis', () => {
     expect(labelsOf(container)).toEqual(['0', '10'])
     const [hatches, axis] = overlays(container)
     expect(hatches?.left).toBe('0px')
-    expect(axis?.left).toBe('0px')
+    expect(axis?.left).toBe(`${ONSCREEN_LEFT_AXIS_INSET_PX}px`)
     expect(axis?.width).toBe('50px')
     expect(axis?.top).toBe('0px')
   })
@@ -957,7 +961,9 @@ describe('the y axis', () => {
       AxisModel.create({ axes: [scale({ left: 40 })] }),
     )
     await findByTestId('probe-canvas')
-    expect(overlays(container)[0]?.left).toBe('40px')
+    expect(overlays(container)[0]?.left).toBe(
+      `${40 + ONSCREEN_LEFT_AXIS_INSET_PX}px`,
+    )
   })
 
   // Below COMPACT_AXIS_HEIGHT the labels would overlap, so the scale is

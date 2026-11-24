@@ -103,10 +103,14 @@ content edge.
 - **One form for every axis, on screen and in the export.** The axis sits in
   a gutter `AXIS_GUTTER_WIDTH_PX` (50 px) wide with its spine on the gutter's
   inner edge and its numbers growing outward (`AxisGutter`), except that on
-  screen a left-side axis with a panel at its `left` keeps its spine against
-  the panel and grows its numbers right (`numbersGrowRight`, 2026-10-09: the
-  multi-wiggle's row labels sit left of the scalebar and its numbers face the
-  plot). The export does not follow it (2026-11-10): its margin is the
+  screen every axis grows its numbers right, facing the plot
+  (`numbersGrowRight`): a left-side axis keeps its spine on the display's edge,
+  or against the panel at its `left` (2026-10-09: the multi-wiggle's row labels
+  sit left of the scalebar). Since 2026-11-24 the single wiggle and the
+  alignments coverage draw as the multi-wiggle does, rather than with the
+  spine 50 px in and the numbers over the plot's first 50 px, and a band chip
+  starts past the numbers (`onScreenLeftAxisWidth`) rather than past that
+  gutter. The export does not follow it (2026-11-10): its margin is the
   gutter, so every exported left-side axis keeps its spine on the plot's edge
   and its numbers outside, the multi-wiggle's drawn as the alignments' is
   rather than as a bracket standing off the plot. The rule reads `left`, which

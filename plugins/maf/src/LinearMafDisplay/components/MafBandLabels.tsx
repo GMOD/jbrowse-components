@@ -6,7 +6,7 @@ import {
   bandChipsShown,
 } from '@jbrowse/display-kit/BandChips'
 import { GROUP_LABEL_INSET_X } from '@jbrowse/display-kit/groupLabelStyle'
-import { leftAxisGutterWidth } from '@jbrowse/display-ui'
+import { onScreenLeftAxisWidth } from '@jbrowse/display-ui'
 import { AXIS_GUTTER_WIDTH_PX } from '@jbrowse/wiggle-core'
 import { observer } from 'mobx-react'
 
@@ -21,7 +21,7 @@ const BASELINE_OFFSET = FONT_SIZE + 1
 /**
  * The band titles for the SVG export, as plain text at the export's own x:
  * the export draws no controls, so neither the on-screen chips nor their x,
- * which follows the axes (`leftAxisGutterWidth`). `model.bandLabels` decides
+ * which follows the axes (`onScreenLeftAxisWidth`). `model.bandLabels` decides
  * what is titled.
  */
 export function SvgMafBandLabels({
@@ -48,7 +48,7 @@ export function SvgMafBandLabels({
 }
 
 /**
- * Each band's chip at its top-left, past the y-axis gutter the bands share,
+ * Each band's chip at its top-left, past the left-side y axis's numbers,
  * whose × hides the band as its Show menu row does.
  */
 const MafBandLabels = observer(function MafBandLabels({
@@ -56,7 +56,7 @@ const MafBandLabels = observer(function MafBandLabels({
 }: {
   model: LinearMafDisplayModel
 }) {
-  const left = leftAxisGutterWidth(model.axes) + GROUP_LABEL_INSET_X
+  const left = onScreenLeftAxisWidth(model.axes) + GROUP_LABEL_INSET_X
   const labels = bandChipsShown(model) ? model.bandLabels : []
   return labels.map(({ band, text, top }) => (
     <BandChipRow
