@@ -10,6 +10,7 @@ import {
   laneRowsOf,
   laneUniverseOf,
   lanesInForce,
+  noLanesPlacedText,
   pickedLanes,
   unalignedChosenLanesOf,
   withLaneHidden,
@@ -483,4 +484,22 @@ describe('the lane dialog with copy lanes', () => {
       ),
     ).toEqual(['grape', '{grape}chr11', '{grape}chr4'])
   })
+})
+
+test("the no-lane line counts a track's own lanes, and speaks for the file only where the track names none", () => {
+  expect(noLanesPlacedText(8, true)).toBe(
+    "None of this track's 8 haplotypes has sequence placed in this window",
+  )
+  expect(noLanesPlacedText(1, true)).toBe(
+    "None of this track's 1 haplotype has sequence placed in this window",
+  )
+  expect(noLanesPlacedText(2, false)).toBe(
+    "None of this track's 2 genomes has sequence placed in this window",
+  )
+  expect(noLanesPlacedText(0, true)).toBe(
+    'No haplotype has sequence placed in this window',
+  )
+  expect(noLanesPlacedText(0, false)).toBe(
+    'No genome has sequence placed in this window',
+  )
 })

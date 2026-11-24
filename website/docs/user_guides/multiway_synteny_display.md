@@ -59,7 +59,10 @@ places, each a row of its own under the haplotype's name and contig: one on
 another contig, or a window or more along the same one. A lane placing
 alignments draws its own sequence as a grey bar under its ribbons, and a dashed
 line across a hole, where the bases either side are adjacent in the lane. Where
-no haplotype has sequence placed in the window, a line under the anchor says so.
+none of the lanes has sequence placed in the window, a line under the anchor
+says so. A track that names its haplotypes speaks for those alone, as in "None
+of this track's 8 haplotypes has sequence placed in this window", since others
+in the file may have sequence there.
 
 The marks every lane draws alike, the ribbons' orientation, a mismatch, the grey
 sequence bar and its dashed join, are keyed in one row above the anchor lane,

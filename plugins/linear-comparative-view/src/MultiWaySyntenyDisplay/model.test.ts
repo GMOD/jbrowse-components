@@ -914,6 +914,41 @@ test('a window no lane places says so only on records fetched for it, with no la
   expect(note()).toBeUndefined()
 })
 
+test('a source declaring its lanes says no lane is placed over the lanes its track names, and nothing once a choice narrows the fetch', () => {
+  const { display } = createDisplayWithSession({
+    syntenyAdapter: { type: 'GbzBaseSyntenyAdapter' },
+    rpc: () => new Promise(() => {}),
+  })
+  const commitNothing = () => {
+    display.commitFetchResult(() => {
+      display.setFeatures([])
+    }, display.currentFetchKey!)
+  }
+  expect(display.laneSelection).toEqual(['volvox_random'])
+  commitNothing()
+  expect(display.noLanesNote?.text).toBe(
+    "None of this track's 1 genome has sequence placed in this window",
+  )
+
+  display.setSelectedLanes(['volvox_random'])
+  commitNothing()
+  expect(display.noLanesNote).toBeUndefined()
+})
+
+test("a source declaring its lanes counts the track's lanes in the no-lane line, since the file may hold others placed here", () => {
+  const { display } = createDisplayWithSession({
+    syntenyAdapter: { type: 'GbzBaseSyntenyAdapter' },
+    trackAssemblyNames: ['volvox', 'HG00097.1', 'HG00099.1'],
+    rpc: () => new Promise(() => {}),
+  })
+  display.commitFetchResult(() => {
+    display.setFeatures([])
+  }, display.currentFetchKey!)
+  expect(display.noLanesNote?.text).toBe(
+    "None of this track's 2 genomes has sequence placed in this window",
+  )
+})
+
 test('the strand ribbon mode adds its own section', () => {
   const display = createDisplay()
   setConf(display, ['encoding', 'color'], {

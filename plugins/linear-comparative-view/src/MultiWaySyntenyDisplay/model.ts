@@ -188,7 +188,7 @@ import {
   placelessLaneViews,
   unalignedLaneViews,
 } from './laneRowViews.ts'
-import { laneUniverseOf } from './laneSelection.ts'
+import { laneUniverseOf, noLanesPlacedText } from './laneSelection.ts'
 import { gutterNearViewport, laneGeometry, stackReach } from './laneStack.ts'
 import {
   canvasBlocks,
@@ -2022,8 +2022,9 @@ export function stateModelFactory(
       /**
        * #getter
        * where the stack says that no lane has sequence placed in the window:
-       * only on records fetched for this window and every lane, whatever is
-       * hidden
+       * only on records fetched for this window and every lane the track
+       * names, whatever is hidden, counting the track's lanes where it names
+       * them
        */
       get noLanesNote(): { y: number; text: string } | undefined {
         const { lanes, glyphHeight } = self.laneStack
@@ -2031,7 +2032,7 @@ export function stateModelFactory(
         return anchor &&
           isDataCurrent(self.loadedFetchKey, self.currentFetchKey) &&
           !self.error &&
-          self.laneSelection === undefined &&
+          self.laneChoice.length === 0 &&
           lanesPlacedIn(self.groups).size === 0
           ? {
               y:
@@ -2039,7 +2040,10 @@ export function stateModelFactory(
                 glyphHeight +
                 self.geneLabelPx +
                 2 * LABEL_FONT_SIZE,
-              text: `No ${headerDeclaresHaplotypeLanes(self.adapterHeader) ? 'haplotype' : 'genome'} has sequence placed in this window`,
+              text: noLanesPlacedText(
+                self.configuredLanes.length,
+                headerDeclaresHaplotypeLanes(self.adapterHeader),
+              ),
             }
           : undefined
       },

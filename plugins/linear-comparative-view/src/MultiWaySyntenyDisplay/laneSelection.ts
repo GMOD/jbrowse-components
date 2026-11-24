@@ -44,6 +44,13 @@ export function laneResetLabel(
     : `Show every lane (${model.laneUniverse.length})`
 }
 
+export function noLanesPlacedText(declared: number, haplotypes: boolean) {
+  const noun = haplotypes ? 'haplotype' : 'genome'
+  return declared
+    ? `None of this track's ${declared} ${noun}${declared === 1 ? '' : 's'} has sequence placed in this window`
+    : `No ${noun} has sequence placed in this window`
+}
+
 type KeyOf = (name: string) => string
 
 /**
