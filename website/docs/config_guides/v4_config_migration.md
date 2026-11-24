@@ -70,7 +70,6 @@ a file, and fails on a key it does not know.
 | `LDTrackDisplay`, `LinearHicDisplay`, `LinearMafDisplay`, `LinearManhattanDisplay`, `LinearMarkDisplay`, `LinearMultiRowFeatureDisplay`, `LinearWiggleDisplay`, `MultiWaySyntenyDisplay` | `mouseover` | dropped |
 | `LGVSyntenyDisplay` | `colorBy` | `encoding.color.field` |
 |  | `colorBy` (session), `colorBySetting` (session) | `encoding.color.field` |
-|  | `showArcs` (session) | dropped |
 | `LGVSyntenyDisplay`, `LinearAlignmentsDisplay` | `autoscale` | `coverage.encoding.y.scale.fenceQuantile` |
 |  | `featureHeight` | `pileup.mark.height` |
 |  | `hideMismatches` | `pileup.mismatches.show` |
@@ -88,10 +87,11 @@ a file, and fails on a key it does not know.
 |  | `constraints` (session) | `coverage.encoding.y.scale.domainMax`, `coverage.encoding.y.scale.domainMin` |
 |  | `displayCrossHatches` (session) | `coverage.encoding.y.axis.grid` |
 |  | `drawProperPairs` (session) | `readConnections.ordinaryPairs.show` |
-|  | `drawSingletons` (session), `filterBy` (session), `filterBySetting` (session) | `filter` |
+|  | `drawSingletons` (session), `filterBy` (session), `filterBySetting` (session), `minArcScore` (session) | `filter` |
 |  | `hideMismatchesSetting` (session) | `pileup.mismatches.show` |
 |  | `PileupDisplay` (session) | `encoding.color.field`, `pileup.maxLayoutHeight` |
 |  | `scale` (session) | `coverage.encoding.y.scale.type` |
+|  | `showInterbaseCounts` (session), `showInterbaseIndicators` (session) | `coverage.interbase.show` |
 |  | `showSoftClipping` (session) | `pileup.softclips.show` |
 |  | `SNPCoverageDisplay` (session) | `coverage.encoding.y.axis.grid`, `coverage.encoding.y.scale.type` |
 |  | `snpCovHeight` (session) | `coverage.height` |

@@ -9,7 +9,8 @@ export default function LGVSyntenyDisplayF(pluginManager: PluginManager) {
   pluginManager.addDisplayType(() => {
     const configSchema = configSchemaF()
     // v4.3.0 built this display on the pileup mixin, so its sessions carry
-    // the colorBySetting and filterBySetting the alignments display lifts
+    // the colorBySetting and filterBySetting the alignments display lifts,
+    // and never the SNP coverage display's sashimi arcs
     const { ReactComponent, retiredState } = pluginManager.getDisplayType(
       'LinearAlignmentsDisplay',
     )
@@ -25,7 +26,10 @@ export default function LGVSyntenyDisplayF(pluginManager: PluginManager) {
       viewType: 'LinearGenomeView',
       plotExamples: LGV_SYNTENY_PLOT_EXAMPLES,
       ReactComponent,
-      retiredState,
+      retiredState: retiredState && {
+        ...retiredState,
+        keys: retiredState.keys.filter(key => key !== 'showArcs'),
+      },
     })
   })
 }

@@ -399,3 +399,54 @@ test("a standalone v4.3.0 SNP coverage's hidden arcs stay hidden", () => {
   expect(readConfObject(conf, ['junctions', 'show'])).toBe(false)
   expect(readConfObject(conf, ['pileup', 'show'])).toBe(false)
 })
+
+// v4.3.0's SNP coverage menu: "Show insertion/clipping counts", "Show
+// insertion/clipping indicators" and the sashimi arcs' minimum score
+test('v4.3.0 SNP coverage interbase and arc score state lifts', () => {
+  const conf = v4Conf({
+    type: 'LinearAlignmentsDisplay',
+    configuration: 't-LinearAlignmentsDisplay',
+    PileupDisplay: {
+      type: 'LinearPileupDisplay',
+      configuration: 't-LinearAlignmentsDisplay-LinearPileupDisplay',
+    },
+    SNPCoverageDisplay: {
+      type: 'LinearSNPCoverageDisplay',
+      configuration: 't-LinearAlignmentsDisplay-LinearSNPCoverageDisplay',
+      showInterbaseIndicators: false,
+      minArcScore: 5,
+    },
+  })
+  expect(readConfObject(conf, ['coverage', 'interbase', 'show'])).toBe(false)
+  expect(readConfObject(conf, 'filter')).toEqual([
+    { field: 'junction.reads', gte: 5 },
+  ])
+  expect(retiredState.keys).toEqual(
+    expect.arrayContaining([
+      'minArcScore',
+      'showInterbaseCounts',
+      'showInterbaseIndicators',
+    ]),
+  )
+})
+
+// v5's one interbase layer draws both, so hiding either hides it
+test.each([
+  [{ showInterbaseCounts: false }],
+  [{ showInterbaseIndicators: false }],
+])('a v4.3.0 coverage hiding %o hides the interbase layer', hidden => {
+  expect(
+    retiredState.lift({ type: 'LinearSNPCoverageDisplay', ...hidden }),
+  ).toEqual({ coverage: { interbase: { show: false } } })
+})
+
+test('a v4.3.0 coverage at its default arc score lifts nothing', () => {
+  expect(
+    retiredState.lift({
+      type: 'LinearSNPCoverageDisplay',
+      showInterbaseCounts: true,
+      showInterbaseIndicators: true,
+      minArcScore: 0,
+    }),
+  ).toEqual({})
+})

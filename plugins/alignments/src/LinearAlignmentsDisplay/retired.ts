@@ -384,13 +384,18 @@ const NESTED_SUBNODES = ['PileupDisplay', 'SNPCoverageDisplay']
 
 // v4.3.0 built the SNP coverage display on the wiggle display, whose axis
 // state the coverage band's y scale took over; its sashimi arcs are the
-// junctions band
+// junctions band, their score floor its supporting-read floor, and its
+// interbase counts and indicators the one interbase layer, hidden when v4 hid
+// either
 const COVERAGE_STATE_KEYS = [
   'scale',
   'autoscale',
   'constraints',
   'displayCrossHatches',
   'showArcs',
+  'minArcScore',
+  'showInterbaseCounts',
+  'showInterbaseIndicators',
 ]
 const coverageScaleOf = valueScaleOf(COVERAGE_Y_PATHS.members)
 const { displayCrossHatches: coverageGridOf } = retiredAxisSpellings(
@@ -409,17 +414,26 @@ function mergedTrees(a: DisplayEntry, b: DisplayEntry): DisplayEntry {
 }
 
 function coverageStateOf(source: DisplayEntry) {
-  return mergedTrees(
-    mergedTrees(
-      coverageScaleOf(source),
-      typeof source.displayCrossHatches === 'boolean'
-        ? coverageGridOf(source.displayCrossHatches)
-        : {},
-    ),
-    typeof source.showArcs === 'boolean'
-      ? { junctions: { show: source.showArcs } }
+  const {
+    displayCrossHatches,
+    showArcs,
+    minArcScore,
+    showInterbaseCounts,
+    showInterbaseIndicators,
+  } = source
+  return [
+    coverageScaleOf(source),
+    typeof displayCrossHatches === 'boolean'
+      ? coverageGridOf(displayCrossHatches)
       : {},
-  )
+    typeof showArcs === 'boolean' ? { junctions: { show: showArcs } } : {},
+    typeof minArcScore === 'number' && minArcScore > 0
+      ? { filter: { junctions: { minReads: minArcScore } } }
+      : {},
+    showInterbaseCounts === false || showInterbaseIndicators === false
+      ? { coverage: { interbase: { show: false } } }
+      : {},
+  ].reduce(mergedTrees)
 }
 
 // a key under both spellings resolves to the `*Setting` one, listed last
