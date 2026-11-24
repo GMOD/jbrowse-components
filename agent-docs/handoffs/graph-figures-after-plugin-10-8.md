@@ -11,8 +11,8 @@ unbranched run as one node: `487908~488222+` for a reference run,
 `ins:<segment before>:<bp>[:<segment after>]+` for a walk's own path. A spec
 anchored on a plain segment id inside a folded run resolves to nothing.
 
-The work is six commits on branch `worktree-agent-af292b7035cc479fb`, rebased
-onto main at `2fa1c07450`, not landed and with nothing published. The pictures
+The work is six unlanded commits ending at `730f394478`, rebased onto main at
+`2fa1c07450`, with nothing published. The pictures
 behind each item are at <https://claude.ai/artifact/8Sf9NhDp8XmGkE18Ay59am>.
 
 Colin answered "your choice" to the open calls on 2026-11-23, so the choices
@@ -30,7 +30,7 @@ were not reshot, so the gene-label item below is unchecked for them.
 
 - **Move the fly walk file to jbrowse.org before ada prunes it.** The thread
   specs read `extra_test_data/flywalks/fly_walks.json`, which exists only as
-  untracked files in `ada:~/jbshoot/worktree-agent-af292b7035cc479fb/`
+  untracked files in the `ada:~/jbshoot/` worktree that shot `730f394478`
   (`fly-dm6-mc.dm6.walks.gz`, its `.idx`, the config). `jb-ada-prune` removes
   a jb-shoot worktree idle for 7 days. Upload beside the fly demo, repoint
   `WALKS_CONFIG` in `website/scripts/specs/graph-rice-fly.ts`, reshoot.
@@ -72,15 +72,6 @@ were not reshot, so the gene-label item below is unchecked for them.
   `pangenome/hprc_lpa_kiv2`, `pangenome/mouse_dock2` and
   `pangenome/rgfa_paa_bubble`. A callout pointing at the wrong place shoots
   without error. Read each against its published copy before a publish.
-
-## Someone else's
-
-- **Gene tracks draw a description line, and a gene starting before the view
-  start has its labels cut at the left edge** ("0" and "ein" in
-  `pangenome/fly_chkov1_threads`, chr3R:25,320,001-25,335,000). Another session
-  found it in ggjbrowse's Cyp6g1 figure and holds the fix for Colin's answer on
-  two questions: descriptions on by default in figures, and pinning an
-  off-screen label whole at the edge as the bare name already is.
 
 ## Not this thread
 
