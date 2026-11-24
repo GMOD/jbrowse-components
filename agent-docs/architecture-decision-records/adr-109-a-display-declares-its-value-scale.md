@@ -216,3 +216,8 @@ per section reserving an arc band, on the side each mode's axis had, captioned
   tick is what marks the boundary on the axis. Labelling only the first row
   was declined too: a cropped or scrolled row then has no numbers. At the 30
   px floor the two boundary labels still clear each other.
+- **The alignments coverage axis always on the right** (2026-11-24), so the
+  band chips start at the display's edge as they do under group chips. Spiked
+  and declined on the look: the left edge is where the eye starts, and it set
+  coverage on the opposite side from the wiggle. The numbers growing right
+  past a narrow column took its place.
