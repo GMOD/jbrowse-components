@@ -3,12 +3,12 @@ import useMeasure from '@jbrowse/core/util/useMeasure'
 import { Typography } from '@mui/material'
 import { observer } from 'mobx-react'
 
+import TrackTableGrid from '../../TrackTable/components/TrackTableGrid.tsx'
 import {
   shownFields,
   tableMenuItems,
 } from '../../TrackTable/components/tableLayout.ts'
 import { noMatchingTracksMessage } from '../../TrackTable/components/util.ts'
-import TrackTable from './TrackTable.tsx'
 import HierarchicalHeader from './tree/HierarchicalHeader.tsx'
 import HierarchicalTree from './tree/HierarchicalTree.tsx'
 
@@ -77,7 +77,8 @@ const TrackTree = observer(function TrackTree({
 /**
  * One header over both modes, so the filter box and the Tree | Table toggle
  * keep their focus across a switch; the body below is measured once for
- * either the tree's height or the table's width
+ * either the tree's height or the table's width. Slid out wide, the table
+ * shows every column at its measured width and scrolls sideways
  */
 const HierarchicalTrackSelector = observer(function HierarchicalTrackSelector({
   model,
@@ -89,6 +90,12 @@ const HierarchicalTrackSelector = observer(function HierarchicalTrackSelector({
   const { classes, cx } = useStyles()
   const [ref, { width, height }] = useMeasure()
   const { showTable, trackTable } = model
+  const wide = model.tableWide
+  const fields = wide
+    ? trackTable.wideColumns
+    : width
+      ? shownFields(trackTable, width)
+      : ['name']
   return (
     <div
       className={classes.container}
@@ -98,12 +105,7 @@ const HierarchicalTrackSelector = observer(function HierarchicalTrackSelector({
         model={model}
         tableMenuItems={
           showTable
-            ? () =>
-                tableMenuItems(
-                  model,
-                  trackTable,
-                  width ? shownFields(trackTable, width) : ['name'],
-                )
+            ? () => tableMenuItems(model, trackTable, fields)
             : undefined
         }
       />
@@ -113,7 +115,14 @@ const HierarchicalTrackSelector = observer(function HierarchicalTrackSelector({
       >
         {showTable ? (
           width ? (
-            <TrackTable model={model} width={width} />
+            <TrackTableGrid
+              model={model}
+              table={trackTable}
+              fields={fields}
+              width={width}
+              emptyMessage={model.emptyListMessage}
+              naturalWidths={wide}
+            />
           ) : null
         ) : height ? (
           <TrackTree model={model} height={height} />

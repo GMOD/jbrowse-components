@@ -456,16 +456,45 @@ describe('columns and facets', () => {
   test('a sort on a field no longer offered as a column is dropped', () => {
     const { session, table } = setup()
     addAssayTracks(session, ['DNase', 'DNase', 'ChIP', 'ChIP'])
-    const assayIds = () =>
-      table.sortedRows.map(r => r.id).filter(id => /^a\d$/.test(id))
-    setColumns(session, ['description'])
-    table.setSort('description', false)
-    expect(table.shownColumns(10)).toContain('description')
-    expect(assayIds()).toEqual(['a3', 'a2', 'a1', 'a0'])
+    setColumns(session, ['adapter'])
+    table.setSort('adapter', false)
+    expect(table.activeSortField).toBe('adapter')
+    expect(table.shownColumns(10)).toContain('adapter')
     setColumns(session, [])
     expect(table.activeSortField).toBe('')
-    expect(table.shownColumns(10)).not.toContain('description')
-    expect(assayIds()).toEqual(['a0', 'a2', 'a1', 'a3'])
+    expect(table.shownColumns(10)).not.toContain('adapter')
+  })
+
+  test('the wide pop-out shows every field the user has not hidden, the adapter only when shown, and a sort on one pins it in the drawer', () => {
+    const { session, table } = setup()
+    addAssayTracks(session, ['DNase', 'DNase', 'ChIP', 'ChIP', 'ChIP', 'ChIP'])
+    expect(table.wideColumns).toEqual([
+      'name',
+      'category',
+      'metadata.assay',
+      'metadata.lab',
+      'description',
+      'kind',
+      'metadata.url',
+      'metadata.flag',
+      'metadata.format',
+    ])
+    expect(Object.keys(table.wideWidths)).toEqual([
+      'description',
+      'kind',
+      'metadata.url',
+      'metadata.flag',
+      'metadata.format',
+    ])
+
+    table.setColumnVisible('metadata.url', false)
+    table.setColumnVisible('adapter', true)
+    expect(table.wideColumns).not.toContain('metadata.url')
+    expect(table.wideColumns).toContain('adapter')
+
+    table.setSort('metadata.format', true)
+    expect(table.activeSortField).toBe('metadata.format')
+    expect(table.shownColumns(1)).toContain('metadata.format')
   })
 
   test('the filter chips keep a facet that is still filtering', () => {

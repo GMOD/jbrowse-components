@@ -52,12 +52,15 @@ const TrackTableGrid = observer(function TrackTableGrid({
   fields,
   width,
   emptyMessage = 'No tracks',
+  naturalWidths = false,
 }: {
   model: HierarchicalTrackSelectorModel
   table: TrackTableModel
   fields: string[]
   width: number
   emptyMessage?: string
+  /** columns keep their measured widths and the table scrolls sideways */
+  naturalWidths?: boolean
 }) {
   const { classes, cx } = useTableStyles()
   const gridId = useId()
@@ -95,18 +98,21 @@ const TrackTableGrid = observer(function TrackTableGrid({
       rows={sortedRows}
       columns={columns}
       width={width}
-      widths={available =>
-        fitColumnWidths(
-          Object.fromEntries(
-            columns.map(col => [
-              col.id,
-              initialWidths[col.id] ?? DEFAULT_COL_WIDTH,
-            ]),
-          ),
-          available,
-          id => columnFloor(id, available),
+      widths={available => {
+        const measured = Object.fromEntries(
+          columns.map(col => [
+            col.id,
+            initialWidths[col.id] ??
+              table.wideWidths[col.id] ??
+              DEFAULT_COL_WIDTH,
+          ]),
         )
-      }
+        return naturalWidths
+          ? measured
+          : fitColumnWidths(measured, available, id =>
+              columnFloor(id, available),
+            )
+      }}
       resetKey={JSON.stringify([filterText, [...filters]])}
       draggedWidths={{
         widths: table.draggedWidths,

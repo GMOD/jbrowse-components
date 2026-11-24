@@ -121,6 +121,7 @@ export {
   isSessionWithAddAssembly,
   isSessionWithAddSessionTrack,
   isSessionWithAddTracks,
+  isSessionWithDrawerWidgets,
   isSessionWithPublishTrackConf,
   isSessionWithDeleteTrackConf,
   isSessionWithMultipleViews,

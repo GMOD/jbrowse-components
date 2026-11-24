@@ -242,6 +242,17 @@ export default function stateTreeFactory(pluginManager: PluginManager) {
       tableDrawerWidth: undefined as number | undefined,
       /**
        * #volatile
+       * the table's drawer width before it slid out wide to show every
+       * column, restored when it slides back; undefined while not wide
+       */
+      narrowTableDrawerWidth: undefined as number | undefined,
+      /**
+       * #volatile
+       * whether the table has slid the drawer out wide to show every column
+       */
+      tableWide: false,
+      /**
+       * #volatile
        * which tracks the tree and the table list: all of them, or only the
        * favorites or the recently used
        */
@@ -463,6 +474,25 @@ export default function stateTreeFactory(pluginManager: PluginManager) {
       closeTable() {
         self.tableViewId = undefined
         self.tableDrawerWidth = undefined
+        self.narrowTableDrawerWidth = undefined
+        self.tableWide = false
+      },
+      /**
+       * #action
+       * slides the drawer out across most of the window, where the table
+       * shows every column, or back to the width it had
+       * @param availableWidth - the width the drawer and the views share
+       */
+      setTableWide(wide: boolean, availableWidth?: number) {
+        if (wide && availableWidth !== undefined) {
+          self.narrowTableDrawerWidth = self.tableDrawerWidth
+          self.tableDrawerWidth = Math.round(availableWidth * 0.8)
+          self.tableWide = true
+        } else if (!wide) {
+          self.tableDrawerWidth = self.narrowTableDrawerWidth
+          self.narrowTableDrawerWidth = undefined
+          self.tableWide = false
+        }
       },
       /**
        * #action

@@ -1,4 +1,4 @@
-import { useRef } from 'react'
+import { useRef, useState } from 'react'
 
 import ResizeHandle from '@jbrowse/core/ui/ResizeHandle'
 import { DRAWER_Z_INDEX } from '@jbrowse/core/ui/zIndexes'
@@ -69,9 +69,15 @@ const Drawer = observer(function Drawer({
   const { drawerPosition } = session
   const { classes, cx } = useStyles()
   const rootRef = useRef<HTMLDivElement>(null)
+  const [dragging, setDragging] = useState(false)
 
   return (
-    <div ref={rootRef} className={classes.root} data-drawer-column>
+    <div
+      ref={rootRef}
+      className={classes.root}
+      data-drawer-column
+      data-drawer-dragging={dragging || undefined}
+    >
       <Paper
         ref={ref}
         className={classes.paper}
@@ -86,6 +92,12 @@ const Drawer = observer(function Drawer({
         // the handle is on the drawer's inner edge, so toward a right drawer
         // narrows it
         reverse={drawerPosition === 'right'}
+        onDragStart={() => {
+          setDragging(true)
+        }}
+        onDragEnd={() => {
+          setDragging(false)
+        }}
         onChange={width => {
           // the width the drawer and the main area share: both are columns of
           // the grid this is an item of, and the clamp needs the container

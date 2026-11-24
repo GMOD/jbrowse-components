@@ -307,3 +307,32 @@ test('the list toggles switch between all tracks, favorites and recent, and pres
   expect(model.trackList).toBe('all')
   expect(getByTestId('list-recent')).toBe(recent)
 })
+
+test('in table mode a button slides the drawer out wide to show every column, and back to the width it had', () => {
+  const { model } = setup()
+  const { getByTestId, queryByTestId } = render(
+    <ThemeProvider theme={createJBrowseTheme()}>
+      <div data-testid="drawer-row">
+        <div data-drawer-column>
+          <HierarchicalTrackSelector model={model} />
+        </div>
+      </div>
+    </ThemeProvider>,
+  )
+  Object.defineProperty(getByTestId('drawer-row'), 'clientWidth', {
+    value: 1500,
+  })
+  expect(queryByTestId('table-bump-out')).toBeNull()
+
+  act(() => {
+    model.openTable(400)
+  })
+  fireEvent.click(getByTestId('table-bump-out'))
+  expect(model.tableWide).toBe(true)
+  expect(model.preferredDrawerWidth).toBe(1200)
+  expect(model.trackTable.wideColumns).toContain('description')
+
+  fireEvent.click(getByTestId('table-bump-out'))
+  expect(model.tableWide).toBe(false)
+  expect(model.preferredDrawerWidth).toBe(400)
+})

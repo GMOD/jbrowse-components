@@ -666,6 +666,12 @@ export function isSessionModelWithWidgets(
 ): thing is SessionWithWidgets {
   return isSessionModel(thing) && 'widgets' in thing
 }
+
+export function isSessionWithDrawerWidgets(
+  thing: unknown,
+): thing is SessionWithDrawerWidgets {
+  return isSessionModelWithWidgets(thing) && 'popoutWidget' in thing
+}
 /** a live connection instance held in a session's `connectionInstances` */
 export interface ConnectionInstance {
   name: string

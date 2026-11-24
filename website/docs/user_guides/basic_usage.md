@@ -392,7 +392,9 @@ with each track's category in the column beside its name, until you click a
 column header to sort; a search lists the tracks whose name matches first. The
 filter chips stay set when you switch between the tree and the table. In table
 mode, the track selector's ☰ menu shows or hides any column through Manage
-columns. Tracks with `metadata` fields get extra columns:
+columns, and the expand button beside the tree and table buttons slides the
+drawer out wide to show every column; the same button slides it back. Tracks
+with `metadata` fields get extra columns:
 
 ```json
 {

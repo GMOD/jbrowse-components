@@ -101,6 +101,31 @@ function trackRow(
   }
 }
 
+function measureColumnWidths(
+  fields: string[],
+  rows: ReturnType<typeof trackRow>[],
+  nonMetadataFieldSet: Set<string>,
+) {
+  return Object.fromEntries(
+    fields.map(f => [
+      f,
+      f === 'name'
+        ? measureNameColumnWidth(rows)
+        : Math.max(
+            measureGridWidth([...new Set(rows.map(r => getRowStr(f, r)))], {
+              maxWidth: 400,
+              stripHTML: true,
+            }),
+            measureGridWidth([facetLabel(f, nonMetadataFieldSet)], {
+              fontSize: 14,
+              padding: 46,
+              maxWidth: 400,
+            }),
+          ),
+    ]),
+  )
+}
+
 // A field groups tracks when at least two of its values are each shared by
 // two or more tracks, and it has no more values than half the tracks that have
 // one: a constant flag, a lone exception to one, or a per-track description
@@ -611,13 +636,27 @@ export function trackTableModelFactory() {
       },
       /**
        * #getter
+       * every column the wide pop-out shows: the candidate columns, then every
+       * other field the user has not hidden, the adapter only when shown
+       */
+      get wideColumns() {
+        const { shown, hidden } = self.chosenColumns
+        return [
+          ...new Set([
+            ...this.candidateColumns,
+            ...self.fields.filter(
+              f => !hidden.has(f) && (f !== 'adapter' || shown.includes(f)),
+            ),
+          ]),
+        ]
+      },
+      /**
+       * #getter
        * the field the rows are sorted by, while it can still show as a
        * column; empty keeps natural order
        */
       get activeSortField() {
-        return this.candidateColumns.includes(self.sortField)
-          ? self.sortField
-          : ''
+        return this.wideColumns.includes(self.sortField) ? self.sortField : ''
       },
       /**
        * #getter
@@ -716,24 +755,23 @@ export function trackTableModelFactory() {
        * room for more columns.
        */
       get initialWidths(): Record<string, number> {
-        const rows = self.allRows
-        return Object.fromEntries(
-          self.candidateColumns.map(f => [
-            f,
-            f === 'name'
-              ? measureNameColumnWidth(rows)
-              : Math.max(
-                  measureGridWidth(
-                    [...new Set(rows.map(r => getRowStr(f, r)))],
-                    { maxWidth: 400, stripHTML: true },
-                  ),
-                  measureGridWidth([facetLabel(f, self.nonMetadataFieldSet)], {
-                    fontSize: 14,
-                    padding: 46,
-                    maxWidth: 400,
-                  }),
-                ),
-          ]),
+        return measureColumnWidths(
+          self.candidateColumns,
+          self.allRows,
+          self.nonMetadataFieldSet,
+        )
+      },
+      /**
+       * #getter
+       * Measured widths for the columns only the wide pop-out shows, apart
+       * from initialWidths so the drawer never measures them
+       */
+      get wideWidths(): Record<string, number> {
+        const measured = new Set(self.candidateColumns)
+        return measureColumnWidths(
+          self.wideColumns.filter(f => !measured.has(f)),
+          self.allRows,
+          self.nonMetadataFieldSet,
         )
       },
       /**
@@ -784,7 +822,7 @@ export function trackTableModelFactory() {
         const keep = new Set([...auto, ...pinned])
         return [
           'name',
-          ...self.candidateColumns.filter(f => f !== 'name' && keep.has(f)),
+          ...self.wideColumns.filter(f => f !== 'name' && keep.has(f)),
         ]
       },
     }))

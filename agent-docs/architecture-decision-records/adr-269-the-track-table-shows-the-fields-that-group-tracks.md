@@ -11,7 +11,8 @@ Accepted (2026-11-16); ADR-271 turns its facet panel into filter chips that the
 tree shares; amended 2026-11-17 by ADR-271, which moves Manage columns to the
 track selector's ☰ menu in the drawer and a columns button in the folder
 dialog; amended 2026-11-18, when the name's share went from half the table
-to two thirds (The width decides how many show); amended 2026-11-18, when
+to two thirds (The width decides how many show); amended 2026-11-24, when
+a table slid out wide started showing every column (Slid out wide); amended 2026-11-18, when
 opening the table stopped widening the drawer and a dragged name column
 started keeping its width; amended 2026-11-19, after Colin found the table
 "confusing": category leads the columns, the rows list
@@ -80,6 +81,17 @@ found none of the six "Fiber-seq Compendium - THP-1 …" tracks.
   its edge is dragged, which gives it a width of its own, and the table opens
   at the drawer's current width: Colin found widening the drawer on open
   presumptive (2026-11-18).
+- **Slid out wide, the table shows every column.** In table mode a button
+  beside the tree and grid toggle slides the drawer out to 80% of the room it
+  shares with the views, and there the table draws every field the user has
+  not hidden, the adapter only when shown, each at its measured width,
+  scrolling sideways; the same button slides it back to the width it had.
+  Colin asked for an easy way to see every metadata column, recalling the
+  JBrowse 1 faceted selector's drawer that slid outwards (2026-11-24). Unlike
+  widening on open, the user asks for it. A wide pop-out modal was built
+  first and dropped for the slide, which keeps the view in sight. The chips
+  stay the drawer's, and a sort on a column only the wide table shows pins
+  that column when it narrows, so narrowing never hides the order.
 - **`configuration.hierarchical.table.columns` ranks columns first** for a
   hub whose metadata has many keys of which a few matter. It is a string list
   of field paths (`category`, `kind`, `description`, `adapter`,
