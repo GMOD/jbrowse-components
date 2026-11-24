@@ -7,7 +7,6 @@ import { ErrorBoundary } from '@jbrowse/core/ui/ErrorBoundary'
 import { setTypeChecking } from '@jbrowse/mobx-state-tree'
 import { observer } from 'mobx-react'
 
-import packageJSON from '../../package.json' with { type: 'json' }
 import { gitCommit } from '../buildInfo.ts'
 import { markCrashedSession } from '../crashedSession.ts'
 import { createSessionLoaderFromUrl } from '../createSessionLoader.ts'
@@ -61,7 +60,6 @@ const LoaderWrapper = observer(function LoaderWrapper({
       FallbackComponent={props => (
         <FatalErrorDialog
           {...props}
-          version={packageJSON.version}
           gitCommit={gitCommit}
           resetButtonText="Reset Session"
           onFactoryReset={factoryReset}

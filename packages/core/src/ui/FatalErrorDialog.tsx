@@ -53,14 +53,12 @@ const FatalErrorDialog = observer(function FatalErrorDialog({
   onFactoryReset,
   resetButtonText = 'Factory Reset',
   extraActions,
-  version,
   gitCommit,
 }: {
   componentStack?: string
   error?: unknown
   onFactoryReset: () => void
   resetButtonText?: string
-  version?: string
   gitCommit?: string
   // recovery offers narrower than a factory reset, which only some products
   // have: Desktop puts "Disable global plugins and reload" here, so a plugin
@@ -79,7 +77,6 @@ const FatalErrorDialog = observer(function FatalErrorDialog({
             <ErrorReport
               error={error}
               componentStack={componentStack}
-              version={version}
               gitCommit={gitCommit}
             />
           </Suspense>

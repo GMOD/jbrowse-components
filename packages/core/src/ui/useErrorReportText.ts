@@ -2,12 +2,12 @@ import { effectiveRenderer } from '@jbrowse/render-core/graphicsCapabilities'
 import { useGraphicsCapabilities } from '@jbrowse/render-core/useGraphicsCapabilities'
 
 import { useFetch } from '../util/useFetch.ts'
+import { version } from '../version.ts'
 import { withoutSharePassword } from './errorReport.ts'
 import { formatErrorStack } from './formatErrorStack.ts'
 import { mapStackTrace } from './mapStackTrace.ts'
 
 interface SessionGlobal {
-  version?: string
   gitCommit?: string
   rpcManager: {
     driverName: string
@@ -20,21 +20,18 @@ const MAX_ERR_LEN = 10_000
  * The one text every "Send report" sends: the error, its source-mapped stack,
  * the React component stack when a boundary caught it, and the environment.
  *
- * `version` and `gitCommit` are for a caller whose session is already gone,
- * the fatal dialog above all: a fatal error unmounts the app, which tears the
- * session down, so the build has to arrive as plain values. Everyone else gets
- * them off the live `window.JBrowseSession`, which a product clears when its
- * session goes away.
+ * The version is core's own, so an embedded view, which publishes no session
+ * global, reports one too. `gitCommit` is for a caller whose session is
+ * already gone, the fatal dialog above all; everyone else gets it off the live
+ * `window.JBrowseSession`, which a product clears when its session goes away.
  */
 export function useErrorReportText({
   error,
   componentStack,
-  version,
   gitCommit,
 }: {
   error: unknown
   componentStack?: string
-  version?: string
   gitCommit?: string
 }) {
   const graphicsCapabilities = useGraphicsCapabilities()
@@ -67,7 +64,6 @@ export function useErrorReportText({
 
   const session = (window as unknown as { JBrowseSession?: SessionGlobal })
     .JBrowseSession
-  const jbrowseVersion = version ?? session?.version
   const commit = gitCommit ?? session?.gitCommit
   const rpcManager = session?.rpcManager
   const rpcInfo = rpcManager ? `RPC: ${rpcManager.driverName}` : ''
@@ -80,9 +76,7 @@ export function useErrorReportText({
       ? `--- component stack ---\n${componentStack.replace(/^\n/, '')}`
       : '',
     '--- environment ---',
-    jbrowseVersion
-      ? `JBrowse ${jbrowseVersion}${commit ? ` (${commit})` : ''}`
-      : '',
+    `JBrowse ${version}${commit ? ` (${commit})` : ''}`,
     graphicsInfo,
     gpuInfo,
     glRendererInfo,
