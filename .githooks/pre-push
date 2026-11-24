@@ -189,10 +189,10 @@ fi
 # PUSH_ONTO_RED=1. When gh is missing or silent for 10s, the push goes ahead.
 if [ -n "$to_main" ] && [ "${PUSH_ONTO_RED:-}" != 1 ] &&
   command -v gh >/dev/null 2>&1; then
-  runs=$(timeout 10 gh run list --branch main --workflow Push --limit 20 \
+  runs=$(GH_PROMPT_DISABLED=1 GH_PAGER=cat timeout -k 2 10 gh run list --branch main --workflow Push --limit 20 \
     --json databaseId,status,conclusion,headSha \
     --jq '.[] | "\(.status) \(.conclusion) \(.databaseId) \(.headSha)"' \
-    2>/dev/null || true)
+    2>/dev/null </dev/null || true)
   latest=$(printf '%s\n' "$runs" |
     awk '$1 == "completed" && ($2 == "success" || $2 == "failure") { print; exit }')
   if [ "${latest#completed failure }" != "$latest" ]; then
@@ -201,8 +201,8 @@ if [ -n "$to_main" ] && [ "${PUSH_ONTO_RED:-}" != 1 ] &&
     red_sha=$4
     echo >&2
     echo "pre-push: main is red on CI, at ${red_sha%"${red_sha#?????????}"} (run $red_id):" >&2
-    timeout 10 gh run view "$red_id" --json jobs \
-      --jq '.jobs[] | select(.conclusion == "failure") | "  " + .name' >&2 2>/dev/null || true
+    GH_PROMPT_DISABLED=1 GH_PAGER=cat timeout -k 2 10 gh run view "$red_id" --json jobs \
+      --jq '.jobs[] | select(.conclusion == "failure") | "  " + .name' >&2 2>/dev/null </dev/null || true
     if printf '%s\n' "$runs" | awk '$1 != "completed"' | grep -q .; then
       echo "A newer run is still going; if it carries a fix, wait for it." >&2
     fi
