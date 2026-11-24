@@ -44,7 +44,11 @@ once per display that embeds it, so read the trend, not the size.
 surface on one page, its first table each path whose members differ between
 displays or a display's parts, with the ruling on each.
 
-- The last shared-path change is the settled-spellings pass (2026-11-20,
+- The last shared-path change is `arrows` (2026-11-23, +3 shared,
+  52131e11cc): `LinearBasicDisplay.arrows` and `arrows.show`, with
+  `FeatureTrack.displayDefaults.arrows`, so a strand-less track drops the
+  arrow past each feature's 3' end. Additive.
+- Before it, the settled-spellings pass (2026-11-20,
   +11 / −4 shared). `pileup.softClips` is `pileup.softclips` on
   LinearAlignments and LGVSynteny, one word as the `softclip` sort field
   spells it, beta-only with no lift (ADR-240). `encoding.color.scale.type`
@@ -54,6 +58,22 @@ displays or a display's parts, with the ruling on each.
   does. The regeneration also carries `preferences.showBandChips`
   (aa9181ec89). ggjbrowse took the engine and the `softclips` respell at
   e00bb27, its tests and tutorial lint green on a8b49ba7a9.
+- Earlier on 2026-11-20 (+55 / −11 shared, +1 mark display), all additive
+  for a writer: `pedigreeLocation` on VcfAdapter, VcfTabixAdapter and
+  SplitVcfTabixAdapter (+36, f3428aa282); `rows.subtitle` on five row
+  displays, the mark display's the +1 (43900a8095); and
+  `MultiWaySyntenyDisplay.rows.field` with `assembly` and `refName`
+  (4fc6d8c6f1), then `auto` (5e0caff166). `rows.copies` (0379864895) and the
+  assemblies' `transmission` list (+10, 574ecbd80d) were added and removed
+  the same day, the latter with the Mendelian check (17bda75572), so neither
+  reached a release.
+- Before those, GenbankAdapter and GenbankSequenceAdapter (2026-11-19, +92
+  shared, 81153042e7): their own slots and a place in the type enum of every
+  slot taking an adapter. Additive.
+- Before it, `sashimi` → `junctions` on LinearAlignments and
+  `AlignmentsTrack.displayDefaults` (2026-11-18, +11 / −11 shared,
+  992e825a59), members unchanged, the jbrowse-img and launch-args modifier
+  with it. Beta-only, no lift.
 - Before it, the arc bands' `placement` values
   (2026-11-17, +9 / −6 shared, 9b1a3fe173): `sashimi.placement` and
   `readConnections.placement` take `overlay`, `above` and `below` where they
@@ -212,6 +232,6 @@ displays or a display's parts, with the ruling on each.
   `release.ts` prepends to `CHANGELOG.md`) reaches main. Sessions edit it as
   features land; a sweep at the release candidate adds what never got a line
   and moves its `changelog-through` marker, which `check-release-drafts.ts`
-  counts from (swept through adce99d582 on 2026-11-09). The migration
+  counts from (swept through 9ea677e0b3 on 2026-11-23). The migration
   table it can point at is generated
   (`website/docs/config_guides/v4_config_migration.md`).
