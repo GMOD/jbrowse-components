@@ -24,6 +24,7 @@ import {
   ConfigurationSchema,
   expandUriShorthand,
 } from '@jbrowse/core/configuration'
+import { samplesTsvAdapterConfigSchemaFields } from '@jbrowse/core/util/samplesTsv'
 
 import type { Instance } from '@jbrowse/mobx-state-tree'
 
@@ -73,6 +74,7 @@ const BedGraphAdapter = ConfigurationSchema(
       description: 'List of column names',
       defaultValue: [],
     },
+    ...samplesTsvAdapterConfigSchemaFields,
   },
   {
     explicitlyTyped: true,
