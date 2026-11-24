@@ -189,11 +189,13 @@ describe('the ladder rung', () => {
     expect(pickRung(2.25)).toBe(3)
   })
 
-  test('a whole piece overhangs 1× by up to 1% of the window each end, and covers exactly above it', () => {
+  test('a whole piece overhangs any rung by up to 1% of the window each end', () => {
     expect(pickRung(1.019, undefined, true)).toBe(1)
     expect(pickRung(1.021, undefined, true)).toBe(1.5)
-    expect(pickRung(1.501, undefined, true)).toBe(2)
-    expect(pickRung(1.5, undefined, true)).toBe(1.5)
+    expect(pickRung(1.519, undefined, true)).toBe(1.5)
+    expect(pickRung(1.521, undefined, true)).toBe(2)
+    expect(pickRung(3.017, undefined, true)).toBe(3)
+    expect(pickRung(3.021, undefined, true)).toBe(5)
   })
 
   test('the overrun a tolerated rung leaves out falls outside the frame', () => {

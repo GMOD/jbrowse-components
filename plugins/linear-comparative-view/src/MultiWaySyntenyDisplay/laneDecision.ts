@@ -114,14 +114,13 @@ function mid(p: MultiWayPlacement) {
   return (p.start + p.end) / 2
 }
 
-const ONE_X_OVERHANG = 0.01
+// of the window, at each end of a whole piece on any rung
+const OVERHANG = 0.01
 
-const overhangAt = (rung: number) => (rung === 1 ? ONE_X_OVERHANG : 0)
-
-/** `whole` covers exactly, but for a 1× overhang at each end */
+/** `whole` covers all but `OVERHANG` at each end */
 export function pickRung(need: number, incumbent?: number, whole = false) {
   const covers = (rung: number) =>
-    whole ? rung * (1 + 2 * overhangAt(rung)) >= need : rungCovers(rung, need)
+    whole ? rung + 2 * OVERHANG >= need : rungCovers(rung, need)
   const up = SCALE_LADDER.find(covers) ?? Math.ceil(need)
   if (incumbent === undefined || !covers(incumbent)) {
     return up
@@ -510,7 +509,7 @@ function alignFrameTo(
 
 function holdsFit(frame: RowFrame, rung: number) {
   const openings = frameOpenings(frame)
-  const slack = (overhangAt(rung) * (frame.max - frame.min)) / rung
+  const slack = (OVERHANG * (frame.max - frame.min)) / rung
   return (
     openedBp(openings, frame.fitMin, true) >= frame.min - slack &&
     openedBp(openings, frame.fitMax) <= frame.max + slack

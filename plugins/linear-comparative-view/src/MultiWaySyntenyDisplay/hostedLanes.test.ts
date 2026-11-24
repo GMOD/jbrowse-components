@@ -290,15 +290,15 @@ function undrawnLaneBp({ groups, frames }: Laid) {
   return undrawn
 }
 
-/** per genome, a 1× lane may overhang 1% of the window at each end */
+/** per genome, a lane may overhang 1% of the window at each end */
 function overhangSlack({ frames, decisions }: Laid) {
   const slack = new Map<string, number>()
   for (const [lane, frame] of frames) {
     const genome = laneGenome(lane)
-    const share = decisions.get(lane)?.rung === 1 ? 0.02 : 0
+    const rung = decisions.get(lane)?.rung ?? 1
     slack.set(
       genome,
-      (slack.get(genome) ?? 0) + share * (frame.max - frame.min),
+      (slack.get(genome) ?? 0) + (0.02 * (frame.max - frame.min)) / rung,
     )
   }
   return slack
