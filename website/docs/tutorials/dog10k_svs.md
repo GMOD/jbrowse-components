@@ -161,9 +161,9 @@ block. The track below also:
 
 - reads the build script's `dog10k_nhej1_samples.tsv`, whose `clade` column
   `facet` splits the rows on, one section per clade
-- filters the window's records to the 7.8 kb deletion. A second deletion nested
-  inside it is a no-call in the dogs homozygous for the larger one, which have
-  no reads there to genotype it from, and would stripe their rows yellow
+- filters the window's records to the 7.8 kb deletion. A second deletion within
+  its span is a no-call in the dogs homozygous for the larger one, which have no
+  reads there to genotype it from, and would stripe their rows yellow
 
 ```json addtrack
 {

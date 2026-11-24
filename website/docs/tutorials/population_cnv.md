@@ -11,13 +11,13 @@ Most of the genome comes in two copies, but some stretches are duplicated or
 deleted in one person and not the next. We read copy number for the whole 1000
 Genomes panel at once, one row per individual, colored by how far that person's
 copy number is from two, at the chemokine genes _CCL3L1_, a deletion of
-_UGT2B17_, and two nested deletions on chr3. We:
+_UGT2B17_, and a deletion on chr3 that has two alleles. We:
 
 - load a few individuals' BigWigs as step lines at _CCL3L1_
 - load one population as a multi-row heatmap track, and set the 1000 Genomes SV
   map beside it over _UGT2B17_
-- load the whole panel from one Zarr store, and cluster its rows over the nested
-  chr3 deletions under a length-filtered variant track
+- load the whole panel from one Zarr store, and cluster its rows over the chr3
+  deletion's two alleles under a length-filtered variant track
 - turn your own QuicK-mer2 output into BigWigs, and build a Zarr store from them
 
 ## Prerequisites
@@ -314,12 +314,15 @@ beside your `config.json`, the `uri` is `qm2_cn_1kb.zarr`.
 
 <Figure caption="Every individual from one Zarr store, clustered. Red is a gain, blue a loss, white two copies." src="/img/cnv1000g/zarr_cohort.png" />
 
-## Sort the panel by which nested deletion each person carries {#a-deletion-nested-inside-another-on-chr3-sorted-by-clustering}
+## Sort the panel by which deletion alleles each person carries {#a-deletion-with-two-alleles-on-chr3-sorted-by-clustering}
 
-The Zarr store covers chr3:162.5-163.2 Mb, where a 22 kb deletion sits inside a
-114 kb one. Clustering sorts the individuals by which deletion they have, and
-the long-read assembly calls of the Human Genome Structural Variation Consortium
-([Logsdon et al. 2025](https://doi.org/10.1038/s41586-025-09140-6)) place both:
+The Zarr store covers chr3:162.5-163.2 Mb, where one deletion has two alleles:
+114 kb, and 22 kb within the same span. Clustering sorts the individuals by the
+alleles they carry, so people with one of each, who have lost both copies of the
+22 kb stretch and one copy of the rest, group apart. The long-read assembly
+calls of the Human Genome Structural Variation Consortium
+([Logsdon et al. 2025](https://doi.org/10.1038/s41586-025-09140-6)) place both
+alleles:
 
 - Navigate the Zarr track to `chr3:162,650,000-163,050,000`.
 - Run **Clustering → Cluster rows by score...** from its track menu.
@@ -343,7 +346,7 @@ kb:
 jexl:alleleLength(feature)>=5000
 ```
 
-<Figure caption="Every individual over the nested deletion, clustered, under HGSVC3 structural variants." src="/img/paper/cohort_cnv.png" />
+<Figure caption="Every individual over the two-allele deletion, clustered, under HGSVC3 structural variants." src="/img/paper/cohort_cnv.png" />
 
 ## Run QuicK-mer2 on your own samples {#your-own-samples}
 
@@ -482,4 +485,4 @@ bash build_1000g_cnv_zarr.sh --whole-genome # every main contig, 10kb base and f
 - [1000 Genomes phase 3 integrated SV map](https://doi.org/10.1038/nature15394)
 - Logsdon et al. (2025).
   [Complex genetic variation in nearly complete human genomes](https://doi.org/10.1038/s41586-025-09140-6),
-  the HGSVC3 structural variant calls in the nested deletion figure
+  the HGSVC3 structural variant calls in the chr3 deletion figure

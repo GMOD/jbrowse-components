@@ -152,7 +152,7 @@ signal similarity over the visible region. A sample with patchy coverage
 clusters by the values it has, and under a log or signed log axis clustering
 compares values as the axis draws them. See [](/docs/user_guides/clustering) for
 the modes, the dendrogram, and how to share a result in a session URL. The
-[population CNV tutorial](/docs/tutorials/population_cnv#a-deletion-nested-inside-another-on-chr3-sorted-by-clustering)
+[population CNV tutorial](/docs/tutorials/population_cnv#a-deletion-with-two-alleles-on-chr3-sorted-by-clustering)
 clusters a copy-number panel.
 
 <Figure caption="The Cluster rows by score dialog (top), and the rows reordered by signal similarity (bottom)." src="/img/multiwig/cluster_dialog.png" />
