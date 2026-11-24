@@ -128,8 +128,8 @@ test('can use config from a url with shared session ', async () => {
   await waitFor(() => {
     expect(sessionStorage.length).toBeGreaterThan(0)
   }, delay)
-  expect(warn).toHaveBeenCalledWith(
-    'LinearGenomeView ignored unknown key(s): trackSelectorType',
+  expect(warn).not.toHaveBeenCalledWith(
+    expect.stringContaining('ignored unknown key(s)'),
   )
 }, 20000)
 

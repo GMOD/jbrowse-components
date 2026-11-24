@@ -62,6 +62,11 @@ function liftMinLength(snap: Snap) {
   }
 }
 
+function dropTrackSelectorType(snap: Snap) {
+  const { trackSelectorType, ...rest } = snap
+  return 'trackSelectorType' in snap ? rest : snap
+}
+
 function liftIndels(snap: Snap) {
   if (!('drawCigar' in snap)) {
     return snap
@@ -93,11 +98,16 @@ const DISPLAY_SETTINGS = ['colorBy', 'alpha', 'minAlignmentLength'] as const
 
 /**
  * #api
- * The view keys `liftSyntenyViewSettings` converts, which the linear synteny
- * and dotplot views name as their launch keys' `passThrough` so a validator
- * accepts them.
+ * The view keys `liftSyntenyViewSettings` converts or drops, which the linear
+ * synteny and dotplot views name as their launch keys' `passThrough` so a
+ * validator accepts them.
  */
-export const LIFTED_VIEW_KEYS = ['colorBy', 'alpha', 'drawCigar'] as const
+export const LIFTED_VIEW_KEYS = [
+  'colorBy',
+  'alpha',
+  'drawCigar',
+  'trackSelectorType',
+] as const
 
 /**
  * #api
@@ -128,12 +138,15 @@ function liftDisplaySettings(snap: Snap) {
  * `filter` predicate on `length`.
  * An older genomes-portal launch link puts the mode string on the view
  * itself, which lifts the same way. The dotplot's own `drawCigar` lands as
- * the `indels` part.
+ * the `indels` part. `trackSelectorType`, which every v2.10–v4.3.0 view saved
+ * and nothing read, drops.
  */
 export function liftSyntenyViewSettings(snap: Snap | undefined) {
   return snap
-    ? liftIndels(
-        liftMinLength(liftAlpha(liftColorBy(liftDisplaySettings(snap)))),
+    ? dropTrackSelectorType(
+        liftIndels(
+          liftMinLength(liftAlpha(liftColorBy(liftDisplaySettings(snap)))),
+        ),
       )
     : snap
 }

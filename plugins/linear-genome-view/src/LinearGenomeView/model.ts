@@ -3653,9 +3653,16 @@ export function stateModelFactory(pluginManager: PluginManager) {
       }
       // v4's `showCytobandsSetting` persists as the bare `showCytobands` prop
       // (the capability-gated getter is `effectiveShowCytobands`), and v4's
-      // `colorByCDS` as `colorByFrame`.
-      const { showCytobandsSetting, colorByCDS, offsetPx, bpPerPx, ...rest } =
-        snap
+      // `colorByCDS` as `colorByFrame`. v2.10–v4.3.0 wrote
+      // `trackSelectorType` into every saved view; nothing reads it now.
+      const {
+        showCytobandsSetting,
+        colorByCDS,
+        offsetPx,
+        bpPerPx,
+        trackSelectorType,
+        ...rest
+      } = snap
       return {
         ...(showCytobandsSetting !== undefined
           ? { showCytobands: showCytobandsSetting }

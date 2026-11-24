@@ -96,7 +96,7 @@ test('an unknown key is reported once', () => {
   expect(warnings()).toHaveLength(1)
 })
 
-test('a saved view carrying the retired trackSelectorType drops it', () => {
+test('a saved view carrying the retired trackSelectorType drops it silently', () => {
   const view = open({
     type: 'LinearGenomeView',
     displayedRegions: [
@@ -104,9 +104,7 @@ test('a saved view carrying the retired trackSelectorType drops it', () => {
     ],
     trackSelectorType: 'hierarchical',
   })
-  expect(warnings()).toEqual([
-    'LinearGenomeView ignored unknown key(s): trackSelectorType',
-  ])
+  expect(warnings()).toEqual([])
   expect(notify).not.toHaveBeenCalled()
   expect(JSON.stringify(getSnapshot(view))).not.toContain('trackSelectorType')
 })

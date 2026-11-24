@@ -7,11 +7,12 @@ import type { InitState } from './types.ts'
 // key that partitions as a typo.
 //
 // `bpPerPx`/`offsetPx` are v4's viewport spelling from before it was stored as
-// a window, `showCytobandsSetting` its cytoband toggle and `colorByCDS` its
-// frame coloring. None is a declared property, so the partition would read them
-// as typos; the model's own preProcessSnapshot still converts them, so a URL or
-// saved spec naming them goes on working. Share links carry all four, so they
-// stay.
+// a window, `showCytobandsSetting` its cytoband toggle, `colorByCDS` its frame
+// coloring and `trackSelectorType` a slot every v2.10–v4.3.0 view saved and
+// nothing read. None is a declared property, so the partition would read them
+// as typos; the model's own preProcessSnapshot converts or drops them, so a URL
+// or saved spec naming them goes on working. Share links carry all five, so
+// they stay.
 //
 // #launchKeys LinearGenomeView — the URL parameters page renders this list
 // rather than restating it; each of these keys has its own `&param=` section
@@ -29,6 +30,12 @@ export const lgvLaunchKeys = defineLaunchKeys<InitState>()(
     highlight: { kind: 'launch' },
   },
   {
-    passThrough: ['bpPerPx', 'offsetPx', 'showCytobandsSetting', 'colorByCDS'],
+    passThrough: [
+      'bpPerPx',
+      'offsetPx',
+      'showCytobandsSetting',
+      'colorByCDS',
+      'trackSelectorType',
+    ],
   },
 )

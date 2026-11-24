@@ -81,3 +81,13 @@ test("the dotplot's v4.3.0 drawCigar lands as the indels part", () => {
     indels: { show: false },
   })
 })
+
+// v2.10–v4.3.0 saved trackSelectorType on every view, and nothing reads it
+test('a v4.3.0 trackSelectorType drops', () => {
+  expect(
+    liftSyntenyViewSettings({
+      type: 'DotplotView',
+      trackSelectorType: 'hierarchical',
+    }),
+  ).toEqual({ type: 'DotplotView' })
+})
