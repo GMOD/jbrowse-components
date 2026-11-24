@@ -70,13 +70,13 @@ same row. The layout is the display's under its `heightMode` and `height`: `fit`
 heights the browser gives up to fit the track are given up here too, and `grow`
 places every feature at full size. The layout packs what was fetched over
 `fetchRegions`, each of `regions` and the view's margin around it, a region
-apiece, and the tables list the features touching `regions`, or a margin feature
-whose label reaches into one, each with every mark of its glyph, as the view
-draws them before its edges clip them. A read of the file's own fields for the
-features listed reads over `fetchRegions`. A feature in view the packer could
-not place within its 10000 px row ceiling is left out of every table and counted
-in `truncated`; the legend keys the boxes the layout kept of the features in
-view, such a feature included, as the browser's key does.
+apiece, and the tables list the features touching `regions`, each with every
+mark of its glyph, as the view draws them before its edges clip them. A read of
+the file's own fields for the features listed reads over `fetchRegions`. A
+feature in view the packer could not place within its 10000 px row ceiling is
+left out of every table and counted in `truncated`; the legend keys the boxes
+the layout kept of the features in view, such a feature included, as the
+browser's key does.
 
 Under a `facet` the display packs a section per value, each under its
 `sectionLabelHeight` chip row, and `sections` lists them in stacking order:

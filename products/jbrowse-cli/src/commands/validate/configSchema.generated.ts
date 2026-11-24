@@ -5472,7 +5472,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
               }
             },
             "field": {
-              "description": "the field the description reads, such as \`note\`, or a \`jexl:\` expression over \`feature\`; the default reads \`note\`, else \`description\`, else \`function\`, and an empty value draws no description.",
+              "description": "the field the description reads, such as \`note\`, or a \`jexl:\` expression over \`feature\`; the default reads \`note\`, else \`description\`, else \`function\`, else the \`product\` of the feature or its line of only children, and an empty value draws no description.",
               "default": "jexl:get(feature,'note') || get(feature,'description') || get(feature,'function') || getUnbranched(feature,'product')",
               "if": {
                 "type": "null"
