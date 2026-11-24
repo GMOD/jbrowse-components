@@ -1,0 +1,8 @@
+forms of 461 placed haplotypes: 239 repl 114kb->8bp, 135 ref, 87 repl 21.9kb->2.26kb
+100 of 100 individuals with both HPRC haplotypes have the copy number their haplotypes predict
+114 kb deletion + 114 kb deletion: HGSV_105993 1/1 x36
+114 kb deletion + 22 kb deletion: HGSV_105993 0/1 x11
+114 kb deletion + neither: HGSV_105993 0/1 x28
+22 kb deletion + 22 kb deletion: HGSV_105993 0/0 x8
+22 kb deletion + neither: HGSV_105993 0/0 x14
+neither + neither: HGSV_105993 0/0 x3
