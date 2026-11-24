@@ -112,7 +112,7 @@ const genotypeOf = new Map(
 )
 const byPair = new Map()
 for (const { sample, haps } of assembled) {
-  const pair = haps.toSorted().join(' + ')
+  const pair = haps.toSorted((a, b) => a.localeCompare(b)).join(' + ')
   const counts = byPair.get(pair) ?? new Map()
   const genotype = genotypeOf.get(sample) ?? 'absent'
   counts.set(genotype, (counts.get(genotype) ?? 0) + 1)
@@ -125,7 +125,8 @@ for (const [pair, counts] of [...byPair].toSorted(([a], [b]) =>
     `${pair}: ${CALLSET_114KB.id} ${[...counts].map(([g, n]) => `${g} x${n}`).join(', ')}`,
   )
 }
-console.log(['name', 'hap1', 'hap2'].join('\t'))
-for (const row of rows) {
-  console.log(row.join('\t'))
-}
+process.stdout.write(
+  [['name', 'hap1', 'hap2'], ...rows]
+    .map(row => `${row.join('\t')}\n`)
+    .join(''),
+)
