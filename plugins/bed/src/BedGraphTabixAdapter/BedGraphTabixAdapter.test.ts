@@ -67,6 +67,43 @@ test('names value columns from a skip-line header', async () => {
   ])
 })
 
+function skiplineAdapter(samplesTsv?: string) {
+  return new BedGraphTabixAdapter(
+    configSchema.create({
+      bedGraphGzLocation: {
+        localPath: require.resolve('./test_data/skipline.bg.gz'),
+        locationType: 'LocalPathLocation',
+      },
+      index: {
+        location: {
+          localPath: require.resolve('./test_data/skipline.bg.gz.tbi'),
+          locationType: 'LocalPathLocation',
+        },
+      },
+      ...(samplesTsv
+        ? {
+            samplesTsvLocation: {
+              localPath: require.resolve(samplesTsv),
+              locationType: 'LocalPathLocation',
+            },
+          }
+        : {}),
+    }),
+  )
+}
+
+test('a samples table gives the value columns its attributes and narrows them to its rows', async () => {
+  const listing = await skiplineAdapter(
+    './test_data/skipline.samples.tsv',
+  ).getSourcesAndWarnings()
+  expect(listing?.sources).toEqual([{ name: 'loss', group: 'deleted' }])
+  expect(listing?.warnings).toEqual([expect.stringContaining('gain')])
+})
+
+test('without a samples table the rows come from the features', async () => {
+  expect(await skiplineAdapter().getSourcesAndWarnings()).toBeUndefined()
+})
+
 function hangReadsOf(suffix: string) {
   const signals: (AbortSignal | undefined)[] = []
   const { readFile } = CachedFilehandle.prototype

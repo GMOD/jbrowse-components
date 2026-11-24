@@ -9,7 +9,10 @@ import { decompressedBytesBudget } from '@jbrowse/core/util/cacheBudgets'
 import { openLocation, openTabixIndexFilehandle } from '@jbrowse/core/util/io'
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
 
-import { makeBedGraphFeature } from '../bedGraphUtil.ts'
+import {
+  bedGraphSamplesTsvSources,
+  makeBedGraphFeature,
+} from '../bedGraphUtil.ts'
 import { parseNamesFromHeader } from '../util.ts'
 
 import type { BedGraphTabixAdapterConfig } from './configSchema.ts'
@@ -65,6 +68,22 @@ export default class BedGraphTabixAdapter extends BaseFeatureDataAdapter<BedGrap
     return columnNames.length ? columnNames : parseNamesFromHeader(header)
   }
 
+  private async valueColumnNames() {
+    const { bedGraph } = await this.configure()
+    const { columnNumbers } = await bedGraph.getMetadata()
+    const singleCoordinate = columnNumbers.start === columnNumbers.end
+    return (await this.getNames())?.slice(singleCoordinate ? 2 : 3) ?? []
+  }
+
+  async getSourcesAndWarnings(opts?: BaseOptions) {
+    return bedGraphSamplesTsvSources({
+      location: this.getConf('samplesTsvLocation'),
+      names: await this.valueColumnNames(),
+      pluginManager: this.pluginManager,
+      opts,
+    })
+  }
+
   public async getRefNames(opts: BaseOptions = {}) {
     const { bedGraph } = await this.configure(opts)
     return downloadStatus(
@@ -87,7 +106,7 @@ export default class BedGraphTabixAdapter extends BaseFeatureDataAdapter<BedGrap
       const colStart = columnNumbers.start - 1
       const colEnd = columnNumbers.end - 1
       const same = colStart === colEnd
-      const names = (await this.getNames())?.slice(same ? 2 : 3) ?? []
+      const names = await this.valueColumnNames()
       const sourceColumn = names.indexOf('source')
       await downloadStatus(
         'Downloading features',

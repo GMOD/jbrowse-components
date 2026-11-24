@@ -300,6 +300,10 @@ export const configManifest: ConfigManifest = {
         {
           "name": "columnNames",
           "type": "string[]"
+        },
+        {
+          "name": "samplesTsvLocation",
+          "type": "((LocalPathLocation | UriLocation | BlobLocation | FileHandleLocation) | undefined)"
         }
       ],
       "shorthandKeys": [
@@ -336,6 +340,10 @@ export const configManifest: ConfigManifest = {
         {
           "name": "columnNames",
           "type": "string[]"
+        },
+        {
+          "name": "samplesTsvLocation",
+          "type": "((LocalPathLocation | UriLocation | BlobLocation | FileHandleLocation) | undefined)"
         }
       ],
       "shorthandKeys": [

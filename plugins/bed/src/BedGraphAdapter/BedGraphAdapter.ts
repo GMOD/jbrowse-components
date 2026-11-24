@@ -6,7 +6,10 @@ import { intervalTreeFeatures } from '@jbrowse/core/data_adapters/intervalTreeFe
 import { IntervalTree, fetchAndMaybeUnzip } from '@jbrowse/core/util'
 import { openLocation } from '@jbrowse/core/util/io'
 
-import { makeBedGraphFeature } from '../bedGraphUtil.ts'
+import {
+  bedGraphSamplesTsvSources,
+  makeBedGraphFeature,
+} from '../bedGraphUtil.ts'
 import { bucketBedLines, resolveColumnNames } from '../util.ts'
 
 import type { BedGraphAdapterConfig } from './configSchema.ts'
@@ -23,6 +26,15 @@ export default class BedGraphAdapter extends BaseFeatureDataAdapter<BedGraphAdap
       async () => (await this.loadData()).header,
     )
   }
+  async getSourcesAndWarnings(opts?: BaseOptions) {
+    return bedGraphSamplesTsvSources({
+      location: this.getConf('samplesTsvLocation'),
+      names: (await this.getNames())?.slice(3) ?? [],
+      pluginManager: this.pluginManager,
+      opts,
+    })
+  }
+
   private async loadFeatureIntervalTreeHelper(refName: string) {
     const { features } = await this.loadData()
     const lines = features[refName]

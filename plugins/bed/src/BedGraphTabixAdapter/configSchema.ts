@@ -3,6 +3,7 @@ import {
   expandTabixShorthand,
   tabixIndexSchema,
 } from '@jbrowse/core/configuration'
+import { samplesTsvAdapterConfigSchemaFields } from '@jbrowse/core/util/samplesTsv'
 
 import type { Instance } from '@jbrowse/mobx-state-tree'
 
@@ -26,6 +27,17 @@ export function normalizeSnapshot(snap: Record<string, unknown>) {
  * {
  *   type: 'BedGraphTabixAdapter',
  *   uri: 'https://example.com/signal.bedGraph.gz',
+ * }
+ * ```
+ *
+ * #example
+ * Per-column metadata from a table whose first column names each value column
+ * as the header does; the track shows only the columns the table lists:
+ * ```js
+ * {
+ *   type: 'BedGraphTabixAdapter',
+ *   uri: 'https://example.com/cohort.bedgraph.gz',
+ *   samplesTsvLocation: { uri: 'https://example.com/samples.tsv' },
  * }
  * ```
  */
@@ -59,6 +71,7 @@ const BedGraphTabixAdapter = ConfigurationSchema(
       description: 'List of column names',
       defaultValue: [],
     },
+    ...samplesTsvAdapterConfigSchemaFields,
   },
   {
     explicitlyTyped: true,

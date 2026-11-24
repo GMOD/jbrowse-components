@@ -193,6 +193,41 @@ describe('plain feature adapter fallback', () => {
   // so every feature comes back with `source: undefined`. Grouping used to
   // stringify that into a subtrack literally named "undefined", which reached
   // the tooltip as `undefined: 5`.
+  it("takes a samples table's rows and their columns over the sources the features name", async () => {
+    jest.mocked(getFeatureAdapterOrThrow).mockResolvedValue({
+      getFeaturesArray: jest
+        .fn()
+        .mockResolvedValue([feature('a', 0, 1), feature('b', 10, 2)]),
+      getSourcesAndWarnings: async () => ({
+        sources: [{ name: 'b', hap1: '22 kb deletion' }],
+        warnings: ['a is not in the table'],
+      }),
+      getZoomRange: async () => undefined,
+      getValueDomain: async () => undefined,
+    } as never)
+
+    const [first] = await run({})
+
+    expect(first!.sources.map(({ name, hap1 }) => ({ name, hap1 }))).toEqual([
+      { name: 'b', hap1: '22 kb deletion' },
+    ])
+    expect(scoresOf(first!, 'b')).toEqual([2])
+    expect(first!.warnings).toEqual(['a is not in the table'])
+  })
+
+  it('discovers the sources from the features where the adapter has no table', async () => {
+    jest.mocked(getFeatureAdapterOrThrow).mockResolvedValue({
+      getFeaturesArray: jest.fn().mockResolvedValue([feature('a', 0, 1)]),
+      getSourcesAndWarnings: async () => undefined,
+      getZoomRange: async () => undefined,
+      getValueDomain: async () => undefined,
+    } as never)
+
+    const [first] = await run({})
+
+    expect(first!.sources.map(s => s.name)).toEqual(['a'])
+  })
+
   it('names a source-less feature group with the empty string, not "undefined"', async () => {
     const anon = (start: number, score: number) =>
       new SimpleFeature({

@@ -10,7 +10,7 @@ import { rpcResult } from '@jbrowse/core/util/librpc'
 import { collectWiggleTransferables } from '@jbrowse/wiggle-core'
 
 import { fetchSourceRaws } from '../fetchRegionRaws.ts'
-import { isMultiSource } from '../multiSourceAdapter.ts'
+import { isMultiSource, listsSampleRows } from '../multiSourceAdapter.ts'
 import { processFeaturesFromArrays } from '../util.ts'
 
 import type { RawFeatureArrays } from '../util.ts'
@@ -124,8 +124,9 @@ async function readWiggleData(
   // list through the base `getSources` alone. Variants' `sourcesAndWarnings`
   // falls back the same way, and stays separate: the one home both could share
   // is a base-class `getSourcesAndWarnings`, plugin ABI for four lines (declined
-  // 2026-11-08). A plain fallback adapter
-  // has no source list — its sources are discovered per region — so union the
+  // 2026-11-08). A one-file adapter lists its rows only from a samples table
+  // (a bedGraph's `samplesTsvLocation`). Without one it has no source list —
+  // its sources are discovered per region — so union the
   // caller's list with whatever sources these regions actually contain.
   // Otherwise a source with zero features in the fetched regions would be
   // absent from the payload, get echoed back on every later fetch, and stay
@@ -135,7 +136,9 @@ async function readWiggleData(
         sources: await dataAdapter.getSources(regions),
         warnings: [],
       })
-    : undefined
+    : listsSampleRows(dataAdapter)
+      ? await dataAdapter.getSourcesAndWarnings(opts)
+      : undefined
   const orderedSources: SourceInfo[] = listing
     ? sourcesArg?.length
       ? sourcesArg

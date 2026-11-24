@@ -32,6 +32,19 @@ interface MultiSourceWiggleAdapter extends BaseFeatureDataAdapter {
   ): Promise<{ sources: SourceInfo[]; warnings: string[] }>
 }
 
+interface SampleListingAdapter extends BaseFeatureDataAdapter {
+  getSourcesAndWarnings(
+    opts?: BaseOptions,
+  ): Promise<{ sources: SourceInfo[]; warnings: string[] } | undefined>
+}
+
+// A one-file adapter (a bedGraph) lists its rows only from a samples table
+export function listsSampleRows(
+  adapter: BaseFeatureDataAdapter,
+): adapter is SampleListingAdapter {
+  return 'getSourcesAndWarnings' in adapter
+}
+
 // Shared by the render RPC and the clustering score matrix so the two take the
 // same branch: a track backed by real per-subtrack files gets typed arrays from
 // both, and only an adapter carrying several sources in one file (bedMethyl, a

@@ -1,6 +1,9 @@
 import { SimpleFeature } from '@jbrowse/core/util'
+import { getSamplesTsvSources } from '@jbrowse/core/util/samplesTsv'
 
-import type { Feature } from '@jbrowse/core/util'
+import type PluginManager from '@jbrowse/core/PluginManager'
+import type { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'
+import type { Feature, FileLocation } from '@jbrowse/core/util'
 
 // Build a single-score bedGraph feature for value column j, or undefined when
 // the value is not numeric. A wide file names each value column's source in
@@ -38,4 +41,33 @@ export function makeBedGraphFeature({
           source: rowSource ?? (names[j] || `col${j}`),
         },
       })
+}
+
+// A tidy file's `source` column names its rows only row by row
+export function wideSourceNames(names: string[]) {
+  return names.length === 0 || names.includes('source')
+    ? undefined
+    : names.map((name, j) => name || `col${j}`)
+}
+
+export async function bedGraphSamplesTsvSources({
+  location,
+  names,
+  pluginManager,
+  opts,
+}: {
+  location: FileLocation | undefined
+  names: string[]
+  pluginManager?: PluginManager
+  opts?: BaseOptions
+}) {
+  return location
+    ? getSamplesTsvSources({
+        location,
+        names: wideSourceNames(names),
+        namesLabel: 'the bedGraph header',
+        pluginManager,
+        opts,
+      })
+    : undefined
 }

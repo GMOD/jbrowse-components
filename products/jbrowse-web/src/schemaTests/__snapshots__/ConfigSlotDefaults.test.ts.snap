@@ -21,12 +21,14 @@ exports[`every registered schema slot default 1`] = `
   "adapter: BedGraphAdapter": {
     "bedGraphLocation": "fileLocation = {"uri":"/path/to/my.bedgraph","locationType":"UriLocation"}",
     "columnNames": "stringArray = []",
+    "samplesTsvLocation": "maybeFileLocation = undefined",
   },
   "adapter: BedGraphTabixAdapter": {
     "bedGraphGzLocation": "fileLocation = {"uri":"/path/to/my.bedgraph","locationType":"UriLocation"}",
     "columnNames": "stringArray = []",
     "index.indexType": "stringEnum = "TBI" of ["TBI","CSI"]",
     "index.location": "fileLocation = {"uri":"/path/to/my.gz.tbi","locationType":"UriLocation"}",
+    "samplesTsvLocation": "maybeFileLocation = undefined",
   },
   "adapter: BedTabixAdapter": {
     "autoSql": "string = """,
