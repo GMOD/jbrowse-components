@@ -22,8 +22,9 @@ TypeScript, and @jbrowse/mobx-state-tree.
 
 ## Documentation
 
-- [Documentation home](https://jbrowse.org/jb2/docs/) has the user guide, config
-  guide, developer guide, and CLI reference
+- [Home](https://jbrowse.org/jb2/)
+- [Docs](https://jbrowse.org/jb2/docs/) - has the user guide, config guide,
+  developer guide, and CLI reference
 - [Tutorials](https://jbrowse.org/jb2/docs/tutorials/) are step-by-step guides
   grouped by topic (synteny, SVs, methylation, RNA-seq, and more)
 - [FAQ](https://jbrowse.org/jb2/docs/faq/)
