@@ -35,7 +35,7 @@ const CN_BEDGRAPH_TRACK = {
   },
 }
 
-const NESTED_DELETION_WINDOW = 'chr3:162,650,000-163,050,000'
+const TWO_ALLELE_DELETION_WINDOW = 'chr3:162,650,000-163,050,000'
 const HGSVC3_SV_TRACK = {
   type: 'VariantTrack',
   trackId: 'hgsvc3_sv_insdel',
@@ -48,11 +48,12 @@ const HGSVC3_SV_TRACK = {
 }
 
 // Inside the callset's 114 kb deletion (HGSV_105993) but outside the 22 kb
-// one nested in it, which the callset does not record and the heatmap shows
+// allele whose span lies inside it, which the callset does not record and the
+// heatmap shows
 const OUTER_DELETION_SORT = { refName: 'chr3', pos: 162_879_999 }
 
-const BLURB_FONT = 18
-const LETTER_FONT = 26
+const BLURB_FONT = 14
+const LETTER_FONT = 20
 
 // Left of the first deletion call, where every track is clear of calls, the
 // blurb indented past its panel's letter
@@ -96,7 +97,7 @@ export const paperCohortSpecs: ScreenshotSpec[] = [
         {
           type: 'LinearGenomeView',
           assembly: 'hg38',
-          loc: NESTED_DELETION_WINDOW,
+          loc: TWO_ALLELE_DELETION_WINDOW,
           tracks: [
             {
               trackId: SV_TRACK.trackId,
