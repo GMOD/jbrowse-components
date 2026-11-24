@@ -48,7 +48,7 @@ Dotplot1DView
 LinearSyntenyViewHelper
 TimeTraveller
 
-# model members with no description (1226)
+# model members with no description (1227)
 # fix: write a sentence under the member’s #property/#volatile/#getter/#method/#action tag
 AddTrackModel.adapterHint
 AddTrackModel.altAssemblyName
@@ -463,6 +463,7 @@ HierarchicalTrackSelectorWidget.setTrackContainerId
 HierarchicalTrackSelectorWidget.setTrackList
 HierarchicalTrackSelectorWidget.setView
 HierarchicalTrackSelectorWidget.shownTrackIds
+HierarchicalTrackSelectorWidget.tableWide
 HierarchicalTrackSelectorWidget.treeHeight
 HierarchicalTrackSelectorWidget.view
 HierarchicalTrackSelectorWidget.visibleRange
