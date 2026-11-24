@@ -6,7 +6,7 @@ import { observer } from 'mobx-react'
 import { makeStyles } from '../util/tss-react/index.ts'
 import ControlRow from './ControlRow.tsx'
 import ExternalLink from './ExternalLink.tsx'
-import { ERROR_REPORT_EMAIL, sendErrorReport } from './errorReport.ts'
+import { ERROR_REPORT_EMAIL, sendErrorReport } from './errorReportEmail.ts'
 import { alpha } from './palette.ts'
 
 const useStyles = makeStyles()(theme => ({

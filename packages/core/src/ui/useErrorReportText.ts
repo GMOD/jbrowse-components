@@ -3,7 +3,7 @@ import { useGraphicsCapabilities } from '@jbrowse/render-core/useGraphicsCapabil
 
 import { useFetch } from '../util/useFetch.ts'
 import { version } from '../version.ts'
-import { withoutSharePassword } from './errorReport.ts'
+import { withoutSharePassword } from './errorReportEmail.ts'
 import { formatErrorStack } from './formatErrorStack.ts'
 import { mapStackTrace } from './mapStackTrace.ts'
 

@@ -1,7 +1,7 @@
 import { cleanup, fireEvent, render } from '@testing-library/react'
 
 import ErrorMessageStackTraceContents from './ErrorMessageStackTraceContents.tsx'
-import { withoutSharePassword } from './errorReport.ts'
+import { withoutSharePassword } from './errorReportEmail.ts'
 
 afterEach(() => {
   cleanup()
