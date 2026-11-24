@@ -593,7 +593,7 @@ function slotNesting(
   }
   const shapes: Record<string, string> = {
     Adapter: `Adapter slots go inside the track's \`adapter\`: \`"adapter": { "type": "${name}", ... }\`.`,
-    Display: `Display slots go on a display entry: \`"displays": [{ "type": "${name}", ... }]\`, or in the track's [\`displayDefaults\`](${DISPLAYS_GUIDE}) when this is its default display.`,
+    Display: `Display slots go on a display entry: \`"displays": [{ "type": "${name}", ... }]\`, or in the track's [\`displayDefaults\`](${DISPLAYS_GUIDE}), which routes each setting to every display of the track whose slot takes it.`,
     Track:
       'Track slots are top-level fields of the track config, alongside `trackId` and `name`.',
     Connection:

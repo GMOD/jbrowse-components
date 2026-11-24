@@ -61,7 +61,7 @@ const VcfTabixAdapter = ConfigurationSchema(
     ...pedigreeAdapterConfigSchemaFields,
     /**
      * #slot
-     * Matches the feature-track default (5 Mb): the tabix byte estimate is
+     * Matches the feature-track default (5 MB): the tabix byte estimate is
      * block-granular (a small region still pulls whole BGZF blocks), so a
      * tighter gate trips on routine variant views. VCF text downloads fast; the
      * feature-density gate remains the backstop for genuinely over-dense views.

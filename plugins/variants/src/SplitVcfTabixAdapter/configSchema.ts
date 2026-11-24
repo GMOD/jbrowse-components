@@ -67,10 +67,10 @@ const SplitVcfTabixAdapter = ConfigurationSchema(
 
     /**
      * #slot
-     * The same 5 Mb `VcfTabixAdapter` declares, for the same reason: this
+     * The same 5 MB `VcfTabixAdapter` declares, for the same reason: this
      * adapter implements `getRegionByteSize`, so its reads are byte-gated, and
      * without a limit on the adapter the gate falls back to the display config's
-     * conservative 1 Mb (`resolveByteLimit` prefers the adapter's). That gated
+     * conservative 1 MB (`resolveByteLimit` prefers the adapter's). That gated
      * a split VCF five times tighter than the single-file VCF beside it, on a
      * block-granular tabix estimate that already over-quotes small regions.
      */

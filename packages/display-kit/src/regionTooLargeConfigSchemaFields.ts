@@ -21,7 +21,7 @@ import type { ConfigModelForFields } from '@jbrowse/core/configuration'
  * Spreading this table is still how a display declares the slot, but it is no
  * longer the only thing standing between a schema slip and an ungated download:
  * `configuredFetchSizeLimit` is typed `number | undefined` and `resolveByteLimit`
- * falls back to `BASE_FETCH_SIZE_LIMIT`, the same 1 Mb this table defaults to.
+ * falls back to `BASE_FETCH_SIZE_LIMIT`, the same 1 MB this table defaults to.
  * That covers the out-of-tree plugins no in-repo scan reaches;
  * `check-gated-adapter-budgets` covers the ones it does.
  */

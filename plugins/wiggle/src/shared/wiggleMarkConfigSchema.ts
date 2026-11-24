@@ -51,8 +51,8 @@ export const wiggleMarkConfigSchema = ConfigurationSchema(
     },
     /**
      * #slot
-     * The span drawn around each bin's plotted value, as Vega-Lite's
-     * `errorband` names it: `min-max` draws the bin's stored min and max as a
+     * The span drawn around each bin's plotted value, as Vega-Lite's boxplot
+     * `extent` names it: `min-max` draws the bin's stored min and max as a
      * lighter band, while `encoding.y` names a stored summary. A `rect` draws
      * none.
      */

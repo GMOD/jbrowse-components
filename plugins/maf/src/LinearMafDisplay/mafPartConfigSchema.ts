@@ -20,7 +20,8 @@ export const mafPartConfigSchema = ConfigurationSchema(
     show: {
       type: 'boolean',
       defaultValue: false,
-      description: 'draw this part',
+      description:
+        "draw this part: under `inversions`, the hatching over each block a species aligns on the strand opposite its other blocks on that chromosome; under `frames`, each species' CDS reading-frame strip from the adapter's `framesAdapter`",
     },
   },
   { closed: true, plot: true },

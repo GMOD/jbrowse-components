@@ -57,7 +57,7 @@ export default function configSchemaF() {
        * The bytes a region may cost before the display stops and offers to
        * load it anyway, the whole budget since no MAF adapter declares a
        * `fetchSizeLimit`.
-       * 5 Mb, as `LinearBasicDisplay` uses, because the index estimate is
+       * 5 MB (5,000,000 bytes), as `LinearBasicDisplay` uses, because the index estimate is
        * block-granular.
        */
       fetchSizeLimit: { type: 'number', defaultValue: 5_000_000 },

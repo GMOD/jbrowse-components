@@ -308,8 +308,9 @@ export function createBaseTrackConfig(pluginManager: PluginManager) {
        * For the common case, prefer the `displayDefaults` shorthand instead — an
        * object of appearance settings (e.g.
        * `displayDefaults: { encoding: { color: { value: 'green' } } }`)
-       * that JBrowse routes to whichever display uses each setting, so you don't
-       * have to name the display or write the array. A `type` in it names the
+       * that JBrowse routes to every display of the track whose slot by that
+       * name takes the value, so you don't have to name the display or write
+       * the array. A `type` in it names the
        * one display it reaches.
        *
        * See the [track config guide](/docs/config_guides/tracks/#configuring-displays).

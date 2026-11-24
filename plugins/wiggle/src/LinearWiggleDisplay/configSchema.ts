@@ -32,9 +32,10 @@ import type { ConfigurationSlotPath } from '@jbrowse/core/configuration'
  *
  * These are display-level slots: set them inside a track's `displays` to
  * change its defaults (setting them at the track top level has no effect).
- * The object shorthand `displayDefaults: { key: value }` is equivalent to the
- * full `displays: [{ type: 'LinearWiggleDisplay', displayId: '...', key: value }]`
- * array form — see
+ * The object shorthand `displayDefaults: { key: value }` writes `key` to this
+ * display and to every other display of the track whose slot takes it, as
+ * `displays: [{ type: 'LinearWiggleDisplay', displayId: '...', key: value }]`
+ * writes it to this one alone — see
  * [configuring displays](/docs/config_guides/tracks#configuring-displays).
  *
  * #example

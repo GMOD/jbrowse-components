@@ -25,8 +25,8 @@ import type PluginManager from '@jbrowse/core/PluginManager'
  * ```
  *
  * #example
- * The same track, colored per feature. `displayDefaults` applies settings to
- * whichever display takes them, here `LinearBasicDisplay`:
+ * The same track, colored per feature. `displayDefaults` applies each setting
+ * to every display whose slot takes it, here `LinearBasicDisplay`:
  * ```js
  * {
  *   type: 'FeatureTrack',

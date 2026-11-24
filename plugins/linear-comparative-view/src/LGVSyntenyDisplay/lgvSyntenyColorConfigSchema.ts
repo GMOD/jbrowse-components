@@ -17,7 +17,9 @@ export const LGV_SYNTENY_IMPLIED_FIELD = 'strand'
  * The LGVSyntenyDisplay's `encoding.color`: the
  * [AlignmentsColor](../alignmentscolor) channel, painting `strand` while it
  * names neither a field nor a constant. `strand`, `mapq` and `mateRefName`
- * (the query contig) are the fields a synteny block answers.
+ * (the query contig) are the fields a synteny block answers; the channel's
+ * other presets, `firstOfPairStrand` and `insertSizeAndOrientation`, are the
+ * alignments channel's, for read pairs, which a synteny block is not.
  *
  * #example
  * ```js

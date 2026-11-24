@@ -21,7 +21,8 @@ export const cellEncodingConfigSchema = ConfigurationSchema(
      * #slot color
      * The hue of every record and every genotype cell with an alt allele:
      * unset, the SV type and genotype colors; `{ value }`, a CSS color or `jexl:` callback; or a field, one
-     * of the `impact`, `svType` and `phaseSet` presets or any record field,
+     * of the `impact`, `svType`, `strand`, `score` and `phaseSet` fields or
+     * any record field,
      * whose values each take a color with a key.
      */
     color: cellColorConfigSchema,

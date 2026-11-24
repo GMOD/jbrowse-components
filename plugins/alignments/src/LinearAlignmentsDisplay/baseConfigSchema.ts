@@ -89,9 +89,11 @@ export const baseLinearAlignmentsDisplayConfigSchema = ConfigurationSchema(
      * `junction.canonical` (a split junction reads no motif and counts as
      * canonical, so `equal: false` hides it), `junction.class` (`splice` for an N gap, or a
      * split read's `deletion`, `duplication` or `inversion`) and
-     * `junction.source` (`gap` or `split`) test the junctions band's arcs, and
-     * `connection.interchrom`, `connection.offscreen` and `breakpoint.reads`
-     * the connections the arcs, the read cloud and the connectors draw.
+     * `junction.source` (`gap` or `split`) test the junctions band's arcs, on
+     * LinearAlignmentsDisplay only, since LGVSyntenyDisplay has no junctions
+     * band. `connection.interchrom`, `connection.offscreen` and
+     * `breakpoint.reads` test the connections the arcs, the read cloud and
+     * the connectors draw.
      *
      * A written list merges with the defaults by field: unmapped, QC-failed
      * and duplicate reads out (`flags.UNMAP`, `flags.QCFAIL` and `flags.DUP`
