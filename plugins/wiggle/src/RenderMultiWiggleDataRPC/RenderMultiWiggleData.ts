@@ -1,10 +1,14 @@
 import RpcMethodTypeWithRenameRegions from '@jbrowse/core/pluggableElementTypes/RpcMethodTypeWithRenameRegions'
 
 import type { RpcExecuteArgs } from '@jbrowse/core/rpc/RpcRegistry'
+import type {
+  GatedFetchArgs,
+  RegionTooLargeResult,
+} from '@jbrowse/core/rpc/byteBudget'
 import type { Region } from '@jbrowse/core/util'
 import type { SourceInfo, WiggleDataResult } from '@jbrowse/wiggle-core'
 
-interface RenderMultiWiggleDataArgs {
+interface RenderMultiWiggleDataArgs extends GatedFetchArgs {
   adapterConfig: Record<string, unknown>
   // All visible regions in one call so each subtrack's adapter can coalesce
   // reads across them (BigWig). Returns one WiggleDataResult per region, in
@@ -20,7 +24,7 @@ declare module '@jbrowse/core/rpc/RpcRegistry' {
   interface RpcRegistry {
     RenderMultiWiggleData: {
       args: RenderMultiWiggleDataArgs
-      return: WiggleDataResult[]
+      return: (WiggleDataResult | RegionTooLargeResult)[]
       // wrapped in rpcResult so postMessage transfers its buffers
       transferables: true
     }

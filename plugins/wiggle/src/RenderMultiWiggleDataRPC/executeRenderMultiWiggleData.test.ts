@@ -1,4 +1,5 @@
 import { getFeatureAdapterOrThrow } from '@jbrowse/core/data_adapters/getFeatureAdapter'
+import { ungatedResult } from '@jbrowse/core/rpc/byteBudget'
 import { SimpleFeature } from '@jbrowse/core/util'
 
 import { executeRenderMultiWiggleData } from './executeRenderMultiWiggleData.ts'
@@ -31,13 +32,12 @@ function scoresOf(result: WiggleDataResult, name: string) {
   return Array.from(source.featureScores)
 }
 
-async function run(args: {
+async function runGated(args: {
   sources?: { name: string }[]
   origin?: number
   statusCallback?: StatusCallback
+  byteLimit?: number
 }) {
-  // no cast: rpcResult carries its value type, so `value` arrives as the
-  // WiggleDataResult[] the RpcRegistry declares for RenderMultiWiggleData
   const { value } = await executeRenderMultiWiggleData({
     pluginManager: pm,
     args: {
@@ -48,6 +48,12 @@ async function run(args: {
     },
   })
   return value
+}
+
+async function run(args: Parameters<typeof runGated>[0]) {
+  return (await runGated(args)).map(result =>
+    ungatedResult(result, 'RenderMultiWiggleData'),
+  )
 }
 
 describe('multi-source adapter (batched)', () => {
@@ -325,5 +331,41 @@ describe('single-source typed-array adapter', () => {
     expect(results.map(r => r.sources.map(s => s.name))).toEqual([[''], ['']])
     expect(scoresOf(results[0]!, '')).toEqual([1, 2])
     expect(scoresOf(results[1]!, '')).toEqual([3])
+  })
+})
+
+// A computed adapter, the GC track's, reads every base of what it is asked
+// for, so the budget is checked before anything is read.
+describe('a byte budget', () => {
+  function gcLikeAdapter(bytesPerRegion: number) {
+    const getFeatureArrays = jest.fn().mockResolvedValue([raw([1]), raw([2])])
+    jest.mocked(getFeatureAdapterOrThrow).mockResolvedValue({
+      getZoomRange: async () => undefined,
+      getValueDomain: async () => undefined,
+      getRegionByteSize: async () => bytesPerRegion,
+      getFeatureArrays,
+    } as never)
+    return getFeatureArrays
+  }
+
+  it('refuses every region, reading none, when the largest is over it', async () => {
+    const getFeatureArrays = gcLikeAdapter(248_956_422)
+    expect(await runGated({ byteLimit: 10_000_000 })).toEqual([
+      { regionTooLarge: true, bytes: 248_956_422 },
+      { regionTooLarge: true, bytes: 248_956_422 },
+    ])
+    expect(getFeatureArrays).not.toHaveBeenCalled()
+  })
+
+  it('reports what each region measured when it fits', async () => {
+    gcLikeAdapter(5_000)
+    const results = await run({ byteLimit: 10_000_000 })
+    expect(results.map(r => r.bytes)).toEqual([5_000, 5_000])
+  })
+
+  it('measures nothing without one', async () => {
+    gcLikeAdapter(248_956_422)
+    const results = await run({})
+    expect(results.map(r => r.bytes)).toEqual([undefined, undefined])
   })
 })

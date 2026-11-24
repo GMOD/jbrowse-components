@@ -210,6 +210,18 @@ export default function stateModelFactory(
     .views(self => wiggleConfigViews(self))
     .views(self => wiggleModeViews(self))
     .views(self => wiggleLabelViews(self))
+    .views(() => ({
+      /**
+       * #getter
+       * On, so an adapter answering `getRegionByteSize` is measured before
+       * it reads: a GC track computes from the sequence, and zoomed out it
+       * would read the whole chromosome. A bigWig answers no estimate, since
+       * its zoom levels already bound a zoomed-out read, and is never gated.
+       */
+      get gateEnabled() {
+        return true
+      },
+    }))
     .views(self => ({
       /**
        * #getter

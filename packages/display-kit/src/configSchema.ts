@@ -39,7 +39,7 @@ const baseLinearDisplayConfigSchema = ConfigurationSchema(
   {
     // `fetchSizeLimit` and `forceLoad`, which every display composing
     // `RegionTooLargeMixin` owes it. Here as the mixin's own table rather than
-    // written out, so the five displays composing the mixin against a schema
+    // written out, so the displays composing the mixin against a schema
     // that does NOT extend this one declare the same pair from the same place.
     ...regionTooLargeConfigSchemaFields,
     /**

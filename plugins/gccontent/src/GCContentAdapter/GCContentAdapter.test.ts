@@ -366,3 +366,12 @@ test("v4's windowSize and windowDelta load as window and step", () => {
     (['window', 'step'] as const).map(k => readConfObject(conf, k)),
   ).toEqual([30, 10])
 })
+
+test('a region costs a byte per base it scans, so a zoomed-out track is gated', async () => {
+  const adapter = makeAdapter('ACGT', 'content', 100)
+  expect(
+    await adapter.getRegionByteSize([
+      { refName: 'ctgA', start: 0, end: 248_956_422, assemblyName: 'a' },
+    ]),
+  ).toBe(248_956_522)
+})

@@ -6,6 +6,7 @@ import LinearGenomeViewPlugin, {
   linearGenomeViewStateModelFactory as LinearGenomeViewModelFactory,
 } from '@jbrowse/plugin-linear-genome-view'
 import WigglePlugin from '@jbrowse/plugin-wiggle'
+import { when } from 'mobx'
 
 import GCContentPlugin from '../index.ts'
 import { liftGCSettings } from './liftGCSettings.ts'
@@ -16,6 +17,7 @@ import type {
   RadioMenuItem,
   SubMenuItem,
 } from '@jbrowse/core/ui'
+import type { Region } from '@jbrowse/core/util'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 import type { LinearWiggleDisplayModel } from '@jbrowse/plugin-wiggle/LinearWiggleDisplay/stateModel'
 
@@ -51,7 +53,30 @@ function trackConfig(
     )
 }
 
+interface RpcCall {
+  byteLimit: number | undefined
+  read: boolean
+}
+
+// RenderMultiWiggleData as the worker answers it for a GC track: a byte per
+// base, refused past the budget
+function gcWorker(calls: RpcCall[]) {
+  return async (
+    _sessionId: string,
+    _method: string,
+    { regions, byteLimit }: { regions: Region[]; byteLimit?: number },
+  ) => {
+    const bytes = regions.map(r => r.end - r.start)
+    const read = !bytes.some(b => byteLimit !== undefined && b > byteLimit)
+    calls.push({ byteLimit, read })
+    return bytes.map(b =>
+      read ? { sources: [], bytes: b } : { regionTooLarge: true, bytes: b },
+    )
+  }
+}
+
 async function createTrack(adapter: Record<string, unknown> = {}) {
+  const rpcCalls: RpcCall[] = []
   const pluginManager = makePluginManager()
   await pluginManager.getDisplayType('LinearWiggleDisplay').loadStateModel()
   const LinearGenomeModel = LinearGenomeViewModelFactory(pluginManager)
@@ -70,7 +95,7 @@ async function createTrack(adapter: Record<string, unknown> = {}) {
       configuration: types.map(types.frozen()),
     })
     .volatile(() => ({
-      rpcManager: { call: jest.fn() },
+      rpcManager: { call: gcWorker(rpcCalls) },
       assemblyManager: { get: () => ({ initialized: true }) },
     }))
     .views(() => ({
@@ -92,13 +117,20 @@ async function createTrack(adapter: Record<string, unknown> = {}) {
         {
           type: 'GCContentTrack',
           configuration: 'gc',
-          displays: [{ type: 'LinearWiggleDisplay' }],
+          displays: [
+            {
+              type: 'LinearWiggleDisplay',
+              configuration: 'gc-LinearWiggleDisplay',
+            },
+          ],
         },
       ],
     }),
   )
   const track = view.tracks[0]!
   return {
+    rpcCalls,
+    view,
     track: track as typeof track & GCContentTrackMembers,
     display: track.displays[0]! as LinearWiggleDisplayModel,
   }
@@ -220,6 +252,24 @@ test("v4's GC display settings land on the adapter, and a bare sequence adapter 
   const display = conf.displays[0]!
   expect(display.type).toBe('LinearWiggleDisplay')
   expect(readConfObject(display, ['encoding', 'y', 'field'])).toBe('score')
+})
+
+test('a chromosome-wide GC read asks first, and force-load reads it', async () => {
+  const { display, view, rpcCalls } = await createTrack()
+  view.setWidth(800)
+  view.setDisplayedRegions([
+    { refName: 'ctgA', start: 0, end: 248_956_422, assemblyName: 'volvox' },
+  ])
+  view.showAllRegions()
+
+  await when(() => display.regionTooLarge)
+  expect(rpcCalls).toEqual([{ byteLimit: 10_000_000, read: false }])
+  expect(display.rpcDataMap.size).toBe(0)
+
+  display.forceLoad()
+  await when(() => display.rpcDataMap.size > 0)
+  expect(rpcCalls.at(-1)).toEqual({ byteLimit: undefined, read: true })
+  expect(display.regionTooLarge).toBe(false)
 })
 
 test('displayDefaults GC settings land on the adapter too', () => {

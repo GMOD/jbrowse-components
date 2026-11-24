@@ -235,8 +235,10 @@ export async function fetchEachRegion<R>(
  *
  * Its refusal granularity is the region, the third of three: `fetchEachRegion`
  * stops the batch, `fetchRegionsBatched` refuses the one payload, and this one
- * already holds every result so it keeps the regions that fit. No gated display
- * is on it, and which granularity a gated one should want is
+ * already holds every result so it keeps the regions that fit. Its gated
+ * caller, wiggle, sidesteps the choice: its worker refuses the whole set when
+ * the largest region is over budget, before reading any. Which granularity a
+ * display wanting more should take is
  * agent-docs/ideas/waiting-on-a-call/per-region-banner-for-a-mixed-region-set.md.
  */
 export async function fetchAllRegions<R>(

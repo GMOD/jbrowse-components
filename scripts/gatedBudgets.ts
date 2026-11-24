@@ -235,9 +235,15 @@ export const DISPLAY_TIERS = [
       'PlinkLDTabixAdapter, which declares none, so this is the whole budget',
   },
   {
+    name: 'GCContentTrack',
+    file: 'plugins/gccontent/src/GCContentTrack/gcWiggleConfigSchema.ts',
+    applies:
+      "GCContentAdapter under the GC track's LinearWiggleDisplay, a byte per base scanned",
+  },
+  {
     name: 'baseLinearDisplayConfigSchema',
     // The field table `baseLinearDisplayConfigSchema` spreads, not the schema
-    // file: `fetchSizeLimit` belongs to `RegionTooLargeMixin`, and the five
+    // file: `fetchSizeLimit` belongs to `RegionTooLargeMixin`, and the
     // displays composing that mixin without extending the base schema spread
     // the same table. One file still holds the number.
     file: 'packages/display-kit/src/regionTooLargeConfigSchemaFields.ts',
@@ -261,6 +267,8 @@ export const GATE_OPT_IN_SITES: Record<string, string> = {
   'plugins/variants/src/LDDisplay/model.ts': 'LDTrackDisplay',
   'plugins/variants/src/LinearVariantDisplay/model.ts':
     'VcfTabixAdapter/SplitVcfTabixAdapter declare 5 Mb',
+  'plugins/wiggle/src/LinearWiggleDisplay/model.ts':
+    "GCContentTrack: its LinearWiggleDisplay raises the budget to 10 Mb; elsewhere MultiWiggleAdapter's subadapters inherit baseLinearDisplayConfigSchema, and a bigWig answers no estimate",
   'plugins/circular-view/src/ChordVariantDisplay/models/stateModelFactory.ts':
     'VcfTabixAdapter/SplitVcfTabixAdapter declare 5 Mb, measured over the whole fetch since the circle holds every region',
 }

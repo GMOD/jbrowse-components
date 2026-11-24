@@ -7,6 +7,7 @@
   "BigMafAdapter": "display",
   "CramAdapter": "own:5000000",
   "CrisprGuideAdapter": "display",
+  "GCContentAdapter": "display",
   "GWASAdapter": "display",
   "Gff3TabixAdapter": "display",
   "GtfTabixAdapter": "display",

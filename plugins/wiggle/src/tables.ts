@@ -1,4 +1,5 @@
 import { fullConfSnapshot, readConfObject } from '@jbrowse/core/configuration'
+import { ungatedResult } from '@jbrowse/core/rpc/byteBudget'
 import { colorKeyTables } from '@jbrowse/core/ui/rampKey'
 import {
   abgrToHex,
@@ -124,8 +125,9 @@ async function fetchedWiggleHost(
     ...fetchInputs,
     statusCallback: () => {},
   }
-  const results = (await executeRenderMultiWiggleData({ pluginManager, args }))
-    .value
+  const results = (
+    await executeRenderMultiWiggleData({ pluginManager, args })
+  ).value.map(result => ungatedResult(result, 'RenderMultiWiggleData'))
   model.setFetched(
     {
       initialized: true,

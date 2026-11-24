@@ -1,4 +1,9 @@
 import { getFeatureAdapterOrThrow } from '@jbrowse/core/data_adapters/getFeatureAdapter'
+import {
+  largestRegionBytes,
+  overByteBudget,
+  perRegionBytes,
+} from '@jbrowse/core/rpc/byteBudget'
 import { updateStatus } from '@jbrowse/core/util'
 import { checkAbortSignal } from '@jbrowse/core/util/aborting'
 import { rpcResult } from '@jbrowse/core/util/librpc'
@@ -10,7 +15,9 @@ import { processFeaturesFromArrays } from '../util.ts'
 
 import type { RawFeatureArrays } from '../util.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
+import type { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { RpcExecuteArgs } from '@jbrowse/core/rpc/RpcRegistry'
+import type { RegionTooLargeResult } from '@jbrowse/core/rpc/byteBudget'
 import type { SourceInfo, WiggleDataResult } from '@jbrowse/wiggle-core'
 
 // `primary` order first (the caller's stable list), then any sources present in
@@ -46,6 +53,40 @@ export async function executeRenderMultiWiggleData({
   pluginManager,
   args,
 }: ExecuteParams) {
+  const { regions, signal, statusCallback, byteLimit } = args
+  const dataAdapter = await getFeatureAdapterOrThrow({ ...args, pluginManager })
+  const bytes =
+    byteLimit === undefined
+      ? []
+      : await updateStatus('Downloading index', statusCallback, () =>
+          perRegionBytes(dataAdapter, regions, { signal, statusCallback }),
+        )
+  checkAbortSignal(signal)
+  if (overByteBudget(largestRegionBytes(bytes), byteLimit)) {
+    return rpcResult(
+      bytes.map((b): RegionTooLargeResult => ({
+        regionTooLarge: true,
+        bytes: b,
+      })),
+      [],
+    )
+  } else {
+    const results = await readWiggleData(
+      pluginManager,
+      args,
+      dataAdapter,
+      bytes,
+    )
+    return rpcResult(results, collectWiggleTransferables(results))
+  }
+}
+
+async function readWiggleData(
+  pluginManager: PluginManager,
+  args: RpcExecuteArgs<'RenderMultiWiggleData'>,
+  dataAdapter: BaseFeatureDataAdapter,
+  bytes: (number | undefined)[],
+) {
   const {
     regions,
     sources: sourcesArg,
@@ -55,8 +96,6 @@ export async function executeRenderMultiWiggleData({
     yField,
     statusCallback,
   } = args
-
-  const dataAdapter = await getFeatureAdapterOrThrow({ ...args, pluginManager })
 
   const isMulti = isMultiSource(dataAdapter)
   const opts = {
@@ -110,6 +149,7 @@ export async function executeRenderMultiWiggleData({
   // Every region carries the full source list — a source with no features here
   // still gets an entry, so row placement stays aligned across regions.
   const results: WiggleDataResult[] = regions.map((_region, regionIndex) => ({
+    ...(bytes[regionIndex] === undefined ? {} : { bytes: bytes[regionIndex] }),
     sources: orderedSources.map(source => ({
       ...source,
       ...processFeaturesFromArrays(
@@ -120,5 +160,5 @@ export async function executeRenderMultiWiggleData({
     ...(valueDomain ? { valueDomain } : {}),
     ...(warnings?.length ? { warnings } : {}),
   }))
-  return rpcResult(results, collectWiggleTransferables(results))
+  return results
 }

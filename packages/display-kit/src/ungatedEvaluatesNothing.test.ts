@@ -1,7 +1,7 @@
 import RegionTooLargeMixin from './RegionTooLargeMixin.ts'
 
 // "Nothing below the opt-in is evaluated" is the property the ungated composers
-// (wiggle, Manhattan, sequence, GC content) and the simplified test models rely
+// (Manhattan, sequence) and the simplified test models rely
 // on, and the mixin states it four times in its own comments. What it prevents
 // is a throw, not a slow read: `byteGateAdapterConfig` reaches
 // `getContainingTrack`, which throws 'no containing track found' for a host that

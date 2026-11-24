@@ -28,4 +28,6 @@ export interface WiggleDataResult {
   valueDomain?: [number, number]
   /** What the adapter's source listing dropped or could not match. */
   warnings?: string[]
+  /** The region's byte estimate, where the fetch carried a `byteLimit`. */
+  bytes?: number
 }

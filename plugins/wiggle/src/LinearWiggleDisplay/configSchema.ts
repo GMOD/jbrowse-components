@@ -1,6 +1,7 @@
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
 import { retiredBaseDisplaySpellings } from '@jbrowse/display-kit/configSchema'
 import { legendConfigSchema } from '@jbrowse/display-kit/legendConfigSchema'
+import { regionTooLargeConfigSchemaFields } from '@jbrowse/display-kit/regionTooLargeConfigSchemaFields'
 import { trackHeightConfigSchemaFields } from '@jbrowse/display-kit/trackHeightConfigSchemaFields'
 import {
   retiredAxisSpellings,
@@ -140,6 +141,7 @@ const linearWiggleDisplayConfigSchema = ConfigurationSchema(
      */
     rows: quantitativeRowsConfigSchema,
     ...trackHeightConfigSchemaFields(),
+    ...regionTooLargeConfigSchemaFields,
     /**
      * #slot encoding
      * The channels the marks paint through. `encoding.color` is one CSS

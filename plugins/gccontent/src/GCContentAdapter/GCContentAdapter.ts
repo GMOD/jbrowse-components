@@ -58,6 +58,18 @@ export default class GCContentAdapter extends BaseFeatureDataAdapter<GCContentAd
     return this.getConf('op') === 'content' ? [0, 1] : undefined
   }
 
+  /**
+   * One byte per base read, the window's flanks included, so a zoomed-out
+   * track meets the display's region-too-large gate instead of reading and
+   * scanning the whole chromosome. A sequence adapter reports no estimate of
+   * its own, so this counts what the scan holds rather than what the wire
+   * carries.
+   */
+  public async getRegionByteSize(regions: Region[]) {
+    const width = this.getConf('window')
+    return regions.reduce((bytes, r) => bytes + r.end - r.start + width, 0)
+  }
+
   /** The zoom an `auto` step's rung serves; a fixed step serves every zoom. */
   public async getZoomRange(opts?: GCOptions) {
     return this.gcWindow(opts).zoomRange

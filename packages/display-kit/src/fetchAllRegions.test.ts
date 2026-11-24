@@ -16,10 +16,10 @@
  * either: frozen until reload, with nothing going red. See `regionCommit.ts`
  * for the whole rule.
  *
- * Its one caller is wiggle and `RenderMultiWiggleData` has no refusal path, so
- * that branch is unreachable in the tree today. That is exactly why it needs a
- * test rather than why it does not: an edit hoisting the commit out of the
- * guard breaks nothing anyone can see.
+ * Its one caller is wiggle, whose `RenderMultiWiggleData` refuses every
+ * region or none, so a mixed answer is unreachable in the tree today. That is
+ * exactly why it needs a test rather than why it does not: an edit hoisting
+ * the commit out of the guard breaks nothing anyone can see.
  */
 import { fetchAllRegions } from './fetchEachRegion.ts'
 
