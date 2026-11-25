@@ -6,10 +6,9 @@ guide_category: Tutorials
 tutorial_category: Cancer genomics
 ---
 
-Tumors from different patients tend to gain and lose the same regions, because
-those regions contain a gene driving the cancer, so a recurrent event shows as a
-vertical stripe across tumors. With copy-number segment calls for 1104 TCGA
-breast tumors we:
+Tumors from different patients tend to gain and lose the same regions, so a
+recurrent event shows as a vertical stripe across tumors. With copy-number
+segment calls for the TCGA-BRCA breast tumors we:
 
 - load the segment BED as a multi-row feature track, one row per tumor colored
   by gain or loss
@@ -51,13 +50,14 @@ own calls.
 
 | What it is                                                                              | File                                      |
 | --------------------------------------------------------------------------------------- | ----------------------------------------- |
-| Primary-tumor segment calls for 1104 tumors, queried and downloaded through the GDC API | [files](https://api.gdc.cancer.gov/files) |
+| Primary-tumor segment calls, queried and downloaded through the GDC API                 | [files](https://api.gdc.cancer.gov/files) |
 | Per-tumor clinical annotation, from harmonized case fields and each case's clinical XML | [cases](https://api.gdc.cancer.gov/cases) |
 
 ## Load the segments into JBrowse
 
-Add the assembly first. The hosted FASTA names its contigs `1`, `2`, ... and the
-BED uses `chr1`, so pass the alias file to map one onto the other.
+We'll start by adding the assembly. The hosted FASTA names its contigs `1`, `2`,
+... and the BED uses `chr1`, so we pass the alias file to map one onto the
+other.
 
 ```json addassembly genome=hg38
 {
@@ -102,11 +102,11 @@ it.
 The segments themselves are a `FeatureTrack` whose
 `LinearMultiRowFeatureDisplay` holds the row and color settings:
 
-```json addtrack config=test_data/tcga_cnv/config.json loc=17:39,000,000-40,500,000
+```json addtrack config=test_data/tcga_cnv/config.json loc=chr17:39,000,000-40,500,000
 {
   "type": "FeatureTrack",
   "trackId": "tcga_brca_cnv",
-  "name": "TCGA-BRCA copy number (1104 primary tumors)",
+  "name": "TCGA-BRCA copy number (primary tumors)",
   "assemblyNames": ["hg38"],
   "category": ["TCGA"],
   "adapter": {
@@ -143,7 +143,7 @@ The segments themselves are a `FeatureTrack` whose
 
 The display divides its
 [`height`](/docs/config/linearmultirowfeaturedisplay/#slot-height) among the
-rows, which at this row count makes each tumor under a pixel tall. In
+rows, so each tumor is a thin row. In
 [grammar-of-graphics](/docs/config_guides/mark_display) terms, two settings draw
 the rows and colors:
 
@@ -162,10 +162,6 @@ Choose **Clustering → Cluster rows by similarity...** in the track menu (see
 [](/docs/user_guides/clustering)). JBrowse averages `segmean` across each bin in
 view and sorts the rows into blocks with a shared copy-number profile, which
 gathers the tumors amplified at _ERBB2_ into one band.
-
-Clustered at whole-genome zoom, the stack groups tumors by their genome-wide
-profile, and the heavily aneuploid tumors, whose rows run red or blue end to
-end, form a separate band.
 
 <Video src="/media/tcga/cohort_cnv_clustering.mp4" caption="The ERBB2 window clustered from the track menu." />
 
@@ -193,7 +189,7 @@ losses down in the other.
 {
   "type": "QuantitativeTrack",
   "trackId": "tcga_brca_cnv_recurrence",
-  "name": "TCGA-BRCA recurrence (% of 1104 tumors)",
+  "name": "TCGA-BRCA recurrence (% of tumors)",
   "assemblyNames": ["hg38"],
   "category": ["TCGA"],
   "adapter": {
@@ -233,10 +229,10 @@ python3 cnv_recurrence.py tcga_brca_cnv.bed.gz by_subtype.bedGraph \
   --groups tcga_brca_clinical.tsv:subtype --min-group 20
 ```
 
-The `--groups` file is the
-[clinical TSV](/docs/tutorials/tcga_cohort_mutations#load-the-cohort-vcf-into-jbrowse)
-the mutation cohort also uses. Four subtypes give eight signals, each named for
-its subtype and direction, with losses below zero. We'll draw them on a
+The `--groups` file is the clinical TSV that
+[`tcga_clinical_tsv.py`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/tcga_clinical_tsv.py)
+writes. Four subtypes give eight signals, each named for its subtype and
+direction, with losses below zero. We'll draw them on a
 [mark display](/docs/config_guides/mark_display), where a `mark` is the shape
 drawn (here a bar) and `rows` assigns one row per subtype, with its gain above
 the line and its loss below. A `formula` step takes the subtype from each
@@ -307,22 +303,12 @@ The bottom row is the tumors with no resolved subtype.
 
 <Figure caption="Gain and loss frequency per 100 kb, one row per receptor subtype." src="/img/tcga/cohort_cnv_recurrence_subtype.png" />
 
-The file keeps gain and loss as separate columns, since at the edge of the 17q
-amplicon the HER2+ group is gained and lost at nearly the same rate, and its row
-shows both.
-
 Two options adjust the split:
 
 - `--min-group` sets how many tumors a subtype needs to be plotted, and the
   script names each group it dropped.
 - `--groups` takes any other column for a different split: `histology` and
   `stage` work for any TCGA project, while `subtype` is breast specific.
-
-In the copy-number rows, the 17q amplicon marks the HER2+ row. The
-triple-negative group, which the segments do not separate, shows in the point
-mutations. The [mutation cohort](/docs/tutorials/tcga_cohort_mutations) facets
-the same tumors by the same clinical table, and its recurrence track shows
-_TP53_ mutations in the triple-negative row.
 
 ## Use your own cohort
 
@@ -386,10 +372,8 @@ The script writes a `jbrowse2/` opening on _ERBB2_. Swap in any other project id
 (`TCGA-OV`, `TCGA-LUAD`, ...), with a third argument to group the recurrence by
 a different clinical column.
 
-`cnv_recurrence.py` also runs alone on a cohort BED. The clinical table comes
-from
-[`tcga_clinical_tsv.py`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/tcga_clinical_tsv.py),
-shared with the [mutation cohort](/docs/tutorials/tcga_cohort_mutations).
+`cnv_recurrence.py` also runs alone on a cohort BED, with the clinical table
+that `tcga_clinical_tsv.py` writes.
 
 ## See also
 
