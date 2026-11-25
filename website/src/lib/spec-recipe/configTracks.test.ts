@@ -168,7 +168,6 @@ test("the steps walk a config track's own display settings", () => {
   expect(track?.substeps?.map(step => step.title)).toContain(
     'Track menu → One row per → Attribute...',
   )
-  expect(track?.note).toContain('`encoding.color`')
   expect(recipe?.unmapped).toEqual([])
 })
 

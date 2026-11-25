@@ -361,8 +361,6 @@ function trackStep(
   // The track's own display config first, the spec's settings over it. Then
   // an arrangement, and the per-field walk over what it did not claim: the
   // settings one menu row writes together are one step, not one step each.
-  // A setting only the config holds and no step covers is named on the track,
-  // since the session spec the figure's gaps point to does not carry it.
   const own = flatSettings(
     ownDisplaySettings(
       lookupRawTrack(config, trackId, sessionTracks),
@@ -381,21 +379,16 @@ function trackStep(
   }
   const fromSpec = new Set(spec.map(([field]) => field))
   const unmapped = walked.unmapped.filter(field => fromSpec.has(field))
-  const ownUnmapped = walked.unmapped.filter(field => !fromSpec.has(field))
   const name = info ? `“${info.name}”` : `the “${trackId}” track`
-  const notes = [
-    ...(info && fromPlugin(info)
-      ? [isGraphAdapter(info.adapterType) ? GRAPH_PLUGIN_NOTE : PLUGIN_NOTE]
-      : []),
-    ...(ownUnmapped.length
-      ? [
-          `The track's config also sets ${ownUnmapped.map(field => `\`${field}\``).join(', ')}, which no menu step covers yet.`,
-        ]
-      : []),
-  ]
   return {
     ...addTrackTitle(info, kind, band, viaTrackSelector, repeat),
-    ...(notes.length ? { note: notes.join(' ') } : {}),
+    ...(info && fromPlugin(info)
+      ? {
+          note: isGraphAdapter(info.adapterType)
+            ? GRAPH_PLUGIN_NOTE
+            : PLUGIN_NOTE,
+        }
+      : {}),
     example:
       info?.type === 'ReferenceSequenceTrack'
         ? undefined
