@@ -178,8 +178,7 @@ On a plain GFA, the command places each segment by walking the paths:
 - **A segment a path reaches twice** takes its position from the first visit, so
   it is drawn as one node and the repeat shows as depth.
 
-At human-chromosome scale, index the SV-resolution rGFA; a pggb graph's index
-does not finish there.
+At human-chromosome scale, index the SV-resolution rGFA.
 
 The command writes these files beside the prefix:
 
@@ -222,11 +221,11 @@ seven to nine the segment's contig and span.
 
 ### Index an rGFA in the contig layout {#rgfa-contig-layout}
 
-The species tutorials index their rGFAs with three commands in place of `build`.
-For an rGFA, `build` writes the anchored layout at the bare prefix
-(`<prefix>.graph.bed.gz`) and the contig layout at `<prefix>.contig`. The three
-commands write the contig layout at the bare prefix, so a track's `uri` is the
-prefix itself. First the segments and links:
+For an rGFA, index in the contig layout with three commands, so the graph
+track's `uri` is the prefix itself. `build` writes the anchored layout at the
+bare prefix (`<prefix>.graph.bed.gz`) and the contig layout at
+`<prefix>.contig`; the three commands write the contig layout at the bare
+prefix. First the segments and links:
 
 ```bash
 # --layout contig: each segment under its coordinate on its source contig
@@ -299,9 +298,9 @@ The config's first track is the graph track, whose adapter holds:
 `build` writes the config as `<prefix>.config.json`, here `hprc.config.json`.
 Merge its `plugins` and `tracks` entries into your own config, then run
 `jbrowse validate config.json`, which reports a misspelled or undeclared slot
-JBrowse otherwise ignores. Without a config, **Open track... → Add pangenome
-graph track** reads `hprc.graph.json` beside `hprc.graph.bed.gz`, so a track
-opened from that url gets the coarse tier too.
+JBrowse otherwise ignores. Without a config, **File → Open track... → Add
+pangenome graph track** reads `hprc.graph.json` beside `hprc.graph.bed.gz`, so a
+track opened from that url gets the coarse tier too.
 
 A plain GFA's index and tier are in the contig layout, each segment under its
 coordinate on its source contig. In the anchored layout an rGFA gets, each
@@ -322,8 +321,6 @@ Turn them on and switch the graph back with **Display types → Graph**.
 A node's right-click menu offers **Open in** the haplotype its rGFA id names
 (`NA20809#2#CM094351.1` opens `NA20809#2`), when the session holds an assembly
 named or aliased `sample#haplotype`.
-[The HPRC tutorial](/docs/tutorials/pangenome_hprc#opening-the-haplotype-an-allele-came-from)
-takes that route.
 
 ## Record which haplotypes pass through each segment {#which-haplotypes-walk-each-segment}
 
@@ -378,9 +375,7 @@ needs no color config:
 }
 ```
 
-The arabidopsis pangenome config includes one such file as the track
-`arabidopsis_minigraph_paths`. Open it over _FLC_ at `Chr5:3,170,000-3,186,000`,
-under `TAIR10_genes`:
+Open the track over _FLC_ at `Chr5:3,170,000-3,186,000`:
 
 <Figure caption="The 1001 Genomes+ minigraph graph's paths file over FLC on TAIR10: one row per accession, each block its allele at a bubble." src="/img/pangenome/prepare_graph_paths.png" />
 
@@ -395,9 +390,9 @@ indexed against K12.
   `feature.samples` and their count as `feature.sampleCount`.
 - **Color by → Attribute...** with `sampleCount` gives each count a separate
   color.
-- For more than a handful of haplotypes, **Edit plot...** in the same dialog
-  takes a ramp, here red for a segment on one haplotype to grey for a segment on
-  most:
+- For more than a handful of haplotypes, **Advanced → Edit plot...** in the
+  track menu takes a ramp, here red for a segment on one haplotype to grey for a
+  segment on most. The track config below sets it:
 
 ```json addtrack
 {
@@ -456,10 +451,8 @@ gfa-to-tabix hprc-v2.1-mc-grch38.gfa.gz --walks --refs GRCh38 \
   -o hprc-v2.1-mc-grch38
 ```
 
-A Minigraph-Cactus graph's own reference passes no node twice, so every step in
-its walk file is placed exactly. On another reference, a step on a node that
-reference passes more than once takes the pass the tool picks, so a track on
-T2T-CHM13 reads the walks of the graph built on CHM13, indexed the same way:
+Index a track on T2T-CHM13 from the CHM13-built graph, whose reference passes no
+node twice, so every step is placed exactly:
 
 ```bash
 gfa-to-tabix hprc-v2.1-mc-chm13.gfa.gz --walks --refs CHM13 -o hprc-v2.1-mc-chm13
