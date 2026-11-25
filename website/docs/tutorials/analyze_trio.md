@@ -118,13 +118,14 @@ can be made of one allele from each parent's, and writes the answer into the VCF
 as INFO fields, which JBrowse reads like any other:
 
 ```bash
-# -p names the trio as child,father,mother
+# -p names the trio as child,father,mother sample IDs
 # -m a adds INFO/MERR, the number of trios with a Mendelian error at the site,
 #   beside MGOOD, MMISS and MNORULE (consistent, missing and rule-less trios)
 # --rules GRCh38 applies the X, Y, pseudoautosomal and chrM inheritance rules
-bcftools +mendelian2 trio.vcf.gz -p child,father,mother --rules GRCh38 -m a \
-  -Oz -o trio.merr.vcf.gz
-tabix -p vcf trio.merr.vcf.gz
+bcftools +mendelian2 HG02024_VN049_KHVTrio.chr1.vcf.gz \
+  -p HG02024,HG02026,HG02025 --rules GRCh38 -m a \
+  -Oz -o HG02024_VN049_KHVTrio.chr1.merr.vcf.gz
+tabix -p vcf HG02024_VN049_KHVTrio.chr1.merr.vcf.gz
 ```
 
 A site where the child has an allele neither parent was called with counts as an
@@ -173,8 +174,8 @@ works the same way.
 
 We'll check the calls before analyzing them by coloring the alt cells by
 `INFO.MERR`. A `threshold` scale with one cut at 1 gives a site with no error
-one color and a site with any error another, set as the variant display's
-`encoding`:
+one color and a site with any error another. Set it as the variant display's
+`encoding`, in **Advanced → Edit plot...** in the track menu:
 
 ```json
 "displays": [
@@ -196,21 +197,13 @@ one color and a site with any error another, set as the variant display's
 ]
 ```
 
-Type `chr1:196,745,000-196,850,000` in the location box to go to CFHR3 and
-CFHR1, where both kinds of error show:
+Type `chr1:196,745,000-196,850,000` in the location box to go to _CFHR3_ and
+_CFHR1_, where both kinds of error show:
 
-<Figure caption="The trio VCF colored by INFO.MERR across CFHR3 and CFHR1, rows HG02024 (daughter), HG02025 (mother) and HG02026 (father). Left of CFHR3 the child has alt cells at error sites where both parents are hom-ref, and across CFHR1 the parents' rows have a run of error sites." src="/img/trio-merr.png"/>
+<Figure caption="The trio VCF colored by INFO.MERR across CFHR3 and CFHR1, rows HG02024 (daughter), HG02025 (mother) and HG02026 (father)." src="/img/trio-merr.png"/>
 
-This VCF is the 1000 Genomes low-coverage callset, statistically phased, and
-under one percent of its chr1 sites have a Mendelian error. A child's allele
-neither parent was called with is a de novo candidate, and here it is far more
-often a genotyping error than a mutation. At the site checked below, the reads
-show a parent's het that the low-coverage calls missed. The 1000 Genomes SV
-callset gives the father and the daughter a deletion across CFHR1 (`HGSV_9982`),
-and a sample with one copy of a sequence is called homozygous for that copy's
-allele, which accounts for the run of errors there. Those calls are right for a
-one-copy sample, so the errors there mark the deletion rather than a genotyping
-error.
+A child's allele that neither parent was called with is a de novo candidate, and
+the reads show which call is wrong.
 
 - **Filter:** the display's `filter` entry `{ "field": "INFO.MERR", "gte": 1 }`
   keeps the sites with an error alone.
@@ -237,23 +230,6 @@ there, so the child's call stands. The mother's CRAM,
 `https://1000genomes.s3.amazonaws.com/1000G_2504_high_coverage/data/ERR3242042/HG02025.final.cram`,
 loaded the same way, also has reads with G, so the low-coverage calls missed the
 mother's het.
-
-To check every flagged site this way, the
-[KHV trio review portal](https://jbrowse.org/demos/khv_trio_review/) stacks the
-daughter's, father's and mother's 30x reads under each flagged site in
-chr1:190-200 Mb, with a verdict per site. A de novo candidate's reads show one
-of these, most often one of the first two:
-
-- a child miscall: the child's reads lack the allele, or are homozygous where
-  the call is het
-- a parent's het the calls missed
-- a parent's indel, which the call writes as a different allele
-- the allele in the child's reads alone, which supports a de novo variant
-- nothing clear either way
-
-[variant-review-portal](https://github.com/cmdcolin/variant-review-portal)
-builds such a portal from a trio VCF, its pedigree and the three alignment
-files.
 
 **Color by → Genotype** returns the cells to the genotype colors the steps below
 use.
@@ -286,6 +262,9 @@ the `no_chr_in_chrom_field` variant of the GRCh38 map:
 <!-- from: scripts/build_khv_trio_hapibd.sh -->
 
 ```bash
+# the map is plink.GRCh38.map.zip's no_chr_in_chrom_field/plink.chr1.GRCh38.map
+unzip -j plink.GRCh38.map.zip no_chr_in_chrom_field/plink.chr1.GRCh38.map
+
 # min-seed: shortest shared stretch (cM) hap-ibd starts a segment from
 # min-output: shortest segment (cM) it writes
 # both default to 2.0, so 1.0 also reports segments between 1 and 2 cM
@@ -297,13 +276,7 @@ java -jar hap-ibd.jar \
 
 The output is `trio.ibd.gz`, one row per shared segment, with columns sample1,
 hap1, sample2, hap2, chrom, start, end, cM-length. In a trio every segment pairs
-the child with one parent, and the child's two haplotypes split cleanly between
-them:
-
-| child haplotype | matches parent   | inherited copy |
-| --------------- | ---------------- | -------------- |
-| HG02024:1       | HG02026 (father) | paternal       |
-| HG02024:2       | HG02025 (mother) | maternal       |
+the child with one parent.
 
 ## Paint hap-ibd segments as inheritance blocks
 
@@ -381,11 +354,8 @@ marks the father's copy the child inherited there, so each step from one blue
 row to the other is a paternal crossover. Likewise, the red rows are the
 maternal chromosome.
 
-Both blue rows filled at one position, or both red rows, would mean hap-ibd
-matched one child haplotype to both of a parent's copies. A position with
-neither row filled is one where hap-ibd found no segment long enough to report.
-The blocks run straight through the centromere, because hap-ibd joins the
-markers on either side of it.
+A position with neither row filled is one where hap-ibd found no segment long
+enough to report.
 
 ## Compare the painted blocks with the raw genotypes
 
@@ -421,10 +391,7 @@ copies:
 The 1000 Genomes VCF is statistically phased, so its genotypes switch between
 the two parental copies more often than real crossovers do. hap-ibd drops
 segments shorter than its cM-length threshold, which removes most of those
-switches from the painting, so the two crossovers above are well supported and
-the finer blocks are approximate. For crossover mapping, use a pedigree-aware
-method such as
-[duoHMM](https://mathgen.stats.ox.ac.uk/genetics_software/duohmm/duohmm.html).
+switches from the painting, so the finer blocks are approximate.
 
 ## Reproduce it end to end
 
@@ -459,17 +426,15 @@ opens `khv_trio_build/jbrowse2/config.json` directly.
 - [](/docs/user_guides/multirow_feature_track)
 - [](/docs/user_guides/multivariant_track)
 - [](/docs/config_guides/variant_track)
+- [KHV trio review portal](https://jbrowse.org/demos/khv_trio_review/)
+- [variant-review-portal](https://github.com/cmdcolin/variant-review-portal)
 
 ## Citations
 
 - Danecek et al. (2021).
   [Twelve years of SAMtools and BCFtools](https://doi.org/10.1093/gigascience/giab008)
-
 - 1000 Genomes Project Consortium (2015).
   [A global reference for human genetic variation](https://doi.org/10.1038/nature15393)
 - Zhou et al. (2020).
   [A fast and simple method for detecting identity-by-descent segments in large-scale data](https://doi.org/10.1016/j.ajhg.2020.02.010),
   hap-ibd
-- O'Connell et al. (2014).
-  [A general approach for haplotype phasing across the full spectrum of relatedness](https://doi.org/10.1371/journal.pgen.1004234),
-  duoHMM
