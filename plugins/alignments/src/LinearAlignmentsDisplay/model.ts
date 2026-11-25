@@ -102,6 +102,7 @@ import {
 import { connectionKeyViews } from './connectionKeyViews.ts'
 import { bandPlotViews, shownGroupCoverage } from './coverageScaleViews.ts'
 import { filterFieldInEffect, layersInEffect } from './dialogs/layerFilters.ts'
+import { exportPileupCut } from './exportPileupCut.ts'
 import { fetchExportedReads } from './exportedReads.ts'
 import { fitViews } from './fitViews.ts'
 import { fittedReadPitch } from './groupLayout.ts'
@@ -820,6 +821,20 @@ function stateModelFactory(
             scrollTop: self.scrollTop,
             canvasHeight: self.height,
           }
+        },
+
+        /**
+         * #getter
+         * Where an SVG export ends the pileup and the caption it draws under
+         * it (`exportPileupCut`): the export clips there, and a view
+         * overlaying the reads ends its curves there.
+         */
+        get svgPileupCut() {
+          return exportPileupCut(
+            this.renderSections,
+            self.rowHeight,
+            this.scrollModel,
+          )
         },
 
         /**

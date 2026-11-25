@@ -10,13 +10,14 @@ import { renderDisplaySvg } from '@jbrowse/display-kit/renderDisplaySvg'
 import JunctionLabels from './components/JunctionLabels.tsx'
 import { drawAlignmentLabels } from './components/drawAlignmentLabels.ts'
 import { bandScreenTop } from './components/sectionScreen.ts'
-import { exportPileupCut } from './exportPileupCut.ts'
+import { CUT_CAPTION_LINE_PX } from './exportPileupCut.ts'
 import { drawAlignmentsToCtx } from './renderers/Canvas2DAlignmentsRenderer.ts'
 import { junctionLabels } from './renderers/junctionMarks.ts'
 
 import type { ColorPalette } from '../shaders/colors.ts'
 import type { VisibleLabel } from './components/computeVisibleLabels.ts'
 import type { ScrollModel } from './components/sectionScreen.ts'
+import type { PileupCut } from './exportPileupCut.ts'
 import type { AlignmentLane } from './lanes.ts'
 import type {
   DisplayRenderState,
@@ -34,16 +35,9 @@ import type React from 'react'
 interface AlignmentsSvgModel extends LgvSvgExportable {
   renderSections: readonly Pick<
     AlignmentLane & Section,
-    | 'groupKey'
-    | 'label'
-    | 'sectionTop'
-    | 'height'
-    | 'pileupTop'
-    | 'pileupHeight'
-    | 'rowsHeight'
-    | 'ceilingClipped'
+    'groupKey' | 'label' | 'sectionTop' | 'height'
   >[]
-  rowHeight: number
+  svgPileupCut: PileupCut
   scrollModel: ScrollModel
   themedIn: (palette: JBrowsePalette) => {
     colors: ColorPalette
@@ -66,11 +60,8 @@ export async function renderSvg(
   return renderDisplaySvg(model, opts, AlignmentsSvgBody)
 }
 
-// The line under a pileup cut short, as small as the on-screen truncation
-// caption, and the drop from the box's bottom to its baseline.
+// the on-screen truncation caption's size
 const CUT_CAPTION_FONT_SIZE = 10
-const CUT_CAPTION_LINE_PX = 13
-const CUT_CAPTION_DESCENT_PX = 3
 
 // An empty (zero-read) region draws an empty pileup + coverage axis here, so
 // this body renders unconditionally: there's no data-size gate. Readiness and
@@ -119,17 +110,7 @@ function AlignmentsSvgBody({
         sections.map(sec => sec.junctionFeeds),
       )
     : []
-  // A pileup deeper than the box ends on its last whole row, over a caption
-  // saying what is left out: the screen's scrollbar and truncation rule do
-  // not export.
-  const cut = overlays
-    ? exportPileupCut(
-        renderSections,
-        model.rowHeight,
-        scroll,
-        CUT_CAPTION_LINE_PX,
-      )
-    : undefined
+  const cut = model.svgPileupCut
 
   // The arcs and connectors paint into the canvas with the reads; the junctions
   // count labels are vector SVG on screen too, and share their geometry with
@@ -177,7 +158,7 @@ function AlignmentsSvgBody({
       ) : null}
     </>
   )
-  return cut ? (
+  return overlays && cut.caption ? (
     <>
       <SvgClipRect
         id={`pileup-cut-${svgNodeId(model)}`}
@@ -189,7 +170,7 @@ function AlignmentsSvgBody({
       <text
         data-testid="pileup-cut-caption"
         x={contentLeft + 4}
-        y={height - CUT_CAPTION_DESCENT_PX}
+        y={height - (CUT_CAPTION_LINE_PX - CUT_CAPTION_FONT_SIZE)}
         fontSize={CUT_CAPTION_FONT_SIZE}
         {...getFillProps(palette.text.secondary)}
       >

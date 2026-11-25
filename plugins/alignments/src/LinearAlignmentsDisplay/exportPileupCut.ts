@@ -4,6 +4,9 @@ import { bandScreenTop, contentScreenY } from './components/sectionScreen.ts'
 
 import type { ScrollModel } from './components/sectionScreen.ts'
 
+/** Px of the line under the cut that holds its caption. */
+export const CUT_CAPTION_LINE_PX = 13
+
 export interface PileupCutSection {
   pileupTop: number
   pileupHeight: number
@@ -13,9 +16,9 @@ export interface PileupCutSection {
 
 /**
  * Where an export of a pileup stops and what it says about the rest: `cutY`,
- * the screen y the last whole row above the caption line ends at, and
- * `caption`, the rows scrolled above, the rows left below, and whether the
- * layout's ceiling left reads unstacked.
+ * the y the last whole row above the caption line ends at, and `caption`, the
+ * rows scrolled above, the rows left below, and whether the layout's ceiling
+ * left reads unstacked. No cut is the whole box and an empty caption.
  */
 export interface PileupCut {
   cutY: number
@@ -64,17 +67,15 @@ function rowsAt(
 }
 
 /**
- * The export's pileup cut: undefined where every laid-out row is drawn whole
- * and the layout stacked every read, else the rows end on the last whole row
- * above a `captionHeight` line at the bottom of the box, which says what the
- * figure leaves out.
+ * The export's pileup cut: none where every laid-out row is drawn whole and
+ * the layout stacked every read, else the rows end on the last whole row
+ * above the caption line, which says what the figure leaves out.
  */
 export function exportPileupCut(
   sections: readonly PileupCutSection[],
   rowHeight: number,
   scroll: ScrollModel,
-  captionHeight: number,
-): PileupCut | undefined {
+): PileupCut {
   const box = scroll.canvasHeight
   const whole = rowsAt(sections, rowHeight, scroll, box)
   const ceiling = sections.some(s => s.ceilingClipped)
@@ -82,7 +83,7 @@ export function exportPileupCut(
     sections,
     rowHeight,
     scroll,
-    box - captionHeight,
+    box - CUT_CAPTION_LINE_PX,
   )
   return whole.above + whole.below > 0 || ceiling
     ? {
@@ -95,5 +96,5 @@ export function exportPileupCut(
           .filter(part => part !== '')
           .join(' · '),
       }
-    : undefined
+    : { cutY: box, caption: '' }
 }

@@ -47,6 +47,11 @@ interface OverlayDisplayBase extends Partial<ReadSource>, IStateTreeNode {
    */
   svgControlsStrip?: { top: number; height: number }
   /**
+   * LinearAlignmentsDisplay's `svgPileupCut`: the y its export ends the
+   * pileup at, over the caption saying what it leaves out
+   */
+  svgPileupCut?: { cutY: number }
+  /**
    * Whether the display draws its own read connectors,
    * LinearAlignmentsDisplay's `drawsConnectors`: in chain layout or under
    * pileup connectors. Structural, since this plugin has no dependency on
@@ -160,8 +165,8 @@ export function placeOnRow(layout: ViewLayout, refName: string, coord: number) {
 /**
  * One row's overlay geometry for a track. An export passes `exportedTop`, the
  * track body's top in the figure, and the body is display-kit's
- * `exportedHeight`: the display's `height` less the controls strip the export
- * leaves out.
+ * `exportedHeight`, the display's `height` less the controls strip the export
+ * leaves out, ending where the export cuts the pileup.
  */
 export function overlayLevel({
   display: d,
@@ -171,7 +176,11 @@ export function overlayLevel({
 }: {
   display: Pick<
     OverlayDisplayBase,
-    'height' | 'svgControlsStrip' | 'stickyBandHeight' | 'scrollTop'
+    | 'height'
+    | 'svgControlsStrip'
+    | 'svgPileupCut'
+    | 'stickyBandHeight'
+    | 'scrollTop'
   >
   screenTop: number
   exportedTop: number | undefined
@@ -182,7 +191,10 @@ export function overlayLevel({
     height:
       exportedTop === undefined
         ? d.height
-        : d.height - (d.svgControlsStrip?.height ?? 0),
+        : Math.min(
+            d.height - (d.svgControlsStrip?.height ?? 0),
+            d.svgPileupCut?.cutY ?? d.height,
+          ),
     stickyTop: d.stickyBandHeight ?? 0,
     scrollTop: d.scrollTop ?? 0,
     offsetPx,

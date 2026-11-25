@@ -343,4 +343,42 @@ describe('overlayLevel', () => {
       }).height,
     ).toBe(200)
   })
+  describe('over a pileup the export cuts', () => {
+    const cutDisplay = { height: 200, svgPileupCut: { cutY: 150 } }
+    const exported = overlayLevel({
+      display: cutDisplay,
+      screenTop: 500,
+      exportedTop: 100,
+      offsetPx: 0,
+    })
+
+    test('a read in a row below the cut ends at the cut', () => {
+      expect(computeOverlayY({ ...exported, layout: [10, 170, 20, 180] })).toBe(
+        250,
+      )
+    })
+
+    test('an off-display read ends at the cut, not under the caption', () => {
+      expect(
+        computeOverlayY({ ...exported, layout: makeOffscreenLayout(10, 20) }),
+      ).toBe(250)
+    })
+
+    test('a read above the cut keeps its row', () => {
+      expect(computeOverlayY({ ...exported, layout: [10, 40, 20, 50] })).toBe(
+        145,
+      )
+    })
+
+    test('on screen the whole track is the overlay height', () => {
+      expect(
+        overlayLevel({
+          display: cutDisplay,
+          screenTop: 500,
+          exportedTop: undefined,
+          offsetPx: 0,
+        }).height,
+      ).toBe(200)
+    })
+  })
 })
