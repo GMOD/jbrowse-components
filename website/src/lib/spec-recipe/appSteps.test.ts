@@ -52,6 +52,14 @@ test('a view with no steps gets no empty "From scratch" list', () => {
   expect(html).toContain('No steps for this view yet')
 })
 
+test('a linear view goes to its region before its tracks go in', () => {
+  expect(recipe.steps.map(step => step.title)).toEqual([
+    expect.stringMatching(/^Open your genome/),
+    'Go to your region in the location box.',
+    expect.stringMatching(/^Add your track/),
+  ])
+})
+
 test('one genome step covers Desktop and Web', () => {
   expect(recipe.steps[0]?.title).toContain('JBrowse Desktop')
   expect(recipe.steps[0]?.title).toContain('`jbrowse add-assembly`')

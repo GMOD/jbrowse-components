@@ -498,11 +498,22 @@ function viewSteps(
     })
   }
 
+  // A linear view goes to its region before its tracks go in, so a step that
+  // clicks on the data finds it; an import form's view exists only after Launch.
+  const region: RecipeStep[] = view.loc
+    ? [
+        {
+          title: 'Go to your region in the location box.',
+          example: `This figure is at ${view.loc}.`,
+        },
+      ]
+    : []
   if (form) {
     const formSteps = importFormSteps(view, form, config, sessionTracks)
-    steps.push(...formSteps.steps)
+    steps.push(...formSteps.steps, ...region)
     unmapped.push(...formSteps.unmapped)
   } else {
+    steps.push(...region)
     for (const entry of specTracks(view)) {
       const { unmapped: trackUnmapped, ...step } = trackStep(
         entry,
@@ -517,13 +528,6 @@ function viewSteps(
       steps.push(step)
       unmapped.push(...trackUnmapped)
     }
-  }
-
-  if (view.loc) {
-    steps.push({
-      title: 'Go to your region in the location box.',
-      example: `This figure is at ${view.loc}.`,
-    })
   }
 
   const viewFieldSteps = fieldSteps(

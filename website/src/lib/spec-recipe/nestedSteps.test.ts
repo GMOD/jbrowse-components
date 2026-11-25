@@ -126,7 +126,7 @@ test('only the first row of a synteny view says how a track is added', () => {
   })
   const [first, second] = recipe.steps
     .filter(s => s.title.startsWith('Row'))
-    .map(row => row.substeps?.[0]?.title)
+    .map(row => row.substeps?.[1]?.title)
   expect(first).toContain('**Add track...**')
   expect(second).toMatch(/^Add the next track the same way\./)
 })
@@ -155,7 +155,8 @@ test('a breakpoint split view opens from the first panel, and a later panel adds
   })
   const titles = recipe.steps.map(s => s.title)
   expect(titles.filter(t => t.startsWith('Open your genome'))).toHaveLength(1)
-  expect(titles[1]).toContain('File → Open track...')
+  expect(titles[1]).toBe('Go to your region in the location box.')
+  expect(titles[2]).toContain('File → Open track...')
   expect(titles).toContainEqual(
     expect.stringContaining('**Open breakpoint split view**'),
   )
