@@ -1,5 +1,11 @@
 import { saveAs } from '../util/FileSaver/index.ts'
-import { sizeSvgForRaster } from './figureSize.ts'
+import { MAX_SVG_RASTER_AREA_PX } from '../util/createSvgRasterCanvas.ts'
+import {
+  CSS_PX_PER_INCH,
+  EXPORT_RASTER_DPI,
+  sizeSvgForRaster,
+  svgRootIsPhysical,
+} from './figureSize.ts'
 
 export interface SaveSvgAsImageOptions {
   format?: string
@@ -15,14 +21,35 @@ export interface SaveSvgAsImageOptions {
 // limits.
 const PNG_SCALE = 2
 
+const MAX_PNG_DIM_PX = 32767
+
+/**
+ * Px per CSS px a PNG of a `width`x`height` CSS px figure gets: `wanted`
+ * where that fits the browsers' canvas limits, as `createSvgRasterCanvas`
+ * fits an export layer, and less where it does not. Below 1 the figure does
+ * not fit even at screen resolution.
+ */
+export function pngRasterScale(width: number, height: number, wanted: number) {
+  return Math.min(
+    wanted,
+    MAX_PNG_DIM_PX / width,
+    MAX_PNG_DIM_PX / height,
+    Math.sqrt(MAX_SVG_RASTER_AREA_PX / (width * height)),
+  )
+}
+
 // Rasterizes an SVG string to a PNG Blob by routing through a hidden <img>
-// + Canvas2D. Rejects with the actual underlying cause so bug reports
+// + Canvas2D, at a lower resolution where the one asked for is past the
+// canvas limits. Rejects with the actual underlying cause so bug reports
 // distinguish "SVG failed to load" (usually malformed markup) from
 // "canvas.toBlob returned null" (rasterized image exceeded browser limits).
 export function svgHtmlToPngBlob(
   html: string,
   scale = PNG_SCALE,
 ): Promise<Blob> {
+  const wanted = svgRootIsPhysical(html)
+    ? EXPORT_RASTER_DPI / CSS_PX_PER_INCH
+    : scale
   return new Promise<Blob>((resolve, reject) => {
     const img = new Image()
     const svgBlob = new Blob([sizeSvgForRaster(html, { pxScale: scale })], {
@@ -36,23 +63,28 @@ export function svgHtmlToPngBlob(
       // the other end of this pipeline. Reject explicitly instead.
       try {
         const canvas = document.createElement('canvas')
-        const w = img.width
-        const h = img.height
+        const cssWidth = img.width / wanted
+        const cssHeight = img.height / wanted
+        const fitted = pngRasterScale(cssWidth, cssHeight, wanted)
+        const w = Math.floor(cssWidth * Math.max(fitted, 1))
+        const h = Math.floor(cssHeight * Math.max(fitted, 1))
         // stated once: both the context and the blob give out at this size,
         // and both failures are silent (a null, not a throw)
         const tooLarge = `The image may be too large (${w}x${h}). Try reducing the view size or use SVG format.`
+        if (fitted < 1) {
+          throw new Error(`Failed to create PNG. ${tooLarge}`)
+        }
         canvas.width = w
         canvas.height = h
         const ctx = canvas.getContext('2d')
         if (!ctx) {
           // browsers hand back a null 2d context rather than throwing once the
-          // canvas exceeds their area limit, which PNG_SCALE makes 4x easier to
-          // hit than the on-screen canvases
+          // canvas exceeds their area limit
           throw new Error(`Failed to create PNG rendering context. ${tooLarge}`)
         }
         ctx.imageSmoothingEnabled = true
         ctx.imageSmoothingQuality = 'high'
-        ctx.drawImage(img, 0, 0)
+        ctx.drawImage(img, 0, 0, w, h)
         canvas.toBlob(blob => {
           if (blob) {
             resolve(blob)
