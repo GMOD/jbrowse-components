@@ -5,7 +5,7 @@ import { types } from '@jbrowse/mobx-state-tree'
 
 import { containingHost } from './foundationView.ts'
 
-import type { legendConfigSchema } from './legendConfigSchema.ts'
+import type { figureLegendConfigSchema } from './hiddenLegendConfigSchema.ts'
 import type { ConfigModelForFields } from '@jbrowse/core/configuration'
 import type { ColorScale } from '@jbrowse/core/ui/colorScale'
 import type { LegendSpec } from '@jbrowse/core/ui/legendSpec'
@@ -13,10 +13,14 @@ import type { JBrowsePalette } from '@jbrowse/core/ui/palette'
 
 /**
  * The whole of what `LegendMixin` needs a composing display to be: a `legend`
- * declared as `legendConfigSchema` or `hiddenLegendConfigSchema`.
+ * declared as `legendConfigSchema`, `hiddenLegendConfigSchema` or
+ * `figureLegendConfigSchema`, the last's `show` being the one that can be
+ * unset.
  */
 export interface LegendConfHost {
-  configuration: ConfigModelForFields<{ legend: typeof legendConfigSchema }>
+  configuration: ConfigModelForFields<{
+    legend: typeof figureLegendConfigSchema
+  }>
 }
 
 // The mixin's own `self` is the model it declares, so it cannot see the
@@ -32,13 +36,14 @@ function shownLegendSpec(scales: ColorScale[], dismissed: string[]) {
 /**
  * #stateModel LegendMixin
  * #category display
- * #crossCuttingMixin The legend, whole. A display declares the color scales it paints with (`colorScales`, a getter hook, and `colorScalesIn` where they follow the theme) and the mixin derives the key from them (`legendSpec`, and `legendSpecIn` for the SVG export, through `legendSpecOf`), keeps the `legend.show` slot's getter and setter (`showLegend`, `setShowLegend`), dismisses sections one at a time (`dismissLegendSection`, undone by re-showing the legend), and answers whether there is a key to offer (`hasLegendKey`). `DisplayChrome` draws the on-screen key and the exporting view the exported one, in a gutter right of the plot, so a display places neither
+ * #crossCuttingMixin The legend, whole. A display declares the color scales it paints with (`colorScales`, a getter hook, and `colorScalesIn` where they follow the theme) and the mixin derives the key from them (`legendSpec`, and `legendSpecIn` for the SVG export, through `legendSpecOf`), keeps the `legend.show` slot's getters and setter (`showLegend`, `showLegendInExport`, `setShowLegend`), dismisses sections one at a time (`dismissLegendSection`, undone by re-showing the legend), and answers whether there is a key to offer (`hasLegendKey`). `DisplayChrome` draws the on-screen key and the exporting view the exported one, in a gutter right of the plot, so a display places neither
  *
  * A key derived from the scales the painter resolves colors through lists only
  * colors that were painted. A legend hand-built from a second copy of the rules
  * can list a color nothing painted. Each display declares the `legend` slot,
- * `legendConfigSchema` or `hiddenLegendConfigSchema` by its default, so this
- * mixin supplies the accessors over it and never the slot.
+ * `legendConfigSchema`, `hiddenLegendConfigSchema` or
+ * `figureLegendConfigSchema` by its default, so this mixin supplies the
+ * accessors over it and never the slot.
  */
 export default function LegendMixin() {
   return types
@@ -59,7 +64,15 @@ export default function LegendMixin() {
        * Whether the legend is drawn.
        */
       get showLegend(): boolean {
-        return getConf(confNode(self), ['legend', 'show'])
+        return getConf(confNode(self), ['legend', 'show']) ?? false
+      },
+      /**
+       * #getter
+       * Whether an SVG export draws the key: `showLegend`, except that a
+       * `legend.show` left unset draws it.
+       */
+      get showLegendInExport(): boolean {
+        return getConf(confNode(self), ['legend', 'show']) ?? true
       },
       /**
        * #getter

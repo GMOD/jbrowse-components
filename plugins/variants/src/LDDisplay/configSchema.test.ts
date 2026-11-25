@@ -157,7 +157,7 @@ describe('the v4 showLegend', () => {
     expect(getSnapshot(conf)).not.toHaveProperty('showLegend')
   })
 
-  test('the legend is off unset', () => {
-    expect(readConfObject(make(), ['legend', 'show'])).toBe(false)
+  test('the legend is unset unless written', () => {
+    expect(readConfObject(make(), ['legend', 'show'])).toBeUndefined()
   })
 })

@@ -4,7 +4,10 @@ import { resolvePalette } from '@jbrowse/core/ui/palette'
 import { types } from '@jbrowse/mobx-state-tree'
 
 import LegendMixin from './LegendMixin.ts'
-import { hiddenLegendConfigSchema } from './hiddenLegendConfigSchema.ts'
+import {
+  figureLegendConfigSchema,
+  hiddenLegendConfigSchema,
+} from './hiddenLegendConfigSchema.ts'
 import { legendConfigSchema } from './legendConfigSchema.ts'
 
 import type { LegendConfHost } from './LegendMixin.ts'
@@ -23,17 +26,23 @@ pluginManager.configure()
 
 function makeSession({
   defaultValue,
+  figure = false,
   configuration = {},
   colorScales = [],
   colorScalesIn,
 }: {
   defaultValue: boolean
+  figure?: boolean
   configuration?: Record<string, unknown>
   colorScales?: ColorScale[]
   colorScalesIn?: (palette: JBrowsePalette) => ColorScale[]
 }) {
   const configSchema = ConfigurationSchema('TestLegendDisplay', {
-    legend: defaultValue ? legendConfigSchema : hiddenLegendConfigSchema,
+    legend: figure
+      ? figureLegendConfigSchema
+      : defaultValue
+        ? legendConfigSchema
+        : hiddenLegendConfigSchema,
   })
   const Base = types
     .compose(
@@ -108,6 +117,47 @@ describe.each([true, false])('with default %p', defaultValue => {
     expect(display.showLegend).toBe(!defaultValue)
     display.setShowLegend(defaultValue)
     expect(display.showLegend).toBe(defaultValue)
+  })
+
+  it('an export draws the key exactly when the screen does', () => {
+    for (const value of [true, false]) {
+      const { display } = makeSession({ defaultValue })
+      display.setShowLegend(value)
+      expect(display.showLegendInExport).toBe(value)
+    }
+    expect(makeSession({ defaultValue }).display.showLegendInExport).toBe(
+      defaultValue,
+    )
+  })
+})
+
+// A heatmap figure needs its scale where a browsing reader does not, so an
+// unset `legend.show` is off on screen and on in an export, and only an
+// explicit false keeps it out of the figure.
+describe('a figure legend', () => {
+  it('unset, is off on screen and drawn in an export', () => {
+    const { display } = makeSession({ defaultValue: false, figure: true })
+    expect(display.showLegend).toBe(false)
+    expect(display.showLegendInExport).toBe(true)
+  })
+
+  it('set either way, is the same on screen and in an export', () => {
+    for (const show of [true, false]) {
+      const { display } = makeSession({
+        defaultValue: false,
+        figure: true,
+        configuration: { legend: { show } },
+      })
+      expect(display.showLegend).toBe(show)
+      expect(display.showLegendInExport).toBe(show)
+    }
+  })
+
+  it('turned off from the menu, stays out of the export', () => {
+    const { display } = makeSession({ defaultValue: false, figure: true })
+    display.setShowLegend(true)
+    display.setShowLegend(false)
+    expect(display.showLegendInExport).toBe(false)
   })
 })
 

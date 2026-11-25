@@ -1,7 +1,7 @@
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
 import { triangleMatrixConfigSchemaFields } from '@jbrowse/display-kit/TriangleMatrixMixin'
 import { retiredBaseDisplaySpellings } from '@jbrowse/display-kit/configSchema'
-import { hiddenLegendConfigSchema } from '@jbrowse/display-kit/hiddenLegendConfigSchema'
+import { figureLegendConfigSchema } from '@jbrowse/display-kit/hiddenLegendConfigSchema'
 import { regionTooLargeConfigSchemaFields } from '@jbrowse/display-kit/regionTooLargeConfigSchemaFields'
 import { trackHeightConfigSchemaFields } from '@jbrowse/display-kit/trackHeightConfigSchemaFields'
 import { types } from '@jbrowse/mobx-state-tree'
@@ -104,9 +104,10 @@ export default function ldTrackDisplayConfigSchema() {
       encoding: ldEncodingConfigSchema,
       /**
        * #slot legend
-       * The color ramp's key, off until asked for.
+       * The color ramp's key, off on screen until asked for and drawn in an
+       * SVG export unless turned off.
        */
-      legend: hiddenLegendConfigSchema,
+      legend: figureLegendConfigSchema,
       /**
        * #slot labels
        * The text drawn at each variant's tick mark.

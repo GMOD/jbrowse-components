@@ -135,7 +135,7 @@ export interface LgvSvgBodyProps<M> {
 const GUTTER_INSET = 10
 
 function exportedLegendEntries(model: object, palette: JBrowsePalette) {
-  return isLegendHost(model) && model.showLegend
+  return isLegendHost(model) && (model.showLegendInExport ?? model.showLegend)
     ? legendEntries(model.legendSpecIn?.(palette) ?? model.legendSpec)
     : []
 }

@@ -97,8 +97,8 @@ describe('encoding.color', () => {
 })
 
 describe('legend', () => {
-  test('is off until asked for, and reads back as legend.show', () => {
-    expect(readConfObject(make(), ['legend', 'show'])).toBe(false)
+  test('is unset until asked for, and reads back as legend.show', () => {
+    expect(readConfObject(make(), ['legend', 'show'])).toBeUndefined()
     expect(plotOf(make({ legend: { show: true } }))).toEqual({
       legend: { show: true },
     })

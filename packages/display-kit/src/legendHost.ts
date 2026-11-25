@@ -10,6 +10,8 @@ import type { IStateTreeNode } from '@jbrowse/mobx-state-tree'
 export interface LegendHost extends IStateTreeNode {
   id: string
   showLegend: boolean
+  /** Whether an SVG export draws the key, where that differs from `showLegend`. */
+  showLegendInExport?: boolean
   legendSpec: LegendSpec
   /** `legendSpec` in the export's theme, for a key whose colors follow it. */
   legendSpecIn?(palette: JBrowsePalette): LegendSpec

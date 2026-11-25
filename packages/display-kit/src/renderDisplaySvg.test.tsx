@@ -362,10 +362,15 @@ test('the shell draws no key, even for a display with one', async () => {
 })
 
 describe('SvgLegend', () => {
-  function host(showLegend: boolean, labels: string[]) {
+  function host(
+    showLegend: boolean,
+    labels: string[],
+    showLegendInExport?: boolean,
+  ) {
     return {
       id: 'host',
       showLegend,
+      showLegendInExport,
       legendSpec: {
         sections: [
           {
@@ -401,6 +406,24 @@ describe('SvgLegend', () => {
     )
     expect(container.querySelector('[data-testid="color-legend"]')).toBeNull()
     expect(svgLegendGutterWidth(model, undefined, 200, undefined)).toBe(0)
+  })
+
+  test('a key off on screen but on for an export is drawn, and the reverse is not', () => {
+    const shown = host(false, ['a'], true)
+    const { container } = render(
+      <svg>
+        <SvgLegend model={shown} width={800} height={200} />
+      </svg>,
+    )
+    expect(
+      container.querySelector('[data-testid="color-legend"]'),
+    ).not.toBeNull()
+    expect(
+      svgLegendGutterWidth(shown, undefined, 200, undefined),
+    ).toBeGreaterThan(0)
+    expect(
+      svgLegendGutterWidth(host(true, ['a'], false), undefined, 200, undefined),
+    ).toBe(0)
   })
 
   test('a model with no key reserves no gutter', () => {

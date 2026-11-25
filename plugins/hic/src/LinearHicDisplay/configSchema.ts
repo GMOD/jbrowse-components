@@ -2,7 +2,7 @@ import { ConfigurationSchema } from '@jbrowse/core/configuration'
 import { triangleMatrixConfigSchemaFields } from '@jbrowse/display-kit/TriangleMatrixMixin'
 import { retiredBaseDisplaySpellings } from '@jbrowse/display-kit/configSchema'
 import { fieldPredicateList } from '@jbrowse/display-kit/fieldPredicateConfigSchema'
-import { hiddenLegendConfigSchema } from '@jbrowse/display-kit/hiddenLegendConfigSchema'
+import { figureLegendConfigSchema } from '@jbrowse/display-kit/hiddenLegendConfigSchema'
 import { trackHeightConfigSchemaFields } from '@jbrowse/display-kit/trackHeightConfigSchemaFields'
 
 import { hicDataConfigSchema } from './hicDataConfigSchema.ts'
@@ -51,9 +51,10 @@ const HicTrackConfigFactory = () => {
       encoding: hicEncodingConfigSchema,
       /**
        * #slot legend
-       * The color ramp's key, off until asked for.
+       * The color ramp's key, off on screen until asked for and drawn in an
+       * SVG export unless turned off.
        */
-      legend: hiddenLegendConfigSchema,
+      legend: figureLegendConfigSchema,
       /**
        * #slot data
        * What the fetch reads, a [](/docs/config/hicdata) object: `resolution`
