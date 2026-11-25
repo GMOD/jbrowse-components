@@ -8,10 +8,13 @@ import { observer } from 'mobx-react'
 
 import {
   AXIS_LABEL_FONT,
+  AXIS_LABEL_INSET_PX,
   AXIS_TITLE_FONT,
+  REF_NAME_TICK_GAP_PX,
   fitAxisTitle,
   tickKey,
   tickLabel,
+  underRefNameLabel,
 } from './util.ts'
 
 import type { DotplotViewModel } from '../model.ts'
@@ -108,6 +111,7 @@ export const HorizontalAxisRaw = observer(function HorizontalAxisRaw({
     visibleTickPositions: ticks,
     blockLabelKeysToHide: hide,
     refNameLabels: labels,
+    refNameLabelStartsPx: labelStarts,
   } = hview
   const blocks = dynamicBlocks.contentBlocks
   const color = useAxisColor()
@@ -123,7 +127,10 @@ export const HorizontalAxisRaw = observer(function HorizontalAxisRaw({
               transform={`rotate(${rotate},${xoff},0)`}
               key={b.key}
               x={xoff}
-              y={1 + textBaselineShift('hanging', AXIS_LABEL_FONT)}
+              y={
+                REF_NAME_TICK_GAP_PX +
+                textBaselineShift('hanging', AXIS_LABEL_FONT)
+              }
               fontSize={AXIS_LABEL_FONT}
               textAnchor="end"
               fill={color}
@@ -146,9 +153,12 @@ export const HorizontalAxisRaw = observer(function HorizontalAxisRaw({
           {/* `labeled` is the model's collision decision (major, and clear of
               the last label); `x > 10` is this axis' own edge rule, keeping a
               label off the region name drawn at the start of the axis. */}
-          {showTickLabels && labeled && x > 10 ? (
+          {showTickLabels &&
+          labeled &&
+          x > 10 &&
+          !underRefNameLabel(x, labelStarts) ? (
             <text
-              x={x - 7}
+              x={x - AXIS_LABEL_INSET_PX}
               y={textBaselineShift('middle', AXIS_LABEL_FONT)}
               transform={`rotate(${rotate},${x},0)`}
               fontSize={AXIS_LABEL_FONT}
@@ -198,6 +208,7 @@ export const VerticalAxisRaw = observer(function VerticalAxisRaw({
     visibleTickPositions: ticks,
     blockLabelKeysToHide: hide,
     refNameLabels: labels,
+    refNameLabelStartsPx: labelStarts,
   } = vview
   const blocks = dynamicBlocks.contentBlocks
   const color = useAxisColor()
@@ -211,7 +222,7 @@ export const VerticalAxisRaw = observer(function VerticalAxisRaw({
           return (
             <text
               key={b.key}
-              x={borderX}
+              x={borderX - AXIS_LABEL_INSET_PX}
               y={yoff}
               fontSize={AXIS_LABEL_FONT}
               textAnchor="end"
@@ -237,10 +248,11 @@ export const VerticalAxisRaw = observer(function VerticalAxisRaw({
             {showTickLabels &&
             labeled &&
             alongPx > 10 &&
-            alongPx < vview.width - 10 ? (
+            alongPx < vview.width - 10 &&
+            !underRefNameLabel(alongPx, labelStarts) ? (
               <text
                 y={y - 3 + textBaselineShift('hanging', AXIS_LABEL_FONT)}
-                x={borderX - 7}
+                x={borderX - AXIS_LABEL_INSET_PX}
                 textAnchor="end"
                 fontSize={AXIS_LABEL_FONT}
                 fill={color}

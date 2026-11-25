@@ -142,8 +142,16 @@ export function fitAxisTitle(title: string, availablePx: number) {
   return elideToFit(title, availablePx, AXIS_TITLE_FONT)
 }
 
-// Fixed px an axis needs beyond its widest label: the 7px tick-label inset
-// (labels anchor at border - 7) plus the rotated assembly title parked at x=12.
+// How far an axis label stands off the plot edge, clear of the 6px major tick
+// beside it
+export const AXIS_LABEL_INSET_PX = 7
+
+// How far a horizontal refName label stands beside the tick at its region's
+// start
+export const REF_NAME_TICK_GAP_PX = 3
+
+// Fixed px an axis needs beyond its widest label: the label inset plus the
+// rotated assembly title parked at x=12.
 // The floor keeps room for that title on a short-label axis (e.g. self-vs-self
 // "ctgA").
 const BORDER_CHROME = 25
@@ -410,6 +418,26 @@ function intervalsOverlap(a: Interval, b: Interval) {
 // and the top edge for the vertical one. Both are the edge where that axis's
 // text would render outside the SVG, so don't "fix" the asymmetry by making it
 // symmetric: that hides labels which currently render fine at the opposite edge.
+// A tick label is one line of type across its tick, so this far either side of
+// it along the axis
+const TICK_LABEL_HALF_PX = AXIS_LABEL_FONT / 2
+
+/**
+ * Whether a tick label at `alongPx` would print over a refName label, each of
+ * which takes the `LABEL_PX` past its start (`labelStartsPx`). A region's
+ * first tick and the previous region's last one both sit there.
+ */
+export function underRefNameLabel(
+  alongPx: number,
+  labelStartsPx: readonly number[],
+) {
+  return labelStartsPx.some(
+    p =>
+      alongPx + TICK_LABEL_HALF_PX > p &&
+      alongPx - TICK_LABEL_HALF_PX < p + LABEL_PX,
+  )
+}
+
 export function getBlockLabelKeysToHide(
   blocks: ContentBlock[],
   labels: Map<string, string>,

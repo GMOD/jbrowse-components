@@ -20,9 +20,9 @@ beforeEach(() => {
 
 // the session comes back alongside the view: `getSession(view)` types as
 // AbstractSessionModel, which has no addTrackConf
-async function setup() {
+async function setup(contigs: [string, number][] = [['ctgA', 16000]]) {
   const session = createTestSession()
-  addVolvoxAssembly(session)
+  addVolvoxAssembly(session, contigs)
   const view = (await session.launchView('DotplotView', {
     views: [{ assembly: 'volvox' }, { assembly: 'volvox' }],
   })) as DotplotViewModel
@@ -38,7 +38,10 @@ async function setup() {
   return { session, view }
 }
 
-function addVolvoxAssembly(session: ReturnType<typeof createTestSession>) {
+function addVolvoxAssembly(
+  session: ReturnType<typeof createTestSession>,
+  contigs: [string, number][],
+) {
   session.addAssemblyConf({
     name: 'volvox',
     sequence: {
@@ -46,15 +49,13 @@ function addVolvoxAssembly(session: ReturnType<typeof createTestSession>) {
       type: 'ReferenceSequenceTrack',
       adapter: {
         type: 'FromConfigSequenceAdapter',
-        features: [
-          {
-            refName: 'ctgA',
-            uniqueId: 'ctgA',
-            start: 0,
-            end: 16000,
-            seq: 'a'.repeat(16000),
-          },
-        ],
+        features: contigs.map(([refName, end]) => ({
+          refName,
+          uniqueId: refName,
+          start: 0,
+          end,
+          seq: 'a'.repeat(end),
+        })),
       },
     },
   })
@@ -289,8 +290,8 @@ test('axis text is placed by y alone, with no baseline attribute', async () => {
 
   // horizontal tick labels, rotated -90° and centred across their tick
   expect(ys(t => rotated(t) && !named(t))).toEqual(new Set(['2.8']))
-  // the horizontal refName hangs 1px in from the plot edge
-  expect(ys(t => rotated(t) && named(t))).toEqual(new Set(['8.3']))
+  // the horizontal refName hangs 3px clear of the tick at its start
+  expect(ys(t => rotated(t) && named(t))).toEqual(new Set(['10.3']))
   // each vertical tick label hangs 3px above its tick
   const tick = view.vview.visibleTickPositions.findLast(t => t.labeled)!
   const label = texts.find(
@@ -324,4 +325,54 @@ test('a vertical tick label within 10px of the top edge is not drawn', async () 
     t => t.textContent === text && !t.hasAttribute('transform'),
   )
   expect(vertical).toHaveLength(0)
+}, 20000)
+
+// The last tick of a region sits on the next region's start, where its name is
+test('a tick label never prints over a refName label', async () => {
+  const { view } = await setup([
+    ['ctgA', 20000],
+    ['ctgB', 20000],
+  ])
+  const { hview, vview } = view
+  const boundary = (axis: typeof hview) => {
+    const start = axis.refNameLabelStartsPx[1]!
+    const tick = axis.visibleTickPositions.find(
+      t => t.labeled && Math.abs(t.alongPx - start) < 5,
+    )
+    expect(tick).toBeDefined()
+    return tick!
+  }
+  const h = boundary(hview)
+  const v = boundary(vview)
+  const texts = axisTexts(await renderToSvg(view, {}))
+  const hLabels = texts.filter(t => {
+    const x = /^rotate\(-90,([\d.]+),0\)$/.exec(
+      t.getAttribute('transform') ?? '',
+    )?.[1]
+    return (
+      x !== undefined &&
+      t.querySelector('title') === null &&
+      Math.abs(Number(x) - h.alongPx) < 1
+    )
+  })
+  const vLabels = texts.filter(
+    t =>
+      !t.hasAttribute('transform') &&
+      Math.abs(
+        Number(t.getAttribute('y')) - (vview.toScreenPx(v.alongPx) - 3 + 7.3),
+      ) < 1,
+  )
+  expect(hLabels.map(t => t.textContent)).toEqual([])
+  expect(vLabels.map(t => t.textContent)).toEqual([])
+}, 20000)
+
+test('a vertical refName label ends clear of the tick at its start', async () => {
+  const { view } = await setup()
+  const named = axisTexts(await renderToSvg(view, {})).filter(
+    t => t.querySelector('title') !== null && !t.hasAttribute('transform'),
+  )
+  expect(named.length).toBeGreaterThan(0)
+  for (const t of named) {
+    expect(Number(t.getAttribute('x'))).toBeLessThan(view.borderX - 6)
+  }
 }, 20000)

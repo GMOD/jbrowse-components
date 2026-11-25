@@ -140,6 +140,18 @@ const Dotplot1DView = Base1DView.extend(self => {
 
       /**
        * #getter
+       * Where each drawn refName label starts along the axis, which no tick
+       * label prints over
+       */
+      get refNameLabelStartsPx() {
+        const hide = this.blockLabelKeysToHide
+        return this.dynamicBlocks.contentBlocks
+          .filter(b => !hide.has(b.key))
+          .map(b => Math.floor(b.offsetPx - self.offsetPx))
+      },
+
+      /**
+       * #getter
        * Signature of the displayed-region order and orientation, which a
        * diagonalize reorder/flip changes and a zoom or pan does not. Its own
        * primitive-valued computed so every display's fetch key reads it without
