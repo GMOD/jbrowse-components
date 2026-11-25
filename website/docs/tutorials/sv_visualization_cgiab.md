@@ -37,7 +37,7 @@ Building your own instance needs:
 - ~1 TB of free disk for the tracks, or ~1.5 TB for the
   [full pipeline](#reproduce-it-end-to-end)
 - At least 32 GB of RAM for the minimap2 step; only data preparation needs it.
-- The command-line tools below, with the versions tested in parentheses:
+- The command-line tools below, with the versions in parentheses:
   - [JBrowse CLI](/docs/cli) (`@jbrowse/cli` v3.6.5 or later)
   - [Node.js](https://nodejs.org/) (v18 minimum, v24.1.0 used for this tutorial)
   - [samtools](http://www.htslib.org/) (v1.21 or later)
@@ -177,13 +177,13 @@ through the cuts in `scale.domain` to the colors in `scale.range`.
 C-GIAB publishes five somatic SV callsets for this pair, the benchmark among
 them:
 
-| Callset                                                                                                                 | Called from                                    |
-| ----------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------- |
-| NIST V0.5 draft benchmark                                                                                               | assembly comparison plus read support          |
-| [Severus](https://github.com/KolmogorovLab/Severus)                                                                     | PacBio HiFi                                    |
-| [minda](https://github.com/KolmogorovLab/minda) ensemble                                                                | eleven caller runs over HiFi, ONT and Illumina |
-| DRAGEN                                                                                                                  | Illumina WGS                                   |
-| NYGC somatic pipeline ([Manta](https://github.com/Illumina/manta) and [GRIDSS](https://github.com/PapenfussLab/gridss)) | Illumina WGS                                   |
+| Callset                                                                                                                 | Called from                           |
+| ----------------------------------------------------------------------------------------------------------------------- | ------------------------------------- |
+| NIST V0.5 draft benchmark                                                                                               | assembly comparison plus read support |
+| [Severus](https://github.com/KolmogorovLab/Severus)                                                                     | PacBio HiFi                           |
+| [minda](https://github.com/KolmogorovLab/minda) ensemble                                                                | HiFi, ONT and Illumina callers        |
+| DRAGEN                                                                                                                  | Illumina WGS                          |
+| NYGC somatic pipeline ([Manta](https://github.com/Illumina/manta) and [GRIDSS](https://github.com/PapenfussLab/gridss)) | Illumina WGS                          |
 
 ### Load Severus and DRAGEN SV calls
 
@@ -274,8 +274,9 @@ builds.
 
 ## Convert the HiFi reads to CRAM
 
-The tumor and normal BAMs have no `MD` tags. Convert each to a local CRAM
-against the `GRCh38_GIABv3` reference, which this step needs as a local FASTA:
+The tumor and normal BAMs, from the `PacBio_Revio_20240125/` directory above,
+have no `MD` tags. Convert each to a local CRAM against the `GRCh38_GIABv3`
+reference, which this step needs as a local FASTA:
 
 ```bash
 curl -L https://ftp-trace.ncbi.nlm.nih.gov/ReferenceSamples/giab/release/references/GRCh38/GRCh38_GIABv3_no_alt_analysis_set_maskedGRC_decoys_MAP2K3_KMT2C_KCNJ18.fasta.gz |
@@ -346,35 +347,25 @@ VCF loaded earlier.
 
 <Figure caption="The SV inspector showing the benchmark VCF as a circular overview alongside a table of calls." src="/img/sv_cgiab/translocation_sv_inspector_view.png" />
 
-`SV_20` and `SV_190` are the two records of one breakpoint, where
-chr3:139,976,414 joins chr13:114,353,244. The benchmark files them under
-`EVENT=cluster_3` with two further breakends and tags the cluster
-`EVENTTYPE=CHROMOPLEXY` (rearrangements chained across chromosomes). To read the
-junction in the reads:
+Use the **Search rows** box to find the chr3 to chr13 breakend. The benchmark
+groups the breakends of one rearrangement under an `EVENT`. To read the junction
+in the reads:
 
-- Choose `cluster_3` under **Filter by event**, then click the chord joining
-  chr3 and chr13 to launch the breakpoint split view.
+- Choose that event under **Filter by event**, then click the chord joining chr3
+  and chr13 to launch the breakpoint split view.
 - Set **Read height → Compact** on the tumor PacBio HiFi reads opened on each
   panel.
 - **Sort by → Split reads first** moves the split reads to the top of each
   pileup.
 
-[The cancer SV tutorial](/docs/tutorials/cancer_sv#following-the-chain-across-panels)
-covers opening the view from a record and following the further breakends.
-
 <Figure caption="Breakpoint split view of the chr3-chr13 translocation with tumor HiFi reads. Splines join the two halves of each split read." src="/img/sv_cgiab/translocation_breakpoint_split.png" />
 
-We read the same junction three ways:
+Compare the tumor with the normal and the assembly:
 
-- In the tumor reads, each split read has one half on chr13 and one on chr3,
-  joined by a spline. The read runs forward on chr13 into the junction, then
-  continues on the reverse strand of chr3.
-- In the matched normal, the reads run through the locus with no split. Open
-  `HG008-N-P_PacBio-HiFi-Revio_20240125_35x_GRCh38-GIABv3` from the hosted
+- Open `HG008-N-P_PacBio-HiFi-Revio_20240125_35x_GRCh38-GIABv3` from the hosted
   config on the same two panels.
-- In the tumor assembly, the synteny track loaded earlier shows the junction
-  with no reads. The C-GIAB assembly resolves both loci onto one tumor contig,
-  named for the two chromosomes joined in it.
+- Open the synteny track loaded earlier to see the junction against the tumor
+  assembly.
 
 ### Find a small deletion in CUZD1
 
@@ -403,14 +394,35 @@ clinical significance, served by UCSC as a bigBed:
 }
 ```
 
-The filter keeps ClinVar CNVs under 50 kb.
-
 <Figure caption="The SV inspector after searching for SV_85, a heterozygous CUZD1 deletion, and the linear genome view its location link opens: the <DEL> ALT allele over the ClinVar CNV and NCBI RefSeq gene tracks." src="/img/sv_cgiab/deletion_sv_inspector_search.png" />
 
-Open **NCBI RefSeq genes (hg38)** from the hosted config and the tumor PacBio
-HiFi reads, then set **Read height → Compact** and **Sort by → Base** in the
-reads' track menu and center the deletion. **Show → Show center line** in the
-view menu helps line up the breakpoint.
+Add NCBI's RefSeq genes:
+
+```json addtrack
+{
+  "type": "FeatureTrack",
+  "trackId": "ncbi_refseq_hg38",
+  "name": "NCBI RefSeq genes",
+  "assemblyNames": ["GRCh38_GIABv3"],
+  "adapter": {
+    "type": "Gff3TabixAdapter",
+    "gffGzLocation": {
+      "uri": "https://jbrowse.org/ucsc/hg38/ncbiRefSeq.gff.gz"
+    },
+    "index": {
+      "indexType": "CSI",
+      "location": {
+        "uri": "https://jbrowse.org/ucsc/hg38/ncbiRefSeq.gff.gz.csi"
+      }
+    }
+  }
+}
+```
+
+Open the genes and the tumor PacBio HiFi reads, then set **Read height →
+Compact** and **Sort by → Base** in the reads' track menu and center the
+deletion. **Show → Show center line** in the view menu helps line up the
+breakpoint.
 
 <Figure caption="Tumor HiFi reads at compact height, sorted by base pair at the deletion." src="/img/sv_cgiab/deletion_linear_view.png" />
 
@@ -427,11 +439,11 @@ assembly-vs-reference diagonal per haplotype.
 
 <Figure caption="HG008-T's two haplotypes (y) against GRCh38 (x) as dotplots, hap1 left and hap2 right." src="/img/sv_cgiab/dotplot_haplotypes.png" />
 
-Drag over a region and take **Launch → Linear synteny view...**, keeping
-**HG008T_v3.2 vs GRCh38_GIABv3** (**HG008T v3.2** in the hosted config) as the
-synteny track, then enter `chr13 chr3` in the GRCh38 search box.
+Drag over a region and take **Linear synteny view**, keeping **HG008T_v3.2 vs
+GRCh38_GIABv3** (**HG008T v3.2** in the hosted config) as the synteny track,
+then enter `chr13 chr3` in the GRCh38 search box.
 
-<Figure caption="The breakpoint split view's two reference windows with tumor reads grouped by split read, above the fused scaffold. A curve joins the two halves of each split read, and the same reads realigned to the tumor assembly cross the junction in one piece." src="/img/sv_cgiab/junction_synteny.png" />
+<Figure caption="The breakpoint split view's two reference windows with tumor reads grouped by split read, above the fused scaffold." src="/img/sv_cgiab/junction_synteny.png" />
 
 The hosted config's **HG008-T PacBio HiFi reads on the HG008T v3.2 assembly**
 track holds the reads from these two windows realigned to the tumor assembly
@@ -464,8 +476,6 @@ curl -fO https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/
 bash build_sv_visualization_cgiab.sh   # builds ./cgiab_build/jbrowse2
 npx --yes serve cgiab_build/jbrowse2
 ```
-
-The script downloads over 200 GB and takes hours.
 
 ## See also
 
