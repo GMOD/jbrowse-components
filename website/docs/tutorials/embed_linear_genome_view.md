@@ -115,7 +115,7 @@ Prep your own data files with the
 
 ## Add genes, reads, conservation and variants
 
-Swap in the example below to draw genes, reads, conservation and variants in one
+Expand the example below to draw genes, reads, conservation and variants in one
 view.
 
 <details id="more-complete-example">
@@ -220,7 +220,8 @@ view state as a hook.
 `useCreateViewState` also destroys the view when the component unmounts, which
 `<LinearGenomeView>` leaves running, so use it in a component that mounts and
 unmounts repeatedly, such as an app route. It returns `undefined` until it has
-built the view, so render nothing until then:
+built the view, so render nothing until then. The hook takes the view's fields,
+such as `location`, at the top level:
 
 ```js
 import {
@@ -229,7 +230,11 @@ import {
 } from '@jbrowse/react-linear-genome-view2'
 
 function GenomeBrowser() {
-  const state = useCreateViewState({ assembly, tracks, location: '...' })
+  const state = useCreateViewState({
+    assembly,
+    tracks,
+    location: '10:29,838,565..29,838,850',
+  })
   return state ? <JBrowseLinearGenomeView viewState={state} /> : null
 }
 ```
