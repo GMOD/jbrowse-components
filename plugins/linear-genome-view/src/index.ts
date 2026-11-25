@@ -238,6 +238,7 @@ export {
   defaultTextHeight,
   getRowHeaderLayout,
   labelOffset,
+  lgvSvgLayoutOptions,
   totalHeight,
   trackBoxHeight,
   trackBoxOffsets,
