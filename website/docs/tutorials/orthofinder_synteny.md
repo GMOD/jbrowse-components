@@ -89,13 +89,13 @@ configs name, or follow the same commands on
 We'll run OrthoFinder on the `wheat` set, the genomes of wheat's polyploid
 history:
 
-- **Aegilops tauschii**, diploid D donor
-- **bread wheat**, hexaploid, A+B+D
-- **Triticum urartu**, diploid A donor
-- **durum**, domesticated tetraploid, A+B
-- **wild emmer**, durum's wild tetraploid ancestor
+- _Aegilops tauschii_, diploid D donor
+- bread wheat, hexaploid, A+B+D
+- _Triticum urartu_, diploid A donor
+- durum, domesticated tetraploid, A+B
+- wild emmer, durum's wild tetraploid ancestor
 
-The other four sets run the same commands on their own proteomes:
+The other four sets run the same commands on their own proteomes. For wheat:
 
 <!-- from: scripts/build_orthofinder_synteny.sh -->
 
@@ -119,7 +119,7 @@ orthologs2jbrowse orthofinder Orthogroups.tsv -o tauschii.blocks \
   --max-copies 4
 ```
 
-`blockAssemblies` must match the column order the script prints.
+`blockAssemblies` must match the column order the converter prints.
 `--assembly COLUMN=NAME` renames a column:
 
 ```bash
@@ -141,9 +141,8 @@ treatments:
 | `single`           | no ribbon                                                    | you want a strictly one-to-one table                      |
 
 Where both genomes of a band hold copies, `expand` pairs them in the order
-OrthoFinder listed them, so the build script's wheat stack keeps a diploid
-between bread wheat and the tetraploids. A cell over `--max-copies` counts as a
-family and contributes no row (`0` keeps every cell):
+OrthoFinder listed them. A cell over `--max-copies` counts as a family and
+contributes no row (`0` keeps every cell):
 
 ```bash
 orthologs2jbrowse orthofinder Orthogroups.tsv -o tauschii.blocks \
@@ -157,6 +156,39 @@ Column 4 of each BED must match the ids in the table exactly. The build script
 keeps each gene's longest protein and names it by the gene id, so OrthoFinder
 sees one protein per gene under the id the BED has. `--bed name=file` reports
 the share of ids placed, and the conversion stops if it places none.
+
+## Set up the wheat assemblies and gene track
+
+A gene-level synteny view needs only sequence names and lengths, so each
+assembly is a [`ChromSizesAdapter`](/docs/config/chromsizesadapter) over a
+`.chrom.sizes` file (a name and a length per line) built from its NCBI sequence
+report. We'll set up wheat; the other genomes repeat the block under each
+genome's name:
+
+```json addassembly
+{ "name": "wheat", "uri": "wheat.chrom.sizes" }
+```
+
+The multi-way display draws a lane per genome, with gene models from a gene
+track on that genome's assembly in the config, open or not
+([`laneGeneTracks`](/docs/config/multiwaysyntenydisplay/#slot-lanegenetracks)
+picks one when a genome has several). For your own annotation, add one per
+genome from a GFF3 that uses the assembly's refNames,
+[sorted and indexed with tabix](/docs/quickstart_web) (`tabix -C`):
+
+```json addtrack
+{
+  "type": "FeatureTrack",
+  "trackId": "wheat_genes",
+  "name": "wheat genes",
+  "assemblyNames": ["wheat"],
+  "adapter": {
+    "type": "Gff3TabixAdapter",
+    "uri": "wheat.sorted.gff3.gz",
+    "csi": true
+  }
+}
+```
 
 ## Load the wheat orthogroups as a synteny track
 
@@ -183,50 +215,19 @@ One track backs each pair of adjacent rows in the stack:
 }
 ```
 
-A mismatch between `blockAssemblies` and the column order the conversion printed
+A mismatch between `blockAssemblies` and the column order the converter printed
 raises a track error naming both lists.
-
-### Load each assembly from a chrom.sizes
-
-A gene-level synteny view needs only sequence names and lengths, so each
-assembly is a [`ChromSizesAdapter`](/docs/config/chromsizesadapter) over a
-`.chrom.sizes` file (a name and a length per line) built from its NCBI sequence
-report. We'll load wheat; the other genomes repeat the block under each genome's
-name:
-
-```json addassembly
-{ "name": "wheat", "uri": "wheat.chrom.sizes" }
-```
-
-### Add a gene track per genome
-
-The multi-way display draws a lane per genome, with gene models from a gene
-track on that genome's assembly in the config, open or not
-([`laneGeneTracks`](/docs/config/multiwaysyntenydisplay/#slot-lanegenetracks)
-picks one when a genome has several). For your own annotation, add one per
-genome from a bgzipped, sorted GFF3 ([prep](/docs/quickstart_web)) that uses the
-assembly's refNames, indexed with `tabix -C`:
-
-```json addtrack
-{
-  "type": "FeatureTrack",
-  "trackId": "wheat_genes",
-  "name": "wheat genes",
-  "assemblyNames": ["wheat"],
-  "adapter": {
-    "type": "Gff3TabixAdapter",
-    "uri": "wheat.sorted.gff3.gz",
-    "csi": true
-  }
-}
-```
 
 ## Stack tauschii over wheat {#stacking-the-wheat-genomes}
 
-We'll stack the D-genome donor over bread wheat: **Add → Linear synteny view**,
-pick `wheat_orthogroups` and add tauschii above wheat; the
-[all-vs-all tutorial](/docs/tutorials/allvsall_synteny#from-the-ui) walks the
-dialog. Then:
+We'll stack the D-genome donor over bread wheat:
+
+- **Add → Linear synteny view**, then **Manual** to build the stack by hand.
+- **Add row** for tauschii and for wheat, and pick `wheat_orthogroups` with the
+  connector button between them.
+- Click **Launch**.
+
+Then:
 
 - Navigate the wheat row to
   `1A 1B 1D 2A 2B 2D 3A 3B 3D 4A 4B 4D 5A 5B 5D 6A 6B 6D 7A 7B 7D`, the seven
@@ -264,19 +265,11 @@ A session over the hosted wheat config opens the same view:
 
 <Figure caption="Aegilops tauschii over bread wheat on the wheat orthogroups track, each link colored by its tauschii chromosome." src="/img/orthofinder_synteny/wheat.png" />
 
-An orthogroup holds a gene's A, B and D copies (homoeologs) together, and
-`--pick expand` draws a link to each, so every tauschii chromosome fans out to
-the three wheat chromosomes of its group.
-
 ### Narrow wheat to 4A against the D genome
 
 Navigate the wheat row to `4A` alone, keeping **Query sequence**:
 
 <Figure caption="Aegilops tauschii's D-genome chromosomes over wheat 4A. Color by → Query sequence colors each chromosome differently." src="/img/orthofinder_synteny/wheat_4a.png" />
-
-Other chromosomes appear on 4A only as single genes. The runs from tauschii 5
-and 7 are the 4AL/5AL and 4AL/7BS translocations (Devos et al. 1995; Dvorak et
-al. 2018).
 
 ## Open rice against two maize copies {#grasses}
 
@@ -298,8 +291,6 @@ Open the `grasses` config and stack sorghum over rice over maize, with
   and `1:286,676,000-287,665,000 5:6,261,000-6,790,000[rev]`.
 - Pick **Target sequence** in the palette button menu to color each link by the
   chromosome of its target gene.
-
-Sorghum shares the ancestry and lacks the duplication, so it is the control.
 
 <Figure caption="One rice locus between sorghum and maize from the grasses orthogroups track, a gene track under each row." src="/img/orthofinder_synteny/grasses_maize_wgd.png" />
 
@@ -385,9 +376,6 @@ in both bands. Then:
 
 <Figure caption="One coffee window between three tomato windows from the solanaceae orthogroups track, links colored by tomato chromosome." src="/img/orthofinder_synteny/solanaceae.png" />
 
-Each copy has lost genes since the triplication, so most coffee genes link to
-one of the three.
-
 ## Stack the flies around melanogaster {#drosophila}
 
 The `drosophila` set stacks _D. melanogaster_ with close relatives _D. simulans_
@@ -404,9 +392,9 @@ one fly against melanogaster, with `drosophila_orthogroups` in each band. Then:
 - Pick **Show whole genome**, then **Square view - same bp per pixel**, in the
   header's ⋮ menu (`coord: { ratio: 1 }` in a session spec), which puts the rows
   on one bp/px, so row length on screen matches genome size.
-- Pick **Re-order chromosomes** in the same menu (`autoDiagonalize` in a session
-  spec), which sorts each row's chromosomes against its neighbour so the links
-  run along a diagonal.
+- Pick **Re-order chromosomes...** in the same menu (`autoDiagonalize` in a
+  session spec), which sorts each row's chromosomes against its neighbour so the
+  links run along a diagonal.
 - Pick **Reference** in the palette button menu to color each ribbon by its
   melanogaster arm.
 
@@ -507,7 +495,7 @@ every band:
 ## Open an orthogroup's alignment and gene tree {#orthogroup-alignments}
 
 Run past the orthogroup step, OrthoFinder also aligns each orthogroup and infers
-a gene tree for every one of four or more genes, and the
+a gene tree for each orthogroup of four or more genes, and the
 [MSA view plugin](https://github.com/GMOD/jbrowse-plugin-msaview) opens them
 from a gene on the genome. Every set's config includes them, and the MSA view
 opens from the top genome of each stack: melanogaster, rice, human, tomato or
@@ -558,8 +546,8 @@ For the five flies the run took 15 minutes on 24 threads, on OrthoFinder 3.2,
 the version every set's demo was built with.
 
 The plugin finds the clicked gene's row in the alignment by translating its
-transcript, so the top genome (`MSA_GENOMES` names others) is downloaded and cut
-to the sequences in its chrom.sizes, and becomes the assembly in their place:
+transcript, so the build downloads the top genome (`MSA_GENOMES` names others),
+cuts it to the sequences in its chrom.sizes, and uses it as the assembly:
 
 ```json addassembly
 {
@@ -577,8 +565,7 @@ to the sequences in its chrom.sizes, and becomes the assembly in their place:
 
 Last, the run's `Orthogroups/`, `MultipleSequenceAlignments/` and
 `Resolved_Gene_Trees/` are copied into an `orthofinder/` folder beside
-`config.json` (77 MB for the flies), and the config lists the plugin and that
-folder:
+`config.json`, and the config lists the plugin and that folder:
 
 ```json
 {
@@ -705,7 +692,7 @@ MAXSEQ=60 MAXCOPIES=6 bash build_orthofinder_synteny.sh wheat
 - Emms and Kelly (2019).
   [OrthoFinder: phylogenetic orthology inference for comparative genomics](https://doi.org/10.1186/s13059-019-1832-y)
 - Emms, Liu, Belcher, Holmes and Kelly (2026).
-  [OrthoFinder 3, Nature Methods 23:1327–1333](https://doi.org/10.1038/s41592-026-03126-6)
+  [OrthoFinder 3](https://doi.org/10.1038/s41592-026-03126-6)
 - Wang et al. (2012).
   [MCScanX: a toolkit for detection and evolutionary analysis of gene synteny and collinearity](https://doi.org/10.1093/nar/gkr1293)
 - Schnable et al. (2009).
@@ -718,7 +705,3 @@ MAXSEQ=60 MAXCOPIES=6 bash build_orthofinder_synteny.sh wheat
   [The coffee genome provides insight into the convergent evolution of caffeine biosynthesis](https://doi.org/10.1126/science.1255274)
 - Richards et al. (2005).
   [Comparative genome sequencing of Drosophila pseudoobscura: chromosomal, gene, and cis-element evolution](https://doi.org/10.1101/gr.3059305)
-- Devos et al. (1995).
-  [Structural evolution of wheat chromosomes 4A, 5A, and 7B and its impact on recombination](https://doi.org/10.1007/BF00220890)
-- Dvorak et al. (2018).
-  [Reassessment of the evolution of wheat chromosomes 4A, 5A, and 7B](https://doi.org/10.1007/s00122-018-3165-8)
