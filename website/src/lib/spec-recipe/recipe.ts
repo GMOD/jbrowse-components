@@ -311,13 +311,19 @@ function addTrackTitle(
     : kind
       ? ` Needs ${kind}.`
       : ''
-  return info?.type === 'ReferenceSequenceTrack'
-    ? `Show the sequence: check **${info.name}** in the track selector.`
-    : band
-      ? `Add your file: ${band.form.band} and choose **New track**.${needs}`
-      : graphChoice
-        ? `Add your graph: ${viaTrackSelector ? "**+** → **Add track...** in this view's track selector" : `**${DESKTOP_UI_LABELS.openTrack}**`}, choose **${GRAPH_FORM_LABELS.workflow}**, and set **${GRAPH_FORM_LABELS.fileType}** to **${graphChoice}**.`
-        : `${repeat ? NEXT_TRACK : viaTrackSelector ? ADD_TRACK : OPEN_TRACK}${needs}`
+  const ordinary =
+    info?.type !== 'ReferenceSequenceTrack' && !band && !graphChoice && !pasted
+  return {
+    ordinary,
+    title:
+      info?.type === 'ReferenceSequenceTrack'
+        ? `Show the sequence: check **${info.name}** in the track selector.`
+        : band
+          ? `Add your file: ${band.form.band} and choose **New track**.${needs}`
+          : graphChoice
+            ? `Add your graph: ${viaTrackSelector ? "**+** → **Add track...** in this view's track selector" : `**${DESKTOP_UI_LABELS.openTrack}**`}, choose **${GRAPH_FORM_LABELS.workflow}**, and set **${GRAPH_FORM_LABELS.fileType}** to **${graphChoice}**.`
+            : `${ordinary && repeat ? NEXT_TRACK : viaTrackSelector ? ADD_TRACK : OPEN_TRACK}${needs}`,
+  }
 }
 
 // A track or adapter type no core plugin registers
@@ -343,7 +349,7 @@ function trackStep(
   viaTrackSelector?: boolean,
   // an earlier step of this view already said how a track is added
   repeat?: boolean,
-): RecipeStep & { unmapped: string[] } {
+): RecipeStep & { unmapped: string[]; ordinary: boolean } {
   const trackId = specTrackId(entry)
   const info = lookupTrack(config, trackId, sessionTracks)
   const kind = info ? fileKind(info.adapterType) : undefined
@@ -390,7 +396,7 @@ function trackStep(
       : []),
   ]
   return {
-    title: addTrackTitle(info, kind, band, viaTrackSelector, repeat),
+    ...addTrackTitle(info, kind, band, viaTrackSelector, repeat),
     ...(notes.length ? { note: notes.join(' ') } : {}),
     example:
       info?.type === 'ReferenceSequenceTrack'
@@ -439,7 +445,11 @@ function importFormSteps(
     ...new Map(entries.map(entry => [JSON.stringify(entry), entry])).values(),
   ]
   for (const [index, entry] of distinct.entries()) {
-    const { unmapped: trackUnmapped, ...step } = trackStep(
+    const {
+      unmapped: trackUnmapped,
+      ordinary,
+      ...step
+    } = trackStep(
       entry,
       config,
       view.type,
@@ -584,7 +594,11 @@ function viewSteps(
   } else {
     steps.push(...region)
     for (const entry of specTracks(view)) {
-      const { unmapped: trackUnmapped, ...step } = trackStep(
+      const {
+        unmapped: trackUnmapped,
+        ordinary,
+        ...step
+      } = trackStep(
         entry,
         config,
         viewType,
@@ -593,7 +607,7 @@ function viewSteps(
         viaTrackSelector,
         told.addTrack,
       )
-      told.addTrack ||= step.title.startsWith('Add your track')
+      told.addTrack = ordinary
       steps.push(step)
       unmapped.push(...trackUnmapped)
     }
@@ -636,7 +650,11 @@ function viewSteps(
         entry => !copied.has(specTrackId(entry)),
       )
       const panelSteps = added.map(entry => {
-        const { unmapped: trackUnmapped, ...step } = trackStep(
+        const {
+          unmapped: trackUnmapped,
+          ordinary,
+          ...step
+        } = trackStep(
           entry,
           config,
           panel.type ?? rowViewType(view.type),

@@ -73,6 +73,24 @@ test('a linear view goes to its region before its tracks go in', () => {
   ])
 })
 
+test('"Add the next track the same way" follows only an ordinary Open track step', () => {
+  expect(
+    titles([
+      {
+        type: 'LinearGenomeView',
+        assembly: 'volvox',
+        tracks: ['volvox_cram', 'arc_track', 'volvox_bam', 'volvox_sv'],
+      },
+    ]),
+  ).toEqual([
+    expect.stringMatching(/^Open your genome/),
+    expect.stringMatching(/^Add your track: \*\*File/),
+    expect.stringMatching(/^Add your track: .*pasted JSON/),
+    expect.stringMatching(/^Add your track: \*\*File/),
+    expect.stringMatching(/^Add the next track the same way/),
+  ])
+})
+
 test('one genome step covers Desktop and Web', () => {
   expect(recipe.steps[0]?.title).toContain('JBrowse Desktop')
   expect(recipe.steps[0]?.title).toContain('`jbrowse add-assembly`')
