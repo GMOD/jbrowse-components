@@ -41,19 +41,19 @@ We ran two predictions over the _TAL1_ locus against
 tokens, following the AlphaGenome team's
 [worked example](https://www.alphagenomedocs.com/colabs/example_analysis_workflow.html).
 The window is a megabase centered on _TAL1_, which is on in K562, an
-erythroleukemia line, and off in GM12878, a lymphoblastoid line, the control.
+erythroleukemia line, and off in GM12878, a lymphoblastoid line.
 
 Nothing to download: the plugin reads both stored predictions by URL. To use
-your own variants, swap `uri` for a VCF or BED, as _Ask AlphaGenome for a
-prediction_ shows, and the query panel requests a prediction for any hg38 locus
-you open.
+your own variants, swap `uri` for a VCF or BED, as
+[Ask AlphaGenome for a prediction](#ask-alphagenome-for-a-prediction) shows, and
+the query panel requests a prediction for any hg38 locus you open.
 
 <details>
 <summary>The files</summary>
 
 | What it is                                                                                                                     | File                                                                                                                     |
 | ------------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------ |
-| The reference prediction over chr1:46,700,048..47,748,623, all eleven output types, K562 and GM12878                           | [demo-tal1-interval](https://0t0e9nn6bj.execute-api.us-east-2.amazonaws.com/Prod/api/predict/demo-tal1-interval)         |
+| The reference prediction over chr1:46,700,048..47,748,623, all output types, K562 and GM12878                                  | [demo-tal1-interval](https://0t0e9nn6bj.execute-api.us-east-2.amazonaws.com/Prod/api/predict/demo-tal1-interval)         |
 | The variant prediction, the same window scored for the Jurkat insertion upstream of _TAL1_ in CD34+ common myeloid progenitors | [demo-tal1-variant-cd34](https://0t0e9nn6bj.execute-api.us-east-2.amazonaws.com/Prod/api/predict/demo-tal1-variant-cd34) |
 
 </details>
@@ -131,8 +131,8 @@ columns:
 }
 ```
 
-The session below loads the hosted config with the plugin and these tracks and
-opens the locus with no predictions yet.
+The session below loads the same assembly and tracks with the plugin in one
+click, and opens the locus with no predictions yet.
 
 ```json session config=https://jbrowse.org/demos/alphagenome/config.json
 {
@@ -154,7 +154,7 @@ opens the locus with no predictions yet.
 **AlphaGenome predictions…** in the view menu opens the query panel, which takes
 four inputs:
 
-- **what to predict**: any of the eleven output types, or a preset group
+- **what to predict**: any output type, or a preset group
 - **which cell types and tissues**: a search over the biosample catalog. This
   page uses K562 and GM12878 for the locus, and CD34+ progenitors for the
   variant
@@ -186,10 +186,7 @@ untick **Stack on a shared scale**.
 
 <Figure caption="Predicted polyA plus RNA-seq over TAL1 in K562 and GM12878 on one y-axis." src="/img/alphagenome/expression_two_cell_lines.png" />
 
-_STIL_, to the right, is predicted in both lines, a sign that the GM12878 row
-loaded.
-
-## Stack the accessibility rows on one axis
+## Compare accessibility in both cell lines
 
 Add four accessibility rows to the prediction:
 
@@ -199,30 +196,28 @@ Add four accessibility rows to the prediction:
 
 <Figure caption="Predicted DNase and ATAC for K562 and GM12878, the rows on one shared y-axis." src="/img/alphagenome/accessibility_shared_axis.png" />
 
-The GM12878 rows have peaks too, at open chromatin that is not transcribed.
-
 ## Add each cell line's splice junctions as arcs
 
-Splice junctions come back as arcs joining exons, as in a sashimi plot. Add the
-K562 and GM12878 polyA junctions and zoom in to _TAL1_.[^junctions]
+Splice junctions come back as arcs joining exons, as in a sashimi plot. Filter
+the track list as above, tick the K562 and GM12878 polyA junction rows, add them
+and zoom in to _TAL1_.[^junctions]
 
 <Figure caption="Predicted splice junctions over TAL1 for K562 and GM12878 as arcs." src="/img/alphagenome/splice_junctions.png" />
 
 ## Add the GM12878 contact map over the window
 
 AlphaGenome predicts Hi-C-style contact maps for a set of cell lines, GM12878
-among them. Add the GM12878 contact map and zoom out to the whole predicted
-megabase:
+among them. Filter the track list as above, tick the GM12878 contact map, add it
+and zoom out to the whole predicted megabase:
 
 <Figure caption="The predicted GM12878 contact map across the window." src="/img/alphagenome/contact_map.png" />
 
 ## Score a TAL1 variant against the reference
 
-In T-cell acute lymphoblastic leukemia (T-ALL), _TAL1_ is switched on in a
-lineage where it should be silent. One route is a small insertion upstream of
-the gene that creates a binding site. The variant track holds the variants
-reported in T-ALL patients and cell lines, most of them insertions at one site
-upstream of the gene.
+The variant track holds the variants reported in T-cell acute lymphoblastic
+leukemia patients and cell lines
+([Mansour et al. 2014](https://doi.org/10.1126/science.1259037)), most of them
+insertions at one site upstream of _TAL1_.
 
 Right-click any variant and choose **Predict variant effect with AlphaGenome**.
 The query panel opens with the variant loaded, and running it predicts the
@@ -231,11 +226,10 @@ window twice, once for the reference and once with the variant.
 <Figure caption="Right-clicking a variant in the oncogenic TAL1 variants track. The menu's last row opens the query panel with that variant loaded." src="/img/alphagenome/predict_variant_menu.png" />
 
 The stored prediction is for the **Jurkat** insertion,
-`chr1:47239296 C>CCGTTTCCTAACC`, in CD34+ common myeloid progenitors, the
-closest AlphaGenome cell type to the CD34+ hematopoietic cells Mansour et al.
-studied. To reach it, replace K562 in the biosample box with "common myeloid
-progenitor, CD34-positive" and type the insertion into the variant box. Any
-other variant or biosample makes a live API call.
+`chr1:47239296 C>CCGTTTCCTAACC`, in CD34+ common myeloid progenitors. To reach
+it, replace K562 in the biosample box with "common myeloid progenitor,
+CD34-positive" and type the insertion into the variant box. Any other variant or
+biosample makes a live API call.
 
 The panel warns when the variant falls outside the window. In variant mode
 AlphaGenome reports only the junctions the variant could affect, so clear the
@@ -255,9 +249,6 @@ where positive is a gain from the insertion.[^mapping] To read the differences:
   insertion.
 
 <Figure caption="The Jurkat insertion scored in CD34+ progenitors: alternate minus reference for DNase, RNA-seq and H3K27ac." src="/img/alphagenome/variant_difference.png" />
-
-Accessibility rises at the insertion. H3K27ac, the mark of an active enhancer,
-rises across the locus, and predicted transcription rises over the _TAL1_ exons.
 
 ## See also
 
