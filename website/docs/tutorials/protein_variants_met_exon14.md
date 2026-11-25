@@ -73,9 +73,9 @@ species and a structure, linked:
 - open
   [genomes.jbrowse.org/protein-browser/?gene=MET&ref=9606&structure=3bux](https://genomes.jbrowse.org/protein-browser/?gene=MET&ref=9606&structure=3bux)
   and click **Open in JBrowse ↗**
-- pick **Assembly** in the protein view's menu, then the entry for assembly 5,
-  marked dimeric. 3BUX opens on its first assembly, the MET stretch alone;
-  assembly 5 adds CBL
+- pick **Assembly →** the entry for assembly 5, marked dimeric, in the protein
+  view's menu. 3BUX opens on its first assembly, the MET stretch alone; assembly
+  5 adds CBL
 - close the MET orthologs view with the × on its title bar, and the ClinVar and
   AlphaMissense tracks with the × on each track's label
 - type
@@ -105,9 +105,8 @@ structure until they face you; they lie in a groove on CBL.
 
 ## Find the cause at the splice site
 
-The first two bases of an intron are almost always GT, and the splicing
-machinery reads them to find the end of the exon. To look for a change there in
-the DNA reads, copy the view to the end of exon 14:
+The first two bases of an intron are almost always GT. To look for a change
+there in the DNA reads, copy the view to the end of exon 14:
 
 - pick **View options → Copy view** in the view's menu; the copy opens under the
   first view, so scroll down to it and close its RNA-seq tracks
@@ -116,12 +115,8 @@ the DNA reads, copy the view to the end of exon 14:
 
 <Figure src="/img/protein/met_ex14.png" caption="MET exons 13 to 15 with NCI-H596 DNA and RNA-seq reads and EBC-1 RNA-seq reads (A), the view copied to the end of exon 14 (B), and 3BUX with the exon 14 highlight on the MET stretch CBL binds (C)." />
 
-In panel A, the NCI-H596 arcs join exon 13 to exon 15, over a dip in coverage
-across exon 14, while the EBC-1 arcs join exon 13 to exon 14 and exon 14 to
-exon 15. In panel B, every NCI-H596 read has T where the reference has the G of
-the intron's GT. Without exon 14 the receptor lacks tyrosine 1003, the residue
-CBL binds in panel C, so CBL marks less of the receptor for degradation
-([Kong-Beltran et al. 2006](https://doi.org/10.1158/0008-5472.CAN-05-2749)).
+In panel A, an arc that joins exon 13 to exon 15 marks the skip. In panel B, the
+sorted column holds the base at the first intron position.
 
 ## Run the same steps on your own reads
 
@@ -168,6 +163,7 @@ bash build_metex14.sh
 ## See also
 
 - [](/docs/tutorials/protein_variants_sickle_cell)
+- [](/docs/tutorials/protein_variants_dog_myelopathy)
 - [](/docs/tutorials/protein_variants_kras)
 - [](/docs/tutorials/genomes_proteins)
 - [](/docs/user_guides/highlights)

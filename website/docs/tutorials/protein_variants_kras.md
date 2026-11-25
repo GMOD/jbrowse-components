@@ -11,11 +11,13 @@ tutorial_subcategory: Variants on protein structures
 ---
 
 _KRAS_ encodes a small G protein that switches growth signalling on while it
-holds GTP. In tumours its missense mutations cluster at a few codons: glycine
-12, glycine 13 and glutamine 61. A change at any of them keeps the protein in
-its GTP-bound, active state. The drug sotorasib binds KRAS G12C covalently at
-the mutant cysteine. We open the hotspots beside the crystal structure of that
-complex and read which of the protein's conserved sites each one falls in. We:
+holds GTP. In tumors its missense mutations cluster at a few codons: glycine 12,
+glycine 13 and glutamine 61. A change at any of them keeps the protein in its
+GTP-bound, active state. The drug sotorasib binds KRAS G12C covalently at the
+mutant cysteine
+([Canon et al. 2019](https://doi.org/10.1038/s41586-019-1694-1)). We open the
+hotspots beside the crystal structure of that complex and read which of the
+protein's conserved sites each one falls in. We:
 
 - open _KRAS_ in the protein browser with structure 6OIM, and pin the human row
   of the ortholog alignment
@@ -74,13 +76,8 @@ label the two hotspots there:
 
 <Figure src="/img/protein/kras_codon_hover.png" caption="KRAS at codons 12 and 13 with ClinVar, the ortholog alignment pinned to its human row, and 6OIM. The hovered codon, the alignment column and Cys12 mark one position." />
 
-Every row of the alignment has glycine at 12 and 13. The other columns in the
-window are columns of dots too, so across these vertebrate orthologs the start
-of KRAS barely varies.
-
-ClinVar has records of several base changes at each of codons 12 and 13. Click a
-box to open its record, which names the protein change, its classification and
-the conditions submitters reported.
+Click a box in the ClinVar track to open its record, which names the protein
+change, its classification and the conditions submitters reported.
 
 ## Color the three views by the conserved sites
 
@@ -99,13 +96,12 @@ takes on HBB:
 
 <Figure src="/img/protein/kras_domains_three_views.png" caption="KRAS in three linked views, colored by the alignment's domains and sites: the genome's domain track, the alignment's rows and the 6OIM cartoon, with each site's side chains as sticks." />
 
-Codon 12 sits inside three of NCBI's sites, the G1 box (the P-loop), the
-GTP/Mg2+ binding site and the putative GDI interaction site, and codon 13 inside
-the first two. Codon 61 sits outside all three, in the Switch II region.
+The header's **From the alignment** rows list the sites each codon falls in.
 
 ## Run the same steps on your own gene
 
-- the same steps work on any gene the protein browser opens
+On any gene the protein browser opens:
+
 - add `residue=N` to the link to open on the seed alignment of the Pfam family
   the residue falls in, distant relatives from many species, in place of the
   gene's orthologs
