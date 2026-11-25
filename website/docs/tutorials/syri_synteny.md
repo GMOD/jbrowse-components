@@ -16,12 +16,12 @@ inversion of more than a megabase on the short arm of chromosome 4, first seen
 under the microscope and later confirmed by assembling Landsberg.
 [SyRI](https://github.com/schneebergerlab/syri) sorts a whole-genome alignment
 into syntenic, inverted, translocated and duplicated regions. We find the
-inversion again with it, then compare four more accessions. We:
+inversion again with it, then compare the other accessions. We:
 
 - run SyRI on each aligned pair of accessions, and turn its output into a
   JBrowse config with [syri2jbrowse](https://github.com/cmdcolin/syri2jbrowse)
 - color the ribbons by SyRI type in a linear synteny view of two accessions
-- stack all six accessions in one linear synteny view, as
+- stack the accessions in one linear synteny view, as
   [plotsr](https://github.com/schneebergerlab/plotsr) does
 - draw the accessions as lanes under Columbia, beside a row of SyRI regions per
   accession
@@ -63,7 +63,9 @@ pip install git+https://github.com/cmdcolin/syri2jbrowse
 
 TAIR10 for Columbia, and the chromosome-level assemblies of five more accessions
 from [Jiao and Schneeberger 2020](https://doi.org/10.1038/s41467-020-14779-y).
-The [build script](#reproduce-it-end-to-end) fetches them all.
+The sessions below read local files the [build script](#reproduce-it-end-to-end)
+writes from these, so run it first, or follow the same commands on genomes of
+your own.
 
 | What it is             | File                                                                                                                                                |
 | ---------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -119,8 +121,8 @@ syri2jbrowse --genomes genomes.txt -o . \
   --pair Col-0 Kyo Col-0_Kyo.syri.out --pair Col-0 Sha Col-0_Sha.syri.out
 ```
 
-syri2jbrowse writes `config.json` with one assembly per accession, read from a
-`.chrom.sizes` beside it:
+syri2jbrowse writes `config.json` with one assembly per accession and two
+tracks. Each assembly reads a `.chrom.sizes` beside it:
 
 ```json addassembly
 {
@@ -129,9 +131,9 @@ syri2jbrowse writes `config.json` with one assembly per accession, read from a
 }
 ```
 
-and two tracks. The first holds every region as a PAF record whose `syri` tag is
-its type and `color` tag plotsr's color for it. `attributeColumns` offers both
-on the palette button, and the `MultiWaySyntenyDisplay` entry sets up the
+The first track holds every region as a PAF record whose `syri` tag is its type
+and `color` tag plotsr's color for it. `attributeColumns` offers both on the
+palette button, and the `MultiWaySyntenyDisplay` entry sets up the
 [lanes](#every-accession-in-columbia-coordinates):
 
 ```json addtrack
@@ -165,9 +167,9 @@ on the palette button, and the `MultiWaySyntenyDisplay` entry sets up the
 }
 ```
 
-The second places each accession's regions on Col-0, a BED row per region whose
-`name` is its type and whose `query` column names the accession. `rows` gives
-each accession a row, `encoding.color` maps the type to plotsr's colors in
+The second track places each accession's regions on Col-0, a BED row per region
+whose `name` is its type and whose `query` column names the accession. `rows`
+gives each accession a row, `encoding.color` maps the type to plotsr's colors in
 plotsr's order, and `disableGeneHeuristic` keeps the lanes from drawing it as
 Col-0's genes:
 
@@ -257,8 +259,8 @@ Open the first 6 Mb of chromosome 4 in both accessions and pick **syri** under
 ```
 
 The thin ribbons leaving the frame end on another chromosome, which the label at
-the frame's edge names. plotsr paints `INVTR` as `TRANS` and `INVDP` as `DUP`,
-so a key row names every type on screen in its color.
+the frame's edge names. The legend lists `INVTR` and `INVDP` separately but
+draws them in the `TRANS` and `DUP` colors, as plotsr does.
 
 <Figure caption="Chromosome 4 in Col-0 above and Ler below, SyRI regions colored by type. The crossed ribbon is the inversion." src="/img/syri/col_ler_chr4.png" />
 
@@ -266,9 +268,9 @@ so a key row names every type on screen in its color.
 
 The config opens on every accession stacked, each band drawing the SyRI run
 between the two genomes it joins. Like plotsr, `filter` hides regions under 10
-kb, though plotsr keeps a short syntenic region and the filter cannot single one
-out. Regions joining two chromosomes, which plotsr hides unless given `--itx`,
-stay as the long ribbons:
+kb; the `length` filter also hides short syntenic regions, which plotsr keeps.
+Regions joining two chromosomes, which plotsr hides unless given `--itx`, stay
+as the long ribbons:
 
 ```json session config=test_data/syri/config.json
 {
@@ -350,18 +352,8 @@ band between two lanes from the run between those two accessions.
 
 The
 [Arabidopsis pangenome page](https://genomes.jbrowse.org/pangenomes/arabidopsis/)
-has SyRI regions for the 1001 Genomes Plus accessions on TAIR10. Type a gene or
-region, and the page maps the window with one row per structural form: a group
-of accessions with the same alleles at every structural-variant site in the
-window, called with `minigraph --call`.
-
-- **Open in JBrowse**, under the map, opens the window with a row of SyRI
-  regions per accession beneath the graph
-- **Every accession as SyRI lanes**, under the page title, opens the same rows
-  over the chromosome 4 inversion
-
-The rows are the **SyRI regions on TAIR10, one row per accession** track of the
-hosted
+has SyRI regions for the 1001 Genomes Plus accessions on TAIR10, as the **SyRI
+regions on TAIR10, one row per accession** track of the hosted
 [Arabidopsis pangenome config](https://jbrowse.org/demos/arabidopsis_pangenome/config.json):
 
 <Figure caption="TAIR10 chromosome 4 with a row of SyRI regions per 1001 Genomes Plus accession." src="/img/syri/tair10_1001g.png" />

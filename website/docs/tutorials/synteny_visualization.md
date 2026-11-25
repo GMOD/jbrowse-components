@@ -13,9 +13,7 @@ Two assemblies of one species share most of their sequence, and an alignment
 between them shows where the order breaks: an inversion, a moved block, a gene
 only one strain has. We align three _Helicobacter pylori_ strains (26695, CHC155
 and J99) with minimap2, one pair at a time, and the steps work the same on any
-pair of assemblies of your own. The other way to build a stack of genomes is to
-align every genome against every other in one run, which
-[](/docs/tutorials/allvsall_synteny) follows through five _E. coli_ strains. We:
+pair of assemblies of your own. We:
 
 - load the assemblies, and the minimap2 PAF as a synteny track, indexed as PIF
   when it is large
@@ -26,25 +24,25 @@ align every genome against every other in one run, which
 
 ## Prerequisites
 
-- a JBrowse instance ([web](/docs/quickstart_web) or
-  [desktop](/docs/quickstart_desktop) quickstart); the steps are identical on
-  both, and Desktop reads the alignments as local files
+- A running JBrowse instance (the [web quickstart](/docs/quickstart_web) or the
+  [desktop quickstart](/docs/quickstart_desktop))
 - [minimap2](https://github.com/lh3/minimap2)
+- htslib (`bgzip`, `tabix`), which `jbrowse make-pif` calls
 - `python3`, which the build script uses to copy the hub configs
 - `node`, for the [JBrowse CLI](/docs/cli)
 
-<!-- BEGIN GENERATED TUTORIAL_INSTALL minimap2,node,jbrowse-cli -->
+<!-- BEGIN GENERATED TUTORIAL_INSTALL minimap2,htslib,node,jbrowse-cli -->
 
 ```bash
 # Debian/Ubuntu
-sudo apt install minimap2 nodejs
+sudo apt install minimap2 tabix nodejs
 # or conda, which has every tool above
-conda install -c bioconda -c conda-forge minimap2 nodejs
+conda install -c bioconda -c conda-forge minimap2 htslib nodejs
 # any platform
 npm install -g @jbrowse/cli@next
 ```
 
-<!-- END GENERATED TUTORIAL_INSTALL minimap2,node,jbrowse-cli -->
+<!-- END GENERATED TUTORIAL_INSTALL minimap2,htslib,node,jbrowse-cli -->
 
 ## The data
 
@@ -56,9 +54,10 @@ the sequence minimap2 aligns and a config holding the assembly and its NCBI
 RefSeq genes.
 
 The tracks below read local files that the
-[build script](#reproduce-it-end-to-end) writes from these, so run it first, or
-run _Aligning the assemblies_ on any pair of assemblies of your own. The script
-fetches everything itself.
+[build script](#reproduce-it-end-to-end) writes from these, so run it first (it
+fetches everything itself), or follow
+[Align the assemblies](#align-the-assemblies) on any pair of assemblies of your
+own.
 
 | What it is                      | File                                                                                                                |
 | ------------------------------- | ------------------------------------------------------------------------------------------------------------------- |
@@ -193,10 +192,7 @@ minimap2 -c -x asm20 --eqx hpylori_chc155.fa.gz hpylori_26695.fa.gz > 26695_vs_c
 minimap2 -c -x asm20 --eqx hpylori_j99.fa.gz hpylori_chc155.fa.gz > chc155_vs_j99.paf
 ```
 
-With one file per pair, the pairs you aligned fix the row order. A single
-all-vs-all PAF lets every band read the same file in any row order, after
-renaming each genome's sequences to PanSN names
-([](/docs/tutorials/allvsall_synteny)).
+With one file per pair, the pairs you aligned fix the row order.
 
 Take the third assembly from its hub and add both alignments the same way as
 above, then:
@@ -226,8 +222,7 @@ NZ_CP011330v1:1,238,100-1,258,100
 
 ## Color genes by ortholog
 
-NCBI reuses standardized gene symbols across bacterial strains, so the `gene`
-attribute works as an ortholog id. In
+Most genes here share a `gene` attribute, so it works as an ortholog id. In
 [grammar-of-graphics](/docs/config_guides/mark_display) terms, a track's
 `encoding.color` is a color scale, a `field` mapped to colors. On each gene
 track's menu:
@@ -237,8 +232,7 @@ track's menu:
   applies live
 
 An ortholog is then one color down all the rows, and a gene with no `gene` value
-(most genes here have only a locus tag) stays grey. Inside the inversion, _rsmA_
-and _rlmN_ are in swapped order in J99.
+(most genes here have only a locus tag) stays grey.
 
 <Figure caption="Left, the Color by attribute dialog on the first gene track. Right, the strains after applying it, a shared symbol one color down all of them." src="/img/sv_synteny/color_by_attribute_steps.png" links="Dialog=sv_synteny/color_by_attribute,Result=sv_synteny/ortholog_colors" />
 
