@@ -112,3 +112,41 @@ test('the CLI tab names a styled track it cannot rebuild and drops the styled cl
   expect(html).toContain('is not among them')
   expect(html).not.toContain('styled</a> as in the figure')
 })
+
+test('a track the graph form does not build goes in as pasted JSON', () => {
+  const recipe = buildRecipe(
+    `https://jbrowse.org/code/jb2/main/?config=test_data/graphgenomeview/pangenome_nonhuman.json&session=spec-${encodeURIComponent(
+      JSON.stringify({
+        sessionTracks: [
+          {
+            type: 'FeatureTrack',
+            trackId: 'carriage',
+            name: 'Strains per segment',
+            assemblyNames: ['bosTau9'],
+            adapter: { type: 'RgfaTabixAdapter', uri: 'graph.segs.bed.gz' },
+          },
+        ],
+        views: [
+          {
+            type: 'LinearGenomeView',
+            assembly: 'bosTau9',
+            tracks: [
+              'bovine_minigraph_bubbles',
+              'bovine_bubble_score',
+              'carriage',
+            ],
+          },
+        ],
+      }),
+    )}`,
+  )
+  const titleOf = (name: string) =>
+    recipe?.steps.find(step => step.example?.includes(name))?.title
+  expect(titleOf('pangenome bubbles')).toContain(
+    'set **File type** to **Minigraph bubbles',
+  )
+  for (const name of ['variability', 'Strains per segment']) {
+    expect(titleOf(name)).not.toContain('Add pangenome graph track')
+    expect(titleOf(name)).toContain('Add track from pasted JSON')
+  }
+})

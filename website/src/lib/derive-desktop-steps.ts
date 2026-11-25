@@ -114,27 +114,39 @@ const GRAPH_ADAPTERS: Record<
   string,
   {
     choice: string
+    trackType: string
     locationSlot: string
     suffix: (adapter: Record<string, unknown>) => string
   }
 > = {
   RgfaTabixAdapter: {
     choice: 'Indexed GFA (gfa-to-tabix .segs.bed.gz or .graph.bed.gz)',
+    trackType: 'GraphTrack',
     locationSlot: 'segmentsLocation',
     suffix: adapter =>
       adapter.format === 2 ? '.graph.bed.gz' : '.segs.bed.gz',
   },
   MinigraphBubbleAdapter: {
     choice: 'Minigraph bubbles (tabix BED)',
+    trackType: 'FeatureTrack',
     locationSlot: 'bubblesLocation',
     suffix: () => '',
   },
 }
 
-// The File type the pangenome graph form offers for an adapter, when it offers
-// one
-export function graphFormChoice(adapterType: string) {
-  return GRAPH_ADAPTERS[adapterType]?.choice
+// The pangenome graph form builds one track type per adapter, so a track of
+// any other type over it goes in as pasted JSON
+function graphForm(trackType: unknown, adapterType: unknown) {
+  const form = GRAPH_ADAPTERS[String(adapterType)]
+  return form?.trackType === trackType ? form : undefined
+}
+
+export function isGraphAdapter(adapterType: string) {
+  return adapterType in GRAPH_ADAPTERS
+}
+
+export function graphFormChoice(trackType: string, adapterType: string) {
+  return graphForm(trackType, adapterType)?.choice
 }
 
 function uris(value: unknown, key?: string): string[] {
@@ -197,7 +209,7 @@ function graphFormNodes(
   config: Record<string, unknown>,
 ): RootContent[] | undefined {
   const adapter = asRecord(config.adapter)
-  const form = GRAPH_ADAPTERS[String(adapter.type)]
+  const form = graphForm(config.type, adapter.type)
   const assembly = (config.assemblyNames as unknown[] | undefined)?.[0]
   if (!form || config.displays || typeof assembly !== 'string') {
     return undefined

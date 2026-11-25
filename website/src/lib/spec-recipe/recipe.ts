@@ -3,6 +3,7 @@ import {
   DESKTOP_UI_LABELS,
   GRAPH_FORM_LABELS,
   graphFormChoice,
+  isGraphAdapter,
 } from '../derive-desktop-steps.ts'
 import {
   defaultDisplay,
@@ -296,13 +297,20 @@ function addTrackTitle(
   viaTrackSelector: boolean | undefined,
   repeat: boolean | undefined,
 ) {
-  const needs =
+  const graphChoice = info
+    ? graphFormChoice(info.type, info.adapterType)
+    : undefined
+  const pasted =
     info?.adapterType === 'FromConfigAdapter'
-      ? ` Its features sit inline in its config: choose **${DESKTOP_UI_LABELS.pasteJson}** and paste the track.`
-      : kind
-        ? ` Needs ${kind}.`
-        : ''
-  const graphChoice = info ? graphFormChoice(info.adapterType) : undefined
+      ? 'Its features sit inline in its config'
+      : info && isGraphAdapter(info.adapterType) && !graphChoice
+        ? `The pangenome graph form makes another track type from ${kind ?? 'this file'}`
+        : undefined
+  const needs = pasted
+    ? ` ${pasted}: choose **${DESKTOP_UI_LABELS.pasteJson}** and paste the track.`
+    : kind
+      ? ` Needs ${kind}.`
+      : ''
   return info?.type === 'ReferenceSequenceTrack'
     ? `Show the sequence: check **${info.name}** in the track selector.`
     : band
@@ -373,7 +381,7 @@ function trackStep(
   const name = info ? `“${info.name}”` : `the “${trackId}” track`
   const notes = [
     ...(info && fromPlugin(info)
-      ? [graphFormChoice(info.adapterType) ? GRAPH_PLUGIN_NOTE : PLUGIN_NOTE]
+      ? [isGraphAdapter(info.adapterType) ? GRAPH_PLUGIN_NOTE : PLUGIN_NOTE]
       : []),
     ...(ownUnmapped.length
       ? [
