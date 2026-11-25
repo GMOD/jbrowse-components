@@ -10,8 +10,8 @@ tutorial_category: Automation
 ---
 
 An AI agent, given four requests in plain words, aligns two fruit fly species
-that have no published alignment and inspects the result in JBrowse Desktop.
-Typed one at a time, the requests ask the agent to:
+that have no published alignment and inspects the result in JBrowse Desktop. We
+type the requests one at a time and ask the agent to:
 
 - align the two genomes with minimap2 and open them side by side, genes and all
 - add a dotplot of the pair, restricted to the chromosome arms
@@ -26,20 +26,21 @@ Typed one at a time, the requests ask the agent to:
 - an MCP client that can run shell commands, for the alignment step: Claude
   Code, or Claude Desktop, set up as in [](/docs/agents)
 - [minimap2](https://github.com/lh3/minimap2)
+- htslib (`bgzip`, `tabix`), which `jbrowse make-pif` calls
 - `node`, for the [JBrowse CLI](/docs/cli)
 
-<!-- BEGIN GENERATED TUTORIAL_INSTALL minimap2,node,jbrowse-cli -->
+<!-- BEGIN GENERATED TUTORIAL_INSTALL minimap2,htslib,node,jbrowse-cli -->
 
 ```bash
 # Debian/Ubuntu
-sudo apt install minimap2 nodejs
+sudo apt install minimap2 tabix nodejs
 # or conda, which has every tool above
-conda install -c bioconda -c conda-forge minimap2 nodejs
+conda install -c bioconda -c conda-forge minimap2 htslib nodejs
 # any platform
 npm install -g @jbrowse/cli@next
 ```
 
-<!-- END GENERATED TUTORIAL_INSTALL minimap2,node,jbrowse-cli -->
+<!-- END GENERATED TUTORIAL_INSTALL minimap2,htslib,node,jbrowse-cli -->
 
 ## The data
 
@@ -87,9 +88,9 @@ minimap2 -t 8 -cx asm20 --cs mau.fa.gz sim.fa.gz > sim_vs_mau.paf
 
 The alignment takes several minutes, so the request asks the agent to run it in
 the background and let it finish before opening anything. Otherwise a tool call
-times out, after two minutes for `run_javascript`, and the agent reports a
-failure that did not happen. The agent then indexes the PAF, so the browser can
-read one region without parsing the whole file:
+times out and the agent reports a failure that did not happen. The agent then
+indexes the PAF, so the browser can read one region without parsing the whole
+file:
 
 <!-- from: scripts/build_fly_agent_synteny.sh -->
 
@@ -129,16 +130,19 @@ synteny band is empty.
 Add a dotplot of the same two assemblies underneath.
 ```
 
-Unrestricted, a few hundred unplaced scaffolds (not assigned to a chromosome)
-interleave both axes. Restricted to the chromosome arms, the plot shows one
-diagonal:
+Unrestricted, the unplaced scaffolds (not assigned to a chromosome) interleave
+both axes. Restricted to the chromosome arms, the plot shows one diagonal:
 
 ```text
 Restrict both dotplot axes to chr2L, chr2R, chr3L, chr3R, chr4 and chrX.
 ```
 
-Add one more request to color the dotplot by strand, so a reversed block is
-drawn blue and a forward one red.
+Then ask for the strand coloring, so a reversed block is drawn blue and a
+forward one red:
+
+```text
+Color the dotplot by strand.
+```
 
 <Figure caption="The alignment as a dotplot cut to the chromosome arms, colored by strand." src="/img/agent_synteny/dotplot_arms.png" />
 
@@ -174,11 +178,10 @@ END {
 }' sim_vs_mau.paf | sort
 ```
 
-The agent reports 2R and X with far more reverse-strand alignment than the other
-four arms, which are the control. Asked to group the reverse-strand blocks of 5
-kb or more, cutting a group wherever half a megabase passes with none, it names
-one region on 2R and two on X. Asking for these numbers before navigating lets
-you check the view against them.
+Asked for per-arm reverse-strand totals, the agent reports them. Asked to group
+the reverse-strand blocks of 5 kb or more, cutting a group wherever half a
+megabase passes with none, it names the regions on 2R and X. Asking for these
+numbers before navigating lets you check the view against them.
 
 ## Ask the agent to open the 2R and X regions
 
@@ -194,7 +197,7 @@ at `chr2R:500,000-3,800,000`.
 
 <Figure caption="The 2R region, the alignment alone. Reverse-strand blocks are drawn blue and cross the band." src="/img/agent_synteny/inversion_2r.png" />
 
-Then ask for the first of the two X regions, `chrX:8,100,000-8,950,000` over
+Then ask for the first X region, `chrX:8,100,000-8,950,000` over
 `chrX:8,330,000-9,180,000`, where the reverse blocks are fewer and longer:
 
 <Figure caption="The X region, the alignment alone. Two reverse blocks cross in the middle." src="/img/agent_synteny/inversion_x.png" />

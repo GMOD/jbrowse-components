@@ -67,17 +67,15 @@ across a gap. Insertions and deletions inside each block are see-through gaps;
 
 <Figure src="/img/genomes_synteny/ribbon_settings.png" links="As it opens=genomes_synteny/ribbons_default,Curved=genomes_synteny/ribbons_curved" caption="The TNNT3 comparison before and after Curved lines, with the menu open on top." />
 
-## Color the TNNT3 rearrangement by strand
+## Color a rearrangement by strand
 
-_TNNT3_ is the locus of Fig 5C in Aganezov et al. (2022). Against GRCh38 the
-region reads as an inversion plus a deletion. The palette button in the view
-header sets the view's `encoding.color`, a color scale that maps a field to
-colors. Pick **Strand** there, and the segment that moved is the one ribbon in
-the second color.
+The palette button in the view header sets the view's `encoding.color`, a color
+scale that maps a field to colors. Pick **Strand** there, and the segment that
+moved is the one ribbon in the second color.
 
 <Figure caption="hg38 (top) against hs1 (bottom) at TNNT3, colored by strand, with LINC01150 shaded in each." src="/img/synteny_hg38_hs1_tnnt3.png" />
 
-## Launch hg38 against chimp at an FTO intron
+## Launch a synteny view against chimp
 
 Launching a synteny view from a chain block works from any track under
 **Pairwise alignments** → **liftOver**. We'll repeat it against chimp and add
@@ -92,15 +90,11 @@ tracks to the chimp panel:
 
 <Figure caption="Launching from the hg38-to-panTro6 liftOver track: right-click a chain block, confirm the framing, launch, then add the chimp panel's tracks." src="/img/genomes_synteny/launch_sequence.png" />
 
-The one gap in the ribbon is a hole that lines up with the L1HS element in
-hg38's RepeatMasker track, and the chimp panel's has no L1HS. The rest of the
-panTro6 hub loads from **File → Open connection...** as a JBrowse 2 hub at
-`https://jbrowse.org/ucsc/panTro6/config.json`.
+The rest of the panTro6 hub loads from **File → Open connection...** as a
+JBrowse 2 hub at `https://jbrowse.org/ucsc/panTro6/config.json`.
 
 You can launch from a chain or PAF of your own the same way once it is added as
-a synteny track: [HG002 haplotypes](/docs/tutorials/hg002_haplotypes) loads a
-chain, and [Synteny (pairwise minimap2)](/docs/tutorials/synteny_visualization)
-aligns two genomes and loads the PAF.
+a synteny track.
 
 To start from a gene, the site's
 [ortholog search](https://genomes.jbrowse.org/orthologs) lists a symbol's NCBI
@@ -138,10 +132,8 @@ many to read at once. In its track menu:
 
 [The multi-way synteny display guide](/docs/user_guides/multiway_synteny_display)
 covers the lane labels, `[rev]`, the ribbons and the lane menus.
-[Synteny (liftOver lanes, vertebrates)](/docs/tutorials/hg38_vertebrates_synteny)
-shows how to build the same kind of track from chains you choose.
 
-## Choose which mouse strains become lanes at Nnt
+## Choose lanes to compare mouse strains
 
 Choosing lanes also compares strains within one species. mm39 is C57BL/6J, the
 strain that lost _Nnt_ exons 7 to 11 (Freeman et al. 2006), and its multi-way
@@ -158,7 +150,7 @@ lanes at that gene:
 
 <Figure src="/img/genomes_synteny/mouse_strains_nnt.png" caption="mm39 at Nnt over the Mus assemblies the track holds, the C57BL/6J T2T assembly first." />
 
-## Compare one person's two haplotypes at 17q21.31
+## Put one person's two haplotypes side by side
 
 Dragging a lane's label moves it up or down the stack. hg38's multi-way track
 holds both haplotypes of the H9 T2T assembly, so a stack can put one person's
@@ -180,6 +172,8 @@ inversion (Stefansson et al. 2005), and H9 has one of each. On hg38 at
 
 - [](/docs/tutorials/genomes_basics)
 - [](/docs/tutorials/synteny_visualization)
+- [](/docs/tutorials/hg38_vertebrates_synteny)
+- [](/docs/tutorials/hg002_haplotypes)
 - [](/docs/tutorials/multiway_synteny_grape_peach_cacao)
 - [](/docs/tutorials/allvsall_synteny)
 - [](/docs/tutorials/pangenome_mouse)
@@ -190,8 +184,6 @@ inversion (Stefansson et al. 2005), and H9 has one of each. On hg38 at
 
 ## Citations
 
-- Aganezov et al. (2022).
-  [A complete reference genome improves analysis of human genetic variation](https://doi.org/10.1126/science.abl3533)
 - Freeman et al. (2006).
   [Deletion of nicotinamide nucleotide transhydrogenase: a new quantitive trait locus accounting for glucose intolerance in C57BL/6J mice](https://doi.org/10.2337/db06-0358)
 - Stefansson et al. (2005).

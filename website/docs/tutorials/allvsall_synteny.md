@@ -10,11 +10,9 @@ tutorial_subcategory: Whole-genome alignments
 Strains of one bacterial species share most of their chromosome and differ by
 gene islands one strain picked up and by stretches that flipped. One minimap2
 run aligns every strain against every other and writes a single all-vs-all PAF,
-so the strains can be stacked in any order from one file. For a few genomes in a
-fixed order, [](/docs/tutorials/synteny_visualization) aligns each pair of
-adjacent rows separately and keeps the original sequence names. With five _E.
-coli_ strains, at Sakai's Shiga-toxin prophage, the phenylacetate (paa) operon
-some strains lack, and IAI39's inversions, we:
+so the strains can be stacked in any order from one file. With five _E. coli_
+strains, at Sakai's Shiga-toxin prophage, the phenylacetate (paa) operon some
+strains lack, and IAI39's inversions, we:
 
 - align the strains with `minimap2 -X` and load the all-vs-all PAF as a synteny
   track with `MultiGenomePAFAdapter`
@@ -131,8 +129,8 @@ An assembly whose refNames still have the PanSN prefix is drawn empty. The
 
 ## Load the PAF with MultiGenomePAFAdapter
 
-List every assembly the file covers in `assemblyNames`; the adapter keeps only
-the records whose PanSN prefixes match the pair of rows each band joins:
+List every assembly the file covers in `assemblyNames`; the adapter reads the
+records whose PanSN prefixes match the two rows a band joins:
 
 ```json addtrack
 {
@@ -286,8 +284,8 @@ graph beside its pggb one.
 
 <Figure caption="Above, K-12 against every other sample in the file, grouped by mate assembly. Below, the same window as a graph." src="/img/multiway_synteny/ecoli_one_vs_all.png" />
 
-At whole-chromosome zoom, the same sections also fit on the K-12 row of the
-strain stack:
+To read one strain against the rest in the stack, at whole-chromosome zoom, put
+the sections on the K-12 row:
 
 - List IAI39 second in the session's `views`.
 - Add `ecoli_ava` to the K-12 row from that row's track selector.
@@ -350,13 +348,13 @@ applies edits live.
 
 <Figure caption="K-12 against each other strain, one row per strain, each alignment a line at its identity." src="/img/multiway_synteny/ecoli_identity_rows.png" />
 
-### Launch a stacked view at one locus
+## Launch a stacked view at one locus
 
 Drag-select a region on the scale bar and pick **Launch → Linear synteny
 view...**. The dialog lists every assembly aligning to that region as a panel,
 top to bottom, with arrows to reorder them and a checkbox to drop one; **Replace
-current view** or **Open in new view** launches the stack. Ribbons are drawn
-between neighbouring rows only.
+current view** or **Open in new view** launches the stack. A ribbon joins two
+neighbouring rows.
 
 Right-clicking a single alignment offers three routes under **Launch**:
 

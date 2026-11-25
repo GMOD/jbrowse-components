@@ -12,14 +12,14 @@ tutorial_subcategory: Whole-genome alignments
 
 We lay the human and mouse chromosomes around one circle and draw UCSC's
 hg38-to-mm39 liftOver chain as ribbons between them, so one picture shows where
-the autosomes have been shuffled and where the X has not. We:
+the autosomes have been shuffled. We:
 
-- declare both assemblies and load the chain as an indexed alignment track
+- set up both assemblies and load the chain as an indexed alignment track
 - open both on a circular view, the mouse arc ordered to follow the human one
 - hover a mouse chromosome to list the human chromosomes aligned to it, and
   color the ribbons by strand
 - add a gene density ring over both genomes
-- check the X chromosome as the control, and hover a ribbon for its span in each
+- narrow the circle to three chromosomes and hover a ribbon for its span in each
   genome
 
 ## Prerequisites
@@ -56,8 +56,8 @@ density bigWig the build script makes of them.
 
 You don't need these files to follow the page: the track configs below read the
 hosted results. The [build script](#reproduce-it-end-to-end) fetches them to
-rebuild those results. The last section, Your own pair of genomes, lists what a
-pair of your own needs.
+rebuild those results. [Reproduce it end to end](#reproduce-it-end-to-end)
+closes with what a pair of your own needs.
 
 | What it is                 | File                                                                               |
 | -------------------------- | ---------------------------------------------------------------------------------- |
@@ -73,10 +73,10 @@ pair of your own needs.
 
 </details>
 
-## Declare the human and mouse assemblies
+## Set up the human and mouse assemblies
 
 The ribbons join chromosomes of the two genomes, so the circle needs both
-genomes declared. Each alias table is the hub's with the build's genome-prefixed
+genomes set up. Each alias table is the hub's with the build's genome-prefixed
 names added, so `1`, `chr1` and `hg38.chr1` in a track all resolve to `chr1`:
 
 ```json addassembly
@@ -103,10 +103,8 @@ names added, so `1`, `chr1` and `hg38.chr1` in a track all resolve to `chr1`:
 ## Load the chain as an indexed alignment
 
 jbrowse.org keeps every liftOver chain UCSC publishes as an indexed PAF, one row
-per chain, the same files the
-[vertebrates tutorial](/docs/tutorials/hg38_vertebrates_synteny) stacks under a
-locus. The track names that file and its two assemblies, query first. A chain's
-query is the genome it lifts to, so for hg38ToMm39 that is mouse:
+per chain. The track names that file and its two assemblies, query first. A
+chain's query is the genome it lifts to, so for hg38ToMm39 that is mouse:
 
 ```json addtrack
 {
@@ -208,10 +206,8 @@ the same labels. To read the circle:
 
 In native contig order, a mouse chromosome sits wherever its number falls, so
 ribbons cross the middle of the circle to reach their human partners. On open,
-the circle reorders the mouse arc as the
-[linear synteny view](/docs/user_guides/linear_synteny_view) and the
-[dotplot](/docs/user_guides/dotplot_view) do, placing each mouse chromosome next
-to the human chromosome it shares the most aligned bases with.
+the circle reorders the mouse arc, placing each mouse chromosome next to the
+human chromosome it shares the most aligned bases with.
 
 - The circle draws the mouse arc mirrored, so a mouse chromosome running the
   same way as its human partner faces it and their ribbons run straight across.
@@ -269,6 +265,8 @@ both genomes' densities go into one bigWig.
 
 ```bash
 # one chrom.sizes and one GFF3 for the pair, every contig prefixed by genome
+: > hg38ToMm39.chrom.sizes
+: > hg38ToMm39.genes.gff
 for g in hg38 mm39; do
   awk -v g="$g" -F'\t' -v OFS='\t' '{print g "." $1, $2}' "$g.chrom.sizes" >> hg38ToMm39.chrom.sizes
   gzip -dc "$g.genes.gff.gz" | awk -v g="$g" -F'\t' -v OFS='\t' '/^#/ {next} {$1 = g "." $1; print}' >> hg38ToMm39.genes.gff
@@ -364,26 +362,21 @@ before the synteny track:
 
 <Figure src="/img/circular_synteny/rings.png" caption="The human and mouse circle with a gene density ring inside the ideogram, dark where a stretch is gene-rich." />
 
-## Check the X chromosome as the control
+## Narrow the circle and hover a ribbon
 
-The X chromosome has stayed whole across the two lineages, so at the 100 kb cut
-the X ribbons should stay between human and mouse X. Open the ring session above
-with `displayedRegionNames` cut to `["chr1", "chr2", "chrX"]` to read the
-control.
+Open the ring session above with `displayedRegionNames` cut to
+`["chr1", "chr2", "chrX"]`, so each ribbon between the three human and three
+mouse arcs reads clearly.
 
 <Figure src="/img/circular_synteny/x_control.png" caption="Human chr1, chr2 and chrX against the same three mouse chromosomes, with a gene density ring. The X ribbons stay between the two X arcs." />
 
-Below the 100 kb **Min length** cut, the PIF holds short rows between human chrX
-and mouse autosomes, mostly a few hundred bases long, and lowering **Min
-length** brings them back.
-
-## Hover a ribbon for its span in each genome
-
-Hover the widest ribbon on the same three-chromosome circle, the X block that
-runs reverse between the two genomes and so twists. A tooltip gives its span in
-each genome and its strand.
+Hover the widest ribbon, the X block that runs reverse between the two genomes
+and so twists. A tooltip gives its span in each genome and its strand.
 
 <Figure src="/img/circular_synteny/ribbon_hover.png" caption="The widest X ribbon hovered, filled grey and crossing itself because it is on the reverse strand. The tooltip names its span in each genome." />
+
+Below the 100 kb **Min length** cut, the PIF holds short rows between human chrX
+and mouse autosomes, and lowering **Min length** brings them back.
 
 ## Reproduce it end to end
 
@@ -430,9 +423,5 @@ and an alias per assembly as in
 
 - Kent et al. (2003).
   [Evolution's cauldron: duplication, deletion, and rearrangement in the mouse and human genomes](https://doi.org/10.1073/pnas.1932072100)
-- Ohno (1967).
-  [Sex Chromosomes and Sex-Linked Genes](https://doi.org/10.1007/978-3-642-88178-7),
-  the argument that the mammalian X chromosome's gene content is conserved
-  across species.
 - Krzywinski et al. (2009).
   [Circos: an information aesthetic for comparative genomics](https://doi.org/10.1101/gr.092759.109)
