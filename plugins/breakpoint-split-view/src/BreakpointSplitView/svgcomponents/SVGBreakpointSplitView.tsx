@@ -2,6 +2,7 @@ import { SvgClipRect } from '@jbrowse/core/svg/SvgExport'
 import { parsePhysicalWidth } from '@jbrowse/core/svg/figureSize'
 import { svgNodeId } from '@jbrowse/core/svg/svgId'
 import {
+  awaitSvgReady,
   awaitSvgRenders,
   awaitViewInitialized,
 } from '@jbrowse/core/svg/svgReady'
@@ -85,6 +86,14 @@ export async function renderToSvg(model: BSV, opts: ExportSvgOptions) {
       }),
     ),
   )
+  await awaitSvgReady({
+    get svgReady() {
+      return model.overlaySvgReady
+    },
+    get error() {
+      return model.overlayError
+    },
+  })
   // one message for the whole stack, not one per row
   if (opts.announceSkipped !== false) {
     notifySkippedSvgTracks(

@@ -2,6 +2,7 @@ import { lazy } from 'react'
 
 import { BaseViewModel } from '@jbrowse/core/pluggableElementTypes/models'
 import { exportViewSvg } from '@jbrowse/core/svg/exportViewSvg'
+import { computeSvgReady } from '@jbrowse/core/svg/svgReady'
 import { makeShowSubMenu } from '@jbrowse/core/ui/showSubMenu'
 import {
   avg,
@@ -14,6 +15,7 @@ import {
 import { fanOutStatus, makeFetchContext } from '@jbrowse/core/util/fetchContext'
 import { installClearHoverOnSurfaceMove } from '@jbrowse/core/util/installClearHoverOnSurfaceMove'
 import { installFetch } from '@jbrowse/core/util/installFetch'
+import { isDataCurrent } from '@jbrowse/core/util/isDataCurrent'
 import { viewLoading } from '@jbrowse/core/util/viewStatus'
 import {
   pendingLaunch,
@@ -66,6 +68,7 @@ import type {
   ConnectorRow,
   ExportSvgOptions,
   LayoutRecord,
+  OverlayFetchKey,
   OverlayLevel,
   OverlayHover,
   OverlayMatch,
@@ -155,6 +158,8 @@ export default function stateModelFactory(pluginManager: PluginManager) {
     .volatile<{
       width: number | undefined
       matchedTrackFeatures: Record<string, Feature[][]>
+      overlayLoadedKey: OverlayFetchKey | undefined
+      overlayError: unknown
       reloadCounter: number
       fetchStatus: StatusChannel
       hoveredOverlay: OverlayHover | undefined
@@ -171,6 +176,17 @@ export default function stateModelFactory(pluginManager: PluginManager) {
        * per panel
        */
       matchedTrackFeatures: {},
+      /**
+       * #volatile
+       * `overlayFetchKey` as it stood when `matchedTrackFeatures` was
+       * committed; dropped by `reload`
+       */
+      overlayLoadedKey: undefined,
+      /**
+       * #volatile
+       * the overlay fetch's failure, cleared when the next run starts
+       */
+      overlayError: undefined,
       /**
        * #volatile
        * The pure "go again" signal the shared fetch skeleton reads above every
@@ -396,6 +412,80 @@ export default function stateModelFactory(pluginManager: PluginManager) {
        */
       get fetchInert(): boolean {
         return this.fetchedTracks.length === 0
+      },
+
+      /**
+       * #getter
+       * The variant tracks the overlay fetch asks for now: a track whose
+       * banner has replaced its features is left out, which also drops any
+       * features left from before it went over its limit.
+       */
+      get overlayFetchTracks(): OverlayTrack[] {
+        return this.fetchedTracks.filter(
+          track => !track.displays[0]!.regionTooLarge,
+        )
+      },
+
+      /**
+       * #getter
+       * What the overlay fetch asks for now. The blocks are read only when a
+       * track remains, so with every track over its limit a pan does not spin
+       * the fetch.
+       */
+      get overlayFetchInputs() {
+        const tracks = this.overlayFetchTracks
+        return {
+          tracks,
+          regionsPerView: tracks.length
+            ? self.views.map(view => view.staticBlocks.contentBlocks)
+            : [],
+          jexlFilters: tracks.map(track =>
+            self.views.map(view =>
+              overlayJexlFilters(
+                view.getTrack(track.configuration.trackId)?.displays[0],
+              ),
+            ),
+          ),
+        }
+      },
+
+      /**
+       * #getter
+       * `overlayFetchInputs` as plain data, compared structurally against
+       * `overlayLoadedKey`
+       */
+      get overlayFetchKey(): OverlayFetchKey {
+        const { tracks, regionsPerView, jexlFilters } = this.overlayFetchInputs
+        return {
+          trackIds: tracks.map(track => track.configuration.trackId),
+          regionsPerView: regionsPerView.map(blocks =>
+            blocks.map(({ assemblyName, refName, start, end }) => ({
+              assemblyName,
+              refName,
+              start,
+              end,
+            })),
+          ),
+          jexlFilters: jexlFilters.map(rows => rows.map(f => [...f])),
+        }
+      },
+
+      /**
+       * #getter
+       * The overlay has nothing more to load: no track to fetch for, the
+       * fetch failed, or `matchedTrackFeatures` was committed for the current
+       * inputs. What an export awaits before drawing the overlay.
+       */
+      get overlaySvgReady() {
+        return computeSvgReady(
+          {
+            error: self.overlayError,
+            regionTooLarge: false,
+            extraTerminal: this.overlayFetchTracks.length === 0,
+            fetchCanceled: false,
+          },
+          () => isDataCurrent(self.overlayLoadedKey, this.overlayFetchKey),
+        )
       },
 
       /**
@@ -752,11 +842,31 @@ export default function stateModelFactory(pluginManager: PluginManager) {
       },
       /**
        * #action
+       * the overlay fetch's commit: the features and the key they were
+       * fetched for, in one transaction
+       */
+      commitOverlayFeatures(
+        obj: Record<string, Feature[][]>,
+        key: OverlayFetchKey,
+      ) {
+        self.matchedTrackFeatures = obj
+        self.overlayLoadedKey = key
+      },
+      /**
+       * #action
+       */
+      setOverlayError(error: unknown) {
+        self.overlayError = error
+      },
+      /**
+       * #action
        * Re-run the overlay-feature fetch with no input change — what the Retry
-       * on its failure notification calls.
+       * on its failure notification calls. Drops the loaded key, so an export
+       * started after it waits for the refetch.
        */
       reload() {
         self.reloadCounter += 1
+        self.overlayLoadedKey = undefined
       },
       /**
        * #action
@@ -860,44 +970,17 @@ export default function stateModelFactory(pluginManager: PluginManager) {
           // being measured is not this fetch's own gate, and `initialized` is
           // observable, so the body re-runs the moment it flips.
           gate: () => self.views.every(view => view.initialized),
-          prepare: () => {
-            if (self.fetchInert) {
-              return undefined
-            }
-            // Skipped per track, not for the whole view: where the banner has
-            // replaced the features there is nothing to match against, but that
-            // says nothing about the other matched tracks, and dropping the key
-            // also clears any features left from before the track went over its
-            // limit.
-            const tracks = self.fetchedTracks.filter(
-              track => !track.displays[0]!.regionTooLarge,
-            )
-            // THE READ THAT MAKES A PAN REFETCH, and it belongs here rather
-            // than in `getBlockFeatures` where it used to sit. Reached from
-            // there it tracked only because the `tracks.map` below runs its
-            // async bodies as far as their first await synchronously, so the
-            // read landed inside the tracked window from two files away — and
-            // one hoisted await anywhere along that chain would have stopped
-            // every refetch on pan with nothing failing. `prepare` is where the
-            // skeleton promises the reads are tracked.
-            //
-            // Guarded on `tracks.length` to keep the dependency exactly as
-            // narrow as it was: with every matched track over its limit there is
-            // nothing to fetch, and a pan should not spin the rotation to fetch
-            // it.
-            const regionsPerView = tracks.length
-              ? self.views.map(view => view.staticBlocks.contentBlocks)
-              : []
-            // Tracked too, so a filter change refetches.
-            const jexlFilters = tracks.map(track =>
-              self.views.map(view =>
-                overlayJexlFilters(
-                  view.getTrack(track.configuration.trackId)?.displays[0],
-                ),
-              ),
-            )
-            return { tracks, regionsPerView, jexlFilters }
-          },
+          // THE READS THAT MAKE A PAN OR A FILTER CHANGE REFETCH, and they
+          // belong in `prepare` rather than in `getBlockFeatures`, where the
+          // blocks read used to sit tracked only by the accident of `run`'s
+          // synchronous prefix. `prepare` is where the skeleton promises the
+          // reads are tracked.
+          prepare: () =>
+            self.fetchInert
+              ? undefined
+              : { ...self.overlayFetchInputs, key: self.overlayFetchKey },
+          fetchKey: ({ key }) => key,
+          loadedKey: () => self.overlayLoadedKey,
           // One fan-out slot per track, so the N of them aggregate into one bar
           // rather than the first to finish blanking the label.
           //
@@ -929,15 +1012,15 @@ export default function stateModelFactory(pluginManager: PluginManager) {
               ),
             )
           },
-          commit: fetched => {
-            self.setMatchedTrackFeatures(fetched)
+          commit: (fetched, { key }) => {
+            self.commitOverlayFeatures(fetched, key)
           },
-          // This view holds no error slot, so a failure is a session
-          // notification — carrying the Retry that makes `reload()` the real
+          // The notification carries the Retry that makes `reload()` the real
           // thing the skeleton's `reloadCounter` read exists for. `getSession`
           // also throws on a dead node, which is why only a current run's real
           // failure reaches here at all.
           setError: error => {
+            self.setOverlayError(error)
             if (error !== undefined) {
               getNotificationSink(self).notifyError(
                 `${error}`,

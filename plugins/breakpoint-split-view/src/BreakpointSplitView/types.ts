@@ -40,6 +40,21 @@ export interface BreakpointSplitViewCommands {
   views?: BreakpointSplitViewInitView[]
 }
 
+/**
+ * What the overlay fetch was issued for, as plain data: the variant tracks it
+ * fetched, each row's content-block regions, and each track's filters per row.
+ */
+export interface OverlayFetchKey {
+  trackIds: string[]
+  regionsPerView: {
+    assemblyName: string
+    refName: string
+    start: number
+    end: number
+  }[][]
+  jexlFilters: string[][][]
+}
+
 export type LayoutRecord = [number, number, number, number]
 
 // Per-view-level geometry an overlay needs to place a feature, resolved once per

@@ -114,6 +114,12 @@ mid-launch while tracks still attach. Every view's `error` must therefore be
 **resolved** (assembly and sub-view errors folded in), not the raw
 `volatileError`.
 
+A fetch the view owns rather than a display (the breakpoint split view's
+variant-call overlay) gets its own readiness getter, `computeSvgReady` over its
+error and the key it last committed (`overlaySvgReady`), and `renderToSvg`
+awaits it through `awaitSvgReady` after the rows render, so a failed overlay
+fetch fails the export the way a failed track does.
+
 ### Every resting state that never fetches must be terminal
 
 `dataCurrent` says whether held data is current, not whether data will ever
