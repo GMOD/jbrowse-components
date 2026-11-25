@@ -16,6 +16,27 @@ const recipe = buildRecipe(
   )}`,
 )!
 
+function titles(views: unknown[]) {
+  return buildRecipe(
+    `https://jbrowse.org/code/jb2/main/?config=test_data/volvox/config.json&session=spec-${encodeURIComponent(JSON.stringify({ views }))}`,
+  )?.steps.map(step => step.title)
+}
+
+test("a figure's only view, when not the linear one, is opened from the Add menu after the genome", () => {
+  expect(
+    titles([{ type: 'CircularView', assembly: 'volvox', tracks: ['volvox_sv'] }])?.slice(0, 2),
+  ).toEqual([
+    expect.stringMatching(/^Open your genome/),
+    'Open the view: **Add → Circular view**.',
+  ])
+  expect(
+    titles([{ type: 'SvInspectorView', assembly: 'volvox', uri: 'sv.vcf' }]),
+  ).toContain('Open the view: **Add → SV inspector**.')
+  expect(
+    titles([{ type: 'LinearGenomeView', assembly: 'volvox' }])?.join('\n'),
+  ).not.toContain('Open the view')
+})
+
 test('one genome step covers Desktop and Web', () => {
   expect(recipe.steps[0]?.title).toContain('JBrowse Desktop')
   expect(recipe.steps[0]?.title).toContain('`jbrowse add-assembly`')

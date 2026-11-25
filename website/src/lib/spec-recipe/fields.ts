@@ -2340,9 +2340,8 @@ export const viewFields: Record<string, FieldRecipe> = {
   // The file a spreadsheet-backed view opens on. Both launchers that accept it
   // (LaunchSvInspectorView, LaunchSpreadsheetView) hand it to the same import
   // wizard the view shows while its spreadsheet is uninitialized, so one path
-  // serves both and only the Add entry differs — hence the note rather than a
-  // first segment this table has no view type to choose between (see the
-  // FieldContext comment above). Labels verified against ImportWizard.tsx
+  // serves both, after the step that opens the view from the Add menu
+  // (withOpenViewStep in recipe.ts). Labels verified against ImportWizard.tsx
   // (selectorTypes, the Open button), SourceTypeSelector.tsx (the File/URL
   // toggles) and UrlChooser.tsx ('Enter URL').
   uri: value => {
@@ -2350,7 +2349,7 @@ export const viewFields: Record<string, FieldRecipe> = {
     return uri
       ? {
           path: 'Import form → Open file from URL or local computer → URL → Enter URL → Open',
-          note: 'Open the form with Add → SV inspector (or Add → Spreadsheet view); set File Type and Assembly in the same form before clicking Open.',
+          note: 'Set File Type and Assembly in the same form before clicking Open.',
         }
       : undefined
   },

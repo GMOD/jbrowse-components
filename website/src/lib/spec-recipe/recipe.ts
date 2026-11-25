@@ -215,6 +215,36 @@ function viewName(type: string | undefined): string {
   return VIEW_NAMES[type] ?? split[0] + split.slice(1).toLowerCase()
 }
 
+// Views a figure's own steps open some other way: the linear view the app
+// starts in, and the ones opened from a feature or a track rather than the Add
+// menu
+const OPENED_ELSEWHERE = new Set([
+  'LinearGenomeView',
+  'ProteinView',
+  'GraphGenomeView',
+])
+
+// A figure's only view, when it is not the linear view the genome opens in,
+// is opened from the Add menu right after the genome step
+function withOpenViewStep(steps: RecipeStep[], view: SpecView | undefined) {
+  const type = view?.type
+  const at = view?.assembly ? 1 : 0
+  return type &&
+    !OPENED_ELSEWHERE.has(type) &&
+    !(type in IMPORT_FORM_VIEWS) &&
+    !(type in LAUNCHED_VIEWS) &&
+    !steps.some(step => step.opensView)
+    ? [
+        ...steps.slice(0, at),
+        {
+          title: `Open the view: **Add → ${viewName(type)}**.`,
+          opensView: true,
+        },
+        ...steps.slice(at),
+      ]
+    : steps
+}
+
 // A band's dataset in a comparative import form, rather than a track added to a
 // view that is already open.
 interface BandContext {
@@ -664,7 +694,7 @@ export function buildRecipe(
   // opened, which an import form and a graph view on a GFA file both do.
   const steps = collected.flatMap((c, index) =>
     views.length < 2
-      ? c.steps
+      ? withOpenViewStep(c.steps, views[index])
       : c.steps.some(step => step.opensView)
         ? groupSteps(`Pane ${index + 1}`, c.steps)
         : [
