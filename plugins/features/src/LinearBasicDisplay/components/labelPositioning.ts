@@ -421,9 +421,64 @@ function labelExtent(
       }
 }
 
+/**
+ * A label the export moved to end at the figure's right edge, drawn anchored
+ * at `endX`, so a face wider than the one it was measured in still ends there.
+ */
+export type FittedLabel = ResolvedLabel & { endX?: number }
+
+const RENDERED_WIDTH_SLACK = 1.1
+
+export interface LabelEdges {
+  left: number
+  right: number
+  bottom: number
+}
+
+// `rowWidth` is the name's line with its badge, which moves as one.
+function measureLabels(
+  labels: ResolvedLabel[],
+  fontSize: number,
+  fontFamily?: string,
+) {
+  const measured = labels.map(placed => ({
+    placed,
+    ...labelExtent(placed, fontSize, fontFamily),
+  }))
+  const badge = measured.find(
+    m => m.placed.kind === 'more' && !m.placed.label.expanded,
+  )
+  return measured.map(m => ({
+    ...m,
+    rowWidth:
+      m.placed.kind === 'name' && badge
+        ? Math.max(m.width, badge.placed.labelX + badge.width - m.placed.labelX)
+        : m.width,
+  }))
+}
+
+type MeasuredLabel = ReturnType<typeof measureLabels>[number]
+
+// The lines that move together: the name, description and a subfeature label
+// hung below. The badge rides on its name, and an overlay subfeature label
+// belongs inside its exon, so it is dropped rather than moved.
+function inStack({ placed }: MeasuredLabel) {
+  return (
+    placed.kind !== 'more' && !(placed.kind === 'sub' && placed.label.isOverlay)
+  )
+}
+
+function crossesRight({ placed, rowWidth }: MeasuredLabel, right: number) {
+  return placed.labelX + rowWidth > right + 0.5
+}
+
+function stackMoves(measured: MeasuredLabel[], right: number) {
+  return measured.some(m => inStack(m) && crossesRight(m, right))
+}
+
 function labelBoxes(
   owner: string,
-  labels: ResolvedLabel[],
+  labels: FittedLabel[],
   fontSize: number,
   fontFamily?: string,
 ) {
@@ -431,17 +486,23 @@ function labelBoxes(
     const { width, height } = labelExtent(placed, fontSize, fontFamily)
     return {
       owner,
-      left: placed.labelX,
-      right: placed.labelX + width,
+      left:
+        placed.endX === undefined
+          ? placed.labelX
+          : placed.endX - width * RENDERED_WIDTH_SLACK,
+      right: placed.endX ?? placed.labelX + width,
       top: placed.labelY,
       bottom: placed.labelY + height,
     }
   })
 }
 
+// Each body reaches down by a label stack, so a label moved under a feature
+// that names nothing does not read as its name.
 function featureBodyBoxes(
   regions: RegionWithData[],
   dataMap: ReadonlyMap<number, FeatureDataResult>,
+  labelReachPx: number,
 ) {
   return regions.flatMap(region => {
     const toScreen = makeBpMapper(region)
@@ -455,83 +516,84 @@ function featureBodyBoxes(
           left: Math.min(px1, px2),
           right: Math.max(px1, px2),
           top: item.topPx,
-          bottom: item.bottomPx,
+          bottom: item.bottomPx + labelReachPx,
         }
       })
   })
 }
 
 /**
- * A label the export moved to end at the figure's right edge, drawn anchored
- * at `endX`, so a face wider than the one it was measured in still ends there.
- */
-export type FittedLabel = ResolvedLabel & { endX?: number }
-
-const RENDERED_WIDTH_SLACK = 1.1
-
-/**
- * The labels whose box, measured in `fontFamily`, fits inside `right` and
- * `bottom`, the export's mirror of `placeFeatureLabels` dropping a label that
+ * The labels of one feature whose box, measured in `fontFamily`, fits inside
+ * the edges, the export's mirror of `placeFeatureLabels` dropping a label that
  * would start left of the view: a figure has no scrolling to bring a cut label
- * whole. One the right edge would cut is anchored to end at it, unless that
- * leaves it no room or `isFree` says the box it would take, widened by
- * `RENDERED_WIDTH_SLACK` for another renderer's face, is taken; one the bottom
- * would cut is dropped. A badge moves and goes with its name.
+ * whole. A label the bottom would cut is dropped. When a line of the stack
+ * would cross `right`, the stack moves left as one, sharing a left edge, so
+ * its widest line ends at `right`; a line that a face `RENDERED_WIDTH_SLACK`
+ * wider would carry past `right` is anchored by its end there. The stack is
+ * dropped whole when its widened box would start left of `left` or `isFree`
+ * says it is taken. A badge moves and goes with its name.
  */
 export function labelsWithinEdges(
   labels: ResolvedLabel[],
-  { right, bottom }: { right: number; bottom: number },
+  { left, right, bottom }: LabelEdges,
   fontSize: number,
   fontFamily?: string,
   isFree: (box: PxBox) => boolean = () => true,
 ) {
-  const measured = labels.map(placed => ({
-    placed,
-    ...labelExtent(placed, fontSize, fontFamily),
-  }))
-  const badge = measured.find(
-    m => m.placed.kind === 'more' && !m.placed.label.expanded,
-  )
-  let nameMoved = false
+  const measured = measureLabels(labels, fontSize, fontFamily)
+  const stack = measured.filter(inStack)
+  const moved = stackMoves(measured, right)
+  const widest = Math.max(0, ...stack.map(m => m.rowWidth))
+  const stackLeft = right - widest
+  const reach = right - widest * RENDERED_WIDTH_SLACK
+  const stackKept =
+    !moved ||
+    (reach >= left &&
+      isFree({
+        left: reach,
+        right,
+        top: Math.min(...stack.map(m => m.placed.labelY)),
+        bottom: Math.max(...stack.map(m => m.placed.labelY + m.height)),
+      }))
   let nameKept = false
-  return measured.flatMap(({ placed, width, height }): FittedLabel[] => {
-    const rowWidth =
-      placed.kind === 'name' && badge
-        ? Math.max(width, badge.placed.labelX + badge.width - placed.labelX)
-        : width
-    const moved =
-      placed.kind === 'more'
-        ? nameMoved
-        : placed.labelX + rowWidth > right + 0.5
-    const reach = right - rowWidth * RENDERED_WIDTH_SLACK
+  let movedName: { endX: number | undefined; shift: number } | undefined
+  return measured.flatMap((m): FittedLabel[] => {
+    const { placed, width, height, rowWidth } = m
     const kept =
       placed.labelY + height < bottom + 0.5 &&
       (placed.kind === 'more'
         ? nameKept
-        : !moved ||
-          (reach >= LABEL_EDGE_GUTTER_PX &&
-            isFree({
-              left: reach,
-              right,
-              top: placed.labelY,
-              bottom: placed.labelY + height,
-            })))
+        : inStack(m)
+          ? stackKept
+          : !crossesRight(m, right))
     if (placed.kind === 'name') {
-      nameMoved = moved
       nameKept = kept
     }
+    const endAnchored = stackLeft + rowWidth * RENDERED_WIDTH_SLACK > right
     const endX = right - (rowWidth - width)
-    return kept
-      ? [moved ? { ...placed, labelX: endX - width, endX } : placed]
-      : []
+    const fitted: FittedLabel =
+      !moved || !inStack(m)
+        ? placed.kind === 'more' && movedName
+          ? movedName.endX === undefined
+            ? { ...placed, labelX: placed.labelX + movedName.shift }
+            : { ...placed, labelX: right - width, endX: right }
+          : placed
+        : endAnchored
+          ? { ...placed, labelX: endX - width, endX }
+          : { ...placed, labelX: stackLeft }
+    if (placed.kind === 'name' && moved) {
+      movedName = { endX: fitted.endX, shift: fitted.labelX - placed.labelX }
+    }
+    return kept ? [fitted] : []
   })
 }
 
 /**
  * `forEachDisplayLabel` for an export, each feature's labels fitted to the
- * figure's edges by `labelsWithinEdges`. A label moved off the right edge must
- * land clear of every other feature's body and label as the layout placed
- * them, and of each label moved before it.
+ * figure's edges by `labelsWithinEdges`, no further left than its region's
+ * start. A stack moved off the right edge must land clear of every other
+ * feature's body and label as the layout placed them, and of each stack moved
+ * before it; those boxes are built only once a stack has to move.
  */
 export function forEachExportLabel(
   regions: RegionWithData[],
@@ -547,6 +609,7 @@ export function forEachExportLabel(
     featureId: string
     parentId: string | undefined
     labels: ResolvedLabel[]
+    regionStartPx: number
   }[] = []
   forEachDisplayLabel(
     regions,
@@ -559,32 +622,50 @@ export function forEachExportLabel(
           .get(region.displayedRegionIndex)
           ?.floatingLabelsData.get(featureId)?.parentFeatureId,
         labels,
+        regionStartPx: region.screenStartPx,
       })
     },
     cullBand,
   )
-  const bodies = featureBodyBoxes(regions, dataMap)
-  const placedLabels = drawn.flatMap(({ featureId, labels }) =>
-    labelBoxes(featureId, labels, fontSize, fontFamily),
-  )
-  for (const { featureId, parentId, labels } of drawn) {
+  let occupied:
+    | {
+        bodies: ReturnType<typeof featureBodyBoxes>
+        labels: ReturnType<typeof labelBoxes>
+      }
+    | undefined
+  const occupiedBoxes = () => {
+    occupied ??= {
+      bodies: featureBodyBoxes(regions, dataMap, labelStackHeightPx(fontSize)),
+      labels: drawn.flatMap(({ featureId, labels }) =>
+        stackMoves(measureLabels(labels, fontSize, fontFamily), edges.right)
+          ? []
+          : labelBoxes(featureId, labels, fontSize, fontFamily),
+      ),
+    }
+    return occupied
+  }
+  for (const { featureId, parentId, labels, regionStartPx } of drawn) {
     const kept = labelsWithinEdges(
       labels,
-      edges,
+      { ...edges, left: regionStartPx + LABEL_EDGE_GUTTER_PX },
       fontSize,
       fontFamily,
-      box =>
-        !bodies.some(
-          body =>
-            body.owner !== featureId &&
-            body.owner !== parentId &&
-            boxesOverlap(body, box),
-        ) &&
-        !placedLabels.some(
-          other => other.owner !== featureId && boxesOverlap(other, box),
-        ),
+      box => {
+        const { bodies, labels: others } = occupiedBoxes()
+        return (
+          !bodies.some(
+            body =>
+              body.owner !== featureId &&
+              body.owner !== parentId &&
+              boxesOverlap(body, box),
+          ) &&
+          !others.some(
+            other => other.owner !== featureId && boxesOverlap(other, box),
+          )
+        )
+      },
     )
-    placedLabels.push(...labelBoxes(featureId, kept, fontSize, fontFamily))
+    occupied?.labels.push(...labelBoxes(featureId, kept, fontSize, fontFamily))
     emit(kept)
   }
 }

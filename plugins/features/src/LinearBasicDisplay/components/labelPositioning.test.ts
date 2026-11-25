@@ -29,6 +29,7 @@ import type {
   LabelItem,
 } from '../../RenderFeatureDataRPC/rpcTypes.ts'
 import type {
+  FittedLabel,
   LabelCullBand,
   RegionWithData,
   ResolvedLabel,
@@ -746,13 +747,21 @@ describe('the reservation and the ink agree', () => {
 })
 
 describe('labelsWithinEdges', () => {
-  const name = (labelX: number): ResolvedLabel => ({
-    label: { text: 'GENE1', textWidth: 30 },
+  const name = (labelX: number, text = 'GENE1'): ResolvedLabel => ({
+    label: { text, textWidth: 30 },
     labelX,
     labelY: 0,
     fontSize: 11,
     kind: 'name',
     color: 'black',
+  })
+  const desc = (labelX: number, text: string): ResolvedLabel => ({
+    label: { text, textWidth: 30 },
+    labelX,
+    labelY: 11,
+    fontSize: 11,
+    kind: 'desc',
+    color: 'grey',
   })
   const badge = (labelX: number): ResolvedLabel => ({
     label: { text: '+3', textWidth: 10, hidden: 3, expanded: false },
@@ -761,8 +770,17 @@ describe('labelsWithinEdges', () => {
     kind: 'more',
     color: 'grey',
   })
-  const edges = { right: 100, bottom: 50 }
-  const nameWidth = measureText('GENE1', 11, 'sans-serif')
+  const overlaySub = (labelX: number): ResolvedLabel => ({
+    label: { text: 'EXON 1', textWidth: 30, isOverlay: true },
+    labelX,
+    labelY: -10,
+    fontSize: 11,
+    kind: 'sub',
+    color: 'white',
+  })
+  const edges = { left: 4, right: 100, bottom: 50 }
+  const width = (text: string) => measureText(text, 11, 'sans-serif')
+  const nameWidth = width('GENE1')
 
   test('keeps a name and badge that end inside the edges', () => {
     const labels = [name(0), badge(nameWidth + 4)]
@@ -787,7 +805,19 @@ describe('labelsWithinEdges', () => {
     expect(
       labelsWithinEdges(
         [name(50), badge(0)],
-        { right: nameWidth, bottom: 50 },
+        { ...edges, right: nameWidth },
+        11,
+        'sans-serif',
+      ),
+    ).toEqual([])
+  })
+
+  test('drops a moved name that would start left of the region', () => {
+    const start = 100 - nameWidth / 2
+    expect(
+      labelsWithinEdges(
+        [name(start)],
+        { ...edges, left: 70 },
         11,
         'sans-serif',
       ),
@@ -812,8 +842,48 @@ describe('labelsWithinEdges', () => {
 
   test('drops a label the bottom edge would cut', () => {
     expect(
-      labelsWithinEdges([name(0)], { right: 100, bottom: 5 }, 11, 'sans-serif'),
+      labelsWithinEdges([name(0)], { ...edges, bottom: 5 }, 11, 'sans-serif'),
     ).toEqual([])
+  })
+
+  // A short name that fits and a long description that does not move as one
+  // stack: the widest line ends at the edge, and the name keeps their shared
+  // left edge.
+  test('moves a name with the description the edge would cut, sharing a left edge', () => {
+    const long = 'LONGER DESC'
+    const [movedName, movedDesc] = labelsWithinEdges(
+      [name(40), desc(40, long)],
+      edges,
+      11,
+      'sans-serif',
+    )
+    expect(movedDesc?.endX).toBe(100)
+    expect(movedDesc?.labelX).toBeCloseTo(100 - width(long))
+    expect(movedName?.labelX).toBeCloseTo(100 - width(long))
+    expect(movedName?.endX).toBeUndefined()
+  })
+
+  test('drops the whole stack where its new place is taken', () => {
+    expect(
+      labelsWithinEdges(
+        [name(40), desc(40, 'LONGER DESC')],
+        edges,
+        11,
+        'sans-serif',
+        () => false,
+      ),
+    ).toEqual([])
+  })
+
+  test('drops an overlay subfeature label the edge would cut rather than move it off its exon', () => {
+    expect(
+      labelsWithinEdges(
+        [name(0), overlaySub(100 - width('EXON 1') / 2)],
+        edges,
+        11,
+        'sans-serif',
+      ),
+    ).toEqual([name(0)])
   })
 })
 
@@ -828,60 +898,107 @@ describe('forEachExportLabel', () => {
   }
   const text = 'A NAME WIDER THAN ITS FEATURE'
   const width = measureText(text, LABEL_FONT, 'sans-serif')
-
-  // The feature at 960-990px names itself past the 1000px edge, so the name
-  // moves left to end at 1000px, over where `neighbour` sits when it shares
-  // the label's row.
-  function fitted(neighbourTopPx: number) {
-    const data = makeFeatureData({
-      flatbushItems: [
-        makeFlatbushItem({
-          featureId: 'edge',
-          startBp: 960,
-          endBp: 990,
-          topPx: 0,
-          bottomPx: 10,
-        }),
-        makeFlatbushItem({
-          featureId: 'neighbour',
-          startBp: 900,
-          endBp: 950,
-          topPx: neighbourTopPx,
-          bottomPx: neighbourTopPx + 10,
-        }),
-      ],
-      floatingLabelsData: new Map([
-        [
-          'edge',
-          makeLabelData('edge', {
-            minX: 960,
-            maxX: 990,
-            nameLabel: makeLabel({ text, textWidth: 150 }),
-          }),
-        ],
-      ]),
+  const named = (featureId: string, minX: number, maxX: number, name = text) =>
+    makeLabelData(featureId, {
+      minX,
+      maxX,
+      nameLabel: makeLabel({ text: name, textWidth: 150 }),
     })
-    const out: { labelX: number; endX?: number }[] = []
+
+  function fitAll(regions: RegionWithData[], data: FeatureDataResult[]) {
+    const out: FittedLabel[] = []
     forEachExportLabel(
-      [region],
-      new Map([[0, data]]),
+      regions,
+      new Map(data.map((d, i) => [i, d])),
       context,
       { right: 1000, bottom: 100 },
       'sans-serif',
       labels => {
-        out.push(...labels.map(({ labelX, endX }) => ({ labelX, endX })))
+        out.push(...labels)
       },
     )
     return out
   }
 
+  // The feature at 960-990px names itself past the 1000px edge, so the name
+  // moves left to end at 1000px, over where `neighbour` sits when it shares
+  // the label's row or the row below.
+  function fitted(neighbourTopPx: number) {
+    return fitAll(
+      [region],
+      [
+        makeFeatureData({
+          flatbushItems: [
+            makeFlatbushItem({
+              featureId: 'edge',
+              startBp: 960,
+              endBp: 990,
+              topPx: 0,
+              bottomPx: 10,
+            }),
+            makeFlatbushItem({
+              featureId: 'neighbour',
+              startBp: 900,
+              endBp: 950,
+              topPx: neighbourTopPx,
+              bottomPx: neighbourTopPx + 10,
+            }),
+          ],
+          floatingLabelsData: new Map([['edge', named('edge', 960, 990)]]),
+        }),
+      ],
+    )
+  }
+
   test('anchors a label the right edge would cut to end at it', () => {
-    const [moved] = fitted(50)
+    const [moved] = fitted(60)
     expect(moved?.endX).toBe(1000)
     expect(moved?.labelX).toBeCloseTo(1000 - width)
   })
 
-  test('drops it where the move would land on another feature', () => {
+  test('drops it where the move would land on a feature in the row below', () => {
     expect(fitted(10)).toEqual([])
+  })
+
+  test('drops it where the move would put it under an unnamed feature in its own row', () => {
+    expect(fitted(0)).toEqual([])
+  })
+
+  // chrA fills 0-890px and chrB 900-1000px: moved to end at the edge, a name
+  // under chrB's 910-960px feature would start back over chrA.
+  test('drops it where the move would carry it back past its region', () => {
+    const chrA = { start: 0, end: 890, screenStartPx: 0, screenEndPx: 890 }
+    const chrB = { start: 0, end: 100, screenStartPx: 900, screenEndPx: 1000 }
+    expect(
+      fitAll(
+        [
+          { ...chrA, displayedRegionIndex: 0 },
+          { ...chrB, displayedRegionIndex: 1 },
+        ],
+        [
+          makeFeatureData(),
+          makeFeatureData({
+            floatingLabelsData: new Map([['b', named('b', 10, 60)]]),
+          }),
+        ],
+      ),
+    ).toEqual([])
+  })
+
+  test('keeps the first of two moved labels that would land on each other', () => {
+    const fitted = fitAll(
+      [region],
+      [
+        makeFeatureData({
+          floatingLabelsData: new Map([
+            ['first', named('first', 960, 990, `FIRST ${text}`)],
+            ['second', named('second', 970, 995, `SECOND ${text}`)],
+          ]),
+        }),
+      ],
+    )
+    expect(fitted.map(l => [l.label.text, l.endX])).toEqual([
+      [`FIRST ${text}`, 1000],
+    ])
   })
 })

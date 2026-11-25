@@ -29,12 +29,14 @@ nothing overflows today. Exact measurement needs a family threaded through
 those two.
 
 **A feature label can still be cut at the top of a scrolled track.** The
-export drops a label that would cross the view's left or bottom edge, and
-anchors one that would cross the right edge by its end at it, dropping it only
-where that leaves no room or lands on another feature (`labelsWithinEdges`,
-`forEachExportLabel`, `labelPositioning.ts`). `exactCullBand` still admits a
-label from a feature scrolled just above the top. The records band's labels
-(`paintFeatureBand.ts`) do not go through `labelsWithinEdges` at all.
+export drops a label that would cross the view's left or bottom edge. A
+feature's label stack that would cross the right edge moves left as one, its
+widest line anchored by its end at the edge, and is dropped whole where that
+would carry it past its region's start or onto another feature
+(`labelsWithinEdges`, `forEachExportLabel`, `labelPositioning.ts`).
+`exactCullBand` still admits a label from a feature scrolled just above the
+top. The records band's labels (`paintFeatureBand.ts`) do not go through
+`labelsWithinEdges` at all.
 
 **The dotplot export holds its font on the view model.** `renderToSvg` calls
 `model.setAxisFontFamily(fontFamily)` and resets it in a `finally`, so the
