@@ -39,6 +39,11 @@ minimized track, and `notifySkippedSvgTracks` names it. It is one call,
   moved: the root scales whatever document results to the page width, so a
   wrong chrome rescales every text size.
 
+**A track exports at its box height**, empty band included: the figure is what
+the screen shows, and a reader who wants it tight sets the height. A synteny
+row draws no scalebar, since its ruler already scales a whole chromosome; a
+breakpoint split row is a kilobase window and draws one.
+
 **The export canvas width is `view.width`**, not `renderState.canvasWidth`
 (`view.trackWidthPx`, 2px narrower); reusing the on-screen width clips the last
 column. A model that lays its cells out at its own width takes the width as a
@@ -87,7 +92,9 @@ an observer follows the view, so a pan slides its labels across layers drawn
 before it. The `observer` lint rule names its exemptions.
 
 **A figure carries the pinned highlight only, never a hover or a selection**:
-both say where the reader's pointer was. A body that hands live render params to
+both say where the reader's pointer was. The one pick that does export is the
+SV inspector's row: `ShapePaths` dims every chord outside `dimmedFeatureIds`,
+since choosing a row is how a reader asks for a figure of one variant. A body that hands live render params to
 a painter zeroes them (`hoveredFeatureId`, `clickedFeatureId` in the synteny and
 multi-way exports), and the chord export draws every shape resting.
 

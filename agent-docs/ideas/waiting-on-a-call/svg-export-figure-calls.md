@@ -1,6 +1,6 @@
 ---
 name: svg-export-figure-calls
-description: "Figure-quality calls left by the 2026-11 SVG export audit, each needing a ruling before any code: a pileup cut mid-row with no sign, blank track height, selection dimming in a circular export, a narrowed row set with no caption, indel colors with no key, the Hi-C and LD key default, pale small-chromosome ribbons, a scalebar on synteny rows, the dialog's label mode for stacked views."
+description: "Figure-quality calls left by the 2026-11 SVG export audit: three with a built spike waiting on a yes or no (a pileup cut mid-row, a narrowed row set with no caption, the Hi-C and LD key default), and two parked (indel colors with no key, pale small-chromosome ribbons)."
 ---
 
 # SVG export figure calls
@@ -28,21 +28,6 @@ Separately, `jbrowse-img` could default alignments to `heightMode: 'grow'`, as
 [vertical-real-estate](vertical-real-estate.md) is about allocating height,
 not about saying a figure was truncated.
 
-**An export keeps a track's box height whatever its content needs.**
-`lgv_snapshot.svg` has about 250 px of empty band under two rows of reads, and
-all four synteny goldens reserve 250 px for an alignments track that draws two
-rows, which puts about 230 px of blank above each ribbon band. Trimming a
-track to its content in an export would change every figure's height and
-break "the figure is what the screen shows".
-
-**A row selected in the SV inspector dims every other chord in a circular
-export.** `ShapePaths` applies `dimmedFeatureIds` in export mode, and the SV
-inspector fills that set from the session's selected feature, so every other
-chord exports at 0.15 opacity. `SVG_EXPORT.md` says a figure carries no
-selection; `ShapeDisplay.test.tsx` ("the export dims the chords in the dimmed
-set") pins the dimming on purpose. One of the two changes. An inspector row is
-a deliberate pick, unlike a hover, which argues for amending the doc.
-
 **A figure of a narrowed row set does not say it is narrowed.**
 `svgControlsStrip` (`treeSidebarRowViews.ts`) drops the "Showing N of M rows"
 line with the controls, and no export draws a replacement. A caption, or the
@@ -51,7 +36,9 @@ count appended to the track label, would carry it.
 **Default synteny coloring paints indels with no key.** With no color field
 set, insertions are yellow and deletions blue (`colorUtils.ts`), and
 `hasColorKey(undefined)` is false, so neither the screen nor the export draws
-a key: `hosted_synteny.png` is mostly blue and yellow streaks. Commit
+a key. The audit described `hosted_synteny.png` as mostly blue and yellow
+streaks; rendered on 2026-11-25 at both the pre-fix and current commits it is
+all match-colored, so find a figure that shows the wedges before keying them. Commit
 3f0c2e0c2a chose no key so a constant `value` color would not get a "match"
 chip; that reason does not cover the default scheme, where the wedge colors
 carry meaning. The proposal keys the indel chips when the field is unset and
@@ -66,28 +53,5 @@ question.
 **Small chromosomes' ribbons nearly vanish.** In `hs1_mm39_synteny.png` and
 `hg38_hs1_mm39_synteny.png` the chromosomes past about chr17 take the
 palette's pale tints, which at `encoding.opacity` 0.4 over the white ground
-are barely visible. A palette question, not an export one.
-
-**Synteny rows draw no scalebar; breakpoint split rows do.** The reason
-written in `SVGBreakpointSplitView.tsx` (rows a reader compares need a scale
-each) applies to synteny rows too. A scalebar adds about 37 px per row at the
-default font (`getRowHeaderLayout`).
-
-**The export dialog's first-run label mode ignores a stack's rows.**
-`ExportSvgDialog.tsx` reads `model.effectiveTrackLabels ?? 'offset'`, and
-neither `LinearSyntenyView` nor `BreakpointSplitView` has that getter, so a
-stack whose rows are all set to overlapping or hidden opens the dialog on
-"offset". It matters once per browser: the choice is stored in one
-`localStorage` key shared by every view type. A getter returning the rows'
-common mode, else `'offset'`, would fix it.
-
-**The mark display's "N of M skipped" notice is not exported.** A Manhattan or
-mark track with a non-numeric field shows a warning chip on screen
-(`LinearMarkDisplayComponent.tsx`) and exports its partial plot with nothing
-said. Colin has declined runtime warnings for malformed data elsewhere, which
-argues for leaving it.
-
-**The LD index-SNP highlight changed color on screen.** Exporting it moved
-the band and dot from a hard-coded orange (`rgba(255,170,0,0.35)`, `#e69500`)
-to `palette.highlight.main` and `highlight.dark`, on screen as well. It
-landed that way; this is here in case the orange was the intent.
+are barely visible. A palette question, not an export one: rendered at
+`encoding.opacity` 0.8 the pale chromosomes stay pale while the rest turn heavy.
