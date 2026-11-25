@@ -299,17 +299,27 @@ export function alignmentsColorViews(self: AlignmentsColorHost) {
 
     /**
      * #getter
-     * The insertions, clips and deletions drawn in view, which the key's
-     * marks section names. A deletion is a pileup mark only, gated with the
-     * mismatches; the interbase kinds also draw in the coverage band.
+     * The insertions, clips, deletions and muted mismatches drawn in view,
+     * which the key's marks section names. A deletion is a pileup mark
+     * only, gated with the mismatches; the interbase kinds also draw in the
+     * coverage band. A mismatch is keyed only while a modification layer
+     * mutes it to one grey, since its base colors are otherwise unkeyed.
      */
     get cigarMarkKinds(): ReadonlySet<CigarMarkKind> {
       const found = self.showLegend
         ? cigarMarkKindsInWindows(self.laidOutByGroupFramed, self.keyWindows)
         : new Set<CigarMarkKind>()
-      return self.showMismatches && this.drawsReadRows
-        ? found
-        : new Set([...found].filter(kind => kind !== 'deletion'))
+      const pileupMarks = self.showMismatches && this.drawsReadRows
+      const mutedMismatches = pileupMarks && paintsModifications(self.baseLayer)
+      return new Set(
+        [...found].filter(kind =>
+          kind === 'deletion'
+            ? pileupMarks
+            : kind === 'mismatch'
+              ? mutedMismatches
+              : true,
+        ),
+      )
     },
 
     /**

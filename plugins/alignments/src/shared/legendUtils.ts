@@ -183,13 +183,19 @@ export function oneRowPerSplitTwin(items: LegendItem[]) {
   return rows
 }
 
-export type CigarMarkKind = 'insertion' | 'deletion' | 'softclip' | 'hardclip'
+export type CigarMarkKind =
+  | 'insertion'
+  | 'deletion'
+  | 'mismatch'
+  | 'softclip'
+  | 'hardclip'
 
 export const CIGAR_MARKS_TITLE = 'Alignment marks'
 
 const CIGAR_MARK_COLORS: [CigarMarkKind, PaletteColorKey][] = [
   ['insertion', 'colorInsertion'],
   ['deletion', 'colorDeletion'],
+  ['mismatch', 'colorMutedSnpBase'],
   ['softclip', 'colorSoftclip'],
   ['hardclip', 'colorHardclip'],
 ]
@@ -198,7 +204,8 @@ const CIGAR_MARK_COLORS: [CigarMarkKind, PaletteColorKey][] = [
  * The fixed-color pileup marks drawn in view, in one order whatever was found
  * first. Their hues are constants, not a field's, so they head a section of
  * their own rather than joining the read colors they can collide with (a soft
- * clip's blue beside "Unmethylated").
+ * clip's blue beside "Unmethylated"). A mismatch is keyed only in its muted
+ * grey, beside the deletion's near twin, so a grey tick names both readings.
  */
 export function cigarMarkLegendItems(
   present: ReadonlySet<CigarMarkKind>,

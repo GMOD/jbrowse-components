@@ -64,15 +64,20 @@ export function readCategoriesInWindows(
 }
 
 /**
- * The interbase marks (insertion, soft clip, hard clip) and deletions inside a
- * window, as the CIGAR type names that label them. A region's walk stops once
- * every kind is found.
+ * The interbase marks (insertion, soft clip, hard clip), deletions and
+ * mismatches inside a window, as the CIGAR type names that label them. Each
+ * walk stops at its first find, since the interbase kinds are few and a deep
+ * pileup holds millions of mismatches.
  */
 export function cigarMarkKindsInWindows(
   byGroup: ByGroup<
     Pick<
       WorkerPileupData,
-      'interbasePositions' | 'interbaseTypes' | 'gapPositions' | 'gapTypes'
+      | 'interbasePositions'
+      | 'interbaseTypes'
+      | 'gapPositions'
+      | 'gapTypes'
+      | 'mismatchPositions'
     >
   >,
   windows: readonly KeyWindow[],
@@ -84,7 +89,7 @@ export function cigarMarkKindsInWindows(
       const ranges = regions.get(regionIndex)
       if (ranges) {
         const ib = d.interbasePositions
-        for (let i = 0; i < ib.length && present.size < 4; i++) {
+        for (let i = 0; i < ib.length && present.size < 5; i++) {
           if (touchesAny(ranges, ib[i]!, ib[i]! + 1)) {
             present.add(interbaseTypeName(d.interbaseTypes[i]!))
           }
@@ -96,6 +101,13 @@ export function cigarMarkKindsInWindows(
             touchesAny(ranges, gaps[i * 2]!, gaps[i * 2 + 1]!)
           ) {
             present.add('deletion')
+            break
+          }
+        }
+        const mm = d.mismatchPositions
+        for (let i = 0; i < mm.length; i++) {
+          if (touchesAny(ranges, mm[i]!, mm[i]! + 1)) {
+            present.add('mismatch')
             break
           }
         }

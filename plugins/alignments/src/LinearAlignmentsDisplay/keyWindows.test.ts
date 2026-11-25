@@ -233,6 +233,24 @@ test('an overlap keys only on a row the track draws, when it is cut at its heigh
 })
 
 test('the CIGAR marks inside a window, skips and marks outside it left out', () => {
+  const inside = new Map([
+    [
+      '',
+      new Map([
+        [
+          0,
+          {
+            interbasePositions: new Uint32Array(0),
+            interbaseTypes: new Uint8Array(0),
+            gapPositions: new Uint32Array(0),
+            gapTypes: new Uint8Array(0),
+            mismatchPositions: new Uint32Array([500, 1500]),
+          },
+        ],
+      ]),
+    ],
+  ])
+  expect(cigarMarkKindsInWindows(inside, window)).toEqual(new Set(['mismatch']))
   const marks = new Map([
     [
       '',
@@ -248,6 +266,7 @@ test('the CIGAR marks inside a window, skips and marks outside it left out', () 
             ]),
             gapPositions: new Uint32Array([1100, 1200, 2100, 2200]),
             gapTypes: new Uint8Array([GAP_SKIP, GAP_DELETION]),
+            mismatchPositions: new Uint32Array([500]),
           },
         ],
       ]),

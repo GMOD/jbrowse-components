@@ -1558,11 +1558,16 @@ describe('the alignment marks section', () => {
 
   test('keys only the marks found, in one order, in their painted colors', () => {
     const items = cigarMarkLegendItems(
-      new Set(['hardclip', 'insertion'] as const),
+      new Set(['hardclip', 'mismatch', 'insertion'] as const),
       palette,
     )
-    expect(items.map(i => i.label)).toEqual(['Insertion', 'Hard clip'])
+    expect(items.map(i => i.label)).toEqual([
+      'Insertion',
+      'SNP/Mismatch',
+      'Hard clip',
+    ])
     expect(items[0]!.color).toBe(rgb255(palette.colorInsertion))
+    expect(items[1]!.color).toBe(rgb255(palette.colorMutedSnpBase))
   })
 
   test('is its own section after the read colors, and absent when empty', () => {
