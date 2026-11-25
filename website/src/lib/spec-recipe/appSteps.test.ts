@@ -37,6 +37,21 @@ test("a figure's only view, when not the linear one, is opened from the Add menu
   ).not.toContain('Open the view')
 })
 
+test('a view with no steps gets no empty "From scratch" list', () => {
+  const protein = buildRecipe(
+    `https://jbrowse.org/code/jb2/main/?config=test_data/protein3d_config.json&session=spec-${encodeURIComponent(
+      JSON.stringify({
+        views: [{ type: 'ProteinView', structures: [{ pdbId: '1TUP' }] }],
+      }),
+    )}`,
+  )
+  expect(protein?.steps).toEqual([])
+  const html = protein ? recipeDialogHtml(protein, 'p') : ''
+  expect(html).not.toContain('From scratch')
+  expect(html).not.toContain('<ol class="spec-steps"></ol>')
+  expect(html).toContain('No steps for this view yet')
+})
+
 test('one genome step covers Desktop and Web', () => {
   expect(recipe.steps[0]?.title).toContain('JBrowse Desktop')
   expect(recipe.steps[0]?.title).toContain('`jbrowse add-assembly`')

@@ -56,15 +56,19 @@ function renderStep(step: RecipeStep): string {
 }
 
 function ownDataSteps(steps: RecipeStep[], unmapped: string[]): string {
-  return [
-    note('<strong>From scratch</strong>:'),
-    `<ol class="spec-steps">${steps.map(renderStep).join('')}</ol>`,
-    unmapped.length
-      ? note(
-          'Some settings have no step yet: see <strong>Session</strong>.',
-        )
-      : '',
-  ].join('')
+  return steps.length
+    ? [
+        note('<strong>From scratch</strong>:'),
+        `<ol class="spec-steps">${steps.map(renderStep).join('')}</ol>`,
+        unmapped.length
+          ? note(
+              'Some settings have no step yet: see <strong>Session</strong>.',
+            )
+          : '',
+      ].join('')
+    : note(
+        'No steps for this view yet: the <strong>Session</strong> tab holds every setting.',
+      )
 }
 
 type Opens = ReturnType<typeof openRecipe>
