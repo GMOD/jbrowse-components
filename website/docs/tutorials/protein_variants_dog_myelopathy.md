@@ -3,8 +3,8 @@ title: 'Variants on protein structures part 2: degenerative myelopathy in dogs'
 sidebar_label: Proteins (variants pt 2, dog SOD1)
 description:
   Open dog SOD1 on codon 40 beside a crystal structure of the E40K protein that
-  causes degenerative myelopathy, then read the allele across breed dogs,
-  village dogs and wild canids from the Dog10K callset
+  causes degenerative myelopathy, then draw the Dog10K callset's genotypes under
+  the gene, one row per animal
 guide_category: Tutorials
 tutorial_category: Transcriptomics & proteins
 tutorial_subcategory: Variants on protein structures
@@ -16,8 +16,7 @@ the risk allele in _SOD1_: c.118G>A changes glutamate 40 of superoxide dismutase
 to lysine (E40K), and most affected dogs are homozygous for it
 ([Awano et al. 2009](https://doi.org/10.1073/pnas.0812297106)). We put the codon
 beside a crystal structure of the E40K protein itself, then read the allele
-across the Dog10K collection, with wolves and coyotes as the control, since an
-allele they share would predate domestication. We:
+across the Dog10K collection. We:
 
 - launch structure 7WX0 and an ortholog alignment from the _SOD1_ gene's
   right-click menu on the canFam4 dog assembly, with **Launch protein view** and
@@ -56,10 +55,10 @@ need these files to follow the page: the track reads hosted copies of what the
 commands below write. The slicing command streams the callset over HTTP, so a
 tabix-indexed VCF of your own slices the same way.
 
-| What it is                                                                                            | File                                                                                                                                                            |
-| ----------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| The SNV callset, 397 GB over 1,987 canids on canFam4 (UU_Cfam_GSD_1.0), streamed and never downloaded | [AutoAndXPAR.SNPs.vqsr99.vcf.gz](https://kiddlabshare.med.umich.edu/dog10K/SNP_and_indel_calls_2021-10-17/AutoAndXPAR.SNPs.vqsr99.vcf.gz)                       |
-| The sample table, breed and category per animal                                                       | [dog10K-alignment-sample-table.2022-02-23-v7.txt](https://kiddlabshare.med.umich.edu/dog10K/sample-information/dog10K-alignment-sample-table.2022-02-23-v7.txt) |
+| What it is                                                                          | File                                                                                                                                                            |
+| ----------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| The SNV callset, 397 GB on canFam4 (UU_Cfam_GSD_1.0), streamed and never downloaded | [AutoAndXPAR.SNPs.vqsr99.vcf.gz](https://kiddlabshare.med.umich.edu/dog10K/SNP_and_indel_calls_2021-10-17/AutoAndXPAR.SNPs.vqsr99.vcf.gz)                       |
+| The sample table, breed and category per animal                                     | [dog10K-alignment-sample-table.2022-02-23-v7.txt](https://kiddlabshare.med.umich.edu/dog10K/sample-information/dog10K-alignment-sample-table.2022-02-23-v7.txt) |
 
 <details>
 <summary>Read by URL (no download needed)</summary>
@@ -98,7 +97,7 @@ glutamate in the dog genome, lysine in the crystal.
 
 <Figure src="/img/protein/sod1_codon_hover.png" caption="SOD1 at codon 40 with its ortholog alignment and 7WX0. The hovered column, the codon band and Lys40 mark one position." />
 
-## Read E40K across breeds, village dogs and wild canids
+## Add the Dog10K genotypes under SOD1
 
 `bcftools` reads _SOD1_ out of the tabix-indexed Dog10K callset over HTTP and
 writes a small VCF of its genotypes. Set `SNVS` to your own callset's path or
@@ -167,18 +166,18 @@ The track reads hosted copies of the slice and the sheet; for your own, point
 }
 ```
 
-To put a site where the wolves have the alternate allele beside codon 40, type
-`chr31:27122805-27122834 chr31:27123013-27123103` into the location box. The
-first region is 30 bp of the upstream intron, around an SNV at chr31:27,122,819.
+Type `chr31:27123013-27123103` into the location box to read the genotypes
+around codon 40, the rows grouped by category down the left edge.
 
 <Figure src="/img/protein/sod1_dog10k.png" caption="Dog10K genotypes under SOD1, one row per canid, colored down the left edge by category." />
 
 ## Open the structure on the E40K record
 
-A VCF record names its change on the genome's forward strand, the spelling the
-protein view's `variant` key takes. E40K's record in the slice reads
-`chr31 27123057 . G A`, so a session spec opens 7WX0 on it. Swap the gene, the
-PDB id and the record for your own:
+The first section's views open again from a session spec, which a link or a
+script can repeat. A VCF record names its change on the genome's forward strand,
+the spelling the protein view's `variant` key takes. E40K's record in the slice
+reads `chr31 27123057 . G A`, so a session spec opens 7WX0 on it. Swap the gene,
+the PDB id and the record for your own:
 
 ```json live config=https://jbrowse.org/ucsc/canFam4/config.json
 {
