@@ -1,6 +1,6 @@
 {
   "name": "@jbrowse/plugin-features",
-  "version": "5.0.0-beta.22",
+  "version": "5.0.0-beta.23",
   "type": "module",
   "description": "JBrowse 2 plugin for feature tracks",
   "keywords": [
