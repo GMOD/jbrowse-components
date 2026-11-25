@@ -60,7 +60,7 @@ your own, run the commands on your genome FASTA and GFF3.
 | Its RefSeq gene models, which the domains are placed on                            | [GCF_003254395.2_Amel_HAv3.1_genomic.gff.gz](https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/003/254/395/GCF_003254395.2_Amel_HAv3.1/GCF_003254395.2_Amel_HAv3.1_genomic.gff.gz) |
 | The Pfam HMM library, about 400 MB and 1.5 GB once pressed, which hmmscan searches | [Pfam-A.hmm.gz](https://ftp.ebi.ac.uk/pub/databases/Pfam/current_release/Pfam-A.hmm.gz)                                                                                       |
 
-## Calling Pfam domains on the proteins
+## Call Pfam domains on the proteins
 
 We'll start from the two files any annotation project has, the genome FASTA and
 the gene models, and translate every transcript's CDS into a protein FASTA:
@@ -94,8 +94,7 @@ hmmpress Pfam-A.hmm
 # --cut_ga: each Pfam family's curated gathering threshold, the cutoff InterPro
 # uses, in place of one E-value for every family. hmmscan keeps about two cores
 # busy whatever --cpu asks for, so the build script splits proteins.fa into
-# chunks and scans them at once, about a quarter hour for an insect proteome
-# with THREADS=18.
+# chunks and scans them at once.
 hmmscan --cut_ga --cpu 2 --noali --domtblout pfam.domtblout Pfam-A.hmm proteins.fa >/dev/null
 ```
 
@@ -104,7 +103,7 @@ GFF3 output (`--formats gff3`), named by Pfam's short family names. The next
 step reads it in place of `pfam.domtblout`, with `--source Pfam` to keep only
 the Pfam rows.
 
-## Placing the domains on the exons
+## Place the domains on the exons
 
 `domains2genome` walks each transcript's CDS in the direction of translation and
 places each domain on the bases that encode it, on either strand and across
@@ -115,7 +114,7 @@ compresses:
 <!-- from: scripts/build_protein_domains.sh -->
 
 ```bash
-# matches each protein to its transcript by transcript ID, CDS protein_id or
+# domains2genome matches each protein to its transcript by transcript ID, CDS protein_id or
 # CDS ID, so gffread, NCBI and Ensembl protein names all work. Where HMMER hits
 # on one protein overlap by more than half, the lowest E-value is kept.
 npx -y 'domains2genome@>=2.4.0' genes.gff3 pfam.domtblout --gff3 | bgzip >pfam.gff3.gz
@@ -140,7 +139,7 @@ tabix -f -C -p gff pfam.gff3.gz
 - Without `--gff3`, domains2genome writes the domains alone as BED12, one row
   per domain per transcript, which IGV and the UCSC browser draw too.
 
-## Drawing the domains on their transcripts
+## Draw the domains on their transcripts
 
 JBrowse loads the file as a track in the multi-row feature display, with the
 plot set by these keys in its config:
@@ -154,7 +153,7 @@ plot set by these keys in its config:
 - `encoding.color` colors the domains, the marks with no color set, by Pfam
   family.
 
-The key lists both greys and the families on screen. The track menu's **Edit
+The legend lists both greys and the families on screen. The track menu's **Edit
 plot...** offers the same plot as an example for any GFF3 of transcripts with
 protein matches.
 
@@ -239,17 +238,9 @@ genome, add the track above, and go to `NC_037653.1:4,839,300-4,850,050`.
 
 <Figure src="/img/protein_domains/suvar39.png" caption="Honey bee Su(var)3-9: each RefSeq transcript in a separate row, its UTR and coding exons grey and its Pfam domains over them, colored by family." />
 
-The two curated transcripts (NM_) encode different proteins from the same first
-three exons. NM_001040277.1 goes on into the exon that encodes Chromo, Pre-SET
-and SET, the Su(var)3-9 histone methyltransferase. NM_001171169.1 skips that
-exon and joins the exons of eIF2γ, the GTP-binding subunit of translation
-initiation factor 2, and so has the GTP_EFTU, GTP_EFTU_D2 and eIF2_C domains.
-XM_006561307.3 and XM_006561308.3, which differ only at their 5′ ends, leave the
-Su(var)3-9 exon partway through SET and continue into the eIF2γ exons, so each
-encodes Chromo and Pre-SET and the eIF2γ domains in one protein. The two genes
-share one transcription unit across the insects that undergo complete
-metamorphosis (Krauss and Reuter, 2000). XM_001121123.5 is a transcript of the
-neighboring gene.
+Each row is one transcript. The transcripts include different exons, so the
+domains over their exons differ from row to row: the two curated transcripts
+(NM_) encode different proteins from the same first three exons.
 
 ## Reproduce it end to end
 
@@ -285,8 +276,6 @@ The script reads `genome.fa` and `genes.gff3` plain or gzipped, and
   [Pfam: The protein families database in 2021](https://doi.org/10.1093/nar/gkaa913)
 - Eddy (2011).
   [Accelerated profile HMM searches](https://doi.org/10.1371/journal.pcbi.1002195)
-- Krauss and Reuter (2000).
-  [Two genes become one: the genes encoding heterochromatin protein Su(var)3-9 and translation initiation factor subunit eIF-2gamma are joined to a dicistronic unit in holometabolic insects](https://doi.org/10.1093/genetics/156.3.1157)
 - Pertea and Pertea (2020).
   [GFF utilities: GffRead and GffCompare](https://doi.org/10.12688/f1000research.23297.2)
 - Wallberg et al. (2019).
