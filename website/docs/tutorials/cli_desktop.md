@@ -22,7 +22,7 @@ We:
 
 ## Prerequisites
 
-- [Node.js](https://nodejs.org/) 18 or newer
+- [Node.js](https://nodejs.org/) 18.3 or newer
 - JBrowse Desktop, or a web server if you want to serve the same folder
 
 ## Install the CLI
@@ -85,7 +85,9 @@ myproject/
 ```
 
 <details>
-<summary>What the CLI wrote into config.json: each file by its bare relative name</summary>
+<summary>The adapter entry the CLI wrote</summary>
+
+Each file appears by its bare relative name:
 
 ```json
 "adapter": {
@@ -160,23 +162,24 @@ open -a "JBrowse 2" myproject/config.json                 # macOS
 
 <Figure src="/img/desktop-cli-config.png" caption="A CLI-built folder opened in JBrowse Desktop by path. The session name and track labels come from the commands above."/>
 
-Desktop reads `config.json` and never writes back to it. Desktop autosaves your
-work to a separate session in **Recently opened sessions**, with a copy of the
-config. So after another `add-track`, reopen `config.json` itself to see the new
-track; the autosave still holds the old track list. **Save session as...**
-writes a `.jbrowse` file, which Desktop saves in place from then on.
+Desktop autosaves your work to a separate session in **Recently opened
+sessions**, with a copy of the config. So after another `add-track`, reopen
+`config.json` itself to see the new track; the autosave still holds the old
+track list. **Save session as...** writes a `.jbrowse` file, which Desktop saves
+in place from then on.
 
 ## Serve the config folder on the web
 
 JBrowse Web is a separate app, so a served `myproject/` needs a JBrowse Web
 instance alongside it, set up either way:
 
-- Build into a JBrowse Web install: run `jbrowse create jbrowse2` first and pass
+- Build into a JBrowse Web install. Run `jbrowse create jbrowse2` first and pass
   `--out jbrowse2` on the commands above, so the app and your config sit in one
   served folder. The [web quickstart](/docs/quickstart_web) takes this route.
-- Point an existing deployment at your config: host `myproject/` anywhere (e.g.
-  `npx serve myproject`) and open your JBrowse Web instance with its URL
-  appended: `https://your-jbrowse/?config=http://localhost:3000/config.json`.
+- Point an existing deployment at your config. Host `myproject/` anywhere (e.g.
+  `npx serve myproject`), then open your JBrowse Web instance with the config's
+  URL appended:
+  `https://your-jbrowse/?config=http://localhost:3000/config.json`.
 
 ## See also
 
