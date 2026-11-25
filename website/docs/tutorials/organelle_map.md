@@ -203,23 +203,34 @@ under the circular view menu's **Tracks** item:
 - **Group by** with `strand` splits the ring into a section per strand
 - **Color by → Attribute...** with `type` colors each feature by its GFF3 type
 
-The track's `height` sets how much of the circle's radius the track takes. The
-rings together take at most half the radius, so a tall track is narrowed to fit,
-and its rows are laid out in that band. In a circle of one sequence, feature
-names are drawn outside the ruler, each joined to its feature by a line.
+The track's `height` sets how much of the circle's radius the track takes, and
+its rows are laid out in that band. In a circle of one sequence, feature names
+are drawn outside the ruler, each joined to its feature by a line.
 
 <Figure src="/img/organelle_map/mito_ring.png" caption="NC_012920.1 as a circle, the NCBI genes grouped by strand and colored by type." />
 
 ## Open ND6 and its neighbours in a linear view
 
-The minus-strand row holds a single protein-coding gene, _ND6_, which sits
-between _ND5_ and _CYTB_. Type `NC_012920.1:12,000-16,569` into a linear view
-with the same track to see the three side by side:
+The minus-strand row holds _ND6_, which sits between _ND5_ and _CYTB_. Open a
+linear view of the same assembly and track to see the three side by side:
+
+```json session config=test_data/human_mito/config.json
+{
+  "defaultSession": {
+    "name": "ND6 and its neighbours",
+    "views": [
+      {
+        "type": "LinearGenomeView",
+        "assembly": "human_mito",
+        "loc": "NC_012920.1:12,000-16,569",
+        "tracks": ["mito_genes"]
+      }
+    ]
+  }
+}
+```
 
 <Figure src="/img/organelle_map/nd6_linear.png" caption="The end of NC_012920.1, the NCBI genes grouped by strand." />
-
-Anderson et al. (1981) published the sequence with this layout, twelve of the
-thirteen protein-coding genes on one strand and _ND6_ on the other.
 
 ## Reproduce it end to end
 
@@ -234,8 +245,15 @@ wraps every step above. It:
 ```bash
 curl -fO https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/build_organelle_map.sh
 bash build_organelle_map.sh                   # builds ./organelle_map_build/jbrowse2
-ACC=NC_000932.1 GENETIC_CODE=11 NAME=arabidopsis_chloroplast DISPLAY_NAME="Arabidopsis chloroplast (NC_000932.1)" bash build_organelle_map.sh chloroplast_build
 npx --yes serve organelle_map_build/jbrowse2  # then open the printed URL
+```
+
+For another accession, such as a chloroplast, set the accession, genetic code
+and names, and serve the folder you named:
+
+```bash
+ACC=NC_000932.1 GENETIC_CODE=11 NAME=arabidopsis_chloroplast DISPLAY_NAME="Arabidopsis chloroplast (NC_000932.1)" bash build_organelle_map.sh chloroplast_build
+npx --yes serve chloroplast_build/jbrowse2
 ```
 
 ## See also
@@ -253,7 +271,5 @@ npx --yes serve organelle_map_build/jbrowse2  # then open the printed URL
 
 ## Citations
 
-- Anderson et al. (1981).
-  [Sequence and organization of the human mitochondrial genome](https://doi.org/10.1038/290457a0)
 - Andrews et al. (1999).
   [Reanalysis and revision of the Cambridge reference sequence for human mitochondrial DNA](https://doi.org/10.1038/13779)
