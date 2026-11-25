@@ -142,13 +142,21 @@ export function lookupRawTrack(
 }
 
 // The display config a track carries itself, as config.json would hold it on a
-// copy: its `displays` and `displayDefaults`, without the `displayId`s that
-// name the original
-export function ownDisplayConfig({ displays, displayDefaults }: RawTrack) {
+// copy: without the `displayId`s that name the original, and without a bare
+// `{ type }` entry the track would open as anyway
+export function ownDisplayConfig(
+  { displays = [], displayDefaults }: RawTrack,
+  info: TrackInfo | undefined,
+  viewType: string | undefined,
+) {
+  const copies = displays.map(({ displayId, ...display }) => display)
+  const set = copies.filter(d => Object.keys(d).some(key => key !== 'type'))
+  const opens = (list: { type?: string }[]) =>
+    info && viewType ? opensAs(info, viewType, list) : undefined
+  const kept =
+    opens(set) !== undefined && opens(set) === opens(copies) ? set : copies
   return {
-    ...(displays?.length
-      ? { displays: displays.map(({ displayId, ...display }) => display) }
-      : {}),
+    ...(kept.length ? { displays: kept } : {}),
     ...(displayDefaults && Object.keys(displayDefaults).length
       ? { displayDefaults }
       : {}),
@@ -198,6 +206,23 @@ export function lookupTrack(
 // The display a view of `viewType` opens the track as when the spec names none.
 export function defaultDisplay(track: TrackInfo | undefined, viewType: string) {
   return track ? defaultDisplayIn(displayTable, track, viewType) : undefined
+}
+
+// The display a track declaring `displays` opens as
+export function opensAs(
+  info: TrackInfo,
+  viewType: string,
+  displays: { type?: string }[] = [],
+) {
+  return defaultDisplay(
+    {
+      ...info,
+      declaredDisplayTypes: displays
+        .map(d => d.type)
+        .filter(type => typeof type === 'string'),
+    },
+    viewType,
+  )
 }
 
 // A retired display type name as the one that answers to it now

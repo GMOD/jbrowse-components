@@ -4,6 +4,7 @@ import {
   defaultDisplay,
   lookupRawTrack,
   lookupTrack,
+  opensAs,
   ownDisplayConfig,
   viewTrackEntries,
 } from './configs.ts'
@@ -49,16 +50,6 @@ function withSettings(
   settings: Record<string, unknown>,
 ): RawTrack | undefined {
   const displays = track.displays ?? []
-  const opensAs = (list: RawTrack['displays'] = []) =>
-    defaultDisplay(
-      {
-        ...info,
-        declaredDisplayTypes: list
-          .map(d => d.type)
-          .filter(type => typeof type === 'string'),
-      },
-      viewType,
-    )
   const isDisplay = (d: { type?: string }) =>
     canonicalDisplayType(d.type) === display
   const declared = displays.find(isDisplay)
@@ -66,7 +57,7 @@ function withSettings(
     { ...declared, type: display, ...settings },
     ...displays.filter(d => !isDisplay(d)),
   ]
-  return opensAs(displays) === display
+  return opensAs(info, viewType, displays) === display
     ? declared
       ? {
           ...track,
@@ -79,7 +70,7 @@ function withSettings(
             ...settings,
           },
         }
-    : opensAs(first) === display
+    : opensAs(info, viewType, first) === display
       ? { ...track, displays: first }
       : undefined
 }
@@ -126,7 +117,7 @@ export function rebuildTracks({ config, spec }: DecodedSpec) {
     const settings =
       display && typeof entry !== 'string' ? slotSettings(entry, display) : {}
     const raw = lookupRawTrack(config, trackId)
-    const own = raw ? ownDisplayConfig(raw) : {}
+    const own = raw ? ownDisplayConfig(raw, info, viewType) : {}
     const assemblyNames =
       info?.assemblyNames ?? (assemblies.length === 1 ? assemblies : undefined)
     const adapter = info ? ownAdapter(info) : undefined
