@@ -1,5 +1,5 @@
 ---
-title: Synteny visualization (all-vs-all minimap2)
+title: Synteny from an all-vs-all minimap2 alignment (E. coli strains)
 sidebar_label: Synteny (all-vs-all minimap2)
 description: Stack strains in a linear synteny view from one all-vs-all PAF
 guide_category: Tutorials

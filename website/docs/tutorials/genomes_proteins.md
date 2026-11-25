@@ -375,8 +375,6 @@ encodes.[^constructs]
 
 - [_Proteins in the Genome Browser_](https://doi.org/10.1016/j.jmb.2026.169645)
   (_Journal of Molecular Biology_, 2026), the approach this page uses
-- Broz and Dixit (2016).
-  [Inflammasomes: mechanism of assembly, regulation and signalling](https://doi.org/10.1038/nri.2016.58)
 - Royo et al. (2018).
   [The major origin of seedless grapes is associated with a missense mutation in the MADS-box gene VviAGL11](https://doi.org/10.1104/pp.18.00259)
 - Varadi et al. (2024).

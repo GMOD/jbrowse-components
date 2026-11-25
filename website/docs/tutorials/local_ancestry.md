@@ -1,5 +1,5 @@
 ---
-title: Local ancestry (Dog10K)
+title: Local ancestry of wolfdog breeds (Dog10K)
 sidebar_label: Dog10K (local ancestry)
 description:
   Paint wolf-derived haplotype blocks in wolfdog breeds, against other breeds

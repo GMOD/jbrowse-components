@@ -1,5 +1,5 @@
 ---
-title: Synteny visualization (a polyploid against itself)
+title: Synteny from a polyploid against itself (oat subgenomes)
 sidebar_label: Synteny (polyploid subgenomes)
 description:
   Draw hexaploid oat against itself from syntenic anchors, colored by the

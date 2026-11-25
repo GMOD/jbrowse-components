@@ -1,5 +1,5 @@
 ---
-title: Synteny visualization (pairwise minimap2)
+title: Synteny from pairwise minimap2 alignments (H. pylori strains)
 sidebar_label: Synteny (pairwise minimap2)
 description:
   Align two assemblies with minimap2 and compare them in the dotplot and linear

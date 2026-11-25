@@ -1,5 +1,5 @@
 ---
-title: Synteny visualization (OrthoFinder orthogroups)
+title: Synteny from OrthoFinder orthogroups
 sidebar_label: Synteny (OrthoFinder)
 description:
   Stack genomes on OrthoFinder orthogroups, built from protein homology, and

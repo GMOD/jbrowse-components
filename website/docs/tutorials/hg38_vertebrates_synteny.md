@@ -1,5 +1,5 @@
 ---
-title: Synteny from liftOver chains (hg38 and eight vertebrates)
+title: Synteny from liftOver chains (hg38 and other vertebrates)
 sidebar_label: Synteny (liftOver lanes, vertebrates)
 description:
   Stack UCSC genomes under a human locus from the liftOver chains UCSC already

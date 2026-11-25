@@ -1,5 +1,5 @@
 ---
-title: Rearrangements between genomes by type (SyRI)
+title: Synteny from SyRI rearrangement calls (Arabidopsis)
 sidebar_label: Synteny (SyRI rearrangement types)
 description:
   Load the SyRI classification of the differences between assembled genomes, so
