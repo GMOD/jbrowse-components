@@ -1,5 +1,5 @@
 import { agentBrief } from './agent.ts'
-import { OWN_FILE, configTracks } from './configTracks.ts'
+import { OWN_FILE, configTracks, rebuildTracks } from './configTracks.ts'
 import { buildRecipe } from './recipe.ts'
 
 import type { SessionSpec } from './decode.ts'
@@ -108,6 +108,56 @@ test("the spec's settings go over a config track's own display", () => {
       height: 240,
     }),
   ])
+})
+
+test("a spec display other than the config's own opens first, with its settings", () => {
+  const spec = {
+    views: [
+      {
+        type: 'LinearGenomeView',
+        assembly: 'hg19',
+        tracks: [
+          {
+            trackId: 'broad_chromhmm_multirow_hg19',
+            type: 'LinearBasicDisplay',
+            height: 240,
+          },
+        ],
+      },
+    ],
+  }
+  const [track] = configTracks({ ...chromhmm, spec })
+  expect(track?.displays?.[0]).toEqual({
+    type: 'LinearBasicDisplay',
+    height: 240,
+  })
+  expect(track?.displays?.map(display => display.type)).toEqual([
+    'LinearBasicDisplay',
+    'LinearMultiRowFeatureDisplay',
+  ])
+})
+
+test('a config track whose spec settings no display can carry is named as missing', () => {
+  const { tracks, missing } = rebuildTracks({
+    ...chromhmm,
+    spec: {
+      views: [
+        {
+          type: 'LinearGenomeView',
+          assembly: 'hg19',
+          tracks: [
+            {
+              trackId: 'broad_chromhmm_multirow_hg19',
+              type: 'LinearAlignmentsDisplay',
+              height: 90,
+            },
+          ],
+        },
+      ],
+    },
+  })
+  expect(tracks).toEqual([])
+  expect(missing).toHaveLength(1)
 })
 
 test("the steps walk a config track's own display settings", () => {

@@ -38,8 +38,8 @@ function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null && !Array.isArray(value)
 }
 
-// `displayDefaults` where the track opens as the figure's display anyway, a
-// `displays` entry where declaring it is what makes the track open as it, and
+// `displayDefaults` where the track opens as the figure's display anyway, the
+// figure's display moved first where that makes the track open as it, and
 // nothing where neither holds
 function withSettings(
   track: RawTrack,
@@ -48,28 +48,40 @@ function withSettings(
   display: string,
   settings: Record<string, unknown>,
 ): RawTrack | undefined {
-  const displays = (track.displays ?? []) as Record<string, unknown>[]
-  if (displays.some(d => d.type === display)) {
-    return {
-      ...track,
-      displays: displays.map(d =>
-        d.type === display ? { ...d, ...settings } : d,
-      ),
-    }
-  }
-  if (defaultDisplay(info, viewType) === display) {
-    return {
-      ...track,
-      displayDefaults: {
-        ...(isRecord(track.displayDefaults) ? track.displayDefaults : {}),
-        ...settings,
+  const displays = track.displays ?? []
+  const opensAs = (list: RawTrack['displays'] = []) =>
+    defaultDisplay(
+      {
+        ...info,
+        declaredDisplayTypes: list
+          .map(d => d.type)
+          .filter(type => typeof type === 'string'),
       },
-    }
-  }
-  const declared = { ...info, declaredDisplayTypes: [display] }
-  return defaultDisplay(declared, viewType) === display
-    ? { ...track, displays: [...displays, { type: display, ...settings }] }
-    : undefined
+      viewType,
+    )
+  const isDisplay = (d: { type?: string }) =>
+    canonicalDisplayType(d.type) === display
+  const declared = displays.find(isDisplay)
+  const first = [
+    { ...declared, type: display, ...settings },
+    ...displays.filter(d => !isDisplay(d)),
+  ]
+  return opensAs(displays) === display
+    ? declared
+      ? {
+          ...track,
+          displays: displays.map(d => (isDisplay(d) ? { ...d, ...settings } : d)),
+        }
+      : {
+          ...track,
+          displayDefaults: {
+            ...(isRecord(track.displayDefaults) ? track.displayDefaults : {}),
+            ...settings,
+          },
+        }
+    : opensAs(first) === display
+      ? { ...track, displays: first }
+      : undefined
 }
 
 // The adapter a reader fills in with their own files: one `uri`, or a
@@ -134,7 +146,11 @@ export function rebuildTracks({ config, spec }: DecodedSpec) {
       base && info && viewType && display && Object.keys(settings).length
         ? withSettings(base, info, viewType, display, settings)
         : undefined
-    const kept = styled ?? (Object.keys(own).length ? base : undefined)
+    const kept = Object.keys(settings).length
+      ? styled
+      : Object.keys(own).length
+        ? base
+        : undefined
     const unreadDisplay = !display || !(display in configManifest.displays)
     const styledInFigure =
       Object.keys(own).length > 0 ||
