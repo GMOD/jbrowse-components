@@ -55,6 +55,7 @@ import {
   makeOffscreenLayout,
   overlayJexlFilters,
   overlayKind,
+  overlayLevel,
   placeOnRow,
   readSourceOf,
   inEveryRow,
@@ -629,15 +630,14 @@ export default function stateModelFactory(pluginManager: PluginManager) {
           // connection.
           // present in every view, the same invariant `tracks[level]` leans on
           const d = tracks[level]!.displays[0]!
-          levels.push({
-            yOffset:
-              yOffsetsOverride?.[level] ??
-              viewTop + view.getTrackYOffset(trackId)!,
-            height: d.height,
-            stickyTop: d.stickyBandHeight ?? 0,
-            scrollTop: d.scrollTop ?? 0,
-            offsetPx: view.offsetPx,
-          })
+          levels.push(
+            overlayLevel({
+              display: d,
+              screenTop: viewTop + view.getTrackYOffset(trackId)!,
+              exportedTop: yOffsetsOverride?.[level],
+              offsetPx: view.offsetPx,
+            }),
+          )
           layouts.push({
             displayedRegions: view.displayedRegions,
             bpPerPx: view.bpPerPx,

@@ -42,6 +42,11 @@ interface OverlayDisplayBase extends Partial<ReadSource>, IStateTreeNode {
   /** the bands held out of the scroll, on displays that have any */
   stickyBandHeight?: number
   /**
+   * display-kit's `SvgDisplayBox.svgControlsStrip`: the controls the export
+   * leaves out, which make the exported track that much shorter
+   */
+  svgControlsStrip?: { top: number; height: number }
+  /**
    * Whether the display draws its own read connectors,
    * LinearAlignmentsDisplay's `drawsConnectors`: in chain layout or under
    * pileup connectors. Structural, since this plugin has no dependency on
@@ -150,6 +155,38 @@ export function placeOnRow(layout: ViewLayout, refName: string, coord: number) {
         reversed: !!layout.displayedRegions[hit.index]!.reversed,
       }
     : undefined
+}
+
+/**
+ * One row's overlay geometry for a track. An export passes `exportedTop`, the
+ * track body's top in the figure, and the body is display-kit's
+ * `exportedHeight`: the display's `height` less the controls strip the export
+ * leaves out.
+ */
+export function overlayLevel({
+  display: d,
+  screenTop,
+  exportedTop,
+  offsetPx,
+}: {
+  display: Pick<
+    OverlayDisplayBase,
+    'height' | 'svgControlsStrip' | 'stickyBandHeight' | 'scrollTop'
+  >
+  screenTop: number
+  exportedTop: number | undefined
+  offsetPx: number
+}) {
+  return {
+    yOffset: exportedTop ?? screenTop,
+    height:
+      exportedTop === undefined
+        ? d.height
+        : d.height - (d.svgControlsStrip?.height ?? 0),
+    stickyTop: d.stickyBandHeight ?? 0,
+    scrollTop: d.scrollTop ?? 0,
+    offsetPx,
+  }
 }
 
 // Vertical screen position (relative to the overlay SVG) of an overlay endpoint

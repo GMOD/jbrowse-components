@@ -7,6 +7,7 @@ import {
   layoutUnknown,
   linksOwnReads,
   overlayJexlFilters,
+  overlayLevel,
   makeOffscreenLayout,
   placeOnRow,
   inEveryRow,
@@ -303,5 +304,43 @@ describe('inEveryRow', () => {
 
   test('no rows, no tracks', () => {
     expect(tracksInEveryRow([])).toEqual([])
+  })
+})
+
+describe('overlayLevel', () => {
+  const display = { height: 200, svgControlsStrip: { top: 40, height: 30 } }
+
+  test('an exported record the band does not lay out snaps to the exported track bottom', () => {
+    const level = overlayLevel({
+      display,
+      screenTop: 500,
+      exportedTop: 100,
+      offsetPx: 0,
+    })
+    expect(
+      computeOverlayY({ ...level, layout: makeOffscreenLayout(10, 20) }),
+    ).toBe(270)
+  })
+
+  test('on screen the controls stay in the track', () => {
+    expect(
+      overlayLevel({
+        display,
+        screenTop: 500,
+        exportedTop: undefined,
+        offsetPx: 0,
+      }),
+    ).toMatchObject({ yOffset: 500, height: 200 })
+  })
+
+  test('a display with no controls strip exports at its height', () => {
+    expect(
+      overlayLevel({
+        display: { height: 200 },
+        screenTop: 500,
+        exportedTop: 100,
+        offsetPx: 0,
+      }).height,
+    ).toBe(200)
   })
 })
