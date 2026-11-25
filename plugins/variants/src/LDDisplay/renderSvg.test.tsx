@@ -2,6 +2,7 @@ import { act } from 'react'
 
 import { render } from '@testing-library/react'
 
+import { indexSnpHighlightGeometry } from './components/indexArms.ts'
 import { renderSvg } from './renderSvg.tsx'
 import { createTestEnvironment } from './testEnv.ts'
 
@@ -21,7 +22,10 @@ function ldData(n: number, widthBp: number, originBp: number): LDDataResult {
       end: i * 1000 + 1,
     })),
     ldValues: new Float32Array((n * (n - 1)) / 2),
-    boundaries: new Float32Array(n + 1),
+    boundaries: Float32Array.from(
+      { length: n + 1 },
+      (_, i) => (i * widthBp) / (n * Math.SQRT2),
+    ),
     band: 1_000_000,
     uniformW: widthBp / (n * Math.SQRT2),
     originBp,
@@ -53,4 +57,34 @@ test('the exported labels and connector lines hold still while the view pans', a
     view.scrollTo(300)
   })
   expect(container.innerHTML).toBe(drawn)
+})
+
+function displayWithData() {
+  const { display, view } = createTestEnvironment().createDisplay()
+  view.zoomTo(10)
+  const width = view.dynamicBlocks.totalWidthPxWithoutBorders
+  const block = view.dynamicBlocks.contentBlocks[0]!
+  display.setRpcData(ldData(4, width * view.bpPerPx, block.start))
+  return display
+}
+
+test('the export draws the index SNP band where the screen does', async () => {
+  const display = displayWithData()
+  display.setIndexSnp(display.snps[2])
+  const geometry = indexSnpHighlightGeometry(display)
+
+  const { getByTestId } = render(<svg>{await renderSvg(display, {})}</svg>)
+  const band = getByTestId('ld-index-snp-band')
+  expect(geometry).toBeDefined()
+  expect(band.getAttribute('d')).toBe(geometry?.d)
+  expect(band.getAttribute('stroke-width')).toBe(`${geometry?.strokeWidth}`)
+  expect(band.getAttribute('stroke-opacity')).toBe('0.35')
+  expect(band.getAttribute('stroke')).not.toMatch(/rgba/)
+})
+
+test('the export draws no index SNP band without an index SNP', async () => {
+  const display = displayWithData()
+
+  const { queryByTestId } = render(<svg>{await renderSvg(display, {})}</svg>)
+  expect(queryByTestId('ld-index-snp-band')).toBeNull()
 })

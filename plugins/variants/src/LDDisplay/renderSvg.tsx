@@ -4,10 +4,13 @@ import { renderDisplaySvg } from '@jbrowse/display-kit/renderDisplaySvg'
 
 import { SvgConnectorField } from '../shared/ConnectorLines.tsx'
 import { LD_CONNECTOR_STROKE_PX } from '../shared/constants.ts'
+import { IndexSnpHighlightSvg } from './components/IndexSnpHighlight.tsx'
 import { ConnectorLabels } from './components/VariantLabels.tsx'
+import { indexSnpHighlightGeometry } from './components/indexArms.ts'
 import { LD_MARKS } from './components/ldMarks.ts'
 
 import type { ConnectorCoord } from '../shared/ConnectorLines.tsx'
+import type { IndexSnpHighlightSource } from './components/indexArms.ts'
 import type {
   LDRenderState,
   LDUploadData,
@@ -18,7 +21,7 @@ import type {
 } from '@jbrowse/display-kit/renderDisplaySvg'
 import type { ExportSvgDisplayOptions } from '@jbrowse/display-kit/types'
 
-interface LdSvgModel extends LgvSvgExportable {
+interface LdSvgModel extends LgvSvgExportable, IndexSnpHighlightSource {
   paintedCells: ReadonlyMap<number, LDUploadData>
   renderState: LDRenderState
   matrixTop: number
@@ -56,6 +59,9 @@ function LdSvgBody({
         top={model.matrixTop}
         opts={opts}
       />
+      {overlays ? (
+        <IndexSnpHighlightSvg geometry={indexSnpHighlightGeometry(model)} />
+      ) : null}
       {overlays && !model.atGenomicPositions ? (
         <SvgConnectorField
           coords={coords}
