@@ -13,23 +13,23 @@ tutorial_subcategory: Other species
 Fly geneticists have traced several traits to structural variants: duplications
 of a cytochrome P450 gene that resist nicotine, a transposon that bends the wing
 of the Curved mutant, and a transposon in _CHKov1_ that protects against an
-insecticide and a virus. We find each one in 29 _Drosophila melanogaster_
+insecticide and a virus. We find each one in _Drosophila melanogaster_
 assemblies aligned with `minigraph` into a graph on the dm6 reference: the
 founders of the Drosophila Synthetic Population Resource (DSPR) and other
-strains of Chakraborty et al. (2019), 11 Bloomington stocks with classical
-visible mutations that Samano et al. (2026) assembled, three single-fly PacBio
-HiFi strains and a Canton S. The graph track draws each bubble, a place where
-the assemblies' sequences split and rejoin, and a callset made by mapping every
-assembly back onto the graph lists which allele each assembly has there, one VCF
-column per assembly. dm6 is ISO1, itself a laboratory strain, so where it has a
-transposon the strains without one appear as a deletion. We:
+strains of Chakraborty et al. (2019), Bloomington stocks with classical visible
+mutations that Samano et al. (2026) assembled, single-fly PacBio HiFi strains
+and a Canton S. The graph track draws each bubble, a place where the assemblies'
+sequences split and rejoin, and a callset made by mapping every assembly back
+onto the graph lists which allele each assembly has there, one VCF column per
+assembly. dm6 is ISO1, itself a laboratory strain, so where it has a transposon
+the strains without one appear as a deletion. We:
 
 - load dm6 with its RefSeq genes, the graph, its bubbles and the callset as
   tracks in JBrowse
-- at _Cyp28d1_, sort the callset's rows by genotype to group the duplication
+- sort the callset's rows by genotype at _Cyp28d1_ to group the duplication
   alleles
-- at _Strn-Mlck_, find the one Bloomington stock with the Curved insertion
-- at _CHKov1_, read which assemblies lack the reference's transposon
+- find the Bloomington stock with the Curved insertion at _Strn-Mlck_
+- read which assemblies lack the reference's transposon at _CHKov1_
 - build the graph and the callset from the NCBI assemblies
 
 The fly graph page on
@@ -53,8 +53,8 @@ The graph view is a beta plugin. We welcome your [feedback](/contact).
 - to build the graph and the callset:
   [`minigraph`](https://github.com/lh3/minigraph), the `k8` JavaScript shell
   that runs minigraph's `mgutils` scripts, bcftools, htslib (`bgzip`, `tabix`),
-  gfatools, [`gfa-to-tabix`](https://github.com/GMOD/gfa-to-tabix) 5.0 or later
-  and NCBI's `datasets`
+  gfatools, [`gfa-to-tabix`](https://github.com/GMOD/gfa-to-tabix) 5.0.0 or
+  later and NCBI's `datasets`
 
 <!-- BEGIN GENERATED TUTORIAL_INSTALL minigraph,k8,bcftools,htslib,gfatools,gfa-to-tabix,datasets -->
 
@@ -78,7 +78,7 @@ cargo install gfa-to-tabix
 ## The data
 
 The reference is dm6, which the build takes from NCBI as GCF_000001215.4 and
-JBrowse reads as UCSC's copy, and the 29 assemblies are NCBI GenBank records,
+JBrowse reads as UCSC's copy, and the assemblies are NCBI GenBank records,
 listed with their accessions in the
 [README](https://jbrowse.org/demos/fly_pangenome/README.txt) beside the files.
 
@@ -195,18 +195,15 @@ reference's first. The display config:
     "type": "VcfTabixAdapter",
     "uri": "https://jbrowse.org/demos/fly_pangenome/fly-dm6-minigraph.vcf.gz"
   },
-  "displays": [
-    {
-      "type": "LinearVariantDisplay",
-      "rows": { "field": "haplotype" },
-      "records": {
-        "labels": {
-          "name": { "show": false },
-          "description": "jexl:feature.INFO.ALEN + ' bp'"
-        }
+  "displayDefaults": {
+    "rows": { "field": "haplotype" },
+    "records": {
+      "labels": {
+        "name": { "show": false },
+        "description": "jexl:feature.INFO.ALEN + ' bp'"
       }
     }
-  ]
+  }
 }
 ```
 
@@ -228,18 +225,13 @@ dm6's.
 - In the graph track's menu, open **Graph settings...** and set **Bubble
   spread** to **Compress lengths**, so the kb and bp segments fit one pane.
 
-<Figure caption="Cyp28d1 with the callset sorted at its record over the gene, above the graph track. The six alternate alleles take a color each. The callouts name each DSPR founder's allele and how much longer it is than dm6's, and on the graph track the 15 kb copy A2 and B1 add and the 4.9 kb Canton-S_A1 alone has." src="/img/pangenome/fly_cyp28d1.png" />
-
-Two Bloomington stocks share Canton-S_A1's allele, and CantonS_Yunnan shares
-BOG1_A2's. KSA2 and A4_HiFi, the red rows, have an allele the paper did not
-describe, 5.3 kb longer than dm6's, and SAM_HiFi, the mint row, has another, 3.3
-kb longer.
+<Figure caption="Cyp28d1 with the callset sorted at its record over the gene, above the graph track. The callouts name each DSPR founder's allele and how much longer it is than dm6's." src="/img/pangenome/fly_cyp28d1.png" />
 
 ## Find the Curved wing insertion at Strn-Mlck
 
-The Curved (c¹) wing mutation was described a century ago and never placed in
-the genome. Samano et al. (2026) traced it to a 7.5 kb DM412 retrotransposon
-inside an exon of the muscle gene _Strn-Mlck_, which truncates its transcript.
+Samano et al. (2026) traced the Curved (c¹) wing mutation to a 7.5 kb DM412
+retrotransposon inside an exon of the muscle gene _Strn-Mlck_, which truncates
+its transcript.
 
 - Type `chr2R:15,953,860-15,953,960` into the location box, where the record at
   `chr2R:15,953,909` is wide enough to click.
@@ -247,7 +239,7 @@ inside an exon of the muscle gene _Strn-Mlck_, which truncates its transcript.
 - Type `chr2R:15,940,001-15,966,000` to zoom back out; the rows keep their
   order.
 
-<Figure caption="Strn-Mlck with the callset sorted at the 7,511 bp insertion, which BDSC_156 alone has. The graph track draws it as the 7.5 kb loop the callout names." src="/img/pangenome/fly_strn_mlck.png" />
+<Figure caption="Strn-Mlck with the callset sorted at the insertion BDSC_156 alone has. The graph track draws it as the loop the callout names." src="/img/pangenome/fly_strn_mlck.png" />
 
 ## Find which assemblies lack CHKov1's transposon
 
@@ -260,10 +252,7 @@ has the Doc, so the assemblies without it have a 4.5 kb deletion in the callset.
 - Type `chr3R:25,320,001-25,335,000` into the location box.
 - Right-click the record over _CHKov1_ and pick **Sort rows by genotype here**.
 
-<Figure caption="CHKov1 with the callset sorted at the 4.5 kb record. Blue rows lack the Doc that dm6 has. On the graph track, the callout marks the Doc, the arc over the 1 bp path the seven strains take." src="/img/pangenome/fly_chkov1.png" />
-
-Oregon-R, BOG1_A2, three Bloomington stocks and two of the HiFi strains lack the
-Doc, and the other 22 assemblies have it.
+<Figure caption="CHKov1 with the callset sorted at the record over the gene. Blue rows lack the Doc that dm6 has. On the graph track, the callout marks the Doc, the arc over the short path the strains without it take." src="/img/pangenome/fly_chkov1.png" />
 
 ## Build the fly graph
 
@@ -333,9 +322,6 @@ chromosomes:
 # --below: the size to fold under; --layout matches the index's
 gfa-to-tabix fold fly.rgfa.gz --below 10000 --layout contig -o fly.fold10000
 ```
-
-[](/docs/tutorials/pangenome_prepare_graph) explains each file and the other
-layouts.
 
 ## Make the callset
 
@@ -433,7 +419,7 @@ each assembly's call loads the graph's index, 6 to 10 GB of RAM. `CALL_MAX_GB`
 (16 by default) caps each call's memory, so a call that outgrows it stops the
 script with an error. The script:
 
-- downloads dm6 and the 29 assemblies from NCBI with their sequence reports, and
+- downloads dm6 and the assemblies from NCBI with their sequence reports, and
   keeps each assembly's chromosomes, renamed to PanSN
   (`sample#haplotype#contig`). Three assemblies hold chromosome 3 as one
   sequence where dm6 has the arms 3L and 3R; the script keeps it whole, and
