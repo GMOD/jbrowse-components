@@ -69,37 +69,48 @@ runs the same check on your own locus and reads.
 ## Load mappability, coverage and reads across SMN1 and SMN2 {#mappability-coverage-and-read-tracks-across-the-smn1-and-smn2-region}
 
 _SMN1_ and _SMN2_ sit about 900 kb apart on chromosome 5 and are roughly 99.9%
-identical across their ~28 kb. Spinal muscular atrophy depends on the copy
-number of _SMN1_, so which copy a read came from is the clinical question. An
-aligner given a 150 bp read from either copy has two equally good places to put
-it and reports mapping quality 0 (MAPQ 0). MAPQ is
+identical. An aligner given a 150 bp read from either copy has two equally good
+places to put it and reports mapping quality 0 (MAPQ 0). MAPQ is
 `-10 log10 Pr{mapping position is wrong}`
 ([SAM specification](https://samtools.github.io/hts-specs/SAMv1.pdf)), so MAPQ 0
-means the chosen position is about as likely wrong as right.
+means the aligner puts no confidence in the chosen position.
 
 Turn these tracks on from the track selector of the hosted hg38 config at
 [genomes.jbrowse.org](https://genomes.jbrowse.org), or add them with the configs
 below to any JBrowse that has the hg38 assembly. UCSC publishes the mappability
-and problematic-region tracks for hg38 only:
+and problematic-region tracks for hg38 only. The hosted config holds Umap M100
+only as one row of **Multi-read mappability - Umap (multi)**, and the 1KG Vienna
+ONT SVs only as one row of **Long-read SVs - by cohort**, so add those two with
+the configs below. On another JBrowse, load the hg38 assembly first:
+
+```json addassembly genome=hg38
+{
+  "name": "hg38",
+  "uri": "https://jbrowse.org/genomes/GRCh38/fasta/hg38.prefix.fa.gz",
+  "refNameAliases": {
+    "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/GRCh38/hg38_aliases.txt"
+  },
+  "cytobands": "https://jbrowse.org/genomes/GRCh38/cytoBand.txt"
+}
+```
+
+The tracks:
 
 - **Multi-read mappability - Umap M100**, the fraction of overlapping 100-mers
   at each position that are unique in the genome, computed from the reference
   alone. The file omits positions with no unique 100-mer, so the track is blank
-  there. The hosted config holds it only as one row of **Multi-read
-  mappability - Umap (multi)**, so add it on its own with the config below.
+  there.
   - **Resolution → Bin summary → Minimum**, with **Show min and max** unchecked,
     draws the worst position in each bin
   - **Y axis... → Min** and **Max** pin the axis at 0 to 1
   - In the 2.5 Mb frame, at about a kilobase per pixel, even the **Minimum**
     line is at 0 everywhere, so read this track in the zoomed view
-- **gnomAD v3 Genome Coverage - Mean Coverage**, averaged over tens of thousands
-  of genomes. gnomAD drops reads that do not place uniquely before averaging, so
+- **gnomAD v3 Genome Coverage - Mean Coverage**, averaged over the gnomAD
+  genomes. gnomAD drops reads that do not place uniquely before averaging, so
   this track is low wherever the Umap track is blank.
 - **GIAB Problematic Regions - LowMap+SegDup**, the sequence GIAB leaves out of
   its benchmark.
-- **Long-read SVs - 1KG Vienna ONT SVs**, the long-read callset, which the
-  hosted config holds only as one row of **Long-read SVs - by cohort**; add it
-  with the config below.
+- **Long-read SVs - 1KG Vienna ONT SVs**, the long-read callset.
 - **NCBI RefSeq - RefSeq Curated**, the gene track in the figures.
 
 The Umap config holds the **Minimum** score mode and the 0 to 1 axis:
@@ -114,19 +125,15 @@ The Umap config holds the **Minimum** score mode and the 0 to 1 axis:
     "type": "BigWigAdapter",
     "uri": "https://hgdownload.soe.ucsc.edu/gbdb/hg38/hoffmanMappability/k100.Umap.MultiTrackMappability.bw"
   },
-  "displays": [
-    {
-      "type": "LinearWiggleDisplay",
-      "displayId": "hg38-umap100Quantitative-LinearWiggleDisplay",
-      "mark": { "extent": "none" },
-      "encoding": {
-        "y": {
-          "field": "minScore",
-          "scale": { "domainMin": 0, "domainMax": 1 }
-        }
+  "displayDefaults": {
+    "mark": { "extent": "none" },
+    "encoding": {
+      "y": {
+        "field": "minScore",
+        "scale": { "domainMin": 0, "domainMax": 1 }
       }
     }
-  ]
+  }
 }
 ```
 
@@ -196,16 +203,11 @@ decodes it against hg38; for your own sample, swap the `uri`. In
 }
 ```
 
-Open `chr5:69,200,000-71,700,000` for the whole region, and a second view at
-`chr5:70,889,000-70,989,000`, the SMN cassette, for the reads.
+Type `chr5:69,200,000-71,700,000` into the location box for the whole region,
+and open a second view at `chr5:70,889,000-70,989,000`, the SMN cassette, for
+the reads.
 
 <Figure src="/img/qc/smn_block_and_reads.png" caption="Top: 2.5 Mb of chr5 around SMN2 and SMN1, the band marking the window below. Below: that 100 kb around SMN1, one read per row, colored by mapping quality." links="Open the wide view=qc/smn_problematic_regions,Open the zoomed view=qc/smn1_evidence" />
-
-GIAB flags two long intervals, much larger than the gene, and the gnomAD track
-stays low across both, against the typical depth on either side. The long-read
-SV track is nearly empty across them. In the zoomed view most of the Umap track
-is blank, gnomAD reaches its flank level only in islands, and most reads are
-dark blue.
 
 Dark blue is MAPQ 0; yellow is MAPQ 30 and above. **Advanced → Edit plot...** on
 the reads track shows this `encoding.color` as text and applies edits live.
@@ -231,9 +233,6 @@ config that is a `facet` on the `mapq` field:
 ```
 
 <Figure src="/img/qc/smn1_mapq_coverage.png" caption="The same 100 kb around SMN1 with the reads grouped by mapping quality and the pileup hidden: one coverage band per MAPQ bin, on a shared scale." links="Open this view=qc/smn1_mapq_coverage" />
-
-The MAPQ 0 band has depth across the whole window. The MAPQ 30+ band has depth
-only in the islands where the gnomAD track reaches its flank level.
 
 ## Check the SMN duplication against T2T-CHM13
 
@@ -275,10 +274,8 @@ the hs1 assembly and the chain file, whose query is the genome it lifts to:
 
 <Figure src="/img/qc/smn_vs_t2t.png" caption="GRCh38 above T2T-CHM13, each on its SMN2-to-SMN1 span, ribbons from UCSC's liftOver chains colored by strand." links="Open this view=qc/smn_vs_t2t" />
 
-The gene order is the same in both assemblies, _SMN2_ first and then _SMN1_. The
-crossing chains join each GRCh38 copy to both CHM13 copies, so CHM13 has the
-same duplication, with the two genes closer together, and a read from either
-copy still has two places to go.
+The crossing chains join each GRCh38 copy to both CHM13 copies, so a read from
+either copy still has two places to go.
 
 ## Apply the mappability check to another locus
 
@@ -303,16 +300,16 @@ samtools view -c -q 1 "$CRAM" chr5:70,900,000-71,000,000       # placed at all
 samtools view -c -q 60 "$CRAM" chr5:70,900,000-71,000,000      # placed uniquely
 ```
 
-The Umap track's value over a window is one command over the same bigWig:
+The Umap track's value over _SMN1_ is one command over the same bigWig:
 
 <!-- from: scripts/scan_mappability_qc.sh -->
 
 ```bash
 # positions with no unique 100-mer are absent from the file, so the share of
 # the span that has any value is the number to read
-bigWigToBedGraph -chrom=chr5 -start=70049000 -end=70077000 \
+bigWigToBedGraph -chrom=chr5 -start=70924940 -end=70953012 \
   k100.Umap.MultiTrackMappability.bw stdout |
-  awk -v s=70049000 -v e=70077000 \
+  awk -v s=70924940 -v e=70953012 \
     '{cov += $3 - $2} END {printf "%.1f%% has a value\n", 100 * cov / (e - s)}'
 ```
 
@@ -324,12 +321,9 @@ Run both on the control window too, at the same width.
 measures the SMN region from the files in the figures. It tests whether a read
 can be placed at a locus several ways, and compares each result with a control:
 
-- Over _SMN1_, _SMN2_ and two controls, it measures how much of each window the
-  Umap track has a value for, gnomAD's mean depth, and the share of NA12878's
-  reads at MAPQ 0. The near control is a window of the same width at the 5' end
-  of _BDP1_, past both flagged intervals on the same chromosome, so sample,
-  library and chromosome all match; _ACTB_ on chromosome 7 shows the near
-  control is ordinary.
+- Over _SMN1_, _SMN2_ and two controls (_BDP1_ and _ACTB_), it measures how much
+  of each window the Umap track has a value for, gnomAD's mean depth, and the
+  share of NA12878's reads at MAPQ 0.
 - The script lists which problematic-region tracks flag the region, and bins the
   gnomAD track across it to find where the depth recovers.
 - The script counts GM18501's long-read records over _SMN1_ at MAPQ 0 and MAPQ
