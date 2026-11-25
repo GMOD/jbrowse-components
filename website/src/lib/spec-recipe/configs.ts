@@ -271,8 +271,9 @@ const FILE_KINDS: Record<string, string> = {
   MultiGenomeIndexedPAFAdapter:
     'one indexed PAF of several genomes, PanSN-named (.pif.gz + .tbi)',
   MCScanBlocksAdapter: 'an MCScan .blocks file plus one BED per genome',
-  MCScanAnchorsAdapter: 'an MCScan .anchors file',
-  MCScanSimpleAnchorsAdapter: 'an MCScan .anchors.simple file',
+  MCScanAnchorsAdapter: 'an MCScan .anchors file plus one BED per genome',
+  MCScanSimpleAnchorsAdapter:
+    'an MCScan .anchors.simple file plus one BED per genome',
   DeltaAdapter: 'a MUMmer .delta file',
   ChainAdapter: 'a UCSC .chain file',
   MashMapAdapter: 'a MashMap output file',
