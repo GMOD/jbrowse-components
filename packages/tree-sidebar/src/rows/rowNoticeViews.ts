@@ -207,5 +207,18 @@ export function rowNoticeViews<S extends Row>(self: RowNoticeHost<S>) {
           }
         : undefined
     },
+    /**
+     * #getter
+     * What an SVG export appends to the track's label while fewer rows
+     * show than there are, "showing N of M rows": the export drops the
+     * chip with the controls. Empty while every row shows.
+     */
+    get svgTrackLabelNote(): string {
+      const shown = self.shownRows.length
+      const all = self.expandedRows.length
+      return self.rowNarrowingShows && shown < all
+        ? `showing ${shown} of ${all} rows`
+        : ''
+    },
   }
 }

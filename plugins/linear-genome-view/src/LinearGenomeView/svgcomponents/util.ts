@@ -43,7 +43,7 @@ export interface LgvSvgChromeView {
 // shape fed into these helpers (including SvgDisplayResult.track) satisfies it.
 type SidebarDisplay = Pick<
   LgvSvgExportable,
-  'svgSidebarWidth' | 'svgControlsStrip'
+  'svgSidebarWidth' | 'svgControlsStrip' | 'svgTrackLabelNote'
 > & { axes?: YAxis[] }
 
 interface TrackHeights {
@@ -79,14 +79,27 @@ export interface SvgTrackRow {
   legendHeight?: number
 }
 
-/** A session's rendered tracks as rows, each named as the session names it. */
+/**
+ * The label an export draws for a track: its name, and after it the note its
+ * display adds, as "showing 3 of 12 rows".
+ */
+export function svgTrackLabel(track: SidebarTrack, session: TrackCatalog) {
+  const name = svgTrackName(track, session)
+  const note = track.displays[0]?.svgTrackLabelNote
+  return note ? `${name} · ${note}` : name
+}
+
+/**
+ * A session's rendered tracks as rows, each labelled as {@link svgTrackLabel}
+ * labels it.
+ */
 export function sessionTrackRows(
   displayResults: SvgDisplayResult[],
   session: TrackCatalog,
 ): SvgTrackRow[] {
   return displayResults.map(({ track, result, legendHeight }) => ({
     trackId: String(track.configuration.trackId),
-    name: svgTrackName(track, session),
+    name: svgTrackLabel(track, session),
     track,
     result,
     legendHeight,
@@ -396,7 +409,7 @@ export function trackLabelLeftOffset({
   session: TrackCatalog
 }) {
   return trackLabelGutterWidth({
-    rows: tracks.map(track => ({ track, name: svgTrackName(track, session) })),
+    rows: tracks.map(track => ({ track, name: svgTrackLabel(track, session) })),
     trackLabels,
     fontSize,
     fontFamily,

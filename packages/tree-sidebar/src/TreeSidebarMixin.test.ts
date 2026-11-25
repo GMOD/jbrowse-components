@@ -336,6 +336,19 @@ describe('rows.kept and rows.filter narrow the rows', () => {
     )
   })
 
+  // The export drops the chip with the controls, so the label carries it.
+  it('an export labels a narrowed track with its count, and an unnarrowed one with nothing', () => {
+    expect(
+      makeFiltered({ filter: [{ field: 'population', oneOf: ['EUR'] }] })
+        .svgTrackLabelNote,
+    ).toBe('showing 2 of 4 rows')
+    expect(
+      makeFiltered({ filter: [{ field: 'sex', oneOf: ['F', 'M'] }] })
+        .svgTrackLabelNote,
+    ).toBe('')
+    expect(makeFiltered({}).svgTrackLabelNote).toBe('')
+  })
+
   it('valid: false keeps the rows missing the attribute', () => {
     const display = makeFiltered({
       filter: [{ field: 'population', valid: false }],

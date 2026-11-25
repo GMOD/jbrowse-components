@@ -60,6 +60,11 @@ interface SvgDisplayBox {
    * spending part of `height` on them. Absent for a display with none.
    */
   svgControlsStrip?: SvgControlsStrip
+  /**
+   * Words the export appends to the track's label, standing in for a line
+   * the screen draws in a control the export leaves out: empty for none.
+   */
+  svgTrackLabelNote?: string
 }
 
 /**

@@ -11,6 +11,7 @@ import {
   labelInkHeight,
   labelOffset,
   offsetLabelBaselineY,
+  sessionTrackRows,
   TRACK_LABEL_GAP,
   trackBoxOffsets,
   trackLabelLeftOffset,
@@ -203,6 +204,22 @@ describe('trackLabelLeftOffset', () => {
     ).toBe(width('coverage') + AXIS_GUTTER_WIDTH_PX)
   })
 
+  it('measures a left label with the note its display adds', () => {
+    expect(
+      trackLabelLeftOffset({
+        tracks: [
+          {
+            configuration: { name: 'calls' } as never,
+            displays: [{ svgTrackLabelNote: 'showing 2 of 9 rows' }],
+          },
+        ],
+        trackLabels: 'left',
+        fontSize: 13,
+        session,
+      }),
+    ).toBe(width('calls · showing 2 of 9 rows'))
+  })
+
   it('is 0 with no tracks', () => {
     expect(
       trackLabelLeftOffset({
@@ -212,6 +229,32 @@ describe('trackLabelLeftOffset', () => {
         session,
       }),
     ).toBe(0)
+  })
+})
+
+describe('sessionTrackRows', () => {
+  const session = { assemblies: [], tracks: [], getTrackById: () => undefined }
+  const row = (svgTrackLabelNote?: string) =>
+    sessionTrackRows(
+      [
+        {
+          track: {
+            configuration: { name: 'calls', trackId: 'calls' } as never,
+            displays: [{ height: 100, svgTrackLabelNote }],
+          },
+          result: null,
+        },
+      ],
+      session,
+    )[0]!.name
+
+  it('appends the note a display adds to the track name', () => {
+    expect(row('showing 2 of 9 rows')).toBe('calls · showing 2 of 9 rows')
+  })
+
+  it('is the track name alone where the display adds none', () => {
+    expect(row('')).toBe('calls')
+    expect(row()).toBe('calls')
   })
 })
 
