@@ -26,8 +26,7 @@ one, since its authors publish a chain for every pair of genomes in it. We:
 
 ## Prerequisites
 
-- [chain2paf](https://github.com/AndreaGuarracino/chain2paf), built with
-  `cargo install --path .` from its checkout
+- [chain2paf](https://github.com/AndreaGuarracino/chain2paf)
 - The [JBrowse CLI](/docs/cli), for `jbrowse make-pif`
 - htslib (`bgzip`, `tabix`), which `jbrowse make-pif` calls
 - `python3`, for the build script
@@ -56,9 +55,9 @@ You don't need these files to follow the page: the track configs below read the
 hosted results. The [build script](#reproduce-it-end-to-end) fetches them to
 rebuild those results, and the chain steps below take your own chains.
 
-| What it is                                                                                                | File                                                                              |
-| --------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------- |
-| Chains between every pair of genomes in the 8-way alignment, one `<genome>_vs_<genome>.chain.gz` per pair | [chains/](https://cgl.gi.ucsc.edu/data/cactus/t2t-apes/8-t2t-apes-2023v2/chains/) |
+| What it is                                                                                          | File                                                                              |
+| --------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------- |
+| Chains between every pair of genomes in the alignment, one `<genome>_vs_<genome>.chain.gz` per pair | [chains/](https://cgl.gi.ucsc.edu/data/cactus/t2t-apes/8-t2t-apes-2023v2/chains/) |
 
 <details>
 <summary>Read by URL (no download needed)</summary>
@@ -115,9 +114,8 @@ query from either genome is one tabix lookup:
 jbrowse make-pif apes.paf --out apes.pif.gz
 ```
 
-`make-pif` warns that the file contains only some of the genome pairs. The
-missing ones are the pairs no two neighbouring lanes need, such as chimpanzee
-against the siamang.
+`make-pif` warns about the genome pairs not in the file, such as chimpanzee
+against the siamang; no two neighbouring lanes use them.
 
 ## Load the chains as one multi-way synteny track
 
@@ -172,7 +170,7 @@ gene tracks come from each genome's hub unchanged, as in the hosted config.
 }
 ```
 
-## Follow ERBB2's orientation down the tree
+## Open the track at ERBB2 and color the ribbons by strand
 
 We'll open the track on hg38 around _ERBB2_ on 17q12. The track draws a lane per
 ape under human, each in the coordinates of that ape's assembly, and each lane
@@ -184,7 +182,7 @@ the one above it:
 ```json session config=https://jbrowse.org/demos/t2t_apes_cactus/config.json
 {
   "defaultSession": {
-    "name": "ERBB2 across seven apes",
+    "name": "ERBB2 across the apes",
     "views": [
       {
         "type": "LinearGenomeView",
@@ -204,11 +202,7 @@ the one above it:
 }
 ```
 
-<Figure caption="ERBB2 on hg38 over six T2T ape lanes, each ribbon joining a lane to the one above, colored by strand." src="/img/multiway_synteny/t2t_apes_cactus_17q.png" />
-
-The ribbons turn blue between human and chimpanzee, and again between gorilla
-and the Sumatran orangutan: chimpanzee, bonobo and gorilla have _ERBB2_ in one
-orientation, and human, both orangutans and the siamang in the other.
+<Figure caption="ERBB2 on hg38 over the T2T ape lanes, each ribbon joining a lane to the one above, colored by strand." src="/img/multiway_synteny/t2t_apes_cactus_17q.png" />
 
 ## Reproduce it end to end
 
