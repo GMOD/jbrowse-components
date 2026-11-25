@@ -168,15 +168,15 @@ bcftools view -S targets.txt --force-samples -Oz -o chr1.gt.vcf.gz chr1.subset.v
 
 FLARE requires a genetic map in four PLINK columns: chromosome, marker ID,
 genetic position in cM and base-pair position. The build script reshapes the
-Campbell pedigree map's `POS`/`rate`/`Map(cM)` columns into them, and the
-chromosome names must match the VCF's, and the reshape is one `awk`:
+Campbell pedigree map's `POS`/`rate`/`Map(cM)` columns into them with one
+`awk`, naming the chromosome as the VCF does:
 
 <!-- from: scripts/build_dog10k_wolfdog_ancestry.sh -->
 
 ```bash
 # skip the header and keep numeric rows: chromosome, marker (.), cM, base pair
 awk -v c=chr1 'NR>1 && $1 ~ /^[0-9]+$/ {printf "%s\t.\t%s\t%s\n", c, $3, $1}' \
-  campbell_sex_average_canFam4_chr1_map.txt > chr1.map
+  campbell_sex_average_canFam4/campbell_sex_average_canFam4_chr1_map.txt > chr1.map
 ```
 
 With no map for your organism, write one at a constant rate per megabase from
@@ -204,7 +204,8 @@ java -Xmx12g -jar flare.jar ref=chr1.ref.vcf.gz ref-panel=refpanel.txt \
 to rank the targets:
 
 ```bash
-gzip -dc wolfdog_chr1.global.anc.gz
+gzip -dc wolfdog_chr1.global.anc.gz |
+  grep -wE 'SAMPLE|CLUPRU000001|SAAR000001|CZEC000003|SHIL000001|THAI000009|TMSK000001|GRSD000002'
 ```
 
 ```text output
