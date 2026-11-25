@@ -15,9 +15,11 @@ import { getSession, radToDeg } from '@jbrowse/core/util'
 import { RingAxes } from '../../rings/RingAxes.tsx'
 import { RingOverlay } from '../../rings/RingOverlay.tsx'
 import {
+  RING_TOO_LARGE_REASON,
   canRasterizeRings,
   paintRingsSvg,
   renderRingBodies,
+  undrawnRingTracks,
 } from '../../rings/ringSvg.tsx'
 import { Rulers } from '../components/Ruler.tsx'
 import { figureGutterPx } from '../rulerLabels.ts'
@@ -30,14 +32,16 @@ import type { ReactNode } from 'react'
 export function SvgCircularLegend({
   model,
   size,
+  undrawnIds,
 }: {
   model: CircularViewModel
   size: number
+  undrawnIds?: readonly string[]
 }) {
   const palette = usePalette()
   return (
     <SvgColorLegend
-      entries={legendEntries(model.legendSpecIn(palette))}
+      entries={legendEntries(model.legendSpecIn(palette, undrawnIds))}
       canvasWidth={size}
       maxHeight={size}
       testid="color-legend"
@@ -113,8 +117,22 @@ export async function renderToSvg(
     ringsDrawable ? renderRingBodies(model.ringDisplays, opts, theme) : [],
   ])
 
+  const ringRows = undrawnRingTracks(model.tracks.filter(isRing), ringBodies)
+  if (ringsDrawable && opts.announceSkipped !== false) {
+    notifySkippedSvgTracks(session, ringRows.tooLarge, RING_TOO_LARGE_REASON)
+  }
+  const undrawnIds = [
+    ...model.tracks.filter(t => !svgDisplayOf(t)),
+    ...ringRows.undrawn,
+  ].flatMap(t => t.displays.map(d => d.id))
+
   // read after the waits, since a zoom or rotation may land during them
-  const { radiusPx, offsetRadians, effectivePaddingPx: paddingPx } = model
+  const {
+    radiusPx,
+    offsetRadians,
+    staticSlices,
+    effectivePaddingPx: paddingPx,
+  } = model
 
   // the export grows to its labels where the screen clips them
   const gutterPx = Math.max(
@@ -143,14 +161,28 @@ export async function renderToSvg(
           transform={`translate(${center},${center}) rotate(${radToDeg(offsetRadians)})`}
         >
           <Rulers model={model} />
-          <RingAxes model={model} />
+          <RingAxes
+            model={{
+              ringHost: {
+                rings: ringHost.rings.filter(
+                  r => !undrawnIds.includes(r.display.id),
+                ),
+              },
+              offsetRadians,
+              staticSlices,
+            }}
+          />
           <RingOverlay model={model} exporting />
           {displayResults.map(({ id, result }) => (
             <Fragment key={id}>{result}</Fragment>
           ))}
         </g>
         {model.showLegend ? (
-          <SvgCircularLegend model={model} size={figureSize} />
+          <SvgCircularLegend
+            model={model}
+            size={figureSize}
+            undrawnIds={undrawnIds}
+          />
         ) : null}
       </>
     ),

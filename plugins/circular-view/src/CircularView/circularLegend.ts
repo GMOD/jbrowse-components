@@ -75,17 +75,21 @@ function keyFor(
 /**
  * The circle's key, since a ring or a chord carries no label of its own: a row
  * per single-color or ramp track, then a section per track coloring by a field.
- * Given a palette, the key is the SVG export's, in that theme.
+ * Given a palette, the key is the SVG export's, in that theme, without the
+ * tracks whose displays are in `undrawnIds`.
  */
 export function circularLegendSpec(
   view: CircularLegendHost,
   palette?: JBrowsePalette,
+  undrawnIds: readonly string[] = [],
 ): LegendSpec {
   const session = getSession(view)
   const keys = view.tracks.flatMap(track => {
     const display = track.displays[0]
     const name = coarseStripHTML(getTrackName(track.configuration, session))
-    return display ? [keyFor(display, name, display.id, palette)] : []
+    return display && !undrawnIds.includes(display.id)
+      ? [keyFor(display, name, display.id, palette)]
+      : []
   })
   const rows = keys.flatMap(k => (k.row ? [k.row] : []))
   return {

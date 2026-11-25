@@ -60,7 +60,9 @@ The exported key draws `legendSpecIn(palette)`, so a display whose key takes
 colors from the theme overrides `LegendMixin`'s `colorScalesIn` (alignments,
 MAF); the default is `colorScales`. A ring's exports run `plotOnly`, so the
 circular view's own key (`CircularView.legendSpecIn`) reads each ring's
-`legendSpecIn` instead.
+`legendSpecIn` instead. A ring settled too large has no strip to warp, so it
+leaves with its axis and key row and `notifySkippedSvgTracks` names it; a ring
+whose on-screen paint failed still exports through its Canvas2D path.
 
 **Text inherits the export's font.** The dialog puts `font-family` on the root,
 so a `<text>` that writes the theme's family overrides it; measure in

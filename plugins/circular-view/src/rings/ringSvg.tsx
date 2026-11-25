@@ -7,7 +7,7 @@ import {
   svgRasterDataUrl,
 } from '@jbrowse/core/util/createSvgRasterCanvas'
 
-import { ringStripReplaced } from './RingStatus.tsx'
+import { ringTooLarge } from './RingStatus.tsx'
 import { warpRing } from './warpRing.ts'
 
 import type { ExportSvgOptions } from '../CircularView/model.ts'
@@ -78,8 +78,9 @@ async function rasterize(
  * Every ring display's own SVG export, plot only. The first half of a ring
  * export, and the only half that waits on data, so the view fans it out beside
  * its chord renders and reads the figure geometry after both. A display that
- * settled gated or failed is left out, so its annulus is as empty as the
- * screen's, where its status line stands in for the export's message box.
+ * settled too large is left out, since its export is a message box the warp
+ * would bend into an opaque annulus; the view names it to the user. One whose
+ * on-screen paint failed still exports, through its own Canvas2D path.
  */
 export async function renderRingBodies(
   ringDisplays: readonly RingDisplay[],
@@ -97,7 +98,27 @@ export async function renderRingBodies(
       }),
     })),
   )
-  return bodies.filter(({ display }) => !ringStripReplaced(display))
+  return bodies.filter(({ display }) => !ringTooLarge(display))
+}
+
+export const RING_TOO_LARGE_REASON =
+  'Too much data to draw as a ring: force load the track or show fewer chromosomes, then export again.'
+
+/**
+ * The ring tracks an export has no strip for: their axes and key rows go with
+ * them, and the too-large ones are named to the user, so the figure has no
+ * unexplained empty annulus.
+ */
+export function undrawnRingTracks<T extends { displays: readonly object[] }>(
+  ringTracks: readonly T[],
+  bodies: readonly RingBody[],
+) {
+  const drawn = new Set<object | undefined>(bodies.map(b => b.display))
+  const undrawn = ringTracks.filter(t => !drawn.has(t.displays[0]))
+  return {
+    undrawn,
+    tooLarge: undrawn.filter(t => t.displays.some(ringTooLarge)),
+  }
 }
 
 /**

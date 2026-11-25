@@ -22,6 +22,20 @@ function viewWith(tracks: { name: string; display: CircularLegendSource }[]) {
   >[0]
 }
 
+test('an export leaves out the key row of a track it did not draw', () => {
+  const spec = circularLegendSpec(
+    viewWith([
+      { name: 'coverage', display: { legendColor: '#1565c0' } },
+      { name: 'reads', display: { legendColor: '#ff8500' } },
+    ]),
+    undefined,
+    ['reads-display'],
+  )
+  expect(spec.sections).toEqual([
+    { id: 'tracks', items: [{ label: 'coverage', color: '#1565c0' }] },
+  ])
+})
+
 test('a row per track, named by the track, in the color it paints', () => {
   const spec = circularLegendSpec(
     viewWith([

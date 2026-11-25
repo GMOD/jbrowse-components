@@ -1,6 +1,10 @@
 import { createCanvas, loadImage } from '@napi-rs/canvas'
 
-import { paintRingsSvg, renderRingBodies } from './ringSvg.tsx'
+import {
+  paintRingsSvg,
+  renderRingBodies,
+  undrawnRingTracks,
+} from './ringSvg.tsx'
 
 import type { RingDisplay } from './ringHost.ts'
 import type { ReactElement } from 'react'
@@ -26,7 +30,7 @@ const display: RingDisplay = {
 
 // A gated display's export is its "Region too large" box, which the warp bent
 // into an opaque grey annulus where the screen shows the status line alone.
-test('a ring whose display settled gated or failed exports no body, and one still painting does', async () => {
+test('a ring that settled too large exports no body, and one whose on-screen paint failed still does', async () => {
   const phased = (displayPhase: string) => ({
     ...display,
     id: displayPhase,
@@ -38,7 +42,25 @@ test('a ring whose display settled gated or failed exports no body, and one stil
     {},
     undefined,
   )
-  expect(bodies.map(b => b.display.id)).toEqual(['ready', 'loading'])
+  expect(bodies.map(b => b.display.id)).toEqual([
+    'ready',
+    'renderError',
+    'loading',
+  ])
+})
+
+test('of the rings without a strip, only a too-large one is named', () => {
+  const track = (displayPhase: string) => ({
+    name: displayPhase,
+    displays: [{ ...display, id: displayPhase, displayPhase }],
+  })
+  const [drawn, ...rest] = ['renderError', 'tooLarge', 'unexported'].map(track)
+  const { undrawn, tooLarge } = undrawnRingTracks(
+    [drawn!, ...rest],
+    [{ display: drawn!.displays[0]!, body: null }],
+  )
+  expect(undrawn.map(t => t.name)).toEqual(['tooLarge', 'unexported'])
+  expect(tooLarge.map(t => t.name)).toEqual(['tooLarge'])
 })
 
 test('an exported ring draws a translucent strip at its own alpha, inside its annulus only', async () => {

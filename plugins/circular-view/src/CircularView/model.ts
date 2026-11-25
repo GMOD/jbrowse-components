@@ -1516,10 +1516,14 @@ function stateModelFactory(pluginManager: PluginManager) {
       },
       /**
        * #method
-       * `legendSpec` in another theme, the SVG export's
+       * `legendSpec` in another theme, the SVG export's, without the tracks
+       * whose displays the export left out
        */
-      legendSpecIn(palette?: JBrowsePalette): LegendSpec {
-        const { sections } = circularLegendSpec(self, palette)
+      legendSpecIn(
+        palette?: JBrowsePalette,
+        undrawnIds: readonly string[] = [],
+      ): LegendSpec {
+        const { sections } = circularLegendSpec(self, palette, undrawnIds)
         const all =
           self.chordSyntenyDisplays.length > 0 && self.hasLegendKey
             ? [...sections, ...legendSpecOf(self.colorScales).sections]

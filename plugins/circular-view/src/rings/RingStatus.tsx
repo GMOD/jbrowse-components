@@ -72,15 +72,11 @@ function ringStatus(display: StatusDisplay) {
 }
 
 /**
- * Whether a ring's display has settled into a state its status line stands
- * in for — gated or failed — so its strip is not drawn.
+ * Whether a ring's display settled too large to draw, so an export has no
+ * strip for it.
  */
-export function ringStripReplaced(display: object) {
-  return (
-    hasPhase(display) &&
-    display.displayPhase !== 'loading' &&
-    ringStatus(display) !== undefined
-  )
+export function ringTooLarge(display: object) {
+  return hasPhase(display) && display.displayPhase === 'tooLarge'
 }
 
 /** The first of `candidates` that fits the arc a label path can take. */
