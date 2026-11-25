@@ -46,12 +46,12 @@ them from disk; every other track reads a hosted copy. The
 [build script](#reproduce-it-end-to-end) fetches everything itself. The merge
 step takes your own per-cell-type segmentation BEDs.
 
-| What it is                                                                                           | File                                                                                                                                                              |
-| ---------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| The nine ENCODE Broad HMM segmentation BEDs, one per cell type, merged into the multi-row file below | [wgEncodeBroadHmm/](http://hgdownload.soe.ucsc.edu/goldenPath/hg19/encodeDCC/wgEncodeBroadHmm/)                                                                   |
-| The Roadmap segmentations, fetched either individually or as the whole 127-epigenome tarball         | [final/](https://egg2.wustl.edu/roadmap/data/byFileType/chromhmmSegmentations/ChmmModels/coreMarks/jointModel/final/)                                             |
-| The row labels, tissue groups and tissue colors, `EID_metadata.tab`                                  | [EID_metadata.tab](https://egg2.wustl.edu/roadmap/data/byFileType/metadata/EID_metadata.tab)                                                                      |
-| The state colors, since the Roadmap segmentations themselves have none                               | [colormap_15_coreMarks.tab](https://egg2.wustl.edu/roadmap/data/byFileType/chromhmmSegmentations/ChmmModels/coreMarks/jointModel/final/colormap_15_coreMarks.tab) |
+| What it is                                                                                      | File                                                                                                                                                              |
+| ----------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| The ENCODE Broad HMM segmentation BEDs, one per cell type, merged into the multi-row file below | [wgEncodeBroadHmm/](http://hgdownload.soe.ucsc.edu/goldenPath/hg19/encodeDCC/wgEncodeBroadHmm/)                                                                   |
+| The Roadmap segmentations, fetched either individually or as the whole-compendium tarball       | [final/](https://egg2.wustl.edu/roadmap/data/byFileType/chromhmmSegmentations/ChmmModels/coreMarks/jointModel/final/)                                             |
+| The row labels, tissue groups and tissue colors, `EID_metadata.tab`                             | [EID_metadata.tab](https://egg2.wustl.edu/roadmap/data/byFileType/metadata/EID_metadata.tab)                                                                      |
+| The state colors, since the Roadmap segmentations themselves have none                          | [colormap_15_coreMarks.tab](https://egg2.wustl.edu/roadmap/data/byFileType/chromhmmSegmentations/ChmmModels/coreMarks/jointModel/final/colormap_15_coreMarks.tab) |
 
 <details>
 <summary>Read by URL (no download needed)</summary>
@@ -62,11 +62,11 @@ step takes your own per-cell-type segmentation BEDs.
 
 </details>
 
-## Merge nine ENCODE segmentation BEDs into one file
+## Merge the ENCODE segmentation BEDs into one file
 
 [ChromHMM](https://compbio.mit.edu/ChromHMM/) writes one BED9 per cell type
 (`Gm12878.bed`, `K562.bed`, ...), with the state in `name` (for example
-`1_Active_Promoter`) and its color in `itemRgb`. The nine
+`1_Active_Promoter`) and its color in `itemRgb`. The
 [UCSC ENCODE Broad HMM](http://hgdownload.soe.ucsc.edu/goldenPath/hg19/encodeDCC/wgEncodeBroadHmm/)
 15-state BEDs concatenate into one BED with a trailing `cellType` field, which
 the multi-row feature display turns into one row per value, so any number of
@@ -78,8 +78,14 @@ chr1    10000       10600     15_Repetitive/CNV  0      .       10000       1060
 chr1    10000       10600     15_Repetitive/CNV  0      .       10000       10600     245,245,245  K562
 ```
 
-The adapter reads its column names from the `#`-prefixed defline. The merge is
-one pass:
+The adapter reads its column names from the `#`-prefixed defline. Fetch the BED
+for each cell type, then merge them in one pass:
+
+```bash
+for cell in Gm12878 H1hesc K562 Hepg2 Huvec Hmec Hsmm Nhek Nhlf; do
+  wget -c "http://hgdownload.soe.ucsc.edu/goldenPath/hg19/encodeDCC/wgEncodeBroadHmm/wgEncodeBroadHmm${cell}HMM.bed.gz"
+done
+```
 
 <!-- from: scripts/build_chromhmm_multirow.sh -->
 
@@ -111,9 +117,6 @@ CELL_TYPES=(
 jbrowse sort-bed multirow.bed | bgzip > multirow.bed.gz
 tabix -f -C -p bed multirow.bed.gz
 ```
-
-A [`BigBedAdapter`](/docs/config/bigbedadapter) reads the hosted bigBed copies
-of both merged files, as in the Roadmap track config below.
 
 ## Paint one row per cell type over HOXA
 
@@ -232,19 +235,15 @@ Type `chr7:27,110,000-27,265,000` into the location box, the _HOXA_ cluster:
 
 <Figure src="/img/chromhmm_encode_hoxa.png" caption="The nine ENCODE cell types over HOXA, one row each, under the RefSeq genes." />
 
-The HOX genes are transcribed in the order they sit in, so each cell type opens
-the stretch matching its position along the body axis and holds the rest under
-Polycomb, a repressive chromatin complex. H1-hESC's magenta is
-`3_Poised_Promoter`, the bivalent state HOX clusters are held in before a
-lineage commits.
+H1-hESC's magenta is `3_Poised_Promoter`.
 
 ## Filter the legend and cluster the rows {#the-legend-filtering-and-row-order}
 
 The key lists the identity scale's `scale.domain`, each color under its
-`scale.names` entry. A BED file holds only each state's color, not what it
-means, so JBrowse draws no key for a track whose config sets no domain. States
-that share a color share an entry, so in the Broad 15-state model
-`4_Strong_Enhancer` and `5_Strong_Enhancer` are one row, `4-5 Strong enhancer`.
+`scale.names` entry. A BED file carries each state's color but not its name, so
+the key needs `scale.domain` and `scale.names` in the config. States that share
+a color share an entry, so in the Broad 15-state model `4_Strong_Enhancer` and
+`5_Strong_Enhancer` are one row, `4-5 Strong enhancer`.
 
 Most of any segmentation is quiescent or heterochromatic. The track menu has
 these actions for reading the rest:
@@ -258,21 +257,19 @@ these actions for reading the rest:
 - Right-click a state and pick **Sort rows by color here** to rank the rows by
   the state each has at that base.
 
-## Load Roadmap's epigenomes at PAX5 and HOXA
+## Load Roadmap's epigenomes
 
-The nine ENCODE lines are a small sample of tissues. The
+The ENCODE lines are a small sample of tissues. The
 [Roadmap Epigenomics](https://egg2.wustl.edu/roadmap/web_portal/chr_state_learning.html)
 15-state segmentations of the Roadmap epigenomes merge the same way, into one
 track and one fetch, and the merged file is hosted. Their state names are
 mnemonics (`12_EnhBiv`, `14_ReprPCWk`), so this track labels its colors with
 `scale.type: "identity"`: each block is still painted with the file's `itemRgb`,
-and `scale.names` spells out the fifteen `scale.domain` colors in order.
+and `scale.names` spells out the `scale.domain` colors in order.
 
-The config below leaves out three settings the PAX5 figure uses: a `rows.sort`
-naming every epigenome, grouped by tissue, and the `rows.groups` and
-`rows.color` built further down that color the label bars. The hosted demo
-config, https://jbrowse.org/code/jb2/main/test_data/config_demo.json, has the
-track with all three:
+The hosted
+[demo config](https://jbrowse.org/code/jb2/main/test_data/config_demo.json) also
+sets `rows.sort`, `rows.groups` and `rows.color`; the next steps build them:
 
 ```json addtrack loc=chr9:34,700,000-38,420,000
 {
@@ -333,8 +330,7 @@ track with all three:
 }
 ```
 
-Red is active TSS, yellow enhancer, green transcription, grey Polycomb, and
-speckled olive bivalent.
+## Group the rows by tissue
 
 With a row per epigenome in one track, a row is a few pixels tall and its label
 barely legible, so we group the rows by the Roadmap tissue groups with three
@@ -349,8 +345,7 @@ settings:
   color scale on each row's label bar that pairs each tissue with a color
 
 The blocks are still painted in their `itemRgb` state colors, so the tissue
-color appears on the label bar alone. Two of the nineteen tissues look like
-this:
+color appears on the label bar alone. Two tissues look like this:
 
 ```json
 {
@@ -376,8 +371,10 @@ this:
 ```
 
 The `rows.groups` and `rows.color` lists come from the `GROUP` and `COLOR`
-columns of `EID_metadata.tab`.[^encode2012] One `jq` call writes them from the
-`STD_NAME` column, escaping the regex metacharacters in the names:
+columns of
+[`EID_metadata.tab`](https://egg2.wustl.edu/roadmap/data/byFileType/metadata/EID_metadata.tab).[^encode2012]
+One `jq` call writes them from the `STD_NAME` column, escaping the regex
+metacharacters in the names:
 
 ```bash
 jq -R -s 'split("\n")[1:-1] | map(split("\t")) | group_by(.[1])
@@ -394,7 +391,8 @@ which a `STD_NAME` match leaves as one row.
 The hosted track orders the rows by tissue group through `rows.sort` and leaves
 `facet` out, so clustering runs over all the rows together and the label bars
 show which tissues a cluster spans. The PAX5 figure adds `facet` with this
-`sort`, which stacks the groups in the paper's order:
+`sort`, which stacks the groups in the order of
+[Roadmap Epigenomics 2015](https://doi.org/10.1038/nature14248) Fig. 3a:
 
 ```json
 {
@@ -426,16 +424,11 @@ show which tissues a cluster spans. The PAX5 figure adds `facet` with this
 ```
 
 Type `chr9:34,700,000-38,420,000` into the location box, the chr9 stretch from
-_FAM205A_ to _ALDH1B1_. With the groups stacked in the paper's order, the track
-reproduces [Roadmap Epigenomics 2015](https://doi.org/10.1038/nature14248) Fig.
-3a, all 127 epigenomes. Over _PAX5_:
-
-- strong transcription with genic enhancers (green and yellow) marks only the B
-  cells and the B-lymphoblastoid GM12878
-- spleen and blood mononuclear cells, which hold B cells, and a few ES, iPS and
-  neural progenitor lines show _PAX5_ transcribed without the enhancers
+_FAM205A_ to _ALDH1B1_ that holds _PAX5_:
 
 <Figure src="/img/chromhmm.png" caption="All the Roadmap epigenomes over chr9, banded by tissue group with facet. PAX5 is boxed."/>
+
+## Narrow the rows to fibroblasts and ES cells
 
 With epigenome names listed in `rows.sort` (the order) and `rows.kept` (the
 subset), the same track narrows to lung fibroblasts, foreskin fibroblasts and ES
