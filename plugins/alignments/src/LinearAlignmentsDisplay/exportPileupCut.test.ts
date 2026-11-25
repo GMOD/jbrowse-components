@@ -91,6 +91,23 @@ describe('a pileup the layout ceiling cut', () => {
   })
 })
 
+describe('a box too short for a whole row over the caption line', () => {
+  // The rows start at 40; a 50px box leaves 37px above the caption line, under
+  // the first row's 50px bottom.
+  it('is not cut, though its rows run past it', () => {
+    expect(exportPileupCut([section(40, 30)], ROW, ungrouped(50))).toEqual({
+      cutY: 50,
+      caption: '',
+    })
+  })
+
+  it('is not cut where the caption line would start above the pileup', () => {
+    expect(
+      exportPileupCut([section(40, 30, true)], ROW, ungrouped(45)),
+    ).toEqual({ cutY: 45, caption: '' })
+  })
+})
+
 describe('grouped sections', () => {
   // The first ends at 140, whole; the second's rows run from 180, and the box
   // at 300 cuts its row 12.

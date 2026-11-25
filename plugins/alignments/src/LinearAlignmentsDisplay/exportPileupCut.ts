@@ -45,6 +45,7 @@ function sectionRows(
   return {
     above,
     below: rows - through,
+    drawn: through - above,
     end:
       bandBottom > limit
         ? Math.max(clipTop, rowBase + rowsTo(limit) * rowHeight)
@@ -62,14 +63,16 @@ function rowsAt(
   return {
     above: each.reduce((n, s) => n + s.above, 0),
     below: each.reduce((n, s) => n + s.below, 0),
+    drawn: each.reduce((n, s) => n + s.drawn, 0),
     end: Math.min(limit, ...each.map(s => s.end)),
   }
 }
 
 /**
  * The export's pileup cut: none where every laid-out row is drawn whole and
- * the layout stacked every read, else the rows end on the last whole row
- * above the caption line, which says what the figure leaves out.
+ * the layout stacked every read, or where the box has no room for a whole row
+ * over the caption line; else the rows end on the last whole row above that
+ * line, which says what the figure leaves out.
  */
 export function exportPileupCut(
   sections: readonly PileupCutSection[],
@@ -79,13 +82,13 @@ export function exportPileupCut(
   const box = scroll.canvasHeight
   const whole = rowsAt(sections, rowHeight, scroll, box)
   const ceiling = sections.some(s => s.ceilingClipped)
-  const { above, below, end } = rowsAt(
+  const { above, below, drawn, end } = rowsAt(
     sections,
     rowHeight,
     scroll,
     box - CUT_CAPTION_LINE_PX,
   )
-  return whole.above + whole.below > 0 || ceiling
+  return (whole.above + whole.below > 0 || ceiling) && drawn > 0
     ? {
         cutY: end,
         caption: [
