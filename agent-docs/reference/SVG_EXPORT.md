@@ -40,10 +40,12 @@ minimized track, and `notifySkippedSvgTracks` names it. It is one call,
 
 **The export canvas width is `view.width`**, not `renderState.canvasWidth`
 (`view.trackWidthPx`, 2px narrower); reusing the on-screen width clips the last
-column. A body paints a mark list through `MarkSvgLayer` (display-kit), which
-replaces the state's canvas box with the layer's own `width` and `height`; its
-`paint` callback draws the overlays the screen stacks over its canvas, with the
-same framed state.
+column. A model that lays its cells out at its own width takes the width as a
+parameter, and the export asks for its cells at `view.width` (the multi-way
+display's `figureAt`). A body paints a mark list through `MarkSvgLayer`
+(display-kit), which replaces the state's canvas box with the layer's own
+`width` and `height`; its `paint` callback draws the overlays the screen stacks
+over its canvas, with the same framed state.
 
 **Colors come from `usePalette()`**, never `getPaletteHost` or the session: the
 export dialog picks a theme the session need not be showing. A model input built

@@ -69,19 +69,20 @@ export function measuredFont(
 // join.
 const GRAPHEMES = new Intl.Segmenter(undefined, { granularity: 'grapheme' })
 
-// The result measures no wider than maxWidthPx, so a caller's stored textWidth
-// is bounded by construction. A budget too small for the ellipsis itself yields
-// nothing rather than a lone '…', the one input that could otherwise come back
-// wider than it was given.
+// The result measures no wider than maxWidthPx in `fontFamily`, so a caller's
+// stored textWidth is bounded by construction. A budget too small for the
+// ellipsis itself yields nothing rather than a lone '…', the one input that
+// could otherwise come back wider than it was given.
 export function truncateToWidth(
   text: string,
   maxWidthPx: number,
   fontSize: number,
+  fontFamily?: string,
 ) {
-  if (measureText(text, fontSize) <= maxWidthPx) {
+  if (measureText(text, fontSize, fontFamily) <= maxWidthPx) {
     return text
   }
-  const budget = maxWidthPx - measureText('…', fontSize)
+  const budget = maxWidthPx - measureText('…', fontSize, fontFamily)
   if (budget < 0) {
     return ''
   }
@@ -89,7 +90,7 @@ export function truncateToWidth(
   let width = 0
   let kept = 0
   while (kept < chars.length) {
-    const next = width + measureText(chars[kept]!, fontSize)
+    const next = width + measureText(chars[kept]!, fontSize, fontFamily)
     if (next > budget) {
       break
     }

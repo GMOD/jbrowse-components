@@ -252,6 +252,7 @@ import type { GeneLabel, NamedSpan, PlacedLaneLabel } from './laneLabels.ts'
 import type {
   HeldLaneLayer,
   LaneLayerFetchSpec,
+  LaneLayerPlacement,
   LaneLayerSource,
 } from './laneLayers.ts'
 import type { LaneTransition } from './laneMotion.ts'
@@ -351,6 +352,14 @@ interface MultiWayVolatiles {
 }
 
 const NO_GENES: LaneGene[] = []
+
+// the lanes gene labels are placed over, and the width they are culled to
+interface LaneLabelFigure {
+  stack: LaneStack
+  boxNames: ReadonlyMap<string, NamedSpan[]>
+  geneGroups: ReadonlyMap<string, Map<string, string>>
+  width: number
+}
 
 function drawnRect(
   map: LaneMap,
@@ -1746,35 +1755,45 @@ export function stateModelFactory(
         return this.laneLayerReads.specs
       },
       /**
-       * #getter
-       * has no lane genes, so a gene commit re-uploads no ribbon or tick
+       * #method
+       * the lanes laid across `width` px; has no lane genes, so a gene commit
+       * re-uploads no ribbon or tick
        */
-      get laneStack(): LaneStack {
+      laneStackAt(width: number): LaneStack {
         const { assemblyManager } = getSession(self)
         const heldAssembly = (assemblyName: string) =>
           self.holdsAssembly(assemblyName)
             ? assemblyManager.get(laneGenome(assemblyName))
             : undefined
-        return laneStackOn(self.anchorStage, {
-          assemblyNames: self.laneOrder,
-          anchorRow: self.anchorRow,
-          groups: [...self.visibleGroups, ...self.anchorlessGroups],
-          rowFrames: self.rowFrames,
-          contigOf: (assemblyName, refName) => {
-            const assembly = heldAssembly(assemblyName)
-            const index = assembly?.refNameToIndex?.get(refName)
-            return index === undefined ? undefined : assembly?.regions?.[index]
+        return laneStackOn(
+          { ...self.anchorStage, width },
+          {
+            assemblyNames: self.laneOrder,
+            anchorRow: self.anchorRow,
+            groups: [...self.visibleGroups, ...self.anchorlessGroups],
+            rowFrames: self.rowFrames,
+            contigOf: (assemblyName, refName) => {
+              const assembly = heldAssembly(assemblyName)
+              const index = assembly?.refNameToIndex?.get(refName)
+              return index === undefined
+                ? undefined
+                : assembly?.regions?.[index]
+            },
+            refNameAliasOf: assemblyName => {
+              const assembly = heldAssembly(assemblyName)
+              return (
+                assembly && (refName => assembly.getCanonicalRefName2(refName))
+              )
+            },
+            geometry: self.stackGeometry,
+            pastHalfway: self.laneMotionHalfway,
+            labelOf: assemblyName => self.laneLabel(assemblyName),
           },
-          refNameAliasOf: assemblyName => {
-            const assembly = heldAssembly(assemblyName)
-            return (
-              assembly && (refName => assembly.getCanonicalRefName2(refName))
-            )
-          },
-          geometry: self.stackGeometry,
-          pastHalfway: self.laneMotionHalfway,
-          labelOf: assemblyName => self.laneLabel(assemblyName),
-        })
+        )
+      },
+      /** #getter */
+      get laneStack(): LaneStack {
+        return this.laneStackAt(self.canvasWidthPx)
       },
     }))
     .views(self => ({
@@ -1962,12 +1981,12 @@ export function stateModelFactory(
     }))
     .views(self => ({
       /**
-       * #getter
+       * #method
        * in the stack's own px
        */
-      get ribbonGeometry() {
+      ribbonGeometryOf(stack: LaneStack) {
         return buildRibbonGeometry({
-          stack: self.laneStack,
+          stack,
           anchorOps: self.featureOps,
           laneLinks: self.pairLinks,
           ribbonColor: self.ribbonColor,
@@ -1980,25 +1999,34 @@ export function stateModelFactory(
           rowsVsAnchor: self.rowsVsAnchor,
         })
       },
+      /** #getter */
+      get ribbonGeometry() {
+        return this.ribbonGeometryOf(self.laneStack)
+      },
     }))
     .views(self => ({
-      get tickGeometry(): TickGeometry {
+      /** #method */
+      tickGeometryAt(stack: LaneStack, width: number): TickGeometry {
         return self.showLaneTicks
           ? buildTickGeometry({
-              stack: self.laneStack,
+              stack,
               tickIntervalBp: self.tickIntervalBp,
-              width: self.canvasWidthPx,
+              width,
               color: bandInk().gridline,
             })
           : { cells: new Map(), layers: [] }
       },
+      /** #getter */
+      get tickGeometry(): TickGeometry {
+        return this.tickGeometryAt(self.laneStack, self.canvasWidthPx)
+      },
       /** #method */
-      bandCellOn(page: string): MultiWayCell {
+      bandCellOn(page: string, width: number): MultiWayCell {
         return {
           kind: 'glyphs',
           data: buildBandCell({
             ...self.stackGeometry,
-            width: self.canvasWidthPx,
+            width,
             paper: bandGroundColor(),
             stripe: bandInk().stripe,
             page,
@@ -2007,39 +2035,45 @@ export function stateModelFactory(
       },
       /** #getter */
       get bandCell(): MultiWayCell {
-        return this.bandCellOn(getPaletteHost(self).palette.background.paper)
+        return this.bandCellOn(
+          getPaletteHost(self).palette.background.paper,
+          self.canvasWidthPx,
+        )
       },
     }))
     .views(self => ({
       /**
-       * #getter
+       * #method
        * px of the anchor's ticks across the displayed regions, over the reach
-       * the anchor's rule draws
+       * the anchor's rule draws across `width`
        */
-      get anchorTickXs(): number[] {
+      anchorTickXsAt(width: number): number[] {
         const step = self.tickIntervalBp
         return self.lgv.initialized && step > 0
-          ? axisTickXs(
-              self.lgv,
-              step,
-              stackReach(self.canvasWidthPx),
-              self.renderOriginPx,
-            )
+          ? axisTickXs(self.lgv, step, stackReach(width), self.renderOriginPx)
           : []
       },
       /** #getter */
-      get anchorRule() {
+      get anchorTickXs(): number[] {
+        return this.anchorTickXsAt(self.canvasWidthPx)
+      },
+      /** #method */
+      anchorRuleAt(stack: LaneStack, width: number) {
         return self.rowsVsAnchor
           ? buildAnchorRule({
-              stack: self.laneStack,
-              ticks: this.anchorTickXs,
+              stack,
+              ticks: this.anchorTickXsAt(width),
               stroke: bandInk().text,
             })
           : undefined
       },
+      /** #getter */
+      get anchorRule() {
+        return this.anchorRuleAt(self.laneStack, self.canvasWidthPx)
+      },
     }))
     .views(self => {
-      let held: {
+      interface LaneCellRow {
         lane: Lane
         genes: LaneGene[]
         colors: LaneGlyphColors
@@ -2047,70 +2081,83 @@ export function stateModelFactory(
         boxes: MultiWayCell
         boxNames: NamedSpan[]
         geneGroups: Map<string, string>
-      }[] = []
-      return {
-        /**
-         * #getter
-         * boxes before glyphs, so an in-order hit test finds a box over a gene
-         */
-        get laneCells() {
-          const { laneGeneColors, boxColors } = self
-          const laneGenes = self.laneGenes.held
-          const { lanes, glyphHeight } = self.laneStack
-          const ink = bandInk()
-          held = lanes.map((lane, row) => {
-            const colors = {
-              genes: laneGeneColors.get(lane.assemblyName) ?? boxColors,
-              boxes: boxColors,
-              stroke: ink.text,
-              divider: ink.divider,
-            }
-            const genes = laneGenes.get(lane.assemblyName)?.genes ?? NO_GENES
-            const prev = held[row]
-            if (
-              prev?.lane === lane &&
-              prev.genes === genes &&
-              prev.colors.genes === colors.genes &&
-              prev.colors.boxes === colors.boxes &&
-              prev.colors.stroke === colors.stroke &&
-              prev.colors.divider === colors.divider
-            ) {
-              return prev
-            }
-            const { glyphs, boxes, boxNames, geneGroups } = buildLaneCells({
-              lane,
-              genes,
-              glyphHeight,
-              width: self.canvasWidthPx,
-              colors,
-            })
-            return {
-              lane,
-              genes,
-              colors,
-              glyphs: { kind: 'glyphs', data: glyphs },
-              boxes: { kind: 'glyphs', data: boxes },
-              boxNames,
-              geneGroups,
-            }
-          })
-          const cells = new Map<string, MultiWayCell>()
-          held.forEach(({ glyphs, boxes }, row) => {
-            cells.set(boxesKey(row), boxes)
-            cells.set(glyphsKey(row), glyphs)
+      }
+      // a row whose lane, genes and colors are unchanged keeps its cells
+      function laneCellRows(
+        { lanes, glyphHeight }: LaneStack,
+        width: number,
+        previous: LaneCellRow[],
+      ) {
+        const { laneGeneColors, boxColors } = self
+        const laneGenes = self.laneGenes.held
+        const ink = bandInk()
+        return lanes.map((lane, row): LaneCellRow => {
+          const colors = {
+            genes: laneGeneColors.get(lane.assemblyName) ?? boxColors,
+            boxes: boxColors,
+            stroke: ink.text,
+            divider: ink.divider,
+          }
+          const genes = laneGenes.get(lane.assemblyName)?.genes ?? NO_GENES
+          const prev = previous[row]
+          if (
+            prev?.lane === lane &&
+            prev.genes === genes &&
+            prev.colors.genes === colors.genes &&
+            prev.colors.boxes === colors.boxes &&
+            prev.colors.stroke === colors.stroke &&
+            prev.colors.divider === colors.divider
+          ) {
+            return prev
+          }
+          const { glyphs, boxes, boxNames, geneGroups } = buildLaneCells({
+            lane,
+            genes,
+            glyphHeight,
+            width,
+            colors,
           })
           return {
-            cells,
-            boxNames: new Map(
-              held.map(({ lane, boxNames }) => [lane.assemblyName, boxNames]),
-            ),
-            geneGroups: new Map(
-              held.map(({ lane, geneGroups }) => [
-                lane.assemblyName,
-                geneGroups,
-              ]),
-            ),
+            lane,
+            genes,
+            colors,
+            glyphs: { kind: 'glyphs', data: glyphs },
+            boxes: { kind: 'glyphs', data: boxes },
+            boxNames,
+            geneGroups,
           }
+        })
+      }
+      function laneCellMaps(rows: LaneCellRow[]) {
+        const cells = new Map<string, MultiWayCell>()
+        rows.forEach(({ glyphs, boxes }, row) => {
+          cells.set(boxesKey(row), boxes)
+          cells.set(glyphsKey(row), glyphs)
+        })
+        return {
+          cells,
+          boxNames: new Map(
+            rows.map(({ lane, boxNames }) => [lane.assemblyName, boxNames]),
+          ),
+          geneGroups: new Map(
+            rows.map(({ lane, geneGroups }) => [lane.assemblyName, geneGroups]),
+          ),
+        }
+      }
+      let held: LaneCellRow[] = []
+      return {
+        /**
+         * #method
+         * `stack`'s lane cells across `width` px; boxes before glyphs, so an
+         * in-order hit test finds a box over a gene
+         */
+        laneCellsAt(stack: LaneStack, width: number) {
+          return laneCellMaps(laneCellRows(stack, width, []))
+        },
+        /** #getter */
+        get laneCells() {
+          held = laneCellRows(self.laneStack, self.canvasWidthPx, held)
+          return laneCellMaps(held)
         },
       }
     })
@@ -2179,12 +2226,18 @@ export function stateModelFactory(
       return {
         /**
          * #method
-         * placed in the stack's px
+         * placed in the stack's px, over the lanes as the screen lays them
+         * out unless `figure` lays them out across another width
          */
         laneGeneLabels(
           fontFamily: string | undefined,
           pinnedGroups: ReadonlySet<string> = new Set(),
-          width = self.canvasWidthPx,
+          figure: LaneLabelFigure = {
+            stack: self.laneStack,
+            boxNames: self.laneBoxNames,
+            geneGroups: self.laneGeneGroups,
+            width: self.canvasWidthPx,
+          },
         ): PlacedLaneLabel[] {
           if (!self.showGeneLabels) {
             return []
@@ -2199,9 +2252,8 @@ export function stateModelFactory(
             memo = { text, fontFamily, genes, labels: new Map() }
           }
           const { labels } = memo
-          const { lanes, glyphHeight } = self.laneStack
-          const boxNames = self.laneBoxNames
-          const groups = self.laneGeneGroups
+          const { stack, boxNames, geneGroups: groups, width } = figure
+          const { lanes, glyphHeight } = stack
           const height = self.scrollContentHeight
           const inputs = [
             text,
@@ -2426,20 +2478,24 @@ export function stateModelFactory(
     }))
     .views(self => ({
       /**
-       * #getter
-       * each payload's region placed in its lane's own frame; a payload whose
-       * lane or contig no longer draws is left out
+       * #method
+       * each payload's region placed in its lane's own frame across `width`
+       * px; a payload whose lane or contig no longer draws is left out
        */
-      get laneLayerPlacements() {
+      laneLayerPlacementsAt(stack: LaneStack, width: number) {
         const view = self.lgv
         return laneLayerPlacementsOf({
-          lanes: self.laneStack.lanes,
+          lanes: stack.lanes,
           heights: self.laneLayerHeights,
           held: self.laneLayerData.held,
           axisSpanOf: (refName, start, end) =>
             axisSpan(view, refName, start, end, self.renderOriginPx),
-          canvasWidth: self.canvasWidthPx,
+          canvasWidth: width,
         })
+      },
+      /** #getter */
+      get laneLayerPlacements() {
+        return this.laneLayerPlacementsAt(self.laneStack, self.canvasWidthPx)
       },
     }))
     .views(self => {
@@ -2544,14 +2600,18 @@ export function stateModelFactory(
           }
         })
       },
-      /** #getter */
-      get laneLayerCells() {
+      /** #method */
+      laneLayerCellsOn(placements: LaneLayerPlacement[]) {
         return laneLayerCellsOf({
-          placements: self.laneLayerPlacements,
+          placements,
           domains: self.laneLayerDomains,
           colorScales: this.laneLayerColorScales,
           coloredLayersOf: held => self.coloredLayersOf(held),
         })
+      },
+      /** #getter */
+      get laneLayerCells() {
+        return this.laneLayerCellsOn(self.laneLayerPlacements)
       },
       /** #getter */
       get namedCells(): ReadonlyMap<string, MultiWayCell> {
@@ -2563,6 +2623,40 @@ export function stateModelFactory(
           ...this.laneLayerCells.cells,
           ...self.laneGlyphCells,
         ])
+      },
+      /**
+       * #method
+       * the cells `namedCells` holds and the lanes gene labels are placed
+       * over, laid out across `width` px with the bands on `page`: an
+       * export's, whose canvas is the view's width rather than the track's.
+       * The cells are keyed by `sharedBackendKey` and carry no outline, which
+       * marks a click.
+       */
+      figureAt(width: number, page: string) {
+        const stack = self.laneStackAt(width)
+        const anchorRule = self.anchorRuleAt(stack, width)
+        const lanes = self.laneCellsAt(stack, width)
+        const named = new Map<string, MultiWayCell>([
+          [BANDS_KEY, self.bandCellOn(page, width)],
+          ...self.ribbonGeometryOf(stack).cells,
+          ...self.tickGeometryAt(stack, width).cells,
+          ...(anchorRule ? anchorRule.cells : []),
+          ...this.laneLayerCellsOn(self.laneLayerPlacementsAt(stack, width))
+            .cells,
+          ...lanes.cells,
+        ])
+        const labels: LaneLabelFigure = {
+          stack,
+          boxNames: lanes.boxNames,
+          geneGroups: lanes.geneGroups,
+          width,
+        }
+        return {
+          cells: new Map(
+            [...named].map(([key, cell]) => [sharedBackendKey(key), cell]),
+          ),
+          labels,
+        }
       },
       /**
        * #getter

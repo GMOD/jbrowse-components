@@ -329,3 +329,20 @@ test('the export draws each lane color as a bar before its label, in both placem
     ])
   }
 })
+
+// The track's canvas is 2px narrower than the view, which is the export's
+// width: cells laid out at the track's left the last column bare.
+test("the export's bands span the view's width, not the track's", async () => {
+  const display = createDisplay()
+  await when(() => display.anchorRecordsLoaded, { timeout: 5000 })
+  await when(() => display.svgReady, { timeout: 5000 })
+  const { width } = display.lgv
+  expect(display.canvasWidthPx).toBeLessThan(width)
+  const node = await display.renderSvg()
+  const svg = withFreshSvgClipIds(() => renderToString(<svg>{node}</svg>))
+  const band =
+    /<rect x="0" y="[\d.]+" width="([\d.]+)"[^>]* fill="rgb\(255,255,255\)"/.exec(
+      svg,
+    )
+  expect(Number(band?.[1])).toBe(width)
+})

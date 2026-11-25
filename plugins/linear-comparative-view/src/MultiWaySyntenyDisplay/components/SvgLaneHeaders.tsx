@@ -23,26 +23,25 @@ import type { LaneHeaderRow } from '../laneHeader.ts'
 const EXPORT_WIDTH_SLACK = 1.1
 const SEMIBOLD_WIDTH = 1.05
 
-function exportTextWidth(text: string) {
-  return measureText(text, LABEL_FONT_SIZE) * EXPORT_WIDTH_SLACK
+function exportTextWidth(text: string, fontFamily?: string) {
+  return measureText(text, LABEL_FONT_SIZE, fontFamily) * EXPORT_WIDTH_SLACK
 }
 
-function chipWidth(text: string) {
-  return exportTextWidth(text) + 2 * INLINE_CHIP_PAD_PX
+function chipWidth(text: string, fontFamily?: string) {
+  return exportTextWidth(text, fontFamily) + 2 * INLINE_CHIP_PAD_PX
 }
 
 function SvgInlineChip({
-  text,
+  width,
   y,
   x,
   anchor,
 }: {
-  text: string
+  width: number
   y: number
   x: number
   anchor: 'start' | 'end'
 }) {
-  const width = chipWidth(text)
   return (
     <rect
       data-testid="multiway-lane-inline-chip"
@@ -62,12 +61,12 @@ function SvgInlineChip({
 }
 
 function SvgColorChip({
-  text,
+  width,
   y,
   x,
   color,
 }: {
-  text: string
+  width: number
   y: number
   x: number
   color: string
@@ -75,7 +74,7 @@ function SvgColorChip({
   const box = {
     x: x - INLINE_CHIP_PAD_PX,
     y: labelBoxTop(y),
-    width: chipWidth(text),
+    width,
     height: LABEL_FONT_SIZE,
     rx: 2,
   }
@@ -127,13 +126,21 @@ function SvgHeaderChip({
   )
 }
 
+/**
+ * The lanes' headers in an export, sized and cut in `fontFamily`, the one the
+ * export's text draws in.
+ */
 export function SvgLaneHeaders({
   rows,
   width,
+  fontFamily,
 }: {
   rows: LaneHeaderRow[]
   width: number
+  fontFamily?: string
 }) {
+  const textWidth = (text: string) => exportTextWidth(text, fontFamily)
+  const boxWidth = (text: string) => chipWidth(text, fontFamily)
   const text = {
     fontSize: LABEL_FONT_SIZE,
     halo: bandGroundColor(),
@@ -145,7 +152,7 @@ export function SvgLaneHeaders({
         const badge = row.against ? `vs ${row.against}` : undefined
         const badgeX = HEADER_INSET_PX + 0.5
         const badgeWidth = badge
-          ? exportTextWidth(badge) * SEMIBOLD_WIDTH + 2 * BADGE_PAD_PX
+          ? textWidth(badge) * SEMIBOLD_WIDTH + 2 * BADGE_PAD_PX
           : 0
         const barX = badge
           ? badgeX + badgeWidth + HEADER_GAP_PX
@@ -155,13 +162,13 @@ export function SvgLaneHeaders({
           : barX
         const scaleRight = width - HEADER_INSET_PX
         const repeatsRight = row.scale
-          ? scaleRight - exportTextWidth(row.scale) - HEADER_GAP_PX
+          ? scaleRight - textWidth(row.scale) - HEADER_GAP_PX
           : scaleRight
-        const repeatsWidth = row.repeats ? chipWidth(row.repeats.text) : 0
+        const repeatsWidth = row.repeats ? boxWidth(row.repeats.text) : 0
         const changesRight = row.repeats
           ? repeatsRight - repeatsWidth - HEADER_GAP_PX
           : repeatsRight
-        const changesWidth = row.changes ? chipWidth(row.changes.text) : 0
+        const changesWidth = row.changes ? boxWidth(row.changes.text) : 0
         const labelRight = row.changes
           ? changesRight - changesWidth - HEADER_GAP_PX
           : changesRight
@@ -172,6 +179,7 @@ export function SvgLaneHeaders({
             (row.color || row.inline ? INLINE_CHIP_PAD_PX : 0)) /
             EXPORT_WIDTH_SLACK,
           LABEL_FONT_SIZE,
+          fontFamily,
         )
         return (
           <g key={`header-${row.assemblyName}`}>
@@ -210,13 +218,18 @@ export function SvgLaneHeaders({
             ) : null}
             {row.color ? (
               <SvgColorChip
-                text={label}
+                width={boxWidth(label)}
                 x={labelX}
                 y={row.y}
                 color={row.color}
               />
             ) : row.inline ? (
-              <SvgInlineChip text={label} x={labelX} y={row.y} anchor="start" />
+              <SvgInlineChip
+                width={boxWidth(label)}
+                x={labelX}
+                y={row.y}
+                anchor="start"
+              />
             ) : null}
             <SvgHaloText
               {...text}
@@ -251,7 +264,7 @@ export function SvgLaneHeaders({
               <>
                 {row.inline ? (
                   <SvgInlineChip
-                    text={row.scale}
+                    width={boxWidth(row.scale)}
                     x={scaleRight}
                     y={row.y}
                     anchor="end"

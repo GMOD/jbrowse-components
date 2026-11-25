@@ -113,3 +113,28 @@ test('the cut lane label stays inside its chip and short of the changes chip in 
   expect(labelRight).toBeLessThanOrEqual(rectBox(labelChip).right)
   expect(labelRight).toBeLessThan(rectBox(changes.querySelector('rect')!).left)
 })
+
+// A monospace face advances every glyph 0.6em, past the Helvetica table's
+// average: a header sized in Helvetica ran its label into the changes chip and
+// the chip's text out of its box.
+test('a monospace export sizes the chips and cuts the label in monospace', () => {
+  const { container } = render(
+    <svg>
+      <SvgLaneHeaders rows={[row]} width={400} fontFamily="monospace" />
+    </svg>,
+  )
+  const label = [...container.querySelectorAll('text')].find(text =>
+    text.textContent.startsWith('mate'),
+  )!
+  const chip = screen
+    .getByTestId('multiway-lane-changes')
+    .querySelector('rect')!
+  const mono = (text: string) => measureText(text, LABEL_FONT_SIZE, 'monospace')
+  expect(label.textContent).toMatch(/…$/)
+  expect(
+    Number(label.getAttribute('x')) + mono(label.textContent),
+  ).toBeLessThan(Number(chip.getAttribute('x')))
+  expect(Number(chip.getAttribute('width'))).toBeGreaterThan(
+    mono(row.changes!.text),
+  )
+})
