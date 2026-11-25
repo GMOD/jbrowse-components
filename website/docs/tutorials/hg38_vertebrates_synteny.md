@@ -9,8 +9,8 @@ tutorial_category: Synteny & comparative genomics
 tutorial_subcategory: Whole-genome alignments
 ---
 
-We look at one human locus across eight other mammals at once, from alignments
-that already exist. UCSC publishes a liftOver chain from hg38 to each genome it
+We look at one human locus across other genomes at once, from alignments that
+already exist. UCSC publishes a liftOver chain from hg38 to each genome it
 hosts, and jbrowse.org keeps each chain as an indexed alignment file. The same
 config works for any set of pairwise chains that share one genome. We look at
 _TP53_, where the genomes share one gene order, and at the _PMP22_ segmental
@@ -47,9 +47,9 @@ npm install -g @jbrowse/cli@next
 
 UCSC's pairwise liftOver chains from hg38 (Kent et al. 2003), each converted to
 an indexed PAF and rehosted beside the hub configs
-[genomes.jbrowse.org](https://genomes.jbrowse.org) serves, and eight UCSC genome
-hubs, whose assembly entry and NCBI RefSeq gene track are used verbatim for each
-lane.
+[genomes.jbrowse.org](https://genomes.jbrowse.org) serves, and the UCSC genome
+hubs of the genomes stacked, whose assembly entry and NCBI RefSeq gene track are
+used verbatim for each lane.
 
 You don't need these files to follow the page: the track config below reads the
 hosted indexed copies. To index a chain of your own, convert it with `chain2paf`
@@ -79,9 +79,8 @@ and `make-pif`, as _Index each liftOver chain as PIF_ shows.
 
 A liftOver chain maps each stretch of one genome to a position in another,
 whether or not a gene lies there, so JBrowse draws each lane from the chain
-alone. Each UCSC chain aligns hg38 to one other genome, so there is no
-chimpanzee-to-mouse alignment, and every ribbon joins a lane to hg38, whichever
-lane sits above it.
+alone. Each UCSC chain aligns hg38 to one other genome, so every ribbon joins a
+lane to hg38, whichever lane sits above it.
 
 Each hosted file is a chain converted to PAF and indexed with
 `jbrowse make-pif`. To index a chain of your own, convert it to PAF with
@@ -237,18 +236,6 @@ The ribbons are colored by strand, the default `ribbons.encoding.color` (**Color
 by → Strand**, under **Ribbons** in the track menu). Each ribbon has the strand
 of the chain record it comes from, red where the lane runs the same way as hg38
 and blue where it runs reversed.
-
-Around _TP53_, the whole window aligns through one chain in every lane but
-gorilla's, with the same genes in the same order:
-
-- **The gorilla ribbons** stop after _FXR2_, because gorGor6 holds the _TP53_
-  end of the window on an unplaced contig.
-- **The mouse, cow and dog lanes** break into many ribbons, because JBrowse cuts
-  a chain record at every long indel and draws each gap-free run as one ribbon,
-  with a gap wherever the lane has sequence hg38 lacks.
-- **The ape lanes** have only short gaps, so their ribbons look continuous.
-- **The mouse lane** shows `[rev]` because its chain runs the other way against
-  hg38 here, so its ribbons are blue.
 
 <Figure caption="TP53 on hg38 over eight UCSC genome lanes in tree order, ribbons colored by strand." src="/img/multiway_synteny/hg38_vertebrates_tp53.png" />
 

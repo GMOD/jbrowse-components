@@ -61,9 +61,7 @@ pip install jcvi git+https://github.com/cmdcolin/orthologs2jbrowse
 ## The data
 
 Grape ([Shi et al. 2023](https://doi.org/10.1093/hr/uhad061)) and peach RefSeq
-assemblies and annotations, each fetched by accession with the `datasets` CLI:
-the same two genomes stacked with cacao in
-[](/docs/tutorials/multiway_synteny_grape_peach_cacao).
+assemblies and annotations, each fetched by accession with the `datasets` CLI.
 
 You don't need these files to follow the figures, which come from the hosted
 grape, peach and cacao build. The track configs name local files that the
@@ -157,9 +155,7 @@ Grape and peach are each a genome hub on
 [genomes.jbrowse.org](https://genomes.jbrowse.org) under the RefSeq accession
 the BEDs were built from. The build takes each assembly entry and NCBI RefSeq
 gene track from the hub's `config.json`, and adds the short name as an alias so
-a session can still say `grape`;
-[the three-genome page](/docs/tutorials/multiway_synteny_grape_peach_cacao#setting-up-the-grape-peach-and-cacao-assemblies)
-shows the entry.
+a session can still say `grape`.
 
 A genome of your own loads from its FASTA, with a `.fai` from `samtools faidx`
 beside it:
@@ -172,7 +168,7 @@ Each genome also gets a gene track, which the
 [close-up](#what-an-anchor-looks-like-up-close) below filters to genes. The
 figures use each genome's **NCBI RefSeq - RefSeq All** track from its GenArk
 hub; swap the `uri` for your own GFF3, bgzipped and tabix-indexed
-([prep](/docs/quickstart_web)):
+([sort and index with tabix](/docs/quickstart_web)):
 
 ```json addtrack
 {
@@ -254,9 +250,6 @@ genes**.
 
 <Figure caption="One MCScan block with both gene tracks set to Only genes. Each ribbon is one .anchors line, spanning the two genes it pairs." src="/img/mcscan_synteny/gene_level.png" />
 
-MCScan anchors only the pairs it could call confidently, so most genes have no
-ribbon.
-
 ## Color the gene pairs by syntenic depth {#syntenic-depth}
 
 Pick **Color by value → Syntenic depth** on the palette button in the view
@@ -266,10 +259,11 @@ turns orange where several genes share one ortholog. The count covers the whole
 
 <Figure caption="Grape chr3 against peach chrG8, the .anchors track colored by syntenic depth." src="/img/mcscan_synteny/syntenic_depth.png" />
 
-Grape and peach share a genome triplication older than either species, so a
-stretch of peach often has one grape ortholog and two older copies. To draw them
-at once, open peach in a linear genome view at `chrG7:18,290,000-18,660,000` and
-turn on the .anchors track:
+### Draw the triplicated copies in lanes
+
+A stretch of peach can pair with several grape chromosomes. To draw each in its
+own lane, open peach in a linear genome view at `chrG7:18,290,000-18,660,000`
+and turn on the .anchors track:
 
 - Pick **Display types → Multi-way synteny display** in the track menu. The
   track has peach paired with one other genome, so the display draws each grape
@@ -284,10 +278,8 @@ turn on the .anchors track:
 
 <Figure caption="A 370 kb stretch of peach chrG7 between an older grape copy on chr9 (above) and its grape ortholog on chr11 (below), one lane per copy, each gutter joining peach genes to one copy's." src="/img/mcscan_synteny/gamma_copies.png" />
 
-The older copy shares far fewer genes with the peach stretch, and the gene
-tracks in each lane show the genes a copy kept and lost. The pale tint behind
-the ribbons is the MCScan block this window sits inside, which the display draws
-as a band under its gene pairs.
+The pale tint behind the ribbons is the MCScan block this window sits inside,
+which the display draws as a band under its gene pairs.
 
 ## Color the gene pairs by block {#blocks}
 
@@ -345,15 +337,12 @@ the palette button.
 
 **Add → Dotplot view** with peach and grape opens either MCScan track as a
 dotplot, where a gene pair is one point and a block a run of them. The axes
-start in index order; **Re-order chromosomes**, in the overflow menu of the
-dotplot header, sorts the vertical axis to follow the horizontal one.
+start in index order; **Re-order chromosomes...**, in the dotplot header's ⋮
+menu, sorts the vertical axis to follow the horizontal one.
 
-<Video src="/media/synteny/dotplot_reorder.mp4" caption="The dotplot axes in index order, then re-sorted from the header's overflow menu." />
+<Video src="/media/synteny/dotplot_reorder.mp4" caption="The dotplot axes in index order, then re-sorted from the header's ⋮ menu." />
 
 <Figure caption="Peach against grape after Re-order chromosomes, every point one .anchors gene pair." src="/img/mcscan_synteny/dotplot.png" />
-
-**Re-order chromosomes** puts each peach chromosome's strongest grape partner on
-the diagonal, and its other partners stay off it.
 
 ## Convert an MCScanX run {#coming-from-mcscanx}
 
@@ -392,10 +381,10 @@ MCScanX's e-value.
 
 The number of `--species` names sets what the run writes:
 
-- With a third species the script writes an ortholog table instead, since one
+- With a third species the converter writes an ortholog table instead, since one
   `.collinearity` covers every pair. See
   [ortholog tables](/docs/config_guides/synteny_track#from-mcscanx).
-- With a single species the script keeps the blocks duplicated within that
+- With a single species the converter keeps the blocks duplicated within that
   genome, which [](/docs/tutorials/homoeolog_synteny) shows as a dotplot of one
   assembly on both axes.
 

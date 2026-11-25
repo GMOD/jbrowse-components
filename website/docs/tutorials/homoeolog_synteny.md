@@ -103,21 +103,17 @@ the gene-against-itself diagonal, then chains the rest into syntenic blocks
 diamond makedb --in oat.pep -d oat.pep
 diamond blastp --threads 14 --query oat.pep --db oat.pep --out oat.oat.last \
   --max-target-seqs 20 --evalue 1e-10 --outfmt 6
+# --no_strip_names: keeps the ids byte-identical to the BED the adapter joins on
+# --self_remove: defaults to 98 and discards every hit at or above that percent
+#   identity; oat's A-D homoeologs sit above it, so this run sets 100
 python -m jcvi.compara.catalog ortholog --no_strip_names --dbtype prot \
   --align_soft diamond_blastp --self_remove 100 --no_dotplot oat oat
 ```
 
-Two flags matter here:
-
-- `--self_remove` defaults to 98 and discards every hit at or above that percent
-  identity. Oat's A-D homoeologs sit above it, so this run sets 100
-- `--no_strip_names` keeps the ids byte-identical to the BED the adapter joins
-  on
-
 The alignment is the long step: budget over an hour on every core, since the
-whole proteome is aligned against itself. Run separately as above, DIAMOND uses
-its default sensitivity, which finds homoeologs this recent, and jcvi picks up
-`oat.oat.last` by name and skips its own alignment.
+whole proteome is aligned against itself. DIAMOND runs at its default
+sensitivity, which finds homoeologs this recent. jcvi picks up `oat.oat.last` by
+name and skips its own alignment.
 
 Three choices set which pairs are kept:
 
@@ -163,10 +159,10 @@ method and the filters.
 
 ## Load the homoeolog table as a dotplot track
 
-Oat (_Avena sativa_) is an allohexaploid with 21 chromosomes, seven homoeologous
-groups of three, one per subgenome (A, C and D). A homoeolog table has oat on
-both sides, and the dotplot puts oat on both axes. A segment moved between
-groups lies off the diagonal.
+Oat (_Avena sativa_) is an allohexaploid whose chromosomes fall in homoeologous
+groups, one chromosome per subgenome (A, C and D) in each. A homoeolog table has
+oat on both sides, and the dotplot puts oat on both axes. A segment moved
+between groups lies off the diagonal.
 
 `oat.homoeologs.blocks` lists gene pairs, then dN, dS, the synonymous
 substitution count and a Fisher exact p, which is the `.blocks` layout
@@ -201,9 +197,7 @@ the session [below](#coloring-by-ds) does the same.
 ## Color homoeolog pairs by dS {#coloring-by-ds}
 
 **Color by value → ds** <!-- menu-path-ok --> on the palette button paints each
-pair by its dS. Oat's A and D subgenomes descend from closely related diploid
-_Avena_ species and its C subgenome from a more distant one, so A-D pairs are
-the control: they diverged most recently.
+pair by its dS.
 
 In [grammar-of-graphics](/docs/config_guides/mark_display) terms, the dotplot's
 `encoding.color` is a color scale, here the `ds` field mapped to a ramp. The
