@@ -39,10 +39,10 @@ const OpenLinkDialog = observer(function OpenLinkDialog({
       onCancel={onClose}
     >
       <DialogContentText>
-        Paste a JBrowse Web link — for example the "Open this view in JBrowse"
-        link under a figure in the documentation, or any jbrowse.org URL with an
-        "&assembly=" in it. Its genome, tracks, and location open here as a new
-        session.
+        Paste a JBrowse Web link — for example the "Open in JBrowse Web" link in
+        a documentation figure's "Open or rebuild this view" dialog, or any
+        jbrowse.org URL with an "&assembly=" in it. Its genome, tracks, and
+        location open here as a new session.
       </DialogContentText>
       <TextField
         autoFocus

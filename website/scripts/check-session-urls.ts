@@ -79,7 +79,7 @@ function repoConfigPath(url: string) {
 }
 
 // The relative form of an absolute `<code base>/test_data/<name>/config.json`,
-// which is what a figure's "Open this view in JBrowse" link shows and so the
+// which is what a figure's "Open in JBrowse Web" link shows and so the
 // natural thing for an author to paste. It is a config this repo publishes, so
 // "not one we publish" would be a lie; it is still the wrong spelling, because
 // only the relative form retargets with JBROWSE_CODE_BASE (see

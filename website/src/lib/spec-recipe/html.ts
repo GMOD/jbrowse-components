@@ -6,7 +6,7 @@ import { OWN_FILE } from './configTracks.ts'
 import { EMBED_PACKAGE } from './embed.ts'
 
 import type { AgentRecipe } from './agent.ts'
-import type { Recipe, RecipeStep } from './recipe.ts'
+import type { Recipe, RecipeStep, openRecipe } from './recipe.ts'
 
 // Docs markdown is rendered to an HTML string (src/lib/markdown.ts), not to
 // Astro components, so this emits a plain <dialog> a small script in
@@ -67,7 +67,7 @@ function ownDataSteps(steps: RecipeStep[], unmapped: string[]): string {
   ].join('')
 }
 
-type Opens = Pick<Recipe, 'liveUrl' | 'desktopWebUrl' | 'desktopUrl'>
+type Opens = ReturnType<typeof openRecipe>
 
 const QUICKEST = note(
   '<strong>Quickest</strong>: open the view, then <strong>File → Open track...</strong> for your files.',
@@ -268,8 +268,6 @@ function dialogHtml(id: string, body: string): string {
   ].join('')
 }
 
-// Opening the finished view comes first, since most readers want only that;
-// the tabs below are the ways to rebuild it from their own data.
 function openButtonsHtml(opens: Opens, slow: boolean, id: string): string {
   return [
     '<div class="spec-opens">',
@@ -282,6 +280,8 @@ function openButtonsHtml(opens: Opens, slow: boolean, id: string): string {
   ].join('')
 }
 
+// Opening the finished view comes first, since most readers want only that;
+// the tabs below are the ways to rebuild it from their own data.
 function opensHtml(recipe: Recipe, slow: boolean, id: string): string {
   return `${openButtonsHtml(recipe, slow, id)}<p class="spec-rebuild-lead">Or rebuild it from your own data:</p>`
 }
@@ -297,10 +297,13 @@ export function recipeDialogHtml(
   )
 }
 
-// A view saved as a whole session rather than a spec has no steps to derive,
-// so its dialog opens it and points the reader at their own files from there
+// A link with no session spec has no steps to derive, so its dialog opens the
+// view and points the reader at their own files from there
 export function openDialogHtml(opens: Opens, id: string, slow = false): string {
-  return dialogHtml(id, openButtonsHtml(opens, slow, id) + QUICKEST)
+  return dialogHtml(
+    id,
+    `${openButtonsHtml(opens, slow, id)}<p class="spec-rebuild-lead">Or rebuild it from your own data: open the view, then <strong>File → Open track...</strong> for your files.</p>`,
+  )
 }
 
 export interface RecipeFrame {
@@ -342,16 +345,17 @@ export function agentDialogHtml(agent: AgentRecipe, id: string): string {
 // screen, and the config it pasted. The session panels that follow are the
 // figure recipe's, built from the session the clip starts in.
 export function videoRecipeDialogHtml(
-  recipe: Recipe,
+  opens: Opens,
   id: string,
   video: { steps: string[]; paste?: string },
+  recipe?: Recipe,
 ): string {
   const walkthrough: Panel = {
     label: 'Video',
     kind: 'video',
     body: [
       note(
-        `<a href="${escapeAttr(recipe.liveUrl)}" target="_blank" rel="noopener noreferrer">Open the session the video starts in ↗</a>, then take the steps it shows:`,
+        `<a href="${escapeAttr(opens.liveUrl)}" target="_blank" rel="noopener noreferrer">Open the session the video starts in ↗</a>, then take the steps it shows:`,
       ),
       `<ol class="spec-steps">${video.steps
         .map(
@@ -369,7 +373,10 @@ export function videoRecipeDialogHtml(
         : []),
     ].join(''),
   }
-  return dialogHtml(id, tabsHtml(id, [walkthrough, ...panels(recipe, id, true)]))
+  return dialogHtml(
+    id,
+    tabsHtml(id, [walkthrough, ...(recipe ? panels(recipe, id, true) : [])]),
+  )
 }
 
 // a "steps/recipe" glyph (lucide clipboard-list). The label beside it carries

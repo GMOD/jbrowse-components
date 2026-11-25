@@ -149,7 +149,12 @@ export function figureRenderer(feed: boolean) {
           0,
           multiFrames.findIndex(f => f.name === shown.name),
         )
-        return `<figure>${zoomed}<figcaption>${caption} ${recipeButtonHtml(id)}</figcaption>${framesDialogHtml(multiFrames, id, shownFrame)}</figure>`
+        const [only] = multiFrames
+        const dialog =
+          multiFrames.length === 1 && only
+            ? recipeDialogHtml(only.recipe, id, only.slow)
+            : framesDialogHtml(multiFrames, id, shownFrame)
+        return `<figure>${zoomed}<figcaption>${caption} ${recipeButtonHtml(id)}</figcaption>${dialog}</figure>`
       }
     } else if (liveUrl) {
       // a spec whose link opens a plain page rather than a view says so
@@ -157,17 +162,19 @@ export function figureRenderer(feed: boolean) {
       const label = `${(live?.name ? figureLiveLabels[live.name] : undefined) ?? 'Open this view in JBrowse'} ↗`
       const zoomed = zoom(img, { url: liveUrl, label })
       const isSlow = slow(live?.name)
-      const dialog = singleRecipe
-        ? (id: string) => recipeDialogHtml(singleRecipe, id, isSlow)
-        : opensJBrowse(liveUrl)
-          ? (id: string) =>
-              openDialogHtml(openRecipe(liveUrl, live?.name), id, isSlow)
-          : undefined
-      if (feed || !dialog) {
-        return `<figure>${zoomed}<figcaption>${caption} ${a(liveUrl, label)}${slowNote(live?.name)}</figcaption></figure>`
+      const id = `spec-dialog-${dialogCount}`
+      const dialog = feed
+        ? undefined
+        : singleRecipe
+          ? recipeDialogHtml(singleRecipe, id, isSlow)
+          : opensJBrowse(liveUrl)
+            ? openDialogHtml(openRecipe(liveUrl, live?.name), id, isSlow)
+            : undefined
+      if (dialog) {
+        dialogCount++
+        return `<figure>${zoomed}<figcaption>${caption} ${recipeButtonHtml(id)}</figcaption>${dialog}</figure>`
       } else {
-        const id = `spec-dialog-${dialogCount++}`
-        return `<figure>${zoomed}<figcaption>${caption} ${recipeButtonHtml(id)}</figcaption>${dialog(id)}</figure>`
+        return `<figure>${zoomed}<figcaption>${caption} ${a(liveUrl, label)}${slowNote(live?.name)}</figcaption></figure>`
       }
     } else if (composite && !feed) {
       const help = agentHelp(composite)

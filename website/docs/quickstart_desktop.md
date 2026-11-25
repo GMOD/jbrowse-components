@@ -146,8 +146,8 @@ opened sessions". The **File → Session** menu handles named sessions:
 **File → Session**, takes a JBrowse Web URL and rebuilds it as a new session:
 
 - a [session spec](/docs/urlparams/#session-spec) link (`&session=spec-...`),
-  such as the link a figure's **Open or rebuild this view** dialog opens in
-  these docs
+  such as the **Open in JBrowse Web** link in a figure's **Open or rebuild this
+  view** dialog in these docs
 - the [URL parameter](/docs/urlparams/) shorthand, `&assembly=` with `&loc=`,
   `&tracks=` and `&highlight=`
 - a `&hubURL=` link, attached as a connection; `&assembly=` naming one of the

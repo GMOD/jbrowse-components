@@ -601,18 +601,19 @@ export function withSessionName(
   return rewritten.href
 }
 
-// The opens every figure of a JBrowse view gets, its session a spec or not
 export function openRecipe(liveUrl: string, figureName?: string) {
   const desktopWebUrl = withSessionName(liveUrl, figureName)
   return {
     liveUrl,
     desktopWebUrl,
+    // built with Desktop's own helper, so the link the docs hand out and the
+    // one the app parses cannot drift apart
     desktopUrl: toProtocolUrl(desktopWebUrl),
   }
 }
 
 export function opensJBrowse(liveUrl: string) {
-  return new URLSearchParams(liveUrl.split('?')[1]).has('config')
+  return URL.canParse(liveUrl) && new URL(liveUrl).searchParams.has('config')
 }
 
 export function buildRecipe(

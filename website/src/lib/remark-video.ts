@@ -11,7 +11,11 @@ import {
   videoSteps,
 } from './liveLinks.generated.ts'
 import { recipeButtonHtml, videoRecipeDialogHtml } from './spec-recipe/html.ts'
-import { buildRecipe } from './spec-recipe/recipe.ts'
+import {
+  buildRecipe,
+  openRecipe,
+  opensJBrowse,
+} from './spec-recipe/recipe.ts'
 
 import type { Heading, Root } from 'mdast'
 import type { Plugin } from 'unified'
@@ -162,20 +166,27 @@ const remarkVideo: Plugin<[], Root> = () => {
       // with no steps has none, so those keep that link in the caption.
       const recipe =
         live && file.data.feed !== true ? buildRecipe(live, name) : undefined
+      const opens =
+        recipe ??
+        (live && file.data.feed !== true && opensJBrowse(live)
+          ? openRecipe(live, name)
+          : undefined)
       const steps = videoSteps[name] ?? []
       const id = `video-dialog-${dialogCount}`
       const help =
-        recipe && steps.length
+        opens && steps.length
           ? {
               button: recipeButtonHtml(
                 id,
                 'Open and follow along',
                 'Open the session this video starts in and take its steps yourself',
               ),
-              dialog: videoRecipeDialogHtml(recipe, id, {
-                steps,
-                paste: videoPastes[name],
-              }),
+              dialog: videoRecipeDialogHtml(
+                opens,
+                id,
+                { steps, paste: videoPastes[name] },
+                recipe,
+              ),
             }
           : { button: '', dialog: '' }
       if (help.dialog) {

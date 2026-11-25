@@ -8,7 +8,7 @@ import { repoRoot } from './paths.ts'
 import { screenshotLiveUrls } from './screenshot-specs.ts'
 import { videoLiveUrls } from './video-specs.ts'
 
-// Every figure's "Open this view in JBrowse" link is `<CODE_BASE>?config=…`, and
+// Every figure's "Open in JBrowse Web" link is `<CODE_BASE>?config=…`, and
 // a relative config is served by the hosted build out of its own bundled
 // `test_data/`. So a spec may only name a config that ships:
 //

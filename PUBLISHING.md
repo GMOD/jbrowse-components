@@ -259,7 +259,7 @@ two, `announceFormat.test.ts` the newsletter.
 
 Once the post is on the site you can upgrade `![caption](src)` to
 `<Figure caption="…" src="…" />`, which adds a lightbox and, for any image
-backed by a screenshot spec, an "Open this view in JBrowse" link.
+backed by a screenshot spec, an "Open or rebuild this view" button.
 
 ## Checking a draft against the code
 
