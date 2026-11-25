@@ -81,7 +81,7 @@ The figures also show NCBI's MANE transcripts as the gene track:
 
 ## Add the Hi-C and contact-domain tracks
 
-The `.hic` files are tens of GB, and JBrowse requests only the bins on screen.
+JBrowse reads only the bins on screen from the remote `.hic`.
 
 ```json addtrack
 {
@@ -147,18 +147,6 @@ The domain BEDPE needs one extra slot, `"type": "FeatureTrack"`:
 }
 ```
 
-Arrowhead writes each domain with both BEDPE ends set to the same interval, so
-JBrowse draws the file as a `FeatureTrack` with one box per domain, nested
-domains stacking into rows. Loops, whose mates differ, are the paired-arc case
-in the
-[Hi-C track config guide](/docs/config_guides/hic_track#loops-and-interactions-as-arcs);
-the whole GM12878 loops track is `hic_gm12878_loops` in
-https://jbrowse.org/code/jb2/main/test_data/config_demo.json.
-
-To color or filter either track by a column, set
-[`columnNames`](/docs/config/bedpeadapter/#slot-columnnames)
-explicitly.[^juicer]
-
 ## Open chr9 and chr22 in one view
 
 Type both locations into the location box, separated by a space:
@@ -172,9 +160,6 @@ chromosome, t(9;22)(q34;q11) ([Rowley 1973](https://doi.org/10.1038/243290a0)),
 joining _BCR_ on chr22 to _ABL1_ on chr9.
 
 <Figure src="/img/hic/bcr_abl1_translocation.png" caption="ABL1 and BCR as two windows in one view, GM12878 above and K562 below. The wedge between the panels is chr9 against chr22." links="Open this view=hic/bcr_abl1_translocation" />
-
-The domain boundaries inside each window line up between the two lines, so chr9
-and chr22 each fold normally in K562.
 
 ## Rank chr9-chr22 contact bins with juicer_tools
 
@@ -247,11 +232,7 @@ Wrote hic_translocation_scan/case.chr9-chr22.250000.NONE.txt and hic_translocati
 Override `CASE`, `CTRL`, `CHR1`, `CHR2`, `RES` and `NORM` to scan any two `.hic`
 files that hold inter-chromosomal blocks. Reading the output:
 
-- The top row pairs _ABL1_ intron 1 with the 5' end of _BCR_.
-- With `RES=10000`, the scan resolves the junction itself, _ABL1_ intron 1
-  against the _BCR_ major breakpoint cluster region. In
-  [the K562 fusions tutorial](/docs/tutorials/k562_fusions), the DNA break of
-  the same fusion falls in that intron.
+- `RES=10000` resolves the junction itself.
 - A second chr9-chr22 bin further down also sits well clear of the control, so
   treat the ranking as a list of candidates to open.
 
@@ -262,9 +243,7 @@ to a scan of your own files:
   GM12878 in situ file `ENCSR410MDC` by default. The script leaves the much
   shallower GM12878 "supernatant" fraction, `ENCSR730CER`, commented out,
   because a wedge empty for want of reads looks the same as one empty for want
-  of a translocation. With the deep file, GM12878 has more contact than K562
-  across the whole chr9-chr22 block except the junction bin, where the order
-  inverts.
+  of a translocation.
 - **Normalization.** Matrix balancing divides out per-bin coverage differences,
   and an amplified fusion is such a difference. Re-run the scan with
   `NORM=INTER_SCALE` and _ABL1_×_BCR_ drops off the top of the table. Balanced
@@ -295,12 +274,3 @@ next to the matrix it was called from.
 ## External links
 
 - [HiGlass](https://higlass.io/)
-
-[^juicer]:
-    Juicer writes a version banner after the header line, so column names read
-    from the header come out `undefined` past the tenth column, and a jexl
-    expression on one of them matches nothing and reports no error. HiCCUPS
-    writes 24 columns and Arrowhead 16, and both leave `name` and `score` at `.`
-    and put what they rank by further along: `observed` for HiCCUPS, a second
-    column called `score` for Arrowhead. Values past the tenth column are read
-    as strings, so compare with `>` and `<`, which coerce.
