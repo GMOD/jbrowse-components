@@ -15,6 +15,7 @@ are **linear projections** of the graph onto K12's coordinates, which load as
 ordinary tracks; together they show which sequence all five strains share and
 which only some have. We:
 
+- build the graph with pggb
 - load the alignment between the strains as a synteny track, and stack the
   strains in a linear synteny view
 - load the variants pggb calls from the graph against K12 as a variant track,
@@ -71,17 +72,17 @@ The page's commands fetch the five _E. coli_ RefSeq assemblies by accession and
 build local files from them; run [the build script](#reproduce-it-end-to-end)
 first, or follow the same commands on your own assemblies. The graph tracks read
 our hosted copy, and the nanopore reads under
-[Testing the CPZ-55 depth trough](#test-the-cpz-55-depth-trough-with-nanopore-reads)
+[Test the CPZ-55 depth trough with nanopore reads](#test-the-cpz-55-depth-trough-with-nanopore-reads)
 are the one file the script does not fetch.
 
-| What it is                                               | File                                                                                                                  |
-| -------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------- |
-| K12                                                      | [GCF_000005845.2_ASM584v2/](https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/000/005/845/GCF_000005845.2_ASM584v2/)       |
-| Sakai                                                    | [GCF_000008865.2_ASM886v2/](https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/000/008/865/GCF_000008865.2_ASM886v2/)       |
-| CFT073                                                   | [GCF_000007445.1_ASM744v1/](https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/000/007/445/GCF_000007445.1_ASM744v1/)       |
-| NCTC86                                                   | [GCF_002007705.1_ASM200770v1/](https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/002/007/705/GCF_002007705.1_ASM200770v1/) |
-| IAI39                                                    | [GCF_000026345.1_ASM2634v1/](https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/000/026/345/GCF_000026345.1_ASM2634v1/)     |
-| Nanopore reads from an unrelated isolate, _E. coli_ E146 | [DRR193901_1.fastq.gz](https://ftp.sra.ebi.ac.uk/vol1/fastq/DRR193/DRR193901/DRR193901_1.fastq.gz)                    |
+| What it is                                                        | File                                                                                                                  |
+| ----------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------- |
+| K12                                                               | [GCF_000005845.2_ASM584v2/](https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/000/005/845/GCF_000005845.2_ASM584v2/)       |
+| Sakai                                                             | [GCF_000008865.2_ASM886v2/](https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/000/008/865/GCF_000008865.2_ASM886v2/)       |
+| CFT073                                                            | [GCF_000007445.1_ASM744v1/](https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/000/007/445/GCF_000007445.1_ASM744v1/)       |
+| NCTC86                                                            | [GCF_002007705.1_ASM200770v1/](https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/002/007/705/GCF_002007705.1_ASM200770v1/) |
+| IAI39                                                             | [GCF_000026345.1_ASM2634v1/](https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/000/026/345/GCF_000026345.1_ASM2634v1/)     |
+| Nanopore reads from an unrelated isolate, _E. coli_ E146 (1.6 GB) | [DRR193901_1.fastq.gz](https://ftp.sra.ebi.ac.uk/vol1/fastq/DRR193/DRR193901/DRR193901_1.fastq.gz)                    |
 
 ## Build the graph
 
@@ -288,8 +289,8 @@ in_pggb bash -c "bcftools annotate --rename-chrs /data/rename_chrs.tsv \
   | bcftools sort -Oz -o /data/ecoli_pggb.vcf.gz && tabix -C -p vcf /data/ecoli_pggb.vcf.gz"
 ```
 
-Each strain is one haplotype, so with `rows: "haplotype"` the track draws one
-row per strain, colored by that strain's allele:
+Each strain is one haplotype, so with `rows.field: "haplotype"` the track draws
+one row per strain, colored by that strain's allele:
 
 ```json addtrack
 {
@@ -302,7 +303,7 @@ row per strain, colored by that strain's allele:
     "uri": "ecoli_pggb.vcf.gz",
     "csi": true
   },
-  "displays": [{ "type": "LinearVariantDisplay", "rows": "haplotype" }]
+  "displayDefaults": { "rows": { "field": "haplotype" } }
 }
 ```
 
@@ -310,10 +311,6 @@ With a length after the path name, as in `-V K12:10000`, pggb runs
 [`vcfbub`](https://github.com/pangenome/vcfbub) and
 [`vcfwave`](https://github.com/vcflib/vcflib) over the VCF to decompose large
 sites into smaller variants, giving `*.decomposed.vcf`.
-
-The undecomposed `*.smooth.final.K12.vcf` has one record per bubble (where paths
-split and rejoin), which the
-[graph track](#opening-the-graph-in-the-graph-genome-view) reads.
 
 `pggb -M` wrote the multiple alignment as a MAF. Re-root every block on K12,
 rename the rows to `sample.chr`, and blank the padding smoothxg writes around
@@ -430,9 +427,6 @@ The config adds reference lines at the strain count and at 1:
 }
 ```
 
-The curve doubles over the rrnC and rrnB operons (ribosomal RNA gene copies),
-because pggb folds those two copies onto each other in the graph.
-
 ### Add per-strain presence as a heatmap
 
 [`odgi pav`](https://odgi.readthedocs.io/en/latest/rst/commands/odgi_pav.html)
@@ -489,21 +483,16 @@ column is a stretch that strain lacks:
 }
 ```
 
-Open `chr:450,000-590,000` with the K12 genes on. The figure shades
-`chr:501,500-539,000`.
+Open `chr:450,000-590,000` with the K12 genes on.
 
 <Figure caption="K12 genes, the aggregate depth curve, and odgi pav below it, one row per non-K12 strain." src="/img/pangenome/pav.png" />
-
-Across the shaded span IAI39's row is empty and depth drops by one. The deeper
-trough to its right, `chr:565,000-585,000`, is the prophage that begins at
-_intD_, where depth falls toward the **K12 alone** line.
 
 ### Test the CPZ-55 depth trough with nanopore reads
 
 A depth trough marks a stretch of K12 the other strains lack. Reads from a new
 isolate show whether it lacks the stretch too. We'll load nanopore reads from
-_E. coli_ E146, an isolate outside the graph, over CPZ-55, a cryptic prophage
-only K12 has. Download them:
+_E. coli_ E146, an isolate outside the graph, over CPZ-55, a cryptic prophage.
+Download them, 1.6 GB:
 
 ```bash
 curl -fO https://ftp.sra.ebi.ac.uk/vol1/fastq/DRR193/DRR193901/DRR193901_1.fastq.gz
@@ -532,7 +521,6 @@ samtools index ecoli_e146_ont.bam
 
 Type `chr:2,554,000-2,570,000`. With `facet: "split"` the track puts the reads
 with a supplementary alignment in a separate section, linked across the trough.
-The other reads show it as a single labelled deletion.
 
 <Figure caption="Nanopore reads from another isolate over one K12 depth trough, with the graph's depth curve and MAF below." src="/img/pangenome/long_reads.png" />
 
@@ -541,8 +529,9 @@ The other reads show it as a single labelled deletion.
 The [graph genome view plugin](/docs/user_guides/graph_genome_view) draws the
 graph itself as a track of the linear view.
 [`gfa-to-tabix build`](/docs/tutorials/pangenome_prepare_graph) indexes it by
-following the K12 path, and takes the bubbles from pggb's undecomposed VCF,
-renamed like the decomposed one:
+following the K12 path, and takes the bubbles from pggb's undecomposed VCF
+(`*.smooth.final.K12.vcf`), which has one record per bubble, where paths split
+and rejoin. Rename it like the decomposed one:
 
 ```bash
 in_pggb bash -c "bcftools annotate --rename-chrs /data/rename_chrs.tsv \
@@ -589,10 +578,10 @@ on the contig of a strain that has it. The `uri`s below are our hosted copy.
 }
 ```
 
-**Open track... → Add pangenome graph track** adds the same track from an empty
-session:
+**File → Open track... → Add pangenome graph track** adds the same track from an
+empty session:
 
-<Video src="/media/pangenome/pggb_subgraph_launch.mp4" caption="Adding the graph track to a K12 session with Open track... → Add pangenome graph track." />
+<Video src="/media/pangenome/pggb_subgraph_launch.mp4" caption="Adding the graph track to a K12 session with File → Open track... → Add pangenome graph track." />
 
 Type `chr:1,291,500-1,306,500`. Zoomed out past five bp per pixel, the track
 draws the coarse tier, the graph with variants under 50 bp folded into the
@@ -628,12 +617,12 @@ To set the tier beside the strains:
 - Add a second copy of the K12 genes and keep the insertion sequences with
   **Filter by → Edit filters...** and `startsWith(feature.name || '','ins')`.
 
-<Figure caption="K12 around two insertion sequences: the coarse tier with variants under 50 bp folded into the reference, the MAF's strain rows, and the graph track, which at this zoom also folds variants under 166 bp. The highlight is insH21." src="/img/pangenome/pggb_bubble_tier.png" />
+<Figure caption="K12 around two insertion sequences: the coarse tier with variants under 50 bp folded into the reference, the MAF's strain rows, and the graph track. The highlight is insH21." src="/img/pangenome/pggb_bubble_tier.png" />
 
 A segment K12 lacks has coordinates on the strain that has it, and its
 right-click menu opens that strain's genome there. Type
-`chr:1,004,500-1,004,961`, right-click the 75 bp CFT073 segment and pick **Open
-in CFT073**.
+`chr:1,004,500-1,004,961`, right-click the CFT073 segment and pick **Open in
+CFT073**.
 
 <Video src="/media/pangenome/pggb_out_to_strain.mp4" caption="A node's menu on the CFT073 allele, and the CFT073 view its Open in entry adds." />
 
