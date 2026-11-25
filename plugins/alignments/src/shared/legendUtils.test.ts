@@ -23,6 +23,7 @@ import {
   arcLegendTitle,
   bakedRampScale,
   cigarMarkLegendItems,
+  keyedCigarMarks,
   colorRampScales,
   getAlignmentsColorScales,
   getArcLegendItems,
@@ -1568,6 +1569,36 @@ describe('the alignment marks section', () => {
     ])
     expect(items[0]!.color).toBe(rgb255(palette.colorInsertion))
     expect(items[1]!.color).toBe(rgb255(palette.colorMutedSnpBase))
+  })
+
+  test('keys a deletion while the pileup draws it, a mismatch only under the modification mute', () => {
+    const found = new Set([
+      'insertion',
+      'deletion',
+      'mismatch',
+      'softclip',
+    ] as const)
+    const keyed = (
+      showMismatches: boolean,
+      drawsReadRows: boolean,
+      baseLayer?: BaseLayer,
+    ) => [
+      ...keyedCigarMarks(found, { showMismatches, drawsReadRows, baseLayer }),
+    ]
+    const modifications: BaseLayer = {
+      field: 'modifications',
+      unmodified: false,
+      filter: basesFilterOf([]),
+    }
+    expect(keyed(true, true, modifications)).toEqual([
+      'insertion',
+      'deletion',
+      'mismatch',
+      'softclip',
+    ])
+    expect(keyed(true, true)).toEqual(['insertion', 'deletion', 'softclip'])
+    expect(keyed(false, true, modifications)).toEqual(['insertion', 'softclip'])
+    expect(keyed(true, false, modifications)).toEqual(['insertion', 'softclip'])
   })
 
   test('is its own section after the read colors, and absent when empty', () => {

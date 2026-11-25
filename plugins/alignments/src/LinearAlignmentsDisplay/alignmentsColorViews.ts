@@ -11,6 +11,7 @@ import {
   colorRampScales,
   getReadDisplayLegendItems,
   insertSizeBandLabels,
+  keyedCigarMarks,
   overlapLegendRows,
 } from '../shared/legendUtils.ts'
 import { getColorForModification } from '../util.ts'
@@ -306,20 +307,16 @@ export function alignmentsColorViews(self: AlignmentsColorHost) {
      * mutes it to one grey, since its base colors are otherwise unkeyed.
      */
     get cigarMarkKinds(): ReadonlySet<CigarMarkKind> {
-      const found = self.showLegend
-        ? cigarMarkKindsInWindows(self.laidOutByGroupFramed, self.keyWindows)
+      return self.showLegend
+        ? keyedCigarMarks(
+            cigarMarkKindsInWindows(self.laidOutByGroupFramed, self.keyWindows),
+            {
+              showMismatches: self.showMismatches,
+              drawsReadRows: this.drawsReadRows,
+              baseLayer: self.baseLayer,
+            },
+          )
         : new Set<CigarMarkKind>()
-      const pileupMarks = self.showMismatches && this.drawsReadRows
-      const mutedMismatches = pileupMarks && paintsModifications(self.baseLayer)
-      return new Set(
-        [...found].filter(kind =>
-          kind === 'deletion'
-            ? pileupMarks
-            : kind === 'mismatch'
-              ? mutedMismatches
-              : true,
-        ),
-      )
     },
 
     /**

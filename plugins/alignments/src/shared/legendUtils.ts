@@ -201,6 +201,37 @@ const CIGAR_MARK_COLORS: [CigarMarkKind, PaletteColorKey][] = [
 ]
 
 /**
+ * The found marks the key names: a deletion only while the pileup draws it
+ * (gated with the mismatches), a mismatch only while a modification layer
+ * also mutes it to one grey, since its base colors are otherwise unkeyed. The
+ * interbase kinds draw in the coverage band too, so they always stay.
+ */
+export function keyedCigarMarks(
+  found: ReadonlySet<CigarMarkKind>,
+  {
+    showMismatches,
+    drawsReadRows,
+    baseLayer,
+  }: {
+    showMismatches: boolean
+    drawsReadRows: boolean
+    baseLayer: BaseLayer | undefined
+  },
+) {
+  const pileupMarks = showMismatches && drawsReadRows
+  const mutedMismatches = pileupMarks && paintsModifications(baseLayer)
+  return new Set(
+    [...found].filter(kind =>
+      kind === 'deletion'
+        ? pileupMarks
+        : kind === 'mismatch'
+          ? mutedMismatches
+          : true,
+    ),
+  )
+}
+
+/**
  * The fixed-color pileup marks drawn in view, in one order whatever was found
  * first. Their hues are constants, not a field's, so they head a section of
  * their own rather than joining the read colors they can collide with (a soft
