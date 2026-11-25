@@ -41,18 +41,18 @@ conda install -c bioconda -c conda-forge htslib r-base bioconductor-saturn \
 
 ## The data
 
-ENCODE's ENTEx panel, four skeletal-muscle and four liver donors, quantified
-with RSEM against GENCODE v29.
+ENCODE's ENTEx panel, skeletal-muscle and liver donors, quantified with RSEM
+against GENCODE v29.
 
 You don't need these files to follow the page: the track configs below read the
 hosted results. The [build script](#reproduce-it-end-to-end) fetches them to
 rebuild those results. The test step takes any transcript-by-sample count matrix
 with a sample table and a transcript-to-gene table.
 
-| What it is                                                                                         | File                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 |
-| -------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Eight RSEM per-transcript quantification tables, the four muscle donors then the four liver donors | [ENCFF353NZM.tsv](https://www.encodeproject.org/files/ENCFF353NZM/@@download/ENCFF353NZM.tsv)<br>[ENCFF172SLW.tsv](https://www.encodeproject.org/files/ENCFF172SLW/@@download/ENCFF172SLW.tsv)<br>[ENCFF140GJI.tsv](https://www.encodeproject.org/files/ENCFF140GJI/@@download/ENCFF140GJI.tsv)<br>[ENCFF576DOG.tsv](https://www.encodeproject.org/files/ENCFF576DOG/@@download/ENCFF576DOG.tsv)<br>[ENCFF996LRE.tsv](https://www.encodeproject.org/files/ENCFF996LRE/@@download/ENCFF996LRE.tsv)<br>[ENCFF641ADT.tsv](https://www.encodeproject.org/files/ENCFF641ADT/@@download/ENCFF641ADT.tsv)<br>[ENCFF392VYD.tsv](https://www.encodeproject.org/files/ENCFF392VYD/@@download/ENCFF392VYD.tsv)<br>[ENCFF383KWZ.tsv](https://www.encodeproject.org/files/ENCFF383KWZ/@@download/ENCFF383KWZ.tsv) |
-| The GENCODE v29 annotation those quantifications were made against                                 | [gencode.v29.annotation.gff3.gz](https://ftp.ebi.ac.uk/pub/databases/gencode/Gencode_human/release_29/gencode.v29.annotation.gff3.gz)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                |
+| What it is                                                                             | File                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 |
+| -------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| The RSEM per-transcript quantification tables, the muscle donors then the liver donors | [ENCFF353NZM.tsv](https://www.encodeproject.org/files/ENCFF353NZM/@@download/ENCFF353NZM.tsv)<br>[ENCFF172SLW.tsv](https://www.encodeproject.org/files/ENCFF172SLW/@@download/ENCFF172SLW.tsv)<br>[ENCFF140GJI.tsv](https://www.encodeproject.org/files/ENCFF140GJI/@@download/ENCFF140GJI.tsv)<br>[ENCFF576DOG.tsv](https://www.encodeproject.org/files/ENCFF576DOG/@@download/ENCFF576DOG.tsv)<br>[ENCFF996LRE.tsv](https://www.encodeproject.org/files/ENCFF996LRE/@@download/ENCFF996LRE.tsv)<br>[ENCFF641ADT.tsv](https://www.encodeproject.org/files/ENCFF641ADT/@@download/ENCFF641ADT.tsv)<br>[ENCFF392VYD.tsv](https://www.encodeproject.org/files/ENCFF392VYD/@@download/ENCFF392VYD.tsv)<br>[ENCFF383KWZ.tsv](https://www.encodeproject.org/files/ENCFF383KWZ/@@download/ENCFF383KWZ.tsv) |
+| The GENCODE v29 annotation those quantifications were made against                     | [gencode.v29.annotation.gff3.gz](https://ftp.ebi.ac.uk/pub/databases/gencode/Gencode_human/release_29/gencode.v29.annotation.gff3.gz)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                |
 
 <details>
 <summary>Read by URL (no download needed)</summary>
@@ -68,9 +68,9 @@ with a sample table and a transcript-to-gene table.
 The build takes the ENCODE quantifications to a colorable GFF3 in three steps,
 and one [script](#reproduce-it-end-to-end) runs all three.
 
-**Build the matrices.** The script downloads the eight RSEM tables listed above,
-with the accessions written into it, and writes a count matrix for the model and
-a TPM matrix for the effect size.
+**Build the matrices.** The script downloads the RSEM tables listed above, with
+the accessions written into it, and writes a count matrix for the model and a
+TPM matrix for the effect size.
 
 **Test usage.** [satuRn](https://doi.org/10.12688/f1000research.51749.1) fits a
 quasi-binomial model to each transcript's share of its gene's reads and tests
@@ -129,7 +129,7 @@ quantifications were made against:
 - Joining against a later release drops every transcript revised since, with no
   error.
 - ENCODE lists the release on each quantification's file page as its genome
-  annotation (`V29` for all eight here).
+  annotation (`V29` for all of them here).
 
 A transcript is called when its regular FDR and its |ΔIF| pass the cutoffs in
 the code below. The script keeps each gene with a called transcript that is
@@ -202,7 +202,7 @@ bgzip -f dtu_muscle_vs_liver.gff3
 tabix -f -C -p gff dtu_muscle_vs_liver.gff3.gz
 ```
 
-### The statistics in the attribute column
+### Read the statistics from the attribute column
 
 The track reads each transcript's statistics from the attribute column. A
 transcript row from the finished file, wrapped:
@@ -215,9 +215,9 @@ chr10  HAVANA  transcript  7788129  7807815  .  +  .
   tpm_muscle=10.03;tpm_liver=28.88;dtu=liver;dif_called=-0.299
 ```
 
-The transcript statistics sit on the transcript row, and the exons, CDS and UTRs
-have the transcript's value. The gene row has two more keys, which the track's
-`tooltip` reads:
+The transcript statistics sit on the transcript row, and the track applies the
+transcript's value to its exons, CDS and UTRs. The gene row has two more keys,
+which the track's `tooltip` reads:
 
 - `dtu_transcripts`, the count of called isoforms
 - `dtu_top_dif`, the largest ΔIF among them
@@ -229,10 +229,10 @@ no value for a color field named `dIF` and paints every transcript grey.
 is `dif` on the called transcripts and absent on the rest, so a transcript the
 test could not separate has no value to color and stays grey.
 
-## Load the GRCh38 assembly
+## Color each isoform by its usage change
 
 GENCODE v29 is a GRCh38 annotation and the coverage is on GRCh38, so we load the
-hg38 assembly before either track.
+GRCh38 assembly before either track.
 
 ```json addassembly genome=hg38
 {
@@ -244,8 +244,6 @@ hg38 assembly before either track.
   "cytobands": "https://jbrowse.org/genomes/GRCh38/cytoBand.txt"
 }
 ```
-
-## Color each isoform by its usage change
 
 In [grammar-of-graphics](/docs/config_guides/mark_display) terms,
 `encoding.color` is a color scale: its `field`, `dif_called` (a called
@@ -301,12 +299,9 @@ muscle-preferred above. A value on a cut falls in the interval above it.
 }
 ```
 
-Add the four coverage tracks below and open them with the transcript track at
-`chr10:7,787,600-7,812,400`, the whole of _ATP5F1C_, an ATP synthase subunit:
-
-- The gene is on the plus strand, so the two plus-strand tracks hold its reads.
-- satuRn used no genomic coordinates, so the coverage is an independent check on
-  the color.
+Add the four coverage tracks below, then open `chr10:7,787,600-7,812,400` with
+the transcript track. That is the whole of _ATP5F1C_, an ATP synthase subunit on
+the plus strand, so the two plus-strand tracks hold its reads.
 
 By default each coverage track fits its y axis to the track's peak. To compare
 the tissues by height, choose **Y axis... → Share axis with** on one track and
