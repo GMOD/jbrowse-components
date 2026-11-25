@@ -9,7 +9,7 @@ import {
 } from '@mui/material'
 import { observer } from 'mobx-react'
 
-import { getSession, isAbortException } from '../util/index.ts'
+import { getSession } from '../util/index.ts'
 import ControlRow from './ControlRow.tsx'
 import ErrorBanner from './ErrorBanner.tsx'
 import ExternalLink from './ExternalLink.tsx'
@@ -146,7 +146,7 @@ export default observer(function BaseExportSvgDialog({
           }
           handleClose()
         } catch (e) {
-          if (!isAbortException(e)) {
+          if (!controller.signal.aborted) {
             console.error(e)
             setError(e)
           }

@@ -222,6 +222,15 @@ function uninitializedView(): { initialized: boolean; error: unknown } {
 }
 
 describe('awaitViewInitialized', () => {
+  it('fails at once on a view with nothing to show', async () => {
+    await expect(
+      awaitViewInitialized({
+        ...uninitializedView(),
+        hasSomethingToShow: false,
+      }),
+    ).rejects.toThrow('Cannot export: no regions are displayed')
+  })
+
   it('resolves once the view initializes', async () => {
     const view = uninitializedView()
     const p = awaitViewInitialized(view)

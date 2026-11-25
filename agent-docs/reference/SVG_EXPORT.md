@@ -115,7 +115,9 @@ Every view's `renderToSvg` opens with `awaitViewInitialized(model)`
 silently when an assembly fails to load, and `initialized` can go true
 mid-launch while tracks still attach. Every view's `error` must therefore be
 **resolved** (assembly and sub-view errors folded in), not the raw
-`volatileError`.
+`volatileError`. A view whose `hasSomethingToShow` is false, its import form,
+fails there at once: the synteny and dotplot views are never `initialized` on
+theirs.
 
 A fetch the view owns rather than a display (the breakpoint split view's
 variant-call overlay) gets its own readiness getter, `computeSvgReady` over its

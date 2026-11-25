@@ -149,12 +149,19 @@ export async function awaitSvgReady(
  * Only a view that never initialized is fatal *here*. A track error on an
  * initialized view is fatal too, but it is the displays' readiness waits that
  * report it (`throwOnExportErrors`), after this one has let the export start.
+ *
+ * A view with nothing to show (its import form) fails at once: some views are
+ * never `initialized` there, and the wait would not end.
  */
 export async function awaitViewInitialized(view: {
   initialized: boolean
   error: unknown
   pendingLaunch?: unknown
+  hasSomethingToShow?: boolean
 }) {
+  if (view.hasSomethingToShow === false) {
+    throw new Error('Cannot export: no regions are displayed')
+  }
   if (!(await whenViewSettled(view))) {
     // the wait only resolves on one of the two, so `error` is set here — and
     // routing it through the shared thrower keeps one wording for "the export
