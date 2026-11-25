@@ -19,7 +19,7 @@ import {
   labelFontSizePx,
   labelGutterPx,
   labelIsDrawn,
-  labelOffsetPx,
+  labelAnchorOffsetPx,
   labelPlacement,
   labelsRunAlongArcs,
   middleTitle,
@@ -64,7 +64,10 @@ const RulerLabel = observer(function RulerLabel({
   if (!labelIsDrawn(text, maxWidthPx)) {
     return null
   }
-  const textXY = polarToCartesian(radiusPx + labelOffsetPx, radians)
+  const textXY = polarToCartesian(
+    radiusPx + labelAnchorOffsetPx(alongArc),
+    radians,
+  )
   const { textAnchor, rotation } = labelPlacement(
     radians,
     offsetRadians,

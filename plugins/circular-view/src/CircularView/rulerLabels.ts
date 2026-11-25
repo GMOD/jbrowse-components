@@ -36,8 +36,18 @@ export const tickReachPx =
   tickLabelGapPx +
   tickFontSizePx
 
-// how far outside the circle's radius a label is anchored: past the ticks
+// how far outside the circle's radius a label's inner edge sits: clear of the
+// tick labels
 export const labelOffsetPx = tickReachPx + 5
+
+/**
+ * How far outside the circle's radius a label is anchored: a label along its
+ * arc is centred there, so it stands half a line further out than a radiating
+ * one, which starts there.
+ */
+export function labelAnchorOffsetPx(alongArc: boolean) {
+  return labelOffsetPx + (alongArc ? labelFontSizePx / 2 : 0)
+}
 
 // `measureText` reads a regular-weight Helvetica table, close to the app's
 // own font but not to the face a generic export family resolves to: fontconfig
@@ -140,14 +150,14 @@ export function maxLabelGutterPx(labels: string[]) {
     ? labelOffsetPx +
         max(
           labels.map(label => labelWidthPx(label)),
-          0,
+          labelFontSizePx,
         )
     : tickReachPx
 }
 
 /**
- * How far past the ruler arc this figure's labels reach: the ticks, then half
- * a line when the labels run along their arcs, the longest label when they
+ * How far past the ruler arc this figure's labels reach: the ticks, then a
+ * line when the labels run along their arcs, the longest label when they
  * radiate. The SVG export sizes its canvas by it.
  */
 export function labelGutterPx(
@@ -167,9 +177,7 @@ export function labelGutterPx(
       }
       return (
         labelOffsetPx +
-        // a tangential label is centered on the anchor, so it reaches outward
-        // by half its height rather than by its length
-        (alongArcs ? labelFontSizePx / 2 : labelWidthPx(text, fontFamily))
+        (alongArcs ? labelFontSizePx : labelWidthPx(text, fontFamily))
       )
     }),
     tickReachPx,

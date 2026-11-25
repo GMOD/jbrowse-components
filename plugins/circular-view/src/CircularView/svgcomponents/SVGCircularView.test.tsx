@@ -299,6 +299,32 @@ test('ruler labels and ticks are centred on their radius by y alone', async () =
   expect(ys(10)).toEqual(new Set(['2.8']))
 }, 20000)
 
+// A chromosome's midpoint often lands on a round major tick, whose label sat
+// under the chromosome's name
+test('a label along its arc stands clear of the tick labels, inside the gutter', async () => {
+  const view = await setupRefNames(['ctgA', 'ctgB'])
+  expect(labelsRunAlongArcs(view)).toBe(true)
+  const svg = await renderToSvg(view, {})
+  const gutterEdgePx =
+    view.radiusPx + labelGutterPx(view, exportFontFamily(undefined))
+  const radii = (fontSize: number) =>
+    [
+      ...svg.matchAll(
+        new RegExp(
+          `<text[^>]*font-size="${fontSize}"[^>]*translate\\((-?[\\d.]+),(-?[\\d.]+)\\)`,
+          'g',
+        ),
+      ),
+    ].map(([, x, y]) => Math.hypot(Number(x), Number(y)))
+  const tickLabelsOuterPx = Math.max(...radii(10)) + 10 / 2
+  const regionLabels = radii(13)
+  expect(regionLabels).toHaveLength(2)
+  for (const r of regionLabels) {
+    expect(r - 13 / 2).toBeGreaterThan(tickLabelsOuterPx)
+    expect(r + 13 / 2).toBeLessThanOrEqual(gutterEdgePx + 0.02)
+  }
+}, 20000)
+
 // A monospace face advances every glyph 0.6em, where the Helvetica table puts
 // an accession's digits at 0.56em and its `.` at 0.28em: sized from that table,
 // a monospace export ran each radial label a few px past the canvas edge
