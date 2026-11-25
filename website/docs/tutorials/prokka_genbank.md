@@ -51,8 +51,7 @@ npm install -g @jbrowse/cli@next
 
 <!-- END GENERATED TUTORIAL_INSTALL prokka,node,jbrowse-cli -->
 
-When Prokka is installed beside other tools, conda resolves the old Prokka 1.13,
-so the install puts Prokka in a separate environment.
+Install Prokka in a conda environment of its own, apart from the other tools.
 
 ## The data
 
@@ -92,8 +91,8 @@ prokka --outdir annotation --prefix sakai --locustag SAKAI --cpus 0 assembly.fna
 ```
 
 `annotation/sakai.gbk` is the GenBank file: one record per contig, each with its
-sequence and its genes. Prokka names each record after its contig and writes
-every record as linear, as each record's first line shows:
+sequence and its genes. Prokka names each record after its contig[^names] and
+writes every record as linear, as each record's first line shows:
 
 ```bash
 grep '^LOCUS' annotation/sakai.gbk
@@ -104,13 +103,6 @@ LOCUS       NC_002695.2          5498578 bp    DNA     linear       21-NOV-2026
 LOCUS       NC_002127.1             3306 bp    DNA     linear       21-NOV-2026
 LOCUS       NC_002128.1            92721 bp    DNA     linear       21-NOV-2026
 ```
-
-A contig name longer than the LOCUS line's name column, such as SPAdes's
-`NODE_1_length_52345_cov_23.451523`, runs into the length on that line; JBrowse
-splits the two again by the record's length, so the refNames match the contig
-names in your FASTA and in any reads mapped to it. Prokka refuses a name over 37
-characters, though, and its `--centre` and `--compliant` options get past that
-by renaming the contigs, after which the names match neither.
 
 ## Load the genome and the genes
 
@@ -189,9 +181,8 @@ code in the CDS's `/transl_table`:
 
 ## Open pO157 in the circular view
 
-We'll open pO157 in the circular view. A circular view of one circular sequence
-closes at position 1, ticks its bases, and prints the sequence's name and length
-in the middle:
+A circular view of one circular sequence closes at position 1, ticks its bases,
+and prints the sequence's name and length in the middle:
 
 ```json session config=test_data/prokka_sakai/config.json
 {
@@ -211,8 +202,7 @@ in the middle:
 
 <Figure src="/img/prokka_genbank/po157_ring.png" caption="pO157 as a circle, with Prokka's genes around it." />
 
-Prokka names the enterohemolysin operon `hlyC`, `ehxA`, `hlyB` and `hlyD`, the
-four genes in a row on one strand between 16 and 24 kb.
+Find `hlyC`, `ehxA`, `hlyB` and `hlyD`, the enterohemolysin operon, in the ring.
 
 ## Save a plasmid as GenBank
 
@@ -221,9 +211,10 @@ program or a collaborator. Type `NC_002128.1` into a linear view's location box
 to show the whole plasmid, then choose **Save track data...** in the gene
 track's menu and pick **GenBank**. The file holds one record over the plasmid,
 written circular because the assembly lists it in `circularRefNames`, with the
-`source` feature and each CDS's qualifiers as Prokka wrote them. `Genus species`
-and `strain` are Prokka's placeholders; its `--genus`, `--species` and
-`--strain` options fill them in. The file begins:
+`source` feature and each CDS's qualifiers as Prokka wrote them. The `LOCUS`
+date is a fixed placeholder, and `Genus species` and `strain` are Prokka's
+placeholders; its `--genus`, `--species` and `--strain` options fill them in.
+The file begins:
 
 ```text
 LOCUS       NC_002128.1            92721 bp    DNA     circular UNK 10-JAN-1970
@@ -268,9 +259,24 @@ circular view, or every contig in a linear view when the list is empty.
 ```bash
 curl -fO https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/build_prokka_genbank.sh
 bash build_prokka_genbank.sh                    # builds ./prokka_genbank_build/jbrowse2
-FASTA=my_assembly.fna CIRCULAR=contig_2,contig_3 NAME=my_genome LOCUSTAG=MYG DISPLAY_NAME="My genome" bash build_prokka_genbank.sh my_build
 npx --yes serve prokka_genbank_build/jbrowse2  # then open the printed URL
 ```
+
+For your own FASTA, the positional argument names the output directory:
+
+```bash
+FASTA=my_assembly.fna CIRCULAR=contig_2,contig_3 NAME=my_genome LOCUSTAG=MYG DISPLAY_NAME="My genome" bash build_prokka_genbank.sh my_build
+npx --yes serve my_build/jbrowse2              # then open the printed URL
+```
+
+[^names]:
+    A contig name longer than the LOCUS line's name column, such as SPAdes's
+    `NODE_1_length_52345_cov_23.451523`, runs into the length on that line;
+    JBrowse splits the two again by the record's length, so the refNames match
+    the contig names in your FASTA and in any reads mapped to it. Prokka refuses
+    a name over 37 characters, though, and its `--centre` and `--compliant`
+    options get past that by renaming the contigs, after which the names match
+    neither.
 
 [^gff]:
     Prokka also writes the annotation as `sakai.gff`, with the sequence appended
