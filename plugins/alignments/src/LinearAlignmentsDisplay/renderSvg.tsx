@@ -1,12 +1,16 @@
 /* eslint-disable react-refresh/only-export-components */
+import { SvgClipRect } from '@jbrowse/core/svg/SvgExport'
+import { svgNodeId } from '@jbrowse/core/svg/svgId'
 import { usePalette } from '@jbrowse/core/ui/PaletteContext'
 import { PaintLayer } from '@jbrowse/core/util/paintLayer'
+import { getFillProps } from '@jbrowse/core/util/svgColorProps'
 import { GroupLabelBoxes } from '@jbrowse/display-kit/GroupLabelBox'
 import { renderDisplaySvg } from '@jbrowse/display-kit/renderDisplaySvg'
 
 import JunctionLabels from './components/JunctionLabels.tsx'
 import { drawAlignmentLabels } from './components/drawAlignmentLabels.ts'
 import { bandScreenTop } from './components/sectionScreen.ts'
+import { exportPileupCut } from './exportPileupCut.ts'
 import { drawAlignmentsToCtx } from './renderers/Canvas2DAlignmentsRenderer.ts'
 import { junctionLabels } from './renderers/junctionMarks.ts'
 
@@ -30,8 +34,16 @@ import type React from 'react'
 interface AlignmentsSvgModel extends LgvSvgExportable {
   renderSections: readonly Pick<
     AlignmentLane & Section,
-    'groupKey' | 'label' | 'sectionTop' | 'height'
+    | 'groupKey'
+    | 'label'
+    | 'sectionTop'
+    | 'height'
+    | 'pileupTop'
+    | 'pileupHeight'
+    | 'rowsHeight'
+    | 'ceilingClipped'
   >[]
+  rowHeight: number
   scrollModel: ScrollModel
   themedIn: (palette: JBrowsePalette) => {
     colors: ColorPalette
@@ -53,6 +65,12 @@ export async function renderSvg(
   // drawn.
   return renderDisplaySvg(model, opts, AlignmentsSvgBody)
 }
+
+// The line under a pileup cut short, as small as the on-screen truncation
+// caption, and the drop from the box's bottom to its baseline.
+const CUT_CAPTION_FONT_SIZE = 10
+const CUT_CAPTION_LINE_PX = 13
+const CUT_CAPTION_DESCENT_PX = 3
 
 // An empty (zero-read) region draws an empty pileup + coverage axis here, so
 // this body renders unconditionally: there's no data-size gate. Readiness and
@@ -101,12 +119,23 @@ function AlignmentsSvgBody({
         sections.map(sec => sec.junctionFeeds),
       )
     : []
+  // A pileup deeper than the box ends on its last whole row, over a caption
+  // saying what is left out: the screen's scrollbar and truncation rule do
+  // not export.
+  const cut = overlays
+    ? exportPileupCut(
+        renderSections,
+        model.rowHeight,
+        scroll,
+        CUT_CAPTION_LINE_PX,
+      )
+    : undefined
 
   // The arcs and connectors paint into the canvas with the reads; the junctions
   // count labels are vector SVG on screen too, and share their geometry with
   // the overlay so the two can't drift. The per-base letters and counts get a
   // layer of their own without `opts`, so they stay text over rasterized reads.
-  return (
+  const body = (
     <>
       <PaintLayer
         width={canvasWidth}
@@ -147,5 +176,27 @@ function AlignmentsSvgBody({
         />
       ) : null}
     </>
+  )
+  return cut ? (
+    <>
+      <SvgClipRect
+        id={`pileup-cut-${svgNodeId(model)}`}
+        width={canvasWidth}
+        height={cut.cutY}
+      >
+        {body}
+      </SvgClipRect>
+      <text
+        data-testid="pileup-cut-caption"
+        x={contentLeft + 4}
+        y={height - CUT_CAPTION_DESCENT_PX}
+        fontSize={CUT_CAPTION_FONT_SIZE}
+        {...getFillProps(palette.text.secondary)}
+      >
+        {cut.caption}
+      </text>
+    </>
+  ) : (
+    body
   )
 }
