@@ -104,7 +104,8 @@ function AlignmentsSvgBody({
 
   // The arcs and connectors paint into the canvas with the reads; the junctions
   // count labels are vector SVG on screen too, and share their geometry with
-  // the overlay so the two can't drift.
+  // the overlay so the two can't drift. The per-base letters and counts get a
+  // layer of their own without `opts`, so they stay text over rasterized reads.
   return (
     <>
       <PaintLayer
@@ -120,11 +121,17 @@ function AlignmentsSvgBody({
             renderBlocks,
             state,
           )
-          if (overlays) {
-            drawAlignmentLabels(ctx, labels, state, palette)
-          }
         }}
       />
+      {overlays ? (
+        <PaintLayer
+          width={canvasWidth}
+          height={height}
+          paint={ctx => {
+            drawAlignmentLabels(ctx, labels, state, palette)
+          }}
+        />
+      ) : null}
       {overlays ? <JunctionLabels labels={junctionCounts} /> : null}
       {overlays && model.showsGroupLabels ? (
         <GroupLabelBoxes

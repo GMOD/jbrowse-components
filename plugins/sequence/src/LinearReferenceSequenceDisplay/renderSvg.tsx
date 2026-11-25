@@ -1,6 +1,7 @@
 /* eslint-disable react-refresh/only-export-components */
 import { SVGMessageBox } from '@jbrowse/core/svg/SvgExport'
 import { usePalette } from '@jbrowse/core/ui/PaletteContext'
+import { PaintLayer } from '@jbrowse/core/util/paintLayer'
 import MarkSvgLayer from '@jbrowse/display-kit/MarkSvgLayer'
 import { renderDisplaySvg } from '@jbrowse/display-kit/renderDisplaySvg'
 
@@ -62,18 +63,30 @@ function SequenceSvgBody({
       encodeSequenceCells(data, state, !!view.displayedRegions[key]?.reversed),
     ]),
   )
+  // The letters are a layer of their own without `opts`, so they stay text
+  // over rasterized cells.
   return (
-    <MarkSvgLayer
-      marks={SEQUENCE_MARKS}
-      regions={cells}
-      blocks={renderBlocks}
-      state={state}
-      width={canvasWidth}
-      height={height}
-      opts={opts}
-      paint={(ctx, framed) => {
-        drawSequenceLetters(ctx, sequenceData, renderBlocks, framed)
-      }}
-    />
+    <>
+      <MarkSvgLayer
+        marks={SEQUENCE_MARKS}
+        regions={cells}
+        blocks={renderBlocks}
+        state={state}
+        width={canvasWidth}
+        height={height}
+        opts={opts}
+      />
+      <PaintLayer
+        width={canvasWidth}
+        height={height}
+        paint={ctx => {
+          drawSequenceLetters(ctx, sequenceData, renderBlocks, {
+            ...state,
+            canvasWidth,
+            canvasHeight: height,
+          })
+        }}
+      />
+    </>
   )
 }

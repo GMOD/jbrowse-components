@@ -62,7 +62,11 @@ circular view's own key (`CircularView.legendSpecIn`) reads each ring's
 
 **Text inherits the export's font.** The dialog puts `font-family` on the root,
 so a `<text>` that writes the theme's family overrides it; measure in
-`opts.fontFamily` and leave the attribute off.
+`opts.fontFamily` and leave the attribute off. Text stays vector under
+`rasterizeLayers`: a body paints its labels and letters in a `PaintLayer` of
+their own without `opts`, over the layer that gets them (the feature labels,
+the variant records band's labels, the pileup's mismatch letters and indel
+counts, the reference sequence's letters).
 
 **A live figure (`useViewSvgFigure`) freezes against one snapshot.** An export
 draws plain components that read the model once, never an on-screen observer:
