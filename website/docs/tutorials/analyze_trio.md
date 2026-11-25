@@ -262,8 +262,8 @@ the `no_chr_in_chrom_field` variant of the GRCh38 map:
 <!-- from: scripts/build_khv_trio_hapibd.sh -->
 
 ```bash
-# the map is plink.GRCh38.map.zip's no_chr_in_chrom_field/plink.chr1.GRCh38.map
-unzip -j plink.GRCh38.map.zip no_chr_in_chrom_field/plink.chr1.GRCh38.map
+unzip -o plink.GRCh38.map.zip 'no_chr_in_chrom_field/plink.chr1.GRCh38.map' -d maps
+cp maps/no_chr_in_chrom_field/plink.chr1.GRCh38.map plink.chr1.GRCh38.map
 
 # min-seed: shortest shared stretch (cM) hap-ibd starts a segment from
 # min-output: shortest segment (cM) it writes
