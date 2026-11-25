@@ -34,9 +34,9 @@ The walkthroughs also run on the hosted
 [C-GIAB demo](https://jbrowse.org/code/jb2/latest/?config=https://jbrowse.org/demos/cgiab/config.json).
 Building your own instance needs:
 
-- The JBrowse instance, assembly, CRAMs and benchmark tracks that
-  [part 1](/docs/tutorials/sv_visualization_cgiab) builds
-- The command-line tools below, with the versions tested in parentheses:
+- The JBrowse instance, the `GRCh38_GIABv3` assembly, CRAMs and benchmark tracks
+  that [part 1](/docs/tutorials/sv_visualization_cgiab) builds
+- The command-line tools below, with the minimum versions in parentheses:
   - [megadepth](https://github.com/ChristopherWilks/megadepth) (v1.2.0 or
     later), for the coverage tracks
   - [HiFiCNV](https://github.com/PacificBiosciences/HiFiCNV) (v1.0 or later),
@@ -92,18 +92,7 @@ first, or follow the same commands on your own reads.
 | The earlier Wakhan run's Clair3 tumor small-variant calls                        | [merge_output_tumor.vcf.gz](https://ftp-trace.ncbi.nlm.nih.gov/ReferenceSamples/giab/data_somatic/HG008/Liss_lab/analysis/NIH_HiFi_Wakhan-CNA_20240308/vcf_inputs/merge_output_tumor.vcf.gz)                                                  |
 | The normal's germline calls                                                      | [HG008-N-P.GRCh38.deepvariant.phased.vcf.gz](https://ftp-trace.ncbi.nlm.nih.gov/ReferenceSamples/giab/data_somatic/HG008/Liss_lab/analysis/PacBio_Revio_20240125/pacbio-wgs-wdl_germline_20240206/HG008-N-P.GRCh38.deepvariant.phased.vcf.gz) |
 
-## Compute coverage bigWigs from the CRAMs
-
-megadepth writes each CRAM's per-base coverage as a bigWig, which the
-driver-gene tracks below read:
-
-<!-- from: scripts/build_sv_visualization_cgiab.sh -->
-
-```bash
-megadepth HG008-T.cram --bigwig
-```
-
-## Load the four published copy-number callsets
+## Load the three further copy-number callsets
 
 C-GIAB publishes copy-number calls on this pair from four groups, each reporting
 a different quantity:
@@ -291,7 +280,7 @@ hificnv --bam HG008-T.cram --ref GRCh38.fa --maf tumor_smallvariants.vcf.gz \
   --output-prefix hificnv
 ```
 
-We'll load the depth as points, the **Scatter** plot type:
+We'll load the depth as bars:
 
 ```json addtrack
 {
@@ -303,14 +292,14 @@ We'll load the depth as points, the **Scatter** plot type:
     "type": "BigWigAdapter",
     "uri": "HG008-T.hificnv.depth.bw"
   },
-  "displayDefaults": { "mark": "point", "encoding": { "size": 1 } }
+  "displayDefaults": { "mark": "bar" }
 }
 ```
 
-To compare the depth with the callsets, draw it with **Plot type → Bar plot**
-and a fixed axis from **Y axis... → Min** and **Max**, so a halving in depth
-shows as a lower level. Open `chr9:21,850,000-23,050,000`, around _CDKN2A_, with
-the depth above the four CNV callsets:
+To compare the depth with the callsets, give it a fixed axis from **Y axis... →
+Min** and **Max**, so a halving in depth shows as a lower level. Open
+`chr9:21,850,000-23,050,000`, around _CDKN2A_, with the depth above the four CNV
+callsets:
 
 <Figure caption="Four published CNV callsets over chr9p21.3, under the HiFiCNV depth." src="/img/sv_cgiab/cnv_callset_comparison.png" />
 
@@ -337,27 +326,8 @@ bcftools mpileup -f GRCh38.fa -T hets.vcf.gz -a AD -q 1 -Q 0 tumor.bam |
 bedGraphToBigWig baf.bedgraph GRCh38.chrom.sizes HG008-T_baf.bcftools.bw
 ```
 
-Plot it with **Scatter** over a fixed 0 to 1 range. The chromosome figures add
-UCSC's cytobands as a track:
-
-```json addtrack
-{
-  "type": "FeatureTrack",
-  "trackId": "grch38_cytobands",
-  "name": "Cytobands (UCSC hg38)",
-  "assemblyNames": ["GRCh38_GIABv3"],
-  "adapter": {
-    "type": "BedAdapter",
-    "uri": "https://jbrowse.org/ucsc/hg38/hg38.cytoBand.txt.gz",
-    "columnNames": ["chrom", "chromStart", "chromEnd", "name", "gieStain"]
-  }
-}
-```
-
-<Figure caption="Chromosome 3: the segmented copy ratio, the HiFiCNV depth and B-allele frequency over the benchmark CNV calls." src="/img/sv_cgiab/cnv_depth_baf.png" />
-
-Zoomed out, the default bigWig summary paints an LOH arm as a solid block of
-full height. A small
+Plot it as a scatter over a fixed 0 to 1 range. Zoomed out, the default bigWig
+summary paints an LOH arm as a solid block of full height. A small
 [`resolutionMultiplier`](/docs/config/bigwigadapter/#slot-resolutionmultiplier)
 makes the adapter fetch raw per-site values at the zoom levels of these figures:
 
@@ -382,12 +352,27 @@ makes the adapter fetch raw per-site values at the zoom levels of these figures:
 }
 ```
 
+The chromosome figures add UCSC's cytobands as a track:
+
+```json addtrack
+{
+  "type": "FeatureTrack",
+  "trackId": "grch38_cytobands",
+  "name": "Cytobands (UCSC hg38)",
+  "assemblyNames": ["GRCh38_GIABv3"],
+  "adapter": {
+    "type": "BedAdapter",
+    "uri": "https://jbrowse.org/ucsc/hg38/hg38.cytoBand.txt.gz",
+    "columnNames": ["chrom", "chromStart", "chromEnd", "name", "gieStain"]
+  }
+}
+```
+
+<Figure caption="Chromosome 3: the segmented copy ratio, the HiFiCNV depth and B-allele frequency over the benchmark CNV calls." src="/img/sv_cgiab/cnv_depth_baf.png" />
+
 ## Check copy number at four pancreatic cancer drivers
 
-In pancreatic ductal adenocarcinoma the recurrently altered genes are _KRAS_,
-_CDKN2A_, _TP53_ and _SMAD4_
-([Waddell et al. 2015](https://doi.org/10.1038/nature14169),
-[Bailey et al. 2016](https://doi.org/10.1038/nature16965)). Each copy-number
+We check copy number at _KRAS_, _CDKN2A_, _TP53_ and _SMAD4_. Each copy-number
 figure below shows the gene's MANE Select (standard reference) transcript under
 the tracks, from NCBI's MANE track labelled by gene symbol:
 
@@ -441,8 +426,7 @@ points in one band, with a key naming each sample's color. **Y axis... → Min**
 and **Max** at 0 and 3 stops indexcov's centromere spikes from flattening every
 plateau.
 
-Zoom to a region and open the benchmark CNV BED. Coverage shows where the copy
-number steps, and BAF shows the allelic balance across each step.
+Zoom to a region and open the benchmark CNV BED.
 
 <Video src="/media/sv_cgiab/copy_number_layout.mp4" caption="Plot type → Overlapping → Scatter on the coverage track, drawing the two rows as one band of points." />
 
@@ -450,11 +434,15 @@ number steps, and BAF shows the allelic balance across each step.
 
 ### Find the homozygous deletion at CDKN2A
 
-Navigate to `CDKN2A` on chr9. The benchmark calls a focal ~20 kb homozygous
-deletion over the gene (`SV_75`, CN 0, no copies left), inside a larger
-single-copy-loss arm (`CNA_14`, 0+1 copies on the two haplotypes) where depth is
-already halved
-([Wagner et al. 2026](https://doi.org/10.64898/2026.05.01.722316)).
+Navigate to `CDKN2A` on chr9.
+
+megadepth writes each CRAM's per-base coverage as a bigWig:
+
+<!-- from: scripts/build_sv_visualization_cgiab.sh -->
+
+```bash
+megadepth HG008-T.cram --bigwig
+```
 
 Load the tumor and matched normal per-base coverage as one
 [multi-quantitative track](/docs/user_guides/quantitative_track), one row per
@@ -508,51 +496,31 @@ The figure adds the tumor's HiFi reads, from a slice of the CRAM part 1 loads:
 }
 ```
 
-Thin lines across the gap in the read pileup are reads with the deletion.
-
-The benchmark's `total_copy_number` is absolute, so CN 2 is diploid; 9p has
-already lost a copy, so CN 1 is the local background here. Widen the view
-several hundred kilobases right to read CN 2 against it.
-
 <Figure caption="Tumor and normal coverage, the pileup and the CNV calls over CDKN2A." src="/img/sv_cgiab/driver_cdkn2a_deletion.png" />
 
 ### Separate two kinds of LOH on chromosome 17
 
-Chromosome 17 has two LOH states, split partway along the q-arm. Open it whole
-with the depth track above the BAF:
-
-- **The p-arm (covering _TP53_) and the start of the q-arm** are a single-copy
-  loss with LOH (`CNA_20`, CN 1, 1+0).
-- **The rest of the q-arm** is copy-neutral LOH (`CNA_21`, CN 2, 2+0): one
-  haplotype lost, the other duplicated.
+Open chromosome 17 whole with the depth track above the BAF.
 
 <Figure caption="Chromosome 17: the segmented copy ratio, the HiFiCNV depth, the BAF and the benchmark CNV calls." src="/img/sv_cgiab/cnv_chr17_loh.png" />
 
-Together, depth and BAF separate these states:
-
-| depth       | BAF             | Interpretation            |
-| ----------- | --------------- | ------------------------- |
-| flat (CN 2) | one band at 0.5 | balanced diploid          |
-| flat (CN 2) | split to 0, 1   | copy-neutral LOH          |
-| halved      | split to 0, 1   | single-copy loss with LOH |
-| raised      | 1/3 and 2/3     | allelic gain              |
+Depth and BAF together separate the states: flat depth with one BAF band at 0.5
+is balanced diploid, flat depth with BAF split to 0 and 1 is copy-neutral LOH,
+halved depth with a split BAF is a single-copy loss with LOH, and raised depth
+with BAF at 1/3 and 2/3 is an allelic gain.
 
 The benchmark BED's `hap1_copy_number` and `hap2_copy_number` columns hold the
-`1+0` and `2+0` splits. Click a CNV feature to see both.
+per-haplotype copy number. Click a CNV feature to see both.
 
 ### Read the KRAS gain and the SMAD4 loss
 
-Navigate to _KRAS_ on chr12. It sits in a gain (`SV_101`, CN 3, 2+1): a 2 Mb
-tandem duplication that includes the G12V-mutated copy
-([Wagner et al. 2026](https://doi.org/10.64898/2026.05.01.722316)).
+Navigate to _KRAS_ on chr12.
 
 <Figure caption="KRAS's MANE Select transcript over the copy ratio, depth and BAF, above the CNV calls." src="/img/sv_cgiab/driver_kras_gain.png" />
 
-_SMAD4_ on 18q is a single-copy loss with LOH (`CNA_48`, CN 1, 0+1), like
-_TP53_. The balanced p-arm and the matched normal are the two controls. Leave
-the copy-ratio track's `encoding.color` unset (one color above the `origin` of
-0, another below) with a symmetric axis, so a step down and a step up fill
-equally.
+Navigate to _SMAD4_ on chr18. The copy-ratio track fills one color above its
+`origin` of 0 and another below, on a symmetric axis, so a step down and a step
+up fill equally.
 
 <Figure caption="SMAD4's MANE Select transcript over the copy ratio, tumor and normal coverage and the BAF, above the CNV calls." src="/img/sv_cgiab/driver_smad4_loh.png" />
 
@@ -571,13 +539,9 @@ describes.
 
 ## Citations
 
-- Bailey et al. (2016).
-  [Genomic analyses identify molecular subtypes of pancreatic cancer](https://doi.org/10.1038/nature16965)
 - Diesh et al. (2023).
   [JBrowse 2: A Modular Genome Browser with Views of Synteny and Structural Variation](https://doi.org/10.1186/s13059-023-02914-z)
 - McDaniel et al. (2025).
   [Development and Extensive Sequencing of a Broadly-Consented Genome in a Bottle Matched Tumor-Normal Pair](https://doi.org/10.1038/s41597-025-05438-2)
-- Waddell et al. (2015).
-  [Whole genomes redefine the mutational landscape of pancreatic cancer](https://doi.org/10.1038/nature14169)
 - Wagner et al. (2026).
   [A complete human pancreatic cancer genome](https://doi.org/10.64898/2026.05.01.722316)
