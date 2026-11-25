@@ -116,11 +116,10 @@ MethylDackel extract --CHH -r NC_000932.1 -o conversion \
 
 Column 4 of `conversion_CHH.bedGraph` is the methylated percentage at each
 cytosine, which on an unmethylated sequence is the fraction the conversion
-missed. Modern libraries convert above 99%. For an organism with no plastid, use
-the library's spike-in, usually unmethylated lambda or pUC19, added to the
-reference as an extra contig.
+missed. For an organism with no plastid, use the library's spike-in, usually
+unmethylated lambda or pUC19, added to the reference as an extra contig.
 
-## Load the TAIR10 hub assembly and the WGBS BAM
+## Load the TAIR10 assembly and the WGBS BAM
 
 TAIR10 is a genome hub on [genomes.jbrowse.org](https://genomes.jbrowse.org),
 whose `config.json` holds the 2bit sequence, an alias table and the NCBI RefSeq
@@ -208,7 +207,7 @@ is a color channel for each base, here set from the `bisulfite` field. The
 `context` entry in its [`filter`](/docs/config/pileupbases/#slot-filter) takes
 `CG`, `CHG` or `CHH`, and `{ "field": "context" }` paints every context.
 
-## Summarize each context's methylation with MethylDackel
+## Summarize methylation per context with MethylDackel
 
 Beside the reads, a per-position fraction summarizes all the reads at each site,
 and a bigWig of it is drawn at any zoom. The track is optional, and the
@@ -291,21 +290,17 @@ cytosines red. Two more rows refine it:
 Plants run two unrelated methylation programs, which differ in the contexts they
 methylate:
 
-| Program                         | CpG | CHG | CHH | Effect on the locus                                                  |
-| ------------------------------- | --- | --- | --- | -------------------------------------------------------------------- |
-| Gene body methylation (gbM)     | yes | no  | no  | None obvious, the gene stays transcribed. Depleted at both gene ends |
-| Transposon and repeat silencing | yes | yes | yes | Heterochromatin, transcriptionally off                               |
-
-Red in the CpG context alone is gene body methylation, and red in all three
-contexts is silencing.
+| Program                         | CpG | CHG | CHH |
+| ------------------------------- | --- | --- | --- |
+| Gene body methylation (gbM)     | yes | no  | no  |
+| Transposon and repeat silencing | yes | yes | yes |
 
 Type `chr1:4,398,000-4,412,000` into the location box for a window containing
-one of each: the expressed gene AT1G12930 on the left, and a transposon on the
-right.
+one of each: the gene _AT1G12930_ on the left, and a transposon on the right.
 
 To identify the element on the right, add the RepeatMasker track from the TAIR10
 genome hub. RepeatMasker labels the element `META1_LTR#LTR/Copia`, an LTR
-retrotransposon. No RefSeq transcript overlaps it:
+retrotransposon:
 
 ```json addtrack
 {
@@ -364,7 +359,7 @@ It:
   and RefSeq genes and the pileup pre-colored Bisulfite / CpG, opening on the
   window above
 - with MethylDackel on `PATH`, prints the conversion rate and the per-context
-  fractions (the aggregate bigWig track is left out either way)
+  fractions
 
 ```bash
 curl -fO https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/build_arabidopsis_wgbs.sh
