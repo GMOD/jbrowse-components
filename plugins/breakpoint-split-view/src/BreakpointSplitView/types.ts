@@ -1,19 +1,10 @@
 import type { ReadChain, ReadEntry } from './readChains.ts'
 import type { Feature } from '@jbrowse/core/util'
-import type {
-  ExportSvgOptions as LgvExportSvgOptions,
-  LinearGenomeViewPanelInit,
-} from '@jbrowse/plugin-linear-genome-view'
+import type { LinearGenomeViewPanelInit } from '@jbrowse/plugin-linear-genome-view'
 
-// The LGV export's options plus the one this view adds, rather than a parallel
-// copy: everything here is forwarded verbatim to each sub-view's display
-// `renderSvg`, so an option added there (createCanvas, for the headless raster
-// path) has to be spellable here too.
-export interface ExportSvgOptions extends LgvExportSvgOptions {
-  // Band reserved above each stacked view's ruler: the assembly label floats in
-  // it, and it separates the view from the one above.
-  headerHeight?: number
-}
+// The LGV export's options: everything is forwarded verbatim to each sub-view's
+// display `renderSvg`.
+export type { ExportSvgOptions } from '@jbrowse/plugin-linear-genome-view'
 
 // A panel is an LGV, so it takes the LGV's own launch keys and props
 // (highlight, displayedRegionNames, trackLabels, …); the LGV's partition sorts

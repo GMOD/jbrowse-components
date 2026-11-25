@@ -42,7 +42,7 @@ export async function renderToSvg(model: BSV, opts: ExportSvgOptions) {
   // is still being applied. Reading `views` there exported correctly
   // positioned, correctly labelled, completely empty panels.
   await awaitSvgRenders(model.views.map(view => awaitViewInitialized(view)))
-  const { headerHeight = 30, Wrapper, themeName, fontFamily } = opts
+  const { Wrapper, themeName, fontFamily } = opts
   const { fontSize, textHeight, rulerHeight, trackLabels, showGridlines } =
     lgvSvgLayoutOptions(opts)
 
@@ -60,9 +60,8 @@ export async function renderToSvg(model: BSV, opts: ExportSvgOptions) {
   // each view is a header band (which the assembly label and the scalebar sit
   // in, and which separates the view from the one above) plus a ruler, stacked
   // above its track bodies. `offset` is where those bodies start within the
-  // view. The band is the caller's to reserve, so it is the larger of what the
-  // option asks for and what the header actually draws.
-  const headerBand = Math.max(headerHeight, rowHeader.bandHeight)
+  // view.
+  const headerBand = rowHeader.bandHeight
   const offset = headerBand + rulerHeight
   // renderViewTracks drops minimized tracks (as the standalone LGV export does,
   // so a collapsed track doesn't export as a full-height panel) and measures
