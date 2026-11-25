@@ -90,7 +90,7 @@ URL, and its `.bai` index is found beside it:
   `NCI-H596_RNA.bam` and `EBC-1_RNA_5pct.bam` from the same folder
 - on each RNA-seq track, turn off **Show → Show pileup** and turn on **Show →
   Show junction read counts** in the track menu, which leaves the coverage and
-  an arc for each junction, labelled with its number of reads
+  an arc for each junction, labeled with its number of reads
 
 ## Follow exon 14 onto the structure
 

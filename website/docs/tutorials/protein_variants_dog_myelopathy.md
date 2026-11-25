@@ -26,7 +26,7 @@ across the Dog10K collection. We:
 - add the slice as a variant track, one row per animal, with the rows colored by
   category
 - open 7WX0 on the E40K record from a session spec, with the protein view's
-  `variant` key labelling the change on the gene and the structure
+  `variant` key labeling the change on the gene and the structure
 
 ## Prerequisites
 

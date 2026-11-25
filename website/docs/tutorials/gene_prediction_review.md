@@ -134,7 +134,7 @@ The portal applies these rules:
 - **A merge** counts only when the genes it joins do not overlap each other.
   _PI4KA_ is on the minus strand with _SERPIND1_ inside one of its introns on
   the plus strand, and the portal leaves it off the list.
-- **GENCODE readthrough genes** (one transcript spanning two neighbours) such as
+- **GENCODE readthrough genes** (one transcript spanning two neighbors) such as
   `CHKB-CPT1B` overlap the genes they join, so the portal skips them.
 
 Clone the pipeline and install it:

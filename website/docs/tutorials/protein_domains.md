@@ -146,14 +146,14 @@ plot set by these keys in its config:
 
 - `rows` gives each transcript `name` a row.
 - `marks` draws each transcript as a line with its exons over it, the UTR thin
-  and light grey and the coding exons full height and darker, then its
+  and light gray and the coding exons full height and darker, then its
   `protein_match` children at the same height over the coding exons. Each
   `flatten` step reaches the transcript's children, and each `filter` keeps one
   type.
 - `encoding.color` colors the domains, the marks with no color set, by Pfam
   family.
 
-The legend lists both greys and the families on screen. The track menu's **Edit
+The legend lists both grays and the families on screen. The track menu's **Edit
 plot...** offers the same plot as an example for any GFF3 of transcripts with
 protein matches.
 
