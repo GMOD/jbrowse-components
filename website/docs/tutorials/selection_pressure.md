@@ -3,7 +3,7 @@ title: Selection pressure between two genomes (dN/dS)
 sidebar_label: Synteny (dN/dS)
 description:
   Color an ortholog track by the ratio of non-synonymous to synonymous
-  substitution, and read selection pressure off a gene neighbourhood
+  substitution, and read selection pressure off a gene neighborhood
 guide_category: Tutorials
 tutorial_category: Synteny & comparative genomics
 tutorial_subcategory: Ortholog tables
@@ -16,8 +16,7 @@ the selection pressure on a protein-coding gene between two species. We:
   and dS on every pair with `orthologs2jbrowse kaks`
 - load both genomes and genes, and the table as a synteny track
 - color each ortholog link by the ratio
-- read the lysozyme (_LYZ_) neighbourhood on human chromosome 12, with the
-  conserved neighbour _YEATS4_ as the control
+- open the lysozyme (_LYZ_) neighborhood on human chromosome 12
 
 ## Prerequisites
 
@@ -61,9 +60,10 @@ npm install -g @jbrowse/cli@next
 Each genome is an NCBI RefSeq assembly, and the script fetches its GFF3, CDS
 FASTA and sequence report together with `datasets download genome accession`.
 
-You don't need these files to follow the session, which reads a hosted copy. The
-track configs name local files that the [build script](#reproduce-it-end-to-end)
-writes, so run it first (it needs about 3 GB of memory), or follow
+You don't need these files to follow the session at the end of the page, which
+reads a hosted copy. The track configs before it name local files that the
+[build script](#reproduce-it-end-to-end) writes, so run it first (it needs about
+3 GB of memory), or follow
 [the same steps](#producing-the-human-rhesus-ortholog-table-and-its-rates) on a
 GFF3 and a CDS FASTA per genome of your own.
 
@@ -95,22 +95,23 @@ adapter reads the same file. jcvi writes one from any GFF3:
 
 ```bash
 # --primary_only keeps one mRNA per gene; --key=ID names it by its GFF3 ID,
-# which every GFF3 has and which gffread -x names its CDS by, so the BED, the
-# proteome and the CDS share ids
+# which every GFF3 has
 python -m jcvi.formats.gff bed --type=mRNA --key=ID \
   --primary_only genes.gff3 -o genes.bed
 ```
 
-The [end-to-end script](#reproduce-it-end-to-end) does the same for each NCBI
-download in Python, keeping each protein-coding gene's longest-CDS mRNA under
-its RefSeq accession, renaming each chromosome to the sequence report's name,
-and translating each CDS into `human.pep` and `rhesus.pep` under the same ids.
-DIAMOND aligns human against rhesus, and jcvi chains the hits:
+The [end-to-end script](#reproduce-it-end-to-end) skips that command and does
+the work for each NCBI download in Python, keeping each protein-coding gene's
+longest-CDS mRNA under its RefSeq accession, renaming each chromosome to the
+sequence report's name, and translating each CDS into `human.pep` and
+`rhesus.pep` under the same ids. DIAMOND aligns human against rhesus, and jcvi
+chains the hits:
 
 <!-- from: scripts/build_primate_selection.sh -->
 
 ```bash
 diamond makedb --in rhesus.pep -d rhesus.pep
+# set --threads to your core count
 diamond blastp --threads 14 --query human.pep --db rhesus.pep \
   --out human.rhesus.last --max-target-seqs 20 --evalue 1e-10 --outfmt 6
 python -m jcvi.compara.catalog ortholog --no_strip_names --dbtype prot \
@@ -130,8 +131,7 @@ Two input mistakes leave jcvi with no orthologs:
 
 The pair list is the two gene columns of `human.rhesus.anchors`. The script
 skips `human.rhesus.lifted.anchors`, where jcvi adds extra pairs recruited near
-an established syntenic block. Their median dS is several times that of the
-chained pairs, which marks them as paralogs.
+an established syntenic block, and keeps the chained pairs.
 
 <!-- from: scripts/build_primate_selection.sh -->
 
@@ -145,6 +145,12 @@ cat human.cds.fa rhesus.cds.fa > both.cds.fa
 <!-- from: scripts/build_primate_selection.sh -->
 
 ```bash
+# true orthologs share one divergence time, so their dS values cluster; a pair
+# well above the cluster is a paralog the aligner preferred
+# --max-ds drops every pair whose dS exceeds its value
+# a table sorted by dN/dS tops out in pairs with almost nothing to divide by
+# --min-syn-subs drops every pair with fewer synonymous differences than its
+# value
 orthologs2jbrowse kaks pairs.tsv both.cds.fa \
   --key record --min-syn-subs 3 --max-ds 0.3 -o primate.blocks
 gzip -kf primate.blocks human.bed rhesus.bed
@@ -153,17 +159,6 @@ gzip -kf primate.blocks human.bed rhesus.bed
 [`orthologs2jbrowse kaks`](https://github.com/cmdcolin/orthologs2jbrowse) aligns
 each pair as protein, back-translates to codons so that nothing shifts frame,
 and runs Nei-Gojobori.
-
-### Filter paralogs and low-count pairs
-
-True orthologs share one divergence time, so their dS values cluster. A pair
-well above the cluster is a paralog the aligner preferred, and `--max-ds` drops
-every pair whose dS exceeds its value.
-
-The top of a table sorted by dN/dS is the pairs with almost nothing to divide
-by: _COX20_ sorts there because it has a single synonymous difference.
-`--min-syn-subs` is a floor on that count, and drops every pair with fewer
-synonymous differences than its value.
 
 Every row also has that count and a two-sided Fisher exact p, the test
 [MEGA](https://www.megasoftware.net/web_help_12/Analysis_Preferences_Fisher_s_Exact_Test.htm)
@@ -183,8 +178,13 @@ under the name `rhesus`:
 
 The view draws each panel's genes from a track on that panel's assembly. The
 script writes `human.genes.gff3.gz` and `rhesus.genes.gff3.gz`, bgzipped and
-CSI-indexed ([prep](/docs/quickstart_web)). For your own annotation the GFF3
-needs the same refNames as the assembly:
+CSI-indexed. For your own annotation the GFF3 needs the same refNames as the
+assembly, and the track needs a sorted, bgzipped, indexed copy:
+
+```bash
+jbrowse sort-gff genes.gff3 | bgzip > genes.gff3.gz
+tabix -C -p gff genes.gff3.gz
+```
 
 ```json addtrack
 {
@@ -238,7 +238,7 @@ Two view settings matter for a view this sparse:
 - **Curved lines** on the same menu sets `mark: { interpolate: 'bump' }`, which
   separates stacked neighbours.
 
-## Read LYZ against its neighbours by dN/dS
+## Open the LYZ neighborhood colored by dN/dS
 
 The session below opens, from the hosted copy, the stretch around lysozyme
 (_LYZ_) on human chromosome 12 where gene order matches rhesus, colored by
@@ -274,14 +274,7 @@ dN/dS. The build script's default session is the same view.
 
 <Figure caption="Human against rhesus macaque on chromosome 12, each ribbon an ortholog pair colored by dN/dS." src="/img/selection_pressure/lysozyme.png" />
 
-Gene order is the same in both genomes here, so color is the only thing that
-varies. Click the orange _LYZ_ ribbon for its synonymous count and Fisher p in
-the detail panel; Messier and Stewart (1997) reported adaptive evolution of
-primate lysozyme.
-
-_YEATS4_ begins just past where _LYZ_ ends, so the two share a locus and a
-divergence time, and its blue ribbon is the control. Click it for the same
-fields at the other end of the ramp.
+Click a ribbon for its synonymous count and Fisher p in the detail panel.
 
 ## Reproduce it end to end
 
@@ -289,14 +282,13 @@ fields at the other end of the ramp.
 runs everything above and writes a `config.json` with both assemblies, both gene
 tracks, the ortholog track and a session opening the locus:
 
-- Download each genome's annotation from NCBI, and turn it into a BED, a CDS
-  file and a proteome keyed on one transcript per gene.
-- Align human against rhesus with DIAMOND and chain the hits with jcvi, keeping
-  the chained anchors and not the lifted ones.
-- Measure dN and dS on each pair, dropping pairs with too few synonymous
-  differences or a dS far above the cluster.
-- Print the count of pairs genome-wide with dN/dS above 1, and dN/dS and dS for
-  every pair around _LYZ_, and write the config.
+- download each genome's annotation from NCBI, and turn it into a BED, a CDS
+  file and a proteome keyed on one transcript per gene
+- align human against rhesus with DIAMOND and chain the hits with jcvi, keeping
+  the chained anchors and not the lifted ones
+- measure dN and dS on each pair, dropping pairs with too few synonymous
+  differences or a dS far above the cluster
+- print dN/dS and dS for every pair around _LYZ_, and write the config
 
 ```bash
 curl -fO https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/build_primate_selection.sh
@@ -314,8 +306,6 @@ npx --yes serve primate_selection_build/jbrowse2  # then open the printed URL
 
 - Nei and Gojobori (1986).
   [Simple methods for estimating the numbers of synonymous and nonsynonymous nucleotide substitutions](https://doi.org/10.1093/oxfordjournals.molbev.a040410)
-- Messier and Stewart (1997).
-  [Episodic adaptive evolution of primate lysozymes](https://doi.org/10.1038/385151a0)
 - Tang et al. (2024).
   [jcvi: A versatile toolkit for comparative genomics analysis](https://doi.org/10.1002/imt2.211)
 
