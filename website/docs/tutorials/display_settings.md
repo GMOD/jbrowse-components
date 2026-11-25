@@ -9,7 +9,7 @@ tutorial_category: Configuration & embedding
 
 A change made from a track's menu lasts as long as the session that holds it. To
 make the same change for everyone who opens a track, you need the setting's
-name, and every setting in a track menu has one you can type into a config. On
+name, and a setting in a track menu has a name you can type into a config. On
 one CRAM track we:
 
 - change three settings from the track menu and read their names back out of the
@@ -128,20 +128,18 @@ track's `displayDefaults` apply every time the track loads, and in a served
 }
 ```
 
-The track opens paired and colored. To select a non-default display type, write
-a `displays` array; [configuring tracks](/docs/config_guides/tracks) covers both
-forms.
+To select a non-default display type, write a `displays` array;
+[configuring tracks](/docs/config_guides/tracks) covers both forms.
 
 ## Check which wins, session or config
 
-With the CRAM track now set in two places, a session and `config.json`, the
-session wins, one key at a time. The CRAM track in the shipped volvox config has
-no `displayDefaults` to show that against, so this step uses a volvox gene
-track, `gff3tabix_genes_shorthand_jexl`, whose `displayDefaults` set
-`encoding.color`, a jexl expression that returns blue for plus-strand features
-and red for minus-strand ones, and `labels`, which names each feature with its
-type in brackets. This session sets `encoding.color` on that track and nothing
-else:
+When a session and `config.json` set the same key, the session wins, one key at
+a time. The CRAM track in the shipped volvox config has no `displayDefaults` to
+show that against, so this step uses a different track, the volvox gene track
+`gff3tabix_genes_shorthand_jexl`, whose `displayDefaults` set `encoding.color`,
+a jexl expression that returns blue for plus-strand features and red for
+minus-strand ones, and `labels`, which names each feature with its type in
+brackets. This session sets `encoding.color` on that track and nothing else:
 
 ```json live config=test_data/volvox/config.json
 {
@@ -164,9 +162,6 @@ else:
 The session's `encoding.color` replaces the config's, so the features are drawn
 grey, and their labels still read `seg04 [match]` from
 `displayDefaults`.[^snapshot]
-
-Each route keeps the setting in its own place, and reaches a different set of
-people:
 
 | Route                              | Kept in             | Applies to              |
 | ---------------------------------- | ------------------- | ----------------------- |
