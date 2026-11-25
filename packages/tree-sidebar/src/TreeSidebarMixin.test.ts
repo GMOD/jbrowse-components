@@ -336,7 +336,6 @@ describe('rows.kept and rows.filter narrow the rows', () => {
     )
   })
 
-  // The export drops the chip with the controls, so the label carries it.
   it('an export labels a narrowed track with its count, and an unnarrowed one with nothing', () => {
     expect(
       makeFiltered({ filter: [{ field: 'population', oneOf: ['EUR'] }] })

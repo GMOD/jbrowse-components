@@ -60,18 +60,12 @@ async function exported(reads: number) {
 const caption = (svg: string) =>
   /data-testid="pileup-cut-caption"[^>]*>([^<]*)</.exec(svg)?.[1]
 
+// A 250px box with rows from 45 at a 9px pitch: 21 whole rows end above the
+// caption line at 237.
 test('a pileup deeper than its box ends on a whole row over a caption counting the rest', async () => {
-  const { display, svg } = await exported(200)
-  const [section] = display.renderSections
-  const rows = 200
-  const fit = Math.floor(
-    (display.height - 13 - section!.pileupTop) / display.rowHeight,
-  )
-  expect(caption(svg)).toBe(`${rows - fit} more rows below`)
-  const cutY = section!.pileupTop + fit * display.rowHeight
-  expect(svg).toMatch(
-    new RegExp(`<clipPath id="pileup-cut-[^"]*"><rect [^>]*height="${cutY}"`),
-  )
+  const { svg } = await exported(200)
+  expect(caption(svg)).toBe('179 more rows below')
+  expect(svg).toMatch(/<clipPath id="pileup-cut-[^"]*"><rect [^>]*height="234"/)
 })
 
 test('a pileup that fits draws no caption and no cut', async () => {
