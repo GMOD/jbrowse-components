@@ -12,9 +12,9 @@ import { resolvePalette } from '@jbrowse/core/ui/palette'
 import { getSession, max } from '@jbrowse/core/util'
 import {
   SVGStackedRow,
-  defaultTextHeight,
   exportMargins,
   getRowHeaderLayout,
+  lgvSvgLayoutOptions,
   notifySkippedSvgTracks,
   renderViewTracks,
   trackLabelLeftOffset,
@@ -42,18 +42,9 @@ export async function renderToSvg(model: BSV, opts: ExportSvgOptions) {
   // is still being applied. Reading `views` there exported correctly
   // positioned, correctly labelled, completely empty panels.
   await awaitSvgRenders(model.views.map(view => awaitViewInitialized(view)))
-  const {
-    fontSize = 13,
-    // destructured after fontSize so the label band can scale with it
-    textHeight = defaultTextHeight(fontSize),
-    headerHeight = 30,
-    rulerHeight = 30,
-    trackLabels = 'offset',
-    showGridlines = false,
-    Wrapper,
-    themeName,
-    fontFamily,
-  } = opts
+  const { headerHeight = 30, Wrapper, themeName, fontFamily } = opts
+  const { fontSize, textHeight, rulerHeight, trackLabels, showGridlines } =
+    lgvSvgLayoutOptions(opts)
 
   const session = getSession(model)
   const theme = session.getActiveThemeOptions?.(themeName)

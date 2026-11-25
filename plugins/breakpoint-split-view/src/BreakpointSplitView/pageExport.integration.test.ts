@@ -1,3 +1,4 @@
+import { lgvSvgLayoutOptions } from '@jbrowse/plugin-linear-genome-view'
 import { createTestSession } from '@jbrowse/web/testUtils'
 import { when } from 'mobx'
 
@@ -69,4 +70,14 @@ test('an export with no panels fails instead of saving a blank figure', async ()
   await expect(view.exportSvg({ save: false })).rejects.toThrow(
     'Cannot export: no regions are displayed',
   )
+})
+
+test('the layout defaults are the LGV export defaults', async () => {
+  const view = await launch()
+  const defaults = await view.exportSvg({ save: false })
+  const explicit = await view.exportSvg({
+    ...lgvSvgLayoutOptions({}),
+    save: false,
+  })
+  expect(defaults).toBe(explicit)
 })
