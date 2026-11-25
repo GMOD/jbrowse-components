@@ -8,23 +8,23 @@ tutorial_category: Pangenomes
 tutorial_subcategory: Other species
 ---
 
-The mouse strain pangenome is a `minigraph` alignment of eighteen assemblies of
-seventeen inbred and wild-derived strains onto the GRCm39 reference. GRCm39 is
-itself a strain, C57BL/6J, so the panel's best-known variant, a C57BL/6J
-deletion, appears as an insertion. Sixteen of the assemblies are from
-[Helmy et al. (2026)](https://doi.org/10.1016/j.xgen.2025.101074), and the other
-two are telomere-to-telomere builds of C57BL/6J and CAST/EiJ from the same
+The mouse strain pangenome is a `minigraph` alignment of inbred and wild-derived
+strain assemblies onto the GRCm39 reference. GRCm39 is itself a strain,
+C57BL/6J, so the panel's best-known variant, a C57BL/6J deletion, appears as an
+insertion. Most of the assemblies are from
+[Helmy et al. (2026)](https://doi.org/10.1016/j.xgen.2025.101074), and the
+others are telomere-to-telomere builds of C57BL/6J and CAST/EiJ from the same
 EMBL-EBI project. No graph of them was published, so we built this one. To pick
 a locus from it, we rank the graph's bubbles, the regions where the strains'
 paths split and rejoin, by how many segments each holds, and open the densest
 that fits a window. We:
 
-- at _Nnt_, open the graph track with bubble halos, then the liftOver lanes that
+- open the graph track with bubble halos at _Nnt_, then the liftOver lanes that
   show which strains have the gene
 - rank the bubbles file by segment count and open the densest that fits a
   window, at _Dock2_
 - load the graph and its bubbles as tracks on mm39 in your own JBrowse
-- build a minigraph graph from strain assemblies of your own
+- build the mouse graph from strain assemblies of your own
 
 The first two start from the mouse graph page on
 [genomes.jbrowse.org](https://genomes.jbrowse.org/pangenomes/mouse), which
@@ -70,8 +70,8 @@ them.
 
 Nothing to download: the track configs below read the index files by URL, and
 the ranking step streams the bubbles file.
-[Building a minigraph graph](#build-a-minigraph-graph-from-the-strain-assemblies)
-builds the files for strains of your own.
+[Building the mouse graph](#build-the-mouse-graph) builds the files for strains
+of your own.
 
 <details>
 <summary>The files</summary>
@@ -79,7 +79,7 @@ builds the files for strains of your own.
 | What it is                                                                         | File                                                                                                                                 |
 | ---------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------ |
 | Mm39 (GRCm39)                                                                      | [mm39.fa.gz](https://hgdownload.soe.ucsc.edu/goldenPath/mm39/bigZips/mm39.fa.gz)                                                     |
-| The eighteen assemblies, one GenArk folder per GenBank accession                   | [GCA/](https://hgdownload.soe.ucsc.edu/hubs/GCA/)                                                                                    |
+| The strain assemblies, one GenArk folder per GenBank accession                     | [GCA/](https://hgdownload.soe.ucsc.edu/hubs/GCA/)                                                                                    |
 | Segments and links, the graph's nodes and edges at their reference coordinates     | [mouse-mm39-minigraph.graph.bed.gz](https://jbrowse.org/demos/mouse_pangenome/mouse-mm39-minigraph.graph.bed.gz)                     |
 | Bubbles, where the strains' paths split and rejoin                                 | [mouse-mm39-minigraph.bubbles.bed.gz](https://jbrowse.org/demos/mouse_pangenome/mouse-mm39-minigraph.bubbles.bed.gz)                 |
 | The whole-chromosome overview, with variants under 10 kb folded into the reference | [mouse-mm39-minigraph.fold10000.graph.bed.gz](https://jbrowse.org/demos/mouse_pangenome/mouse-mm39-minigraph.fold10000.graph.bed.gz) |
@@ -102,15 +102,11 @@ strains' intact gene is an insertion. To see it:
 - In the graph track's menu, tick **Show → Show bubble halos**.
 - Turn on the bubbles track in the track selector.
 
-In the portal's **Nnt** example, the deletion's name is above the map, the other
-strains' insertion is labelled "intact Nnt", and each launch opens a **Known
-alleles** row over the site.
+<Figure caption="Nnt with the RefSeq genes and the bubbles track above the force-directed graph track. The bubble inside Nnt is the sequence the other strains have and C57BL/6J lacks." src="/img/pangenome/graph_mouse_nnt_halos.png" />
 
-<Figure caption="Nnt with the RefSeq genes and the bubbles track above the force-directed graph track. Of its four haloed bubbles, the one inside Nnt, labelled as a 16.8 kb insertion with five alleles, is the sequence the other strains have and C57BL/6J lacks." src="/img/pangenome/graph_mouse_nnt_halos.png" />
-
-The graph has no path per strain, so the strains with the exons are read from
-mm39's liftOver chains, one lane per strain assembly. We'll open them at the
-same gene:
+The graph records each strain's allele as a segment, not a path, so we read
+which strains have the exons from mm39's liftOver chains, one lane per strain
+assembly. We'll open them at the same gene:
 
 - Open
   [mm39 on staging.genomes.jbrowse.org](https://staging.genomes.jbrowse.org/ucsc/mm39/)
@@ -125,12 +121,10 @@ same gene:
 ## Rank the graph's bubbles to find Dock2 {#finding-the-loci}
 
 The bubbles file's fourth column holds the number of segments in each bubble.
-Ranked by that count, the bubbles that overlap a gene include the vomeronasal
-receptor and Speer families and the immunoglobulin heavy chain locus, each too
-wide for one window. The densest bubble that fits in one, and the locus this
-page opens, is inside an intron of _Dock2_, at `chr11:34,516,045-34,560,497`.
-Rank the bubbles that fit in a 100 kb window, streaming the hosted file, or swap
-in the `.bubbles.bed.gz` your own build wrote:
+The densest bubble that fits in one window, and the locus this page opens, is
+inside an intron of _Dock2_, at `chr11:34,516,045-34,560,497`. Rank the bubbles
+that fit in a 100 kb window, streaming the hosted file, or swap in the
+`.bubbles.bed.gz` your own build wrote:
 
 ```bash
 # $4: the bubble's segment count, printed second; the densest come first
@@ -156,9 +150,8 @@ To open the _Dock2_ bubble:
 The portal's launches load these tracks for you. In your own JBrowse, we'll load
 the reference, then the graph and its bubbles. The graph track's `uri` is the
 file prefix the indexing commands under
-[Building a minigraph graph](#build-a-minigraph-graph-from-the-strain-assemblies)
-write, and the `uri`s below are our hosted copy, so swap the prefix for your own
-build.
+[Building the mouse graph](#build-the-mouse-graph) write, and the `uri`s below
+are our hosted copy, so swap the prefix for your own build.
 
 ```json addassembly genome=mm39
 {
@@ -210,7 +203,7 @@ The bubbles track reads the same build's bubble index:
 }
 ```
 
-## Build a minigraph graph from the strain assemblies
+## Build the mouse graph
 
 To build a graph like this one, we'll first extract each chromosome from each
 assembly, renamed to PanSN (`sample#haplotype#contig`), since minigraph takes
@@ -236,8 +229,6 @@ minigraph -cxggs -t 8 mm39.chr13.fa strain1.chr13.fa strain2.chr13.fa > chr13.gf
 The commands below turn the joined graph into the files above: the segment and
 link index and the coarse tier, in the contig layout, and the bubbles. The
 track's `uri` is the prefix the first command writes.
-[](/docs/tutorials/pangenome_prepare_graph#rgfa-contig-layout) lists how these
-files differ from the ones `gfa-to-tabix build` writes.
 
 <!-- from: scripts/build_mouse_pangenome.sh -->
 
@@ -262,6 +253,8 @@ tabix -f -C -p bed mouse-mm39-minigraph.bubbles.bed.gz
 gfa-to-tabix fold mouse-mm39-minigraph.rgfa.gz --below 10000 --layout contig -o mouse-mm39-minigraph.fold10000
 ```
 
+## Reproduce it end to end
+
 [`build_mouse_pangenome.sh`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/build_mouse_pangenome.sh)
 runs the whole build on Linux, since it needs GNU tools. It downloads about 30
 GB, writes about 50 GB of per-chromosome FASTA, holds 30 GB of memory free for
@@ -273,6 +266,11 @@ chromosomes at once on 8 threads each. It:
 - runs `minigraph` per chromosome
 - joins the chromosomes with segment ids renumbered
 - indexes the joined graph with the three commands above
+
+```bash
+curl -fO https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/build_mouse_pangenome.sh
+bash build_mouse_pangenome.sh mouse_pangenome_build   # writes ./mouse_pangenome_build/
+```
 
 The script runs two audits on the joined graph and stops if:
 
@@ -293,7 +291,7 @@ build.
 
 - Helmy et al. (2026).
   [High-quality mouse reference genomes reveal the structural complexity of the murine protein-coding landscape](https://doi.org/10.1016/j.xgen.2025.101074),
-  sixteen of the strain assemblies.
+  the source of most of the strain assemblies.
 - Li et al. (2020).
   [The design and construction of reference pangenome graphs with minigraph](https://doi.org/10.1186/s13059-020-02168-z)
 - Toye et al. (2005).
