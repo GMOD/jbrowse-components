@@ -167,8 +167,8 @@ beside it:
 Each genome also gets a gene track, which the
 [close-up](#what-an-anchor-looks-like-up-close) below filters to genes. The
 figures use each genome's **NCBI RefSeq - RefSeq All** track from its GenArk
-hub; swap the `uri` for your own GFF3, bgzipped and tabix-indexed
-([sort and index with tabix](/docs/quickstart_web)):
+hub; swap the `uri` for your own GFF3,
+[sorted and indexed with tabix](/docs/quickstart_web):
 
 ```json addtrack
 {

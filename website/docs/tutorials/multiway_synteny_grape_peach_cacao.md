@@ -53,7 +53,7 @@ pip install jcvi
 
 ## The data
 
-Seven RefSeq assemblies, one per species, each fetched by accession with the
+RefSeq assemblies, one per species, each fetched by accession with the
 `datasets` CLI.
 
 You don't need these files to follow the sessions, which read hosted copies. The
@@ -93,9 +93,8 @@ name gffread wrote. On an NCBI annotation, `--key=transcript_id` and
 `--key=Name` leave jcvi a key it cannot resolve, and it writes a placeholder id
 like `mrna_494685` that matches no CDS name.
 
-Then catalog orthologs against grape, MCScan each pair, and join. The grape and
-peach catalog step is the one the MCScan anchors page ran, and it writes
-`grape.peach.lifted.anchors` beside the `.anchors` file that page loads:
+Then catalog orthologs against grape, MCScan each pair, and join. The catalog
+step writes `grape.<species>.lifted.anchors`, which `mcscan` reads:
 
 <!-- from: scripts/build_grape_peach_cacao_synteny.sh -->
 
@@ -115,10 +114,10 @@ python -m jcvi.formats.base join grape.peach.i1.blocks grape.cacao.i1.blocks \
   --noheader | cut -f1,2,4 > grape.blocks
 ```
 
-The commands above build the two per-pair tables the stack uses, peach and cacao
+The commands above build the per-pair tables the stack uses, peach and cacao
 against grape. The build script runs the same steps for arabidopsis, poplar,
-tomato and citrus too, joins all six tables and keeps column 1 and every even
-column after it, which writes the seven-column `grape.blocks`.
+tomato and citrus too, joins all the tables and keeps column 1 and every even
+column after it, which writes the `grape.blocks` with a column per genome.
 
 A `.blocks` file is a tab-delimited table. Each row is an orthologous group and
 each column a genome, with `.` where a genome has no member. The file has no
@@ -239,17 +238,20 @@ narrow it:
 
 The hosted
 [config.json](https://jbrowse.org/demos/grape_peach_cacao/config.json) holds the
-seven-column version of this track under the same `trackId`, named **Grape vs
-peach, cacao, arabidopsis, poplar, tomato, citrus (MCScan blocks)**. Every
-session and figure below uses that track. Its `assemblyNames` lists only grape,
-peach and cacao, the genomes with an assembly, and JBrowse draws the other four
-columns as multi-way lanes from the table and their BED alone.
+version of this track with a column for each genome in the data table, under the
+same `trackId`, named **Grape vs peach, cacao, arabidopsis, poplar, tomato,
+citrus (MCScan blocks)**. Every session and figure below uses that track. Its
+`assemblyNames` lists only grape, peach and cacao, the genomes with an assembly,
+and JBrowse draws the other four columns as multi-way lanes from the table and
+their BED alone.
 
 ## Stack grape, peach and cacao
 
-Choose **Add → Linear synteny view** and pick `grape_peach_cacao_blocks`; the
-[all-vs-all tutorial](/docs/tutorials/allvsall_synteny#from-the-ui) walks the
-dialog. As a `defaultSession`, the same stack ordered peach-cacao-grape:
+- **Add → Linear synteny view** opens the form in **Quick start**.
+- Choose `grape_peach_cacao_blocks`, whose assemblies become rows.
+- Click **Launch**.
+
+As a `defaultSession`, the same stack ordered peach-cacao-grape:
 
 ```json session config=https://jbrowse.org/demos/grape_peach_cacao/config.json
 {
@@ -293,13 +295,10 @@ table, so the bands of a stack differ in where their ribbons come from:
 - This stack puts grape at the bottom, so its peach-cacao band is the transitive
   one. A peach, grape, cacao stack makes both bands direct.
 
-The adapter also loads an all-against-all table, such as an
-[OrthoFinder one](/docs/tutorials/orthofinder_synteny), where a row holds
-orthologs inferred across all genomes at once.
-
 ## Zoom to one block conserved in every genome
 
-We'll stack peach over grape over cacao. Then:
+We'll stack peach over grape over cacao, by listing the session's `views` in
+that order. Then:
 
 - Navigate the rows to `chrG7:18,565,100-18,700,100`, `chr11:787,000-914,000`
   and `chr9:3,898,700-4,003,700`.
@@ -312,9 +311,9 @@ We'll stack peach over grape over cacao. Then:
 
 ## Open one grape locus against all the genomes
 
-`grape.blocks` has seven columns, and the hosted track names all seven in
-`blockAssemblies` and `bedLocations`, so JBrowse draws every mate (the ortholog
-in each other genome) at once in a linear genome view on grape:
+`grape.blocks` has a column per genome, and the hosted track names every column
+in `blockAssemblies` and `bedLocations`, so JBrowse draws every mate (the
+ortholog in each other genome) at once in a linear genome view on grape:
 
 - Navigate to `chr11:778,000-866,000` and turn on grape's **NCBI RefSeq - RefSeq
   All** track.
@@ -334,15 +333,13 @@ of one genome:
   window
 - one ribbon per ortholog group joins adjacent lanes, bridging past an empty
   one, red where the two lanes run the same way and blue where one is reversed
-- any track whose features have a `mate` per assembly can fill the same lanes,
-  including an [OrthoFinder table](/docs/tutorials/orthofinder_synteny) or an
-  [all-vs-all PAF](/docs/tutorials/allvsall_synteny)
+- any track whose features have a `mate` per assembly can fill the same lanes
 
 Each lane's gene models come from a gene track on that lane's assembly, and gene
 spans from the table are outlined where there is none. We'll add one for grape;
 each other genome gets the same track under its accession. Swap the `uri` for
-your own GFF3, bgzipped and tabix-indexed ([prep](/docs/quickstart_web)), with
-the same refNames as the assembly:
+your own GFF3, [sorted and indexed with tabix](/docs/quickstart_web), with the
+same refNames as the assembly:
 
 ```json addtrack
 {
@@ -426,8 +423,9 @@ A stacked synteny view opens from the lanes by two routes:
   region)...** in its track menu offers a row to every aligning genome
 - from the scale bar, drag-select a locus and pick **Launch → Linear synteny
   view**. The dialog opens a row per genome, grape already placed between peach
-  and cacao for the [reference-in-the-middle](#stack-grape-peach-and-cacao)
-  layout, with arrows to reorder them
+  and cacao for the
+  [grape-in-the-middle](#zoom-to-one-block-conserved-in-every-genome) stack,
+  with arrows to reorder them
 
 <Video src="/media/synteny/restack_around_locus.mp4" caption="Restacking around one grape locus: a selection on the scale bar opens a menu with Launch, and the dialog lists a panel per genome with grape between its two mates." />
 
@@ -437,12 +435,11 @@ A stacked synteny view opens from the lanes by two routes:
 runs everything above and writes a `config.json` with the hub assemblies, gene
 tracks, synteny track and default session:
 
-- Download the seven RefSeq genomes and annotations, and write a BED and a CDS
-  file per genome keyed on the mRNA's GFF3 `ID`, so the two join.
+- Download the RefSeq genomes and annotations, and write a BED and a CDS file
+  per genome keyed on the mRNA's GFF3 `ID`, so the two join.
 - Catalog orthologs against grape and MCScan each pair with `--iter=1`, one
   block per grape gene.
-- Join the six per-pair tables on the grape column into one seven-column
-  `grape.blocks`.
+- Join the per-pair tables on the grape column into one `grape.blocks`.
 - Write the config from the grape, peach and cacao hubs, with the other four
   genomes as lanes of the blocks track.
 
