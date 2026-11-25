@@ -1,5 +1,6 @@
 import { Fragment } from 'react'
 
+import { useExportFontFamily } from '@jbrowse/core/svg/constants'
 import { usePalette } from '@jbrowse/core/ui/PaletteContext'
 import { getBpDisplayStr, stripAlpha } from '@jbrowse/core/util'
 import { textBaselineShift } from '@jbrowse/core/util/SvgCanvas'
@@ -14,7 +15,7 @@ import {
   fitAxisTitle,
   tickKey,
   tickLabel,
-  underRefNameLabel,
+  tickLabelDrawn,
 } from './util.ts'
 
 import type { DotplotViewModel } from '../model.ts'
@@ -60,7 +61,7 @@ function AxisTitle({
   transform?: string
   fill: string
 }) {
-  const text = fitAxisTitle(title, availablePx)
+  const text = fitAxisTitle(title, availablePx, useExportFontFamily())
   return (
     <text
       x={x}
@@ -150,13 +151,9 @@ export const HorizontalAxisRaw = observer(function HorizontalAxisRaw({
             strokeWidth={1}
             stroke={color}
           />
-          {/* `labeled` is the model's collision decision (major, and clear of
-              the last label); `x > 10` is this axis' own edge rule, keeping a
-              label off the region name drawn at the start of the axis. */}
           {showTickLabels &&
           labeled &&
-          x > 10 &&
-          !underRefNameLabel(x, labelStarts) ? (
+          tickLabelDrawn(x, hview.width, labelStarts) ? (
             <text
               x={x - AXIS_LABEL_INSET_PX}
               y={textBaselineShift('middle', AXIS_LABEL_FONT)}
@@ -247,9 +244,7 @@ export const VerticalAxisRaw = observer(function VerticalAxisRaw({
             />
             {showTickLabels &&
             labeled &&
-            alongPx > 10 &&
-            alongPx < vview.width - 10 &&
-            !underRefNameLabel(alongPx, labelStarts) ? (
+            tickLabelDrawn(alongPx, vview.width, labelStarts) ? (
               <text
                 y={y - 3 + textBaselineShift('hanging', AXIS_LABEL_FONT)}
                 x={borderX - AXIS_LABEL_INSET_PX}

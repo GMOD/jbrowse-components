@@ -740,12 +740,19 @@ describe('getBlockLabelKeysToHide', () => {
     expect(hidden([posBlock('a', 600, 100)], 600)).toEqual(['a'])
   })
 
-  test('a label scrolled to a negative position is kept and blocks nothing', () => {
-    // a is off-axis (pos -100) so it is kept and does not occupy any slot,
-    // leaving b free to render
+  // the horizontal axis' right edge, where its text ran into the export's
+  // margin and legend gutter
+  test('a label with less than its own room to the far edge is hidden', () => {
+    expect(hidden([posBlock('a', 595, 100)], 600)).toEqual(['a'])
+    expect(hidden([posBlock('a', 588, 100)], 600)).toEqual([])
+  })
+
+  test('a label scrolled past the far edge is hidden and blocks nothing', () => {
+    // a is off-axis (pos -100), so it is hidden and occupies no slot, leaving
+    // b free to render
     expect(
       hidden([posBlock('a', 700, 200), posBlock('b', 0, 100)], 600),
-    ).toEqual([])
+    ).toEqual(['a'])
   })
 
   test('viewOffsetPx shifts label positions', () => {

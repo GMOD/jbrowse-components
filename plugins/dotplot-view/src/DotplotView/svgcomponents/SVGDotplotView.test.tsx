@@ -1,4 +1,5 @@
 import { exportMargin } from '@jbrowse/core/svg/constants'
+import { measureText } from '@jbrowse/core/util'
 import { createTestSession } from '@jbrowse/web/testUtils'
 import { when } from 'mobx'
 
@@ -326,6 +327,64 @@ test('a vertical tick label within 10px of the top edge is not drawn', async () 
   )
   expect(vertical).toHaveLength(0)
 }, 20000)
+
+// The export draws the horizontal axis in a bare <g>, where the screen's own
+// <svg> box clipped it, so past the plot's right edge lie the margin and the
+// legend gutter
+test('a horizontal tick label within 10px of the right edge is not drawn', async () => {
+  const { view } = await setup()
+  const { hview } = view
+  const last = hview.visibleTickPositions.findLast(t => t.labeled)!
+  hview.scrollTo(hview.offsetPx + last.alongPx - (hview.width - 5))
+  const edge = hview.visibleTickPositions.find(
+    t => t.labeled && t.alongPx > hview.width - 10,
+  )
+  expect(edge).toBeDefined()
+  const text = tickLabel(edge!.tick, hview.bpPerPx)
+  const horizontal = axisTexts(await renderToSvg(view, {})).filter(
+    t =>
+      t.textContent === text &&
+      (t.getAttribute('transform') ?? '').startsWith('rotate(-90,'),
+  )
+  expect(horizontal).toHaveLength(0)
+}, 20000)
+
+test('a horizontal refName label with no room before the right edge is not drawn', async () => {
+  const { view } = await setup([
+    ['ctgA', 20000],
+    ['ctgB', 20000],
+  ])
+  const { hview } = view
+  const ctgB = hview.refNameLabelStartsPx[1]!
+  hview.scrollTo(hview.offsetPx + ctgB - (hview.width - 6))
+  const named = axisTexts(await renderToSvg(view, {})).filter(
+    t =>
+      t.querySelector('title')?.textContent === 'ctgB' &&
+      t.hasAttribute('transform'),
+  )
+  expect(named).toHaveLength(0)
+}, 20000)
+
+// A monospace face prints digits at 0.61em where the app's table has 0.55em,
+// so a border sized in the app's font ran long tick labels into the rotated
+// axis title
+test('a monospace export lays its axis borders out in that face', async () => {
+  const { view } = await setup([['ctgA', 160_000]])
+  const svg = await renderToSvg(view, { fontFamily: 'monospace' })
+  expect(view.axisFontFamily).toBeUndefined()
+  const vertical = axisTexts(svg).filter(
+    t =>
+      !t.hasAttribute('transform') &&
+      t.querySelector('title') === null &&
+      /^[\d,.]+[KMG]?$/.test(t.textContent),
+  )
+  expect(vertical.length).toBeGreaterThan(0)
+  for (const t of vertical) {
+    const left =
+      Number(t.getAttribute('x')) - measureText(t.textContent, 10, 'monospace')
+    expect(left).toBeGreaterThanOrEqual(12 + 11 / 2)
+  }
+}, 30000)
 
 // The last tick of a region sits on the next region's start, where its name is
 test('a tick label never prints over a refName label', async () => {

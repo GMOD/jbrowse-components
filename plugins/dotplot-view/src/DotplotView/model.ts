@@ -313,6 +313,12 @@ export default function stateModelFactory(pm: PluginManager) {
         volatileWidth: undefined as number | undefined,
         /**
          * #volatile
+         * the font family the axes are measured in: an SVG export's while it
+         * lays the figure out, else the app's
+         */
+        axisFontFamily: undefined as string | undefined,
+        /**
+         * #volatile
          */
 
         // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
@@ -1032,6 +1038,12 @@ export default function stateModelFactory(pm: PluginManager) {
         setWidth(newWidth: number) {
           self.volatileWidth = newWidth
           return self.volatileWidth
+        },
+        /**
+         * #action
+         */
+        setAxisFontFamily(fontFamily?: string) {
+          self.axisFontFamily = fontFamily
         },
         /**
          * #action

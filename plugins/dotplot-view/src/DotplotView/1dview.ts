@@ -126,32 +126,6 @@ const Dotplot1DView = Base1DView.extend(self => {
 
       /**
        * #getter
-       * Block-label keys whose labels would overlap, and are hidden
-       */
-      get blockLabelKeysToHide() {
-        return getBlockLabelKeysToHide(
-          this.dynamicBlocks.contentBlocks,
-          this.refNameLabels,
-          labelRoomPx(self.displayedRegions, self.bpPerPx, this.refNameLabels),
-          self.width,
-          self.offsetPx,
-        )
-      },
-
-      /**
-       * #getter
-       * Where each drawn refName label starts along the axis, which no tick
-       * label prints over
-       */
-      get refNameLabelStartsPx() {
-        const hide = this.blockLabelKeysToHide
-        return this.dynamicBlocks.contentBlocks
-          .filter(b => !hide.has(b.key))
-          .map(b => Math.floor(b.offsetPx - self.offsetPx))
-      },
-
-      /**
-       * #getter
        * Signature of the displayed-region order and orientation, which a
        * diagonalize reorder/flip changes and a zoom or pan does not. Its own
        * primitive-valued computed so every display's fetch key reads it without
@@ -185,6 +159,7 @@ interface DotplotAxisParent {
   sharedFitBpPerPx: number
   axisGrid: boolean
   axisLabels: boolean
+  axisFontFamily: string | undefined
 }
 
 // One axis of the plot, as long as the plot dimension it runs along. The
@@ -216,12 +191,48 @@ function plotAxis(length: 'viewWidth' | 'viewHeight') {
       // and zoom only — never from the plot size — so it can't feed back
       // through the plot size into a render loop.
       get labelMarginPx() {
+        const { axisLabels, axisFontFamily } =
+          getParent<DotplotAxisParent>(self)
         return axisBorderPx(
           self.displayedRegions,
           self.bpPerPx,
           self.refNameLabels,
-          getParent<DotplotAxisParent>(self).axisLabels,
+          axisLabels,
+          axisFontFamily,
         )
+      },
+
+      /**
+       * #getter
+       * Block-label keys whose labels would overlap, and are hidden
+       */
+      get blockLabelKeysToHide() {
+        const { axisFontFamily } = getParent<DotplotAxisParent>(self)
+        return getBlockLabelKeysToHide(
+          self.dynamicBlocks.contentBlocks,
+          self.refNameLabels,
+          labelRoomPx(
+            self.displayedRegions,
+            self.bpPerPx,
+            self.refNameLabels,
+            axisFontFamily,
+          ),
+          self.width,
+          self.offsetPx,
+          axisFontFamily,
+        )
+      },
+
+      /**
+       * #getter
+       * Where each drawn refName label starts along the axis, which no tick
+       * label prints over
+       */
+      get refNameLabelStartsPx() {
+        const hide = this.blockLabelKeysToHide
+        return self.dynamicBlocks.contentBlocks
+          .filter(b => !hide.has(b.key))
+          .map(b => Math.floor(b.offsetPx - self.offsetPx))
       },
 
       toScreenPx(alongPx: number) {

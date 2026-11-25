@@ -71,7 +71,10 @@ so a `<text>` that writes the theme's family overrides it; measure in
 `rasterizeLayers`: a body paints its labels and letters in a `PaintLayer` of
 their own without `opts`, over the layer that gets them (the feature labels,
 the variant records band's labels, the pileup's mismatch letters and indel
-counts, the reference sequence's letters).
+counts, the reference sequence's letters). A view whose layout is sized off
+its text lays out in that family for the export's length: the dotplot sets
+`axisFontFamily` so its axis borders, and the plot inside them, follow it. A
+label that would cross its axis's far edge is dropped, not clipped.
 
 **A live figure (`useViewSvgFigure`) freezes against one snapshot.** An export
 draws plain components that read the model once, never an on-screen observer:

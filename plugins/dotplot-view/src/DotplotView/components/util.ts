@@ -95,8 +95,13 @@ export const AXIS_LABEL_FONT = 10
 // scaffold's prefix and its distinguishing suffix. At least MIN_SIDE_CHARS
 // stay on each side, so no room at all still leaves a nameable stub.
 const MIN_SIDE_CHARS = 6
-function elideToFit(text: string, maxPx: number, fontSize: number) {
-  const fullPx = measureText(text, fontSize)
+function elideToFit(
+  text: string,
+  maxPx: number,
+  fontSize: number,
+  fontFamily?: string,
+) {
+  const fullPx = measureText(text, fontSize, fontFamily)
   if (fullPx <= maxPx) {
     return text
   }
@@ -138,8 +143,12 @@ export const AXIS_TITLE_FONT = 11
 // over-long title is clipped at *both* ends — which for the read-vs-ref
 // dotplot's synthetic `<readname>_assembly_<timestamp>` axis loses the read name
 // itself, the only part worth reading. The full string stays on hover.
-export function fitAxisTitle(title: string, availablePx: number) {
-  return elideToFit(title, availablePx, AXIS_TITLE_FONT)
+export function fitAxisTitle(
+  title: string,
+  availablePx: number,
+  fontFamily?: string,
+) {
+  return elideToFit(title, availablePx, AXIS_TITLE_FONT, fontFamily)
 }
 
 // How far an axis label stands off the plot edge, clear of the 6px major tick
@@ -186,11 +195,12 @@ export function labelRoomPx(
   regions: readonly AxisRegion[],
   bpPerPx: number,
   labels: Map<string, string>,
+  fontFamily?: string,
 ) {
   return max(
     regions.flatMap(r =>
       sizesMargin(r, bpPerPx)
-        ? [measureText(labels.get(r.refName)!, AXIS_LABEL_FONT)]
+        ? [measureText(labels.get(r.refName)!, AXIS_LABEL_FONT, fontFamily)]
         : [],
     ),
     MIN_BORDER - BORDER_CHROME,
@@ -215,19 +225,27 @@ export function axisBorderPx(
   bpPerPx: number,
   labels: Map<string, string>,
   tickLabels: boolean,
+  fontFamily?: string,
 ) {
   const tickWidth = tickLabels
     ? max(
         regions.flatMap(r =>
           sizesMargin(r, bpPerPx)
-            ? [measureText(getTickDisplayStr(r.end, bpPerPx), AXIS_LABEL_FONT)]
+            ? [
+                measureText(
+                  getTickDisplayStr(r.end, bpPerPx),
+                  AXIS_LABEL_FONT,
+                  fontFamily,
+                ),
+              ]
             : [],
         ),
         0,
       )
     : 0
   return (
-    Math.max(labelRoomPx(regions, bpPerPx, labels), tickWidth) + BORDER_CHROME
+    Math.max(labelRoomPx(regions, bpPerPx, labels, fontFamily), tickWidth) +
+    BORDER_CHROME
   )
 }
 
@@ -402,48 +420,60 @@ function intervalsOverlap(a: Interval, b: Interval) {
   return Math.max(a.start, b.start) < Math.min(a.end, b.end)
 }
 
+// A tick label is one line of type across its tick, so this far either side of
+// it along the axis
+const TICK_LABEL_HALF_PX = AXIS_LABEL_FONT / 2
+
+// How far in from either end of its axis a tick label must sit to be drawn
+// whole
+const TICK_LABEL_EDGE_PX = 10
+
+/**
+ * Whether a tick label at `alongPx` prints: whole inside its `length`-px axis,
+ * and not over a refName label, each of which takes the `LABEL_PX` past its
+ * start (`labelStartsPx`). A region's first tick and the previous region's
+ * last one both sit there.
+ */
+export function tickLabelDrawn(
+  alongPx: number,
+  length: number,
+  labelStartsPx: readonly number[],
+) {
+  return (
+    alongPx > TICK_LABEL_EDGE_PX &&
+    alongPx < length - TICK_LABEL_EDGE_PX &&
+    !labelStartsPx.some(
+      p =>
+        alongPx + TICK_LABEL_HALF_PX > p &&
+        alongPx - TICK_LABEL_HALF_PX < p + LABEL_PX,
+    )
+  )
+}
+
 // Greedily decide which block labels to drop so the kept ones don't overlap.
-// A label wider than `roomPx` (`labelRoomPx`) is dropped outright. Largest
-// blocks win their slot first; each kept label reserves the LABEL_PX interval
-// ending at its on-axis position, and any later label whose interval
-// intersects a reserved one is hidden.
+// A label wider than `roomPx` (`labelRoomPx`) is dropped outright, and so is
+// one with less than LABEL_PX to its axis' far edge, since a label is drawn
+// whole or not at all. Largest blocks win their slot first; each kept label
+// reserves the LABEL_PX interval ending at its on-axis position, and any later
+// label whose interval intersects a reserved one is hidden.
 //
 // `length - offsetPx + viewOffsetPx` is the vertical axis's own label position
 // (it lays out bottom-up, so this is literally `yoff` in Axes.tsx). The
 // horizontal axis passes the same expression, which is the MIRROR of where it
 // draws its labels (`b.offsetPx - offsetPx`). That is deliberate and safe for
 // the overlap test — mirroring is an isometry, so which pairs collide is
-// unchanged — but it does mean the two boundary rules below (the `end === 0`
-// force-hide and the clamp at 0) land on the right edge for the horizontal axis
-// and the top edge for the vertical one. Both are the edge where that axis's
-// text would render outside the SVG, so don't "fix" the asymmetry by making it
-// symmetric: that hides labels which currently render fine at the opposite edge.
-// A tick label is one line of type across its tick, so this far either side of
-// it along the axis
-const TICK_LABEL_HALF_PX = AXIS_LABEL_FONT / 2
-
-/**
- * Whether a tick label at `alongPx` would print over a refName label, each of
- * which takes the `LABEL_PX` past its start (`labelStartsPx`). A region's
- * first tick and the previous region's last one both sit there.
- */
-export function underRefNameLabel(
-  alongPx: number,
-  labelStartsPx: readonly number[],
-) {
-  return labelStartsPx.some(
-    p =>
-      alongPx + TICK_LABEL_HALF_PX > p &&
-      alongPx - TICK_LABEL_HALF_PX < p + LABEL_PX,
-  )
-}
-
+// unchanged — but it does mean the far-edge rule lands on the right edge for
+// the horizontal axis and the top edge for the vertical one. Both are the edge
+// where that axis's text would render outside its box, so don't "fix" the
+// asymmetry by making it symmetric: that hides labels which render fine at the
+// opposite edge.
 export function getBlockLabelKeysToHide(
   blocks: ContentBlock[],
   labels: Map<string, string>,
   roomPx: number,
   length: number,
   viewOffsetPx: number,
+  fontFamily?: string,
 ) {
   const hide = new Set<string>()
   const reserved: Interval[] = []
@@ -452,10 +482,11 @@ export function getBlockLabelKeysToHide(
   )
   for (const { key, refName, offsetPx } of byLengthDesc) {
     const end = Math.round(length - offsetPx + viewOffsetPx)
-    const label = { start: Math.max(end - LABEL_PX, 0), end }
+    const label = { start: end - LABEL_PX, end }
     if (
-      measureText(labels.get(refName) ?? refName, AXIS_LABEL_FONT) > roomPx ||
-      end === 0 ||
+      measureText(labels.get(refName) ?? refName, AXIS_LABEL_FONT, fontFamily) >
+        roomPx ||
+      end < LABEL_PX ||
       reserved.some(r => intervalsOverlap(label, r))
     ) {
       hide.add(key)
