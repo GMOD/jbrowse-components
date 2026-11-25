@@ -44,7 +44,7 @@ exports[`<JBrowseCircularGenomeView /> 1`] = `
                   font-weight="500"
                   letter-spacing="0.0075em"
                   text-anchor="middle"
-                  transform="translate(-70.40099223655916,157.31858888419433) rotate(24.1087961874711)"
+                  transform="translate(-73.05605111116135,163.25160349503057) rotate(24.1087961874711)"
                   x="0"
                   y="3.6400000000000006"
                 >
@@ -368,7 +368,7 @@ exports[`<JBrowseCircularGenomeView /> 1`] = `
                   font-weight="500"
                   letter-spacing="0.0075em"
                   text-anchor="middle"
-                  transform="translate(70.40099223655899,-157.3185888841944) rotate(384.10879618747106)"
+                  transform="translate(73.05605111116118,-163.25160349503065) rotate(384.10879618747106)"
                   x="0"
                   y="3.6400000000000006"
                 >

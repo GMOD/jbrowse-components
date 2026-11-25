@@ -1,5 +1,7 @@
-import { MAX_SVG_RASTER_AREA_PX } from '../util/createSvgRasterCanvas.ts'
-import { fittedRasterScale } from './createSvgRasterCanvas.ts'
+import {
+  MAX_SVG_RASTER_AREA_PX,
+  fittedRasterScale,
+} from './createSvgRasterCanvas.ts'
 
 test('a figure that fits the canvas limits rasterizes at the scale asked for', () => {
   expect(fittedRasterScale(1200, 3000, 2)).toBe(2)
