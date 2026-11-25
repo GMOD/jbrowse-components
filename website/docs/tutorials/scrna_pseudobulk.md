@@ -15,8 +15,8 @@ peripheral blood cells (PBMC), one RNA and one ATAC, we:
 
 - pool RNA reads or ATAC fragments into one coverage BigWig per cell type,
   outside JBrowse
-- load each set as one multi-wiggle track with a row per cell type, and open
-  nine RNA marker genes side by side
+- load each set as one multi-wiggle track with a row per cell type, and open RNA
+  marker genes side by side
 - add one row per cell under the pooled RNA rows, from a Zarr store
 - read the ATAC rows at a T-cell and a B-cell marker, then load AlphaGenome 2's
   predicted ATAC for the same cell types under them
@@ -68,8 +68,8 @@ without writing the BAM to disk, and SnapATAC2's annotated release of 10x's 5k
 PBMC scATAC experiment, already clustered and cell-type-labeled.
 
 You don't need these files to follow the page: every track reads a hosted copy
-of what the commands below write, and the per-cell track's config points at the
-Zarr store the RNA build script makes, with the hosted copy's URL beside it. The
+of what the commands below write. The per-cell track's config points at the Zarr
+store the RNA build script makes, with the hosted copy's URL beside it. The
 [build scripts](#reproduce-it-end-to-end) fetch everything themselves; the ATAC
 one downloads the dataset through SnapATAC2 (about 800 MB, ten minutes). To
 generate per-cell-type BigWigs, supply your own barcoded BAM or fragments file
@@ -90,7 +90,7 @@ and barcode table.
 
 </details>
 
-## Load GRCh38
+## Load the GRCh38 assembly
 
 The RNA reads and the ATAC fragments were both aligned to GRCh38, and the
 BigWigs use its `chr1`-style chromosome names, so the tracks go on an hg38
@@ -278,7 +278,7 @@ The other ATAC tools write the same files:
   unnormalized, so scale each group yourself (1e6 / total fragments for CPM)
   before the conversion
 
-## Load the RNA rows and open nine marker genes
+## Load the RNA rows
 
 One `MultiQuantitativeTrack` holds the set, one `BigWigAdapter` subadapter per
 cell type with its `name`, `color`, and `group`. The fence lists the first RNA
@@ -349,13 +349,10 @@ Set three things in the `subadapters` list from the single-cell object:
 - `group`: the sidebar tree branches on it, and [](/docs/user_guides/clustering)
   clusters rows within each group
 
-We named the RNA clusters by scoring them against marker panels, so those
-markers have signal in the rows of their cell types by construction. To test the
-labels, we open nine markers the panels leave out, one per cell type: _CD40LG_,
-_LINC02446_, _SPON2_, _CD22_, _S100A12_, _HES4_, _ENHO_, _LRRC26_ and _GNG11_.
-10x 3' kits sequence the 3' end of each transcript, so coverage is a spike near
-the polyadenylation site. Paste each gene's 3' end into the location box to open
-them side by side:
+Marker genes, one per cell type, open side by side: _CD40LG_, _LINC02446_,
+_SPON2_, _CD22_, _S100A12_, _HES4_, _ENHO_, _LRRC26_ and _GNG11_. 10x 3' kits
+sequence the 3' end of each transcript, so coverage is a spike near the
+polyadenylation site. Type each gene's 3' end into the location box:
 
 ```text
 chrX:136,658,390-136,662,390 chr12:10,556,794-10,560,794 chr4:1,164,931-1,168,931 chr19:35,345,361-35,349,361 chr1:153,371,710-153,375,710 chr1:996,963-1,000,963 chr9:34,519,042-34,523,042 chr9:137,166,757-137,170,757 chr7:93,926,610-93,930,610
@@ -418,10 +415,7 @@ where the 3' kit's reads land:
 
 <Figure caption="The pseudobulk rows at LYZ above the cells they sum, ordered by cell type and colored to match." src="/img/scrna/percell_lyz.png" />
 
-Per cell, many lymphocytes have a single UMI of a monocyte gene, ambient RNA
-that was free in the droplet.
-
-Two settings decide whether those single-UMI cells are visible:
+Set two things for the per-cell rows:
 
 - **Order the rows by cell type.** Thousands of rows in a few hundred pixels is
   under a pixel each, so a block is visible only if its cells are adjacent. The
@@ -431,7 +425,7 @@ Two settings decide whether those single-UMI cells are visible:
   the color ramp, whereas autoscale takes its maximum from the tallest single
   cell in view
 
-## Load the ATAC rows at CD8A and MS4A1
+## Load the ATAC rows
 
 The ATAC BigWigs written under _From ATAC fragments_ load the same way, as a
 second track. The fence lists some of the cell types the figure draws; the
@@ -476,9 +470,7 @@ https://jbrowse.org/code/jb2/main/test_data/config_demo.json, has it as
 }
 ```
 
-At _CD8A_ the CD8 T, MAIT and NK rows have the peaks and the B rows stay near
-flat, and at _MS4A1_ the B rows have them and the T rows stay near flat. Paste
-both into the location box to open them side by side:
+Type both into the location box to open _CD8A_ and _MS4A1_ side by side:
 
 ```text
 chr2:86,780,000-86,820,000 chr11:60,450,000-60,490,000
@@ -496,12 +488,11 @@ the row loads with no data.
 ## Load predicted ATAC under the measured rows
 
 AlphaGenome 2 predicts scATAC from sequence for blood cell types that match each
-of the twelve ATAC labels, so its predictions load as a second track with the
-same rows. The build script on [](/docs/tutorials/alphagenome2_singlecell)
-writes one BigWig per cell type over six PBMC marker loci, and maps each label
-to the blood condition of the same cell type that AlphaGenome 2 has measured
-scATAC for. The predicted track takes the measured track's names, colors and
-groups:
+of the ATAC labels, so its predictions load as a second track with the same
+rows. The build script on [](/docs/tutorials/alphagenome2_singlecell) writes one
+BigWig per cell type over the PBMC marker loci, and maps each label to the blood
+condition of the same cell type that AlphaGenome 2 has measured scATAC for. The
+predicted track takes the measured track's names, colors and groups:
 
 ```json addtrack loc=chr2:86,780,000..86,820,000
 {
@@ -541,20 +532,16 @@ groups:
 ```
 
 The hosted config,
-https://jbrowse.org/demos/alphagenome2_singlecell/config.json, has all twelve
-rows beside the measured track. The BigWigs cover only the marker loci, so the
-rows are empty elsewhere. Open _CD8A_ and _MS4A1_ again, under that config's
-NCBI RefSeq - RefSeq Curated genes:
+https://jbrowse.org/demos/alphagenome2_singlecell/config.json, has all the rows
+beside the measured track. The BigWigs cover only the marker loci, so the rows
+are empty elsewhere. Open _CD8A_ and _MS4A1_ again, under that config's NCBI
+RefSeq - RefSeq Curated genes:
 
 ```text
 chr2:86,780,000-86,820,000 chr11:60,450,000-60,490,000
 ```
 
 <Figure caption="The measured ATAC rows above AlphaGenome 2's predicted rows for the same cell types, over CD8A and MS4A1 side by side." src="/img/scatac/pbmc5k_predicted_vs_measured.png" />
-
-At _CD8A_ the predicted peaks fall in the CD8, MAIT and NK rows, as the measured
-ones do. At _MS4A1_ the B rows are highest in both tracks, and the predicted
-track also has two peaks in the T and NK rows where the measured rows are flat.
 
 ## Load a plain list of BigWigs as one track
 
@@ -603,8 +590,7 @@ pass a `.json` file of subadapter objects instead of the comma list.
 [`build_scrna_pseudobulk.sh`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/build_scrna_pseudobulk.sh)
 starts from 10x's filtered RNA count matrix and the BAM. It:
 
-- clusters the cells with the standard scanpy pipeline: quality filtering,
-  normalization, PCA, a neighbor graph, the UMAP and Leiden clusters
+- clusters the cells with scanpy
 - names each cluster after the canonical PBMC marker panel it scores highest on,
   and prints the whole score matrix so each call can be checked. A cluster that
   scores weakly against every panel stays unassigned
