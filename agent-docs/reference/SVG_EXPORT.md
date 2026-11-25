@@ -98,6 +98,17 @@ since choosing a row is how a reader asks for a figure of one variant. A body th
 a painter zeroes them (`hoveredFeatureId`, `clickedFeatureId` in the synteny and
 multi-way exports), and the chord export draws every shape resting.
 
+**A figure says what its box leaves out.** A pileup deeper than its track ends
+on its last whole row over a caption line counting the rows above and below
+and saying whether the layout's ceiling left reads unstacked
+(`svgPileupCut`, `exportPileupCut.ts`); a track too short for a whole row over
+that line exports uncut, and the breakpoint split view ends its read curves at
+the cut (`overlayLevel`). A row display showing fewer rows than it has appends
+"· showing N of M rows" to its exported label (`svgTrackLabelNote`), standing
+in for the chip the export drops with the controls. Hi-C and LD keys are off
+on screen and on in an export until `legend.show` is set
+(`FigureLegend`, `showLegendInExport`).
+
 ## The `svgReady` gate
 
 Every GPU display exposes `svgReady`, and the off-screen renderer awaits only
