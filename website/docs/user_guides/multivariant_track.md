@@ -33,7 +33,7 @@ Each variant is drawn at its real position and scale, and overlapping calls are
 slightly transparent so they stay apart. Where overlaps crowd the view, **Filter
 by → Edit filters...** in the track menu hides variants by size, name or any
 jexl expression. The
-[1000 Genomes SV tutorial](/docs/tutorials/sv_multisamples#sorting-the-cohort-by-genotype-at-the-rhd-deletion)
+[1000 Genomes SV tutorial](/docs/tutorials/sv_multisamples#sort-the-cohort-by-genotype-at-the-rhd-deletion)
 sorts this layout by genotype at a deletion.
 
 <Figure caption="The 1000 Genomes SV callset across 5 Mb of chr19, one row per sample, sorted by genotype at an inversion." src="/img/multisv.png" />

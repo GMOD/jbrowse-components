@@ -11,10 +11,9 @@ tutorial_category: Structural variation
 A structural variant (SV) callset for a cohort gives every person a genotype at
 every call, and each genotype is based on that person's reads. We take one call
 from the 1000 Genomes ensemble SV callset, a deletion spanning the whole of
-_RHD_, the RhD blood group gene, whose loss is the usual cause of the
-RhD-negative blood type. The call is common enough to fill all three genotype
-classes, which read depth separates into two copies of the gene, one, or none. A
-complex call in sample HG02768 on the same chromosome follows. We:
+_RHD_, the RhD blood group gene. The call is common enough to fill all three
+genotype classes, which read depth separates into two copies of the gene, one,
+or none. A complex call in sample HG02768 on the same chromosome follows. We:
 
 - load the callset as a multi-sample variant track, with a sample's CRAM and a
   copy-number Zarr store
@@ -35,11 +34,11 @@ complex call in sample HG02768 on the same chromosome follows. We:
 
 The page reads the 1000 Genomes 2022 high-coverage ensemble SV callset
 ([Byrska-Bishop et al., 2022](https://doi.org/10.1016/j.cell.2022.08.004))
-against CRAMs from three of the cohort's samples and QuicK-mer2 copy number for
-the whole cohort.
+against the CRAMs of the samples below and QuicK-mer2 copy number for the whole
+cohort.
 
 Nothing to download: the track configs below read these files by URL. Your own
-VCF and CRAM swap in by `uri`, as _Loading the callset, the reads and the
+VCF and CRAM swap in by `uri`, as _Load the callset, the reads and the
 copy-number store_ shows.
 
 <details>
@@ -56,7 +55,7 @@ copy-number store_ shows.
 
 </details>
 
-## Loading the callset, the reads and the copy-number store
+## Load the callset, the reads and the copy-number store
 
 JBrowse decodes the CRAMs against the assembly's sequence, so it must be the
 GRCh38 sequence the reads were aligned to, with the chromosome names the VCF
@@ -91,7 +90,7 @@ needs per-sample genotype columns and an index beside it:
 {
   "type": "VariantTrack",
   "trackId": "kgp_ensemble_sv",
-  "name": "1KGP ensemble SV calls, 3202 samples",
+  "name": "1KGP ensemble SV calls",
   "assemblyNames": ["hg38"],
   "uri": "https://jbrowse.org/demos/1000g/1KGP_3202.Illumina_ensemble_callset.freeze_V1.vcf.gz"
 }
@@ -130,7 +129,7 @@ explains these settings and builds a store from your own BigWigs:
 {
   "type": "MultiQuantitativeTrack",
   "trackId": "cnv_1000g_zarr",
-  "name": "1000 Genomes copy number, 2504 individuals",
+  "name": "1000 Genomes copy number",
   "assemblyNames": ["hg38"],
   "adapter": {
     "type": "MultiWiggleZarrAdapter",
@@ -150,7 +149,7 @@ explains these settings and builds a store from your own BigWigs:
 }
 ```
 
-## Sorting the cohort by genotype at the RHD deletion
+## Sort the cohort by genotype at the RHD deletion
 
 Navigate to `chr1:25,200,000-25,400,000`. The callset track draws each sample as
 a row at the variant's genomic span, so `HGSV_1821`, the _RHD_ deletion, is a
@@ -163,29 +162,15 @@ wide block, and rows start in the callset's order:
 - **Clustering → Cluster rows by genotype...** in the track menu clusters rows
   by genotypes across the whole window instead, with a dendrogram.
 
-In the genotype rows, dark blue is no copy of _RHD_, light blue one and grey
-two. The olive stripe is `HGSV_1823`, a small copy-number record nested inside
-the deletion. Most of the cohort has a no-call there in the callset (no genotype
-reported), while QuicK-mer2 measures copy number per bin from the reads, so the
-olive column is a red gain in the copy-number track.
-
-A genotype cell marks some call at that position. The records band above the
-rows shows each call with its id, class and size, and **Color by → SV type**
-shows the class in the cells too, as the
-[multi-variant track guide](/docs/user_guides/multivariant_track) shows. The
-figure has two tracks over NCBI RefSeq genes:
-
-- the callset, one row per sample sorted by genotype at the _RHD_ deletion,
-  under its records band with each call labelled by its id
-- QuicK-mer2 copy number for every individual, one row each and clustered on
-  this window, where blue is a copy lost against the diploid white and red is a
-  copy gained
+The records band above the rows shows each call with its id, class and size, and
+**Color by → SV type** shows the class in the cells too, as the
+[multi-variant track guide](/docs/user_guides/multivariant_track) shows.
 
 <Figure caption="The 1KGP SV callset over RHD with the panel's copy-number calls under it." src="/img/multisv_rhd.png" />
 
 <Video src="/media/sv/multisample_sort.mp4" caption="Right-clicking the deletion sorts the cohort by its genotype there." />
 
-## Checking the RHD genotypes against read coverage in three samples
+## Check the RHD genotypes against read coverage
 
 Open three samples' alignments, one per genotype: HG00113 homozygous alt,
 HG00096 heterozygous, HG00097 homozygous reference. Two settings make them
@@ -202,14 +187,14 @@ Coverage over the deleted span in the top row sits just above zero. The
 neighbouring gene _RHCE_, just right of _RHD_, is nearly identical, so some
 _RHCE_ reads map to the empty _RHD_ footprint.
 
-## Reading a complex call in HG02768 from read-pair orientation
+## Read a complex call in HG02768 from read-pair orientation
 
 A balanced rearrangement such as an inversion leaves coverage unchanged but
 changes read-pair orientation, meaning which strand each mate maps to. HG02768
 has a complex call, an inversion with a duplicated copy, with coverage like the
 rest of its arm.
 
-Put `1:39,658,200-39,661,800` in the location box and add HG02768's CRAM as a
+Put `chr1:39,658,200-39,661,800` in the location box and add HG02768's CRAM as a
 track the same way as HG00113's.
 
 **Presets → SV channels** in the track menu splits the reads into one band per
@@ -221,15 +206,12 @@ their arcs:
 - The inversion band draws two bundles of arcs, the same-strand pairs and split
   reads across each end of the inversion, green for one end and blue for the
   other
-- No duplication-type band appears, since no pair here has mates facing away
-  from each other as a tandem duplication would leave them
 
 <Figure caption="HG02768's reads at the complex call, one band per kind of SV evidence. Reads whose mate is on another chromosome draw as inter-chromosomal ticks." src="/img/sv_channels.png" />
 
 The call also lists a duplicated copy in `INFO.CPX_INTERVALS`. A copy inserted
 beside its origin leaves pair orientation unchanged, so the bands do not show
-it. That half of the call is based on coverage alone, and at this size the noise
-in coverage makes bumps as wide as the duplication.
+it.
 
 ## See also
 
@@ -242,7 +224,6 @@ in coverage makes bumps as wide as the duplication.
 - [](/docs/tutorials/dog10k_svs)
 - [](/docs/tutorials/population_cnv)
 - [](/docs/tutorials/sv_visualization_cgiab)
-- [](/docs/jbrowse_anywidget)
 
 [^ebi]:
     The file EBI publishes is at
