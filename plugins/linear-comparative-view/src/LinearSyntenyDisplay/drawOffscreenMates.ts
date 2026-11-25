@@ -29,7 +29,11 @@ const MAX_BAND_FRACTION = 1 / 3
 
 const MIN_LABEL_PADDING_PX = 6
 
-const LABEL_FONT = '10px sans-serif'
+const LABEL_FONT_PX = 10
+
+function labelFont(fontFamily = 'sans-serif') {
+  return `${LABEL_FONT_PX}px ${fontFamily}`
+}
 
 const LABEL_HALO_PX = 3
 
@@ -117,17 +121,19 @@ export interface OffscreenMatePaint {
   markColor: string
   labelColor: string
   haloColor: string
-  // label width at LABEL_FONT; defaults to the context's own measureText,
+  // an export's, which the labels are drawn and measured in
+  fontFamily?: string
+  // label width in the label font; defaults to the context's own measureText,
   // which on an SvgCanvas is an advance table rather than the browser's font
   measure?: (text: string) => number
 }
 
-export function canvasLabelMeasurer() {
+export function canvasLabelMeasurer(fontFamily?: string) {
   const ctx = document.createElement('canvas').getContext('2d')
   if (!ctx) {
     return undefined
   }
-  ctx.font = LABEL_FONT
+  ctx.font = labelFont(fontFamily)
   return (text: string) => ctx.measureText(text).width
 }
 
@@ -391,7 +397,7 @@ function extendSpan(
 // One lane's marks as parallel arrays. Nothing per mark is an object or a
 // string: the contig is reached through the dataset's dictionary id, and the
 // two readers below resolve a name once per contig rather than once per mark.
-interface LaneMarks {
+export interface LaneMarks {
   lane: OffscreenMateLane
   strip: StripGeometry
   count: number
@@ -661,43 +667,66 @@ function fillMarks(ctx: Ctx2D, marks: LaneMarks, markColor: string) {
   }
 }
 
+/**
+ * Every lane's marks, or none when no lane has one to draw. Computed once for
+ * a band whose marks and labels paint in separate layers.
+ */
+export function offscreenMateMarks(lanes: OffscreenMateLane[]) {
+  const marks = lanes.map(lane => laneMarks(lane)).filter(m => m !== undefined)
+  return marks.some(m => m.count > 0) ? marks : []
+}
+
+export function fillOffscreenMateMarks(
+  ctx: Ctx2D,
+  marks: LaneMarks[],
+  markColor: string,
+) {
+  for (const m of marks) {
+    fillMarks(ctx, m, markColor)
+  }
+}
+
 // Every lane in one call: the band's two strips share the vertical room their
 // labels stack into. A label names a stretch and goes on wherever it fits;
 // fitting is what "too many to label" means.
+export function drawOffscreenMateLabels(
+  ctx: Ctx2D,
+  marks: LaneMarks[],
+  { labelColor, haloColor, fontFamily, measure }: OffscreenMatePaint,
+) {
+  const width = marks[0]?.lane.width
+  if (width !== undefined) {
+    ctx.font = labelFont(fontFamily)
+    ctx.textBaseline = 'alphabetic'
+    ctx.lineWidth = LABEL_HALO_PX
+    ctx.lineJoin = 'round'
+    ctx.strokeStyle = haloColor
+    ctx.fillStyle = labelColor
+    const measureLabel = measure ?? (text => ctx.measureText(text).width)
+    const zones = marks.map(({ strip }) => ({
+      from: strip.markY,
+      to: strip.markY + strip.markHeight,
+    }))
+    const labels = placeLabels(
+      marks.map(m => ({
+        runs: labelRuns(m, measureLabel),
+        baselines: labelBaselines(m.lane.side, m.lane.height, zones),
+      })),
+      width,
+    )
+    for (const { refName, x, y } of labels) {
+      ctx.strokeText(refName, x, y)
+      ctx.fillText(refName, x, y)
+    }
+  }
+}
+
 export function drawOffscreenMates(
   ctx: Ctx2D,
   lanes: OffscreenMateLane[],
   paint: OffscreenMatePaint,
 ) {
-  const { markColor, labelColor, haloColor } = paint
-  const measure = paint.measure ?? (text => ctx.measureText(text).width)
-  const marks = lanes.map(lane => laneMarks(lane)).filter(m => m !== undefined)
-  if (marks.every(m => m.count === 0)) {
-    return
-  }
-  for (const m of marks) {
-    fillMarks(ctx, m, markColor)
-  }
-
-  ctx.font = LABEL_FONT
-  ctx.textBaseline = 'alphabetic'
-  ctx.lineWidth = LABEL_HALO_PX
-  ctx.lineJoin = 'round'
-  ctx.strokeStyle = haloColor
-  ctx.fillStyle = labelColor
-  const zones = marks.map(({ strip }) => ({
-    from: strip.markY,
-    to: strip.markY + strip.markHeight,
-  }))
-  const labels = placeLabels(
-    marks.map(m => ({
-      runs: labelRuns(m, measure),
-      baselines: labelBaselines(m.lane.side, m.lane.height, zones),
-    })),
-    marks[0]!.lane.width,
-  )
-  for (const { refName, x, y } of labels) {
-    ctx.strokeText(refName, x, y)
-    ctx.fillText(refName, x, y)
-  }
+  const marks = offscreenMateMarks(lanes)
+  fillOffscreenMateMarks(ctx, marks, paint.markColor)
+  drawOffscreenMateLabels(ctx, marks, paint)
 }
