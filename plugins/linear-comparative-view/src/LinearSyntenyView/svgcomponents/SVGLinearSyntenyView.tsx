@@ -34,6 +34,9 @@ export async function renderToSvg(
   model: LinearSyntenyViewModel,
   opts: ExportSvgOptions,
 ) {
+  if (!model.hasSomethingToShow) {
+    throw new Error('Cannot export: no regions are displayed')
+  }
   await awaitViewInitialized(model)
   const { fontSize, textHeight, rulerHeight, trackLabels, showGridlines } =
     lgvSvgLayoutOptions(opts)

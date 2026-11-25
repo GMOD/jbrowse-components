@@ -65,6 +65,18 @@ test('a page too narrow for its text is refused before the rows are resized', as
   expect(view.views.map(row => row.width)).toEqual([800, 800])
 })
 
+test('exporting the import form fails rather than waiting forever', async () => {
+  const session = createTestSession()
+  const view = (await session.launchView(
+    'LinearSyntenyView',
+    {},
+  )) as LinearSyntenyViewModel
+  view.setWidth(800)
+  await expect(view.exportSvg({ save: false })).rejects.toThrow(
+    'Cannot export: no regions are displayed',
+  )
+})
+
 test("each row's ruler numbers clear the refName label above them", async () => {
   const view = await launch()
   const svg = await view.exportSvg({ save: false })
