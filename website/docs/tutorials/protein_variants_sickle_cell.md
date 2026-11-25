@@ -1,23 +1,23 @@
 ---
 title:
   'Variants on protein structures part 1: sickle cell from GWAS hit to
-  haemoglobin S'
+  hemoglobin S'
 sidebar_label: Proteins (variants pt 1, sickle cell)
 description:
   Follow the sickle cell allele of HBB from its GWAS Catalog associations and
   its 1000 Genomes genotypes to the residue it changes in the crystal structure
-  of sickle haemoglobin
+  of sickle hemoglobin
 guide_category: Tutorials
 tutorial_category: Transcriptomics & proteins
 tutorial_subcategory: Variants on protein structures
 ---
 
 Sickle cell disease comes from one base change in _HBB_, the gene for the β
-chain of haemoglobin. Codon 7 changes from GAG to GTG, so glutamate 6 of the
+chain of hemoglobin. Codon 7 changes from GAG to GTG, so glutamate 6 of the
 mature protein becomes valine. The variant, rs334, turns up again and again in
 genome-wide association studies, and population callsets show who has one copy
 and who has two. We put all of that in one JBrowse session beside the residue it
-changes, in a crystal structure of sickle haemoglobin. We:
+changes, in a crystal structure of sickle hemoglobin. We:
 
 - open _HBB_ on codon 7 from the protein browser with structure 2HBS, pin the
   human row of the alignment, and highlight and label the codon
@@ -46,9 +46,9 @@ covers a gene of your own.
 
 | What it is                                                                                                    | File                                                                                                                                                                  |
 | ------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Sickle haemoglobin, deoxy form, PDB 2HBS                                                                      | [2HBS.cif](https://files.rcsb.org/download/2HBS.cif)                                                                                                                  |
+| Sickle hemoglobin, deoxy form, PDB 2HBS                                                                       | [2HBS.cif](https://files.rcsb.org/download/2HBS.cif)                                                                                                                  |
 | The NHGRI-EBI GWAS Catalog, which UCSC distributes as its GWAS Catalog track and the hosted hg38 config loads | [gwas/](https://www.ebi.ac.uk/gwas/)                                                                                                                                  |
-| The 1000 Genomes 30x callset for chr11, 3,202 genomes                                                         | [20220422_3202_phased_SNV_INDEL_SV/](https://ftp.1000genomes.ebi.ac.uk/vol1/ftp/data_collections/1000G_2504_high_coverage/working/20220422_3202_phased_SNV_INDEL_SV/) |
+| The 1000 Genomes 30x callset for chr11                                                                        | [20220422_3202_phased_SNV_INDEL_SV/](https://ftp.1000genomes.ebi.ac.uk/vol1/ftp/data_collections/1000G_2504_high_coverage/working/20220422_3202_phased_SNV_INDEL_SV/) |
 | NCBI's ortholog report, the rows of the alignment                                                             | [rest-api/](https://www.ncbi.nlm.nih.gov/datasets/docs/v2/reference-docs/rest-api/)                                                                                   |
 
 </details>
@@ -56,8 +56,7 @@ covers a gene of your own.
 ## Open HBB on the sickle cell codon
 
 The protein browser opens a gene, a structure and an alignment as one linked
-session ([](/docs/tutorials/genomes_proteins) walks through its page). Open it
-on _HBB_ residue 7 with structure 2HBS:
+session. Open it on _HBB_ residue 7 with structure 2HBS:
 
 - open
   [genomes.jbrowse.org/protein-browser/?gene=HBB&ref=9606&residue=7&structure=2hbs](https://genomes.jbrowse.org/protein-browser/?gene=HBB&ref=9606&residue=7&structure=2hbs)
@@ -66,7 +65,7 @@ on _HBB_ residue 7 with structure 2HBS:
 - type `chr11:5226956-5227046[rev]` into the location box. `[rev]` keeps the
   minus-strand gene reading left to right, the way it opened
 - click **Reset Zoom**, the circular arrow at the top right of the structure, to
-  fit the haemoglobin tetramer
+  fit the hemoglobin tetramer
 - pick **Use as reference row** on the `human_query` tip of the alignment's
   tree: the human sequence pins above the alignment, and a residue matching it
   draws as a dot
@@ -92,7 +91,7 @@ trait:
 - choose **Open track selector** in the genome view's menu, search
   `GWAS Catalog`, and tick it. A variant studied many times draws as a stack
 - click a box to open its record. The records at rs334 include malaria,
-  haemolytic anaemias, glycated haemoglobin (HbA1c) and kidney disease
+  hemolytic anemias, glycated hemoglobin (HbA1c) and kidney disease
 
 A second copy of the catalog track shows rs334's strongest record for each of
 those traits, the one with the smallest p-value, labeled with its trait,
@@ -168,14 +167,7 @@ as one row per genome:
 
 rs334 sits under the highlighted codon. Right-click its column and pick **Sort
 rows by genotype here**, which gathers the genomes with the allele into one
-block, nearly all of them with one copy. Two neighbouring variants sit beside
-it:
-
-- **rs713040**, a synonymous change in the His3 codon four codons upstream, sits
-  to its left on screen as the control, a common variant with one copy in some
-  genomes and two in others
-- **HbC**, rs33930165, a second allele of the same codon, shares the highlighted
-  column
+block.
 
 <Figure src="/img/protein/hbb_1000_genomes.png" caption="1000 Genomes genotypes under HBB, one row per genome, sorted by genotype at rs334." />
 
@@ -200,19 +192,12 @@ domains and sites.
 
 <Figure src="/img/protein/hbb_domains_three_views.png" caption="HBB in three linked views: the genome's GWAS, 1000 Genomes and domain tracks, the alignment's rows and the 2HBS cartoon, colored by the alignment's domains. On the structure a cartoon color marks a domain and side-chain sticks mark a site." />
 
-The figure's callouts cover one view at a time:
+The figure's callouts add two details:
 
-- the GWAS records associate the allele with malaria, haemolytic anaemia and
-  kidney disease. One copy protects against severe malaria, and two copies cause
-  sickle cell disease
-- in the 1000 Genomes track, nearly every genome with the allele has one copy,
-  the protected genotype
 - Glu6 sits on the protein's surface, outside the heme-binding and
   tetramer-interface sites that the alignment and the domain track mark[^domain]
-- on the structure, the hydrophobic valine 6 of the second tetramer's chain H
-  fills a pocket of Phe85 and Leu88 on the first tetramer's chain B.
-  Deoxygenated haemoglobin S stacks into fibres through this contact, and the
-  fibres bend red cells into sickles
+- on the structure, valine 6 of the second tetramer's chain H fills a pocket of
+  Phe85 and Leu88 on the first tetramer's chain B
 
 [^domain]:
     The Hb-beta-like domain, NCBI's cd08925, starts at the transcript's residue

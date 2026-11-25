@@ -79,7 +79,7 @@ label the two hotspots there:
 Click a box in the ClinVar track to open its record, which names the protein
 change, its classification and the conditions submitters reported.
 
-## Color the three views by the conserved sites
+## Color all three views by the alignment's domains and sites
 
 The alignment view fills its rows with NCBI's conserved domains and sites, and
 the genome view and the structure read them from the alignment, the same steps
