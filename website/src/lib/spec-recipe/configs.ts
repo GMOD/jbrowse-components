@@ -141,9 +141,7 @@ export function lookupRawTrack(
   )
 }
 
-// The display config a track carries itself, as config.json would hold it on a
-// copy: without the `displayId`s that name the original, and without a bare
-// `{ type }` entry the track would open as anyway
+// A bare `{ type }` entry the track would open as anyway is no config of its own
 export function ownDisplayConfig(
   { displays = [], displayDefaults }: RawTrack,
   info: TrackInfo | undefined,
@@ -163,8 +161,6 @@ export function ownDisplayConfig(
   }
 }
 
-// The settings a track's own config gives the display it opens as, which a
-// spec's settings on the same track go on top of
 export function ownDisplaySettings(
   track: RawTrack | undefined,
   displayType: string | undefined,
@@ -208,7 +204,6 @@ export function defaultDisplay(track: TrackInfo | undefined, viewType: string) {
   return track ? defaultDisplayIn(displayTable, track, viewType) : undefined
 }
 
-// The display a track declaring `displays` opens as
 export function opensAs(
   info: TrackInfo,
   viewType: string,

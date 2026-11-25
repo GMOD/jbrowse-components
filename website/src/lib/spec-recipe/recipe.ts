@@ -235,17 +235,12 @@ function viewName(type: string | undefined): string {
   return VIEW_NAMES[type] ?? split[0] + split.slice(1).toLowerCase()
 }
 
-// Views a figure's own steps open some other way: the linear view the app
-// starts in, and the ones opened from a feature or a track rather than the Add
-// menu
 const OPENED_ELSEWHERE = new Set([
   'LinearGenomeView',
   'ProteinView',
   'GraphGenomeView',
 ])
 
-// A figure's only view, when it is not the linear view the genome opens in,
-// is opened from the Add menu right after the genome step
 function withOpenViewStep(steps: RecipeStep[], view: SpecView | undefined) {
   const type = view?.type
   const at = view?.assembly ? 1 : 0
@@ -324,7 +319,6 @@ function addTrackTitle(
   }
 }
 
-// A track or adapter type no core plugin registers
 function fromPlugin(info: TrackInfo) {
   return (
     (info.type !== '' && !(info.type in configManifest.tracks)) ||
@@ -526,26 +520,32 @@ function pythonSnippet(configUrl: string, spec: SessionSpec) {
   ].join('\n')
 }
 
-function viewSteps(
-  view: SpecView,
-  config: string,
+interface FigureWalk {
+  config: string
   // tracks the spec declares inline, which is where a figure on a hosted config
   // gets its track types from (see lookupTrack)
-  sessionTracks?: RawTrack[],
-  // set when the view is one row of a comparative view: the import form has
-  // already opened its genome, and the steps left are about that row, so each
-  // says which one it belongs to
-  row?: string,
+  sessionTracks?: RawTrack[]
+  // the genomes an earlier pane opened, which a later pane picks in its own
+  // import form rather than opening again
+  genomes: Set<string>
+  // the last track step said how a track is added, so the next can point back
+  // to it
+  addTrack: boolean
+}
+
+function viewSteps(
+  view: SpecView,
+  walk: FigureWalk,
   // the session holds more than this one view, so a track goes in through the
   // view's own track selector (see OPEN_TRACK)
   viaTrackSelector = false,
   viewType = view.type,
-  // shared by the rows of one view, so only the first says how to add a track
-  told = { addTrack: false },
-  // the genomes an earlier pane opened, which a later pane picks in its own
-  // import form rather than opening again
-  genomes = new Set<string>(),
+  // set when the view is one row of a comparative view: the import form has
+  // already opened its genome, and the steps left are about that row, so each
+  // says which one it belongs to
+  row?: string,
 ): { steps: RecipeStep[]; unmapped: string[] } {
+  const { config, sessionTracks, genomes } = walk
   const steps: RecipeStep[] = []
   const unmapped: string[] = []
   const form = view.type ? IMPORT_FORM_VIEWS[view.type] : undefined
@@ -596,9 +596,9 @@ function viewSteps(
         sessionTracks,
         undefined,
         viaTrackSelector,
-        told.addTrack,
+        walk.addTrack,
       )
-      told.addTrack = ordinary
+      walk.addTrack = ordinary
       steps.push(step)
       unmapped.push(...trackUnmapped)
     }
@@ -616,13 +616,9 @@ function viewSteps(
   if (launched && firstPanel) {
     const first = viewSteps(
       firstPanel,
-      config,
-      sessionTracks,
-      undefined,
+      walk,
       viaTrackSelector,
       firstPanel.type ?? rowViewType(view.type),
-      told,
-      genomes,
     )
     steps.push(...first.steps, {
       title: launched.opener,
@@ -669,13 +665,10 @@ function viewSteps(
     // its own track selector
     const sub = viewSteps(
       subView,
-      config,
-      sessionTracks,
-      label,
+      walk,
       true,
       subView.type ?? rowViewType(view.type),
-      told,
-      genomes,
+      label,
     )
     steps.push(...(label ? groupSteps(label, sub.steps) : sub.steps))
     unmapped.push(...sub.unmapped)
@@ -690,7 +683,6 @@ export interface CliRecipe {
   // the assemblies those tracks name, which the target config has to declare
   // already — add-track only warns about one it cannot find
   assemblies: string[]
-  // the names of the figure's styled tracks these commands leave out
   missing: string[]
 }
 
@@ -771,13 +763,8 @@ export function buildRecipe(
   const collected = views.map(view =>
     viewSteps(
       view,
-      config,
-      sessionTracks,
-      undefined,
+      { config, sessionTracks, genomes, addTrack: false },
       views.length > 1,
-      view.type,
-      undefined,
-      genomes,
     ),
   )
   const rebuilt = rebuildTracks(decoded)

@@ -109,7 +109,6 @@ function assembliesNote(assemblies: string[]): string {
     : ''
 }
 
-// The tab claims the figure's styling only when it rebuilds every styled track
 function cliLead(missing: string[]) {
   const names = missing.map(name => `“${escapeAttr(name)}”`).join(', ')
   return missing.length
