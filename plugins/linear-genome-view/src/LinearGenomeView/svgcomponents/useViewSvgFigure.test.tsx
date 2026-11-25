@@ -349,6 +349,20 @@ test('draws the tracks, the header and the ruler at the reserved size', async ()
   expect(text('size')).toBe(`${width}x${svg.getAttribute('height')}`)
 })
 
+// A breakpoint split export centres the breakpoint in each panel and draws its
+// connection over every row, so a centred span label is struck through.
+test("the scalebar's span label starts at the bar's left end", async () => {
+  const view = makeView([{ trackId: 'first', name: 'first', type: 'SvgTrack' }])
+  const { svg } = await renderFigure(view)
+
+  const label = [...svg().querySelectorAll('text')].find(node =>
+    node.textContent.endsWith('bp'),
+  )!
+  const bar = label.parentElement!.querySelector('line')!
+  expect(label.getAttribute('text-anchor')).toBe('start')
+  expect(label.getAttribute('x')).toBe(bar.getAttribute('x1'))
+})
+
 // A figure's track bodies are frozen at a moment in the past, while SVGView and
 // SVGRowHeader re-derive the ruler, the scalebar and the seams from the live
 // model on any render they get, so a host re-rendering for its own reasons —

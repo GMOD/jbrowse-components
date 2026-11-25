@@ -9,9 +9,11 @@ import type { LgvSvgChromeView } from './util.ts'
 export default function SVGScalebar({
   model,
   fontSize,
+  labelAnchor = 'middle',
 }: {
   model: LgvSvgChromeView
   fontSize: number
+  labelAnchor?: 'middle' | 'start'
 }) {
   const {
     offsetPx,
@@ -42,9 +44,9 @@ export default function SVGScalebar({
         stroke={color}
       />
       <text
-        x={(x0 + x1) / 2}
+        x={labelAnchor === 'start' ? x0 : (x0 + x1) / 2}
         y={labelBaselineFromTop(SVG_SCALEBAR_CAP, fontSize)}
-        textAnchor="middle"
+        textAnchor={labelAnchor}
         fontSize={fontSize}
         fill={color}
       >

@@ -67,7 +67,7 @@ export default function SVGRowHeader({
       ) : null}
       {scalebarLineY === undefined ? null : (
         <g transform={`translate(0 ${scalebarLineY})`}>
-          <SVGScalebar model={view} fontSize={fontSize} />
+          <SVGScalebar model={view} fontSize={fontSize} labelAnchor="start" />
         </g>
       )}
       <SVGRuler model={view} rulerHeight={rulerHeight} />
