@@ -26,7 +26,7 @@ _UGT2B17_, and a deletion on chr3 that has two alleles. We:
   [web quickstart](/docs/quickstart_web) or the
   [desktop quickstart](/docs/quickstart_desktop))
 - the zarr plugin, for [the Zarr store](#a-zarr-store-for-the-whole-panel). In
-  your own JBrowse, load it by the URL that section gives
+  your own JBrowse, load it from the plugin store
 - `node` 24 or newer, to
   [build a Zarr store](#building-a-zarr-store-from-per-sample-bigwigs)
 - QuicK-mer2 and a 30x alignment, to add
@@ -61,9 +61,9 @@ rebuild those results, and
 [Run QuicK-mer2 on your own samples](#your-own-samples) takes a cohort of your
 own.
 
-| What it is                                                           | File                                                                                                   |
-| -------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------ |
-| The sample list across 26 populations, from the lab's UCSC track hub | [kmer-1kg.trackDb.txt](https://raw.githubusercontent.com/KiddLab/kmer_1KG/master/kmer-1kg.trackDb.txt) |
+| What it is                                     | File                                                                                                   |
+| ---------------------------------------------- | ------------------------------------------------------------------------------------------------------ |
+| The sample list, from the lab's UCSC track hub | [kmer-1kg.trackDb.txt](https://raw.githubusercontent.com/KiddLab/kmer_1KG/master/kmer-1kg.trackDb.txt) |
 
 <details>
 <summary>Read by URL (no download needed)</summary>
@@ -90,18 +90,7 @@ The copy-number bins are on GRCh38, so the tracks attach to hg38:
 }
 ```
 
-The figures also show NCBI's RefSeq genes. The locus figures use NCBI's GFF:
-
-```json addtrack
-{
-  "trackId": "ncbi_refseq_109_hg38_latest",
-  "name": "NCBI RefSeq (GFF3Tabix)",
-  "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/GRCh38/ncbi_refseq/GRCh38_latest_genomic.sort.gff.gz",
-  "assemblyNames": ["hg38"]
-}
-```
-
-The whole-panel figure uses UCSC's copy:
+The figures also show NCBI's RefSeq genes:
 
 ```json addtrack
 {
@@ -183,19 +172,14 @@ draws step lines on one pinned axis, so each plateau lines up with a copy count:
 
 <Figure caption="CCL3L1 as six stacked profiles on one shared axis." src="/img/cnv1000g/ccl3l1_ladder.png" />
 
-The variation lies in two paralogous blocks. The right-hand block spans the
-chemokine genes _CCL3L1_ and _CCL4L1_ (labelled _CCL3L3_ and _CCL4L2_ in the
-hg38 gene track) in a variable number of tandem copies, and the left-hand block
-is a _TBC1D3_ repeat.
-
 ## Compare one population against the SV map at UGT2B17
 
 Step lines stop being readable past a handful of individuals, so the next track
-draws each of the 104 PUR individuals as one row of color. _UGT2B17_ on chr4 is
-deleted whole in many people, a simple biallelic deletion that structural
-variant (SV) callers genotype directly, so we set the 1000 Genomes phase 3
-integrated SV map beside the rows. The config lists two of the population's
-bigWigs:
+draws each PUR individual as one row of color. _UGT2B17_ on chr4 is deleted
+whole in many people, a simple biallelic deletion that structural variant (SV)
+callers genotype directly, so we set the 1000 Genomes phase 3 integrated SV map
+beside the rows. The config below lists two of the population's bigWigs; the
+full track is linked after the settings:
 
 ```json addtrack loc=chr4:68,480,000-68,660,000
 {
@@ -289,7 +273,7 @@ With the plugin loaded, the adapter's `uri` names the store:
 {
   "type": "MultiQuantitativeTrack",
   "trackId": "cnv_1000g_zarr",
-  "name": "1000 Genomes copy number, 2504 individuals",
+  "name": "1000 Genomes copy number",
   "assemblyNames": ["hg38"],
   "adapter": {
     "type": "MultiWiggleZarrAdapter",
@@ -316,17 +300,16 @@ beside your `config.json`, the `uri` is `qm2_cn_1kb.zarr`.
 
 ## Sort the panel by which deletion alleles each person carries {#a-deletion-with-two-alleles-on-chr3-sorted-by-clustering}
 
-The Zarr store covers chr3:162.5-163.2 Mb, where one deletion has two alleles:
-114 kb, and 22 kb within the same span. Clustering sorts the individuals by the
-alleles they carry, so people with one of each, who have lost both copies of the
-22 kb stretch and one copy of the rest, group apart. The long-read assembly
-calls of the Human Genome Structural Variation Consortium
+The Zarr store covers chr3:162.5-163.2 Mb, where one deletion has a long and a
+short allele. Clustering the rows groups individuals by the alleles they carry.
+The long-read assembly calls of the Human Genome Structural Variation Consortium
 ([Logsdon et al. 2025](https://doi.org/10.1038/s41586-025-09140-6)) place both
-alleles:
+alleles. We:
 
-- Navigate the Zarr track to `chr3:162,650,000-163,050,000`.
-- Run **Clustering → Cluster rows by score...** from its track menu.
-- Add the HGSVC3 calls as a variant track:
+- navigate the Zarr track to `chr3:162,650,000-163,050,000`
+- run **Clustering → Cluster rows by score...** from its track menu
+
+Then we add the HGSVC3 calls as a variant track:
 
 ```json addtrack loc=chr3:162,650,000-163,050,000
 {
@@ -362,6 +345,7 @@ the decoy and EBV contigs are dropped:
 
 ```bash
 grep -v decoy sample.qm2.CN.1k.bed | grep -v chrEBV >sample.bedgraph
+# GRCh38_BSM.fa: the reference FASTA that the k-mer index was built on
 samtools faidx GRCh38_BSM.fa
 cut -f1,2 GRCh38_BSM.fa.fai >GRCh38_BSM.chrom.sizes
 bedGraphToBigWig sample.bedgraph GRCh38_BSM.chrom.sizes sample.qm2.CN.1k.bw
@@ -432,15 +416,6 @@ node measure_signal_latency.ts --samples samples.tsv \
   --zarr https://example.org/qm2_cn_1kb.zarr
 ```
 
-Over the _CCL3L1_ window against the hosted files, at a median range request of
-25 ms:
-
-| chr17:36,080,000-36,270,000, 2504 samples | 2504 BigWigs | Zarr store |
-| ----------------------------------------- | ------------ | ---------- |
-| requests                                  | 15,048       | 3          |
-| bytes                                     | 48.39 MB     | 0.22 MB    |
-| wall clock                                | 24.5 s       | 0.2 s      |
-
 ## Reproduce it end to end
 
 [`build_1000g_cnv_zarr.sh`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/build_1000g_cnv_zarr.sh)
@@ -480,9 +455,7 @@ bash build_1000g_cnv_zarr.sh --whole-genome # every main contig, 10kb base and f
 ## Citations
 
 - Shen & Kidd (2020).
-  [Rapid, Paralog-Sensitive CNV Analysis of 2457 Human Genomes Using QuicK-mer2](https://doi.org/10.3390/genes11020141),
-  the citation for the copy-number data used throughout this page
+  [Rapid, Paralog-Sensitive CNV Analysis of 2457 Human Genomes Using QuicK-mer2](https://doi.org/10.3390/genes11020141)
 - [1000 Genomes phase 3 integrated SV map](https://doi.org/10.1038/nature15394)
 - Logsdon et al. (2025).
-  [Complex genetic variation in nearly complete human genomes](https://doi.org/10.1038/s41586-025-09140-6),
-  the HGSVC3 structural variant calls in the chr3 deletion figure
+  [Complex genetic variation in nearly complete human genomes](https://doi.org/10.1038/s41586-025-09140-6)
