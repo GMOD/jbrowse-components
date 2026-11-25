@@ -1,5 +1,5 @@
 import { saveAs } from '../util/FileSaver/index.ts'
-import { MAX_SVG_RASTER_AREA_PX } from '../util/createSvgRasterCanvas.ts'
+import { fittedRasterScale } from '../util/createSvgRasterCanvas.ts'
 import {
   CSS_PX_PER_INCH,
   EXPORT_RASTER_DPI,
@@ -20,23 +20,6 @@ export interface SaveSvgAsImageOptions {
 // upscales the 2× rasters (blur), and inflates the canvas toward browser size
 // limits.
 const PNG_SCALE = 2
-
-const MAX_PNG_DIM_PX = 32767
-
-/**
- * Px per CSS px a PNG of a `width`x`height` CSS px figure gets: `wanted`
- * where that fits the browsers' canvas limits, as `createSvgRasterCanvas`
- * fits an export layer, and less where it does not. Below 1 the figure does
- * not fit even at screen resolution.
- */
-export function pngRasterScale(width: number, height: number, wanted: number) {
-  return Math.min(
-    wanted,
-    MAX_PNG_DIM_PX / width,
-    MAX_PNG_DIM_PX / height,
-    Math.sqrt(MAX_SVG_RASTER_AREA_PX / (width * height)),
-  )
-}
 
 // Rasterizes an SVG string to a PNG Blob by routing through a hidden <img>
 // + Canvas2D, at a lower resolution where the one asked for is past the
@@ -65,7 +48,7 @@ export function svgHtmlToPngBlob(
         const canvas = document.createElement('canvas')
         const cssWidth = img.width / wanted
         const cssHeight = img.height / wanted
-        const fitted = pngRasterScale(cssWidth, cssHeight, wanted)
+        const fitted = fittedRasterScale(cssWidth, cssHeight, wanted)
         const w = Math.floor(cssWidth * Math.max(fitted, 1))
         const h = Math.floor(cssHeight * Math.max(fitted, 1))
         // stated once: both the context and the blob give out at this size,

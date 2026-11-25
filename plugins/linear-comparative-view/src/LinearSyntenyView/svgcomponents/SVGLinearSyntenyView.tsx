@@ -125,6 +125,7 @@ export async function renderToSvg(
   const margins = exportMargins(
     rowTracks.flatMap(r => r.tracks.map(track => track.displays[0]!)),
     physicalWidth !== undefined,
+    trackLabelOffset,
   )
 
   // The export is a vertical stack, top to bottom: each genome view, and

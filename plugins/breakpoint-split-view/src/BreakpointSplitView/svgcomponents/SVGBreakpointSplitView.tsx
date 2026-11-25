@@ -122,6 +122,7 @@ export async function renderToSvg(model: BSV, opts: ExportSvgOptions) {
   const margins = exportMargins(
     rowTracks.flatMap(r => r.tracks.map(track => track.displays[0]!)),
     physicalWidth !== undefined,
+    trackLabelOffset,
   )
 
   // stack the views top to bottom: one running top offset positions each group,

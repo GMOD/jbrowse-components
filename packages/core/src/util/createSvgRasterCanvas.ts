@@ -31,6 +31,25 @@ export interface SvgRasterCanvasOpts {
 }
 
 /**
+ * The backing px per CSS px a `width`x`height` raster gets: `wanted` where
+ * that fits under `maxAreaPx` and the per-axis limit, and less where it does
+ * not.
+ */
+export function fittedRasterScale(
+  width: number,
+  height: number,
+  wanted: number,
+  maxAreaPx = MAX_SVG_RASTER_AREA_PX,
+) {
+  return Math.min(
+    wanted,
+    MAX_SVG_RASTER_DIM_PX / width,
+    MAX_SVG_RASTER_DIM_PX / height,
+    Math.sqrt(maxAreaPx / (width * height)),
+  )
+}
+
+/**
  * A canvas for one rasterized export layer of `width`x`height` CSS px, drawn in
  * CSS px. Its backing store is 2× where that fits under `maxAreaPx` and the
  * per-axis limit, and smaller where it does not, so read `canvas.width` for the
@@ -42,11 +61,11 @@ export function createSvgRasterCanvas(
   opts: SvgRasterCanvasOpts | undefined,
   maxAreaPx = MAX_SVG_RASTER_AREA_PX,
 ) {
-  const scale = Math.min(
+  const scale = fittedRasterScale(
+    width,
+    height,
     opts?.rasterScale ?? SVG_RASTER_DPR,
-    MAX_SVG_RASTER_DIM_PX / width,
-    MAX_SVG_RASTER_DIM_PX / height,
-    Math.sqrt(maxAreaPx / (width * height)),
+    maxAreaPx,
   )
   const backingW = Math.max(1, Math.floor(width * scale))
   const backingH = Math.max(1, Math.floor(height * scale))
