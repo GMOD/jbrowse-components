@@ -412,7 +412,7 @@ exports[`every registered schema slot default 1`] = `
     "height": "number = 400",
     "heightMode": "stringEnum = "fixed" of ["fixed","fit"]",
     "labels.name.show": "boolean = false",
-    "legend.show": "boolean = false",
+    "legend.show": "maybeBoolean = undefined",
     "variantLayout": "stringEnum = "columns" of ["genomic","columns"]",
   },
   "display: LGVSyntenyDisplay": {
@@ -623,7 +623,7 @@ exports[`every registered schema slot default 1`] = `
     "encoding.color.scale.type": "maybeStringEnum = undefined of ["linear","symlog","log"]",
     "height": "number = 300",
     "heightMode": "stringEnum = "fixed" of ["fixed","fit"]",
-    "legend.show": "boolean = false",
+    "legend.show": "maybeBoolean = undefined",
   },
   "display: LinearMafDisplay": {
     "alignments.bases.encoding.color.field": "stringEnum = "base" of ["base","codon"]",

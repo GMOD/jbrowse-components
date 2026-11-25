@@ -89,3 +89,14 @@ say it.
 circular view never awaits its assembly and would hang on a failed load. The
 audit read `CircularView.error` as folding assembly errors in now; nobody has
 checked whether the extra `assembly.error` read is still needed.
+
+**`jbrowse-img` could let an alignments track grow to its reads.** A headless
+figure has no scrollbar, so `applyTrackOpts.ts` could default alignments to
+`heightMode: 'grow'`, as it already defaults `sortAt`. The export now ends a
+deep pileup on a whole row and captions the rows it leaves out, which covers
+the reader; this would instead show them.
+
+**The pinned-highlight box does not follow a label the export moved.**
+`featureHighlightInk.ts` builds its label box from `placeFeatureLabels`, so a
+pinned feature whose name the export shifted to end at the right edge is boxed
+at the name's original position.
