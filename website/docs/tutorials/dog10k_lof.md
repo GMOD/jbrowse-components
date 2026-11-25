@@ -26,7 +26,7 @@ _CYP1A2_ on chr30, we:
 
 ## Prerequisites
 
-- the `UU_Cfam_GSD_1.0` dog assembly (UCSC's canFam4) set up in JBrowse. The
+- the `UU_Cfam_GSD_1.0` dog assembly (UCSC's canFam4), loaded below. The
   [canFam4 hub on genomes.jbrowse.org](https://genomes.jbrowse.org/ucsc/canFam4/)
   is a config that loads it with its gene and repeat tracks, and the
   [assemblies guide](/docs/config_guides/assemblies) shows how to build one by
@@ -35,8 +35,7 @@ _CYP1A2_ on chr30, we:
 - `curl`
 - `python3`
 - htslib (`tabix`)
-- `samtools` built with libcurl, for the build script's CRAM cross-check on the
-  copy-number track, which is not a step on this page
+- `samtools` built with libcurl, for the copy-number build script's CRAM reads
 
 <!-- BEGIN GENERATED TUTORIAL_INSTALL samtools,bcftools,htslib -->
 
@@ -60,16 +59,15 @@ directly over HTTP with no local copy of the callset.[^cert]
 
 The tracks below read local files that the
 [build script](#reproduce-it-end-to-end) writes from these, so run it first, or
-run the slicing steps on any tabix-indexed VCF of your own. The script fetches
-everything itself.
+run the slicing steps on any tabix-indexed VCF of your own.
 
 | What it is                                                                          | File                                                                                                                                                            |
 | ----------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| The SNV/indel callset the gene is sliced from, 397 GB over 1,987 canids             | [AutoAndXPAR.SNPs.vqsr99.vcf.gz](https://kiddlabshare.med.umich.edu/dog10K/SNP_and_indel_calls_2021-10-17/AutoAndXPAR.SNPs.vqsr99.vcf.gz)                       |
+| The SNV/indel callset the gene is sliced from, over every sequenced canid           | [AutoAndXPAR.SNPs.vqsr99.vcf.gz](https://kiddlabshare.med.umich.edu/dog10K/SNP_and_indel_calls_2021-10-17/AutoAndXPAR.SNPs.vqsr99.vcf.gz)                       |
 | The sample table, breed and category per animal                                     | [dog10K-alignment-sample-table.2022-02-23-v7.txt](https://kiddlabshare.med.umich.edu/dog10K/sample-information/dog10K-alignment-sample-table.2022-02-23-v7.txt) |
 | The reference sequence the stop codon is derived from, over UCSC's canFam4 REST API | [sequence](https://api.genome.ucsc.edu/getData/sequence?genome=canFam4;chrom=chr30;start=38258000;end=38265000)                                                 |
 | The RefSeq gene structure that same derivation reads exon boundaries from           | [track](https://api.genome.ucsc.edu/getData/track?genome=canFam4;track=ncbiRefSeqCurated;chrom=chr30;start=38258000;end=38265000)                               |
-| The 15 published CRAMs that callset depth is validated against                      | [cram-share/](https://kiddlabshare.med.umich.edu/dog10K/cram-share/)                                                                                            |
+| The published CRAMs that callset depth is validated against                         | [cram-share/](https://kiddlabshare.med.umich.edu/dog10K/cram-share/)                                                                                            |
 
 ## Load the UU_Cfam_GSD_1.0 dog assembly
 
@@ -155,8 +153,7 @@ _CYP1A2_ is a drug-metabolizing cytochrome P450 in which dogs have a nonsense
 variant. The truncating allele acts recessively: liver microsomes from dogs
 homozygous for it have no CYP1A2 protein and those dogs are poor metabolizers of
 drugs the enzyme clears, while heterozygotes express the enzyme normally
-([Mise et al. 2004](https://pubmed.ncbi.nlm.nih.gov/15564884/)). Wolves are the
-control, because an allele they share predates domestication.
+([Mise et al. 2004](https://pubmed.ncbi.nlm.nih.gov/15564884/)).
 
 The variant is p.Arg373Ter. The build script rebuilds _CYP1A2_'s coding sequence
 from the reference and the RefSeq exon structure, translates it, and reports
@@ -177,10 +174,13 @@ callset has a record at exactly that position, passing every filter:
 SNVS=https://kiddlabshare.med.umich.edu/dog10K/SNP_and_indel_calls_2021-10-17/AutoAndXPAR.SNPs.vqsr99.vcf.gz
 bcftools query -r chr30:38261635 -f '%CHROM\t%POS\t%REF\t%ALT\t%FILTER\t%AC\t%AN\n' \
   "$SNVS"
-# chr30  38261635  C  T  PASS  174  3974
 ```
 
-## Slice CYP1A2 out of the Dog10K SNV callset
+```text output
+chr30  38261635  C  T  PASS  174  3974
+```
+
+## Slice the CYP1A2 locus out of the Dog10K SNV callset
 
 The Dog10K SNV callset is a single large VCF over every sequenced canid with a
 tabix index, so `bcftools` fetches one gene over HTTP:
@@ -214,8 +214,8 @@ An SNV VCF loads as an ordinary `VariantTrack`:
 ```
 
 The display draws one row per sample, labelled with the Dog10K IDs. In
-[grammar-of-graphics](/docs/config_guides/mark_display) terms, the figure's
-`rows` orders the rows through `sort`, names them through `labels`
+[grammar-of-graphics](/docs/config_guides/mark_display) terms, `rows` orders the
+rows through `sort`, names them through `labels`
 (`{ "GHND000001": "German Hound 1" }`), and tints each row's label bar through
 `colors`.
 
@@ -228,8 +228,9 @@ sample's call is a block, and the gene track shows which exon it sits in.
 
 ## Filter the track to the stop site
 
-Other variants lie near the stop site, and the config below filters them out so
-the stop site is the one column drawn. Dropping the filter shows them.
+Other variants lie near the stop site, and the config below, which replaces the
+track above, filters them out so the stop site is the one column drawn. Dropping
+the filter shows them.
 
 ```json addtrack
 {
@@ -239,12 +240,9 @@ the stop site is the one column drawn. Dropping the filter shows them.
   "uri": "dog10k_cyp1a2_snvs.vcf.gz",
   "csi": true,
   "assemblyNames": ["UU_Cfam_GSD_1.0"],
-  "displays": [
-    {
-      "type": "LinearVariantDisplay",
-      "filter": ["jexl:feature.start == 38261634"]
-    }
-  ]
+  "displayDefaults": {
+    "filter": ["jexl:feature.start == 38261634"]
+  }
 }
 ```
 
@@ -253,9 +251,8 @@ the filtered track:
 
 <Figure caption="The CYP1A2 stop-gained variant at base level: the sequence and its translation, the site as a variant track, then one row per dog." src="/img/dog10k-cyp1a2-nonsense.png" />
 
-Every wolf and every coyote in the collection is homozygous reference at the
-site. The build script genotypes the stop site over every canid in the callset
-and prints the breeds that have the allele.
+The build script genotypes the stop site over every canid in the callset and
+prints the breeds that have the allele.
 
 ## Cluster per-animal copy number at CYP1A2 {#copy-number-at-cyp1a2}
 
@@ -338,15 +335,14 @@ tabix -C -p bed dog10k_cyp1a2_cohort_cn.bed.gz
 ```
 
 The callset holds depth only at sites where a variant was called, so the build
-script checks it against the 15 CRAMs the Dog10K share publishes. The CRAM-based
-painting is in the config as `dog10k_cyp1a2_cn`.
+script checks it against the CRAMs the Dog10K share publishes.
 
 The output is a BED with the color in `itemRgb` and the rounded call in
 `copyNumber`. The `identity` color scale uses the file's own colors, and its
 `scale.names` pair each color with a copy number so the key reads as copy
-number. The figure shows one key, from the named-animals track above this one
-(described below), so this track sets `legend.show` to `false`. Drop that line
-to get a key on this track:
+number. The figure shows one key, from the named-animals track above this one,
+so this track sets `legend.show` to `false`. Drop that line to get a key on this
+track:
 
 ```json addtrack
 {
@@ -416,27 +412,14 @@ copy-number tracks:
 <Figure caption="Copy number over CYP1A2, named animals above and the whole collection below." src="/img/dog10k-cyp1a2-cohort-copy-number.png" />
 
 The upper track holds every Golden Retriever, Labrador Retriever and Boxer in
-the collection, plus the wolves from the genotype figure. Every Golden has the
-expansion, every Boxer has two copies, and the Labradors split one dog to the
-next.
-
-The wolves, the control, all have the expansion, so unlike the stop-gained
-allele it is shared with wild canids and predates domestication. Their calls
-rest on callset depth alone, since none of the dogs with published reads is a
-wolf.
+the collection, plus the wolves from the genotype figure. The wolves' calls rest
+on callset depth alone, since none of the dogs with published reads is a wolf.
 
 The white stripes through both tracks are windows with no call. A window whose
 median across the whole collection is not two copies has a depth set by a quirk
 of the reference, so the build script drops it from every row.[^cpg]
 
-The lower track repeats the estimate for every canid. Clustering groups animals
-whose expansion starts and ends in the same place, and the blocks on either side
-of the gene are deletion polymorphisms.
-
-By the depth-based estimate, far more of the collection has three or more copies
-than the paper reports. The two counts cover different intervals: the paper ran
-QuicK-mer2 over an element whose extent is unpublished, and the build script
-counts the windows whose depth-based estimate is above two copies.
+The lower track repeats the estimate for every canid.
 
 ## Reproduce it end to end
 
