@@ -19,8 +19,8 @@ it. We:
 
 - load the graph as a graph track, and open a whole chromosome with small
   variants folded
-- at _HSPA1A_, load the deconstructed callset as a variant track with one row
-  per assembly, over the graph track
+- load the deconstructed callset as a variant track with one row per assembly,
+  over the graph track, at _HSPA1A_
 - add OMIA's curated variants as a track, and open the Celtic polled allele at
   the POLLED locus
 - open a repeat upstream of _KIT_ and a deletion of _TAS2R46_ in the callset and
@@ -45,13 +45,13 @@ The graph view is a beta plugin. We welcome your [feedback](/contact).
   [install it from the plugin store](/docs/user_guides/plugin_store); the
   [portal page](https://genomes.jbrowse.org/pangenomes/bovine) already loads it
 - `python3` and htslib (`bgzip`, `tabix`), to build the
-  [OMIA track](#open-the-celtic-polled-allele-at-polled)
+  [OMIA track](#add-omias-cattle-variants-and-open-the-polled-locus)
 - [`vg`](https://github.com/vgteam/vg), to
   [deconstruct](#load-the-callset-under-the-graph-at-hspa1a) the graph into a
   callset
 - [`gfatools`](https://github.com/lh3/gfatools) and
   [`gfa-to-tabix`](https://github.com/GMOD/gfa-to-tabix) 5.0.0 or later, to
-  [index the graph](#build-the-bovine-graph-files)
+  [index the graph](#build-the-bovine-graph)
 
 <!-- BEGIN GENERATED TUTORIAL_INSTALL htslib,vg,gfatools,gfa-to-tabix -->
 
@@ -68,13 +68,14 @@ cargo install gfa-to-tabix
 
 ## The data
 
-The graph and callset tracks read the hosted files by URL, and the OMIA track
-reads a file you build from OMIA's dump with
-[the script under the Celtic polled allele](#open-the-celtic-polled-allele-at-polled).
+The graph and callset tracks read the hosted files by URL. The OMIA track reads
+a file you build from OMIA's dump with
+[the script under the polled locus](#add-omias-cattle-variants-and-open-the-polled-locus).
 
-| What it is                                                    | File                                               |
-| ------------------------------------------------------------- | -------------------------------------------------- |
-| OMIA's database dump, the source of the curated variant track | [omia.sql.gz](https://omia.org/static/omia.sql.gz) |
+| What it is                                                    | File                                                     |
+| ------------------------------------------------------------- | -------------------------------------------------------- |
+| OMIA's database dump, the source of the curated variant track | [omia.sql.gz](https://omia.org/static/omia.sql.gz)       |
+| The published graphs the build starts from, 12 GB             | [Zenodo 7737904](https://doi.org/10.5281/zenodo.7737904) |
 
 <details>
 <summary>Read by URL (no download needed)</summary>
@@ -93,8 +94,8 @@ reads a file you build from OMIA's dump with
 
 We'll load the reference the graph is anchored to, then the graph track. Swap
 the prefix in `uri` for the one your
-[indexing commands](#build-the-bovine-graph-files) wrote, which name the
-tabix-indexed segments and links and the overview.
+[indexing commands](#build-the-bovine-graph) wrote, which name the tabix-indexed
+segments and links and the overview.
 
 ```json addassembly genome=bosTau9
 {
@@ -171,17 +172,15 @@ chromosome, the graph track reads its coarse tier, in which every variant under
 narrower than 10 pixels, which at this zoom leaves chr23 as one line with its
 genes. The curve of segments per bubble marks where the assemblies differ most.
 
-<Figure caption="Chromosome 23 with RefSeq genes, segments per bubble as a curve, and the graph track, which at this zoom folds variants under 483 kb into the reference." src="/img/pangenome/bovine_whole_chromosome.png" />
+<Figure caption="Chromosome 23 with RefSeq genes, segments per bubble as a curve, and the graph track." src="/img/pangenome/bovine_whole_chromosome.png" />
 
 ## Load the callset under the graph at HSPA1A
 
 ARS-UCD1.2 lacks an 11 kb segment beside the heat shock gene _HSPA1A_, which
-contains _HSPA1B_, its near-identical copy. Leonard et al. (2022) recovered it
-in every assembly of their earlier pangenome, which had no yak. In this graph's
-callset, every assembly but yak has it, and the **graph** track draws the
-segment as a loop off the reference.
+contains _HSPA1B_, its near-identical copy. The graph track draws the segment as
+a loop off the reference.
 
-The **callset** has a genotype for each assembly but the reference. We ran
+The callset has a genotype for each assembly but the reference. We ran
 `vg deconstruct` once per chromosome over the same graph:
 
 <!-- from: scripts/build_bovine_pangenome.sh -->
@@ -201,8 +200,7 @@ vg deconstruct -p chr1 -a -t 8 chr1.vg > chr1.vcf
 `vg deconstruct` reads each assembly's path from a P line, which these published
 graphs hold. A minigraph rGFA has no P lines, so for one of your own,
 `minigraph --call` maps each assembly back through the graph and writes its
-allele at every bubble, as in
-[the rice tutorial's callset section](/docs/tutorials/pangenome_rice#make-the-callset).
+allele at every bubble.
 
 The VCF's CHROM column is the `-p` path name, which has to equal the assembly's
 refName. Its sample names are the three-letter codes on each assembly's path,
@@ -215,7 +213,8 @@ ANG	Angus	taurine
 BIS	Bison	bison
 ```
 
-The track config:
+The display config below gives each assembly a row, a color, a label and its
+breed order:
 
 - `rows.field: "haplotype"` draws one row per assembly, each alternate allele in
   a color by its frequency: blue for the commonest, then red, then dark green
@@ -242,52 +241,49 @@ The track config:
       "uri": "https://jbrowse.org/demos/bovine_pangenome/bovine-arsucd12-minigraph.samples.tsv"
     }
   },
-  "displays": [
-    {
-      "type": "LinearVariantDisplay",
-      "rows": {
-        "field": "haplotype",
-        "sort": [
-          "ANG",
-          "BSW",
-          "HIG",
-          "OBV",
-          "PIE",
-          "SIM",
-          "BRA",
-          "NEL",
-          "GAU",
-          "BIS",
-          "YAK"
-        ],
-        "labels": {
-          "ANG": "Angus",
-          "BSW": "Brown Swiss",
-          "HIG": "Highland",
-          "OBV": "Original Braunvieh",
-          "PIE": "Piedmontese",
-          "SIM": "Simmental",
-          "BRA": "Brahman",
-          "NEL": "Nellore",
-          "GAU": "Gaur",
-          "BIS": "Bison",
-          "YAK": "Yak"
-        },
-        "color": {
-          "field": "lineage",
-          "scale": {
-            "domain": ["taurine", "indicine", "gaur", "bison", "yak"],
-            "range": ["#0072B2", "#E69F00", "#009E73", "#CC79A7", "#D55E00"]
-          }
-        }
+  "displayDefaults": {
+    "rows": {
+      "field": "haplotype",
+      "sort": [
+        "ANG",
+        "BSW",
+        "HIG",
+        "OBV",
+        "PIE",
+        "SIM",
+        "BRA",
+        "NEL",
+        "GAU",
+        "BIS",
+        "YAK"
+      ],
+      "labels": {
+        "ANG": "Angus",
+        "BSW": "Brown Swiss",
+        "HIG": "Highland",
+        "OBV": "Original Braunvieh",
+        "PIE": "Piedmontese",
+        "SIM": "Simmental",
+        "BRA": "Brahman",
+        "NEL": "Nellore",
+        "GAU": "Gaur",
+        "BIS": "Bison",
+        "YAK": "Yak"
       },
-      "records": {
-        "labels": {
-          "name": { "show": false }
+      "color": {
+        "field": "lineage",
+        "scale": {
+          "domain": ["taurine", "indicine", "gaur", "bison", "yak"],
+          "range": ["#0072B2", "#E69F00", "#009E73", "#CC79A7", "#D55E00"]
         }
       }
+    },
+    "records": {
+      "labels": {
+        "name": { "show": false }
+      }
     }
-  ]
+  }
 }
 ```
 
@@ -305,12 +301,11 @@ Type `chr23:27,508,000-27,536,000` to draw the graph around _HSPA1A_. Then:
 Each locus below is a structural variant a paper reported in one of these breeds
 or species. The rows of assemblies without it are the control.
 
-### Open the Celtic polled allele at POLLED
+### Add OMIA's cattle variants and open the polled locus
 
-Angus cattle are born without horns. Medugorac et al. (2012) traced the Celtic
-form of polledness to a 202 bp duplication and insertion on chromosome 1, which
-OMIA, the Online Mendelian Inheritance in Animals database, curates as OMIA
-000483-9913.[^friesian]
+Medugorac et al. (2012) traced the Celtic form of polledness to a 202 bp
+duplication and insertion on chromosome 1, which OMIA, the Online Mendelian
+Inheritance in Animals database, curates as OMIA 000483-9913.[^friesian]
 
 To add OMIA to your own JBrowse,
 [`build_omia_cattle_variants.sh`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/build_omia_cattle_variants.sh)
@@ -341,9 +336,7 @@ Add the records as a track:
 }
 ```
 
-Then open `chr1:2,428,800-2,429,800`. The figure shades
-`chr1:2,429,109-2,429,320`, the stretch OMIA records as duplicated by the
-allele.
+Then open `chr1:2,428,800-2,429,800`.
 
 <Figure caption="The POLLED locus with OMIA's record of the Celtic polled allele above the callset, in which Angus alone has the 202 bp insertion." src="/img/pangenome/bovine_polled.png" />
 
@@ -356,11 +349,6 @@ reference holds one collapsed copy. Open `chr6:70,080,000-70,180,000`.
 
 <Figure caption="Upstream of KIT with the callset and the graph track, which draws the deletion as a dashed arc." src="/img/pangenome/bovine_kit.png" />
 
-Every other assembly has the record's deletion, in blue. Simmental's row is red
-for the record's second allele, which the key names with its length, 16,923 bp
-longer than the Hereford reference's, so Simmental has more copies of the repeat
-than the reference.
-
 ### Open the TAS2R46 deletion in gaur
 
 _TAS2R46_ encodes a bitter taste receptor. Leonard et al. (2022) found a 17 kb
@@ -368,15 +356,12 @@ deletion in gaur that removes it. Open `chr5:98,575,000-98,615,000`.
 
 <Figure caption="TAS2R46 with the callset and the graph track, which draws the deletion as a dashed arc." src="/img/pangenome/bovine_tas2r46.png" />
 
-Angus, Piedmontese, Brahman and Nellore, two taurine and two indicine breeds,
-have an allele slightly longer than the reference's, in blue. The gaur's allele,
-in red, lacks the span.
+## Build the bovine graph
 
-## Build the bovine graph files
-
-The archive holds one [minigraph](https://github.com/lh3/minigraph) graph (Li et
-al. 2020) per autosome. Before indexing, the build script joins them and
-recovers their rGFA tags:
+The Zenodo archive (Leonard et al. 2023) holds one
+[minigraph](https://github.com/lh3/minigraph) graph (Li et al. 2020) per
+autosome. Before indexing, the build script joins them and recovers their rGFA
+tags:
 
 - **Joining the autosomes**: each graph numbers its segments from 1, so the
   script renumbers and concatenates them.
@@ -388,8 +373,6 @@ recovers their rGFA tags:
 The commands below write the segment and link index and the coarse tier, in the
 contig layout, and the bubbles. The graph track's `uri` is the prefix the first
 command writes.
-[The graph-hosting tutorial](/docs/tutorials/pangenome_prepare_graph#rgfa-contig-layout)
-lists how these files differ from the ones `gfa-to-tabix build` writes.
 
 <!-- from: scripts/build_bovine_pangenome.sh -->
 
@@ -437,6 +420,7 @@ hosted files lists the source and every modification.
 ## See also
 
 - [](/docs/tutorials/pangenome_mouse)
+- [](/docs/tutorials/pangenome_rice)
 - [](/docs/tutorials/pangenome_hprc)
 - [](/docs/tutorials/pangenome_prepare_graph)
 
@@ -445,7 +429,8 @@ hosted files lists the source and every modification.
 - Leonard et al. (2022).
   [Structural variant-based pangenome construction has low sensitivity to variability of haplotype-resolved bovine assemblies](https://doi.org/10.1038/s41467-022-30680-2)
 - Leonard et al. (2023).
-  [Graph construction method impacts variation representation and analyses in a bovine super-pangenome](https://doi.org/10.1186/s13059-023-02969-y)
+  [Graph construction method impacts variation representation and analyses in a bovine super-pangenome](https://doi.org/10.1186/s13059-023-02969-y),
+  with its graphs on [Zenodo](https://doi.org/10.5281/zenodo.7737904)
 - Li et al. (2020).
   [The design and construction of reference pangenome graphs with minigraph](https://doi.org/10.1186/s13059-020-02168-z)
 - Medugorac et al. (2012).
