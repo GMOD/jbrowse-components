@@ -1,5 +1,6 @@
 import { agentBrief } from './agent.ts'
 import { OWN_FILE, configTracks } from './configTracks.ts'
+import { buildRecipe } from './recipe.ts'
 
 import type { SessionSpec } from './decode.ts'
 
@@ -59,6 +60,66 @@ test('a display the track would not open as by default is declared', () => {
   expect(track?.displays).toEqual([
     { type: 'LinearMultiRowFeatureDisplay', height: 250 },
   ])
+})
+
+const chromhmm = {
+  base,
+  config: 'test_data/config_demo.json',
+  spec: {
+    views: [
+      {
+        type: 'LinearGenomeView',
+        assembly: 'hg19',
+        tracks: ['broad_chromhmm_multirow_hg19'],
+      },
+    ],
+  },
+}
+
+test("a config track's own displays carry over, without their displayId, though the spec sets nothing", () => {
+  const [track] = configTracks(chromhmm)
+  expect(track?.adapter).toEqual({ type: 'BigBedAdapter', uri: OWN_FILE })
+  expect(track?.displays).toEqual([
+    expect.objectContaining({
+      type: 'LinearMultiRowFeatureDisplay',
+      rows: expect.objectContaining({ field: 'cellType' }),
+    }),
+  ])
+  expect(track?.displays?.[0]).not.toHaveProperty('displayId')
+})
+
+test("the spec's settings go over a config track's own display", () => {
+  const [track] = configTracks({
+    ...chromhmm,
+    spec: {
+      views: [
+        {
+          type: 'LinearGenomeView',
+          assembly: 'hg19',
+          tracks: [{ trackId: 'broad_chromhmm_multirow_hg19', height: 240 }],
+        },
+      ],
+    },
+  })
+  expect(track?.displays).toEqual([
+    expect.objectContaining({
+      type: 'LinearMultiRowFeatureDisplay',
+      rows: expect.objectContaining({ field: 'cellType' }),
+      height: 240,
+    }),
+  ])
+})
+
+test("the steps walk a config track's own display settings", () => {
+  const recipe = buildRecipe(
+    `${base}?config=${chromhmm.config}&session=spec-${encodeURIComponent(JSON.stringify(chromhmm.spec))}`,
+  )
+  const track = recipe?.steps[1]
+  expect(track?.substeps?.map(step => step.title)).toContain(
+    'Track menu → One row per → Attribute...',
+  )
+  expect(track?.note).toContain('`encoding.color`')
+  expect(recipe?.unmapped).toEqual([])
 })
 
 test("a session track keeps its own config and takes the spec's settings", () => {

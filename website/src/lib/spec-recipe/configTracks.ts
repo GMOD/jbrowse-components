@@ -2,7 +2,9 @@ import { configManifest } from '../../../../products/jbrowse-cli/src/commands/va
 import {
   canonicalDisplayType,
   defaultDisplay,
+  lookupRawTrack,
   lookupTrack,
+  ownDisplayConfig,
   viewTrackEntries,
 } from './configs.ts'
 import { specDisplayType } from './decode.ts'
@@ -92,44 +94,46 @@ function viewAssemblies(views: SpecView[] = []): string[] {
 
 // The figure's tracks as a config.json would hold them, each carrying the
 // display settings that make the figure: its session tracks, and every config
-// track the spec sets slots on, as a template whose `uri` the reader fills in.
+// track that has display config of its own or that the spec sets slots on, as
+// a template whose `uri` the reader fills in.
 export function configTracks({ config, spec }: DecodedSpec): RawTrack[] {
   const sessionTracks = (spec.sessionTracks ?? []) as RawTrack[]
   const tracks = new Map(sessionTracks.map(track => [track.trackId, track]))
   const assemblies = [...new Set(viewAssemblies(spec.views))]
   for (const { entry, viewType } of viewTrackEntries(spec.views)) {
-    const info =
-      typeof entry === 'string' || !viewType
-        ? undefined
-        : lookupTrack(config, entry.trackId, sessionTracks)
+    const trackId = typeof entry === 'string' ? entry : entry.trackId
+    const info = lookupTrack(config, trackId, sessionTracks)
     const display =
-      info && typeof entry !== 'string'
-        ? canonicalDisplayType(specDisplayType(entry)) ??
-          defaultDisplay(info, viewType!)
+      info && viewType
+        ? (canonicalDisplayType(specDisplayType(entry)) ??
+          defaultDisplay(info, viewType))
         : undefined
     const settings =
       display && typeof entry !== 'string' ? slotSettings(entry, display) : {}
-    if (!info || !display || Object.keys(settings).length === 0) {
-      continue
-    }
+    const raw = lookupRawTrack(config, trackId)
+    const own = raw ? ownDisplayConfig(raw) : {}
     const assemblyNames =
-      info.assemblyNames ?? (assemblies.length === 1 ? assemblies : undefined)
-    const adapter = ownAdapter(info)
+      info?.assemblyNames ?? (assemblies.length === 1 ? assemblies : undefined)
+    const adapter = info ? ownAdapter(info) : undefined
     const base: RawTrack | undefined =
-      tracks.get(info.trackId) ??
-      (assemblyNames && adapter
+      tracks.get(trackId) ??
+      (info && assemblyNames && adapter
         ? {
             type: info.type,
-            trackId: info.trackId,
+            trackId,
             name: info.name,
             assemblyNames,
             adapter,
+            ...own,
           }
         : undefined)
     const styled =
-      base && withSettings(base, info, viewType!, display, settings)
-    if (styled) {
-      tracks.set(info.trackId, styled)
+      base && info && viewType && display && Object.keys(settings).length
+        ? withSettings(base, info, viewType, display, settings)
+        : undefined
+    const kept = styled ?? (Object.keys(own).length ? base : undefined)
+    if (kept) {
+      tracks.set(trackId, kept)
     }
   }
   return [...tracks.values()]

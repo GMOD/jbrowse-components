@@ -3,7 +3,9 @@ import {
   defaultDisplay,
   fileKind,
   lookupAssembly,
+  lookupRawTrack,
   lookupTrack,
+  ownDisplaySettings,
   rowViewType,
 } from './configs.ts'
 import { takeArrangement } from './arrangements.ts'
@@ -16,6 +18,7 @@ import { figureFrames, videoFrames } from '../liveLinks.generated.ts'
 import type { RawTrack, TrackInfo  } from './configs.ts'
 import {
   decodeSpecUrl,
+  flatSettings,
   openedTrackIds,
   specDisplayType,
   specTrackId,
@@ -269,20 +272,38 @@ function trackStep(
     noun: trackNoun(info?.type, displayType),
     displayType,
   }
-  // An arrangement first, and the per-field walk over what it did not claim:
-  // the settings one menu row writes together are one step, not one step each.
-  const arrangement = takeArrangement(specTrackSettings(entry), displayType)
-  const { steps: settings, unmapped } = fieldSteps(
-    arrangement.rest,
-    trackFields,
-    context,
+  // The track's own display config first, the spec's settings over it. Then
+  // an arrangement, and the per-field walk over what it did not claim: the
+  // settings one menu row writes together are one step, not one step each.
+  // A setting only the config holds and no step covers is named on the track,
+  // since the session spec the figure's gaps point to does not carry it.
+  const own = flatSettings(
+    ownDisplaySettings(
+      lookupRawTrack(config, trackId, sessionTracks),
+      displayType,
+    ),
   )
+  const spec = specTrackSettings(entry)
+  const arrangement = takeArrangement(
+    [...new Map([...own, ...spec])],
+    displayType,
+  )
+  const walked = fieldSteps(arrangement.rest, trackFields, context)
+  const settings = walked.steps
   if (arrangement.step) {
     settings.unshift({ title: arrangement.step.path })
   }
+  const fromSpec = new Set(spec.map(([field]) => field))
+  const unmapped = walked.unmapped.filter(field => fromSpec.has(field))
+  const ownUnmapped = walked.unmapped.filter(field => !fromSpec.has(field))
   const name = info ? `“${info.name}”` : `the “${trackId}” track`
   return {
     title: addTrackTitle(info, kind, band, viaTrackSelector, repeat),
+    ...(ownUnmapped.length
+      ? {
+          note: `The track's config also sets ${ownUnmapped.map(field => `\`${field}\``).join(', ')}, which no menu step covers yet.`,
+        }
+      : {}),
     example:
       info?.type === 'ReferenceSequenceTrack'
         ? undefined

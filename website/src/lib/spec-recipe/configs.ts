@@ -128,16 +128,58 @@ function shorthandTypes(track: RawTrack) {
   }
 }
 
+export function lookupRawTrack(
+  config: string,
+  trackId: string,
+  sessionTracks?: RawTrack[],
+) {
+  const raw = readConfig(config)
+  return (
+    sessionTracks?.find(t => t.trackId === trackId) ??
+    raw?.tracks?.find(t => t.trackId === trackId) ??
+    sequenceTrack(raw?.assemblies, trackId)
+  )
+}
+
+// The display config a track carries itself, as config.json would hold it on a
+// copy: its `displays` and `displayDefaults`, without the `displayId`s that
+// name the original
+export function ownDisplayConfig({ displays, displayDefaults }: RawTrack) {
+  return {
+    ...(displays?.length
+      ? { displays: displays.map(({ displayId, ...display }) => display) }
+      : {}),
+    ...(displayDefaults && Object.keys(displayDefaults).length
+      ? { displayDefaults }
+      : {}),
+  }
+}
+
+// The settings a track's own config gives the display it opens as, which a
+// spec's settings on the same track go on top of
+export function ownDisplaySettings(
+  track: RawTrack | undefined,
+  displayType: string | undefined,
+) {
+  const canonical = canonicalDisplayType(displayType)
+  const declared = canonical
+    ? track?.displays?.find(
+        display => canonicalDisplayType(display.type) === canonical,
+      )
+    : undefined
+  const { type, displayId, ...settings } = {
+    ...track?.displayDefaults,
+    ...declared,
+  }
+  return settings
+}
+
 export function lookupTrack(
   config: string,
   trackId: string,
   sessionTracks?: RawTrack[],
 ): TrackInfo | undefined {
-  const raw = readConfig(config)
-  const track =
-    sessionTracks?.find(t => t.trackId === trackId) ??
-    raw?.tracks?.find(t => t.trackId === trackId) ??
-    sequenceTrack(raw?.assemblies, trackId)
+  const track = lookupRawTrack(config, trackId, sessionTracks)
   const shorthand = track ? shorthandTypes(track) : undefined
   return track
     ? {
