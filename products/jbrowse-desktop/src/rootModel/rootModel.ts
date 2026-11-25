@@ -34,15 +34,17 @@ import {
 } from '@jbrowse/product-core'
 import AppsIcon from '@mui/icons-material/Apps'
 import DescriptionIcon from '@mui/icons-material/Description'
-import OpenIcon from '@mui/icons-material/FolderOpen'
-import LinkIcon from '@mui/icons-material/Link'
-import MeetingRoomIcon from '@mui/icons-material/MeetingRoom'
 import PublicIcon from '@mui/icons-material/Public'
 import SaveAsIcon from '@mui/icons-material/SaveAs'
 import { autorun } from 'mobx'
 
 import packageJSON from '../../package.json' with { type: 'json' }
-import { desktopHelpMenuItems } from '../desktopHelpMenuItems.ts'
+import {
+  desktopHelpMenuItems,
+  exitMenuItem,
+  openConfigFileMenuItem,
+  openLinkMenuItem,
+} from '../desktopMenuItems.ts'
 import jobsModelFactory from '../indexJobsModel.ts'
 import { invokeIpc } from '../ipc.ts'
 import JBrowseDesktop from '../jbrowseModel.ts'
@@ -389,42 +391,29 @@ export default function rootModelFactory({
                     label: 'Session',
                     icon: DescriptionIcon,
                     subMenu: [
-                      {
-                        label: 'Open config.json or .jbrowse file...',
-                        icon: OpenIcon,
-                        onClick: async () => {
-                          try {
-                            const path = await invokeIpc('promptOpenFile')
-                            if (path) {
-                              // the swap flushes when it installs the
-                              // replacement, covering edits made during the
-                              // load (useSessionSwap)
-                              await self.openNewSessionCallback(path)
-                            }
-                          } catch (e) {
-                            reportError(self.session, e)
-                          }
+                      // the swap flushes when it installs the replacement,
+                      // covering edits made during the load (useSessionSwap)
+                      openConfigFileMenuItem(
+                        path => self.openNewSessionCallback(path),
+                        e => {
+                          reportError(self.session, e)
                         },
-                      },
+                      ),
                       // the dialog reports its own errors inline
-                      {
-                        label: 'Open JBrowse Web link...',
-                        icon: LinkIcon,
-                        onClick: () => {
-                          queueSessionDialog(
-                            self.session,
-                            (_session, handleClose) => [
-                              OpenLinkDialog,
-                              {
-                                onSubmit: async (link: string) => {
-                                  await self.openLinkCallback(link)
-                                },
-                                onClose: handleClose,
+                      openLinkMenuItem(() => {
+                        queueSessionDialog(
+                          self.session,
+                          (_session, handleClose) => [
+                            OpenLinkDialog,
+                            {
+                              onSubmit: async (link: string) => {
+                                await self.openLinkCallback(link)
                               },
-                            ],
-                          )
-                        },
-                      },
+                              onClose: handleClose,
+                            },
+                          ],
+                        )
+                      }),
                       {
                         label: 'Save session as...',
                         icon: SaveAsIcon,
@@ -486,14 +475,9 @@ export default function rootModelFactory({
                       self.returnToStartScreenCallback()
                     },
                   },
-                  {
-                    label: 'Exit',
-                    icon: MeetingRoomIcon,
-                    // the close guard flushes the session on the way out
-                    onClick: async () => {
-                      await invokeIpc('quit')
-                    },
-                  },
+                  exitMenuItem(e => {
+                    reportError(self.session, e)
+                  }),
                 ],
               },
               {

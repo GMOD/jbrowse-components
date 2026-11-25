@@ -137,7 +137,9 @@ function createMenu(autoUpdater: Updater, connectAgent: () => void) {
           label: 'Report an issue',
           click: () => {
             shell
-              .openExternal('https://github.com/GMOD/jbrowse-components/issues')
+              .openExternal(
+                'https://github.com/GMOD/jbrowse-components/issues/new/choose',
+              )
               .catch(logError)
           },
         },

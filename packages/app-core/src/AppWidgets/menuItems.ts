@@ -19,8 +19,8 @@ import type {
   SessionWithWidgets,
 } from '@jbrowse/core/util'
 
-// the renderer binds the active session into each onClick (see AppToolbar's
-// wrapMenuItems), so these handlers receive it as their argument
+// the renderer binds the active session into each onClick (AppToolbar's
+// onMenuItemClick), so these handlers receive it as their argument
 
 export function aboutMenuItem(): MenuItem {
   return {

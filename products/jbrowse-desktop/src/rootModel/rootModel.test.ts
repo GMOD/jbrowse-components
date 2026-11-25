@@ -202,6 +202,29 @@ test('Help holds the app items, then two the main process acts on', () => {
   }
 })
 
+test('an Exit the main process refuses is reported on the session', async () => {
+  const root = createRootModel()
+  mockInvokeIpc.mockImplementation(async (...args) => {
+    if (args[0] === 'quit') {
+      throw new Error('quit refused')
+    }
+    return undefined
+  })
+  const exit = root
+    .menus()
+    .find(m => m.label === 'File')!
+    .menuItems()
+    .find(m => 'label' in m && m.label === 'Exit')
+  if (!exit || !('onClick' in exit)) {
+    throw new Error('no clickable Exit item')
+  }
+
+  exit.onClick()
+  await jest.advanceTimersByTimeAsync(0)
+
+  expect(root.session!.snackbarMessages.length).toBe(1)
+})
+
 test('nothing is written for a session with no path to write to', async () => {
   const root = createRootModel()
   root.setSessionPath('')

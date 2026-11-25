@@ -14,8 +14,8 @@ import type {
 
 const PreferencesDialog = lazy(() => import('../ui/PreferencesDialog.tsx'))
 
-// the renderer binds the active session into each onClick (see AppToolbar's
-// wrapMenuItems), so these handlers receive it as their argument
+// the renderer binds the active session into each onClick (AppToolbar's
+// onMenuItemClick), so these handlers receive it as their argument
 
 const MULTI_VIEW_WARNING =
   'This will add a track to the first view. Note: if you want to open a track in a specific view open the track selector for that view and use the add track (plus icon) in the bottom right'

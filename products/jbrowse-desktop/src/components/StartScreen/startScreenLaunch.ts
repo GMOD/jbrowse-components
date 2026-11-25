@@ -7,8 +7,14 @@ import { fetchConfig, launchSnapshot } from './util.tsx'
 
 import type { JBrowseConfigInput } from './types.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
+import type { FileLocation } from '@jbrowse/core/util/types'
 
-export type StartScreenDialog = 'openGenome' | 'hostedGenomes' | 'openLink'
+export type StartScreenDialog =
+  | { type: 'openGenome'; files?: FileLocation[] }
+  | { type: 'hostedGenomes' }
+  | { type: 'openLink' }
+  | { type: 'globalPlugins' }
+  | { type: 'factoryReset' }
 
 export interface StartScreenLaunch {
   launch: (load: () => Promise<PluginManager>) => Promise<void>

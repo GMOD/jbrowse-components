@@ -22,7 +22,7 @@ const OpenSequencePanel = observer(function OpenSequencePanel() {
         color="primary"
         className={classes.button}
         onClick={() => {
-          openDialog('openGenome')
+          openDialog({ type: 'openGenome' })
         }}
       >
         Open your own genome
@@ -32,7 +32,7 @@ const OpenSequencePanel = observer(function OpenSequencePanel() {
         color="secondary"
         className={classes.button}
         onClick={() => {
-          openDialog('hostedGenomes')
+          openDialog({ type: 'hostedGenomes' })
         }}
       >
         Browse hosted genomes

@@ -9,20 +9,9 @@ import { pluginLabel } from '@jbrowse/core/pluginDefinitions'
 import { PluggableComponent } from '@jbrowse/core/ui'
 import DropDownMenu from '@jbrowse/core/ui/DropDownMenu'
 import { ErrorBoundary } from '@jbrowse/core/ui/ErrorBoundary'
-import { DNA } from '@jbrowse/core/ui/Icons'
 import { electronRenderer } from '@jbrowse/core/util/electron'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { useFetch } from '@jbrowse/core/util/useFetch'
-import BugReportIcon from '@mui/icons-material/BugReport'
-import ExtensionIcon from '@mui/icons-material/Extension'
-import ExtensionOffIcon from '@mui/icons-material/ExtensionOff'
-import OpenIcon from '@mui/icons-material/FolderOpen'
-import LinkIcon from '@mui/icons-material/Link'
-import MeetingRoomIcon from '@mui/icons-material/MeetingRoom'
-import MenuBookIcon from '@mui/icons-material/MenuBook'
-import RefreshIcon from '@mui/icons-material/Refresh'
-import SettingsBackupRestoreIcon from '@mui/icons-material/SettingsBackupRestore'
-import TravelExploreIcon from '@mui/icons-material/TravelExplore'
 import {
   Alert,
   AppBar,
@@ -33,26 +22,22 @@ import {
 } from '@mui/material'
 import { observer } from 'mobx-react'
 
-import { desktopHelpMenuItems } from '../../desktopHelpMenuItems.ts'
-import { invokeIpc } from '../../ipc.ts'
 import { useNotifyError } from '../NotifyContext.ts'
 import SessionLoadingScreen from '../SessionLoadingScreen.tsx'
 import { useUpdateStatus } from '../useUpdateStatus.ts'
-import GlobalPluginsDialog from './GlobalPluginsDialog.tsx'
 import Logo from './Logo.tsx'
 import StartScreenDialogs from './StartScreenDialogs.tsx'
-import FactoryResetDialog from './dialogs/FactoryResetDialog.tsx'
 import {
   globalPluginReadErrorMessage,
   globalPluginSafeMode,
   globalPluginSafeModeSuspects,
-  reloadInSafeMode,
   reloadWithGlobalPlugins,
 } from './globalPlugins.ts'
 import LeftSidePanel from './leftSidePanel/LeftSidePanel.tsx'
 import { compactMedia, narrowMedia } from './narrow.ts'
 import RecentSessionPanel from './recentSessions/RecentSessionsPanel.tsx'
 import { StartScreenLaunchContext } from './startScreenLaunch.ts'
+import { startScreenMenus } from './startScreenMenus.ts'
 import { createStartScreenPluginManager, loadPluginManager } from './util.tsx'
 
 import type { StartScreenPanelProps } from './startScreenExtensionPoints.ts'
@@ -76,12 +61,8 @@ const narrowPanel = {
 
 const useStyles = makeStyles()({
   header: {
-    display: 'flex',
-    alignItems: 'flex-start',
-    gap: 8,
     padding: 16,
     [compactMedia]: {
-      alignItems: 'center',
       padding: '8px 30px',
     },
   },
@@ -219,10 +200,7 @@ const StartScreen = observer(function StartScreen({
   setPluginManager: (arg: PluginManager) => void
 }) {
   const { classes } = useStyles()
-  const [showGlobalPlugins, setShowGlobalPlugins] = useState(false)
   const [dialog, setDialog] = useState<StartScreenDialog>()
-  const [genomeFiles, setGenomeFiles] = useState<FileLocation[]>()
-  const [confirmReset, setConfirmReset] = useState(false)
   const { status, updateStatus } = useUpdateStatus()
   const notifyError = useNotifyError()
   const safeMode = globalPluginSafeMode()
@@ -242,8 +220,10 @@ const StartScreen = observer(function StartScreen({
       onSuccess: ({ failures, readError }) => {
         const manage = {
           label: 'Manage global plugins',
+          // the notification outlives other dialogs, and an open one may
+          // hold staged files
           onClick: () => {
-            setShowGlobalPlugins(true)
+            setDialog(open => open ?? { type: 'globalPlugins' })
           },
         }
         for (const { definition, error } of failures) {
@@ -273,19 +253,11 @@ const StartScreen = observer(function StartScreen({
     })
   const loading = Boolean(status)
 
-  const openConfigFile = async (
-    pickPath: () => Promise<string | undefined>,
-  ) => {
-    try {
-      const path = await pickPath()
-      if (path) {
-        await launch(() => loadPluginManager(path))
-      }
-    } catch (e) {
-      console.error(e)
-      notifyError(e)
-    }
+  const reportError = (e: unknown) => {
+    console.error(e)
+    notifyError(e)
   }
+  const openConfigFile = (path: string) => launch(() => loadPluginManager(path))
 
   const acceptsDrop = (event: DragEvent<HTMLDivElement>) =>
     !loading && acceptsFileDrop(event)
@@ -296,10 +268,9 @@ const StartScreen = observer(function StartScreen({
       .filter(Boolean)
     const [first] = paths
     if (first && paths.every(path => configFilePattern.test(path))) {
-      void openConfigFile(async () => first)
+      openConfigFile(first).catch(reportError)
     } else if (first) {
-      setGenomeFiles(paths.map(localLocation))
-      setDialog('openGenome')
+      setDialog({ type: 'openGenome', files: paths.map(localLocation) })
     }
   }
 
@@ -322,108 +293,21 @@ const StartScreen = observer(function StartScreen({
       >
         <AppBar position="static" data-testid="start-screen-menu">
           <Toolbar>
-            <DropDownMenu
-              menuTitle="File"
-              menuItems={[
-                {
-                  label: 'Open your own genome...',
-                  icon: DNA,
-                  disabled: loading,
-                  onClick: () => {
-                    setDialog('openGenome')
-                  },
-                },
-                {
-                  label: 'Browse hosted genomes...',
-                  icon: TravelExploreIcon,
-                  disabled: loading,
-                  onClick: () => {
-                    setDialog('hostedGenomes')
-                  },
-                },
-                {
-                  label: 'Open config.json or .jbrowse file...',
-                  icon: OpenIcon,
-                  disabled: loading,
-                  onClick: () =>
-                    openConfigFile(() => invokeIpc('promptOpenFile')),
-                },
-                {
-                  label: 'Open JBrowse Web link...',
-                  icon: LinkIcon,
-                  disabled: loading,
-                  onClick: () => {
-                    setDialog('openLink')
-                  },
-                },
-                {
-                  label: 'Exit',
-                  icon: MeetingRoomIcon,
-                  onClick: () => {
-                    invokeIpc('quit').catch(notifyError)
-                  },
-                },
-              ]}
-            />
-            <DropDownMenu
-              menuTitle="Tools"
-              menuItems={() => [
-                {
-                  label: 'Global plugins...',
-                  icon: ExtensionIcon,
-                  onClick: () => {
-                    setShowGlobalPlugins(true)
-                  },
-                },
-                safeMode
-                  ? {
-                      label: 'Reload with global plugins',
-                      icon: RefreshIcon,
-                      onClick: () => {
-                        reloadWithGlobalPlugins()
-                      },
-                    }
-                  : {
-                      label: 'Reload without global plugins',
-                      icon: ExtensionOffIcon,
-                      onClick: () => {
-                        reloadInSafeMode()
-                      },
-                    },
-                ...pluginMenuItems(startScreenPluginManager, panelProps),
-                {
-                  label: 'Factory reset...',
-                  icon: SettingsBackupRestoreIcon,
-                  disabled: loading,
-                  onClick: () => {
-                    setConfirmReset(true)
-                  },
-                },
-              ]}
-            />
-            <DropDownMenu
-              menuTitle="Help"
-              menuItems={[
-                {
-                  label: 'Documentation',
-                  icon: MenuBookIcon,
-                  onClick: () => {
-                    window.open('https://jbrowse.org/jb2/docs/', '_blank')
-                  },
-                },
-                {
-                  label: 'Report an issue',
-                  icon: BugReportIcon,
-                  onClick: () => {
-                    window.open(
-                      'https://github.com/GMOD/jbrowse-components/issues/new/choose',
-                      '_blank',
-                    )
-                  },
-                },
-                ...desktopHelpMenuItems(notifyError),
-              ]}
-            />
+            {startScreenMenus({
+              loading,
+              safeMode: Boolean(safeMode),
+              openDialog: setDialog,
+              openConfigFile,
+              pluginMenuItems: () =>
+                pluginMenuItems(startScreenPluginManager, panelProps),
+              onError: reportError,
+            }).map(menu => (
+              <DropDownMenu
+                key={menu.label}
+                menuTitle={menu.label}
+                menuItems={menu.menuItems}
+              />
+            ))}
           </Toolbar>
         </AppBar>
         <div className={classes.header}>
@@ -437,7 +321,7 @@ const StartScreen = observer(function StartScreen({
               <>
                 <Button
                   onClick={() => {
-                    setShowGlobalPlugins(true)
+                    setDialog({ type: 'globalPlugins' })
                   }}
                 >
                   Manage
@@ -496,29 +380,15 @@ const StartScreen = observer(function StartScreen({
       </div>
       <StartScreenDialogs
         dialog={dialog}
-        genomeFiles={genomeFiles}
         onClose={() => {
           setDialog(undefined)
-          setGenomeFiles(undefined)
-        }}
-      />
-      {confirmReset ? (
-        <FactoryResetDialog
-          onClose={() => {
-            setConfirmReset(false)
-          }}
-        />
-      ) : null}
-      {showGlobalPlugins ? (
-        <GlobalPluginsDialog
-          onClose={() => {
-            setShowGlobalPlugins(false)
+          if (dialog?.type === 'globalPlugins') {
             // a no-op unless the dialog changed the list, so removing the
             // plugin that broke a panel takes effect without a relaunch
             rebuildStartScreenPluginManager()
-          }}
-        />
-      ) : null}
+          }
+        }}
+      />
     </StartScreenLaunchContext>
   )
 })

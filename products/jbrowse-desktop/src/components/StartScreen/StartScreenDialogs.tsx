@@ -3,6 +3,8 @@ import { Suspense, lazy } from 'react'
 import { observer } from 'mobx-react'
 
 import OpenLinkDialog from '../OpenLinkDialog.tsx'
+import GlobalPluginsDialog from './GlobalPluginsDialog.tsx'
+import FactoryResetDialog from './dialogs/FactoryResetDialog.tsx'
 import { newSessionName } from './sessionName.ts'
 import { useLaunchConfigs, useStartScreenLaunch } from './startScreenLaunch.ts'
 import { useFavoriteGenomes } from './useFavoriteGenomes.ts'
@@ -10,7 +12,6 @@ import { openSpecLink } from './util.tsx'
 
 import type { StartScreenDialog } from './startScreenLaunch.ts'
 import type { AssemblyConf } from '@jbrowse/core/util/assemblyConfigUtils'
-import type { FileLocation } from '@jbrowse/core/util/types'
 
 // Between them most of what the start screen could pull in: the
 // available-genomes table is ~2400 lines of grid, search index and category
@@ -23,11 +24,9 @@ const AvailableGenomesDialog = lazy(
 
 const StartScreenDialogs = observer(function StartScreenDialogs({
   dialog,
-  genomeFiles,
   onClose,
 }: {
   dialog: StartScreenDialog | undefined
-  genomeFiles?: FileLocation[]
   onClose: () => void
 }) {
   const { launch } = useStartScreenLaunch()
@@ -38,9 +37,9 @@ const StartScreenDialogs = observer(function StartScreenDialogs({
     // no fallback: the chunk is on local disk, and a spinner sitting where the
     // dialog is about to be reads as a broken button
     <Suspense fallback={null}>
-      {dialog === 'openGenome' ? (
+      {dialog?.type === 'openGenome' ? (
         <OpenSequenceDialog
-          initialFiles={genomeFiles}
+          initialFiles={dialog.files}
           onClose={async (conf?: AssemblyConf[]) => {
             if (conf) {
               void launchConfigs(async () => [
@@ -57,18 +56,22 @@ const StartScreenDialogs = observer(function StartScreenDialogs({
             onClose()
           }}
         />
-      ) : dialog === 'hostedGenomes' ? (
+      ) : dialog?.type === 'hostedGenomes' ? (
         <AvailableGenomesDialog
           favorites={favorites}
           setFavorites={setFavorites}
           launch={launchConfigUrls}
           onClose={onClose}
         />
-      ) : dialog === 'openLink' ? (
+      ) : dialog?.type === 'openLink' ? (
         <OpenLinkDialog
           onSubmit={link => launch(() => openSpecLink(link))}
           onClose={onClose}
         />
+      ) : dialog?.type === 'globalPlugins' ? (
+        <GlobalPluginsDialog onClose={onClose} />
+      ) : dialog?.type === 'factoryReset' ? (
+        <FactoryResetDialog onClose={onClose} />
       ) : null}
     </Suspense>
   )
