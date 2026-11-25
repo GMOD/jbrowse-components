@@ -19,6 +19,16 @@ export function svgTrackName(
   return coarseStripHTML(getTrackName(track.configuration, session))
 }
 
+const SKIPPED_NOTICE = 'Not included in the SVG:'
+
+/**
+ * Whether a session notice is one `notifySkippedSvgTracks` sent, for a host
+ * with no snackbar to show it, such as jb2export.
+ */
+export function isSkippedSvgNotice(message: string) {
+  return message.startsWith(SKIPPED_NOTICE)
+}
+
 /**
  * Tell the user which visible tracks the export left out, by default because
  * their display type implements no `renderSvg`. Called once per reason per
@@ -42,9 +52,6 @@ export function notifySkippedSvgTracks(
     const why =
       reason ??
       `${names.length === 1 ? 'Its display type does' : 'Their display types do'} not support SVG export.`
-    session.notify(
-      `Not included in the SVG: ${names.join(', ')}. ${why}`,
-      'info',
-    )
+    session.notify(`${SKIPPED_NOTICE} ${names.join(', ')}. ${why}`, 'info')
   }
 }

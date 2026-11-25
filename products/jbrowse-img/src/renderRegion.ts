@@ -1,4 +1,5 @@
 import { retainAdapterSession } from '@jbrowse/core/data_adapters/adapterSessionRefcount'
+import { isSkippedSvgNotice } from '@jbrowse/core/svg/trackNames'
 import { getEnv } from '@jbrowse/core/util'
 import { openTracks } from '@jbrowse/core/util/openViews'
 import {
@@ -19,7 +20,7 @@ import {
   memberWrites,
   trackModifierNames,
 } from '@jbrowse/launch-args/displaySettings'
-import { destroy } from '@jbrowse/mobx-state-tree'
+import { addMiddleware, destroy } from '@jbrowse/mobx-state-tree'
 import {
   breakpointPageSubject,
   renderToSvg as renderBreakpointToSvg,
@@ -289,6 +290,23 @@ function reportConfigProblems(session: Model['session']) {
   if (errors.size > 0) {
     throw new Error(`cannot draw as configured:\n  ${[...errors].join('\n  ')}`)
   }
+}
+
+// The app names a track an export left out in a snackbar, which a CLI has
+// none of; stdout may be carrying the SVG, so the notice goes to stderr.
+// Other session notices are the app's UI and stay unprinted.
+function printSkippedSvgNotices(session: Model['session']) {
+  addMiddleware(session, (call, next) => {
+    const [message] = call.args
+    if (
+      call.name === 'notify' &&
+      typeof message === 'string' &&
+      isSkippedSvgNotice(message)
+    ) {
+      console.warn(message)
+    }
+    next(call)
+  })
 }
 
 interface InitView extends SettleableView {
@@ -858,6 +876,7 @@ export async function renderRegionReport(
   )
   warnOptionsWithoutEffect(mode, opts)
   const model = await createModel(data)
+  printSkippedSvgNotices(model.session)
   // feature colors are baked at fetch time from the session theme, before
   // renderToSvg applies themeName
   if (opts.themeName) {

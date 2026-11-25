@@ -39,7 +39,10 @@ const volvox = path.join(__dirname, '..', 'data', 'volvox')
 
 // The same VCF under two ids, so the chords a run draws count the tracks it
 // opened: both is twice one, and neither is the bare ideogram.
-function twoChordTracks(display: Record<string, unknown> = {}) {
+function twoChordTracks(
+  display: Record<string, unknown> = {},
+  extraTracks: Record<string, unknown>[] = [],
+) {
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'jb2export-circular-'))
   const file = path.join(dir, 'config.json')
   const track = (trackId: string) => ({
@@ -74,7 +77,7 @@ function twoChordTracks(display: Record<string, unknown> = {}) {
           },
         },
       ],
-      tracks: [track('sv_one'), track('sv_two')],
+      tracks: [track('sv_one'), track('sv_two'), ...extraTracks],
     }),
   )
   return file
@@ -130,6 +133,43 @@ test('an option the chord display has no slot for is said, not applied', async (
   expect(warn).toHaveBeenCalledWith(
     expect.stringContaining('has no effect on ChordVariantDisplay'),
   )
+  warn.mockRestore()
+}, 90000)
+
+// The app names a ring it left out in a snackbar; a CLI has none, so without
+// this the figure came out a track short and nothing said so.
+test('a ring left out of the figure as too large is named on stderr', async () => {
+  const warn = jest.spyOn(console, 'warn').mockImplementation(() => undefined)
+  const config = twoChordTracks({}, [
+    {
+      type: 'FeatureTrack',
+      trackId: 'genes',
+      name: 'genes',
+      assemblyNames: ['volvox'],
+      adapter: {
+        type: 'Gff3TabixAdapter',
+        gffGzLocation: {
+          localPath: path.join(volvox, 'volvox.sort.gff3.gz'),
+        },
+        index: {
+          location: {
+            localPath: path.join(volvox, 'volvox.sort.gff3.gz.tbi'),
+          },
+        },
+      },
+      displays: [
+        {
+          type: 'LinearBasicDisplay',
+          displayId: 'genes-LinearBasicDisplay',
+          maxFeatureScreenDensity: 0.001,
+        },
+      ],
+    },
+  ])
+  await renderCircular(config, ['sv_one'], ['genes'])
+  expect(warn.mock.calls.map(([line]) => String(line))).toEqual([
+    expect.stringMatching(/^Not included in the SVG: genes\. Too much data/),
+  ])
   warn.mockRestore()
 }, 90000)
 
