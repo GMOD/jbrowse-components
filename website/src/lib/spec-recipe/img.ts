@@ -36,17 +36,18 @@ function trackArgs(entry: SpecTrackEntry) {
   ].map(quote)
 }
 
-// The view's own settings go on `--view` as one JSON argument; `trackLabels`
-// and `axis.grid` also set the export's options of those names, since the
-// export draws labels and gridlines by its own options, not the view's.
+// The view's own settings go on `--view` as one JSON argument; `axis.grid`
+// also sets the export's option of that name, since the export draws gridlines
+// by its own options, not the view's. It draws labels by `--trackLabels` alone,
+// so that one goes there only.
 function linearArgs(view: SpecView) {
-  const { type, assembly, loc, tracks, ...settings } = view
+  const { type, assembly, loc, tracks, trackLabels, ...settings } = view
   return [
     ['--assembly', assembly, '--loc', loc].map(a => quote(a!)),
     ...(Object.keys(settings).length
       ? [['--view', quote(JSON.stringify(settings))]]
       : []),
-    ...(view.trackLabels ? [['--trackLabels', String(view.trackLabels)]] : []),
+    ...(trackLabels ? [['--trackLabels', String(trackLabels)]] : []),
     ...((view.axis as { grid?: boolean } | undefined)?.grid
       ? [['--showGridlines']]
       : []),

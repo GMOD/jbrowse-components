@@ -197,6 +197,22 @@ function fieldSteps(
   return { steps, unmapped }
 }
 
+// A note says the same thing on every track it applies to, so a recipe prints
+// it at its first step only.
+function notesOnce(steps: RecipeStep[], seen = new Set<string>()): RecipeStep[] {
+  return steps.map(({ note, substeps, ...step }) => {
+    const fresh = note !== undefined && !seen.has(note)
+    if (note !== undefined) {
+      seen.add(note)
+    }
+    return {
+      ...step,
+      ...(fresh ? { note } : {}),
+      ...(substeps ? { substeps: notesOnce(substeps, seen) } : {}),
+    }
+  })
+}
+
 function groupSteps(label: string, steps: RecipeStep[]): RecipeStep[] {
   return steps.length ? [{ title: label, substeps: steps }] : []
 }
@@ -745,7 +761,7 @@ export function buildRecipe(
     configUrl,
     specJson,
     oneLinearView: views.length === 1 && views[0]?.type === 'LinearGenomeView',
-    steps,
+    steps: notesOnce(steps),
     python: plugin ? undefined : pythonSnippet(configUrl, spec),
     embed: plugin ? undefined : embedSnippet(configUrl, spec),
     agent: {

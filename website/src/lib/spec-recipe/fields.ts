@@ -2074,12 +2074,6 @@ function clusterRunLabel(displayType: string | undefined) {
   )
 }
 
-const TRACK_LABELS: Record<string, string> = {
-  overlapping: 'Overlapping',
-  offset: 'Offset',
-  hidden: 'Hidden',
-}
-
 // Both views run the same reorder — runDiagonalize, behind the identical
 // 'Re-order chromosomes...' item — but reach it from different headers: the synteny
 // view's is in headerMenuItems, under the "Zoom and layout options" button
@@ -2395,12 +2389,6 @@ export const viewFields: Record<string, FieldRecipe> = {
       : undefined,
   tracklist: value =>
     value === true ? { path: 'View menu → Open track selector' } : undefined,
-  trackLabels: value => {
-    const option = typeof value === 'string' ? TRACK_LABELS[value] : undefined
-    return option
-      ? { path: `View menu → Track labels → ${option}` }
-      : undefined
-  },
   colorByFrame: value =>
     typeof value === 'boolean'
       ? {
@@ -2411,15 +2399,6 @@ export const viewFields: Record<string, FieldRecipe> = {
     typeof value === 'boolean'
       ? {
           path: `View menu → Show → Show amino acids when zoomed in (${checked(value)})`,
-        }
-      : undefined,
-  // The checkbox carries the placeholder's visibility, so it reads the inverse
-  // of the field: hiding it is the box unchecked. A synteny row takes this the
-  // same way any other LGV does, through the per-row launch props.
-  hideNoTracksActive: value =>
-    typeof value === 'boolean'
-      ? {
-          path: `View menu → Show → Show no tracks active button (${value ? 'unchecked' : 'checked'})`,
         }
       : undefined,
   // the linear synteny view's ribbon curve, the Curved lines checkbox
@@ -2491,7 +2470,9 @@ export const launchFields: Record<string, FieldRecipe> = {
 // win; hiding one here retires it silently and makes the report's `+`/`-` lines
 // mean less. `id` qualifies because it is capture scaffolding — a spec pins it so
 // the screenshot's own actions and callouts can address one view among several,
-// and a reader reproducing the figure by hand never types it.
+// and a reader reproducing the figure by hand never types it. `trackLabels` and
+// `hideNoTracksActive` are capture scaffolding too: they tidy the screenshot,
+// and a reader's own view needs neither to match it.
 export const IGNORED_FIELDS = new Set([
   'type',
   'trackId',
@@ -2502,4 +2483,6 @@ export const IGNORED_FIELDS = new Set([
   'sessionTracks',
   'displayedRegionNames',
   'id',
+  'trackLabels',
+  'hideNoTracksActive',
 ])

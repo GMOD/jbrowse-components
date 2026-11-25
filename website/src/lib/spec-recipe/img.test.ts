@@ -79,3 +79,22 @@ test('a figure of two views gets no command', () => {
   const view = { type: 'LinearGenomeView', assembly: 'a', loc: 'x:1-2' }
   expect(imgRecipe({ views: [view, view] }, config, 1500)).toBeUndefined()
 })
+
+test('track labels are the export option alone, not a view setting too', () => {
+  const recipe = imgRecipe(
+    {
+      views: [
+        {
+          type: 'LinearGenomeView',
+          assembly: 'GRCh38',
+          loc: 'chr2:1-100',
+          trackLabels: 'offset',
+        },
+      ],
+    },
+    config,
+    undefined,
+  )
+  expect(recipe?.command).toContain('--trackLabels offset')
+  expect(recipe?.command).not.toContain('--view')
+})

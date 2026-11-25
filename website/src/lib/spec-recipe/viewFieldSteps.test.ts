@@ -1,4 +1,5 @@
 import { viewFields } from './fields.ts'
+import { buildRecipe } from './recipe.ts'
 
 function stepPaths(
   field: string,
@@ -123,4 +124,39 @@ test('the anchor row is named as the reorder dialog lists it', () => {
     'Synteny view header → Zoom and layout options → Re-order chromosomes... → Row to keep as it is → a (row 3)',
   ])
   expect(path(3)).toEqual([])
+})
+
+function recipeOf(views: unknown[]) {
+  return buildRecipe(
+    `https://jbrowse.org/code/jb2/main/?config=test_data/volvox/config.json&session=spec-${encodeURIComponent(JSON.stringify({ views }))}`,
+  )
+}
+
+test('capture scaffolding on a view takes no step and is no gap', () => {
+  const recipe = recipeOf([
+    {
+      type: 'LinearGenomeView',
+      assembly: 'volvox',
+      trackLabels: 'offset',
+      hideNoTracksActive: true,
+    },
+  ])
+  expect(recipe?.steps.map(step => step.title).join('\n')).not.toContain(
+    'View menu',
+  )
+  expect(recipe?.unmapped).toEqual([])
+})
+
+test('a note repeated on several tracks prints at the first one only', () => {
+  const genesOnly = (trackId: string) => ({ trackId, filter: ['geneLike'] })
+  const recipe = recipeOf([
+    {
+      type: 'LinearGenomeView',
+      assembly: 'volvox',
+      tracks: [genesOnly('gff3tabix_genes'), genesOnly('bigbed_genes')],
+    },
+  ])
+  const settings = (recipe?.steps ?? []).flatMap(step => step.substeps ?? [])
+  expect(settings).toHaveLength(2)
+  expect(settings.filter(step => step.note !== undefined)).toHaveLength(1)
 })
