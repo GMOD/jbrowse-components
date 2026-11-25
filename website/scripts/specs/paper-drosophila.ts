@@ -40,48 +40,52 @@ const ROWS = [
 ]
 
 export function drosophilaBlocksUrl(levelHeight: number) {
-  return sessionSpec(CONFIG, {
-    views: [
-      {
-        type: 'LinearSyntenyView',
-        views: ROWS,
-        tracks: [TRACK],
-        encoding: {
-          color: {
-            field: 'muller',
-            scale: {
-              domain: ['A', 'B', 'C', 'D', 'E', 'F'],
-              range: [
-                '#1f77b4',
-                '#ff7f0e',
-                '#2ca02c',
-                '#d62728',
-                '#9467bd',
-                '#8c564b',
-              ],
-              names: [
-                'A (mel X)',
-                'B (mel 2L)',
-                'C (mel 2R)',
-                'D (mel 3L)',
-                'E (mel 3R)',
-                'F (mel 4)',
-              ],
+  return sessionSpec(
+    CONFIG,
+    {
+      views: [
+        {
+          type: 'LinearSyntenyView',
+          views: ROWS,
+          tracks: [TRACK],
+          encoding: {
+            color: {
+              field: 'muller',
+              scale: {
+                domain: ['A', 'B', 'C', 'D', 'E', 'F'],
+                range: [
+                  '#1f77b4',
+                  '#ff7f0e',
+                  '#2ca02c',
+                  '#d62728',
+                  '#9467bd',
+                  '#8c564b',
+                ],
+                names: [
+                  'A (mel X)',
+                  'B (mel 2L)',
+                  'C (mel 2R)',
+                  'D (mel 3L)',
+                  'E (mel 3R)',
+                  'F (mel 4)',
+                ],
+              },
+              legend: { title: 'Muller element' },
             },
-            legend: { title: 'Muller element' },
+            opacity: 0.5,
           },
-          opacity: 0.5,
+          filter: [{ field: 'muller', valid: true }],
+          autoDiagonalize: false,
+          collapseEmptyRows: true,
+          mark: { interpolate: 'bump' },
+          offscreen: { show: false },
+          render: { antialias: false },
+          levelHeights: ROWS.slice(1).map(() => levelHeight),
         },
-        filter: [{ field: 'muller', valid: true }],
-        autoDiagonalize: false,
-        collapseEmptyRows: true,
-        mark: { interpolate: 'bump' },
-        offscreen: { show: false },
-        render: { antialias: false },
-        levelHeights: ROWS.slice(1).map(() => levelHeight),
-      },
-    ],
-  })
+      ],
+    },
+    'Five Drosophila species',
+  )
 }
 
 export const drosophilaBlocksSpec: SessionUrlSpec = {

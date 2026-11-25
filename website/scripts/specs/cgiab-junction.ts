@@ -42,6 +42,7 @@ interface Chrome {
 // assemblyReads is the height of a row of the tumor reads realigned to hap1
 interface JunctionOptions extends Chrome, ScaffoldLayout {
   assemblyReads?: number
+  sessionName?: string
 }
 
 // Heights a figure printed under a page-height cap shortens
@@ -222,68 +223,72 @@ const hap1Label = (text: string, dy: number): Annotation => ({
 
 export const junctionScaffold = (
   name: string,
-  { assemblyReads, ...opts }: JunctionOptions = {},
+  { assemblyReads, sessionName, ...opts }: JunctionOptions = {},
   level = opts.level ?? SCAFFOLD_LEVEL,
   readsHeight = opts.reads ?? SCAFFOLD_READS,
 ): ScreenshotSpec => ({
   mode: 'url',
   name,
-  url: sessionSpec(CGIAB_CONFIG, {
-    views: [
-      {
-        type: 'LinearSyntenyView',
-        mark: { interpolate: 'bump' },
-        levelHeights: [level],
-        encoding: { opacity: 0.35 },
-        offscreen: { show: false },
-        tracks: [[PIF]],
-        views: [
-          {
-            loc: 'chr13:114,348,244-114,358,244 chr3:139,971,415-139,981,415',
-            assembly: GRCH38,
-            tracks: [
-              { trackId: CALLS, height: 40 },
-              {
-                ...reads,
-                unit: 'chain',
-                facet: 'split',
-                encoding: { color: 'insertSizeAndOrientation' },
-                legend: { show: true },
-                pileup: { mark: { height: opts.readRowHeight ?? 2 } },
-                readConnections: { show: true, height: opts.readArcs ?? 70 },
-                ...(opts.coverage
-                  ? { coverage: { height: opts.coverage } }
-                  : {}),
-                height: readsHeight,
-              },
-            ],
-            highlight: [
-              band(GRCH38, 'chr13', 114353224, 114353264),
-              band(GRCH38, 'chr3', 139976395, 139976435),
-            ],
-          },
-          {
-            loc: `${SCAFFOLD}:106,646,329-106,656,329`,
-            assembly: HG008T,
-            ...(assemblyReads
-              ? {
-                  trackLabels: 'hidden',
-                  tracks: [
-                    {
-                      trackId: ASSEMBLY_READS,
-                      pileup: { mark: { height: 2 } },
-                      height: assemblyReads,
-                      forceLoad: true,
-                    },
-                  ],
-                }
-              : { hideNoTracksActive: true }),
-            highlight: [band(HG008T, SCAFFOLD, 106651319, 106651339)],
-          },
-        ],
-      },
-    ],
-  }),
+  url: sessionSpec(
+    CGIAB_CONFIG,
+    {
+      views: [
+        {
+          type: 'LinearSyntenyView',
+          mark: { interpolate: 'bump' },
+          levelHeights: [level],
+          encoding: { opacity: 0.35 },
+          offscreen: { show: false },
+          tracks: [[PIF]],
+          views: [
+            {
+              loc: 'chr13:114,348,244-114,358,244 chr3:139,971,415-139,981,415',
+              assembly: GRCH38,
+              tracks: [
+                { trackId: CALLS, height: 40 },
+                {
+                  ...reads,
+                  unit: 'chain',
+                  facet: 'split',
+                  encoding: { color: 'insertSizeAndOrientation' },
+                  legend: { show: true },
+                  pileup: { mark: { height: opts.readRowHeight ?? 2 } },
+                  readConnections: { show: true, height: opts.readArcs ?? 70 },
+                  ...(opts.coverage
+                    ? { coverage: { height: opts.coverage } }
+                    : {}),
+                  height: readsHeight,
+                },
+              ],
+              highlight: [
+                band(GRCH38, 'chr13', 114353224, 114353264),
+                band(GRCH38, 'chr3', 139976395, 139976435),
+              ],
+            },
+            {
+              loc: `${SCAFFOLD}:106,646,329-106,656,329`,
+              assembly: HG008T,
+              ...(assemblyReads
+                ? {
+                    trackLabels: 'hidden',
+                    tracks: [
+                      {
+                        trackId: ASSEMBLY_READS,
+                        pileup: { mark: { height: 2 } },
+                        height: assemblyReads,
+                        forceLoad: true,
+                      },
+                    ],
+                  }
+                : { hideNoTracksActive: true }),
+              highlight: [band(HG008T, SCAFFOLD, 106651319, 106651339)],
+            },
+          ],
+        },
+      ],
+    },
+    sessionName,
+  ),
   annotations: opts.annotations ?? [
     rowLabel('hap1', 1),
     // dy keeps these clear of the read curves

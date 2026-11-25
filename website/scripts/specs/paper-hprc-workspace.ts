@@ -80,11 +80,15 @@ const session = (
   paneHeight = 600,
   lanePlacement: 'above' | 'overlay' = 'above',
 ) =>
-  sessionSpec(CONFIG, {
-    views: [
-      view(layoutMode, lanesHeight, genesHeight, paneHeight, lanePlacement),
-    ],
-  })
+  sessionSpec(
+    CONFIG,
+    {
+      views: [
+        view(layoutMode, lanesHeight, genesHeight, paneHeight, lanePlacement),
+      ],
+    },
+    'HPRC v2.1 at CFHR3-CFHR1',
+  )
 
 // The lanes are range requests against the hosted walk file, and the graph
 // cuts its subgraph from the segments track's tabix indexes.

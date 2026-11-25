@@ -73,27 +73,31 @@ const lanes = (trackId: string) => ({
   legend: { show: false },
 })
 
-const session = sessionSpec(CONFIG, {
-  sessionTracks: [MINIMAP2_TRACK],
-  views: [
-    {
-      type: 'LinearGenomeView',
-      assembly: 'hg38',
-      loc: CFHR_WINDOW,
-      hideHeader: true,
-      tracks: [
-        {
-          trackId: 'hg38_ncbiRefSeq_ucsc',
-          geneGlyphMode: 'representative',
-          displayMode: 'compact',
-          height: 50,
-        },
-        { ...lanes(GRAPH_ROWS), type: 'MultiWaySyntenyDisplay' },
-        { ...lanes(MINIMAP2_ROWS), type: 'MultiWaySyntenyDisplay' },
-      ],
-    },
-  ],
-})
+const session = sessionSpec(
+  CONFIG,
+  {
+    sessionTracks: [MINIMAP2_TRACK],
+    views: [
+      {
+        type: 'LinearGenomeView',
+        assembly: 'hg38',
+        loc: CFHR_WINDOW,
+        hideHeader: true,
+        tracks: [
+          {
+            trackId: 'hg38_ncbiRefSeq_ucsc',
+            geneGlyphMode: 'representative',
+            displayMode: 'compact',
+            height: 50,
+          },
+          { ...lanes(GRAPH_ROWS), type: 'MultiWaySyntenyDisplay' },
+          { ...lanes(MINIMAP2_ROWS), type: 'MultiWaySyntenyDisplay' },
+        ],
+      },
+    ],
+  },
+  'HPRC walk rows and minimap2 at CFHR3-CFHR1',
+)
 
 const settled = (trackId: string) =>
   `[data-testid$="-${trackId}"] ${displaySettled('multiway-synteny-display')}`

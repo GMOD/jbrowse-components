@@ -162,6 +162,7 @@ const PAIRS_NAME = 'HG008-T Illumina: read cloud'
 
 const readEvidence = ({
   name,
+  title,
   loc,
   arcsHeight,
   coverageMax,
@@ -178,6 +179,7 @@ const readEvidence = ({
   hifiCoverage = layout.hifiCoverage ?? true,
 }: {
   name: string
+  title: string
   loc: string
   arcsHeight: number
   // caps the Illumina coverage axis where a spike in view would flatten it
@@ -196,106 +198,110 @@ const readEvidence = ({
 }): ScreenshotSpec => ({
   mode: 'url',
   name,
-  url: sessionSpec(CGIAB_CONFIG, {
-    sessionTracks: [
-      callsTrack(CALLS, CALLS_NAME),
-      callsTrack(CALL_ARCS, CALL_ARCS_NAME),
-      bamTrack(HIFI_COV, HIFI_COV_NAME, HIFI_BAM),
-      bamTrack(HIFI, HIFI_NAME, HIFI_BAM),
-      bamTrack(ILLUMINA_ARCS, ARCS_NAME, ILLUMINA_BAM),
-      bamTrack(ILLUMINA_PAIRS, PAIRS_NAME, ILLUMINA_BAM),
-    ],
-    views: [
-      {
-        type: 'LinearGenomeView',
-        assembly: GRCH38,
-        loc,
-        trackLabels: 'offset',
-        tracks: [
-          {
-            trackId: 'hg38_ncbiRefSeq_ucsc',
-            geneGlyphMode: 'representative',
-            height: h(60),
-          },
-          {
-            trackId: CALLS,
-            height: h(85),
-          },
-          {
-            trackId: CALL_ARCS,
-            type: 'LinearMarkDisplay',
-            height: h(70),
-            marks: [
-              {
-                mark: 'link',
-                transform: [{ type: 'mate' }],
-                encoding: {
-                  x2: { refName: 'mate.refName', pos: 'mate.start' },
-                  strokeWidth: 2,
-                },
-              },
-            ],
-          },
-          ...(hifiCoverage
-            ? [
+  url: sessionSpec(
+    CGIAB_CONFIG,
+    {
+      sessionTracks: [
+        callsTrack(CALLS, CALLS_NAME),
+        callsTrack(CALL_ARCS, CALL_ARCS_NAME),
+        bamTrack(HIFI_COV, HIFI_COV_NAME, HIFI_BAM),
+        bamTrack(HIFI, HIFI_NAME, HIFI_BAM),
+        bamTrack(ILLUMINA_ARCS, ARCS_NAME, ILLUMINA_BAM),
+        bamTrack(ILLUMINA_PAIRS, PAIRS_NAME, ILLUMINA_BAM),
+      ],
+      views: [
+        {
+          type: 'LinearGenomeView',
+          assembly: GRCH38,
+          loc,
+          trackLabels: 'offset',
+          tracks: [
+            {
+              trackId: 'hg38_ncbiRefSeq_ucsc',
+              geneGlyphMode: 'representative',
+              height: h(60),
+            },
+            {
+              trackId: CALLS,
+              height: h(85),
+            },
+            {
+              trackId: CALL_ARCS,
+              type: 'LinearMarkDisplay',
+              height: h(70),
+              marks: [
                 {
-                  ...connections,
-                  trackId: HIFI_COV,
-                  pileup: { show: false },
-                  height: h(62),
+                  mark: 'link',
+                  transform: [{ type: 'mate' }],
+                  encoding: {
+                    x2: { refName: 'mate.refName', pos: 'mate.start' },
+                    strokeWidth: 2,
+                  },
                 },
-              ]
-            : []),
-          {
-            ...connections,
-            trackId: HIFI,
-            coverage: { ...connections.coverage, show: false },
-            readConnections: { show: true, height: reads.arcs },
-            // rows tall enough to show each maps-back loop and inversion hook
-            pileup: { mark: { height: reads.rowHeight } },
-            unit: 'chain',
-            // paints each split segment by its strand against its molecule
-            encoding: { color: 'insertSizeAndOrientation' },
-            height: reads.height,
-            facet: 'split',
-            legend: { show: true },
-          },
-          {
-            ...illuminaPairs,
-            trackId: ILLUMINA_ARCS,
-            pileup: { show: false },
-            readConnections: {
-              ...illuminaPairs.readConnections,
-              show: true,
-              height: arcs,
+              ],
             },
-            coverage: {
-              ...illuminaPairs.coverage,
-              height: illuminaCoverage,
-              ...(coverageMax
-                ? { encoding: { y: { scale: { domainMax: coverageMax } } } }
-                : {}),
+            ...(hifiCoverage
+              ? [
+                  {
+                    ...connections,
+                    trackId: HIFI_COV,
+                    pileup: { show: false },
+                    height: h(62),
+                  },
+                ]
+              : []),
+            {
+              ...connections,
+              trackId: HIFI,
+              coverage: { ...connections.coverage, show: false },
+              readConnections: { show: true, height: reads.arcs },
+              // rows tall enough to show each maps-back loop and inversion hook
+              pileup: { mark: { height: reads.rowHeight } },
+              unit: 'chain',
+              // paints each split segment by its strand against its molecule
+              encoding: { color: 'insertSizeAndOrientation' },
+              height: reads.height,
+              facet: 'split',
+              legend: { show: true },
             },
-            height: arcsTrack,
-          },
-          {
-            ...illuminaPairs,
-            trackId: ILLUMINA_PAIRS,
-            pileup: { show: false },
-            coverage: { ...illuminaPairs.coverage, show: false },
-            readConnections: {
-              ...illuminaPairs.readConnections,
-              show: true,
-              mark: 'rule',
-              ordinaryPairs: { show: true },
+            {
+              ...illuminaPairs,
+              trackId: ILLUMINA_ARCS,
+              pileup: { show: false },
+              readConnections: {
+                ...illuminaPairs.readConnections,
+                show: true,
+                height: arcs,
+              },
+              coverage: {
+                ...illuminaPairs.coverage,
+                height: illuminaCoverage,
+                ...(coverageMax
+                  ? { encoding: { y: { scale: { domainMax: coverageMax } } } }
+                  : {}),
+              },
+              height: arcsTrack,
             },
-            height: Math.max(h(215), CLOUD_FLOOR),
-            legend: { show: true },
-          },
-        ],
-      },
-    ],
-  }),
+            {
+              ...illuminaPairs,
+              trackId: ILLUMINA_PAIRS,
+              pileup: { show: false },
+              coverage: { ...illuminaPairs.coverage, show: false },
+              readConnections: {
+                ...illuminaPairs.readConnections,
+                show: true,
+                mark: 'rule',
+                ordinaryPairs: { show: true },
+              },
+              height: Math.max(h(215), CLOUD_FLOOR),
+              legend: { show: true },
+            },
+          ],
+        },
+      ],
+    },
+    title,
+  ),
   annotations: stacked(print.labelFont, [
     ['SV calls', 'draft benchmark somatic SVs', 14 + h(38)],
     [compact ? 'SV calls as arcs' : 'SV call arcs', CALL_ARCS_NAME, 14 + h(22)],
@@ -333,6 +339,7 @@ const readEvidence = ({
 export const readEvidenceSpecs = (print: Print): ScreenshotSpec[] => [
   readEvidence({
     name: 'paper/sv_read_evidence',
+    title: 'HG008-T: duplication and deletion in SUZ12',
     loc: 'chr17:31,937,000-32,030,000',
     coverageMax: 200,
     arcsHeight: 80,
@@ -352,6 +359,7 @@ export const readEvidenceSpecs = (print: Print): ScreenshotSpec[] => [
   }),
   readEvidence({
     name: 'paper/sv_read_evidence_inversion',
+    title: 'HG008-T: 2.4 kb inversion on chromosome 3',
     loc: 'chr3:184,709,000-184,723,000',
     arcsHeight: 110,
     viewportHeight: 1416,

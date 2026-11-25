@@ -42,6 +42,7 @@ const PAPER = { width: 820 }
 export const paperSvSpecs: ScreenshotSpec[] = [
   junctionScaffold('paper/sv_junction_scaffold', {
     ...PAPER,
+    sessionName: 'HG008-T: chr13-chr3 junction',
     level: 60,
     reads: 250,
     readRowHeight: 3,

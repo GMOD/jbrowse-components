@@ -17,23 +17,27 @@ export const paperEcoliSpecs: ScreenshotSpec[] = [
   {
     mode: 'url',
     name: 'paper/ecoli_oantigen',
-    url: sessionSpec(`${FROZEN}/ecoli_orthologs/config.json`, {
-      views: [
-        {
-          type: 'LinearGenomeView',
-          assembly: 'MG1655',
-          loc: 'NC_000913.3:2,095,000-2,115,000',
-          tracks: [
-            {
-              trackId: 'ecoli_orthologs',
-              height: 968,
-              labels: { lanes: { placement: 'overlay' } },
-              ribbons: { encoding: { color: { value: 'grey' } } },
-            },
-          ],
-        },
-      ],
-    }),
+    url: sessionSpec(
+      `${FROZEN}/ecoli_orthologs/config.json`,
+      {
+        views: [
+          {
+            type: 'LinearGenomeView',
+            assembly: 'MG1655',
+            loc: 'NC_000913.3:2,095,000-2,115,000',
+            tracks: [
+              {
+                trackId: 'ecoli_orthologs',
+                height: 968,
+                labels: { lanes: { placement: 'overlay' } },
+                ribbons: { encoding: { color: { value: 'grey' } } },
+              },
+            ],
+          },
+        ],
+      },
+      'O-antigen cluster in 44 E. coli and Shigella genomes',
+    ),
     readySelector: displaySettled('multiway-synteny-display'),
     readyTimeout: 240000,
     viewportWidth: 1125,
@@ -43,6 +47,7 @@ export const paperEcoliSpecs: ScreenshotSpec[] = [
     mode: 'url',
     name: 'paper/ecoli_synteny',
     url: ecoliOneVsAllUrl(36, {
+      sessionName: 'Five E. coli strains',
       firstLevelHeight: 60,
       rowsTrackHeight: 86,
       config: `${FROZEN}/ecoli_pangenome/config.json`,

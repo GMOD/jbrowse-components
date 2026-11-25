@@ -52,8 +52,8 @@ const HGSVC3_SV_TRACK = {
 // heatmap shows
 const OUTER_DELETION_SORT = { refName: 'chr3', pos: 162_879_999 }
 
-const BLURB_FONT = 14
-const LETTER_FONT = 20
+const BLURB_FONT = 18
+const LETTER_FONT = 26
 
 // Left of the first deletion call, where every track is clear of calls, the
 // blurb indented past its panel's letter
@@ -91,56 +91,60 @@ export const paperCohortSpecs: ScreenshotSpec[] = [
   {
     mode: 'url',
     name: 'paper/cohort_views',
-    url: sessionSpec(CNV_GRAPH_CONFIG, {
-      sessionTracks: [SV_TRACK, HGSVC3_SV_TRACK, CN_BEDGRAPH_TRACK],
-      views: [
-        {
-          type: 'LinearGenomeView',
-          assembly: 'hg38',
-          loc: TWO_ALLELE_DELETION_WINDOW,
-          tracks: [
-            {
-              trackId: SV_TRACK.trackId,
-              forceLoad: true,
-              sortRowsBy: OUTER_DELETION_SORT,
-              // Deletions only: a 35 Mb duplication at the window's edge and
-              // complex calls loaded just outside it put Duplication and
-              // Complex in the legend with nothing visible to key
-              filter: [
-                "jexl:svType(feature)=='DEL' && alleleLength(feature)>=5000",
-              ],
-              encoding: { color: 'svType' },
-              // The key would cover the lane's label at the window's right
-              // edge; the paper's caption gives it instead
-              legend: { show: false },
-              height: 160,
-            },
-            {
-              trackId: HGSVC3_SV_TRACK.trackId,
-              filter: ['jexl:alleleLength(feature)>=5000'],
-              genotypes: { show: false },
-              records: { displayMode: 'compact' },
-            },
-            {
-              ...CN_HEATMAP_SETTINGS,
-              trackId: CN_BEDGRAPH_TRACK.trackId,
-              height: 160,
-              runClustering: true,
-              rows: { axis: { tree: false, labels: false } },
-            },
-            graphTrack('hprc_minigraph_segments', {
-              layoutMode: 'force',
-              layoutEngine: 'stress',
-              paneHeight: 360,
-              encoding: { color: { field: 'position' } },
-              layers: { lengths: true },
-              key: 'overlay',
-              extent: 'view',
-            }),
-          ],
-        },
-      ],
-    }),
+    url: sessionSpec(
+      CNV_GRAPH_CONFIG,
+      {
+        sessionTracks: [SV_TRACK, HGSVC3_SV_TRACK, CN_BEDGRAPH_TRACK],
+        views: [
+          {
+            type: 'LinearGenomeView',
+            assembly: 'hg38',
+            loc: TWO_ALLELE_DELETION_WINDOW,
+            tracks: [
+              {
+                trackId: SV_TRACK.trackId,
+                forceLoad: true,
+                sortRowsBy: OUTER_DELETION_SORT,
+                // Deletions only: a 35 Mb duplication at the window's edge and
+                // complex calls loaded just outside it put Duplication and
+                // Complex in the legend with nothing visible to key
+                filter: [
+                  "jexl:svType(feature)=='DEL' && alleleLength(feature)>=5000",
+                ],
+                encoding: { color: 'svType' },
+                // The key would cover the lane's label at the window's right
+                // edge; the paper's caption gives it instead
+                legend: { show: false },
+                height: 160,
+              },
+              {
+                trackId: HGSVC3_SV_TRACK.trackId,
+                filter: ['jexl:alleleLength(feature)>=5000'],
+                genotypes: { show: false },
+                records: { displayMode: 'compact' },
+              },
+              {
+                ...CN_HEATMAP_SETTINGS,
+                trackId: CN_BEDGRAPH_TRACK.trackId,
+                height: 160,
+                runClustering: true,
+                rows: { axis: { tree: false, labels: false } },
+              },
+              graphTrack('hprc_minigraph_segments', {
+                layoutMode: 'force',
+                layoutEngine: 'stress',
+                paneHeight: 360,
+                encoding: { color: { field: 'position' } },
+                layers: { lengths: true },
+                key: 'overlay',
+                extent: 'view',
+              }),
+            ],
+          },
+        ],
+      },
+      'Two deletion alleles on chromosome 3',
+    ),
     readySelector: `body:has(${displaySettled('variant-display')}):has(${CLUSTERED_READY}) ${GRAPH_DRAWN}`,
     readyTimeout: 300000,
     // the paper prints it at its full text width

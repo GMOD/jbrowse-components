@@ -755,47 +755,57 @@ export function ecoliOneVsAllUrl(
     firstLevelHeight = levelHeight,
     rowsTrackHeight = 100,
     config = 'https://jbrowse.org/demos/ecoli_pangenome/config.json',
+    sessionName = 'Screenshot',
   } = {},
 ) {
-  return sessionSpec(config, {
-    views: [
-      {
-        type: 'LinearSyntenyView',
-        views: [
-          {
-            assembly: 'K12',
-            loc: 'chr:1-4,641,652',
-            tracks: [
-              {
-                trackId: 'ecoli_ava',
-                // `minimap2 -X` built the PAF, so the K12 lane would be empty
-                facet: { field: 'mateAssembly', hidden: ['K12'] },
-                pileup: {
-                  // at 3.2kb/px the SNPs, each at a 1px floor, paint a solid wall
-                  mismatches: { show: false },
-                  // the gaps are the information; a 7px bar hides them
-                  mark: { height: 20 },
+  return sessionSpec(
+    config,
+    {
+      views: [
+        {
+          type: 'LinearSyntenyView',
+          views: [
+            {
+              assembly: 'K12',
+              loc: 'chr:1-4,641,652',
+              tracks: [
+                {
+                  trackId: 'ecoli_ava',
+                  // `minimap2 -X` built the PAF, so the K12 lane would be empty
+                  facet: { field: 'mateAssembly', hidden: ['K12'] },
+                  pileup: {
+                    // at 3.2kb/px the SNPs, each at a 1px floor, paint a solid wall
+                    mismatches: { show: false },
+                    // the gaps are the information; a 7px bar hides them
+                    mark: { height: 20 },
+                  },
+                  height: rowsTrackHeight,
                 },
-                height: rowsTrackHeight,
-              },
-            ],
-          },
-          // IAI39 must sit next to K12 for a K12<->IAI39 band to exist
-          { assembly: 'IAI39' },
-          { assembly: 'Sakai' },
-          { assembly: 'CFT073' },
-          { assembly: 'NCTC86' },
-        ],
-        tracks: ['ecoli_ava'],
-        mark: { interpolate: 'linear' },
-        // matches the lanes, which color by strand
-        encoding: { color: 'strand' },
-        filter: [{ field: 'length', gte: 10000 }],
-        collapseEmptyRows: true,
-        levelHeights: [firstLevelHeight, levelHeight, levelHeight, levelHeight],
-      },
-    ],
-  })
+              ],
+            },
+            // IAI39 must sit next to K12 for a K12<->IAI39 band to exist
+            { assembly: 'IAI39' },
+            { assembly: 'Sakai' },
+            { assembly: 'CFT073' },
+            { assembly: 'NCTC86' },
+          ],
+          tracks: ['ecoli_ava'],
+          mark: { interpolate: 'linear' },
+          // matches the lanes, which color by strand
+          encoding: { color: 'strand' },
+          filter: [{ field: 'length', gte: 10000 }],
+          collapseEmptyRows: true,
+          levelHeights: [
+            firstLevelHeight,
+            levelHeight,
+            levelHeight,
+            levelHeight,
+          ],
+        },
+      ],
+    },
+    sessionName,
+  )
 }
 
 export const syntenySpecs: ScreenshotSpec[] = [
