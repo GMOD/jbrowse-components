@@ -74,6 +74,19 @@ test('a linear view goes to its region before its tracks go in', () => {
   ])
 })
 
+test("an import form's view goes to its region after Launch, once it exists", () => {
+  const steps = titles([
+    {
+      type: 'LinearSyntenyView',
+      loc: 'ctgA:1-5000',
+      views: [{ assembly: 'volvox' }, { assembly: 'volvox' }],
+    },
+  ])
+  expect(steps?.indexOf('Go to your region in the location box.')).toBe(
+    (steps?.indexOf('Click **Launch**.') ?? -1) + 1,
+  )
+})
+
 test('"Add the next track the same way" follows only an ordinary Open track step', () => {
   expect(
     titles([
