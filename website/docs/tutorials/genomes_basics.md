@@ -52,10 +52,11 @@ instance with a URL you can share:
 
 ## Search for TP53 and trim its isoforms
 
-Open hg38. The view starts with one track on, the **NCBI RefSeq - RefSeq All**
-gene track, and the track selector open down the right. The location box at the
-top of the view takes a gene symbol, because the hosted config ships a name
-index, or a coordinate range such as `chr17:7,668,400-7,687,550`:
+From any of those routes, open hg38. The view starts with one track on, the
+**NCBI RefSeq - RefSeq All** gene track, and the track selector open down the
+right. The location box at the top of the view takes a gene symbol, because the
+hosted config ships a name index, or a coordinate range such as
+`chr17:7,668,400-7,687,550`:
 
 - Type `TP53` into the location box and press Enter
 
@@ -68,6 +69,8 @@ than fit in the track's height. Two controls trim them:
 - Click the `Isoforms trimmed` chip at the bottom right for **Auto / All
   transcripts / Representative transcript**. The last collapses every gene to
   one transcript, which the rest of this page uses
+
+<Figure src="/img/genomes_basics/isoform_control.png" caption="The gene track's isoform control and the popover it opens." />
 
 ## Find the phyloP conservation track in the catalog
 
@@ -92,13 +95,8 @@ base:
 
 - Type `chr17:7,674,180-7,674,290` into the location box
 - Tick **Reference sequence**, which is off by default
-- If the gene track shows a codon row per transcript, pick **Representative
-  transcript** from the isoform control to keep one
 
-<Figure src="/img/genomes_basics/isoform_control.png" caption="The gene track's isoform control and the popover it opens." />
-
-Within a codon the third base's bar is the short one, since most third-position
-changes leave the amino acid unchanged. Hover a bar to read its score.
+Hover a bar to read its score.
 
 ## Add the multiple alignment behind the phyloP score
 
@@ -112,14 +110,9 @@ the 470-way pair. Tick both, under Comparative Genomics:
 <Figure src="/img/genomes_basics/multiz_alignment.png" caption="TP53's DNA binding domain at base zoom with phyloP and the 470-way multiz alignment. A base is drawn only where it differs from human." />
 
 In the alignment track, most columns are blank because every species matches
-human at those bases, and conserved columns give a positive score. phyloP counts
-substitution events on the tree:
-
-- under S240 (serine 240), nearly every species differs from human, but all have
-  the same base, which is one substitution on the human branch, so the score
-  stays above the line
-- under T256 and G244 (threonine 256, glycine 244), fewer rows differ and those
-  that do disagree with each other, and the score goes red
+human at those bases. phyloP counts substitution events on the tree, so a column
+where the species that differ from human share one base scores above the line,
+and one where they disagree with each other scores red.
 
 A MAF block has a row per species, so at gene-wide zoom JBrowse asks you to
 confirm before fetching the alignment.
@@ -142,9 +135,6 @@ give each cell line a row:
 - Choose **Plot type → Multi-row → Bar plot** in each layered track's menu
 
 <Figure src="/img/genomes_basics/promoter_regulation.png" caption="TP53's promoter. Left: the Plot type menu over the overlaid marks. Right: a row per cell line." />
-
-_TP53_ is on the minus strand, so its promoter sits at the high-coordinate end,
-where every track in the figure has a call.
 
 ## Filter gnomAD's TP53 variants to loss of function
 

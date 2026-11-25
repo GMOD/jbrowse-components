@@ -39,8 +39,9 @@ We:
 ## The data
 
 Nothing to download: the protein browser and the two plugins fetch from these
-services, per gene, when you open a session. _Add the plugins to your own
-instance_ covers your own JBrowse.
+services, per gene, when you open a session.
+[Add the plugins to your own instance](#add-the-plugins-to-your-own-instance)
+covers your own JBrowse.
 
 <details>
 <summary>The files</summary>
@@ -137,17 +138,15 @@ The page URL holds the gene, the focus and the structure, so
 [?gene=TP53&ref=9606&residue=248&structure=3kmd](https://genomes.jbrowse.org/protein-browser/?gene=TP53&ref=9606&residue=248&structure=3kmd)
 reopens this launch.
 
-### Color VviAGL11's AlphaFold model by pLDDT {#an-alphafold-model-colored-by-plddt}
+## Color VviAGL11's AlphaFold model by pLDDT {#an-alphafold-model-colored-by-plddt}
 
-Most seedless grapes are seedless because of one missense change in _VviAGL11_,
-a MADS box transcription factor that regulates seed development. Arginine 197
-becomes leucine (R197L)
-([Royo et al. 2018](https://doi.org/10.1104/pp.18.00259)). NCBI names the gene
+_VviAGL11_ is the grapevine seedlessness gene, with the R197L change
+([Royo et al. 2018](https://doi.org/10.1104/pp.18.00259)). NCBI names it
 _MADS5_, on the minus strand of chr18 in the Pinot Noir reference. Its AlphaFold
-model, UniProt A0A217EJJ0, was predicted from a protein sequenced from the
-seedless cultivar Sultanina, so residue 197 of the model is leucine, where the
-Pinot Noir genome codes arginine. The PDB has no structure of the protein, so
-the session opens on the model. Open the protein browser on residue 197:
+model, UniProt A0A217EJJ0, was predicted from the protein of the seedless
+cultivar Sultanina, so residue 197 of the model is leucine, where the Pinot Noir
+genome codes arginine. The PDB has no structure of the protein, so the session
+opens on the model. Open the protein browser on residue 197:
 
 - open
   [genomes.jbrowse.org/protein-browser/?gene=AGL11&ref=29760&residue=197](https://genomes.jbrowse.org/protein-browser/?gene=AGL11&ref=29760&residue=197)
@@ -165,10 +164,6 @@ header's **pLDDT** row shows the same scale along the sequence.
 
 <Figure src="/img/protein/agl11_codon_hover.png" caption="VviAGL11 at codon 197 with its UniRef alignment and the AlphaFold model colored by pLDDT." />
 
-Arginine fills most rows of the alignment column. Residue 197 falls in
-AlphaFold's low band, where AlphaFold DB advises treating the chain's placement
-with caution, and the DNA-binding MADS domain falls in the very high band.
-
 ## Add the plugins to your own instance
 
 The plugin store lists the two plugins as **Protein3d** and **MSAView**, and
@@ -184,10 +179,6 @@ right-click menu, so they appear wherever JBrowse hosts more than one view:
 The single-view embedded components host only a linear genome view, and
 [anywidget](/docs/jbrowse_anywidget)'s `JBrowseApp` loads no plugins yet, so
 neither view type appears there.
-
-The approach is described in
-[_Proteins in the Genome Browser_](https://doi.org/10.1016/j.jmb.2026.169645)
-(_Journal of Molecular Biology_, 2026).
 
 ## Launch from the gene's right-click menu
 
@@ -227,7 +218,9 @@ browser's:
 To put the two views beside each other, open the arrow beside the dialog's
 **Launch** button and choose **Open side by side**, at the foot of the list.
 Then click the nuclear export signal on the alignment panel's **Motif** row,
-which selects its residues and bands their codons on the gene.
+which selects its residues and bands their codons on the gene. With just the
+genome view and the structure side by side, each gets half the window, wide
+enough to read a codon beside the residue it encodes.
 
 <Figure caption="A connected session on TP53, NCBI RefSeq above the AlphaFold structure. A motif clicked on the protein's feature track selects its residues and bands their codons." src="/img/protein/connected.png" />
 
@@ -255,9 +248,6 @@ are residues. The view opens with these tracks on:
 
 <Video src="/media/proteins/annotation_1d.mp4" caption="TP53's launch dialog opened on the arrow beside Launch, then the 1D annotation view." />
 
-With just the genome view and the structure side by side, each gets half the
-window, wide enough to read a codon beside the residue it encodes.
-
 <Video src="/media/proteins/variant_to_residue.mp4" caption="TP53 exon 7 over the five single-base missense changes at codon 248, beside the p53 core domain. Hovering the R248 codon in the genome marks residue 248 in the fold." />
 
 Launch an alignment from the same right-click menu too, and each panel's menu
@@ -266,7 +256,7 @@ structure in three columns.
 
 <Video src="/media/proteins/tiled_views.mp4" caption="TP53's gene menu launching an alignment and a structure, then Arrange all views → Side by side. One hover in the genome moves the highlight in both." />
 
-## Choose the species to align for NLRP1
+## Launch an ortholog alignment of NLRP1
 
 **Launch MSA view** builds an alignment from the orthologs NCBI publishes for
 most annotated genes, one per species, with the rows and the aligner yours to
@@ -293,10 +283,7 @@ the zoom at which the domain blocks are readable.
 
 ### Read NLRP1's conserved domains on the MSA
 
-Each colored block is an NCBI conserved domain, drawn in alignment columns. The
-pyrin (PYD) domain sits at the N terminus of human _NLRP1_ and is absent from
-mouse _Nlrp1a_. NACHT, the winged helix, HD2, FIIND and CARD run across nearly
-every row and are the control; the whale rows have only the C-terminal end.
+Each colored block is an NCBI conserved domain, drawn in alignment columns.
 
 The domain calls come from NCBI's protein records. For a protein NCBI has no
 calls for:
@@ -326,12 +313,11 @@ For a genome UCSC projects no UniProt record onto, or for your own gene models,
 proteins and place each one on the exons that encode it, as a track of the same
 kind.
 
-## Open more protein browser sessions
+## Open the same views on other genes
 
-A protein browser session takes any other JBrowse track beside the codon, and a
-second protein view beside the first. Open a figure's live link to load its
-session, then hover the highlighted codon in the genome view: each protein view
-highlights the residue that codon encodes.[^constructs]
+Open a figure's live link to load its session, then hover the highlighted codon
+in the genome view: each protein view highlights the residue that codon
+encodes.[^constructs]
 
 <Figure src="/img/protein/brca1_sge_alphamissense.png" caption="BRCA1 at codon 1775 with the saturation genome editing score of every missense change and the AlphaMissense score of every possible base change, above 1T15 twice: colored by the scan's residue mean on the left and by AlphaMissense on the right. The M1775R highlight names the residue in both structures." />
 
@@ -387,6 +373,8 @@ highlights the residue that codon encodes.[^constructs]
 
 ## Citations
 
+- [_Proteins in the Genome Browser_](https://doi.org/10.1016/j.jmb.2026.169645)
+  (_Journal of Molecular Biology_, 2026), the approach this page uses
 - Broz and Dixit (2016).
   [Inflammasomes: mechanism of assembly, regulation and signalling](https://doi.org/10.1038/nri.2016.58)
 - Royo et al. (2018).
