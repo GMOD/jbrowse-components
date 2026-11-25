@@ -2078,6 +2078,17 @@
         "@mui/material/Tooltip"
       ]
     },
+    "@jbrowse/core/ui/MenuBar": {
+      "package": "@jbrowse/core",
+      "names": [
+        "default"
+      ],
+      "worker": "stub",
+      "uiVia": [
+        "@mui/material",
+        "@mui/material/Tooltip"
+      ]
+    },
     "@jbrowse/core/ui/menuItems": {
       "package": "@jbrowse/core",
       "names": [
@@ -3186,6 +3197,7 @@
       "names": [
         "MAX_SVG_RASTER_AREA_PX",
         "createSvgRasterCanvas",
+        "fittedRasterScale",
         "svgRasterDataUrl"
       ],
       "worker": "real"

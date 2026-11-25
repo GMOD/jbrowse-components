@@ -246,6 +246,7 @@ const loaders: ReExportLoaders = {
   '@jbrowse/core/ui/Logo': () => import('../ui/Logo.tsx'),
   '@jbrowse/core/ui/measureLegendText': () => import('../ui/measureLegendText.ts'),
   '@jbrowse/core/ui/Menu': () => Promise.resolve(uiStub),
+  '@jbrowse/core/ui/MenuBar': () => Promise.resolve(uiStub),
   '@jbrowse/core/ui/menuItems': () => import('../ui/menuItems.ts'),
   '@jbrowse/core/ui/multiTrackMenuItems': () => import('../ui/multiTrackMenuItems.ts'),
   '@jbrowse/core/ui/palette': () => import('../ui/palette.ts'),

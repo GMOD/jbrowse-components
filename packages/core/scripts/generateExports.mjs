@@ -23,6 +23,8 @@ const preservedExports = [
   '@jbrowse/core/util/fileHandleStore',
   '@jbrowse/core/util/tss-react/types',
   '@jbrowse/core/configuration/configurationSchema',
+  // an app bar's menus are a MenuBar now; plugins may still import the button
+  '@jbrowse/core/ui/DropDownMenu',
   // Served to plugins since 4.x and reached in-repo only by relative path, so
   // the scan never sees either. mst-reflection left `exports` that way once,
   // and every plugin's import of it failed to resolve.

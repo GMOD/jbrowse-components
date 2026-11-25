@@ -244,6 +244,7 @@ export default [
   '@jbrowse/core/ui/Logo',
   '@jbrowse/core/ui/measureLegendText',
   '@jbrowse/core/ui/Menu',
+  '@jbrowse/core/ui/MenuBar',
   '@jbrowse/core/ui/menuItems',
   '@jbrowse/core/ui/multiTrackMenuItems',
   '@jbrowse/core/ui/palette',

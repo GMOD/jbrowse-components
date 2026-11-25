@@ -7,8 +7,8 @@ import { useState } from 'react'
 import { acceptsFileDrop } from '@jbrowse/app-core'
 import { pluginLabel } from '@jbrowse/core/pluginDefinitions'
 import { PluggableComponent } from '@jbrowse/core/ui'
-import DropDownMenu from '@jbrowse/core/ui/DropDownMenu'
 import { ErrorBoundary } from '@jbrowse/core/ui/ErrorBoundary'
+import MenuBar from '@jbrowse/core/ui/MenuBar'
 import { electronRenderer } from '@jbrowse/core/util/electron'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { useFetch } from '@jbrowse/core/util/useFetch'
@@ -293,21 +293,17 @@ const StartScreen = observer(function StartScreen({
       >
         <AppBar position="static" data-testid="start-screen-menu">
           <Toolbar>
-            {startScreenMenus({
-              loading,
-              safeMode: Boolean(safeMode),
-              openDialog: setDialog,
-              openConfigFile,
-              pluginMenuItems: () =>
-                pluginMenuItems(startScreenPluginManager, panelProps),
-              onError: reportError,
-            }).map(menu => (
-              <DropDownMenu
-                key={menu.label}
-                menuTitle={menu.label}
-                menuItems={menu.menuItems}
-              />
-            ))}
+            <MenuBar
+              menus={startScreenMenus({
+                loading,
+                safeMode: Boolean(safeMode),
+                openDialog: setDialog,
+                openConfigFile,
+                pluginMenuItems: () =>
+                  pluginMenuItems(startScreenPluginManager, panelProps),
+                onError: reportError,
+              })}
+            />
           </Toolbar>
         </AppBar>
         <div className={classes.header}>

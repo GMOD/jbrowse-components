@@ -451,6 +451,7 @@ const CascadingSubmenu = observer(function CascadingSubmenu({
           }}
           onKeyDown={e => {
             if (e.key === 'ArrowRight') {
+              e.stopPropagation()
               hover.setSubmenu(itemKey, rowCentre(anchorEl))
             } else if (e.key === 'ArrowLeft') {
               e.stopPropagation()
@@ -754,6 +755,13 @@ interface CascadingMenuProps {
   anchorReference?: 'anchorEl' | 'anchorPosition' | 'none'
   anchorPosition?: { top: number; left: number }
   style?: React.CSSProperties
+  /**
+   * A menu bar's two ways from this menu to the one beside it: the pointer
+   * crossing the backdrop toward another bar button, and ArrowLeft at the root
+   * or ArrowRight on a row with no submenu to open.
+   */
+  onBackdropMouseMove?: (event: React.MouseEvent) => void
+  onNavigateSibling?: (step: -1 | 1) => void
 }
 
 const CascadingMenu = observer(function CascadingMenu({
@@ -770,6 +778,8 @@ const CascadingMenu = observer(function CascadingMenu({
   anchorReference,
   anchorPosition,
   style,
+  onBackdropMouseMove,
+  onNavigateSibling,
 }: CascadingMenuProps) {
   const items = Array.isArray(menuItems) ? menuItems : menuItems()
   const { onEntering, ...focus } = usePlacedMenuFocus()
@@ -785,7 +795,17 @@ const CascadingMenu = observer(function CascadingMenu({
       anchorReference={anchorReference}
       anchorPosition={anchorPosition}
       style={style}
-      slotProps={{ transition: { onEntering } }}
+      slotProps={{
+        transition: { onEntering },
+        backdrop: { onMouseMove: onBackdropMouseMove },
+      }}
+      onKeyDown={event => {
+        // Ctrl+Arrow pans a view and Alt+Arrow is the browser's history
+        const modified = event.ctrlKey || event.metaKey || event.altKey
+        if (event.key === 'ArrowRight' && !modified) {
+          onNavigateSibling?.(1)
+        }
+      }}
     >
       <CascadingMenuContext
         value={{
@@ -795,7 +815,16 @@ const CascadingMenu = observer(function CascadingMenu({
           zIndex: style?.zIndex,
         }}
       >
-        <CascadingMenuList menuItems={items} />
+        <CascadingMenuList
+          menuItems={items}
+          onNavigateBack={
+            onNavigateSibling
+              ? () => {
+                  onNavigateSibling(-1)
+                }
+              : undefined
+          }
+        />
       </CascadingMenuContext>
     </Menu>
   )

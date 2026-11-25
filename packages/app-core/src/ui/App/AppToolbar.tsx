@@ -1,6 +1,6 @@
 import AppLogo from '@jbrowse/core/ui/AppLogo'
-import DropDownMenu from '@jbrowse/core/ui/DropDownMenu'
 import EditableTypography from '@jbrowse/core/ui/EditableTypography'
+import MenuBar from '@jbrowse/core/ui/MenuBar'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { Toolbar, Tooltip } from '@mui/material'
 import { observer } from 'mobx-react'
@@ -73,20 +73,16 @@ const AppToolbar = observer(function AppToolbar({
 
   return (
     <Toolbar className={classes.toolbar}>
-      {menus().map(menu => (
-        <DropDownMenu
-          key={menu.label}
-          menuTitle={menu.label}
-          menuItems={menu.menuItems}
-          // a root model's menu items take the session as their argument, and
-          // the renderer decides how to invoke onClick — so this is the whole
-          // binding. It used to be a recursive rewrite of every row of every
-          // menu, rebuilt on each open, to arrive at the same call
-          onMenuItemClick={callback => {
-            callback(session)
-          }}
-        />
-      ))}
+      <MenuBar
+        menus={menus()}
+        // a root model's menu items take the session as their argument, and
+        // the renderer decides how to invoke onClick — so this is the whole
+        // binding. It used to be a recursive rewrite of every row of every
+        // menu, rebuilt on each open, to arrive at the same call
+        onMenuItemClick={callback => {
+          callback(session)
+        }}
+      />
       <div className={classes.grow} />
       <Tooltip title="Rename session" arrow>
         <div className={classes.sessionName}>

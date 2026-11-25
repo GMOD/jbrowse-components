@@ -1,4 +1,4 @@
-import DropDownMenu from '@jbrowse/core/ui/DropDownMenu'
+import MenuBar from '@jbrowse/core/ui/MenuBar'
 import { AppBar, Toolbar } from '@mui/material'
 import { observer } from 'mobx-react'
 
@@ -28,18 +28,14 @@ const EmbeddedAppBar = observer(function EmbeddedAppBar({
   return menus.length ? (
     <AppBar position="static" style={{ gridColumn: '1 / -1' }}>
       <Toolbar variant="dense" disableGutters>
-        {menus.map(menu => (
-          <DropDownMenu
-            key={menu.label}
-            menuTitle={menu.label}
-            menuItems={menu.menuItems}
-            // the root model's menu items take the session as their argument,
-            // same binding the app's toolbar makes
-            onMenuItemClick={callback => {
-              callback(viewState.session)
-            }}
-          />
-        ))}
+        <MenuBar
+          menus={menus}
+          // the root model's menu items take the session as their argument,
+          // same binding the app's toolbar makes
+          onMenuItemClick={callback => {
+            callback(viewState.session)
+          }}
+        />
       </Toolbar>
     </AppBar>
   ) : null
