@@ -10,9 +10,9 @@ tutorial_category: Synteny & comparative genomics
 tutorial_subcategory: Ortholog tables
 ---
 
-We look at one human locus across seven other primates at once. NCBI gives an
+We look at one human locus across the other primates at once. NCBI gives an
 orthologous gene the same symbol in every species it annotates, so an ortholog
-table is a join on the gene name over eight GFF3 files. Bacterial annotations
+table is a join on the gene name over each genome's GFF3. Bacterial annotations
 name fewer genes and rename more of them, so the last section runs the join on
 E. coli annotations to see how it handles them. We:
 
@@ -53,9 +53,9 @@ pip install git+https://github.com/cmdcolin/orthologs2jbrowse
 
 ## The data
 
-The data are the annotations and sequence reports of eight RefSeq assemblies,
-each fetched by accession with the `datasets` CLI: the current human reference,
-the six NHGRI telomere-to-telomere ape assemblies (Yoo et al. 2025) and the
+The data are the annotations and sequence reports of RefSeq assemblies, each
+fetched by accession with the `datasets` CLI: the current human reference, the
+six NHGRI telomere-to-telomere ape assemblies (Yoo et al. 2025) and the
 telomere-to-telomere rhesus macaque. The E. coli section uses E. coli and
 Shigella annotations anchored on K-12 MG1655, all pinned by accession in its
 build script.
@@ -120,10 +120,10 @@ cases:
   because a link joins one gene to one gene. The main case is the
   pseudoautosomal genes, annotated on both X and Y.
 - **Open reading frame genes** are spelled differently in the apes (human
-  _C1orf35_ is chimp _C1H1orf35_), and the helper maps that spelling back to the
-  human symbol.
+  _C1orf35_ is chimp _C1H1orf35_), and `orthologs2jbrowse symbols` maps that
+  spelling back to the human symbol.
 
-The helper prints how much of each column it filled.
+`orthologs2jbrowse symbols` prints how much of each column it filled.
 
 ## Set up each lane's assembly from its hub
 
@@ -181,8 +181,9 @@ GenArk hub, so the human lane is [hg38](https://genomes.jbrowse.org/ucsc/hg38/):
 ```
 
 Each lane's gene models come from a gene track on that lane's assembly. For your
-own annotation, add one per genome from a bgzipped, tabix-indexed GFF3
-([prep](/docs/quickstart_web)) that uses the assembly's refNames:
+own annotation, add one per genome from a GFF3
+[sorted and indexed with tabix](/docs/quickstart_web) that uses the assembly's
+refNames:
 
 ```json addtrack
 {
@@ -200,8 +201,9 @@ own annotation, add one per genome from a bgzipped, tabix-indexed GFF3
 ## Load the multi-genome ortholog track
 
 One `SyntenyTrack` lists every assembly, and `blockAssemblies` and
-`bedLocations` hold one entry per table column, in the order the helper printed.
-In [grammar-of-graphics](/docs/config_guides/mark_display) terms, the display's
+`bedLocations` hold one entry per table column, in the order
+`orthologs2jbrowse symbols` printed. In
+[grammar-of-graphics](/docs/config_guides/mark_display) terms, the display's
 `encoding.color` is a color scale, and the `cluster` field maps each gene's
 ortholog group, named by its gene symbol, to a color:
 
@@ -259,7 +261,7 @@ ortholog group, named by its gene symbol, to a color:
 }
 ```
 
-## Read the TP53 neighbourhood across eight primates
+## Read a window across the primate lanes
 
 In a linear genome view on human, the track draws a lane per primate under the
 human axis, each in that genome's coordinates. Each lane's header names the
@@ -293,6 +295,11 @@ in orientation. The session below opens the _TP53_ neighbourhood:
 
 <Figure caption="TP53 on human chr17 over the other primates' lanes, each with that genome's RefSeq genes. The reversed siamang lane shows [rev], and its ribbons are straight." src="/img/multiway_synteny/primate_tp53_lanes.png" />
 
+Where a genome has the window's genes on two contigs, the track shows the contig
+with more of them in its lane and names the other in the lane header, and **Show
+⟨contig⟩ in this lane** on the header menu switches the lane to that other
+contig.
+
 Navigate to `chr17:34,000,000-38,000,000` on 17q, where the strand color
 separates forward blocks from reversed ones.
 
@@ -300,7 +307,8 @@ separates forward blocks from reversed ones.
 
 ## Read human chromosome 2 against chimpanzee
 
-Human chromosome 2 is two ape chromosomes joined end to end. To see the join:
+To compare human chromosome 2 with the chimpanzee chromosomes that hold its
+halves:
 
 - Open human over chimpanzee from **Add → Linear synteny view**, with
   `primate_orthologs` between them
@@ -310,11 +318,6 @@ Human chromosome 2 is two ape chromosomes joined end to end. To see the join:
   by the chimpanzee chromosome it maps to
 
 <Figure caption="Human chr2 over chimpanzee chr12 and chr13, ribbons colored by chimpanzee chromosome." src="/img/multiway_synteny/primate_chr2_fusion.png" />
-
-In the multi-lane view, where a genome has the window's genes on two contigs,
-the track shows the contig with more of them in its lane and names the other in
-the lane header, and **Show ⟨contig⟩ in this lane** on the header menu switches
-the lane to that other contig.
 
 ## Rebuild the join over E. coli annotations
 
@@ -392,22 +395,6 @@ genome was deposited:
 ```
 
 <Figure caption="The O-antigen cluster on K-12 over the E. coli and Shigella lanes, each with that genome's RefSeq genes." src="/img/multiway_synteny/ecoli_symbol_oantigen.png" />
-
-Read the lanes from the top:
-
-- The K-12 derivatives sort to the top, since the lanes are ordered by how many
-  of the window's genes each genome has on one contig, and have the cluster gene
-  for gene.
-- Below them the flanks chain down every lane: _galF_ on one side, _gnd_ (_gndA_
-  in most lanes), _ugd_ and _wzzB_ on the other.
-- The interior is grey, except the _rfb_ genes, _wzx_ and _wzy_, which join
-  wherever a strain has them.
-
-`orthologs2jbrowse symbols` gives each symbol K-12 lacks a separate row, so
-_vioB_ is one color down IAI39 and the BL21 lanes. A gene PGAP left under its
-locus tag, such as `ECOLC_RS24020` in the ATCC_8739 lane, has no row. Most of
-the grey is each serotype's sugar genes, which have no K-12 counterpart to join
-by name.
 
 ## Reproduce it end to end
 
