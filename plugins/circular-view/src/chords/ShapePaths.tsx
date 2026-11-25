@@ -1,24 +1,16 @@
-import { createContext, use } from 'react'
+import { use } from 'react'
 
 import { usePalette } from '@jbrowse/core/ui/PaletteContext'
 import { alpha, darken } from '@jbrowse/core/ui/palette'
 import { getFillProps, getStrokeProps } from '@jbrowse/core/util'
 import { observer } from 'mobx-react'
 
+import { ExportChordRadiusContext } from './exportChordRadius.ts'
 import { DIMMED_OPACITY } from './shaders/chordStage.generated.ts'
 import { shapePath } from './shapePath.ts'
 
 import type { Shape } from './shapes.ts'
 import type { ShapeDisplayModel } from './types.ts'
-
-/**
- * The radius an export starts its chords at, which differs from the screen's
- * where the export leaves a ring out: the circle settles which rings it draws
- * only after its chord displays have handed over their paths.
- */
-export const ExportChordRadiusContext = createContext<number | undefined>(
-  undefined,
-)
 
 type ShapeState = 'resting' | 'hovered' | 'selected'
 

@@ -199,8 +199,8 @@ export function BaseChordDisplay() {
        * the radius of a chord's Bezier control point when its ends are
        * opposite each other
        */
-      get bezierRadius() {
-        return this.radiusPx * (1 - this.curveDepth)
+      get bezierRadius(): number {
+        return this.figureStage.bezierRadiusPx
       },
       /**
        * #getter

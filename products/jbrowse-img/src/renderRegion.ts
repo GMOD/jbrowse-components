@@ -292,9 +292,7 @@ function reportConfigProblems(session: Model['session']) {
   }
 }
 
-// The app names a track an export left out in a snackbar, which a CLI has
-// none of; stdout may be carrying the SVG, so the notice goes to stderr.
-// Other session notices are the app's UI and stay unprinted.
+// stderr, since stdout may be carrying the SVG
 function printSkippedSvgNotices(session: Model['session']) {
   addMiddleware(session, (call, next) => {
     const [message] = call.args

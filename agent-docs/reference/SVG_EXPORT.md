@@ -65,8 +65,10 @@ circular view's own key (`CircularView.legendSpecIn`) reads each ring's
 leaves with its band, axis and key row and `notifySkippedSvgTracks` names it:
 the export lays out only the rings it draws and starts the chords inside them
 (`ExportChordRadiusContext`), where the screen keeps the band for its status
-line. A ring whose on-screen paint failed still exports through its Canvas2D
-path.
+line. Where the screen scaled its rings to fit, closing a band widens the rest
+past the strips they were laid out at. jb2export prints these "Not included in
+the SVG" notices on stderr. A ring whose on-screen paint failed still exports
+through its Canvas2D path.
 
 **Text inherits the export's font.** The dialog puts `font-family` on the root,
 so a `<text>` that writes the theme's family overrides it; measure in

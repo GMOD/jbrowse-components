@@ -15,7 +15,7 @@ import { legendEntries } from '@jbrowse/core/ui/legendSpec'
 import { resolveStyleTheme } from '@jbrowse/core/ui/styleTheme'
 import { getSession, radToDeg } from '@jbrowse/core/util'
 
-import { ExportChordRadiusContext } from '../../chords/ShapePaths.tsx'
+import { ExportChordRadiusContext } from '../../chords/exportChordRadius.ts'
 import { RingAxes } from '../../rings/RingAxes.tsx'
 import { RingOverlay } from '../../rings/RingOverlay.tsx'
 import { chordRadiusInside, layoutRings } from '../../rings/ringHost.ts'
@@ -176,8 +176,7 @@ export async function renderToSvg(
     effectivePaddingPx: paddingPx,
   } = model
 
-  // the screen keeps a band for a ring it cannot draw, to say why; the export
-  // names it in a notice instead, so the drawn rings and the chords close up
+  // the screen keeps an undrawn ring's band for its status line
   const rings = layoutRings(
     ringBodies.map(b => b.display),
     radiusPx,
