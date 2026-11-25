@@ -1001,4 +1001,46 @@ describe('forEachExportLabel', () => {
       [`FIRST ${text}`, 1000],
     ])
   })
+
+  // The README's derivative-chromosome figure: a long segment named under
+  // itself, then three short ones at the right edge, each a row lower, whose
+  // names all move left under the long one's span. A row's `bottomPx` already
+  // holds its label line, so nothing above reaches a moved name.
+  test('keeps every name moved under a named feature in the rows above', () => {
+    const rowPx = 24
+    const segments = [
+      ['chr3', 0, 818, 'chr3:25,326,821-25,359,568 (32.7 kb)'],
+      ['chr10', 820, 830, 'chr10:58,717,463-58,717,662 (199 bp)'],
+      ['chr12', 835, 843, 'chr12:72,273,111-72,273,294 (183 bp inverted)'],
+      ['chr3b', 850, 1000, 'chr3:25,352,683-25,359,111 (6.4 kb inverted)'],
+    ] as const
+    const fitted = fitAll(
+      [region],
+      [
+        makeFeatureData({
+          flatbushItems: segments.map(([featureId, startBp, endBp], row) =>
+            makeFlatbushItem({
+              featureId,
+              startBp,
+              endBp,
+              topPx: row * rowPx,
+              bottomPx: (row + 1) * rowPx,
+            }),
+          ),
+          floatingLabelsData: new Map(
+            segments.map(([featureId, minX, maxX, name], row) => [
+              featureId,
+              makeLabelData(featureId, {
+                minX,
+                maxX,
+                topY: row * rowPx,
+                nameLabel: makeLabel({ text: name, textWidth: 150 }),
+              }),
+            ]),
+          ),
+        }),
+      ],
+    )
+    expect(fitted.map(l => l.endX)).toEqual([undefined, 1000, 1000, 1000])
+  })
 })

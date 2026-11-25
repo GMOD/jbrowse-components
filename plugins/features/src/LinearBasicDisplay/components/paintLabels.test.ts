@@ -110,7 +110,14 @@ test('a label moved to the edge is set by its end, the badge ending the line', (
     [
       { ...name!, endX: 150 },
       { ...badge!, endX: 200 },
-      { ...name!, label: { text: 'UNMOVED', textWidth: 40 }, labelY: 40 },
+      {
+        kind: 'name',
+        label: { text: 'UNMOVED', textWidth: 40 },
+        labelX: 10,
+        labelY: 40,
+        fontSize: 11,
+        color: '#000',
+      },
     ],
     11,
   )

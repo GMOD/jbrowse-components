@@ -497,12 +497,12 @@ function labelBoxes(
   })
 }
 
-// Each body reaches down by a label stack, so a label moved under a feature
-// that names nothing does not read as its name.
+// `bottomPx` already holds a feature's own label lines, which `named` says it
+// draws.
 function featureBodyBoxes(
   regions: RegionWithData[],
   dataMap: ReadonlyMap<number, FeatureDataResult>,
-  labelReachPx: number,
+  named: ReadonlySet<string>,
 ) {
   return regions.flatMap(region => {
     const toScreen = makeBpMapper(region)
@@ -513,10 +513,11 @@ function featureBodyBoxes(
         const px2 = toScreen(item.endBp)
         return {
           owner: item.featureId,
+          named: named.has(item.featureId),
           left: Math.min(px1, px2),
           right: Math.max(px1, px2),
           top: item.topPx,
-          bottom: item.bottomPx + labelReachPx,
+          bottom: item.bottomPx,
         }
       })
   })
@@ -593,7 +594,9 @@ export function labelsWithinEdges(
  * figure's edges by `labelsWithinEdges`, no further left than its region's
  * start. A stack moved off the right edge must land clear of every other
  * feature's body and label as the layout placed them, and of each stack moved
- * before it; those boxes are built only once a stack has to move.
+ * before it; those boxes are built only once a stack has to move. Nor may it
+ * hang under a feature in its own row that draws no label, where it would read
+ * as that feature's name.
  */
 export function forEachExportLabel(
   regions: RegionWithData[],
@@ -608,6 +611,7 @@ export function forEachExportLabel(
   const drawn: {
     featureId: string
     parentId: string | undefined
+    rowTop: number | undefined
     labels: ResolvedLabel[]
     regionStartPx: number
   }[] = []
@@ -616,11 +620,13 @@ export function forEachExportLabel(
     dataMap,
     context,
     (featureId, labels, region) => {
+      const labelData = dataMap
+        .get(region.displayedRegionIndex)
+        ?.floatingLabelsData.get(featureId)
       drawn.push({
         featureId,
-        parentId: dataMap
-          .get(region.displayedRegionIndex)
-          ?.floatingLabelsData.get(featureId)?.parentFeatureId,
+        parentId: labelData?.parentFeatureId,
+        rowTop: labelData?.topY,
         labels,
         regionStartPx: region.screenStartPx,
       })
@@ -635,7 +641,19 @@ export function forEachExportLabel(
     | undefined
   const occupiedBoxes = () => {
     occupied ??= {
-      bodies: featureBodyBoxes(regions, dataMap, labelStackHeightPx(fontSize)),
+      bodies: featureBodyBoxes(
+        regions,
+        dataMap,
+        new Set(
+          drawn.flatMap(({ featureId, parentId, labels }) =>
+            labels.length === 0
+              ? []
+              : parentId === undefined
+                ? [featureId]
+                : [featureId, parentId],
+          ),
+        ),
+      ),
       labels: drawn.flatMap(({ featureId, labels }) =>
         stackMoves(measureLabels(labels, fontSize, fontFamily), edges.right)
           ? []
@@ -644,7 +662,7 @@ export function forEachExportLabel(
     }
     return occupied
   }
-  for (const { featureId, parentId, labels, regionStartPx } of drawn) {
+  for (const { featureId, parentId, rowTop, labels, regionStartPx } of drawn) {
     const kept = labelsWithinEdges(
       labels,
       { ...edges, left: regionStartPx + LABEL_EDGE_GUTTER_PX },
@@ -652,12 +670,13 @@ export function forEachExportLabel(
       fontFamily,
       box => {
         const { bodies, labels: others } = occupiedBoxes()
+        const fromRow = { ...box, top: Math.min(box.top, rowTop ?? box.top) }
         return (
           !bodies.some(
             body =>
               body.owner !== featureId &&
               body.owner !== parentId &&
-              boxesOverlap(body, box),
+              boxesOverlap(body, body.named ? box : fromRow),
           ) &&
           !others.some(
             other => other.owner !== featureId && boxesOverlap(other, box),
