@@ -7,7 +7,7 @@ import {
   ownDisplayConfig,
   viewTrackEntries,
 } from './configs.ts'
-import { specDisplayType } from './decode.ts'
+import { specDisplayType, specTrackSettings } from './decode.ts'
 
 import type { RawTrack, TrackInfo } from './configs.ts'
 import type { DecodedSpec, SpecTrack, SpecView } from './decode.ts'
@@ -95,10 +95,13 @@ function viewAssemblies(views: SpecView[] = []): string[] {
 // The figure's tracks as a config.json would hold them, each carrying the
 // display settings that make the figure: its session tracks, and every config
 // track that has display config of its own or that the spec sets slots on, as
-// a template whose `uri` the reader fills in.
-export function configTracks({ config, spec }: DecodedSpec): RawTrack[] {
+// a template whose `uri` the reader fills in. `missing` names the styled
+// tracks no template can be written for: a sequence track, or a track or
+// adapter type from a plugin, whose slots this generator cannot read.
+export function rebuildTracks({ config, spec }: DecodedSpec) {
   const sessionTracks = (spec.sessionTracks ?? []) as RawTrack[]
   const tracks = new Map(sessionTracks.map(track => [track.trackId, track]))
+  const missing = new Map<string, string>()
   const assemblies = [...new Set(viewAssemblies(spec.views))]
   for (const { entry, viewType } of viewTrackEntries(spec.views)) {
     const trackId = typeof entry === 'string' ? entry : entry.trackId
@@ -132,9 +135,26 @@ export function configTracks({ config, spec }: DecodedSpec): RawTrack[] {
         ? withSettings(base, info, viewType, display, settings)
         : undefined
     const kept = styled ?? (Object.keys(own).length ? base : undefined)
+    const unreadDisplay = !display || !(display in configManifest.displays)
+    const styledInFigure =
+      Object.keys(own).length > 0 ||
+      (unreadDisplay
+        ? specTrackSettings(entry).length > 0
+        : Object.keys(settings).length > 0)
     if (kept) {
       tracks.set(trackId, kept)
+    } else if (styledInFigure && !tracks.has(trackId)) {
+      missing.set(trackId, info?.name ?? trackId)
     }
   }
-  return [...tracks.values()]
+  return {
+    tracks: [...tracks.values()],
+    missing: [...missing].flatMap(([trackId, name]) =>
+      tracks.has(trackId) ? [] : [name],
+    ),
+  }
+}
+
+export function configTracks(decoded: DecodedSpec): RawTrack[] {
+  return rebuildTracks(decoded).tracks
 }

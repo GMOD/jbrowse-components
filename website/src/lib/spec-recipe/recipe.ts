@@ -1,5 +1,9 @@
 import { deriveAddTrack, deriveAddTrackJson } from '../derive-add-track.ts'
-import { DESKTOP_UI_LABELS } from '../derive-desktop-steps.ts'
+import {
+  DESKTOP_UI_LABELS,
+  GRAPH_FORM_LABELS,
+  graphFormChoice,
+} from '../derive-desktop-steps.ts'
 import {
   defaultDisplay,
   fileKind,
@@ -11,7 +15,7 @@ import {
 } from './configs.ts'
 import { takeArrangement } from './arrangements.ts'
 import { agentBrief, captureFrame } from './agent.ts'
-import { configTracks } from './configTracks.ts'
+import { rebuildTracks } from './configTracks.ts'
 import { embedSnippet } from './embed.ts'
 import { imgRecipe } from './img.ts'
 import { figureFrames, videoFrames } from '../liveLinks.generated.ts'
@@ -298,12 +302,28 @@ function addTrackTitle(
       : kind
         ? ` Needs ${kind}.`
         : ''
+  const graphChoice = info ? graphFormChoice(info.adapterType) : undefined
   return info?.type === 'ReferenceSequenceTrack'
     ? `Show the sequence: check **${info.name}** in the track selector.`
     : band
       ? `Add your file: ${band.form.band} and choose **New track**.${needs}`
-      : `${repeat ? NEXT_TRACK : viaTrackSelector ? ADD_TRACK : OPEN_TRACK}${needs}`
+      : graphChoice
+        ? `Add your graph: ${viaTrackSelector ? "**+** → **Add track...** in this view's track selector" : `**${DESKTOP_UI_LABELS.openTrack}**`}, choose **${GRAPH_FORM_LABELS.workflow}**, and set **${GRAPH_FORM_LABELS.fileType}** to **${graphChoice}**.`
+        : `${repeat ? NEXT_TRACK : viaTrackSelector ? ADD_TRACK : OPEN_TRACK}${needs}`
 }
+
+// A track or adapter type no core plugin registers
+function fromPlugin(info: TrackInfo) {
+  return (
+    (info.type !== '' && !(info.type in configManifest.tracks)) ||
+    (info.adapterType !== '' && !(info.adapterType in configManifest.adapters))
+  )
+}
+
+const GRAPH_PLUGIN_NOTE =
+  'Needs the GraphGenomeView plugin: install it from **Tools → Plugin store**.'
+const PLUGIN_NOTE =
+  'Needs the plugin this track type comes from: install it from **Tools → Plugin store**.'
 
 function trackStep(
   entry: SpecTrackEntry,
@@ -351,13 +371,19 @@ function trackStep(
   const unmapped = walked.unmapped.filter(field => fromSpec.has(field))
   const ownUnmapped = walked.unmapped.filter(field => !fromSpec.has(field))
   const name = info ? `“${info.name}”` : `the “${trackId}” track`
+  const notes = [
+    ...(info && fromPlugin(info)
+      ? [graphFormChoice(info.adapterType) ? GRAPH_PLUGIN_NOTE : PLUGIN_NOTE]
+      : []),
+    ...(ownUnmapped.length
+      ? [
+          `The track's config also sets ${ownUnmapped.map(field => `\`${field}\``).join(', ')}, which no menu step covers yet.`,
+        ]
+      : []),
+  ]
   return {
     title: addTrackTitle(info, kind, band, viaTrackSelector, repeat),
-    ...(ownUnmapped.length
-      ? {
-          note: `The track's config also sets ${ownUnmapped.map(field => `\`${field}\``).join(', ')}, which no menu step covers yet.`,
-        }
-      : {}),
+    ...(notes.length ? { note: notes.join(' ') } : {}),
     example:
       info?.type === 'ReferenceSequenceTrack'
         ? undefined
@@ -647,6 +673,8 @@ export interface CliRecipe {
   // the assemblies those tracks name, which the target config has to declare
   // already — add-track only warns about one it cannot find
   assemblies: string[]
+  // the names of the figure's styled tracks these commands leave out
+  missing: string[]
 }
 
 // configTracks writes the figure's tracks as a config.json holds them, so the
@@ -656,7 +684,7 @@ export interface CliRecipe {
 // the figure. Both derivations are the ones behind the Config/CLI tabs on a
 // docs fence, and check-config-cli round-trips what they emit through the real
 // CLI.
-export function deriveCliRecipe(tracks: RawTrack[]) {
+export function deriveCliRecipe(tracks: RawTrack[], missing: string[] = []) {
   return tracks.length
     ? {
         commands: tracks
@@ -669,6 +697,7 @@ export function deriveCliRecipe(tracks: RawTrack[]) {
         assemblies: [
           ...new Set(tracks.flatMap(track => track.assemblyNames ?? [])),
         ],
+        missing,
       }
     : undefined
 }
@@ -734,6 +763,7 @@ export function buildRecipe(
       genomes,
     ),
   )
+  const rebuilt = rebuildTracks(decoded)
   const specJson = JSON.stringify(spec, null, 2)
   const configUrl = new URL(config, base).href
   const plugin = needsPlugin(config, spec)
@@ -770,7 +800,7 @@ export function buildRecipe(
       notes: [],
     },
     img: plugin ? undefined : imgRecipe(spec, configUrl, frame?.width),
-    cli: deriveCliRecipe(configTracks(decoded)),
+    cli: deriveCliRecipe(rebuilt.tracks, rebuilt.missing),
     unmapped: [...new Set(collected.flatMap(c => c.unmapped))],
   }
 }

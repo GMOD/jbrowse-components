@@ -109,6 +109,14 @@ function assembliesNote(assemblies: string[]): string {
     : ''
 }
 
+// The tab claims the figure's styling only when it rebuilds every styled track
+function cliLead(missing: string[]) {
+  const names = missing.map(name => `“${escapeAttr(name)}”`).join(', ')
+  return missing.length
+    ? `Adds the figure's tracks it can rebuild to your <code>config.json</code>; ${names} ${missing.length === 1 ? 'is' : 'are'} not among them.`
+    : 'Adds these tracks to your <code>config.json</code>, <a href="/docs/config_guides/tracks/#configuring-displays">styled</a> as in the figure.'
+}
+
 // One panel per way of reproducing the figure. Built as a list so a panel that
 // doesn't apply (a notebook snippet for a synteny view) simply isn't in it —
 // tab and panel positions stay in step with each other automatically, which
@@ -132,7 +140,7 @@ export function panels(recipe: Recipe, id: string, inlineOpens = false): Panel[]
             ...CLI_TAB,
             body: [
               note(
-                `Adds these tracks to your <code>config.json</code>, <a href="/docs/config_guides/tracks/#configuring-displays">styled</a> as in the figure. Point each <code>uri</code> at your file${recipe.cli.commands.includes(OWN_FILE) ? ` (replace <code>${OWN_FILE}</code>)` : ''}.`,
+                `${cliLead(recipe.cli.missing)} Point each <code>uri</code> at your file${recipe.cli.commands.includes(OWN_FILE) ? ` (replace <code>${OWN_FILE}</code>)` : ''}.`,
               ),
               copyableBlock(recipe.cli.commands, 'spec-json'),
               note(

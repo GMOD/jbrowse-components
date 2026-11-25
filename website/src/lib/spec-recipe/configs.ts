@@ -286,6 +286,9 @@ const FILE_KINDS: Record<string, string> = {
   BgzipFastaAdapter: 'a bgzip-compressed FASTA (.fa.gz + .fai + .gzi)',
   GenbankAdapter: 'a GenBank flat file (.gb, .gbk)',
   FromConfigAdapter: 'features defined inline in the config',
+  RgfaTabixAdapter:
+    'a graph indexed by gfa-to-tabix (.segs.bed.gz or .graph.bed.gz)',
+  MinigraphBubbleAdapter: 'minigraph bubbles as a tabix-indexed BED',
 }
 
 export function fileKind(adapterType: string): string | undefined {

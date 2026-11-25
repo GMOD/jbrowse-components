@@ -131,6 +131,12 @@ const GRAPH_ADAPTERS: Record<
   },
 }
 
+// The File type the pangenome graph form offers for an adapter, when it offers
+// one
+export function graphFormChoice(adapterType: string) {
+  return GRAPH_ADAPTERS[adapterType]?.choice
+}
+
 function uris(value: unknown, key?: string): string[] {
   if (Array.isArray(value)) {
     return value.flatMap(item =>
