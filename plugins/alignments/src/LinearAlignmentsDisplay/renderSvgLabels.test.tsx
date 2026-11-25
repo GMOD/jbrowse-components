@@ -33,7 +33,9 @@ function readWithMismatch() {
           data: {
             ...oneReadWithMate(),
             mismatchPositions: new Uint32Array([1010]),
-            mismatchYs: new Uint16Array([0]),
+            mismatchReadIndices: new Uint32Array([0]),
+            mismatchStrands: new Int8Array([1]),
+            mismatchFrequencies: new Uint8Array([255]),
             mismatchBases: new Uint8Array([65]),
             mismatchQuals: new Uint8Array([60]),
           },

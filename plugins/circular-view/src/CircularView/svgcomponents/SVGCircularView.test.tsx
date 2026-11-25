@@ -170,7 +170,7 @@ test('the key sits in a gutter right of the circle, and no key adds no gutter', 
 
   view.setShowLegend(true)
   const svg = await renderToSvg(view, {})
-  const [width, height] = box(svg)
+  const [width = 0, height = 0] = box(svg)
   const keyX = Number(
     /translate\(([\d.]+) 0\)" data-testid="color-legend"/.exec(svg)![1],
   )

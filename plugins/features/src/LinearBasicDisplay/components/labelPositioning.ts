@@ -397,7 +397,7 @@ export function labelsWithinEdges(
   labels: ResolvedLabel[],
   { right, bottom }: { right: number; bottom: number },
   fontSize: number,
-  fontFamily: string,
+  fontFamily?: string,
 ) {
   let nameKept = false
   return labels.filter(placed => {
