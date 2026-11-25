@@ -32,7 +32,11 @@ minimized track, and `notifySkippedSvgTracks` names it. It is one call,
   exist, so a figure with no key has no empty strip. A view's own key (the
   synteny view's, the breakpoint split view's connection key) goes in the same
   gutter beside the first row, and the view's page subject (`legendWidth`)
-  carries its width into a page export's chrome.
+  carries its width into a page export's chrome. `settledPageLayout` measures
+  each key at the height it is drawn, and solves the page again once the
+  tracks have reloaded at the plot width, laying out once more where the
+  chrome moved: the root scales whatever document results to the page width,
+  so a wrong chrome rescales every text size.
 
 **The export canvas width is `view.width`**, not `renderState.canvasWidth`
 (`view.trackWidthPx`, 2px narrower); reusing the on-screen width clips the last
@@ -124,7 +128,9 @@ A fetch the view owns rather than a display (the breakpoint split view's
 variant-call overlay) gets its own readiness getter, `computeSvgReady` over its
 error and the key it last committed (`overlaySvgReady`), and `renderToSvg`
 awaits it through `awaitSvgReady` after the rows render, so a failed overlay
-fetch fails the export the way a failed track does.
+fetch fails the export the way a failed track does. Its page subject hands the
+same wait to the page solve as `settled`, since the key lists calls only once
+the overlay has committed.
 
 ### Every resting state that never fetches must be terminal
 

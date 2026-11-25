@@ -1,3 +1,4 @@
+import { awaitSvgReady } from '@jbrowse/core/svg/svgReady'
 import { svgColorLegendWidth } from '@jbrowse/core/ui/SvgColorLegend'
 import { resolvePalette } from '@jbrowse/core/ui/palette'
 import {
@@ -66,7 +67,8 @@ export function exportedConnectionKey(
 
 /**
  * A breakpoint split view export on a page: its rows share the plot width,
- * and the connection key sits in the legend gutter beside the first row.
+ * and the connection key sits in the legend gutter beside the first row,
+ * listing calls once the overlay fetch has committed.
  */
 export function breakpointPageSubject(
   model: BreakpointViewModel,
@@ -77,5 +79,14 @@ export function breakpointPageSubject(
     views: model.views,
     legendWidth: (theme, fontFamily) =>
       exportedConnectionKey(model, theme, { ...opts, fontFamily }).gutterWidth,
+    settled: () =>
+      awaitSvgReady({
+        get svgReady() {
+          return model.overlaySvgReady
+        },
+        get error() {
+          return model.overlayError
+        },
+      }),
   }
 }

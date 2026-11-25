@@ -1,9 +1,12 @@
 import { exportMargin } from '@jbrowse/core/svg/constants'
+import { svgLegendGutterWidth } from '@jbrowse/display-kit/renderDisplaySvg'
 import { AXIS_GUTTER_WIDTH_PX } from '@jbrowse/display-ui'
 import { axisGutterWidth } from '@jbrowse/display-ui/axisPlacement'
 import { types } from '@jbrowse/mobx-state-tree'
 
-import { exportLaidOut, exportMargins } from './pageLayout.ts'
+import { exportLaidOut, exportMargins, pageLayout } from './pageLayout.ts'
+import { layoutSvgTracks } from './renderViewTracks.ts'
+import { defaultTextHeight } from './util.ts'
 
 const SCREEN_WIDTH = 800
 const EXPORT_WIDTH = 500
@@ -158,4 +161,121 @@ test('an export sized in px keeps its margin on every side, widened for a captio
   const captioned = axisDisplay('depth')
   expect(captioned.gutter).toBeGreaterThan(exportMargin)
   expect(exportMargins([captioned], false).left).toBe(captioned.gutter)
+})
+
+const PAGE = { pageWidth: '7in', textSize: 7 }
+const PAGE_EDGES = 16
+const SHORT_KEY = ['a']
+const LONG_KEY = ['a category name long enough to widen the key']
+
+function keyedPage(height = 40) {
+  const key = { labels: SHORT_KEY }
+  const display = {
+    height,
+    showLegend: true,
+    get legendSpec() {
+      return {
+        sections: [
+          {
+            id: 'k',
+            items: key.labels.map(label => ({ label, color: 'red' })),
+          },
+        ],
+      }
+    },
+    renderSvg: async () => null,
+  }
+  const track = {
+    minimized: false,
+    configuration: { trackId: 't', name: 't' } as never,
+    displays: [display],
+  }
+  return {
+    key,
+    display,
+    subject: {
+      node: types
+        .model({
+          rpcManager: types.frozen({}),
+          configuration: types.frozen({}),
+          view: types.model({}),
+        })
+        .create({ view: {} }).view,
+      views: [{ pinnedTracks: [], unpinnedTracks: [track] }],
+    },
+    legendWidth: () =>
+      layoutSvgTracks({
+        tracks: [track],
+        theme: undefined,
+        fontFamily: undefined,
+        textHeight: defaultTextHeight(13),
+        trackLabels: 'offset',
+      }).legendWidth,
+  }
+}
+
+test('a page export whose key widens when it relays out still draws its document at the page width', async () => {
+  const page = keyedPage()
+  const layOutAt = jest.fn((width: number) => {
+    page.key.labels = width === SCREEN_WIDTH ? SHORT_KEY : LONG_KEY
+  })
+  let documentWidth = 0
+  await exportLaidOut(
+    page.subject,
+    PAGE,
+    { width: () => SCREEN_WIDTH, layOutAt },
+    async () => {
+      documentWidth =
+        layOutAt.mock.calls.at(-1)![0] + PAGE_EDGES + page.legendWidth()
+      return '<svg/>'
+    },
+  )
+  const { documentPx } = pageLayout(page.subject, PAGE)!
+  expect(documentWidth).toBeLessThanOrEqual(documentPx)
+  expect(documentWidth).toBeGreaterThan(documentPx - 1)
+})
+
+test('a page export measures each key at the height it draws it', () => {
+  const page = keyedPage(20)
+  page.key.labels = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', ...LONG_KEY]
+  const drawn = page.legendWidth()
+  expect(drawn).not.toBe(
+    svgLegendGutterWidth(page.display, undefined, Infinity, undefined),
+  )
+  const { documentPx, plotPx } = pageLayout(page.subject, PAGE)!
+  expect(plotPx).toBe(Math.floor(documentPx - PAGE_EDGES - drawn))
+})
+
+test("a page export waits for its subject's own data before it lays out", async () => {
+  const page = keyedPage()
+  const overlay = Promise.withResolvers<void>()
+  const settled = jest.fn(() => overlay.promise)
+  const layout = screenLayout()
+  const exported = exportLaidOut(
+    { ...page.subject, settled },
+    PAGE,
+    layout,
+    async () => '<svg/>',
+  )
+  await new Promise(resolve => setTimeout(resolve, 0))
+  expect(settled).toHaveBeenCalled()
+  expect(layout.layOutAt).not.toHaveBeenCalled()
+  overlay.resolve()
+  await expect(exported).resolves.toBe('<svg/>')
+  expect(layout.layOutAt).toHaveBeenCalled()
+})
+
+test('a page export whose key never settles lays out twice and then renders', async () => {
+  const page = keyedPage()
+  const layOutAt = jest.fn(() => {
+    page.key.labels = page.key.labels === SHORT_KEY ? LONG_KEY : SHORT_KEY
+  })
+  await exportLaidOut(
+    page.subject,
+    PAGE,
+    { width: () => SCREEN_WIDTH, layOutAt },
+    async () => '<svg/>',
+  )
+  expect(layOutAt.mock.calls).toHaveLength(3)
+  expect(layOutAt.mock.calls.at(-1)).toEqual([SCREEN_WIDTH])
 })

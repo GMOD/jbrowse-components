@@ -317,13 +317,11 @@ async function pageSvgOpts<O extends ExportSvgOptions>(
   svgOpts: O,
   session: RenderErrorSources,
 ) {
-  const page = await settledPageLayout(subject, svgOpts)
-  if (page) {
-    layOutAt(page.plotPx)
+  const page = await settledPageLayout(subject, svgOpts, layOutAt, async () => {
     for (const view of ready) {
       await whenViewReady(view, session)
     }
-  }
+  })
   return { ...svgOpts, rasterScale: page?.rasterScale }
 }
 
