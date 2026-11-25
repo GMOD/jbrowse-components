@@ -67,8 +67,14 @@ function ownDataSteps(steps: RecipeStep[], unmapped: string[]): string {
   ].join('')
 }
 
+type Opens = Pick<Recipe, 'liveUrl' | 'desktopWebUrl' | 'desktopUrl'>
+
+const QUICKEST = note(
+  '<strong>Quickest</strong>: open the view, then <strong>File → Open track...</strong> for your files.',
+)
+
 function desktopLink(
-  recipe: Recipe,
+  recipe: Opens,
   id: string,
   label: string,
   className?: string,
@@ -111,9 +117,7 @@ export function panels(recipe: Recipe, id: string, inlineOpens = false): Panel[]
         inlineOpens
           ? `<div class="spec-open"><a href="${escapeAttr(recipe.liveUrl)}" target="_blank" rel="noopener">Open this view in JBrowse Web ↗</a> · ${desktopLink(recipe, id, 'Open this view in JBrowse Desktop ↗')}</div>`
           : '',
-        note(
-          '<strong>Quickest</strong>: open the view, then <strong>File → Open track...</strong> for your files.',
-        ),
+        QUICKEST,
         ownDataSteps(recipe.steps, recipe.unmapped),
       ].join(''),
     },
@@ -266,17 +270,20 @@ function dialogHtml(id: string, body: string): string {
 
 // Opening the finished view comes first, since most readers want only that;
 // the tabs below are the ways to rebuild it from their own data.
-function opensHtml(recipe: Recipe, slow: boolean, id: string): string {
+function openButtonsHtml(opens: Opens, slow: boolean, id: string): string {
   return [
     '<div class="spec-opens">',
-    `<a class="spec-open-btn spec-open-primary" href="${escapeAttr(recipe.liveUrl)}" target="_blank" rel="noopener">Open in JBrowse Web ↗</a>`,
-    desktopLink(recipe, id, 'Open in JBrowse Desktop ↗', 'spec-open-btn'),
+    `<a class="spec-open-btn spec-open-primary" href="${escapeAttr(opens.liveUrl)}" target="_blank" rel="noopener">Open in JBrowse Web ↗</a>`,
+    desktopLink(opens, id, 'Open in JBrowse Desktop ↗', 'spec-open-btn'),
     '</div>',
     slow
       ? '<p class="spec-rebuild-lead">Large dataset: slow to open.</p>'
       : '',
-    '<p class="spec-rebuild-lead">Or rebuild it from your own data:</p>',
   ].join('')
+}
+
+function opensHtml(recipe: Recipe, slow: boolean, id: string): string {
+  return `${openButtonsHtml(recipe, slow, id)}<p class="spec-rebuild-lead">Or rebuild it from your own data:</p>`
 }
 
 export function recipeDialogHtml(
@@ -288,6 +295,12 @@ export function recipeDialogHtml(
     id,
     opensHtml(recipe, slow, id) + tabsHtml(id, panels(recipe, id)),
   )
+}
+
+// A view saved as a whole session rather than a spec has no steps to derive,
+// so its dialog opens it and points the reader at their own files from there
+export function openDialogHtml(opens: Opens, id: string, slow = false): string {
+  return dialogHtml(id, openButtonsHtml(opens, slow, id) + QUICKEST)
 }
 
 export interface RecipeFrame {

@@ -264,7 +264,7 @@ jb2export --config hg38.json --assembly hg38 \
 For a screenshot of the running app, a menu or a hover, see
 [](/docs/agents_capture). Nearly every figure on this site is rendered from one
 of these documents, and the image and the live session come from the same spec,
-so most figures have an "Open this view in JBrowse" link.
+so most figures have an **Open or rebuild this view** button.
 
 ## See also
 

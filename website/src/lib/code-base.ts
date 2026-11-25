@@ -12,8 +12,8 @@ export const RELEASED_CODE_BASE = 'https://jbrowse.org/code/jb2/latest/'
 // That is why it, and not `latest/`, is the default. A figure's live link opens
 // `<base>?config=test_data/…`, and the released build only carries the
 // test_data of its own release: measured against v4.3.0 (May 2026), 20 of the 38
-// configs the specs name 404 there, which is ~50 figures whose "Open this view
-// in JBrowse" lands on a config-not-found page. The graph-genome-view figures
+// configs the specs name 404 there, which is ~50 figures whose "Open in JBrowse
+// Web" lands on a config-not-found page. The graph-genome-view figures
 // cannot be fixed by hosting a config either — the plugin reads `createSvgIcon`
 // off the host (#5607, unreleased), so on `latest` it throws before the view
 // exists. `pnpm check-live-configs --network` is what re-checks this; a release

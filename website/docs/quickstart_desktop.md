@@ -146,7 +146,8 @@ opened sessions". The **File → Session** menu handles named sessions:
 **File → Session**, takes a JBrowse Web URL and rebuilds it as a new session:
 
 - a [session spec](/docs/urlparams/#session-spec) link (`&session=spec-...`),
-  such as the "Open this view in JBrowse" link under any figure in these docs
+  such as the link a figure's **Open or rebuild this view** dialog opens in
+  these docs
 - the [URL parameter](/docs/urlparams/) shorthand, `&assembly=` with `&loc=`,
   `&tracks=` and `&highlight=`
 - a `&hubURL=` link, attached as a connection; `&assembly=` naming one of the
@@ -164,11 +165,11 @@ refused, so open local files from a saved session or config instead.
 JBrowse Web's Share dialog has an "Open in JBrowse Desktop" button that opens
 the link it shows, through the same `jbrowse://` link.
 
-Figures in these docs also offer an "Open this view in JBrowse Desktop" button,
-through a `jbrowse://` link the macOS and Windows installers register. The Linux
-AppImage registers nothing by itself, so there paste the link, pass it on the
-command line (below), or integrate the AppImage with
-[AppImageLauncher](https://github.com/TheAssassin/AppImageLauncher).
+A figure's **Open or rebuild this view** dialog in these docs also has an **Open
+in JBrowse Desktop** button, through a `jbrowse://` link the macOS and Windows
+installers register. The Linux AppImage registers nothing by itself, so there
+paste the link, pass it on the command line (below), or integrate the AppImage
+with [AppImageLauncher](https://github.com/TheAssassin/AppImageLauncher).
 
 ### Saving a genome to the quickstart list
 
