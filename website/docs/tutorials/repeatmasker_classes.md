@@ -9,10 +9,9 @@ tutorial_category: genomes.jbrowse.org
 ---
 
 RepeatMasker annotates a genome's repeats and names each copy's class (SINE,
-LINE, LTR, DNA transposon, simple repeat). Over a window of 17q21, SINE copies
-fill the window end to end while LINE copies come in clusters. A RepeatMasker
-track draws every class in one packed row of colored blocks, where that
-difference is hard to read. We:
+LINE, LTR, DNA transposon, simple repeat). A RepeatMasker track draws every
+class in one packed row of colored blocks, which makes the classes hard to tell
+apart over a window such as 17q21. We:
 
 - switch hg38's RepeatMasker track to a
   [multi-row feature display](/docs/user_guides/multirow_feature_track), one
@@ -21,19 +20,19 @@ difference is hard to read. We:
 - convert your own RepeatMasker `.out` into the BED the display reads, sort it
   with the JBrowse CLI and point the track config at it
 
-Every genome at [genomes.jbrowse.org](https://genomes.jbrowse.org), and any UCSC
-or GenArk hub config, has a RepeatMasker track to try the first step on.
+A genome at [genomes.jbrowse.org](https://genomes.jbrowse.org), or any UCSC or
+GenArk hub config, that has a RepeatMasker track can try the first step.
 
 ## Prerequisites
 
 - a JBrowse to paste the tracks into ([Web](/docs/quickstart_web) or
   [Desktop](/docs/quickstart_desktop))
 - htslib (`bgzip`, `tabix`), for indexing your own output
-- `samtools`, for
-  [serving your own RepeatMasker output](#serving-your-own-repeatmasker-output)
-  and [Reproduce it end to end](#reproduce-it-end-to-end), which runs the same
-  conversion
-- `node`, for the [JBrowse CLI](/docs/cli), which both of those need too
+- `samtools`, for the build script in
+  [Reproduce it end to end](#reproduce-it-end-to-end)
+- `node`, for the [JBrowse CLI](/docs/cli), which
+  [converting your own RepeatMasker output](#serving-your-own-repeatmasker-output)
+  and the build script need
 
 <!-- BEGIN GENERATED TUTORIAL_INSTALL samtools,htslib,node,jbrowse-cli -->
 
@@ -76,14 +75,14 @@ each would make, `repFamily` among them. <!-- menu-path-ok -->
 
 <Figure src="/img/multirow/display_types_menu.png" caption="Top: the track menu's Display types submenu on the UCSC RepeatMasker track; any feature track offers the multi-row display beside its default one. Bottom: the same window in the multi-row display with one row per repeat class." />
 
-<Video src="/media/repeats/painting_display_switch.mp4" caption="The RepeatMasker track from one packed row to a labelled row per class: the track menu's Display types, and the multi-row painting partitioning on the repeat class column in the file." />
+<Video src="/media/repeats/painting_display_switch.mp4" caption="The RepeatMasker track from one packed row to a labelled row per class: the track menu's Display types, and the multi-row display with one row per repeat class." />
 
 <Figure caption="Top: RepeatMasker colored by repClass in one packed row. Bottom: the same track with one row per repClass." src="/img/cookbook_color_by_type_two_ways.png"/>
 
 ## Pin row order and colors in a track config
 
-A track config can open the track in the partitioned view, and two settings keep
-the rows stable as the window's class list changes. `rows.sort` lists the
+A track config can open the track in the multi-row display, and two settings
+keep the rows stable as the window's class list changes. `rows.sort` lists the
 classes that come first, in order, and a class it leaves out follows the listed
 ones. `rows.colors` pins a color on the label bar of each class it names.
 
@@ -126,9 +125,9 @@ ones. `rows.colors` pins a color on the label bar of each class it names.
 }
 ```
 
-`rows.field` names where the class is stored, and UCSC golden-path and GenArk
-hubs store it in different places, so on a GenArk genome the menu switch above
-needs the field spelled out too:
+`rows.field` names where the class is stored. UCSC golden-path and GenArk hubs
+store it in different places, and on a GenArk genome the **One row per** picker
+has no `repClass` column, so set `rows.field` to the expression below:
 
 - A **UCSC golden-path** assembly ships a BED whose header names its columns,
   `repClass` among them. That column is a feature attribute, so `rows.field` is
@@ -136,8 +135,8 @@ needs the field spelled out too:
 - A **GenArk** assembly ships a `bigRmskBed`, whose autoSql has no class column.
   The name contains the class as a suffix, `L1HS#LINE/L1`, so `rows.field`
   derives it with a jexl expression,
-  `"jexl:split(split(feature.name,'#')[1],'/')[0]"`;
-  [](/docs/user_guides/multirow_feature_track#when-the-category-is-not-a-column)
+  `"jexl:split(split(feature.name,'#')[1],'/')[0]"`; the
+  [multi-row feature track guide](/docs/user_guides/multirow_feature_track#when-the-category-is-not-a-column)
   works through it.
 
 In both cases JBrowse builds the rows from the values in the window, so a window
@@ -150,7 +149,7 @@ The track opens with the first display listed, so the multi-row entry makes rows
 the default. A bare `{ "type": "LinearBasicDisplay" }` ahead of it keeps the
 packed form as the default and leaves the rows one menu click away.
 
-## Serve your own RepeatMasker output {#serving-your-own-repeatmasker-output}
+## Convert your own RepeatMasker `.out` for the track {#serving-your-own-repeatmasker-output}
 
 A hub's RepeatMasker BED has the `repClass` column the display partitions on.
 RepeatMasker's `.out` file instead has a single `class/family` field, `LINE/L1`
@@ -189,11 +188,11 @@ path or URL in `uri` and your assembly's name in `assemblyNames`.
 [`build_repeatmasker_classes.sh`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/build_repeatmasker_classes.sh)
 turns your RepeatMasker `.out` into a runnable JBrowse. The script:
 
-- Splits the `.out`'s `class/family` field into a class column and a family
-  column.
-- Writes a BED whose header names the columns UCSC's does, then bgzips and
-  indexes it.
-- Downloads JBrowse and adds the track with the multi-row display selected.
+- splits the `.out`'s `class/family` field into a class column and a family
+  column
+- writes a BED whose header names the columns UCSC's does, then bgzips and
+  indexes it
+- downloads JBrowse and adds the track with the multi-row display selected
 
 ```bash
 curl -fO https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/build_repeatmasker_classes.sh

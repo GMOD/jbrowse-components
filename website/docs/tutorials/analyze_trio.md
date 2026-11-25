@@ -427,6 +427,9 @@ opens `khv_trio_build/jbrowse2/config.json` directly.
 - [](/docs/user_guides/multivariant_track)
 - [](/docs/config_guides/variant_track)
 - [KHV trio review portal](https://jbrowse.org/demos/khv_trio_review/)
+
+## External links
+
 - [variant-review-portal](https://github.com/cmdcolin/variant-review-portal)
 
 ## Citations
