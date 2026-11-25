@@ -12,20 +12,20 @@ tutorial_subcategory: Other species
 Rice breeders have tracked a few structural variants for decades: the deletion
 in _SD1_ that made the Green Revolution's semi-dwarf varieties, deletions
 upstream of the grain-width gene _qSW5_, and the _Pup1_ insertion that lets some
-varieties grow in phosphorus-poor soil. We find each one in 47 rice assemblies,
+varieties grow in phosphorus-poor soil. We find each one in rice assemblies,
 cultivated, weedy and wild, aligned with `minigraph` into a graph on AGIS-1.0,
 the telomere-to-telomere assembly of the japonica variety Nipponbare. The graph
 track draws each bubble, a place where the assemblies' sequences split and
 rejoin, and a callset made by mapping every assembly back onto the graph lists
-which allele each assembly has there, one VCF column per assembly. Nipponbare is
-a temperate japonica, so where it has a derived allele, the other assemblies
-appear as the change. We:
+which allele each assembly has there, one VCF column per assembly. Nipponbare
+carries derived alleles at some of these loci, so the strains with the ancestral
+allele show as insertions. We:
 
 - load AGIS-1.0 with its RefSeq genes, the graph, its bubbles and the callset as
   tracks in JBrowse
-- at _sd1_, sort the callset's rows by genotype at the semi-dwarf deletion
-- at _qSW5_, tell three grain-width alleles apart by color in the callset
-- at _Pup1_, read which assemblies have the 90 kb insertion
+- sort the callset's rows by genotype at the semi-dwarf deletion in _SD1_
+- tell three grain-width alleles apart by color in the callset at _qSW5_
+- read which assemblies have the 90 kb insertion at _Pup1_
 - build the graph and the callset from the NCBI assemblies
 
 The rice graph page on
@@ -49,8 +49,8 @@ The graph view is a beta plugin. We welcome your [feedback](/contact).
 - to make the callset and build the graph:
   [`minigraph`](https://github.com/lh3/minigraph), the `k8` JavaScript shell
   that runs minigraph's `mgutils` scripts, bcftools, htslib (`bgzip`, `tabix`),
-  gfatools, [`gfa-to-tabix`](https://github.com/GMOD/gfa-to-tabix) 5.0 or later
-  and NCBI's `datasets`
+  gfatools, [`gfa-to-tabix`](https://github.com/GMOD/gfa-to-tabix) 5.0.0 or
+  later and NCBI's `datasets`
 
 <!-- BEGIN GENERATED TUTORIAL_INSTALL minigraph,k8,bcftools,htslib,gfatools,gfa-to-tabix,datasets -->
 
@@ -73,8 +73,8 @@ cargo install gfa-to-tabix
 
 ## The data
 
-The reference is AGIS-1.0 (GCF_034140825.1) from UCSC GenArk, and the 47
-assemblies are NCBI GenBank records, listed with their accessions in the
+The reference is AGIS-1.0 (GCF_034140825.1) from UCSC GenArk, and the assemblies
+are NCBI GenBank records, listed with their accessions in the
 [README](https://jbrowse.org/demos/rice_pangenome/README.txt) beside the files.
 
 Nothing to download: the track configs below read the files by URL.
@@ -197,7 +197,7 @@ the reference's first. The display config:
   band above the rows, followed by the share of the assemblies with an alternate
   allele
 
-```json addtrack loc=chr1:39,008,001-39,020,000
+```json addtrack loc=chr1:39,008,001-39,020,000 config=https://jbrowse.org/hubs/genark/GCF/034/140/825/GCF_034140825.1/config.json
 {
   "type": "VariantTrack",
   "trackId": "rice_pangenome_vcf",
@@ -207,30 +207,26 @@ the reference's first. The display config:
     "type": "VcfTabixAdapter",
     "uri": "https://jbrowse.org/demos/rice_pangenome/rice-agis1-minigraph.vcf.gz"
   },
-  "displays": [
-    {
-      "type": "LinearVariantDisplay",
-      "rows": { "field": "haplotype" },
-      "records": {
-        "labels": {
-          "name": { "show": false },
-          "description": "jexl:feature.INFO.ALEN + ' bp'"
-        }
+  "displayDefaults": {
+    "rows": { "field": "haplotype" },
+    "records": {
+      "labels": {
+        "name": { "show": false },
+        "description": "jexl:feature.INFO.ALEN + ' bp'"
       }
     }
-  ]
+  }
 }
 ```
 
-## Sort the callset by genotype at sd1
+## Sort the callset by genotype at SD1
 
 The semi-dwarf rice varieties of the Green Revolution have defective alleles of
 _SD1_, which encodes an oxidase of gibberellin biosynthesis. Monna et al. (2002)
 found that the allele from the Taiwanese variety Dee-geo-woo-gen, sd1-d, is a
 383 bp deletion from the middle of exon 1 to upstream of exon 2, which shifts
-the frame. IR64 has this allele, and Nipponbare is tall with the intact gene.
-RefSeq names _SD1_ by its gene ID, LOC4325003. We'll open it with the genes, the
-callset and the graph:
+the frame. RefSeq names _SD1_ by its gene ID, LOC4325003. We'll open it with the
+genes, the callset and the graph:
 
 - Type `chr1:39,008,001-39,020,000` into the location box and turn on the gene
   track, the callset and the graph track.
@@ -241,28 +237,19 @@ callset and the graph:
 
 <Figure caption="SD1 (LOC4325003) with the callset sorted at the 383 bp record, which runs from exon 1 into exon 2, and its carriers at the top; the column at the left is a commoner 237 bp deletion upstream of the gene. On the graph track, the callout marks the 383 bp segment sd1-d skips." src="/img/pangenome/rice_sd1.png" />
 
-IR64 and eight other assemblies have sd1-d. The upstream 237 bp deletion is in
-most assemblies, those with sd1-d among them.
-
 ## Tell three grain-width alleles apart at qSW5
 
 A deletion upstream of the grain-width gene _qSW5_ (_GW5_, LOC4338011) lowers
 its expression and widens the grain. Lee et al. (2015) distinguished three
 alleles: Kasalath's, with no deletion; an indica allele with a 950 bp deletion;
 and Nipponbare's, with a 1,212 bp deletion. AGIS-1.0 has the 1,212 bp deletion,
-so the callset records the other two as alternate alleles of one record, with
-lengths 504 (the reference's), 1,715 and 766 bp: 1.2 kb and 260 bp more sequence
-than the reference has there.
+so the callset records the other two as alternate alleles of one record.
 
 - Type `chr5:5,374,001-5,390,000` into the location box.
 - Right-click the record at `chr5:5,379,833` and pick **Sort rows by genotype
   here**.
 
 <Figure caption="qSW5 (LOC4338011) with the callset sorted at the record upstream of the gene. Blue rows have the commonest allele, with no deletion; red rows have the 950 bp deletion; grey rows have AGIS-1.0's 1,212 bp deletion. On the graph track, the callout marks the 766 bp path the 950 bp deletion takes." src="/img/pangenome/rice_qsw5.png" />
-
-Kasalath, IR64 and 9311 have no deletion. The three weedy rices, CX20, YZ-2 and
-PI653432, are among the assemblies with the 950 bp deletion, and Balilla,
-Udai21, Changxianggeng1813 and Wuyunjing8 share the reference's.
 
 ## Find which assemblies carry the Pup1 insertion
 
@@ -279,14 +266,10 @@ reference's 39 bp, a second 39 bp sequence, and insertions of 46 to 89 kb.
   the rows by allele.
 - Click a cell to read that assembly's allele and its length.
 
-The figure leaves out the graph track, since in a 730 bp window the insertions'
-loops draw outside its pane.
+The figure leaves out the graph track, since the insertions' loops draw outside
+its pane in a window this narrow.
 
-<Figure caption="Pup1 with the callset sorted at its one record. Blue rows have the commonest allele, a 39 bp path other than AGIS-1.0's. The seven insertions of 46 to 89 kb below them take a color each, and the legend lists each insertion's path length: Kasalath and SL190, the mint rows, have the 88,924 bp path. Balilla, the grey row at the bottom, has AGIS-1.0's path." src="/img/pangenome/rice_pup1.png" />
-
-Kasalath and SL190 share the 89 kb insertion. Fifteen more assemblies have
-insertions of 46 to 77 kb at the same point. IR64 and most of the rest have the
-second 39 bp path, and Balilla alone has AGIS-1.0's.
+<Figure caption="Pup1 with the callset sorted at its one record. Blue rows have the commonest allele, a 39 bp path other than AGIS-1.0's. The insertions below them take a color each, and the legend lists each insertion's path length. Balilla, the grey row at the bottom, has AGIS-1.0's path." src="/img/pangenome/rice_pup1.png" />
 
 ## Build the rice graph
 
@@ -355,9 +338,6 @@ chromosomes:
 # --below: the size to fold under; --layout matches the index's
 gfa-to-tabix fold rice.rgfa.gz --below 10000 --layout contig -o rice.fold10000
 ```
-
-[](/docs/tutorials/pangenome_prepare_graph) explains each file and the other
-layouts.
 
 ## Make the callset
 
@@ -452,12 +432,12 @@ and each assembly's call loads the graph's index, 16 to 19 GB of RAM.
 `CALL_MAX_GB` (24 by default) caps each call's memory, so a call that outgrows
 it stops the script with an error. The script:
 
-- downloads AGIS-1.0 and the 47 assemblies from NCBI with their sequence
-  reports, and keeps each assembly's twelve chromosomes, renamed to PanSN
+- downloads AGIS-1.0 and the assemblies from NCBI with their sequence reports,
+  and keeps each assembly's chromosomes, renamed to PanSN
   (`sample#haplotype#contig`)
 - builds the graph and stops if a segment has an `SN` tag naming no kept
   chromosome, if a segment id repeats, or if the rank-0 segments are not
-  AGIS-1.0's twelve chromosomes at their full length
+  AGIS-1.0's chromosomes at their full length
 - writes the segment index, the bubbles and the overview
 - maps each assembly back onto the graph and merges the calls into the callset
 
