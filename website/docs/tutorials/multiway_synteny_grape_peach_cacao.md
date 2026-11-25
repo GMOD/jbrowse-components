@@ -20,8 +20,8 @@ genomes at once, into one wide table with a column per species. We:
 
 ## Prerequisites
 
-- a JBrowse to open the files in: [Desktop](/docs/quickstart_desktop) takes a
-  local file by path, [Web](/docs/quickstart_web) through **Add track**
+- A running JBrowse instance (the [web quickstart](/docs/quickstart_web) or the
+  [desktop quickstart](/docs/quickstart_desktop))
 - [jcvi](https://github.com/tanghaibao/jcvi) with the
   [LAST](https://gitlab.com/mcfrith/last) aligner
 - Or any other ortholog table, converted as in

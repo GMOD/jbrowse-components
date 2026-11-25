@@ -42,8 +42,8 @@ the fruit flies as a lineage with one copy. We:
   (`datasets`, `dataformat`)
 - [gffread](https://github.com/gpertea/gffread), for
   [your own genomes](#your-own-genomes) only
-- A running JBrowse instance ([web](/docs/quickstart_web) or
-  [desktop](/docs/quickstart_desktop))
+- A running JBrowse instance (the [web quickstart](/docs/quickstart_web) or the
+  [desktop quickstart](/docs/quickstart_desktop))
 
 <!-- BEGIN GENERATED TUTORIAL_INSTALL htslib,diamond,gffread,node,jbrowse-cli,datasets,mcscanx,orthofinder,orthologs2jbrowse -->
 

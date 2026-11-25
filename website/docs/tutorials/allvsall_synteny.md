@@ -25,8 +25,8 @@ strains lack, and IAI39's inversions, we:
 
 ## Prerequisites
 
-- a JBrowse to open the files in: [Desktop](/docs/quickstart_desktop) takes a
-  local file by path, [Web](/docs/quickstart_web) through **Add track**
+- A running JBrowse instance (the [web quickstart](/docs/quickstart_web) or the
+  [desktop quickstart](/docs/quickstart_desktop))
 - the NCBI
   [`datasets`](https://www.ncbi.nlm.nih.gov/datasets/docs/v2/download-and-install/)
   CLI
@@ -100,7 +100,7 @@ done > all.fa
 minimap2 -c -x asm20 -X all.fa all.fa > all_vs_all.paf
 ```
 
-## Load each strain as an assembly
+## Set up each strain as an assembly
 
 Each strain FASTA becomes an assembly whose name matches an entry in
 `assemblyNames` on the track:

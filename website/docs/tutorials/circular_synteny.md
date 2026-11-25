@@ -24,8 +24,8 @@ the autosomes have been shuffled. We:
 
 ## Prerequisites
 
-- a JBrowse to open the files in ([Web](/docs/quickstart_web) or
-  [Desktop](/docs/quickstart_desktop))
+- A running JBrowse instance (the [web quickstart](/docs/quickstart_web) or the
+  [desktop quickstart](/docs/quickstart_desktop))
 - to build the density ring for another pair of genomes, htslib (`bgzip`,
   `tabix`), `bedGraphToBigWig` from the
   [UCSC utilities](https://hgdownload.soe.ucsc.edu/admin/exe/), and `node` for

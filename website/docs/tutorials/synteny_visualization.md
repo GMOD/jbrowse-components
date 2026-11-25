@@ -88,7 +88,7 @@ JBrowse also loads [MUMmer](https://github.com/mummer4/mummer) `.delta` and UCSC
 `delta2paf` reads a `.delta`, and
 [chain2paf](https://github.com/AndreaGuarracino/chain2paf) reads a `.chain`.
 
-## Load the assemblies and the alignment
+## Set up the assemblies and the alignment
 
 We'll load each strain's assembly from its hub. Each strain's hub `config.json`
 holds a whole JBrowse assembly: the 2bit sequence, an alias table and the NCBI

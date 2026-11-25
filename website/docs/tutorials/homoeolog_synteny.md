@@ -21,8 +21,8 @@ of a gene across subgenomes are homoeologs. We:
 
 ## Prerequisites
 
-- a JBrowse to open the files in: [Desktop](/docs/quickstart_desktop) takes a
-  local file by path, [Web](/docs/quickstart_web) through **Add track**
+- A running JBrowse instance (the [web quickstart](/docs/quickstart_web) or the
+  [desktop quickstart](/docs/quickstart_desktop))
 - [jcvi](https://github.com/tanghaibao/jcvi)
 - [DIAMOND](https://github.com/bbuchfink/diamond)
 - [orthologs2jbrowse](https://github.com/cmdcolin/orthologs2jbrowse), and
