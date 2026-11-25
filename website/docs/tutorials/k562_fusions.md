@@ -191,10 +191,10 @@ Type into the SV inspector's search box to filter the table and the circular
 view together:
 
 - `chrM` keeps the rows that pair a gene with a mitochondrial transcript, the
-  usual chimeric-read artefacts.
-- `Mitelman` keeps the two rows listed in the fusion databases.
-- `chr9` keeps the same two, `BCR--ABL1` and `NUP214--XKR3`: junctions between
-  chr9 and chr22 whose chr22 partners lie megabases apart.
+  usual chimeric-read artifacts.
+- `Mitelman` keeps the rows listed in the fusion databases.
+- `chr9` keeps the rows with a junction on chr9, such as `BCR--ABL1` and
+  `NUP214--XKR3`.
 
 Each table row's caret menu has **Open in linear genome view**, which puts the
 row's two breakpoints side by side as two regions of one view:
@@ -205,13 +205,23 @@ row's two breakpoints side by side as two regions of one view:
 - **Read connections → View as pairs/link supplementary alignments** merges each
   molecule's two alignments onto one row.
 - The figure's track is filtered to the split reads with alignments on both chr9
-  and chr22, with
-  `"filter": [{ "field": "split", "equal": true }, { "field": "alignedRefNames", "equal": "chr9" }, { "field": "alignedRefNames", "equal": "chr22" }]`
-  in its `displayDefaults`.
+  and chr22, by the `filter` in the `displayDefaults` below.
+
+```json
+{
+  "displayDefaults": {
+    "filter": [
+      { "field": "split", "equal": true },
+      { "field": "alignedRefNames", "equal": "chr9" },
+      { "field": "alignedRefNames", "equal": "chr22" }
+    ]
+  }
+}
+```
 
 <Figure caption="NUP214--XKR3 as two regions of one view with reads linked, opened from its row in the SV inspector." src="/img/cancer_sv/k562_fusion_inspector_reads.png" links="Import form=cancer_sv/k562_fusion_inspector_form,All 44 calls=cancer_sv/k562_fusion_inspector_all,Searched for chr9=cancer_sv/k562_fusion_inspector_pair,Linked reads=cancer_sv/k562_fusion_inspector_reads" />
 
-The build script adds the STAR-Fusion calls as a track:
+Load the STAR-Fusion TSV as a track:
 
 ```json addtrack
 {
@@ -243,8 +253,9 @@ alignment (the second piece of the split read) on chr9. In the track menu:
 - **Filter by → Split reads → Only split reads** draws only the reads aligned in
   more than one piece (an `SA` tag or the supplementary flag), which here
   include the reads that continue on chr9. The coverage still counts every read;
-  **Group by → Split reads**, with the "Not split" band hidden, gives the split
-  reads' coverage, as the figure shows.
+  **Group by → Split reads**, with the "Not split" band hidden by the hide
+  button on its label chip, gives the split reads' coverage, as the figure
+  shows.
 - **Read connections → Read arcs** adds a band under the coverage with one arc
   per junction, thicker where more reads support it. An arc needs both ends in
   view: the right-hand window gets one arc and the intron 1 window two, one at
@@ -312,20 +323,6 @@ partner is on another chromosome is drawn as a stem at its breakpoint.
 
 <Figure caption="chr9 from ABL1 past NUP214: STAR-Fusion junctions, 10X DNA breakends and DepMap copy number, the DNA breaks banded." src="/img/cancer_sv/k562_amplicon_dna.png" />
 
-| Junction        | RNA junction (STAR-Fusion)        | DNA break (10X)           | Apart                 |
-| --------------- | --------------------------------- | ------------------------- | --------------------- |
-| _BCR_ donor     | chr22:23,290,413, end of exon 14  | chr22:23,290,556          | 143 bp into intron 14 |
-| _ABL1_ acceptor | chr9:130,854,064, start of exon 2 | chr9:130,731,760          | 122 kb, in intron 1   |
-| _NUP214_ donor  | chr9:131,199,015, end of exon 29  | chr9:131,199,198          | 183 bp into intron 29 |
-| _XKR3_ acceptor | chr22:16,808,083, start of exon 3 | chr22:16,819,350          | 11 kb, in intron 2    |
-| none            | no call                           | chr9:131,280,138 to chr13 | no gene at either end |
-
-The amplified block on chr9 ends where the DNA breaks do, and DepMap's
-segmentation has no interval over _BCR_, so the donor window shows an arc and no
-copy-number step.[^splitthreader] A
-[Hi-C scan](/docs/tutorials/hic_structural_variants) of the same cell line pairs
-the _ABL1_ intron 1 break with _BCR_ from contact counts alone.
-
 ## Reproduce it end to end
 
 [`scripts/build_cancer_sv_demo.sh`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/build_cancer_sv_demo.sh)
@@ -339,9 +336,6 @@ builds everything above from public sources. For K562 it:
 - lifts the 10X breakends to hg38 as above, and drops a junction whole when
   either end fails to lift or maps reversed in hg38, where its orientation would
   come out wrong
-
-The script also builds the COLO829 half of the demo, which
-[](/docs/tutorials/cancer_sv) walks through.
 
 ```bash
 curl -fO https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/build_cancer_sv_demo.sh
@@ -359,12 +353,5 @@ npx --yes serve cancer_sv_build/jbrowse2
 
 ## Citations
 
-- Nattestad et al. (2018).
-  [Complex rearrangements and oncogene amplifications revealed by long-read DNA and RNA sequencing of a breast cancer cell line](https://doi.org/10.1101/gr.231100.117)
 - Zhou et al. (2019).
   [Comprehensive, integrated, and phased whole-genome analysis of the primary ENCODE cell line K562](https://doi.org/10.1101/gr.234948.118)
-
-[^splitthreader]:
-    SplitThreader matched copy-number steps to breakpoints the same way in the
-    SK-BR-3 _ERBB2_ amplicon
-    ([Nattestad et al. 2018](https://doi.org/10.1101/gr.231100.117)).
