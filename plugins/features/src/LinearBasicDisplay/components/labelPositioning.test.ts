@@ -863,7 +863,7 @@ describe('labelsWithinEdges', () => {
     expect(movedName?.endX).toBeUndefined()
   })
 
-  test('drops the whole stack where its new place is taken', () => {
+  test('moves nothing where the new place of the stack is taken, keeping the lines that fit', () => {
     expect(
       labelsWithinEdges(
         [name(40), desc(40, 'LONGER DESC')],
@@ -872,7 +872,7 @@ describe('labelsWithinEdges', () => {
         'sans-serif',
         () => false,
       ),
-    ).toEqual([])
+    ).toEqual([name(40)])
   })
 
   test('drops an overlay subfeature label the edge would cut rather than move it off its exon', () => {
@@ -905,12 +905,16 @@ describe('forEachExportLabel', () => {
       nameLabel: makeLabel({ text: name, textWidth: 150 }),
     })
 
-  function fitAll(regions: RegionWithData[], data: FeatureDataResult[]) {
+  function fitAll(
+    regions: RegionWithData[],
+    data: FeatureDataResult[],
+    labelContext = context,
+  ) {
     const out: FittedLabel[] = []
     forEachExportLabel(
       regions,
       new Map(data.map((d, i) => [i, d])),
-      context,
+      labelContext,
       { right: 1000, bottom: 100 },
       'sans-serif',
       labels => {
@@ -1000,6 +1004,99 @@ describe('forEachExportLabel', () => {
     expect(fitted.map(l => [l.label.text, l.endX])).toEqual([
       [`FIRST ${text}`, 1000],
     ])
+  })
+
+  // `b` names itself where it is, in a line that fits, and moving `a` would
+  // land on that name, which stays even when `b`'s own stack moves nowhere.
+  test('does not move a label onto a name that fits where it is', () => {
+    const bDesc = 'A DESCRIPTION OF B RUNS PAST THE EDGE'
+    const fitted = fitAll(
+      [region],
+      [
+        makeFeatureData({
+          floatingLabelsData: new Map([
+            ['a', named('a', 960, 990)],
+            [
+              'b',
+              makeLabelData('b', {
+                minX: 820,
+                maxX: 830,
+                nameLabel: makeLabel({ text: 'B', textWidth: 8 }),
+                descriptionLabel: makeLabel({ text: bDesc, textWidth: 150 }),
+              }),
+            ],
+          ]),
+        }),
+      ],
+      { ...context, showDescriptions: true },
+    )
+    expect(fitted.map(l => l.label.text)).toEqual(['B', bDesc])
+  })
+
+  // The reversed-region golden: a point feature at 753px names itself in a
+  // line that fits, but its description runs past the edge, and moving the
+  // stack would land it on the description of `f07` to its left. Nothing
+  // moves: the name stays where the layout put it, set by its start, and the
+  // description the edge would cut is dropped.
+  test('keeps a name that fits in place when its stack cannot move, in a reversed region', () => {
+    const reversed: RegionWithData = { ...region, reversed: true }
+    const data = makeFeatureData({
+      floatingLabelsData: new Map([
+        [
+          'f07',
+          makeLabelData('f07', {
+            minX: 300,
+            maxX: 400,
+            nameLabel: makeLabel({ text: 'f07', textWidth: 18 }),
+            descriptionLabel: makeLabel({
+              text: 'This is an example',
+              textWidth: 95,
+            }),
+          }),
+        ],
+        [
+          'snp',
+          makeLabelData('snp', {
+            minX: 247,
+            maxX: 248,
+            nameLabel: makeLabel({ text: 'FakeSNP', textWidth: 48 }),
+            descriptionLabel: makeLabel({
+              text: 'This is a fake SNP that should appear at 1000 with length 1',
+              textWidth: 300,
+            }),
+          }),
+        ],
+      ]),
+    })
+    const withDescriptions = { ...context, showDescriptions: true }
+    const placed: ResolvedLabel[] = []
+    forEachDisplayLabel(
+      [reversed],
+      new Map([[0, data]]),
+      withDescriptions,
+      (_, labels) => {
+        placed.push(...labels)
+      },
+    )
+    const fitted: FittedLabel[] = []
+    forEachExportLabel(
+      [reversed],
+      new Map([[0, data]]),
+      withDescriptions,
+      { right: 1000, bottom: 100 },
+      'sans-serif',
+      labels => {
+        fitted.push(...labels)
+      },
+    )
+    const fakeSnp = placed.find(l => l.label.text === 'FakeSNP')
+    expect(fakeSnp?.labelX).toBeGreaterThan(700)
+    expect(fitted.map(l => l.label.text)).toEqual([
+      'f07',
+      'This is an example',
+      'FakeSNP',
+    ])
+    expect(fitted.find(l => l.label.text === 'FakeSNP')).toEqual(fakeSnp)
   })
 
   // The README's derivative-chromosome figure: a long segment named under

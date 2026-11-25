@@ -31,9 +31,10 @@ those two.
 **A feature label can still be cut at the top of a scrolled track.** The
 export drops a label that would cross the view's left or bottom edge. A
 feature's label stack that would cross the right edge moves left as one, its
-widest line anchored by its end at the edge, and is dropped whole where that
-would carry it past its region's start or onto another feature
-(`labelsWithinEdges`, `forEachExportLabel`, `labelPositioning.ts`).
+widest line anchored by its end at the edge. Where that would carry it past
+its region's start or onto another feature, nothing moves, and only the lines
+the edge cuts are dropped (`labelsWithinEdges`, `forEachExportLabel`,
+`labelPositioning.ts`).
 `exactCullBand` still admits a label from a feature scrolled just above the
 top. The records band's labels (`paintFeatureBand.ts`) do not go through
 `labelsWithinEdges` at all.

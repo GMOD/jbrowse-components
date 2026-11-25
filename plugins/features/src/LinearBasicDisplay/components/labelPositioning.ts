@@ -530,9 +530,10 @@ function featureBodyBoxes(
  * whole. A label the bottom would cut is dropped. When a line of the stack
  * would cross `right`, the stack moves left as one, sharing a left edge, so
  * its widest line ends at `right`; a line that a face `RENDERED_WIDTH_SLACK`
- * wider would carry past `right` is anchored by its end there. The stack is
- * dropped whole when its widened box would start left of `left` or `isFree`
- * says it is taken. A badge moves and goes with its name.
+ * wider would carry past `right` is anchored by its end there. Where the
+ * stack's widened box would start left of `left` or `isFree` says it is taken,
+ * nothing moves: each line stays where it was, and one `right` cuts is
+ * dropped. A badge moves and goes with its name.
  */
 export function labelsWithinEdges(
   labels: ResolvedLabel[],
@@ -543,37 +544,34 @@ export function labelsWithinEdges(
 ) {
   const measured = measureLabels(labels, fontSize, fontFamily)
   const stack = measured.filter(inStack)
-  const moved = stackMoves(measured, right)
   const widest = Math.max(0, ...stack.map(m => m.rowWidth))
   const stackLeft = right - widest
   const reach = right - widest * RENDERED_WIDTH_SLACK
-  const stackKept =
-    !moved ||
-    (reach >= left &&
-      isFree({
-        left: reach,
-        right,
-        top: Math.min(...stack.map(m => m.placed.labelY)),
-        bottom: Math.max(...stack.map(m => m.placed.labelY + m.height)),
-      }))
+  const moved =
+    stackMoves(measured, right) &&
+    reach >= left &&
+    isFree({
+      left: reach,
+      right,
+      top: Math.min(...stack.map(m => m.placed.labelY)),
+      bottom: Math.max(...stack.map(m => m.placed.labelY + m.height)),
+    })
   let nameKept = false
   let movedName: { endX: number | undefined; shift: number } | undefined
   return measured.flatMap((m): FittedLabel[] => {
     const { placed, width, height, rowWidth } = m
+    const movesHere = moved && (placed.kind === 'more' || inStack(m))
     const kept =
       placed.labelY + height < bottom + 0.5 &&
-      (placed.kind === 'more'
-        ? nameKept
-        : inStack(m)
-          ? stackKept
-          : !crossesRight(m, right))
+      (placed.kind !== 'more' || nameKept) &&
+      (movesHere || placed.labelX + width < right + 0.5)
     if (placed.kind === 'name') {
       nameKept = kept
     }
     const endAnchored = stackLeft + rowWidth * RENDERED_WIDTH_SLACK > right
     const endX = right - (rowWidth - width)
     const fitted: FittedLabel =
-      !moved || !inStack(m)
+      !movesHere || placed.kind === 'more'
         ? placed.kind === 'more' && movedName
           ? movedName.endX === undefined
             ? { ...placed, labelX: placed.labelX + movedName.shift }
@@ -594,9 +592,10 @@ export function labelsWithinEdges(
  * figure's edges by `labelsWithinEdges`, no further left than its region's
  * start. A stack moved off the right edge must land clear of every other
  * feature's body and label as the layout placed them, and of each stack moved
- * before it; those boxes are built only once a stack has to move. Nor may it
- * hang under a feature in its own row that draws no label, where it would read
- * as that feature's name.
+ * before it, and of every line that fits where it is, which stays put if its
+ * own stack cannot move; those boxes are built only once a stack has to move.
+ * Nor may it hang under a feature in its own row that draws no label, where it
+ * would read as that feature's name.
  */
 export function forEachExportLabel(
   regions: RegionWithData[],
@@ -655,9 +654,9 @@ export function forEachExportLabel(
         ),
       ),
       labels: drawn.flatMap(({ featureId, labels }) =>
-        stackMoves(measureLabels(labels, fontSize, fontFamily), edges.right)
-          ? []
-          : labelBoxes(featureId, labels, fontSize, fontFamily),
+        labelBoxes(featureId, labels, fontSize, fontFamily).filter(
+          box => box.right < edges.right + 0.5,
+        ),
       ),
     }
     return occupied
