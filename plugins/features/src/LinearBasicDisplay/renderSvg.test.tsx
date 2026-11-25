@@ -479,12 +479,14 @@ describe('renderSvg', () => {
 
   // 1000bp over 800px: a feature at 1900-1960bp spans 720-768px, and a name
   // the baked width says fits it runs past the view's 800px right edge in the
-  // export's font, so it moves left to end at the edge. One at 80px below a
+  // export's font, so it is anchored by its end at the edge, where a wider
+  // renderer face cannot carry it past. One at 80px below a
   // 100px display starts 2px from the bottom, and is dropped.
   it('ends a label the right edge would cut at that edge, and drops one the bottom would cut', async () => {
     const cutRight = 'CUT AT THE RIGHT EDGE OF THE VIEW'
-    const cutRightWidth = measureText(cutRight, LABEL_FONT_SIZE, 'sans-serif')
-    expect(720 + cutRightWidth).toBeGreaterThan(800)
+    expect(
+      720 + measureText(cutRight, LABEL_FONT_SIZE, 'sans-serif'),
+    ).toBeGreaterThan(800)
     const feature = (
       featureId: string,
       minX: number,
@@ -514,11 +516,10 @@ describe('renderSvg', () => {
     const html = renderResult(
       await renderSvg(makeModel({ laidOutDataMap: new Map([[0, data]]) })),
     )
-    expect(html).toContain('WHOLE')
-    const x = Number(
-      new RegExp(`<text[^>]*x="([\\d.]+)"[^>]*>${cutRight}<`).exec(html)?.[1],
-    )
-    expect(x).toBeCloseTo(800 - cutRightWidth, 1)
+    const openingTag = (text: string) =>
+      new RegExp(`(<text[^>]*>)${text}<`).exec(html)?.[1]
+    expect(openingTag('WHOLE')).toContain('text-anchor="start"')
+    expect(openingTag(cutRight)).toMatch(/ x="800" .*text-anchor="end"/)
     expect(html).not.toContain('CUT AT THE BOTTOM')
   })
 })

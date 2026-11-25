@@ -769,17 +769,18 @@ describe('labelsWithinEdges', () => {
     expect(labelsWithinEdges(labels, edges, 11, 'sans-serif')).toEqual(labels)
   })
 
-  test('moves a name the right edge would cut left to end at it, its badge with it', () => {
+  test('anchors a name the right edge would cut to end at it, its badge ending the row', () => {
     const badgeWidth = measureText('+3', 11 * 0.85, 'sans-serif')
     const start = 100 - nameWidth / 2
-    expect(
-      labelsWithinEdges(
-        [name(start), badge(start + nameWidth + 4)],
-        edges,
-        11,
-        'sans-serif',
-      ).map(l => l.labelX),
-    ).toEqual([100 - nameWidth - 4 - badgeWidth, 100 - badgeWidth])
+    const [movedName, movedBadge] = labelsWithinEdges(
+      [name(start), badge(start + nameWidth + 4)],
+      edges,
+      11,
+      'sans-serif',
+    )
+    expect(movedBadge?.endX).toBe(100)
+    expect(movedName?.endX).toBeCloseTo(100 - 4 - badgeWidth)
+    expect(movedName?.labelX).toBeCloseTo(100 - 4 - badgeWidth - nameWidth)
   })
 
   test('drops a name wider than the room left of the right edge', () => {
@@ -831,7 +832,7 @@ describe('forEachExportLabel', () => {
   // The feature at 960-990px names itself past the 1000px edge, so the name
   // moves left to end at 1000px, over where `neighbour` sits when it shares
   // the label's row.
-  function labelXs(neighbourTopPx: number) {
+  function fitted(neighbourTopPx: number) {
     const data = makeFeatureData({
       flatbushItems: [
         makeFlatbushItem({
@@ -860,7 +861,7 @@ describe('forEachExportLabel', () => {
         ],
       ]),
     })
-    const out: number[] = []
+    const out: { labelX: number; endX?: number }[] = []
     forEachExportLabel(
       [region],
       new Map([[0, data]]),
@@ -868,18 +869,19 @@ describe('forEachExportLabel', () => {
       { right: 1000, bottom: 100 },
       'sans-serif',
       labels => {
-        out.push(...labels.map(l => l.labelX))
+        out.push(...labels.map(({ labelX, endX }) => ({ labelX, endX })))
       },
     )
     return out
   }
 
-  test('moves a label the right edge would cut to end at it', () => {
-    const [x] = labelXs(50)
-    expect(x).toBeCloseTo(1000 - width)
+  test('anchors a label the right edge would cut to end at it', () => {
+    const [moved] = fitted(50)
+    expect(moved?.endX).toBe(1000)
+    expect(moved?.labelX).toBeCloseTo(1000 - width)
   })
 
   test('drops it where the move would land on another feature', () => {
-    expect(labelXs(10)).toEqual([])
+    expect(fitted(10)).toEqual([])
   })
 })

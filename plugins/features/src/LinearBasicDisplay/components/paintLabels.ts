@@ -6,7 +6,7 @@ import {
   MORE_ISOFORMS_FONT_SCALE,
 } from '../../RenderFeatureDataRPC/constants.ts'
 
-import type { ResolvedLabel } from './labelPositioning.ts'
+import type { FittedLabel } from './labelPositioning.ts'
 import type { Ctx2D } from '@jbrowse/core/util/paintLayer'
 
 /**
@@ -16,11 +16,12 @@ import type { Ctx2D } from '@jbrowse/core/util/paintLayer'
  * in too. Where the context sets runs of text, a name and the badge after it
  * are one line, so a face wider than the one the badge's offset was measured
  * in cannot run the name into it: an SVG `<text>` with the badge in a
- * `<tspan>`.
+ * `<tspan>`. A label with an `endX` is anchored at its end there, and a name
+ * set as one line with its badge ends where the badge does.
  */
 export function paintLabels(
   ctx: Ctx2D,
-  labels: ResolvedLabel[],
+  labels: readonly FittedLabel[],
   fontSize: number,
   fontFamily = 'sans-serif',
 ) {
@@ -31,6 +32,13 @@ export function paintLabels(
     if (font !== curFont) {
       ctx.font = font
       curFont = font
+    }
+  }
+  const initialAlign = ctx.textAlign
+  const setAlign = (endX: number | undefined) => {
+    const align = endX === undefined ? initialAlign : 'end'
+    if (align !== ctx.textAlign) {
+      ctx.textAlign = align
     }
   }
   for (let i = 0; i < labels.length; i++) {
@@ -66,18 +74,21 @@ export function paintLabels(
       badge?.kind === 'more' &&
       !badge.label.expanded
     ) {
+      setAlign(badge.endX)
       runs.fillTextRuns(
         [
           { text: label.text, font: curFont, fillStyle: resolved.color },
           { text: badge.label.text, font: badgeFont, fillStyle: badge.color },
         ],
-        labelX,
+        badge.endX ?? labelX,
         baselineY,
       )
       i++
     } else {
+      setAlign(resolved.endX)
       ctx.fillStyle = resolved.color
-      ctx.fillText(label.text, labelX, baselineY)
+      ctx.fillText(label.text, resolved.endX ?? labelX, baselineY)
     }
   }
+  setAlign(undefined)
 }

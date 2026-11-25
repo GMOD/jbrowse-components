@@ -462,11 +462,20 @@ function featureBodyBoxes(
 }
 
 /**
+ * A label the export moved to end at the figure's right edge, drawn anchored
+ * at `endX`, so a face wider than the one it was measured in still ends there.
+ */
+export type FittedLabel = ResolvedLabel & { endX?: number }
+
+const RENDERED_WIDTH_SLACK = 1.1
+
+/**
  * The labels whose box, measured in `fontFamily`, fits inside `right` and
  * `bottom`, the export's mirror of `placeFeatureLabels` dropping a label that
  * would start left of the view: a figure has no scrolling to bring a cut label
- * whole. One the right edge would cut moves left to end at it, unless that
- * leaves it no room or `isFree` says its new box is taken; one the bottom
+ * whole. One the right edge would cut is anchored to end at it, unless that
+ * leaves it no room or `isFree` says the box it would take, widened by
+ * `RENDERED_WIDTH_SLACK` for another renderer's face, is taken; one the bottom
  * would cut is dropped. A badge moves and goes with its name.
  */
 export function labelsWithinEdges(
@@ -483,32 +492,38 @@ export function labelsWithinEdges(
   const badge = measured.find(
     m => m.placed.kind === 'more' && !m.placed.label.expanded,
   )
-  let nameShift = 0
+  let nameMoved = false
   let nameKept = false
-  return measured.flatMap(({ placed, width, height }) => {
-    const end =
+  return measured.flatMap(({ placed, width, height }): FittedLabel[] => {
+    const rowWidth =
       placed.kind === 'name' && badge
-        ? Math.max(placed.labelX + width, badge.placed.labelX + badge.width)
-        : placed.labelX + width
-    const shift = placed.kind === 'more' ? nameShift : Math.min(0, right - end)
-    const left = placed.labelX + shift
+        ? Math.max(width, badge.placed.labelX + badge.width - placed.labelX)
+        : width
+    const moved =
+      placed.kind === 'more'
+        ? nameMoved
+        : placed.labelX + rowWidth > right + 0.5
+    const reach = right - rowWidth * RENDERED_WIDTH_SLACK
     const kept =
       placed.labelY + height < bottom + 0.5 &&
       (placed.kind === 'more'
         ? nameKept
-        : shift > -0.5 ||
-          (left >= LABEL_EDGE_GUTTER_PX &&
+        : !moved ||
+          (reach >= LABEL_EDGE_GUTTER_PX &&
             isFree({
-              left,
-              right: left + width,
+              left: reach,
+              right,
               top: placed.labelY,
               bottom: placed.labelY + height,
             })))
     if (placed.kind === 'name') {
-      nameShift = shift
+      nameMoved = moved
       nameKept = kept
     }
-    return kept ? [{ ...placed, labelX: left }] : []
+    const endX = right - (rowWidth - width)
+    return kept
+      ? [moved ? { ...placed, labelX: endX - width, endX } : placed]
+      : []
   })
 }
 
@@ -524,7 +539,7 @@ export function forEachExportLabel(
   context: LabelRenderContext,
   edges: { right: number; bottom: number },
   fontFamily: string | undefined,
-  emit: (labels: ResolvedLabel[]) => void,
+  emit: (labels: FittedLabel[]) => void,
   cullBand?: LabelCullBand,
 ) {
   const { fontSize } = context
