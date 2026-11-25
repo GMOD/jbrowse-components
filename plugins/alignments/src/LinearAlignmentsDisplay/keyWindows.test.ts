@@ -2,12 +2,22 @@ import { keyWindowsOf } from '@jbrowse/display-kit/keyWindows'
 
 import { ARC_COLOR_INTERCHROM } from '../features/arcs/arcColors.ts'
 import {
+  GAP_DELETION,
+  GAP_SKIP,
+} from '../shaders/slang/gap.consts.generated.ts'
+import {
   OVERLAP_MATES,
   OVERLAP_SEGMENTS,
 } from '../shaders/slang/overlap.consts.generated.ts'
+import {
+  INTERBASE_HARDCLIP,
+  INTERBASE_INSERTION,
+  INTERBASE_SOFTCLIP,
+} from '../shared/types.ts'
 import { READ_COLOR_CATEGORY } from './colorUtils.ts'
 import {
   arcSlotsInWindows,
+  cigarMarkKindsInWindows,
   connectorKeyInWindows,
   insertSizeBandInWindows,
   junctionInWindows,
@@ -220,4 +230,30 @@ test('an overlap keys only on a row the track draws, when it is cut at its heigh
       new Map([['other', { first: 0, last: 99 }]]),
     ),
   ).toEqual(new Set())
+})
+
+test('the CIGAR marks inside a window, skips and marks outside it left out', () => {
+  const marks = new Map([
+    [
+      '',
+      new Map([
+        [
+          0,
+          {
+            interbasePositions: new Uint32Array([1500, 2500, 1700]),
+            interbaseTypes: new Uint8Array([
+              INTERBASE_INSERTION,
+              INTERBASE_SOFTCLIP,
+              INTERBASE_HARDCLIP,
+            ]),
+            gapPositions: new Uint32Array([1100, 1200, 2100, 2200]),
+            gapTypes: new Uint8Array([GAP_SKIP, GAP_DELETION]),
+          },
+        ],
+      ]),
+    ],
+  ])
+  expect(cigarMarkKindsInWindows(marks, window)).toEqual(
+    new Set(['insertion', 'hardclip']),
+  )
 })

@@ -55,6 +55,7 @@ import { getModificationName, modificationData } from './modificationData.ts'
 import { BASE_QUALITY_RAMP_MAX, qualityRampScale } from './qualityRamps.ts'
 import {
   admitsCode,
+  getCigarTypeLabel,
   paintsUnmodifiedState,
   usesMethylationLegend,
 } from './types.ts'
@@ -182,6 +183,35 @@ export function oneRowPerSplitTwin(items: LegendItem[]) {
   return rows
 }
 
+export type CigarMarkKind = 'insertion' | 'deletion' | 'softclip' | 'hardclip'
+
+export const CIGAR_MARKS_TITLE = 'Alignment marks'
+
+const CIGAR_MARK_COLORS: [CigarMarkKind, PaletteColorKey][] = [
+  ['insertion', 'colorInsertion'],
+  ['deletion', 'colorDeletion'],
+  ['softclip', 'colorSoftclip'],
+  ['hardclip', 'colorHardclip'],
+]
+
+/**
+ * The fixed-color pileup marks drawn in view, in one order whatever was found
+ * first. Their hues are constants, not a field's, so they head a section of
+ * their own rather than joining the read colors they can collide with (a soft
+ * clip's blue beside "Unmethylated").
+ */
+export function cigarMarkLegendItems(
+  present: ReadonlySet<CigarMarkKind>,
+  palette: ColorPalette,
+): LegendItem[] {
+  return CIGAR_MARK_COLORS.filter(([kind]) => present.has(kind)).map(
+    ([kind, key]) => ({
+      color: rgb255(palette[key]),
+      label: getCigarTypeLabel(kind),
+    }),
+  )
+}
+
 // A section's rows as a categorical scale's entries. `value` is what the
 // row classifies; a note row has none and takes its label.
 function scaleOf(
@@ -242,6 +272,7 @@ export function getAlignmentsColorScales(model: {
   arcLegendTitle: string
   arcLegendItems: () => LegendItem[]
   junctionLegend: JunctionLegend
+  cigarMarks?: LegendItem[]
 }): ColorScale[] {
   const listedReads = model.legendItems()
   const plainColor = model.plainFill ? listedReads[0]?.color : undefined
@@ -288,6 +319,7 @@ export function getAlignmentsColorScales(model: {
       merge ? [] : oneRowPerSplitTwin(arcs),
     ),
     scaleOf('junctions', JUNCTION_LEGEND_TITLE, junctions),
+    scaleOf('cigarMarks', CIGAR_MARKS_TITLE, model.cigarMarks ?? []),
   ]
 }
 

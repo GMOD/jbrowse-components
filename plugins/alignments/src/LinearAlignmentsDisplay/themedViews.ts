@@ -6,6 +6,7 @@ import { buildJunctionsBandFeeds } from '../features/junctions/bandFeed.ts'
 import { buildConnectorFeeds } from '../features/linkedReads/connectorFeed.ts'
 import { connectorStyler } from '../features/linkedReads/connectorStyle.ts'
 import {
+  cigarMarkLegendItems,
   getAlignmentsColorScales,
   junctionLegend,
 } from '../shared/legendUtils.ts'
@@ -82,6 +83,7 @@ export interface ThemedHost extends IStateTreeNode {
   colorKeyTitle: string | undefined
   paintsPlainFill: boolean
   legendItems: ColorViews['legendItems']
+  cigarMarkKinds: ColorViews['cigarMarkKinds']
   arcLegendTitle: string
   connectionLegendItems: ReturnType<
     typeof connectionKeyViews
@@ -266,6 +268,7 @@ export function themedViews(self: ThemedHost) {
           theme.alignmentFill,
           { classes: self.junctionLegendKeys.splitClasses, palette },
         ),
+        cigarMarks: cigarMarkLegendItems(self.cigarMarkKinds, palette),
       })
     },
   }

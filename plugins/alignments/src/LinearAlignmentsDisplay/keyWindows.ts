@@ -5,6 +5,8 @@ import {
   connectorEnds,
   connectorInWindows,
 } from '../features/linkedReads/connectorFeed.ts'
+import { GAP_DELETION } from '../shaders/slang/gap.consts.generated.ts'
+import { interbaseTypeName } from '../shared/types.ts'
 import { MAPQ_UNAVAILABLE } from '../shared/util.ts'
 import { READ_COLOR_CATEGORY_BY_INDEX } from './colorUtils.ts'
 
@@ -16,6 +18,7 @@ import type { ArcSplitCategory } from '../features/arcs/arcSplitCategory.ts'
 import type { CrossRegionArc } from '../features/arcs/arcTypes.ts'
 import type { ArcsUploadData } from '../features/arcs/types.ts'
 import type { MergedJunction } from '../features/junctions/junctions.ts'
+import type { CigarMarkKind } from '../shared/legendUtils.ts'
 import type { ReadColorCategory } from './colorUtils.ts'
 import type { KeyWindow } from '@jbrowse/display-kit/keyWindows'
 
@@ -52,6 +55,48 @@ export function readCategoriesInWindows(
         for (let i = 0; i < cats.length; i++) {
           if (touchesAny(ranges, pos[i * 2]!, pos[i * 2 + 1]!)) {
             present.add(READ_COLOR_CATEGORY_BY_INDEX[cats[i]!]!)
+          }
+        }
+      }
+    }
+  }
+  return present
+}
+
+/**
+ * The interbase marks (insertion, soft clip, hard clip) and deletions inside a
+ * window, as the CIGAR type names that label them. A region's walk stops once
+ * every kind is found.
+ */
+export function cigarMarkKindsInWindows(
+  byGroup: ByGroup<
+    Pick<
+      WorkerPileupData,
+      'interbasePositions' | 'interbaseTypes' | 'gapPositions' | 'gapTypes'
+    >
+  >,
+  windows: readonly KeyWindow[],
+) {
+  const regions = windowsByRegion(windows)
+  const present = new Set<CigarMarkKind>()
+  for (const map of byGroup.values()) {
+    for (const [regionIndex, d] of map) {
+      const ranges = regions.get(regionIndex)
+      if (ranges) {
+        const ib = d.interbasePositions
+        for (let i = 0; i < ib.length && present.size < 4; i++) {
+          if (touchesAny(ranges, ib[i]!, ib[i]! + 1)) {
+            present.add(interbaseTypeName(d.interbaseTypes[i]!))
+          }
+        }
+        const gaps = d.gapPositions
+        for (let i = 0; i < d.gapTypes.length; i++) {
+          if (
+            d.gapTypes[i] === GAP_DELETION &&
+            touchesAny(ranges, gaps[i * 2]!, gaps[i * 2 + 1]!)
+          ) {
+            present.add('deletion')
+            break
           }
         }
       }

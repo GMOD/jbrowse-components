@@ -22,6 +22,7 @@ import {
   arcColorCategoryLabel,
   arcLegendTitle,
   bakedRampScale,
+  cigarMarkLegendItems,
   colorRampScales,
   getAlignmentsColorScales,
   getArcLegendItems,
@@ -1498,14 +1499,16 @@ describe('the junctions section', () => {
   }
 
   test('is headed as the menu names the band, with or without split junctions', () => {
-    expect(scalesWith([]).at(-1)?.title).toBe('Junctions')
+    expect(scalesWith([]).find(s => s.id === 'junctions')?.title).toBe(
+      'Junctions',
+    )
     const strandsOnly = getAlignmentsColorScales({
       legendItems: () => [],
       arcLegendTitle: 'Arc colors',
       arcLegendItems: () => [],
       junctionLegend: junctionLegend(new Set([-1]), { read: '#d3d3d3' }),
     })
-    expect(strandsOnly.at(-1)).toMatchObject({
+    expect(strandsOnly.find(s => s.id === 'junctions')).toMatchObject({
       id: 'junctions',
       title: 'Junctions',
       entries: [{ label: 'Reverse transcript strand' }],
@@ -1547,5 +1550,35 @@ describe('the junctions section', () => {
         'Split junction (duplication-type)',
       ],
     )
+  })
+})
+
+describe('the alignment marks section', () => {
+  const palette = makeTestPalette()
+
+  test('keys only the marks found, in one order, in their painted colors', () => {
+    const items = cigarMarkLegendItems(
+      new Set(['hardclip', 'insertion'] as const),
+      palette,
+    )
+    expect(items.map(i => i.label)).toEqual(['Insertion', 'Hard clip'])
+    expect(items[0]!.color).toBe(rgb255(palette.colorInsertion))
+  })
+
+  test('is its own section after the read colors, and absent when empty', () => {
+    const scales = (cigarMarks: LegendItem[]) =>
+      getAlignmentsColorScales({
+        legendItems: () => [{ color: 'red', label: '5mC' }],
+        arcLegendTitle: 'Arc colors',
+        arcLegendItems: () => [],
+        junctionLegend: junctionLegend(new Set(), { read: '#d3d3d3' }),
+        cigarMarks,
+      }).filter(s => s.kind === 'categorical' && s.entries.length > 0)
+    expect(
+      scales(
+        cigarMarkLegendItems(new Set(['insertion'] as const), palette),
+      ).map(s => s.title),
+    ).toEqual(['Read colors', 'Alignment marks'])
+    expect(scales([]).map(s => s.title)).toEqual(['Read colors'])
   })
 })

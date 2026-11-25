@@ -22,6 +22,7 @@ import {
 import { buildColorPaletteFromPalette } from './components/alignmentComponentUtils.ts'
 import { applyReadColorsByGroup } from './groupLayout.ts'
 import {
+  cigarMarkKindsInWindows,
   insertSizeBandInWindows,
   modificationTypesInWindows,
   overlapKindsInWindows,
@@ -39,7 +40,7 @@ import type {
   AlignmentsColorSetting,
   DeclaredReadLabels,
 } from '../shared/alignmentsColor.ts'
-import type { OverlapLegendRow } from '../shared/legendUtils.ts'
+import type { CigarMarkKind, OverlapLegendRow } from '../shared/legendUtils.ts'
 import type { BaseLayer, ColorFieldKind, Facet } from '../shared/types.ts'
 import type { NumericExtent } from './bakedColorScale.ts'
 import type { RefNamePosition } from './colorTagUtils.ts'
@@ -67,6 +68,7 @@ export interface AlignmentsColorHost {
   collapseSections: boolean
   featureHeight: number
   showLegend: boolean
+  showMismatches: boolean
   framesChainStrand: boolean
   laidOutByGroupFramed: LaidOutByGroup
   rowlessLaneKeys: ReadonlySet<string>
@@ -293,6 +295,21 @@ export function alignmentsColorViews(self: AlignmentsColorHost) {
       return self.showLegend && paintsModifications(self.baseLayer)
         ? modificationTypesInWindows(self.laidOutByGroupFramed, self.keyWindows)
         : undefined
+    },
+
+    /**
+     * #getter
+     * The insertions, clips and deletions drawn in view, which the key's
+     * marks section names. A deletion is a pileup mark only, gated with the
+     * mismatches; the interbase kinds also draw in the coverage band.
+     */
+    get cigarMarkKinds(): ReadonlySet<CigarMarkKind> {
+      const found = self.showLegend
+        ? cigarMarkKindsInWindows(self.laidOutByGroupFramed, self.keyWindows)
+        : new Set<CigarMarkKind>()
+      return self.showMismatches && this.drawsReadRows
+        ? found
+        : new Set([...found].filter(kind => kind !== 'deletion'))
     },
 
     /**
