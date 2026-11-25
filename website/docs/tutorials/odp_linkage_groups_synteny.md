@@ -196,13 +196,13 @@ mRNA.RE04286  Em0019g38a  A1a  #C23D51  4.1411820197020265e-230
 mRNA.RE14076  Em0019g57a  .    #000000  524.9999053847149
 ```
 
-## Load the jellyfish and sponge assemblies
+## Set up the jellyfish and sponge assemblies
 
 <!-- No genomes.jbrowse.org hubs: EMU and BFL match portal assemblies, but the
 Dryad copies rename every sequence, so hub tracks would not line up, and RES
 and BIN are different assemblies from the portal's. -->
 
-We'll load the two genomes of the dotplot. The genome FASTA needs a `.fai`
+We'll set up the two genomes of the dotplot. The genome FASTA needs a `.fai`
 beside it (`samtools faidx`), and its sequence names must match the table's
 scaffold columns. The stack adds four more assemblies the same way, one block
 each.
@@ -257,9 +257,9 @@ We'll open the jellyfish-against-sponge table as a dotplot, then:
 
 - Pick **gene_group** under **Color by value** on the palette button in the view
   header, which also opens the legend.
-- Choose **Re-order chromosomes** on the view menu to sort the vertical genome's
-  chromosomes by where their orthologs lie along the horizontal one, which turns
-  one block per group into a diagonal.
+- Choose **Re-order chromosomes...** in the header's ⋮ menu to sort the vertical
+  genome's chromosomes by where their orthologs lie along the horizontal one,
+  which turns one block per group into a diagonal.
 
 As a session, the same dotplot with the sponge's unplaced scaffolds left off its
 axis. In [grammar-of-graphics](/docs/config_guides/mark_display) terms,
@@ -290,15 +290,9 @@ axis. In [grammar-of-graphics](/docs/config_guides/mark_display) terms,
 
 <Figure caption="Jellyfish against sponge as a dotplot, each ortholog colored by its linkage group." src="/img/linkage_groups/alg_dotplot_res_emu.png" />
 
-Inside a block the points fill the square, because gene order along each
-chromosome has shuffled while each gene has stayed on its chromosome.
-
 ## Narrow the dotplot to two fusions
 
-The jellyfish's RES10 has both J1 and Qa, and the sponge's EMU23 has both J2 and
-K. Every other genome on this page has each pair on separate chromosomes, so
-each is a fusion in one lineage. A fusion starts with the two groups end to end,
-and rearrangement inside the chromosome then interleaves their genes.[^mixing]
+The jellyfish's RES10 holds J1 and Qa, and the sponge's EMU23 holds J2 and K.
 We'll draw those two chromosomes and the four they pair with.
 
 `displayedRegionNames` lists the chromosomes on each axis, in the order drawn,
@@ -336,37 +330,27 @@ the orthologs that have a group, so the legend names only the four drawn:
 
 <Figure caption="Three jellyfish chromosomes against three sponge chromosomes, orthologs colored by linkage group." src="/img/linkage_groups/alg_fusions.png" />
 
-Along RES10, the J1 and Qa orthologs each run the chromosome's full length. On
-EMU23, J2 holds one end and K holds the rest.
-
-[^mixing]:
-    The fusion-with-mixing model is from Simakov et al. 2022. Schultz et al.
-    2023 find fusions that sponges, cnidarians and bilaterians share, four of
-    them mixed, which comb jellies and three unicellular outgroups lack, and so
-    place the comb jellies as sister to all other animals.
-
 ## Stack the genomes, ribbons colored by linkage group
 
-Figure 1d of Schultz et al. 2023 stacks the same tables, one row per genome,
-with ribbons between neighbours colored by group. A linear synteny view does
-that with one pair's track per band. The build script loads the pairs in the
-paper's order, two comb jellies over the jellyfish, amphioxus and two sponges,
-and the session below sets what the figure needs.
+A linear synteny view stacks the same tables, one row per genome, with ribbons
+between neighbours colored by group and one pair's track per band. The build
+script loads the pairs in one order, two comb jellies over the jellyfish,
+amphioxus and two sponges, and the session below sets what the stack needs.
 
 odp tests each pair of chromosomes for more shared orthologs than chance
 (Fisher's exact test in the `break_FET` column, multiplied by the number of
-chromosome pairs, so a value can pass 1). Like the paper's figure, the stack
-draws orthologs on a chromosome pair under 0.05 at opacity 0.8 and the rest at
-0.15. That is an `encoding.opacity` scale, which maps the `break_FET` field, cut
-at 0.05, to a `scale.range` of two opacities.
+chromosome pairs, so a value can pass 1). The stack draws orthologs on a
+chromosome pair under 0.05 at opacity 0.8 and the rest at 0.15. That is an
+`encoding.opacity` scale, which maps the `break_FET` field, cut at 0.05, to a
+`scale.range` of two opacities.
 
 Each setting in the session has a menu route except `render` and the
 `encoding.opacity` mapping:
 
 - `autoDiagonalize` sorts each row against its neighbour, working outward from
   `diagonalizeAnchorRow`. Rows count from 0, so 2 is the jellyfish, where each
-  group sits on one chromosome. **Re-order chromosomes** on the header's ⋮ menu
-  runs the same sort and asks for that row.
+  group sits on one chromosome. **Re-order chromosomes...** in the header's ⋮
+  menu runs the same sort and asks for that row.
 - `filter` drops the alignments with no `gene_group`, which **Hide unlabelled
   rows** on the palette menu writes.
 - `mark` is **Curved lines** on the sliders button.
@@ -427,10 +411,6 @@ Each setting in the session has a menu route except `render` and the
 ```
 
 <Figure caption="The genomes in the paper's order, ribbons colored by linkage group, solid on significantly paired chromosomes and faint elsewhere." src="/img/linkage_groups/alg_stack.png" />
-
-The comb jellies have most groups spread over several chromosomes, where the
-jellyfish has each on one, so the second band is the faintest. Both comb jellies
-have them spread the same way, so the band between the two stays solid.
 
 ## Reproduce it end to end
 
