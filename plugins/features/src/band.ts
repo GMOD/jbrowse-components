@@ -44,7 +44,11 @@ export {
 } from './LinearBasicDisplay/featureHighlight.ts'
 export { featureHighlightListActions } from './LinearBasicDisplay/featureHighlightViews.ts'
 export { default as FeatureGateMixin } from './shared/FeatureGateMixin.ts'
-export { paintFeatureBand } from './LinearBasicDisplay/components/paintFeatureBand.ts'
+export {
+  paintFeatureBand,
+  paintFeatureBandGlyphs,
+  paintFeatureBandLabels,
+} from './LinearBasicDisplay/components/paintFeatureBand.ts'
 export { htmlToPlainText } from './LinearBasicDisplay/components/hoverReadout.ts'
 export {
   drawnLabelTexts,

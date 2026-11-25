@@ -1,4 +1,5 @@
 /* eslint-disable react-refresh/only-export-components */
+import { useExportFontFamily } from '@jbrowse/core/svg/constants'
 import { usePalette } from '@jbrowse/core/ui/PaletteContext'
 import { PaintLayer } from '@jbrowse/core/util/paintLayer'
 import { GroupLabelBoxes } from '@jbrowse/display-kit/GroupLabelBox'
@@ -8,7 +9,7 @@ import { renderDisplaySvg } from '@jbrowse/display-kit/renderDisplaySvg'
 import SvgVariantOverlay from './components/SvgVariantOverlay.tsx'
 import { VARIANT_MARKS } from './components/variantMarks.ts'
 import {
-  recordsBandPainter,
+  recordsBandLayerPainters,
   recordsSectionsInBand,
 } from './recordsBandPaint.ts'
 
@@ -49,10 +50,12 @@ function VariantSvgBody({
   const { canvasHeight } = renderState
   const recordsHeight = model.topBands.reserved.records
   const palette = usePalette()
-  const paintRecords = recordsBandPainter(model, {
+  const fontFamily = useExportFontFamily()
+  const paintRecords = recordsBandLayerPainters(model, {
     canvasWidth,
     regions: view.visibleRegions,
     palette,
+    fontFamily,
   })
   return (
     <SvgVariantOverlay
@@ -60,8 +63,9 @@ function VariantSvgBody({
       width={canvasWidth}
       overlays={overlays}
       text={opts}
-      // the band the screen drew, through the same painter, on its own
-      // untranslated layer as the screen gives it its own canvas
+      // the band the screen drew, through the same painters, on its own
+      // untranslated layers as the screen gives it its own canvas; the labels
+      // without `opts`, so they stay text over a rasterized band
       records={
         recordsHeight > 0 ? (
           <>
@@ -69,7 +73,12 @@ function VariantSvgBody({
               width={canvasWidth}
               height={recordsHeight}
               opts={opts}
-              paint={paintRecords}
+              paint={paintRecords.glyphs}
+            />
+            <PaintLayer
+              width={canvasWidth}
+              height={recordsHeight}
+              paint={paintRecords.labels}
             />
             {/* the record sections' names, the twin of the band's chips */}
             {model.recordsGroupSections.length > 0 ? (

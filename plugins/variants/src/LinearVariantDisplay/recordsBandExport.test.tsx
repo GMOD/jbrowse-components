@@ -1,5 +1,7 @@
+import { ExportFontFamilyContext } from '@jbrowse/core/svg/constants'
 import { resolveSubMenu } from '@jbrowse/core/ui'
 import { exportedHeight } from '@jbrowse/display-kit/renderDisplaySvg'
+import { createCanvas } from '@napi-rs/canvas'
 import { render } from '@testing-library/react'
 
 import { createTestEnvironment as createMatrixTestEnvironment } from './matrix/testEnv.ts'
@@ -13,6 +15,11 @@ jest.mock('@jbrowse/core/svg/svgReady', () => ({
   ...jest.requireActual('@jbrowse/core/svg/svgReady'),
   awaitSvgReady: () => Promise.resolve(),
 }))
+
+const nodeCanvas = createCanvas as unknown as (
+  width: number,
+  height: number,
+) => HTMLCanvasElement
 
 function recordsItem(items: MenuItem[]) {
   const show = items.find(i => 'label' in i && i.label === 'Show')
@@ -148,4 +155,27 @@ test('in columns the export leaves out the focus chip line under the connectors'
   expect(rowShifts).toContain(`translate(0 ${connectors})`)
   expect(rowShifts).not.toContain(`translate(0 ${display.rowsTopOffset})`)
   expect(exportedHeight(display)).toBe(display.height - line)
+})
+
+test('a rasterized export keeps the record labels text, drawn in the export font', async () => {
+  const { display } = recordsDisplayAt(KIT, 51)
+  const body = await renderSvg(display, {
+    rasterizeLayers: true,
+    createCanvas: nodeCanvas,
+  })
+  const { container } = render(
+    <svg>
+      <ExportFontFamilyContext value="monospace">
+        {body}
+      </ExportFontFamilyContext>
+    </svg>,
+  )
+  const labels = [...container.querySelectorAll('text')].filter(t =>
+    KIT.some(([id]) => t.textContent.includes(id)),
+  )
+  expect(container.querySelector('image')).not.toBeNull()
+  expect(labels.length).toBeGreaterThan(0)
+  for (const label of labels) {
+    expect(label.getAttribute('font-family')).toBe('monospace')
+  }
 })

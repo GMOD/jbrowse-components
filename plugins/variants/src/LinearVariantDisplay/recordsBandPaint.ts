@@ -2,7 +2,10 @@
  * The records band's paint, the one composition the screen and the SVG
  * export both run, so the export draws the band the reader saw.
  */
-import { paintFeatureBand } from '@jbrowse/plugin-features/band'
+import {
+  paintFeatureBandGlyphs,
+  paintFeatureBandLabels,
+} from '@jbrowse/plugin-features/band'
 
 import type { VariantTopBands } from './variantTopBands.ts'
 import type { JBrowsePalette } from '@jbrowse/core/ui/palette'
@@ -14,7 +17,7 @@ import type {
 } from '@jbrowse/plugin-features/band'
 import type { RenderBlock } from '@jbrowse/render-core/renderBlock'
 
-type BandRegions = Parameters<typeof paintFeatureBand>[3]
+type BandRegions = Parameters<typeof paintFeatureBandLabels>[2]
 
 // Hand-written rather than the model type, which the lazily loaded export
 // cannot import without a circular reference.
@@ -27,17 +30,22 @@ export interface RecordsBandPaintModel {
   recordsScrollTop: number
 }
 
+interface RecordsBandFrame {
+  canvasWidth: number
+  regions: BandRegions
+  palette: JBrowsePalette
+  fontFamily?: string
+}
+
 /**
- * The band's painter. Reads the model when called, so a React caller calls it
- * in its render body, where the reads are tracked, and paints from an effect.
+ * The band's glyphs and labels as two painters, so an export can rasterize the
+ * glyphs and keep the labels text. Reads the model when called, so a React
+ * caller calls it in its render body, where the reads are tracked, and paints
+ * from an effect.
  */
-export function recordsBandPainter(
+export function recordsBandLayerPainters(
   model: RecordsBandPaintModel,
-  {
-    canvasWidth,
-    regions,
-    palette,
-  }: { canvasWidth: number; regions: BandRegions; palette: JBrowsePalette },
+  { canvasWidth, regions, palette, fontFamily }: RecordsBandFrame,
 ) {
   const dataMap = model.recordsLaidOutDataMap
   const blocks = model.renderBlocks
@@ -46,10 +54,28 @@ export function recordsBandPainter(
     bandHeight: model.topBands.reserved.records,
     scrollY: model.recordsScrollTop,
     ...model.recordsRenderedLabels,
+    fontFamily,
     palette,
   }
+  return {
+    glyphs: (ctx: Ctx2D) => {
+      paintFeatureBandGlyphs(ctx, dataMap, blocks, options)
+    },
+    labels: (ctx: Ctx2D) => {
+      paintFeatureBandLabels(ctx, dataMap, regions, options)
+    },
+  }
+}
+
+/** The band's painter for one canvas: glyphs, then labels over them. */
+export function recordsBandPainter(
+  model: RecordsBandPaintModel,
+  frame: RecordsBandFrame,
+) {
+  const { glyphs, labels } = recordsBandLayerPainters(model, frame)
   return (ctx: Ctx2D) => {
-    paintFeatureBand(ctx, dataMap, blocks, regions, options)
+    glyphs(ctx)
+    labels(ctx)
   }
 }
 

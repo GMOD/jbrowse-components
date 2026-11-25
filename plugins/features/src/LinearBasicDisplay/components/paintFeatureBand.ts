@@ -22,32 +22,20 @@ export interface FeatureBandPaint {
   showLabels: boolean
   showDescriptions: boolean
   fontSize: number
+  // An export's, which the labels are drawn and measured in.
+  fontFamily?: string
   // The palette rather than resolved colors, so glyphs and labels cannot be
   // handed different themes.
   palette: JBrowsePalette
   fieldPalette?: FieldPalette
 }
 
-/**
- * A laid-out feature stack painted into a band of another display: glyphs,
- * then labels, culled to the band. The screen and the SVG export both call it,
- * so the two cannot letter one stack differently.
- */
-export function paintFeatureBand(
+/** A laid-out feature stack's glyphs, culled to the band. */
+export function paintFeatureBandGlyphs(
   ctx: Ctx2D,
   dataMap: ReadonlyMap<number, FeatureDataResult>,
   blocks: RenderBlock[],
-  regions: RegionWithData[],
-  {
-    canvasWidth,
-    bandHeight,
-    scrollY,
-    showLabels,
-    showDescriptions,
-    fontSize,
-    palette,
-    fieldPalette,
-  }: FeatureBandPaint,
+  { canvasWidth, bandHeight, scrollY, palette, fieldPalette }: FeatureBandPaint,
 ) {
   paintMarkBlocks(
     ctx,
@@ -56,6 +44,26 @@ export function paintFeatureBand(
     blocks,
     { scrollY, canvasWidth, canvasHeight: bandHeight, outlineColor: 0 },
   )
+}
+
+/**
+ * A laid-out feature stack's labels, culled to the band: a layer of their own
+ * in an export, so they stay text over a rasterized band.
+ */
+export function paintFeatureBandLabels(
+  ctx: Ctx2D,
+  dataMap: ReadonlyMap<number, FeatureDataResult>,
+  regions: RegionWithData[],
+  {
+    bandHeight,
+    scrollY,
+    showLabels,
+    showDescriptions,
+    fontSize,
+    fontFamily,
+    palette,
+  }: FeatureBandPaint,
+) {
   ctx.save()
   ctx.translate(0, -scrollY)
   forEachDisplayLabel(
@@ -69,9 +77,25 @@ export function paintFeatureBand(
       colors: labelColors(palette),
     },
     (_, labels) => {
-      paintLabels(ctx, labels, fontSize)
+      paintLabels(ctx, labels, fontSize, fontFamily)
     },
     exactCullBand(scrollY, bandHeight, fontSize),
   )
   ctx.restore()
+}
+
+/**
+ * A laid-out feature stack painted into a band of another display: glyphs,
+ * then labels. The screen and the SVG export both paint these halves, so the
+ * two cannot letter one stack differently.
+ */
+export function paintFeatureBand(
+  ctx: Ctx2D,
+  dataMap: ReadonlyMap<number, FeatureDataResult>,
+  blocks: RenderBlock[],
+  regions: RegionWithData[],
+  options: FeatureBandPaint,
+) {
+  paintFeatureBandGlyphs(ctx, dataMap, blocks, options)
+  paintFeatureBandLabels(ctx, dataMap, regions, options)
 }
