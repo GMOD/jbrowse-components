@@ -77,8 +77,7 @@ follow _Assemble the der(3) allele_ to assemble a contig from them.
 ## Load tumor and normal reads at the chr3 breakpoints
 
 The chain is COLO829's der(3), a derivative chromosome 3 built from pieces of
-three chromosomes, whose three junctions close a triangle across chr3, chr10 and
-chr12[^chain]:
+three chromosomes, whose three junctions join chr3, chr10 and chr12[^chain]:
 
 ```text
 chr3:25,359,111  <-> chr12:72,273,112
@@ -213,9 +212,6 @@ The published contig aligns to the reference in these blocks:
     derivative   33126-39549   - -> chr3:25,352,683-25,359,111
 ```
 
-The chr10 and chr12 pieces are templated insertions: stretches of other
-chromosomes copied in where the break was repaired.
-
 Index the contigs, then load the contig as an assembly and the PAF as a synteny
 track between it and GRCh38:
 
@@ -249,8 +245,7 @@ empty and reports no error:
 }
 ```
 
-Add the truth set, called on five platforms before this ONT run existed, so
-every junction has an independent call to check against:
+Add the multi-platform truth set:
 
 ```json addtrack config=https://jbrowse.org/demos/cancer_sv/config.json loc=chr3:25,320,000-25,365,000
 {
@@ -311,9 +306,6 @@ On the hg38 row, the figures show UCSC's RefSeq genes:
 }
 ```
 
-The figures below also show RefSeq genes projected onto the derivative, a track
-that is not in the demo config.
-
 Open **Add → Linear synteny view** with hg38 on the top row and
 `der3_RARB_BICC1_TRHDE` below, and pick **der3 contig vs hg38** as the synteny
 track. The view shows:
@@ -322,13 +314,10 @@ track. The view shows:
 - a BED track on the derivative labelling each segment with its reference
   interval, which the gene track cannot do because a segment usually sits inside
   one large intron
-- the reference gene annotation projected onto the derivative: the first coding
-  exon of _RARB_, a short stretch of _TRHDE_ coding sequence in reverse, then
-  _RARB_ again, inverted
 - the tumor's split reads under the reference row, one row per molecule, with
   the truth set's validated calls above them; the reads are grouped by **Split
-  reads** with the unsplit section hidden, so the coverage counts the split
-  reads alone
+  reads** with the Not split group hidden by the hide button on its label chip,
+  so the coverage counts the split reads alone
 - each junction drawn once as an arc, with a tick at each end over the sequence
   retained there. Ticks pointing apart mark a deletion-type join, ticks pointing
   toward each other a duplication-type join, and parallel ticks an inversion.
@@ -340,16 +329,13 @@ track. The view shows:
 Zoom the synteny view to the kilobase holding the junctions, where the two
 inserts have separate ribbons:
 
-- **Against hg38**, the split reads stop at each junction, and the truth set has
-  a validated call at each place they stop. The truth set comes from other
-  platforms, so it is an independent check on the contig.
-- **Against the derivative**, most of the same reads cross all three junctions
-  in one alignment. The consensus was polished from these reads, so this shows
-  that they agree with each other.
+- Read the pileup against hg38, where the split reads stop at each junction and
+  the truth set has a validated call at each place they stop.
+- Read it against the derivative, where most of the same reads cross all three
+  junctions in one alignment.
 - The read track shows split alignments only, grouped by **Split reads** with
-  the unsplit section hidden, so its coverage counts only reads that cross a
-  junction. Each hg38 window is wider than the piece the allele uses, so that
-  coverage steps down as each arm ends.
+  the Not split group hidden by the hide button on its label chip, so its
+  coverage counts only reads that cross a junction.
 
 <Figure caption="The derivative at base scale: reads against hg38 above, realigned to the allele below." src="/img/cancer_sv/derivative_inserts.png" />
 
@@ -368,7 +354,8 @@ For COLO829 the script:
 
 The coverage bigWigs give a chromosome-wide look at where the tumor gained and
 lost. They are the `wf-somatic-variation` run's `mosdepth` output in 50 kb
-windows, converted to bigWig the same way for each sample:
+windows, converted to bigWig the same way for each sample, then loaded as a
+track:
 
 <!-- from: scripts/build_cancer_sv_demo.sh -->
 
@@ -380,9 +367,14 @@ gzip -dc COLO829_tumor.regions.bed.gz | sort -k1,1 -k2,2n |
 bedGraphToBigWig cov.bg hg38.chrom.sizes COLO829_tumor.coverage.bw
 ```
 
-[Assemble the der(3) allele](#the-derivative-allele) shows how to assemble a
-contig like the published one from your own reads. The same run builds the K562
-half of the demo, which [](/docs/tutorials/k562_fusions) walks through.
+```json addtrack
+{
+  "trackId": "COLO829_tumor_coverage",
+  "name": "COLO829 tumor coverage (50 kb bins)",
+  "uri": "COLO829_tumor.coverage.bw",
+  "assemblyNames": ["hg38"]
+}
+```
 
 ```bash
 curl -fO https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/build_cancer_sv_demo.sh
