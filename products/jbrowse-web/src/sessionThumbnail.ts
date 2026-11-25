@@ -15,7 +15,11 @@ const TIMEOUT_MS = 10_000
 let exporting: Promise<unknown> | undefined
 
 interface SvgExportingView {
-  exportSvg(opts: { save: false; announceSkipped: false }): Promise<string>
+  exportSvg(opts: {
+    save: false
+    announceSkipped: false
+    signal: AbortSignal
+  }): Promise<string>
 }
 
 function exportsSvg(view: unknown): view is SvgExportingView {
@@ -25,7 +29,11 @@ function exportsSvg(view: unknown): view is SvgExportingView {
   )
 }
 
-async function withTimeout<T>(promise: Promise<T>, ms: number) {
+async function withTimeout<T>(
+  promise: Promise<T>,
+  ms: number,
+  controller: AbortController,
+) {
   let timer: ReturnType<typeof setTimeout> | undefined
   try {
     return await Promise.race([
@@ -33,6 +41,7 @@ async function withTimeout<T>(promise: Promise<T>, ms: number) {
       new Promise<never>((_, reject) => {
         timer = setTimeout(() => {
           reject(new Error(`session thumbnail took over ${ms}ms`))
+          controller.abort()
         }, ms)
       }),
     ])
@@ -45,14 +54,19 @@ async function exportView(view: SvgExportingView) {
   if (exporting) {
     throw new Error('a session thumbnail export is still running')
   }
-  const svg = view.exportSvg({ save: false, announceSkipped: false })
+  const controller = new AbortController()
+  const svg = view.exportSvg({
+    save: false,
+    announceSkipped: false,
+    signal: controller.signal,
+  })
   exporting = svg
   svg
     .catch(() => {})
     .finally(() => {
       exporting = undefined
     })
-  return withTimeout(svg, TIMEOUT_MS)
+  return withTimeout(svg, TIMEOUT_MS, controller)
 }
 
 /**
