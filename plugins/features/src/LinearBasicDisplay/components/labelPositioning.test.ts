@@ -2,6 +2,10 @@ import { resolvePalette } from '@jbrowse/core/ui/palette'
 import { measureText } from '@jbrowse/core/util'
 
 import { LABEL_EDGE_GUTTER_PX } from '../../RenderFeatureDataRPC/constants.ts'
+import {
+  makeFeatureData,
+  makeFlatbushItem,
+} from '../../RenderFeatureDataRPC/testUtils.ts'
 import { labelColors } from './labelColors.ts'
 import {
   LABEL_CULL_BUCKET_PX,
@@ -13,6 +17,7 @@ import {
   labelScrollBucket,
   labelStackHeightPx,
   labelsWithinEdges,
+  forEachExportLabel,
   viewportBand,
 } from './labelPositioning.ts'
 
@@ -764,14 +769,117 @@ describe('labelsWithinEdges', () => {
     expect(labelsWithinEdges(labels, edges, 11, 'sans-serif')).toEqual(labels)
   })
 
-  test('drops the badge with a name the right edge would cut', () => {
+  test('moves a name the right edge would cut left to end at it, its badge with it', () => {
+    const badgeWidth = measureText('+3', 11 * 0.85, 'sans-serif')
+    const start = 100 - nameWidth / 2
     expect(
       labelsWithinEdges(
-        [name(100 - nameWidth / 2), badge(0)],
+        [name(start), badge(start + nameWidth + 4)],
         edges,
+        11,
+        'sans-serif',
+      ).map(l => l.labelX),
+    ).toEqual([100 - nameWidth - 4 - badgeWidth, 100 - badgeWidth])
+  })
+
+  test('drops a name wider than the room left of the right edge', () => {
+    expect(
+      labelsWithinEdges(
+        [name(50), badge(0)],
+        { right: nameWidth, bottom: 50 },
         11,
         'sans-serif',
       ),
     ).toEqual([])
+  })
+
+  test('drops a moved name whose new place is taken, and keeps one that stays', () => {
+    const taken = () => false
+    expect(
+      labelsWithinEdges(
+        [name(100 - nameWidth / 2)],
+        edges,
+        11,
+        'sans-serif',
+        taken,
+      ),
+    ).toEqual([])
+    expect(
+      labelsWithinEdges([name(0)], edges, 11, 'sans-serif', taken),
+    ).toEqual([name(0)])
+  })
+
+  test('drops a label the bottom edge would cut', () => {
+    expect(
+      labelsWithinEdges([name(0)], { right: 100, bottom: 5 }, 11, 'sans-serif'),
+    ).toEqual([])
+  })
+})
+
+describe('forEachExportLabel', () => {
+  const region: RegionWithData = { ...FULL_REGION, displayedRegionIndex: 0 }
+  const context = {
+    showLabels: true,
+    showDescriptions: false,
+    showSubfeatureLabels: false,
+    fontSize: LABEL_FONT,
+    colors: TEST_LABEL_COLORS,
+  }
+  const text = 'A NAME WIDER THAN ITS FEATURE'
+  const width = measureText(text, LABEL_FONT, 'sans-serif')
+
+  // The feature at 960-990px names itself past the 1000px edge, so the name
+  // moves left to end at 1000px, over where `neighbour` sits when it shares
+  // the label's row.
+  function labelXs(neighbourTopPx: number) {
+    const data = makeFeatureData({
+      flatbushItems: [
+        makeFlatbushItem({
+          featureId: 'edge',
+          startBp: 960,
+          endBp: 990,
+          topPx: 0,
+          bottomPx: 10,
+        }),
+        makeFlatbushItem({
+          featureId: 'neighbour',
+          startBp: 900,
+          endBp: 950,
+          topPx: neighbourTopPx,
+          bottomPx: neighbourTopPx + 10,
+        }),
+      ],
+      floatingLabelsData: new Map([
+        [
+          'edge',
+          makeLabelData('edge', {
+            minX: 960,
+            maxX: 990,
+            nameLabel: makeLabel({ text, textWidth: 150 }),
+          }),
+        ],
+      ]),
+    })
+    const out: number[] = []
+    forEachExportLabel(
+      [region],
+      new Map([[0, data]]),
+      context,
+      { right: 1000, bottom: 100 },
+      'sans-serif',
+      labels => {
+        out.push(...labels.map(l => l.labelX))
+      },
+    )
+    return out
+  }
+
+  test('moves a label the right edge would cut to end at it', () => {
+    const [x] = labelXs(50)
+    expect(x).toBeCloseTo(1000 - width)
+  })
+
+  test('drops it where the move would land on another feature', () => {
+    expect(labelXs(10)).toEqual([])
   })
 })

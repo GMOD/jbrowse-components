@@ -479,13 +479,12 @@ describe('renderSvg', () => {
 
   // 1000bp over 800px: a feature at 1900-1960bp spans 720-768px, and a name
   // the baked width says fits it runs past the view's 800px right edge in the
-  // export's font. One at 80px below a 100px display starts 2px from the
-  // bottom. Neither is drawn cut.
-  it('drops a label the right or bottom edge of the export would cut', async () => {
+  // export's font, so it moves left to end at the edge. One at 80px below a
+  // 100px display starts 2px from the bottom, and is dropped.
+  it('ends a label the right edge would cut at that edge, and drops one the bottom would cut', async () => {
     const cutRight = 'CUT AT THE RIGHT EDGE OF THE VIEW'
-    expect(
-      720 + measureText(cutRight, LABEL_FONT_SIZE, 'sans-serif'),
-    ).toBeGreaterThan(800)
+    const cutRightWidth = measureText(cutRight, LABEL_FONT_SIZE, 'sans-serif')
+    expect(720 + cutRightWidth).toBeGreaterThan(800)
     const feature = (
       featureId: string,
       minX: number,
@@ -516,7 +515,10 @@ describe('renderSvg', () => {
       await renderSvg(makeModel({ laidOutDataMap: new Map([[0, data]]) })),
     )
     expect(html).toContain('WHOLE')
-    expect(html).not.toContain(cutRight)
+    const x = Number(
+      new RegExp(`<text[^>]*x="([\\d.]+)"[^>]*>${cutRight}<`).exec(html)?.[1],
+    )
+    expect(x).toBeCloseTo(800 - cutRightWidth, 1)
     expect(html).not.toContain('CUT AT THE BOTTOM')
   })
 })

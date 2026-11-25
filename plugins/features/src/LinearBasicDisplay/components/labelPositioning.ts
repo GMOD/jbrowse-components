@@ -10,6 +10,7 @@ import {
   OVERLAY_LABEL_MIN_FONT_PX,
   renderedTextWidth,
 } from '../../RenderFeatureDataRPC/constants.ts'
+import { isPlacedRow } from '../rowPlacement.ts'
 
 import type {
   FeatureDataResult,
@@ -387,35 +388,190 @@ export function placeFeatureLabels(
   return out
 }
 
+export interface PxBox {
+  left: number
+  right: number
+  top: number
+  bottom: number
+}
+
+function boxesOverlap(a: PxBox, b: PxBox) {
+  return (
+    a.left < b.right && b.left < a.right && a.top < b.bottom && b.top < a.bottom
+  )
+}
+
+function labelExtent(
+  placed: ResolvedLabel,
+  fontSize: number,
+  fontFamily?: string,
+) {
+  return placed.kind === 'more'
+    ? {
+        width: measureText(
+          placed.label.text,
+          fontSize * MORE_ISOFORMS_FONT_SCALE,
+          fontFamily,
+        ),
+        height: fontSize,
+      }
+    : {
+        width: measureText(placed.label.text, placed.fontSize, fontFamily),
+        height: placed.fontSize,
+      }
+}
+
+function labelBoxes(
+  owner: string,
+  labels: ResolvedLabel[],
+  fontSize: number,
+  fontFamily?: string,
+) {
+  return labels.map(placed => {
+    const { width, height } = labelExtent(placed, fontSize, fontFamily)
+    return {
+      owner,
+      left: placed.labelX,
+      right: placed.labelX + width,
+      top: placed.labelY,
+      bottom: placed.labelY + height,
+    }
+  })
+}
+
+function featureBodyBoxes(
+  regions: RegionWithData[],
+  dataMap: ReadonlyMap<number, FeatureDataResult>,
+) {
+  return regions.flatMap(region => {
+    const toScreen = makeBpMapper(region)
+    return (dataMap.get(region.displayedRegionIndex)?.flatbushItems ?? [])
+      .filter(item => isPlacedRow(item.topPx))
+      .map(item => {
+        const px1 = toScreen(item.startBp)
+        const px2 = toScreen(item.endBp)
+        return {
+          owner: item.featureId,
+          left: Math.min(px1, px2),
+          right: Math.max(px1, px2),
+          top: item.topPx,
+          bottom: item.bottomPx,
+        }
+      })
+  })
+}
+
 /**
- * The labels whose box, measured in `fontFamily`, ends inside `right` and
+ * The labels whose box, measured in `fontFamily`, fits inside `right` and
  * `bottom`, the export's mirror of `placeFeatureLabels` dropping a label that
  * would start left of the view: a figure has no scrolling to bring a cut label
- * whole, so it draws none. A badge goes with its name.
+ * whole. One the right edge would cut moves left to end at it, unless that
+ * leaves it no room or `isFree` says its new box is taken; one the bottom
+ * would cut is dropped. A badge moves and goes with its name.
  */
 export function labelsWithinEdges(
   labels: ResolvedLabel[],
   { right, bottom }: { right: number; bottom: number },
   fontSize: number,
   fontFamily?: string,
+  isFree: (box: PxBox) => boolean = () => true,
 ) {
+  const measured = labels.map(placed => ({
+    placed,
+    ...labelExtent(placed, fontSize, fontFamily),
+  }))
+  const badge = measured.find(
+    m => m.placed.kind === 'more' && !m.placed.label.expanded,
+  )
+  let nameShift = 0
   let nameKept = false
-  return labels.filter(placed => {
-    const size =
-      placed.kind === 'more'
-        ? fontSize * MORE_ISOFORMS_FONT_SCALE
-        : placed.fontSize
-    const lineSize = placed.kind === 'more' ? fontSize : placed.fontSize
-    const width = measureText(placed.label.text, size, fontFamily)
+  return measured.flatMap(({ placed, width, height }) => {
+    const end =
+      placed.kind === 'name' && badge
+        ? Math.max(placed.labelX + width, badge.placed.labelX + badge.width)
+        : placed.labelX + width
+    const shift = placed.kind === 'more' ? nameShift : Math.min(0, right - end)
+    const left = placed.labelX + shift
     const kept =
-      placed.labelX + width < right + 0.5 &&
-      placed.labelY + lineSize < bottom + 0.5 &&
-      (placed.kind !== 'more' || nameKept)
+      placed.labelY + height < bottom + 0.5 &&
+      (placed.kind === 'more'
+        ? nameKept
+        : shift > -0.5 ||
+          (left >= LABEL_EDGE_GUTTER_PX &&
+            isFree({
+              left,
+              right: left + width,
+              top: placed.labelY,
+              bottom: placed.labelY + height,
+            })))
     if (placed.kind === 'name') {
+      nameShift = shift
       nameKept = kept
     }
-    return kept
+    return kept ? [{ ...placed, labelX: left }] : []
   })
+}
+
+/**
+ * `forEachDisplayLabel` for an export, each feature's labels fitted to the
+ * figure's edges by `labelsWithinEdges`. A label moved off the right edge must
+ * land clear of every other feature's body and label as the layout placed
+ * them, and of each label moved before it.
+ */
+export function forEachExportLabel(
+  regions: RegionWithData[],
+  dataMap: ReadonlyMap<number, FeatureDataResult>,
+  context: LabelRenderContext,
+  edges: { right: number; bottom: number },
+  fontFamily: string | undefined,
+  emit: (labels: ResolvedLabel[]) => void,
+  cullBand?: LabelCullBand,
+) {
+  const { fontSize } = context
+  const drawn: {
+    featureId: string
+    parentId: string | undefined
+    labels: ResolvedLabel[]
+  }[] = []
+  forEachDisplayLabel(
+    regions,
+    dataMap,
+    context,
+    (featureId, labels, region) => {
+      drawn.push({
+        featureId,
+        parentId: dataMap
+          .get(region.displayedRegionIndex)
+          ?.floatingLabelsData.get(featureId)?.parentFeatureId,
+        labels,
+      })
+    },
+    cullBand,
+  )
+  const bodies = featureBodyBoxes(regions, dataMap)
+  const placedLabels = drawn.flatMap(({ featureId, labels }) =>
+    labelBoxes(featureId, labels, fontSize, fontFamily),
+  )
+  for (const { featureId, parentId, labels } of drawn) {
+    const kept = labelsWithinEdges(
+      labels,
+      edges,
+      fontSize,
+      fontFamily,
+      box =>
+        !bodies.some(
+          body =>
+            body.owner !== featureId &&
+            body.owner !== parentId &&
+            boxesOverlap(body, box),
+        ) &&
+        !placedLabels.some(
+          other => other.owner !== featureId && boxesOverlap(other, box),
+        ),
+    )
+    placedLabels.push(...labelBoxes(featureId, kept, fontSize, fontFamily))
+    emit(kept)
+  }
 }
 
 export function forEachRenderedLabel(

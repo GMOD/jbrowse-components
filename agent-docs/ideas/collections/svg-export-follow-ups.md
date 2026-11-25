@@ -29,8 +29,10 @@ nothing overflows today. Exact measurement needs a family threaded through
 those two.
 
 **A feature label can still be cut at the top of a scrolled track.** The
-export drops a label that would cross the view's left, right or bottom edge
-(`labelsWithinEdges`, `labelPositioning.ts`). `exactCullBand` still admits a
+export drops a label that would cross the view's left or bottom edge, and
+moves one that would cross the right edge left to end at it, dropping it only
+where that leaves no room or lands on another feature (`labelsWithinEdges`,
+`forEachExportLabel`, `labelPositioning.ts`). `exactCullBand` still admits a
 label from a feature scrolled just above the top. The records band's labels
 (`paintFeatureBand.ts`) do not go through `labelsWithinEdges` at all.
 

@@ -10,8 +10,7 @@ import { shouldRenderPeptideText } from '../RenderFeatureDataRPC/zoomThresholds.
 import { labelColors } from './components/labelColors.ts'
 import {
   exactCullBand,
-  forEachDisplayLabel,
-  labelsWithinEdges,
+  forEachExportLabel,
   viewportBand,
 } from './components/labelPositioning.ts'
 import { paintLabels } from './components/paintLabels.ts'
@@ -108,17 +107,14 @@ function FeaturesSvgBody({
             // Labels and peptides are laid out in absolute track px, so the
             // layer shifts up by scrollY.
             ctx.translate(0, -scrollY)
-            forEachDisplayLabel(
+            forEachExportLabel(
               visibleRegions,
               model.laidOutDataMap,
               labelContext,
-              (_, labels) => {
-                paintLabels(
-                  ctx,
-                  labelsWithinEdges(labels, labelEdges, fontSize, fontFamily),
-                  fontSize,
-                  fontFamily,
-                )
+              labelEdges,
+              fontFamily,
+              labels => {
+                paintLabels(ctx, labels, fontSize, fontFamily)
               },
               labelBand,
             )
