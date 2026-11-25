@@ -76,8 +76,7 @@ export interface Recipe {
   config: string
   configUrl: string
   specJson: string
-  // the figure is one linear view, the one **File → Open track...** adds to
-  oneLinearView: boolean
+  openTrackAddsHere: boolean
   steps: RecipeStep[]
   // absent when a view needs a plugin the widget cannot load from the config
   python?: string
@@ -284,6 +283,8 @@ const OPEN_TRACK =
   'Add your track: **File → Open track...**, or check it in the track selector.'
 const ADD_TRACK =
   "Add your track: **+** → **Add track...** in this view's track selector, or check it there."
+
+const OPEN_TRACK_VIEWS = new Set(['LinearGenomeView', 'CircularView'])
 
 const NEXT_TRACK = 'Add the next track the same way.'
 
@@ -813,7 +814,8 @@ export function buildRecipe(
     config,
     configUrl,
     specJson,
-    oneLinearView: views.length === 1 && views[0]?.type === 'LinearGenomeView',
+    openTrackAddsHere:
+      views.length === 1 && OPEN_TRACK_VIEWS.has(views[0]?.type ?? ''),
     steps: notesOnce(steps),
     python: plugin ? undefined : pythonSnippet(configUrl, spec),
     embed: plugin ? undefined : embedSnippet(configUrl, spec),

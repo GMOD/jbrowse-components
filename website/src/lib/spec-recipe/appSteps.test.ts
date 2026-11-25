@@ -52,7 +52,7 @@ test('a view with no steps gets no empty "From scratch" list', () => {
   expect(html).toContain('No steps for this view yet')
 })
 
-test('the File → Open track shortcut is offered only on one linear view', () => {
+test('the File → Open track shortcut is offered only on one view that takes tracks', () => {
   const quickest = (views: unknown[]) => {
     const built = buildRecipe(
       `https://jbrowse.org/code/jb2/main/?config=test_data/volvox/config.json&session=spec-${encodeURIComponent(JSON.stringify({ views }))}`,
@@ -62,7 +62,8 @@ test('the File → Open track shortcut is offered only on one linear view', () =
   const lgv = { type: 'LinearGenomeView', assembly: 'volvox' }
   expect(quickest([lgv])).toBe(true)
   expect(quickest([lgv, lgv])).toBe(false)
-  expect(quickest([{ type: 'CircularView', assembly: 'volvox' }])).toBe(false)
+  expect(quickest([{ type: 'CircularView', assembly: 'volvox' }])).toBe(true)
+  expect(quickest([{ type: 'DotplotView' }])).toBe(false)
 })
 
 test('a linear view goes to its region before its tracks go in', () => {

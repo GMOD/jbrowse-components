@@ -129,7 +129,7 @@ export function panels(recipe: Recipe, id: string, inlineOpens = false): Panel[]
         inlineOpens
           ? `<div class="spec-open"><a href="${escapeAttr(recipe.liveUrl)}" target="_blank" rel="noopener">Open this view in JBrowse Web ↗</a> · ${desktopLink(recipe, id, 'Open this view in JBrowse Desktop ↗')}</div>`
           : '',
-        recipe.oneLinearView ? QUICKEST : '',
+        recipe.openTrackAddsHere ? QUICKEST : '',
         ownDataSteps(recipe.steps, recipe.unmapped),
       ].join(''),
     },
