@@ -10,10 +10,9 @@ tutorial_category: Population genomics
 
 In _Drosophila melanogaster_, a selective sweep at the insecticide-resistance
 gene _Cyp6g1_ ([Daborn et al. 2002](https://doi.org/10.1126/science.1074170))
-and the `In(2L)t` inversion on chromosome 2L each show up in windowed
-population-genetic statistics. π (diversity within a group) dips at the sweep
-and Tajima's D falls below zero there, while Fst (the distance between two
-groups' allele frequencies) rises across the inversion. The inversion flips a
+and the `In(2L)t` inversion on chromosome 2L can each be read from windowed
+population-genetic statistics: π (diversity within a group), Tajima's D and Fst
+(the distance between two groups' allele frequencies). The inversion flips a
 stretch of 2L end to end and suppresses recombination between the inverted and
 standard arrangements in a heterozygote
 ([Corbett-Detig & Hartl 2012](https://doi.org/10.1371/journal.pgen.1003056)).
@@ -65,11 +64,11 @@ npm install -g @jbrowse/cli@next
 ## The data
 
 The [Drosophila Genetic Reference Panel](https://dgrpool.epfl.ch/) (DGRP) has
-205 inbred lines ([Mackay et al. 2012](https://doi.org/10.1038/nature10811)),
-lifted to dm6. You don't need these files to follow the page: the track configs
-below read the hosted results. The [build script](#reproduce-it-end-to-end)
-fetches them to rebuild those results. The vcftools steps take your own VCF and
-two sample lists.
+inbred lines ([Mackay et al. 2012](https://doi.org/10.1038/nature10811)), lifted
+to dm6. You don't need these files to follow the page: the track configs below
+read the hosted results. The [build script](#reproduce-it-end-to-end) fetches
+them to rebuild those results. The vcftools steps take your own VCF and two
+sample lists.
 
 | What it is                                                                       | File                                                                                                                                             |
 | -------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------ |
@@ -85,8 +84,7 @@ standard homozygotes, `2` for inverted and `1` for heterozygotes.
 [`build_dgrp_popgen.sh`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/build_dgrp_popgen.sh)
 drops the heterozygotes and writes the two sample lists, one name per line, that
 [vcftools](https://vcftools.github.io/) takes for `--weir-fst-pop` and `--keep`.
-It also renames DGRPool's `DGRP_021` to the VCF's `DGRP-021`. DGRPool types
-`In(3R)Payne` too, so the same grouping on that phenotype scans `3R`.
+It also renames DGRPool's `DGRP_021` to the VCF's `DGRP-021`.
 
 Each scan is a vcftools run, an `awk` step that turns its table into a bedGraph,
 and a `bedGraphToBigWig` pack. Fst uses the Weir & Cockerham estimator[^hudson]
@@ -163,15 +161,12 @@ error.
 
 The DGRP VCF holds variant sites only, so `--window-pi` counts every position
 missing from the file as invariant and callable, and a window that lost sites to
-filtering shows low diversity.[^pixy] Filtering also shifts the whole baseline
-of Tajima's D, since it removes the rare alleles D is most sensitive to, and
-vcftools counts two chromosomes where an inbred line contributes one. Read D at
-a locus against the genome-wide background of all the lines.
+filtering shows low diversity.[^pixy]
 
 ## Load the scans in JBrowse
 
-We load dm6 from UCSC, whose reference names the arms `chr2L`. The alias file
-maps them to the bare `2L` the scans use:
+We load dm6 from UCSC, with the alias file that maps its `chr2L` arm names to
+the bare `2L` the scans use:
 
 ```json addassembly genome=dm6
 {
@@ -229,7 +224,7 @@ its aliases.
 }
 ```
 
-## Read the Cyp6g1 sweep in Tajima's D and π
+## Add Tajima's D, π and variant counts at Cyp6g1
 
 Search `Cyp6g1` in the location box and add three `QuantitativeTrack`s shaped
 like the Fst track above, each over all the lines: Tajima's D, π, and the
@@ -279,11 +274,6 @@ scalebar and pick **Highlight region**.
 
 <Figure src="/img/popgen/tajimad_cyp6g1.png" caption="Tajima's D, π and called variants per window across 2R, Cyp6g1 highlighted."/>
 
-Called variants fall under the sweep because a duplication of _Cyp6g1_
-segregates alongside the resistance allele
-([Schmidt et al. 2010](https://doi.org/10.1371/journal.pgen.1000998)), and the
-duplicated sequence lowers the number of sites called in the window.
-
 ## Compare In(2L)t genome-wide and within each arrangement {#the-inversion-genome-wide-and-within-each-arrangement}
 
 Open the assembly with no location to lay the six arms out side by side, with
@@ -304,7 +294,8 @@ published extent of the inversion with one inline feature:
         "refName": "chr2L",
         "start": 2225744,
         "end": 13154180,
-        "name": "In(2L)t"
+        "name": "In(2L)t",
+        "type": "inversion"
       }
     ]
   }
@@ -340,11 +331,9 @@ arrangement loads as one row of a single track:
 }
 ```
 
-Each arrangement's π swings several fold between 2 kb windows, far more than the
-two arrangements differ, so the two rows look alike. Pool into 250 kb bins and
-take log2 of inverted over standard to get one track that sits at zero where the
-arrangements have equal diversity. An `awk` step writes it from the two π
-bedGraphs:
+To compare the arrangements directly, pool into 250 kb bins and take log2 of
+inverted over standard, a track that sits at zero where the arrangements have
+equal diversity. An `awk` step writes it from the two π bedGraphs:
 
 <!-- from: scripts/build_dgrp_popgen.sh -->
 
@@ -406,13 +395,6 @@ Open `chr2L` alone, with the π ratio track under Fst:
 
 <Figure src="/img/popgen/in2lt_pi_ratio.png" caption="Top: the six dm6 arms with the In(2L)t extent over Fst. Below: chr2L with the log2 π ratio of inverted over standard lines." links="Six arms=popgen/fst_in2lt_2L"/>
 
-The inverted lines have less diversity than the standard ones across the
-inverted region, most near the breakpoints, where the suppressed recombination
-is strongest. Toward the centromere past the inversion, where the arrangements
-recombine freely, the ratio sits at zero. Differentiation decays gradually
-outside the breakpoints
-([Corbett-Detig & Hartl](https://doi.org/10.1371/journal.pgen.1003056)).
-
 ### Genotype the inversion in each line
 
 The karyotype that split the lines into two groups also loads as a track, one
@@ -425,7 +407,7 @@ ones, with the far breakpoint in `END`:
 2L      2225744  In2Lt  N    <INV>  .     PASS    SVTYPE=INV;END=13154180  GT      1/1       0/0
 ```
 
-The samples TSV lists each line with its `karyotype` (standard or inverted).
+The samples TSV lists each line with its `karyotype` (`Standard` or `In(2L)t`).
 `facet` splits the display into sections, one per `karyotype` value,
 `facet.sort` orders them, and `rows.color` is a color scale on each row's label
 bar:
@@ -444,13 +426,10 @@ bar:
       "uri": "https://jbrowse.org/demos/popgen/dgrp_In2Lt_samples.tsv"
     }
   },
-  "displays": [
-    {
-      "type": "LinearVariantDisplay",
-      "facet": { "field": "karyotype", "sort": ["Standard", "In(2L)t"] },
-      "rows": { "color": "karyotype" }
-    }
-  ]
+  "displayDefaults": {
+    "facet": { "field": "karyotype", "sort": ["Standard", "In(2L)t"] },
+    "rows": { "color": "karyotype" }
+  }
 }
 ```
 
@@ -463,13 +442,13 @@ shows this track under the Fst scan.
 [`build_dgrp_popgen.sh`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/build_dgrp_popgen.sh)
 wraps every step above. The script:
 
-- Downloads the DGRP2 dm6 SNP VCF and the `In(2L)t` karyotypes.
-- Splits the lines into inverted and standard groups, and writes Fst, π, their
+- downloads the DGRP2 dm6 SNP VCF and the `In(2L)t` karyotypes
+- splits the lines into inverted and standard groups, and writes Fst, π, their
   inverted-over-standard ratio and Tajima's D as bigWigs over windows with
-  vcftools.
-- Builds the one-record inversion VCF, with a genotype for every line.
-- Downloads JBrowse and writes a `config.json` with dm6 and every track, opening
-  on `In(2L)t`.
+  vcftools
+- builds the one-record inversion VCF, with a genotype for every line
+- downloads JBrowse and writes a `config.json` with dm6 and every track, opening
+  on `In(2L)t`
 
 ```bash
 curl -fO https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/build_dgrp_popgen.sh
@@ -517,8 +496,6 @@ JBrowse Desktop.
   [pixy: Unbiased estimation of nucleotide diversity and divergence in the presence of missing data](https://doi.org/10.1111/1755-0998.13326)
 - Mackay et al. (2012).
   [The Drosophila melanogaster Genetic Reference Panel](https://doi.org/10.1038/nature10811)
-- Schmidt et al. (2010).
-  [Copy number variation and transposable elements feature in recent, ongoing adaptation at the Cyp6g1 locus](https://doi.org/10.1371/journal.pgen.1000998)
 - Tajima (1989).
   [Statistical method for testing the neutral mutation hypothesis by DNA polymorphism](https://doi.org/10.1093/genetics/123.3.585)
 - Weir & Cockerham (1984).
