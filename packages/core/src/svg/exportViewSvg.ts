@@ -22,11 +22,14 @@ export interface ViewExportSvgOptions extends SvgRasterCanvasOpts {
   /** a named theme; the session's active one when absent */
   themeName?: string
   fontFamily?: string
+  /** Cancels the export: it rejects with the signal's reason and saves nothing */
+  signal?: AbortSignal
 }
 
 /**
  * The body of every view's `exportSvg` action: load the view's lazy
- * `renderToSvg`, render, save unless `save: false`, and return the markup.
+ * `renderToSvg`, render, save unless `save: false` or the signal aborted, and
+ * return the markup.
  */
 export async function exportViewSvg<V, O extends ViewExportSvgOptions>(
   view: V,
@@ -37,6 +40,7 @@ export async function exportViewSvg<V, O extends ViewExportSvgOptions>(
 ) {
   const { renderToSvg } = await load()
   const html = await renderToSvg(view, opts)
+  opts.signal?.throwIfAborted()
   if (opts.save !== false) {
     const { saveSvgAsImage } = await import('./saveSvgAsImage.ts')
     await saveSvgAsImage(html, opts)

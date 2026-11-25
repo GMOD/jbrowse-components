@@ -5,7 +5,7 @@ import {
   resolveFigureSize,
 } from '@jbrowse/core/svg/figureSize'
 import { awaitSvgReady, awaitSvgRenders } from '@jbrowse/core/svg/svgReady'
-import { getSession, max } from '@jbrowse/core/util'
+import { getSession, makeAbortError, max } from '@jbrowse/core/util'
 import { svgLegendGutterWidth } from '@jbrowse/display-kit/renderDisplaySvg'
 import { leftAxisGutterWidth } from '@jbrowse/display-ui/axisPlacement'
 
@@ -203,13 +203,34 @@ export function stackLayout(stack: ViewStack): ExportLayout {
 
 let exportQueue: Promise<unknown> = Promise.resolve()
 
+function untilAborted<T>(work: Promise<T>, signal: AbortSignal | undefined) {
+  return signal
+    ? new Promise<T>((resolve, reject) => {
+        const abort = () => {
+          reject(
+            signal.reason instanceof Error ? signal.reason : makeAbortError(),
+          )
+        }
+        if (signal.aborted) {
+          abort()
+        } else {
+          signal.addEventListener('abort', abort, { once: true })
+        }
+        work.then(resolve, reject).finally(() => {
+          signal.removeEventListener('abort', abort)
+        })
+      })
+    : work
+}
+
 async function renderLaidOut(
   subject: PageLayoutSubject,
   opts: ExportSvgOptions,
   layout: ExportLayout,
   render: (opts: ExportSvgOptions) => Promise<string>,
 ) {
-  const page = await settledPageLayout(subject, opts)
+  opts.signal?.throwIfAborted()
+  const page = await untilAborted(settledPageLayout(subject, opts), opts.signal)
   const width = layout.width()
   const viewWidth = page?.plotPx ?? opts.viewWidth ?? width
   // The on-screen tracks redraw at `viewWidth` until the export ends. A
@@ -220,8 +241,9 @@ async function renderLaidOut(
     layout.layOutAt(viewWidth)
   }
   try {
-    return await render(
-      page ? { ...opts, rasterScale: page.rasterScale } : opts,
+    return await untilAborted(
+      render(page ? { ...opts, rasterScale: page.rasterScale } : opts),
+      opts.signal,
     )
   } finally {
     if (viewWidth !== width) {
@@ -234,6 +256,8 @@ async function renderLaidOut(
  * Renders `subject` laid out for the export, at its page's plot width or at
  * `viewWidth` when either is given, and puts the screen width back after.
  * Exports run one at a time, so the width each one restores is the screen's.
+ * An aborted export rejects at once and frees the queue, leaving any render
+ * it started to finish detached, unsaved.
  */
 export function exportLaidOut(
   subject: PageLayoutSubject,

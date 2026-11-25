@@ -143,6 +143,20 @@ just the throw), and ask what leaves it declining forever:
   `reloadCounter`. Cover an empty binsize list too.
 - **The containing view is empty** (chord display's `extraTerminal`).
 
+## Cancelling an export
+
+`ViewExportSvgOptions.signal` cancels an export: the dialog's Cancel aborts it,
+and so does the session thumbnail's timeout. The linear genome, synteny and
+breakpoint views export one at a time through `exportLaidOut` (`pageLayout.ts`),
+so a stuck export would hold up every later one. There an abort rejects at once,
+puts the on-screen width back and frees the queue, and an export aborted while
+queued never starts. `exportViewSvg` checks the signal again before it saves,
+which is the only stop the dotplot and circular views have.
+
+The signal stops above `renderToSvg`. A render already running finishes
+detached and its result is dropped, so `awaitSvgReady` and the displays never
+see the signal.
+
 ## PaintLayer: raster-vs-vector dispatch
 
 - **A scale that rounds to zero must not go in the ctx matrix.** `serializeSvg`
