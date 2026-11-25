@@ -50,16 +50,12 @@ beforeEach(() => {
 
 const delay = { timeout: 40000 }
 const opts = [{}, delay]
-const snapshotDir = path.join(
-  path.dirname(module.filename),
-  '__image_snapshots__',
-)
 // The rasterized exports are a base64 PNG blob: nothing compares them (the
 // assertions below only check that an <image> is present at all), and a diff of
 // one tells a reviewer nothing. Tracking them just meant three files that went
 // stale on any rendering change and left the worktree dirty. The vector dumps
 // stay in __image_snapshots__ — they're deterministic text that diffs usefully,
-// and most are pinned by a toMatchSnapshot() on the same string.
+// and each is pinned by a toMatchSnapshot() on the same string.
 const debugDir = path.join(path.dirname(module.filename), '__debug_output__')
 fs.mkdirSync(debugDir, { recursive: true })
 
@@ -156,7 +152,7 @@ test('alignments display SVG vector export', async () => {
 
   await view.exportSvg({ rasterizeLayers: false })
   const svg = getSavedSvg()
-  fs.writeFileSync(`${snapshotDir}/alignments_vector_snapshot.svg`, svg)
+  expectSvgGolden(svg, 'alignments_vector_snapshot', normalizeSvg(svg))
   expect(svg).toContain('<svg')
   // SvgCanvas paths emit as <g>/<path>; rasterized path would emit <image>.
   expect(svg).not.toContain('<image')
