@@ -46,15 +46,15 @@ conda install -c bioconda -c conda-forge minimap2 htslib samtools
 T2T-HG002 v1.2, the [Q100 project](https://github.com/marbl/HG002)'s diploid
 assembly, and the chain between its haplotypes the project publishes, with one
 set of chains per direction
-([Hansen _et al._ 2026](https://doi.org/10.1016/j.cell.2026.06.016)), plus JHU
+([Hansen et al. 2026](https://doi.org/10.1016/j.cell.2026.06.016)), plus JHU
 Liftoff v0.6 gene models built on v1.1.
 
 Nothing to download: the track configs below read these files by URL. Two
-haplotypes of your own go in one FASTA, as _Loading the assembly and the
-alignment_ describes.
+haplotypes of your own go in one FASTA, as _Load the assembly and the chain_
+describes.
 
 <details>
-<summary>The files</summary>
+<summary>Read by URL (no download needed)</summary>
 
 | What it is                                                                                                       | File                                                                                                                                                                  |
 | ---------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -64,7 +64,7 @@ alignment_ describes.
 
 </details>
 
-## Loading the assembly and the alignment
+## Load the assembly and the chain
 
 JBrowse reads the assembly and the chain from their published URLs, picking the
 adapter from the extension and finding the `.fai` and `.gzi` beside the FASTA.
@@ -109,7 +109,7 @@ Two haplotypes of your own need:
 minimap2 -cx asm5 --eqx -X hap.fa.gz hap.fa.gz > hap.paf
 ```
 
-## Plotting maternal against paternal genome-wide
+## Plot maternal against paternal genome-wide
 
 We'll set up the dotplot in the import form:
 
@@ -136,17 +136,17 @@ the boxes, colored by strand.
 
 <Figure caption="The Q100 chain as dotplots colored by strand: the whole genome above, chr8 below." src="/img/hg002_haplotypes_wholegenome.png" />
 
-## Opening the 8p23.1 inversion in a linear synteny view
+## Open the 8p23.1 inversion in a linear synteny view
 
-HG002 is heterozygous for the 8p23.1 inversion polymorphism (Bosch _et al._
-2009), so the maternal and paternal copies of that arm run in opposite
-directions, and the inversion is the largest inverted block in the Q100 chain. A
-linear synteny view lays the two copies against each other, with each
-haplotype's tracks beside the ribbons.
+HG002 is heterozygous for the 8p23.1 inversion polymorphism
+([Bosch et al. 2009](https://doi.org/10.1371/journal.pone.0008269)), so the
+maternal and paternal copies of that arm run in opposite directions. A linear
+synteny view lays the two copies against each other, with each haplotype's
+tracks beside the ribbons.
 
-Open **Add → Linear synteny view**, whose **Quick start** offers a row for each
-side of the chain, and the chain between them. Press **Launch**, and both panels
-open on the whole assembly.[^from-dotplot]
+Open **Add → Linear synteny view**. In **Quick start**, choose `hg002v1.2` for
+both rows and `Maternal vs paternal (Q100 chain)` as the track. Press
+**Launch**, and both panels open on the whole assembly.[^from-dotplot]
 
 Tick **Follow** in the header. With follow on, the view places the panel below
 on the sequence that aligns to the top panel through the chain, so navigate the
@@ -159,11 +159,10 @@ and the view moves the paternal panel to the matching stretch of
 - turn the chain track on in each panel's track selector, where it shows as
   blocks on that panel's ruler. The inverted block is the long blue bar in both
 
-The gene annotation shows the inversion too, from the JHU Liftoff GFFs published
-beside the assembly, one per haplotype, on matching contig names:
+Add the JHU Liftoff gene annotation, published beside the assembly as one GFF
+per haplotype, on matching contig names:
 
-- the files annotate v1.1, and on chromosome 8 the gene tracks still line up
-  with the v1.2 ribbons
+- the files annotate v1.1
 - the gene symbol is in `gene_name`, so the label points there
 - the paternal panel's gene track uses the same config with `PAT` in the name
   and URL, under a different `trackId`
@@ -192,34 +191,44 @@ Set these on each gene track:
   one otherwise, so the track is one row deep
 - **Color by → Strand** colors forward genes red and reverse genes blue,
   matching the ribbons
-- at this zoom the labels come from a second track over the same GFF under a
-  separate `trackId`, with **Filter by...** set to
-  `jexl:feature.gene_name == 'MFHAS1' || feature.gene_name == 'ERI1' || feature.gene_name == 'TNKS' || feature.gene_name == 'MSRA' || feature.gene_name == 'PINX1' || feature.gene_name == 'XKR6' || feature.gene_name == 'BLK' || feature.gene_name == 'GATA4'`,
-  the longest protein-coding genes in the inverted block
+
+At this zoom the labels come from a second track over the same GFF under a
+separate `trackId`, whose `filter` keeps a few genes:
+
+```json addtrack
+{
+  "type": "FeatureTrack",
+  "trackId": "hg002_gene_labels_mat",
+  "name": "Gene labels (JHU Liftoff v0.6, HG002 v1.1 MAT)",
+  "assemblyNames": ["hg002v1.2"],
+  "adapter": {
+    "type": "Gff3TabixAdapter",
+    "uri": "https://s3-us-west-2.amazonaws.com/human-pangenomics/T2T/HG002/assemblies/annotation/JHULiftoff/v0.6/hg002v1.1.MAT.loff.v0.6.gff.gz"
+  },
+  "displayDefaults": {
+    "geneGlyphMode": "representative",
+    "labels": {
+      "name": "jexl:feature.gene_name || feature.name || feature.id"
+    },
+    "filter": [
+      "jexl:feature.gene_name == 'MFHAS1' || feature.gene_name == 'ERI1' || feature.gene_name == 'TNKS' || feature.gene_name == 'MSRA' || feature.gene_name == 'PINX1' || feature.gene_name == 'XKR6' || feature.gene_name == 'BLK' || feature.gene_name == 'GATA4'"
+    ]
+  }
+}
+```
 
 **Advanced → Edit plot...** in a gene track's menu shows its `encoding.color` (a
 color scale) and `filter` (drops records) as text and applies edits live.
 
 <Figure caption="HG002 maternal (top) against paternal (bottom) at 8p23.1, colored by strand. The inverted block is the long blue bar." src="/img/hg002_haplotypes_8p23_inversion.png" />
 
-## Keeping the two haplotypes in register with Follow
-
-At 9 Mb across, a few pixels of offset between the haplotypes are invisible, so
-one window typed into both panels looks lined up. Zoomed in, every upstream
-indel shifts one haplotype against the other and the offset fills the screen.
-
-In the figure below the same 70 kb is typed into both panels with follow off,
-and after **Follow** is ticked, the paternal panel fills and the ribbon closes.
 Turn follow off to pan the paternal panel by hand, or right-click a chain block
 for **Move other panel to the matching region**, which does the follow move
-once.
+once. With **Gridlines** on, in the header's settings menu, the view draws a
+line through each ribbon from a point on the top row to where it maps on the
+bottom.
 
 <Figure caption="Before and after ticking Follow, maternal over paternal." src="/img/hg002_haplotypes_follow_panel.png" />
-
-With **Gridlines** on, in the header's settings menu, the view draws a line
-through each ribbon from a point on the top row to where it maps on the bottom.
-In the clip the same coordinates are typed into both panels, 2 Mb into the
-collinear chain past the inversion.
 
 <Video src="/media/synteny/hg002_follow_panels.mp4" caption="Follow places the paternal panel from the maternal one through the chain, so the location markers stay vertical as the top panel is dragged." />
 
