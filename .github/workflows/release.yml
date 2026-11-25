@@ -91,9 +91,14 @@ jobs:
       - name: Generate release notes
         run: |
           if ! node scripts/releasenotes.ts --tag "${RELEASE_VERSION}" > /tmp/notes.md; then
+            STABLE=${RELEASE_VERSION%%-*}
             PREVIOUS=$(git ls-remote --tags --refs origin 'v*' | sed 's#.*refs/tags/##' | sort -V | grep -x -B1 -F "${RELEASE_VERSION}" | head -n1)
+            DRAFT=website/release_announcement_drafts/${STABLE}.md
+            if [ -f "$DRAFT" ]; then
+              SO_FAR=" The [draft ${STABLE} announcement](https://github.com/${GITHUB_REPOSITORY}/blob/main/${DRAFT}) covers the whole release so far."
+            fi
             cat > /tmp/notes.md <<EOF
-          A prerelease of JBrowse ${RELEASE_VERSION%%-*}, for trying out before the stable release. Full release notes come with ${RELEASE_VERSION%%-*}, so keep an eye out for it.
+          A prerelease of JBrowse ${STABLE}, for trying out before the stable release.${SO_FAR} Final release notes come with ${STABLE}, so keep an eye out for it.
 
           [Changes since ${PREVIOUS}](https://github.com/${GITHUB_REPOSITORY}/compare/${PREVIOUS}...${RELEASE_VERSION})
           EOF
