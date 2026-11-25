@@ -353,13 +353,16 @@ equal-width columns, one row per chromosome:
   "assemblyNames": ["hg38"],
   "uri": "https://jbrowse.org/demos/popgen/lct_1kg38_chr2_6pop.vcf.gz",
   "csi": true,
-  "displayDefaults": {
-    "variantLayout": "columns",
-    "rows": "haplotype",
-    "filter": [{ "field": "minorAlleleFrequency", "gte": 0.35 }],
-    "forceLoad": true,
-    "height": 700
-  }
+  "displays": [
+    {
+      "type": "LinearVariantDisplay",
+      "variantLayout": "columns",
+      "rows": "haplotype",
+      "filter": [{ "field": "minorAlleleFrequency", "gte": 0.35 }],
+      "forceLoad": true,
+      "height": 700
+    }
+  ]
 }
 ```
 

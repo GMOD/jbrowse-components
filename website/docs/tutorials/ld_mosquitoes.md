@@ -185,12 +185,15 @@ the two metric columns, as its input:
     "uri": "https://jbrowse.org/demos/popgen/ag1000g_2L_CMgam.vcor.gz",
     "csi": true
   },
-  "displayDefaults": {
-    "encoding": { "color": "r2" },
-    "variantLayout": "genomic",
-    "legend": { "show": true },
-    "height": 340
-  }
+  "displays": [
+    {
+      "type": "LDTrackDisplay",
+      "encoding": { "color": "r2" },
+      "variantLayout": "genomic",
+      "legend": { "show": true },
+      "height": 340
+    }
+  ]
 }
 ```
 
@@ -234,13 +237,16 @@ with a `LinearVariantDisplay`:
       "uri": "https://jbrowse.org/demos/popgen/ag1000g_2La_CMgam_samples.tsv"
     }
   },
-  "displayDefaults": {
-    "facet": {
-      "field": "karyotype",
-      "sort": ["2L+a/2L+a", "2La/2L+a", "2La/2La"]
-    },
-    "rows": { "color": "karyotype" }
-  }
+  "displays": [
+    {
+      "type": "LinearVariantDisplay",
+      "facet": {
+        "field": "karyotype",
+        "sort": ["2L+a/2L+a", "2La/2L+a", "2La/2La"]
+      },
+      "rows": { "color": "karyotype" }
+    }
+  ]
 }
 ```
 

@@ -205,10 +205,14 @@ row's two breakpoints side by side as two regions of one view:
 - **Read connections → View as pairs/link supplementary alignments** merges each
   molecule's two alignments onto one row.
 - The figure's track is filtered to the split reads with alignments on both chr9
-  and chr22, by the `filter` in the `displayDefaults` below.
+  and chr22, by the `filter` in this restatement of the Iso-Seq track:
 
-```json
+```json addtrack
 {
+  "trackId": "K562_isoseq",
+  "name": "K562 PacBio Iso-Seq (ENCODE)",
+  "uri": "K562_isoseq.bam",
+  "assemblyNames": ["hg38"],
   "displayDefaults": {
     "filter": [
       { "field": "split", "equal": true },

@@ -210,10 +210,13 @@ the graph launch's session:
     "uri": "https://s3-us-west-2.amazonaws.com/human-pangenomics/pangenomes/freeze/release2/minigraph-cactus/v2.1/hprc-v2.1-mc-grch38/hprc-v2.1-mc-grch38.pgbi.vcf.gz",
     "fetchSizeLimit": 20000000
   },
-  "displayDefaults": {
-    "rows": { "field": "haplotype" },
-    "filter": ["jexl:alleleLength(feature)>=50"]
-  }
+  "displays": [
+    {
+      "type": "LinearVariantDisplay",
+      "rows": "haplotype",
+      "filter": ["jexl:alleleLength(feature)>=50"]
+    }
+  ]
 }
 ```
 

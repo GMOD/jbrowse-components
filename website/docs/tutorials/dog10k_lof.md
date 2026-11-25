@@ -240,9 +240,12 @@ the filter shows them.
   "uri": "dog10k_cyp1a2_snvs.vcf.gz",
   "csi": true,
   "assemblyNames": ["UU_Cfam_GSD_1.0"],
-  "displayDefaults": {
-    "filter": ["jexl:feature.start == 38261634"]
-  }
+  "displays": [
+    {
+      "type": "LinearVariantDisplay",
+      "filter": ["jexl:feature.start == 38261634"]
+    }
+  ]
 }
 ```
 

@@ -426,10 +426,13 @@ bar:
       "uri": "https://jbrowse.org/demos/popgen/dgrp_In2Lt_samples.tsv"
     }
   },
-  "displayDefaults": {
-    "facet": { "field": "karyotype", "sort": ["Standard", "In(2L)t"] },
-    "rows": { "color": "karyotype" }
-  }
+  "displays": [
+    {
+      "type": "LinearVariantDisplay",
+      "facet": { "field": "karyotype", "sort": ["Standard", "In(2L)t"] },
+      "rows": { "color": "karyotype" }
+    }
+  ]
 }
 ```
 

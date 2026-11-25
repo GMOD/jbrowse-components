@@ -195,15 +195,18 @@ reference's first. The display config:
     "type": "VcfTabixAdapter",
     "uri": "https://jbrowse.org/demos/fly_pangenome/fly-dm6-minigraph.vcf.gz"
   },
-  "displayDefaults": {
-    "rows": { "field": "haplotype" },
-    "records": {
-      "labels": {
-        "name": { "show": false },
-        "description": "jexl:feature.INFO.ALEN + ' bp'"
+  "displays": [
+    {
+      "type": "LinearVariantDisplay",
+      "rows": { "field": "haplotype" },
+      "records": {
+        "labels": {
+          "name": { "show": false },
+          "description": "jexl:feature.INFO.ALEN + ' bp'"
+        }
       }
     }
-  }
+  ]
 }
 ```
 

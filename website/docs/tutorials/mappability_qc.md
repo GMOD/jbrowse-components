@@ -125,15 +125,19 @@ The Umap config holds the **Minimum** score mode and the 0 to 1 axis:
     "type": "BigWigAdapter",
     "uri": "https://hgdownload.soe.ucsc.edu/gbdb/hg38/hoffmanMappability/k100.Umap.MultiTrackMappability.bw"
   },
-  "displayDefaults": {
-    "mark": { "extent": "none" },
-    "encoding": {
-      "y": {
-        "field": "minScore",
-        "scale": { "domainMin": 0, "domainMax": 1 }
+  "displays": [
+    {
+      "type": "LinearWiggleDisplay",
+      "displayId": "hg38-umap100Quantitative-LinearWiggleDisplay",
+      "mark": { "extent": "none" },
+      "encoding": {
+        "y": {
+          "field": "minScore",
+          "scale": { "domainMin": 0, "domainMax": 1 }
+        }
       }
     }
-  }
+  ]
 }
 ```
 

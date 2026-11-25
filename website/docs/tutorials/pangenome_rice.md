@@ -197,7 +197,7 @@ the reference's first. The display config:
   band above the rows, followed by the share of the assemblies with an alternate
   allele
 
-```json addtrack loc=chr1:39,008,001-39,020,000 config=https://jbrowse.org/hubs/genark/GCF/034/140/825/GCF_034140825.1/config.json
+```json addtrack loc=chr1:39,008,001-39,020,000
 {
   "type": "VariantTrack",
   "trackId": "rice_pangenome_vcf",
@@ -207,15 +207,18 @@ the reference's first. The display config:
     "type": "VcfTabixAdapter",
     "uri": "https://jbrowse.org/demos/rice_pangenome/rice-agis1-minigraph.vcf.gz"
   },
-  "displayDefaults": {
-    "rows": { "field": "haplotype" },
-    "records": {
-      "labels": {
-        "name": { "show": false },
-        "description": "jexl:feature.INFO.ALEN + ' bp'"
+  "displays": [
+    {
+      "type": "LinearVariantDisplay",
+      "rows": { "field": "haplotype" },
+      "records": {
+        "labels": {
+          "name": { "show": false },
+          "description": "jexl:feature.INFO.ALEN + ' bp'"
+        }
       }
     }
-  }
+  ]
 }
 ```
 

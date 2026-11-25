@@ -278,14 +278,17 @@ load unchanged as a [`VariantTrack`](/docs/config_guides/variant_track):
   "name": "MC graph: pangenome variants (vs K12)",
   "uri": "mc/ecoli.vcf.gz",
   "assemblyNames": ["K12"],
-  "displayDefaults": {
-    "variantLayout": "columns",
-    "rows": { "field": "haplotype" }
-  }
+  "displays": [
+    {
+      "type": "LinearVariantDisplay",
+      "variantLayout": "columns",
+      "rows": "haplotype"
+    }
+  ]
 }
 ```
 
-With `rows.field: "haplotype"` the track draws one row per strain, and with
+With `rows: "haplotype"` the track draws one row per strain, and with
 `variantLayout: "columns"` it draws one column per variant. The
 [multi-sample variant track guide](/docs/user_guides/multivariant_track) covers
 columns versus genomic positions, the genotype colors, and clustering samples by

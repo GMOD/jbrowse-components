@@ -127,7 +127,7 @@ the multi-sample matrix display:
 {
   "type": "VariantTrack",
   "trackId": "tcga_brca_mutations",
-  "name": "TCGA-BRCA somatic mutations",
+  "name": "TCGA-BRCA somatic mutations (979 primary tumors)",
   "assemblyNames": ["hg38"],
   "category": ["TCGA"],
   "adapter": {
@@ -138,11 +138,14 @@ the multi-sample matrix display:
       "uri": "https://jbrowse.org/demos/tcga/tcga_brca_clinical.tsv"
     }
   },
-  "displayDefaults": {
-    "variantLayout": "columns",
-    "height": 1010,
-    "encoding": { "color": "impact" }
-  }
+  "displays": [
+    {
+      "type": "LinearVariantDisplay",
+      "variantLayout": "columns",
+      "height": 1010,
+      "encoding": { "color": "impact" }
+    }
+  ]
 }
 ```
 
@@ -168,7 +171,7 @@ row's label bar, so the gutter shows the matching color strip.
 {
   "type": "VariantTrack",
   "trackId": "tcga_brca_mutations",
-  "name": "TCGA-BRCA somatic mutations",
+  "name": "TCGA-BRCA somatic mutations (979 primary tumors)",
   "assemblyNames": ["hg38"],
   "category": ["TCGA"],
   "adapter": {
@@ -179,14 +182,17 @@ row's label bar, so the gutter shows the matching color strip.
       "uri": "https://jbrowse.org/demos/tcga/tcga_brca_clinical.tsv"
     }
   },
-  "displayDefaults": {
-    "variantLayout": "columns",
-    "height": 450,
-    "connectors": { "height": 130 },
-    "encoding": { "color": "impact" },
-    "facet": { "field": "histology", "sort": ["ductal", "lobular"] },
-    "rows": { "color": "histology" }
-  }
+  "displays": [
+    {
+      "type": "LinearVariantDisplay",
+      "variantLayout": "columns",
+      "height": 450,
+      "connectors": { "height": 130 },
+      "encoding": { "color": "impact" },
+      "facet": { "field": "histology", "sort": ["ductal", "lobular"] },
+      "rows": { "color": "histology" }
+    }
+  ]
 }
 ```
 
@@ -199,7 +205,7 @@ We open the matrix over _CDH1_'s exons (see [](/docs/user_guides/gene_track)):
 
 <Figure caption="CDH1's exons, rows grouped and colored by histology, cells colored by VEP impact." src="/img/tcga/mutations_cdh1_histology.png" />
 
-## Facet the rows by receptor subtype
+## Facet rows by receptor subtype
 
 With `facet` and `rows.color` set to `subtype` instead, the rows form bands by
 receptor status, with the HR+/HER2- band first in `sort`:
@@ -208,7 +214,7 @@ receptor status, with the HR+/HER2- band first in `sort`:
 {
   "type": "VariantTrack",
   "trackId": "tcga_brca_mutations",
-  "name": "TCGA-BRCA somatic mutations",
+  "name": "TCGA-BRCA somatic mutations (979 primary tumors)",
   "assemblyNames": ["hg38"],
   "category": ["TCGA"],
   "adapter": {
@@ -219,17 +225,20 @@ receptor status, with the HR+/HER2- band first in `sort`:
       "uri": "https://jbrowse.org/demos/tcga/tcga_brca_clinical.tsv"
     }
   },
-  "displayDefaults": {
-    "variantLayout": "columns",
-    "height": 450,
-    "connectors": { "height": 130 },
-    "encoding": { "color": "impact" },
-    "facet": {
-      "field": "subtype",
-      "sort": ["HR+/HER2-", "HER2+", "triple-negative"]
-    },
-    "rows": { "color": "subtype" }
-  }
+  "displays": [
+    {
+      "type": "LinearVariantDisplay",
+      "variantLayout": "columns",
+      "height": 450,
+      "connectors": { "height": 130 },
+      "encoding": { "color": "impact" },
+      "facet": {
+        "field": "subtype",
+        "sort": ["HR+/HER2-", "HER2+", "triple-negative"]
+      },
+      "rows": { "color": "subtype" }
+    }
+  ]
 }
 ```
 

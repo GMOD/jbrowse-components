@@ -290,10 +290,13 @@ so the two tracks line up row for row:
     "csi": true,
     "samplesTsvLocation": { "uri": "dog10k_amy2b_samples.tsv" }
   },
-  "displayDefaults": {
-    "rows": { "color": "group" },
-    "height": 900
-  }
+  "displays": [
+    {
+      "type": "LinearVariantDisplay",
+      "rows": { "color": "group" },
+      "height": 900
+    }
+  ]
 }
 ```
 
@@ -352,16 +355,19 @@ the record's name and description, as in the synteny figure below.
     "csi": true,
     "samplesTsvLocation": { "uri": "dog10k_fgf4_samples.tsv" }
   },
-  "displayDefaults": {
-    "rows": { "color": "group" },
-    "records": {
-      "labels": {
-        "name": { "show": false },
-        "description": { "show": false }
-      }
-    },
-    "height": 690
-  }
+  "displays": [
+    {
+      "type": "LinearVariantDisplay",
+      "rows": { "color": "group" },
+      "records": {
+        "labels": {
+          "name": { "show": false },
+          "description": { "show": false }
+        }
+      },
+      "height": 690
+    }
+  ]
 }
 ```
 

@@ -241,49 +241,52 @@ breed order:
       "uri": "https://jbrowse.org/demos/bovine_pangenome/bovine-arsucd12-minigraph.samples.tsv"
     }
   },
-  "displayDefaults": {
-    "rows": {
-      "field": "haplotype",
-      "sort": [
-        "ANG",
-        "BSW",
-        "HIG",
-        "OBV",
-        "PIE",
-        "SIM",
-        "BRA",
-        "NEL",
-        "GAU",
-        "BIS",
-        "YAK"
-      ],
-      "labels": {
-        "ANG": "Angus",
-        "BSW": "Brown Swiss",
-        "HIG": "Highland",
-        "OBV": "Original Braunvieh",
-        "PIE": "Piedmontese",
-        "SIM": "Simmental",
-        "BRA": "Brahman",
-        "NEL": "Nellore",
-        "GAU": "Gaur",
-        "BIS": "Bison",
-        "YAK": "Yak"
+  "displays": [
+    {
+      "type": "LinearVariantDisplay",
+      "rows": {
+        "field": "haplotype",
+        "sort": [
+          "ANG",
+          "BSW",
+          "HIG",
+          "OBV",
+          "PIE",
+          "SIM",
+          "BRA",
+          "NEL",
+          "GAU",
+          "BIS",
+          "YAK"
+        ],
+        "labels": {
+          "ANG": "Angus",
+          "BSW": "Brown Swiss",
+          "HIG": "Highland",
+          "OBV": "Original Braunvieh",
+          "PIE": "Piedmontese",
+          "SIM": "Simmental",
+          "BRA": "Brahman",
+          "NEL": "Nellore",
+          "GAU": "Gaur",
+          "BIS": "Bison",
+          "YAK": "Yak"
+        },
+        "color": {
+          "field": "lineage",
+          "scale": {
+            "domain": ["taurine", "indicine", "gaur", "bison", "yak"],
+            "range": ["#0072B2", "#E69F00", "#009E73", "#CC79A7", "#D55E00"]
+          }
+        }
       },
-      "color": {
-        "field": "lineage",
-        "scale": {
-          "domain": ["taurine", "indicine", "gaur", "bison", "yak"],
-          "range": ["#0072B2", "#E69F00", "#009E73", "#CC79A7", "#D55E00"]
+      "records": {
+        "labels": {
+          "name": { "show": false }
         }
       }
-    },
-    "records": {
-      "labels": {
-        "name": { "show": false }
-      }
     }
-  }
+  ]
 }
 ```
 
