@@ -24,12 +24,15 @@ export function exportedOverlayTrackIds(model: BreakpointViewModel) {
     .map(track => track.configuration.trackId)
     .filter(id =>
       model.views.some(view =>
-        view.tracks.some(
-          t =>
+        view.tracks.some(t => {
+          const display = t.displays[0]
+          return (
             t.configuration.trackId === id &&
             !t.minimized &&
-            !!t.displays[0]?.renderSvg,
-        ),
+            display !== undefined &&
+            'renderSvg' in display
+          )
+        }),
       ),
     )
 }

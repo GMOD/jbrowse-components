@@ -178,7 +178,7 @@ test('an overlay fetch failure fails the export', async () => {
 test('a track resize does not refetch the overlay', async () => {
   const { view, calls } = await setup(['tk1'])
   const before = calls.get()
-  view.views[0]!.tracks[0]!.displays[0]!.setHeight(300)
+  view.views[0]!.tracks[0]!.displays[0]!.resizeHeight(50)
 
   expect(view.overlaySvgReady).toBe(true)
   await sleep(1500)
