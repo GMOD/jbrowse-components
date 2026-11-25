@@ -9,7 +9,7 @@ An RNA-seq read mapped back to the genome spans the introns spliced out of the
 transcript as gaps, and the aligner writes each gap into the read's CIGAR
 string. In a stranded library the pair flags also mark which strand the
 transcript came from. JBrowse draws splice arcs and strand coloring from those
-two BAM fields, with no extra files or configuration. We:
+two BAM fields. We:
 
 - load the stranded reads and RefSeq genes on hg19, and read coverage and splice
   arcs over _ACTB_
@@ -42,23 +42,26 @@ conda install -c bioconda -c conda-forge samtools
 
 ## The data
 
-The hg19 alignments, gene models and junction table behind the figures, hosted
-on jbrowse.org's demo bucket.
+The hg19 alignments, long reads, gene models and junction table behind the
+figures, and the hg38 circular RNA reads, hosted on jbrowse.org's demo bucket.
 
 Nothing to download: the track configs below read these files by URL.
 [Load your own RNA-seq reads the same way](#load-your-own-rna-seq-reads-the-same-way)
 covers reads of your own.
 
 <details>
-<summary>The files</summary>
+<summary>Read by URL (no download needed)</summary>
 
-| What it is                                                                                                                                                      | File                                                                                                                                                           |
-| --------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| The paired-end stranded RNA-seq alignments behind every short-read figure on this page, from the sample files listed at [RSeQC](https://rseqc.sourceforge.net/) | [Pairend_StrandSpecific_51mer_Human_hg19.bam](https://s3.amazonaws.com/jbrowse.org/genomes/hg19/paired_end_rnaseq/Pairend_StrandSpecific_51mer_Human_hg19.bam) |
+| What it is                                                                                                                                                      | File                                                                                                                                                                                                                                                                                                                                                   |
+| --------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| The paired-end stranded RNA-seq alignments behind every short-read figure on this page, from the sample files listed at [RSeQC](https://rseqc.sourceforge.net/) | [Pairend_StrandSpecific_51mer_Human_hg19.bam](https://s3.amazonaws.com/jbrowse.org/genomes/hg19/paired_end_rnaseq/Pairend_StrandSpecific_51mer_Human_hg19.bam)                                                                                                                                                                                         |
+| The IsoSeq long-read alignments over _ACTB_                                                                                                                     | [hq_isoforms.fasta.bam](https://s3.amazonaws.com/jbrowse.org/genomes/hg19/alzheimers_isoseq/hq_isoforms.fasta.bam)                                                                                                                                                                                                                                     |
+| The regtools junction table built from the stranded BAM                                                                                                         | [rnaseq_junctions.bed.gz](https://jbrowse.org/demos/rnaseq/rnaseq_junctions.bed.gz)                                                                                                                                                                                                                                                                    |
+| The HeLa RNase R-treated and untreated reads, the HEK293 isoCirc reads and the back-splice table, on hg38                                                       | [SRR1636985.slice.bam](https://jbrowse.org/demos/circrna/SRR1636985.slice.bam)<br>[SRR1637089.slice.bam](https://jbrowse.org/demos/circrna/SRR1637089.slice.bam)<br>[SRR10612055.slice.bam](https://jbrowse.org/demos/circrna/SRR10612055.slice.bam)<br>[SRR1636985.backsplice.bed.gz](https://jbrowse.org/demos/circrna/SRR1636985.backsplice.bed.gz) |
 
 </details>
 
-## Load hg19, the stranded reads and RefSeq genes
+## Load the hg19 assembly, the stranded reads and RefSeq genes
 
 The alignments are against hg19, so we load that assembly with an alias file
 that maps the chromosome names in the BAM and the gene models to the assembly's.
@@ -127,19 +130,17 @@ It finds the strand two ways:
 - **Splice motif.** A BAM from STAR without `--outSAMstrandField intronMotif`
   has no tags, so JBrowse reads the first and last two bases of the intron off
   the reference: GT-AG on the forward strand reads as CT-AC on the reverse.
-  JBrowse draws a junction in the neutral color when its reads disagree or its
-  motif is none of GT-AG, GC-AG and AT-AC. Hovering an arc shows the motif
-  beside the read count.
+  JBrowse draws a junction in the neutral color when its reads disagree. It does
+  the same when its motif is none of GT-AG, GC-AG and AT-AC. Hovering an arc
+  shows the motif beside the read count.
 
-## Pack the ACTB stack at compact read height
+## Pick out spliced reads in a deep pileup
 
 A deeply covered gene has more reads than the track shows at once. The histogram
 above the pileup counts the reads at each position, and **Read height →
 Compact** in the track menu packs the full stack into view:
 
 <Figure caption="ACTB at compact read height, the whole stack fitting the track." src="/img/rnaseq/compact_stacked.png" />
-
-## Pick out spliced reads in a deep pileup
 
 In the compact _ACTB_ stack, reads with a skip sit among many more that have
 none. Three track-menu settings separate the splicing evidence from the rest.
@@ -198,11 +199,10 @@ location box, then pick this path from the track menu:
 
 <Figure caption="The surfeit locus colored by first-of-pair strand." src="/img/rnaseq/strand_specific.png" />
 
-The color marks each read's strand. To compare the strands over a whole gene,
-**Group by → First-of-pair strand** applies a `facet`, one section per strand,
-each with a coverage histogram drawn from that section's reads, forward and
-reverse on one autoscaled axis. **Show → Show pileup**, unticked, hides the
-reads and leaves the two histograms.
+To compare the strands over a whole gene, **Group by → First-of-pair strand**
+applies a `facet`, one section per strand, each with a coverage histogram drawn
+from that section's reads, forward and reverse on one autoscaled axis. **Show →
+Show pileup**, unticked, hides the reads and leaves the two histograms.
 
 On chr6, _NELFE_ and _SKIV2L_ sit back to back on opposite strands. Type
 `chr6:31,920,500-31,933,000` into the location box:
@@ -220,8 +220,8 @@ back-splice is a duplication-type split, drawn in the teal JBrowse uses for an
 RL pair (mates pointing away from each other). **Split-read junctions → Hide
 split-read junctions** in **Filter by → More filters...** turns them off.
 
-STAR writes those `SA` tags only in chimeric mode. With its defaults it
-soft-clips the joint, and no back-splice arc appears:
+STAR writes `SA` tags in chimeric mode. With its defaults it soft-clips the
+joint, so no back-splice arc appears:
 
 ```bash
 # WithinBAM writes each chimeric piece as a supplementary record with an SA tag;
@@ -259,9 +259,22 @@ The
 [circRNA demo](https://jbrowse.org/code/jb2/main/?config=https://jbrowse.org/demos/circrna/config.json)
 holds HeLa RNA-seq treated with RNase R, which digests linear RNA and leaves the
 circles, aligned that way on hg38, and STAR's own back-splice table beside it.
+The assembly is hg38:
+
+```json addassembly genome=hg38
+{
+  "name": "hg38",
+  "uri": "https://jbrowse.org/genomes/GRCh38/fasta/hg38.prefix.fa.gz",
+  "refNameAliases": {
+    "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/GRCh38/hg38_aliases.txt"
+  },
+  "cytobands": "https://jbrowse.org/genomes/GRCh38/cytoBand.txt"
+}
+```
+
 The reads load as an alignments track with junction read counts shown:
 
-```json addtrack
+```json addtrack loc=chr7:100,021,500-100,026,000
 {
   "type": "AlignmentsTrack",
   "trackId": "hela_rnaser_reads",
@@ -306,7 +319,8 @@ with the read count:
 }
 ```
 
-At _ZKSCAN1_ the circle spans two exons:
+Type `chr7:100,021,500-100,026,000` into the location box. At _ZKSCAN1_ the
+circle spans two exons:
 
 <Figure caption="ZKSCAN1: the STAR back-splice table above the reads, and over their coverage a splice arc and the back-splice as a teal duplication-type split junction." src="/img/circrna/zkscan1_backsplice.png" links="Open this view=circrna/zkscan1_backsplice" />
 
@@ -329,11 +343,6 @@ exons lose theirs. The same HeLa RNA left untreated is the control:
 }
 ```
 
-In the control the long red arcs joining ZKSCAN1's circle exons to the rest of
-the gene have more reads than the teal back-splice. In the treated reads they
-all but vanish, while the back-splice and the splice between the circle's two
-exons stay:
-
 <Figure caption="ZKSCAN1 with RNase R above and untreated below: the linear splices into and out of the circle fall away under RNase R, and the back-splice stays." src="/img/circrna/zkscan1_rnase_vs_control.png" links="Open this view=circrna/zkscan1_rnase_vs_control" />
 
 A nanopore read of a circle can run around it several times, and the aligner
@@ -341,7 +350,7 @@ writes each lap as a separate piece. isoCirc enriches circles and copies each
 one round and round by rolling-circle amplification, so its reads are long runs
 of laps. The demo holds HEK293 isoCirc reads aligned with `minimap2 -ax splice`:
 
-```json addtrack
+```json addtrack loc=chrX:140,782,800-140,785,000
 {
   "type": "AlignmentsTrack",
   "trackId": "hek293_isocirc_reads",
@@ -355,7 +364,8 @@ of laps. The demo holds HEK293 isoCirc reads aligned with `minimap2 -ax splice`:
 }
 ```
 
-CDR1as is a single-exon circle antisense to _CDR1_. In the junctions band,
+_CDR1as_ is a single-exon circle antisense to _CDR1_. Type
+`chrX:140,782,800-140,785,000` into the location box. In the junctions band,
 JBrowse counts every lap of every read as a crossing of the back-splice, and the
 pileup shows the pieces of each read stacked over the one exon:
 
