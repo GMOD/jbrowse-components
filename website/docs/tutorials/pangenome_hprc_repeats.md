@@ -19,18 +19,18 @@ IV type 2 copies in _LPA_ and their two repeat types, a VNTR in an intron of
 _ABCA7_ that PacBio's TRGT also measured from reads, and the _AMY1_ gene copies
 in the amylase array. We:
 
-- at _LPA_, draw every haplotype's walk through the array as a bar with the walk
+- draw every haplotype's walk through the array at _LPA_ as a bar with the walk
   rows layout, and open a tandem-repeat record's copies by type
-- at _ABCA7_, set TRGT's genotypes on the walk rows with the **Repeat** layout
+- set TRGT's genotypes on the walk rows at _ABCA7_ with the **Repeat** layout
   entry
 - choose the samples whose TRGT ticks turn red, and draw TRGT's alleles as a
   tandem-repeat record
-- at amylase, read _AMY1_ copies off walk rows, and stack one haplotype per
+- read _AMY1_ copies off walk rows at amylase, and stack one haplotype per
   structure in a linear synteny view
 
 :::caution Experimental
 
-The graph view is a beta plugin, and walk rows is its newest layout. The
+The graph view is a beta plugin. The
 [HPRC page](https://genomes.jbrowse.org/pangenomes/) launches it on the JBrowse
 5 development build until JBrowse 5 ships. We welcome your [feedback](/contact).
 
@@ -106,14 +106,10 @@ open it from the HPRC page:
   `chr6:160,525,000-160,655,000`.
 - Tick **Show → Show bubble halos** in the graph track's menu.
 
-The track draws each reference segment in a strip along its top, at the
-segment's position on the ruler and in the color of its node below.
-
 <Figure caption="LPA over the force-directed graph track. The KIV-2 array is the haloed knot of loops on the right." src="/img/pangenome/hprc_lpa_kiv2.png" />
 
-Each loop in the knot is a different number of copies. Click the array's label,
-**3–175 kb repeat array (KIV-2)**, to lay the bubble's segments out alone, with
-a button back to the window.
+Click the array's label, **3–175 kb repeat array (KIV-2)**, to lay the bubble's
+segments out alone, with a button back to the window.
 
 ## Follow each haplotype's route through KIV-2 {#one-haplotypes-copies}
 
@@ -158,18 +154,14 @@ Read the bars this way:
 - **Purple marks sequence off GRCh38's path.** Most copies lie on nodes off
   GRCh38's path.
 - **Gold is steps the file did not load.** The walk file holds the costliest
-  walks through the array in abridged form, and a bar marks its length ≈ where
-  the walk runs on past the window. Right-click one and take the **Load the …
-  abridged steps** row, which gives their number, to read it in full.
+  walks through the array in abridged form, and a gold segment marks where the
+  walk runs on past the window and abridges its steps. Right-click one and take
+  the **Load the … abridged steps** row, which gives their number, to read it in
+  full.
 - **Hover a bar** for its haplotype, length and excess over GRCh38, since the
   rows pack too thin to letter.
 
 <Figure caption="Every HPRC haplotype's walk across the KIV-2 array in walk rows. Purple is sequence off GRCh38's path; gold is an abridged walk's steps the file did not load." src="/img/pangenome/graph_kiv2_walk_rows.png" />
-
-Click the KIV-2 bubble boxed in the bubbles track. Its details give
-`shortestAlleleLength` and `longestAlleleLength`, the shortest and longest
-routes the rGFA holds there, and the bar lengths range from about the shortest
-to about the longest.
 
 Two controls change which bars show:
 
@@ -245,7 +237,7 @@ the three synonymous sites LPA studies use to tell KIV-2B from KIV-2A:
 printf 'chr6\t160617116\t160617276\texon 1\t0\t-\nchr6\t160618483\t160618665\texon 2\t0\t-\n' > kiv2_exons.bed
 node tandem-repeat-vcf.mjs hprc-v2.1-mc-grch38.kiv2.eight-haplotypes.gfa \
   --bed arrays.bed --name KIV-2 \
-  --sites kiv2_exons.bed > /dev/null
+  --sites kiv2_exons.bed > /dev/null   # the sites report goes to stderr
 ```
 
 JBrowse draws a repeat finder's output as these bars too once it is written as a
@@ -365,20 +357,10 @@ section, the bars also divide into motif-length units.
 To compare samples, keep the _ABCA7_ record picked under **Repeat**. **Samples →
 Choose samples...**, under the **Layout** row of the graph track's menu, takes
 HG00099, HG03688, HG00741, HG02647, HG01943, HG02559 and HG04199 in that order.
-Their walks show in pairs in that order and fall into groups:
+Their walks show in pairs in that order, each with its TRGT tick.
 
-- The ticks of HG00099, HG03688 and HG00741 sit at each bar's end, so reads and
-  assemblies agree.
-- The ticks of HG02647 and HG01943 are red, because TRGT calls each
-  near-homozygous but a walk sits far from both calls (both walks, in HG01943).
-- HG02559 and HG04199 each have a walk that cannot be compared with TRGT's call.
-  No read spans one of HG02559's alleles, so the tick on HG02559#1 is grey, and
-  HG04199's assembly does not span the repeat, and its second walk's readout
-  shows the contig ending before it.
-
-Click the TRGT record to see why. Its sample table gives `AL`, the allele
-lengths behind each tick, and `SD`, the number of reads spanning each allele;
-one of HG02559's alleles has an `SD` of 0.
+Click the TRGT record. Its sample table gives `AL`, the allele lengths behind
+each tick, and `SD`, the number of reads spanning each allele.
 
 <Figure caption="Samples' walks through the ABCA7 VNTR, each marked with TRGT's allele as a tick." src="/img/pangenome/hprc_abca7_disagreements.png" />
 
@@ -386,15 +368,16 @@ one of HG02559's alleles has an `SD` of 0.
 
 TRGT writes each allele as its full sequence, so the details panel shows long
 runs of `CCCCGTGAGC`. Our script rewrites the record as `<CNV:TR>` alleles, each
-a run of the locus's 51 bp motif:
+a run of the locus's motif:
 
 ```bash
 curl -fO https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/trgt-to-cnv-tr.mjs
 ```
 
 ```bash
+curl -fO https://jbrowse.org/demos/hprc/hprc_abca7_trgt.vcf.gz
 # the hosted record has no MS field, TRGT's per-run spans, so each allele
-# becomes one run of the motif, its copies the allele's length over 51 bp
+# becomes one run of the motif, its copies the allele's length over the motif's
 node trgt-to-cnv-tr.mjs hprc_abca7_trgt.vcf.gz > hprc_abca7_cnvtr.vcf
 ```
 
@@ -453,9 +436,8 @@ Yilmaz et al. (2024) name each structure by its _AMY1_ count:
 
 Walk rows show copy number, and a synteny stack shows which copy of one
 haplotype matches which copy of its neighbour. The commands below run on any
-`gfa-to-tabix --walks` file, which
-[Indexing haplotype walks](/docs/tutorials/pangenome_prepare_graph#haplotype-walks-tabix)
-builds from a graph's W lines, and any bgzipped, indexed assembly.
+walk file that `gfa-to-tabix --walks --refs GRCh38` writes from a graph's W
+lines, and any bgzipped, indexed assembly.
 
 Fetch the script that reads a window's walks, then the walk reader it imports:
 
@@ -478,12 +460,15 @@ with its contig coordinates:
 node walk_spans.mjs graph.GRCh38.walks.gz 'GRCh38#0#chr1' 103540000 103541000 > left.tsv
 ```
 
-Fetch one haplotype's copy of the locus:
+Fetch two haplotypes' copies of the locus, streamed from the assemblies in the
+data table:
 
 <!-- from: scripts/build_amylase_haplotypes.sh -->
 
 ```bash
-samtools faidx HG00232_hap1.fa.gz 'HG00232#1#CM089991.1:103491008-103991760' > HG00232.1.fa
+HPRC=https://s3-us-west-2.amazonaws.com/human-pangenomics/working/HPRC
+samtools faidx $HPRC/HG00232/assemblies/release2/HG00232_hap1_hprc_r2_v1.0.1.fa.gz 'HG00232#1#CM089991.1:103491008-103991760' > HG00232.1.fa
+samtools faidx $HPRC/NA18608/assemblies/release2/NA18608_hap2_hprc_r2_v1.0.1.fa.gz 'NA18608#2#CM089849.1:103796766-104203421' > NA18608.2.fa
 ```
 
 Cut the three genes out of GRCh38 as `genes.fa`, one record per gene:
@@ -565,9 +550,11 @@ copy:
 
 ## Reproduce it end to end
 
-PacBio publishes TRGT's calls for a subset of HPRC samples as a TRGTdb, most of
-which have a call at _ABCA7_, and the build turns that locus into the VCF this
-page loads, without re-genotyping anything. It:
+This section reproduces two builds: the _ABCA7_ TRGT VCF and the amylase
+session. The KIV-2 and `<CNV:TR>` files come from the commands under their own
+headings above. PacBio publishes TRGT's calls for a subset of HPRC samples as a
+TRGTdb, and the first build turns the _ABCA7_ locus into the VCF this page
+loads, without re-genotyping anything. It:
 
 - downloads the TRGTdb and the repeat catalogue
 - reads the locus's alleles and every sample's calls out of the database
