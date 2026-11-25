@@ -9,9 +9,8 @@ tutorial_category: Genes & annotation
 ---
 
 We look at where the genes sit along human chromosome 1 and which transposons
-sit near them: Alu elements are densest where the genes are, and L1 elements are
-spread more evenly. A whole chromosome holds more genes, and far more repeat
-copies, than a browser fetches at once. We:
+sit near them. A whole chromosome holds more genes, and far more repeat copies,
+than a browser fetches at once. We:
 
 - count each file's features per kilobase into a small bigWig with
   `jbrowse make-density`
@@ -28,7 +27,7 @@ copies, than a browser fetches at once. We:
 - `bedGraphToBigWig` from the
   [UCSC utilities](https://hgdownload.soe.ucsc.edu/admin/exe/), which
   `make-density` runs
-- htslib (`bgzip`, `tabix`), for the build script
+- htslib (`bgzip`, `tabix`)
 
 <!-- BEGIN GENERATED TUTORIAL_INSTALL htslib,node,jbrowse-cli,bedGraphToBigWig -->
 
@@ -79,11 +78,16 @@ names it in `assemblyNames`.
 }
 ```
 
-## Count features per kilobase into a bigWig
+## Count features per kilobase and plot them along chromosome 1
 
 One bigWig per file holds the number of features starting in each 1 kb bin,
-counted once. `jbrowse make-density` reads the GFF3 and writes it beside the
-input, named for the file with `.density.bw` in place of its `.gz`:
+counted once.
+
+### Count the genes
+
+`jbrowse make-density` reads the GFF3, the table above saved as `genes.gff.gz`,
+and writes the bigWig beside the input, named for the file with `.density.bw` in
+place of its `.gz`:
 
 <!-- from: scripts/build_gene_density.sh -->
 
@@ -114,6 +118,8 @@ With `mark.extent: "none"`, JBrowse draws each bin's mean alone. Most kilobases
 hold no gene or one, so the min-max band drawn around the mean would fill every
 zoomed-out pixel to the same height.
 
+### Build a RepeatMasker BED
+
 The Alu, L1 and simple-repeat tracks start from a RepeatMasker BED. For a genome
 of your own, RepeatMasker's `.out` file lists class and family as one
 `class/family` field, and splitting it under a header that names the columns
@@ -140,6 +146,8 @@ gives a BED with the same columns:
 jbrowse sort-bed rmsk.bed | bgzip > rmsk.bed.gz
 tabix -f -C -p bed rmsk.bed.gz
 ```
+
+### Cut one BED per family
 
 We cut that table into one BED per `repFamily`, so the Alu bigWig holds counts
 of Alus alone. An `awk` filter keeps the header line and the sort order, so
@@ -188,13 +196,9 @@ The L1 track and the simple-repeat control follow, with the file names swapped:
 }
 ```
 
-## Plot gene and repeat density along chromosome 1
-
 Add the tracks above, then open chromosome 1 with all of them.
 
 <Figure src="/img/gene_density_chr1.png" caption="Chromosome 1 with RefSeq genes, Alu, L1 and simple repeats, each as features per kilobase on its own scale." />
-
-The gap in every track is the centromere and the 1q12 heterochromatin beside it.
 
 ## Zoom in to 1q21 with the genes as features
 
