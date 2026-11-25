@@ -137,8 +137,8 @@ both axes. Restricted to the chromosome arms, the plot shows one diagonal:
 Restrict both dotplot axes to chr2L, chr2R, chr3L, chr3R, chr4 and chrX.
 ```
 
-Then ask for the strand coloring, so a reversed block is drawn blue and a
-forward one red:
+Add the strand coloring as one more request, so a reversed block is drawn blue
+and a forward one red:
 
 ```text
 Color the dotplot by strand.

@@ -90,7 +90,18 @@ The copy-number bins are on GRCh38, so the tracks attach to hg38:
 }
 ```
 
-The figures also show NCBI's RefSeq genes:
+The figures also show NCBI's RefSeq genes. The locus figures use NCBI's GFF:
+
+```json addtrack
+{
+  "trackId": "ncbi_refseq_109_hg38_latest",
+  "name": "NCBI RefSeq (GFF3Tabix)",
+  "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/GRCh38/ncbi_refseq/GRCh38_latest_genomic.sort.gff.gz",
+  "assemblyNames": ["hg38"]
+}
+```
+
+The whole-panel figure uses UCSC's copy:
 
 ```json addtrack
 {

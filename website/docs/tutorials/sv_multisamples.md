@@ -90,7 +90,7 @@ needs per-sample genotype columns and an index beside it:
 {
   "type": "VariantTrack",
   "trackId": "kgp_ensemble_sv",
-  "name": "1KGP ensemble SV calls",
+  "name": "1KGP ensemble SV calls, 3202 samples",
   "assemblyNames": ["hg38"],
   "uri": "https://jbrowse.org/demos/1000g/1KGP_3202.Illumina_ensemble_callset.freeze_V1.vcf.gz"
 }
@@ -129,7 +129,7 @@ explains these settings and builds a store from your own BigWigs:
 {
   "type": "MultiQuantitativeTrack",
   "trackId": "cnv_1000g_zarr",
-  "name": "1000 Genomes copy number",
+  "name": "1000 Genomes copy number, 2504 individuals",
   "assemblyNames": ["hg38"],
   "adapter": {
     "type": "MultiWiggleZarrAdapter",
@@ -164,7 +164,8 @@ wide block, and rows start in the callset's order:
 
 The records band above the rows shows each call with its id, class and size, and
 **Color by → SV type** shows the class in the cells too, as the
-[multi-variant track guide](/docs/user_guides/multivariant_track) shows.
+[multi-variant track guide](/docs/user_guides/multivariant_track) shows. The
+figure draws both tracks over the hosted config's **NCBI RefSeq genes**.
 
 <Figure caption="The 1KGP SV callset over RHD with the panel's copy-number calls under it." src="/img/multisv_rhd.png" />
 

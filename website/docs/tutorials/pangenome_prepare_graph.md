@@ -375,7 +375,9 @@ needs no color config:
 }
 ```
 
-Open the track over _FLC_ at `Chr5:3,170,000-3,186,000`:
+The arabidopsis pangenome config includes one such file as the track
+`arabidopsis_minigraph_paths`. Open it over _FLC_ at `Chr5:3,170,000-3,186,000`,
+under `TAIR10_genes`:
 
 <Figure caption="The 1001 Genomes+ minigraph graph's paths file over FLC on TAIR10: one row per accession, each block its allele at a bubble." src="/img/pangenome/prepare_graph_paths.png" />
 

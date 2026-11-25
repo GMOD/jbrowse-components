@@ -401,8 +401,8 @@ Add NCBI's RefSeq genes:
 ```json addtrack
 {
   "type": "FeatureTrack",
-  "trackId": "ncbi_refseq_hg38",
-  "name": "NCBI RefSeq genes",
+  "trackId": "hg38_ncbiRefSeq_ucsc",
+  "name": "NCBI RefSeq genes (hg38)",
   "assemblyNames": ["GRCh38_GIABv3"],
   "adapter": {
     "type": "Gff3TabixAdapter",

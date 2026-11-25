@@ -340,8 +340,10 @@ pinned symmetric, so zero sits mid-row. The fence lists three of its rows:
 }
 ```
 
-Under it goes measured scATAC from blood: the monocyte rows of the 10x PBMC
-pseudobulk track. Its cells are unstimulated blood monocytes, so it tests
+`ag2_ets2_atac_reference` in the hosted config holds the risk allele's predicted
+scATAC the same way, from `atac_reference_<Cell_type>.bw`, with an axis from
+zero. Under both goes measured scATAC from blood: the monocyte rows of the 10x
+PBMC pseudobulk track. Its cells are unstimulated blood monocytes, so it tests
 whether monocytes open this enhancer and cannot check the ileum predictions:
 
 ```json addtrack
@@ -446,7 +448,8 @@ row stays empty, since changing a base to itself has no effect:
 }
 ```
 
-The figure shows the forward strand of the Reference sequence track above it.
+The figure shows the forward strand of the Reference sequence track,
+`hg38-refseq`, above it.
 
 <Figure caption="The predicted effect on ETS2 expression in ileum macrophages of each base change in the 64 bases around rs2836882, one row per base mutated to, under the reference sequence." src="/img/alphagenome2/ets2_enhancer_ism.png" />
 

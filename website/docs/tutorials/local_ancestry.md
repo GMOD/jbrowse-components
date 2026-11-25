@@ -168,8 +168,8 @@ bcftools view -S targets.txt --force-samples -Oz -o chr1.gt.vcf.gz chr1.subset.v
 
 FLARE requires a genetic map in four PLINK columns: chromosome, marker ID,
 genetic position in cM and base-pair position. The build script reshapes the
-Campbell pedigree map's `POS`/`rate`/`Map(cM)` columns into them with one
-`awk`, naming the chromosome as the VCF does:
+Campbell pedigree map's `POS`/`rate`/`Map(cM)` columns into them with one `awk`,
+naming the chromosome as the VCF does:
 
 <!-- from: scripts/build_dog10k_wolfdog_ancestry.sh -->
 

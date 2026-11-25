@@ -198,17 +198,17 @@ Add four accessibility rows to the prediction:
 
 ## Add each cell line's splice junctions as arcs
 
-Splice junctions come back as arcs joining exons, as in a sashimi plot. Filter
-the track list as above, tick the K562 and GM12878 polyA junction rows, add them
-and zoom in to _TAL1_.[^junctions]
+Splice junctions come back as arcs joining exons, as in a sashimi plot. Tick the
+K562 and GM12878 polyA junction rows in the track list, filtered as above, add
+them and zoom in to _TAL1_.[^junctions]
 
 <Figure caption="Predicted splice junctions over TAL1 for K562 and GM12878 as arcs." src="/img/alphagenome/splice_junctions.png" />
 
 ## Add the GM12878 contact map over the window
 
 AlphaGenome predicts Hi-C-style contact maps for a set of cell lines, GM12878
-among them. Filter the track list as above, tick the GM12878 contact map, add it
-and zoom out to the whole predicted megabase:
+among them. Tick the GM12878 contact map in the track list, filtered as above,
+add it and zoom out to the whole predicted megabase:
 
 <Figure caption="The predicted GM12878 contact map across the window." src="/img/alphagenome/contact_map.png" />
 

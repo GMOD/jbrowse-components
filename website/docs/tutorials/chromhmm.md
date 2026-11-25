@@ -257,7 +257,7 @@ these actions for reading the rest:
 - Right-click a state and pick **Sort rows by color here** to rank the rows by
   the state each has at that base.
 
-## Load Roadmap's epigenomes
+## Load Roadmap's epigenomes and group them by tissue
 
 The ENCODE lines are a small sample of tissues. The
 [Roadmap Epigenomics](https://egg2.wustl.edu/roadmap/web_portal/chr_state_learning.html)
@@ -329,8 +329,6 @@ sets `rows.sort`, `rows.groups` and `rows.color`; the next steps build them:
   ]
 }
 ```
-
-## Group the rows by tissue
 
 With a row per epigenome in one track, a row is a few pixels tall and its label
 barely legible, so we group the rows by the Roadmap tissue groups with three

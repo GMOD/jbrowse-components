@@ -73,9 +73,9 @@ species and a structure, linked:
 - open
   [genomes.jbrowse.org/protein-browser/?gene=MET&ref=9606&structure=3bux](https://genomes.jbrowse.org/protein-browser/?gene=MET&ref=9606&structure=3bux)
   and click **Open in JBrowse ↗**
-- pick **Assembly →** the entry for assembly 5, marked dimeric, in the protein
-  view's menu. 3BUX opens on its first assembly, the MET stretch alone; assembly
-  5 adds CBL
+- pick **Assembly** in the protein view's menu, then the entry for assembly 5,
+  marked dimeric. 3BUX opens on its first assembly, the MET stretch alone;
+  assembly 5 adds CBL
 - close the MET orthologs view with the × on its title bar, and the ClinVar and
   AlphaMissense tracks with the × on each track's label
 - type

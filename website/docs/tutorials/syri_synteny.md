@@ -352,8 +352,10 @@ band between two lanes from the run between those two accessions.
 
 The
 [Arabidopsis pangenome page](https://genomes.jbrowse.org/pangenomes/arabidopsis/)
-has SyRI regions for the 1001 Genomes Plus accessions on TAIR10, as the **SyRI
-regions on TAIR10, one row per accession** track of the hosted
+has SyRI regions for the 1001 Genomes Plus accessions on TAIR10. Open it and
+click **Every accession as SyRI lanes**, under the page title, for the rows over
+the chromosome 4 inversion. They are the **SyRI regions on TAIR10, one row per
+accession** track of the hosted
 [Arabidopsis pangenome config](https://jbrowse.org/demos/arabidopsis_pangenome/config.json):
 
 <Figure caption="TAIR10 chromosome 4 with a row of SyRI regions per 1001 Genomes Plus accession." src="/img/syri/tair10_1001g.png" />
