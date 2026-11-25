@@ -159,6 +159,26 @@ test('the figure geometry is measured after the tracks settle', async () => {
   expect(svg).toContain(`translate(${view.centerXY.map(round2).join(',')})`)
 }, 20000)
 
+test('the key sits in a gutter right of the circle, and no key adds no gutter', async () => {
+  const { view } = await setup({ assembly: 'volvox', tracks: ['sv'] })
+  await when(() => view.tracks.length > 0)
+  const box = (svg: string) =>
+    /viewBox="0 0 ([\d.]+) ([\d.]+)"/.exec(svg)!.slice(1).map(Number)
+
+  const [plainWidth, plainHeight] = box(await renderToSvg(view, {}))
+  expect(plainWidth).toBe(plainHeight)
+
+  view.setShowLegend(true)
+  const svg = await renderToSvg(view, {})
+  const [width, height] = box(svg)
+  const keyX = Number(
+    /translate\(([\d.]+) 0\)" data-testid="color-legend"/.exec(svg)![1],
+  )
+  expect(height).toBe(plainHeight)
+  expect(keyX).toBeGreaterThan(height)
+  expect(width).toBeGreaterThan(keyX)
+}, 20000)
+
 test('exporting with nothing displayed says so instead of saving a blank', async () => {
   const { view } = await setup()
   expect(view.displayedRegions).toHaveLength(0)

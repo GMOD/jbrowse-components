@@ -10,6 +10,7 @@ import type { JBrowsePalette } from '@jbrowse/core/ui/palette'
 test("the exported key draws in the export's palette, not the session's", () => {
   const model = {
     id: 'view',
+    showLegend: true,
     legendSpec: {
       sections: [
         { id: 'tracks', items: [{ label: 'reads', color: '#123456' }] },
@@ -31,7 +32,7 @@ test("the exported key draws in the export's palette, not the session's", () => 
   const { container } = render(
     <PaletteProvider palette={exportPalette}>
       <svg>
-        <SvgCircularLegend model={model} size={400} />
+        <SvgCircularLegend model={model} figureSize={400} />
       </svg>
     </PaletteProvider>,
   )

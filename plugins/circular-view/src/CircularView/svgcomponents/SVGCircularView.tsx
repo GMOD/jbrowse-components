@@ -8,8 +8,11 @@ import {
 import { notifySkippedSvgTracks } from '@jbrowse/core/svg/trackNames'
 import { wrapSvgExport } from '@jbrowse/core/svg/wrapSvgExport'
 import { usePalette } from '@jbrowse/core/ui/PaletteContext'
-import SvgColorLegend from '@jbrowse/core/ui/SvgColorLegend'
+import SvgColorLegend, {
+  svgColorLegendWidth,
+} from '@jbrowse/core/ui/SvgColorLegend'
 import { legendEntries } from '@jbrowse/core/ui/legendSpec'
+import { resolveStyleTheme } from '@jbrowse/core/ui/styleTheme'
 import { getSession, radToDeg } from '@jbrowse/core/util'
 
 import { RingAxes } from '../../rings/RingAxes.tsx'
@@ -26,24 +29,60 @@ import { figureGutterPx } from '../rulerLabels.ts'
 
 import type { CircularViewModel, ExportSvgOptions } from '../model.ts'
 import type { DisplayModel } from '@jbrowse/core/pluggableElementTypes/models'
+import type { JBrowsePalette } from '@jbrowse/core/ui/palette'
 import type { ExportSvgDisplayOptions } from '@jbrowse/display-kit/types'
+import type { ThemeOptions } from '@mui/material'
 import type { ReactNode } from 'react'
 
+const KEY_GAP_PX = 10
+
+function keyEntries(
+  model: CircularViewModel,
+  palette: JBrowsePalette,
+  undrawnIds: readonly string[],
+) {
+  return model.showLegend
+    ? legendEntries(model.legendSpecIn(palette, undrawnIds))
+    : []
+}
+
+/**
+ * Px the export widens its square figure by for the key beside it: 0 with no
+ * key, so a figure without one has no empty strip.
+ */
+export function circularKeyGutterPx(
+  model: CircularViewModel,
+  theme: ThemeOptions | undefined,
+  undrawnIds: readonly string[],
+  figureSize: number,
+  fontFamily: string | undefined,
+) {
+  const { palette } = resolveStyleTheme({ configTheme: theme })
+  const width = svgColorLegendWidth(
+    keyEntries(model, palette, undrawnIds),
+    figureSize,
+    fontFamily,
+  )
+  return width > 0 ? width + KEY_GAP_PX : 0
+}
+
+/** The key, in the gutter right of the `figureSize` square circle. */
 export function SvgCircularLegend({
   model,
-  size,
-  undrawnIds,
+  figureSize,
+  undrawnIds = [],
 }: {
   model: CircularViewModel
-  size: number
+  figureSize: number
   undrawnIds?: readonly string[]
 }) {
   const palette = usePalette()
   return (
     <SvgColorLegend
-      entries={legendEntries(model.legendSpecIn(palette, undrawnIds))}
-      canvasWidth={size}
-      maxHeight={size}
+      entries={keyEntries(model, palette, undrawnIds)}
+      canvasWidth={figureSize}
+      x={figureSize + KEY_GAP_PX}
+      maxHeight={figureSize}
       testid="color-legend"
       idPrefix={`legend-${model.id}`}
     />
@@ -149,7 +188,9 @@ export async function renderToSvg(
 
   return wrapSvgExport({
     theme,
-    width: figureSize,
+    width:
+      figureSize +
+      circularKeyGutterPx(model, theme, undrawnIds, figureSize, fontFamily),
     height: figureSize,
     margin: 0,
     fontFamily,
@@ -177,13 +218,11 @@ export async function renderToSvg(
             <Fragment key={id}>{result}</Fragment>
           ))}
         </g>
-        {model.showLegend ? (
-          <SvgCircularLegend
-            model={model}
-            size={figureSize}
-            undrawnIds={undrawnIds}
-          />
-        ) : null}
+        <SvgCircularLegend
+          model={model}
+          figureSize={figureSize}
+          undrawnIds={undrawnIds}
+        />
       </>
     ),
   })

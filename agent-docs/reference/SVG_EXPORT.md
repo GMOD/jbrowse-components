@@ -32,11 +32,12 @@ minimized track, and `notifySkippedSvgTracks` names it. It is one call,
   exist, so a figure with no key has no empty strip. A view's own key (the
   synteny view's, the breakpoint split view's connection key) goes in the same
   gutter beside the first row, and the view's page subject (`legendWidth`)
-  carries its width into a page export's chrome. `settledPageLayout` measures
-  each key at the height it is drawn, and solves the page again once the
-  tracks have reloaded at the plot width, laying out once more where the
-  chrome moved: the root scales whatever document results to the page width,
-  so a wrong chrome rescales every text size.
+  carries its width into a page export's chrome. The circular view's key sits
+  in a gutter right of its square circle. `settledPageLayout` measures each
+  key at the height it is drawn, and solves the page again once the tracks
+  have reloaded at the plot width, laying out once more where the chrome
+  moved: the root scales whatever document results to the page width, so a
+  wrong chrome rescales every text size.
 
 **The export canvas width is `view.width`**, not `renderState.canvasWidth`
 (`view.trackWidthPx`, 2px narrower); reusing the on-screen width clips the last
