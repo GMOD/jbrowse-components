@@ -14,14 +14,13 @@ tutorial_category: Pangenomes
 tutorial_subcategory: HPRC release 2
 ---
 
-The Human Pangenome Reference Consortium's release 2 is a pangenome graph of 464
-human haplotypes; the phased VCF used here lists 462 of them. Where the
-haplotypes differ, the graph forms a bubble, and each route through a bubble is
-an allele. HPRC writes each haplotype's route through every bubble as a phased
-VCF, so a record lists which haplotypes have which allele. We open the graph and
-the VCF from the HPRC page on genomes.jbrowse.org as tracks of a linear view of
-GRCh38, at the CFH gene cluster, the complement genes C4 and beside _HLA-DRB5_
-in MHC class II. We:
+The Human Pangenome Reference Consortium's release 2 is a pangenome graph of
+human haplotypes. Where the haplotypes differ, the graph forms a bubble, and
+each route through a bubble is an allele. HPRC writes each haplotype's route
+through every bubble as a phased VCF, so a record lists which haplotypes have
+which allele. We open the graph and the VCF from the HPRC page on
+genomes.jbrowse.org as tracks of a linear view of GRCh38, at the CFH gene
+cluster, at the complement gene C4, and beside _HLA-DRB5_ in MHC class II. We:
 
 - launch tracks from the HPRC page, and at CFH find a published deletion in the
   launch's tracks
@@ -57,9 +56,8 @@ empty or simple picture.
 
 Nothing to download: the HPRC page's launches read the files of
 [HPRC release 2](https://doi.org/10.64898/2026.07.21.739710), and our tabix
-index of its graph, by URL.
-[Hosting your own graph](/docs/tutorials/pangenome_prepare_graph) builds the
-same files for a graph of your own.
+index of its graph, by URL. [Reproduce it end to end](#reproduce-it-end-to-end)
+builds the same files for a graph of your own.
 
 <details>
 <summary>Read by URL (no download needed)</summary>
@@ -67,7 +65,7 @@ same files for a graph of your own.
 | What it is                                                           | File                                                                                                                                                                                         |
 | -------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | The structural-variant graph (`sv.gfa`) the index files are cut from | [hprc-v2.1-mc-grch38.sv.gfa.gz](https://s3-us-west-2.amazonaws.com/human-pangenomics/pangenomes/freeze/release2/minigraph-cactus/v2.1/hprc-v2.1-mc-grch38/hprc-v2.1-mc-grch38.sv.gfa.gz)     |
-| The phased VCF, one record per allele, 462 haplotypes                | [hprc-v2.1-mc-grch38.pgbi.vcf.gz](https://s3-us-west-2.amazonaws.com/human-pangenomics/pangenomes/freeze/release2/minigraph-cactus/v2.1/hprc-v2.1-mc-grch38/hprc-v2.1-mc-grch38.pgbi.vcf.gz) |
+| The phased VCF, one record per allele                                | [hprc-v2.1-mc-grch38.pgbi.vcf.gz](https://s3-us-west-2.amazonaws.com/human-pangenomics/pangenomes/freeze/release2/minigraph-cactus/v2.1/hprc-v2.1-mc-grch38/hprc-v2.1-mc-grch38.pgbi.vcf.gz) |
 | The multiple alignment of every haplotype against GRCh38             | [hprc-v2.1-mc-grch38.full.maf.gz](https://s3-us-west-2.amazonaws.com/human-pangenomics/pangenomes/freeze/release2/minigraph-cactus/v2.1/hprc-v2.1-mc-grch38/hprc-v2.1-mc-grch38.full.maf.gz) |
 
 </details>
@@ -108,9 +106,9 @@ opens the same map.
 ## Find a published deletion at CFHR3–CFHR1 {#a-known-allele-cfhr3-cfhr1}
 
 Some windows hold an allele described in a publication, as the page's opening
-example does: pick **CFH / CFHR** in **Examples** to return to it. Above the
-map, the page names the **CFHR3–CFHR1 deletion**, says what it does, counts the
-haplotypes with it in the panel and cites
+example does: pick **CFH / CFHR** in **Examples** to return to it. The panel
+above the map names the **CFHR3–CFHR1 deletion**, says what it does, counts the
+haplotypes with it and cites
 [Hughes et al. 2006](https://doi.org/10.1038/ng1890), who tied it to a lower
 risk of age-related macular degeneration. The map calls the change by the same
 name.
@@ -137,9 +135,6 @@ bubble (how many pieces of sequence each bubble holds) shows how much the
 haplotypes disagree at each locus.
 
 <Figure caption="GRCh38 chr1 with the cytogenetic bands, the three chr1 loci this page opens, segments per bubble as a blue curve, and the coarse tier, the graph with variants under 10 kb folded into the reference, as gold segments." src="/img/pangenome/hprc_whole_chromosome.png" />
-
-[Hosting your own graph](/docs/tutorials/pangenome_prepare_graph) builds this
-overview and writes the `coarse` slot.
 
 ## Open C4 as a force-directed graph
 
@@ -193,9 +188,6 @@ Zoom out a few steps.
 
 <Figure caption="MHC class II with an allele's right-click menu open, and the view Open in NA20809.2 opens." src="/img/pangenome/hprc_haplotype_launch.png" />
 
-The haplotype's CAT annotation has _HLA-DRB9_ and _HLA-DRB6_ either side of the
-allele and no _HLA-DRB5_, the gene it spans on hg38.
-
 ## List every haplotype with the HLA-DRB5 allele {#every-haplotype-with-the-allele}
 
 The graph has one source assembly per allele. HPRC's phased VCF lists every
@@ -218,17 +210,14 @@ the graph launch's session:
     "uri": "https://s3-us-west-2.amazonaws.com/human-pangenomics/pangenomes/freeze/release2/minigraph-cactus/v2.1/hprc-v2.1-mc-grch38/hprc-v2.1-mc-grch38.pgbi.vcf.gz",
     "fetchSizeLimit": 20000000
   },
-  "displays": [
-    {
-      "type": "LinearVariantDisplay",
-      "rows": "haplotype",
-      "filter": ["jexl:alleleLength(feature)>=50"]
-    }
-  ]
+  "displayDefaults": {
+    "rows": { "field": "haplotype" },
+    "filter": ["jexl:alleleLength(feature)>=50"]
+  }
 }
 ```
 
-- `rows: "haplotype"` draws one row per haplotype, named `<sample> HP1`,
+- `rows.field: "haplotype"` draws one row per haplotype, named `<sample> HP1`,
   `<sample> HP2`.
 - `filter` drops records, and `alleleLength(feature)>=50` keeps alleles of 50 bp
   and up, the size of the bubbles minigraph calls. `alleleLength` is the length
@@ -253,11 +242,6 @@ and take **Highlight in hg38**: a band marks the span of GRCh38 it replaces,
 which covers most of _HLA-DRB5_.
 
 <Figure caption="The VCF clustered by genotype over the force-directed graph. The arrow runs from the HLA-DRB5 allele's band to the same allele in the graph." src="/img/pangenome/hprc_graph_vs_callset.png" />
-
-The VCF holds the _HLA-DRB5_ allele as several records, one for each of its
-sequences, which differ by a base or two. The blue block under the band is the
-haplotypes with any of its four sequences, plus a smaller block with an 86 kb
-deletion that removes the whole stretch.
 
 ## Read C4's alleles as aligned bases {#the-same-alleles-as-aligned-bases}
 
@@ -299,13 +283,6 @@ sequence that haplotype lacks. Then:
 
 <Figure caption="C4 with the RefSeq genes, the VCF, alignment rows and the graph track. The arrow runs from the shaded band to the graph segment holding it." src="/img/maf_hprc_pangenome.png" />
 
-The VCF's widest blue block is one record, a deletion of a whole C4-CYP21-TNX
-module, which is the dashed arc in the C4 graph. Every alignment row in the
-white block has that deletion in the VCF. The narrower blocks are haplotypes
-that lack the 6.4 kb HERV-K (endogenous retrovirus) in a C4 gene's intron, which
-GRCh38 has, the difference between a long and a short C4. The `<INS> 26.4Kbp`
-label over the block in _C4B_ belongs to a rarer record at the same site.
-
 ## Follow haplotypes through C4 {#haplotype-threads}
 
 The graph track above draws the sequence that exists at C4. A graph cut from the
@@ -315,7 +292,7 @@ along the nodes it passes through. In the same window:
 
 - Turn on **HPRC release 2 haplotypes vs GRCh38, read from the haplotype walk
   files** in the track selector. It opens as a force-directed graph of GRCh38's
-  walk and eight haplotypes' walks.
+  walk and haplotypes' walks.
 - Turn the launch's variant matrix, **HPRC2 pangenome structural variants (464
   haplotypes)**, back on.
 - Press the button beside **Haplotypes** in the haplotypes track's key, and
@@ -332,14 +309,11 @@ fades to grey. Read the threads this way:
   threads run together through _C4A_ and most of the window.
 - **A thread that leaves the others takes another allele.** In _C4B_, GRCh38's
   thread runs through the HERV-K insertion and HG00133's takes the link that
-  skips it. The variant matrix marks that deletion, at chr6:32,017,423, in
-  HG00133's row.
+  skips it. The variant matrix marks that deletion in HG00133's row.
 - **A loop in one color is sequence only that haplotype has here.** At the same
-  place HG00128 alone runs the large loop, a further C4-CYP21-TNX module. Its
-  block in the matrix is a separate record at chr6:32,017,430, where a 26 kb
-  allele takes the place of 6.4 kb of GRCh38, and only HG00128 has it. The genes
-  on it come from the annotation of HG00128's assembly, so each name ends with
-  the haplotype.
+  place HG00128 alone runs the large loop, with its own block in the matrix. The
+  genes on it come from the annotation of HG00128's assembly, so each name ends
+  with the haplotype.
 - **Hover a node**, and the key gives its position on the contig of each
   highlighted haplotype.
 
@@ -351,7 +325,7 @@ alone.
 
 <Figure caption="The same three haplotypes with a panel each. A panel's title gives its walk's stretch of its contig and its length." src="/img/pangenome/hprc_c4_panels.png" />
 
-## Limits of the graph and the page {#limits}
+## Check where the graph leaves out variation {#limits}
 
 The HPRC page's examples are loci where at least one launch draws something
 readable. At a locus of your own, a picture that looks simple or empty can
@@ -389,13 +363,19 @@ mislead in these cases:
 
 ## Reproduce it end to end
 
-[Hosting your own graph](/docs/tutorials/pangenome_prepare_graph) builds the
-index files and the bubbles track in one command that runs on any rGFA. Run on
-`hprc-v2.1-mc-grch38.sv.gfa.gz`, it writes the files we host, and
-[README.txt](https://jbrowse.org/demos/hprc/README.txt) beside them gives their
-provenance. For a graph of your own, minigraph can list each assembly's route
-through every bubble; see
-[Which haplotypes pass through each segment](/docs/tutorials/pangenome_prepare_graph#which-haplotypes-walk-each-segment).
+`gfa-to-tabix build` (5.0.0 or later) builds the index files and the bubbles
+track in one command that runs on any rGFA. Run on the SV graph from the data
+table, it writes the files we host, and the coarse tier comes from `fold`:
+
+```bash
+wget -c https://s3-us-west-2.amazonaws.com/human-pangenomics/pangenomes/freeze/release2/minigraph-cactus/v2.1/hprc-v2.1-mc-grch38/hprc-v2.1-mc-grch38.sv.gfa.gz
+gfa-to-tabix build hprc-v2.1-mc-grch38.sv.gfa.gz -o hprc --assembly hg38
+# --below: fold variants under 10 kb into the reference
+gfa-to-tabix fold hprc-v2.1-mc-grch38.sv.gfa.gz --below 10000 -o hprc.fold10000
+```
+
+[README.txt](https://jbrowse.org/demos/hprc/README.txt) beside the hosted files
+gives their provenance.
 
 ## See also
 
