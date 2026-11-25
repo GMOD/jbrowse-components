@@ -13,15 +13,15 @@ tutorial_subcategory: HPRC release 2
 We draw human haplotypes from the Human Pangenome Reference Consortium's release
 2 side by side, one lane per haplotype drawn in that haplotype's assembly
 coordinates, and use the pangenome graph to show where neighbouring lanes match.
-We look at three loci: CFH, where some haplotypes lack two genes; GSTT1, a gene
-GRCh38's chromosome lacks; and FLNA / EMD, two genes some haplotypes have in the
-opposite order. We:
+We look at _CFH_, where some haplotypes lack two genes; _GSTT1_, a gene GRCh38's
+chromosome lacks; _FLNA_ / _EMD_, two genes some haplotypes have in the opposite
+order; and IGL, where we pick lanes by name. We:
 
-- at CFH and GSTT1, open the lanes from the HPRC page's **Haplotypes** launch,
-  which stacks them by structure, and read each lane's genes from the annotation
-  of that haplotype's assembly
-- at FLNA / EMD, add the graph's bubbles track and filter it to inversions
-- at IGL, choose lanes by name from the **Lanes** menu
+- open the lanes from the HPRC page's **Haplotypes** launch at _CFH_ and
+  _GSTT1_, which stacks them by structure, and read each lane's genes from the
+  annotation of that haplotype's assembly
+- add the graph's bubbles track at _FLNA_ / _EMD_ and filter it to inversions
+- choose lanes by name from the **Lanes** menu at IGL
 - configure the haplotype lanes track for a graph of your own
 
 :::caution Experimental
@@ -126,14 +126,16 @@ window**. Then:
 
 <Figure caption="FLNA / EMD from the Haplotypes launch, with the bubbles track filtered to inversions. The band crosses in blue where the inverted lanes meet the lanes in GRCh38's orientation." src="/img/pangenome/hprc_inversion.png" />
 
-## Choose lanes by name at IGL {#limits}
+## Choose lanes by name at IGL
 
 **Lanes → Choose lanes...** picks lanes by name, for a haplotype the launch did
 not place in a lane. At IGL, from any **Haplotypes** launch, type
 `chr22:22,800,001-22,850,000` and choose `HG00099.1`, `HG002.1`, `HG00097.1`,
 `HG002.2` and `HG01074.1`, which puts two rows with no ribbons at the foot.
 
-<Figure caption="IGL in five lanes. HG002 haplotype 2 and HG01074 haplotype 1 have no step on the reference across the window, so their rows at the foot draw no ribbons and are headed with the length of the stretch. HG002 haplotype 1's lane spans the window but shows only MIR650 and IGLV3-7, since its Liftoff annotation leaves out functional V segments." src="/img/pangenome/hprc_igl_deletion_lanes.png" />
+<Figure caption="IGL in five lanes. HG002 haplotype 2 and HG01074 haplotype 1 have no step on the reference across the window, so their rows at the foot draw no ribbons and are headed with the length of the stretch." src="/img/pangenome/hprc_igl_deletion_lanes.png" />
+
+## Check where lanes mislead {#limits}
 
 Rows like those are one of several cases where the lanes are easy to misread:
 
@@ -142,14 +144,7 @@ Rows like those are one of several cases where the lanes are easy to misread:
 - **A stretch the haplotype skips across the window is a row with no ribbons.**
   A haplotype with no step on the reference across the whole window shows as a
   row at the foot of the lanes, headed with the stretch's length, such as "no
-  step on the reference across 150 kb". The row comes from the walk file's
-  departure record for where the walk leaves the reference and rejoins it. That
-  record spans the whole stretch between in the file, so JBrowse reads it in
-  every window inside the stretch. Walk rows, which
-  [part 3](/docs/tutorials/pangenome_hprc_repeats#amylase) opens, draw the same
-  haplotype as a row with no step on the reference. At IGH, IGK and IGL such a
-  row is often the cell line's deletion, as
-  [part 1's limits](/docs/tutorials/pangenome_hprc#limits) explain.
+  step on the reference across 150 kb".
 - **A lane can stop partway**, at the end of the graph's alignment of that
   haplotype; its sequence can run on past it.
 - **One lane covers many haplotypes.** The page groups haplotypes into
@@ -174,8 +169,8 @@ and the config below is the one to adapt for your own graph:
   declares, and draws a lane for a haplotype with no assembly too.
 - **`assemblyNameToPanSN`** names the walk of an assembly with no such alias,
   here GRCh38's.
-- The walk files for a graph of your own come from
-  [Hosting your own graph](/docs/tutorials/pangenome_prepare_graph#haplotype-walks-tabix).
+- The walk files for a graph of your own come from the
+  [build below](#reproduce-it-end-to-end).
 
 ```json addtrack
 {
@@ -199,46 +194,35 @@ and the config below is the one to adapt for your own graph:
 ### Where each haplotype's genes come from {#haplotype-genes}
 
 JBrowse draws each lane, and each bar under **Walk rows**, with the genes
-annotated on that haplotype's assembly, at that assembly's coordinates. It does
-not lift GRCh38's genes across the graph.
+annotated on that haplotype's assembly, at that assembly's coordinates. HPRC
+annotated each release 2 assembly but HG002's with CAT (the Comparative
+Annotation Toolkit), which projects GENCODE's GRCh38 genes onto it. HG002's gene
+track is **RefSeq genes via JHU Liftoff v0.6**.
 
-- **The source:** HPRC annotated each release 2 assembly but HG002's with CAT
-  (the Comparative Annotation Toolkit), which projects GENCODE's GRCh38 genes
-  onto it, in the CAT index above. HG002's two haplotypes are the
-  [Q100 assembly](https://github.com/marbl/HG002) hg002v1.1, whose project
-  annotated it with RefSeq's genes through JHU's Liftoff; we keep each gene's
-  MANE Select transcript there, so a few symbols and isoforms differ from the
-  CAT lanes. Liftoff leaves out the functional V, D and J segments of the
-  antibody and T-cell receptor loci, so HG002's lanes there show only their
-  pseudogene segments.
-- **What we host:** one gene model per named gene for each haplotype, as
-  `https://jbrowse.org/pangenome/hprc-grch38/genes/<sample>.<haplotype>.genes.bed.gz`,
-  chosen by these rules:
-  - Each model is the gene's Ensembl canonical transcript as CAT projected it,
-    else its longest coding transcript.
-  - A gene with no symbol is dropped, and so is one spanning over 5 Mb.
-  - Where CAT projected two paralogs onto one locus, such as _GSTM1_ onto
-    _GSTM2_, we keep the gene whose GRCh38 span the haplotype's walk crosses
-    there.
-  - CAT misses genes that only GRCh38's alternate contigs hold. We splice
-    GENCODE's models of _GSTT1_, _LILRA3_, _HLA-DRB3_, _HLA-DRB4_ and _HLA-DRB5_
-    onto each haplotype's assembly instead, where its walk crosses them.
-  - [README.txt](https://jbrowse.org/pangenome/hprc-grch38/genes/README.txt)
-    beside the files lists every rule and what CAT still misses.
-- **Where a lane's genes come from:** each haplotype is an assembly, such as
-  `HG00097.1` aliased `HG00097#1`, holding one track, **CAT genes (HG00097
-  haplotype 1, HPRC release 2)**, or for HG002 **RefSeq genes via JHU Liftoff
-  v0.6**. JBrowse draws that track in the haplotype's lane, and for each of the
-  first 40 walk-row bars reads it over the bar's span on the haplotype's contig
-  and boxes each gene where it falls along the bar.
+Each haplotype is an assembly, such as `HG00097.1` aliased `HG00097#1`, holding
+one gene track, **CAT genes (HG00097 haplotype 1, HPRC release 2)**. JBrowse
+draws that track in the haplotype's lane, and for each of the first 40 walk-row
+bars reads it over the bar's span on the haplotype's contig and boxes each gene
+where it falls along the bar. The hosting rules for the gene models, and what
+CAT still misses, are in the
+[README.txt](https://jbrowse.org/pangenome/hprc-grch38/genes/README.txt) beside
+the files.
 
 ## Reproduce it end to end
 
-[Indexing haplotype walks](/docs/tutorials/pangenome_prepare_graph#haplotype-walks-tabix)
-builds the walk files the lanes read, with one command on the release's GFA, and
+`gfa-to-tabix` (5.0.0 or later) builds the walk files the lanes read, with one
+command on the release's GFA:
+
+```bash
+# the base-level GFA, 64 GB
+wget -c https://s3-us-west-2.amazonaws.com/human-pangenomics/pangenomes/freeze/release2/minigraph-cactus/v2.1/hprc-v2.1-mc-grch38/hprc-v2.1-mc-grch38.gfa.gz
+# --refs: the reference sample whose coordinates the walk file is in
+gfa-to-tabix hprc-v2.1-mc-grch38.gfa.gz --walks --refs GRCh38 \
+  -o hprc-v2.1-mc-grch38
+```
+
 [README.txt](https://jbrowse.org/demos/hprc/README.txt) beside the hosted files
-gives their provenance. The same page converts the walks to PAF for a
-whole-genome synteny view.
+gives their provenance.
 
 ## See also
 
