@@ -1,19 +1,19 @@
 ---
 title: LD across an inversion (mosquitoes)
+sidebar_label: LD at an inversion (mosquitoes)
 description:
-  Read precomputed PLINK LD over a 22 Mb inversion, and load the same inversion
+  Read precomputed PLINK LD over an inversion, and load the same inversion
   genotyped per mosquito
 guide_category: Tutorials
 tutorial_category: Population genomics
 ---
 
-The 2La chromosomal inversion of the malaria mosquito _Anopheles gambiae_ spans
-about 22 Mb and suppresses crossing over between the inverted and standard
-arrangements, so linkage disequilibrium (LD, the correlation between variants)
-runs across it as one block in a population where both arrangements segregate.
-An inversion's LD block covers most of a chromosome arm, so the variants are
-thinned to a grid before PLINK writes every pair. On arm 2L in Cameroon and
-Gabon, we:
+The 2La chromosomal inversion of the malaria mosquito _Anopheles gambiae_
+suppresses crossing over between the inverted and standard arrangements, so
+linkage disequilibrium (LD, the correlation between variants) runs across it as
+one block in a population where both arrangements segregate. PLINK writes every
+pair of variants, so the variants are thinned to a grid first. On arm 2L in
+Cameroon and Gabon, we:
 
 - load a thinned PLINK r² table for each population as an LD track
 - load the inversion as one structural-variant record, genotyped per mosquito,
@@ -53,11 +53,11 @@ hosted results. The [build script](#reproduce-it-end-to-end) fetches them to
 rebuild those results. The PLINK steps take your own VCF in place of the Ag1000G
 slice.
 
-| What it is                                                                                                                                                                                             | File                                                                                                           |
-| ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | -------------------------------------------------------------------------------------------------------------- |
-| The phased haplotypes and their sample list for chromosome arm 2L, which the commands subset to one population at a time                                                                               | [shapeit/](https://ngs.sanger.ac.uk/production/ag1000g/phase2/AR1/haplotypes/main/shapeit/)                    |
-| The sample metadata the population lists come from, `CMgam` (Cameroon) and `GAgam` (Gabon)                                                                                                             | [samples.meta.txt](https://ngs.sanger.ac.uk/production/ag1000g/phase2/AR1/samples/samples.meta.txt)            |
-| The 2La tag SNPs, the ~200 positions whose allele marks which arrangement a chromosome has, which each mosquito's karyotype is scored from ([Love et al. 2019](https://doi.org/10.1534/g3.119.400445)) | [2La_targets.txt](https://raw.githubusercontent.com/rrlove/compkaryo/master/compkaryo/targets/2La_targets.txt) |
+| What it is                                                                                                                                                                          | File                                                                                                           |
+| ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------- |
+| The phased haplotypes and their sample list for chromosome arm 2L, which the commands subset to one population at a time                                                            | [shapeit/](https://ngs.sanger.ac.uk/production/ag1000g/phase2/AR1/haplotypes/main/shapeit/)                    |
+| The sample metadata the population lists come from, `CMgam` (Cameroon) and `GAgam` (Gabon)                                                                                          | [samples.meta.txt](https://ngs.sanger.ac.uk/production/ag1000g/phase2/AR1/samples/samples.meta.txt)            |
+| The 2La tag SNPs, whose allele marks which arrangement a chromosome has, which each mosquito's karyotype is scored from ([Love et al. 2019](https://doi.org/10.1534/g3.119.400445)) | [2La_targets.txt](https://raw.githubusercontent.com/rrlove/compkaryo/master/compkaryo/targets/2La_targets.txt) |
 
 ## Load the anoGam3 assembly and genes
 
@@ -121,7 +121,9 @@ that to anoGam3's `chr2L`. The gene track is the hub's too:
 JBrowse draws LD from a precomputed table: PLINK correlates the variants and
 [`PlinkLDTabixAdapter`](/docs/config/plinkldtabixadapter) reads its output.
 PLINK reads a binary fileset, so we first convert the common variants' phased
-VCF with `--double-id`, which sets each family id to the sample id:
+VCF with `--double-id`, which sets each family id to the sample id. The build
+script writes `common.vcf` from the SHAPEIT haplotypes, keeping the common
+variants:
 
 <!-- from: scripts/build_ag1000g_ld.sh -->
 
@@ -131,13 +133,18 @@ plink2 --vcf common.vcf --double-id --allow-extra-chr --make-bed --out common
 
 Then we thin the variants, correlate them and index the table. `keep.CMgam.txt`
 lists the Cameroon samples in two tab-separated columns of the same sample id,
-the family/individual pair plink asks for.
+the family/individual pair plink asks for:
+
+```bash
+awk -F'\t' '$3=="CMgam"{print $1"\t"$1}' samples.meta.txt | sort -u > keep.CMgam.txt
+```
 
 <!-- from: scripts/build_ag1000g_ld.sh -->
 
 ```bash
-# the display uploads n(n-1)/2 cells, and ~800 SNPs across an arm already
-# reach screen resolution, so keep roughly one variant per 50 kb
+# the display uploads n(n-1)/2 cells, and a thinned grid across an arm already
+# reaches screen resolution, so keep roughly one variant per 50 kb
+# the awk reads the position from variant ids shaped like 2L_<pos>
 plink2 --bfile common --allow-extra-chr --keep keep.CMgam.txt --maf 0.2 \
   --chr 2L --write-snplist --out sel
 awk -F'_' -v g=50000 '{p=$2+0; if (p >= nxt) {print $0; nxt = p + g}}' \
@@ -178,15 +185,12 @@ the two metric columns, as its input:
     "uri": "https://jbrowse.org/demos/popgen/ag1000g_2L_CMgam.vcor.gz",
     "csi": true
   },
-  "displays": [
-    {
-      "type": "LDTrackDisplay",
-      "encoding": { "color": "r2" },
-      "variantLayout": "genomic",
-      "legend": { "show": true },
-      "height": 340
-    }
-  ]
+  "displayDefaults": {
+    "encoding": { "color": "r2" },
+    "variantLayout": "genomic",
+    "legend": { "show": true },
+    "height": 340
+  }
 }
 ```
 
@@ -207,8 +211,7 @@ The build script writes the `<INV>` call at the published 2La extent
 ([Sharakhov et al. 2006](https://doi.org/10.1073/pnas.0509683103),
 [White et al. 2007](https://doi.org/10.4269/ajtmh.2007.76.334)) and scores each
 mosquito's karyotype as its mean alternate-allele count across the tag SNPs,
-rounded to a genotype, as MalariaGEN does for its Ag3 release. The score is
-trimodal, which the [reproduce script](#reproduce-it-end-to-end) checks.
+rounded to a genotype, as MalariaGEN does for its Ag3 release.
 
 The samples TSV has a `name` column matching the VCF sample ids and a
 `karyotype` column naming each mosquito's pair of arrangements: `2L+a/2L+a`,
@@ -231,16 +234,13 @@ with a `LinearVariantDisplay`:
       "uri": "https://jbrowse.org/demos/popgen/ag1000g_2La_CMgam_samples.tsv"
     }
   },
-  "displays": [
-    {
-      "type": "LinearVariantDisplay",
-      "facet": {
-        "field": "karyotype",
-        "sort": ["2L+a/2L+a", "2La/2L+a", "2La/2La"]
-      },
-      "rows": { "color": "karyotype" }
-    }
-  ]
+  "displayDefaults": {
+    "facet": {
+      "field": "karyotype",
+      "sort": ["2L+a/2L+a", "2La/2L+a", "2La/2La"]
+    },
+    "rows": { "color": "karyotype" }
+  }
 }
 ```
 
@@ -248,8 +248,7 @@ with a `LinearVariantDisplay`:
 one section per `karyotype` value, `facet.sort` orders them by dosage, and
 `rows.color` is a color scale on each row's label bar. With
 [`genotypes.reference.show`](/docs/config/linearvariantdisplay/#slot-genotypes)
-off, the default, the track fills with the reference color and alt cells are
-painted on top.
+off, the default, the rows are filled grey and alt cells are drawn over them.
 
 The display draws a row for every sample in the file and divides the track
 height among them, so each population goes in a separate track. Gabon's two
@@ -262,19 +261,44 @@ file names:
 
 ## Compare the 2La LD block with the karyotypes {#reading-the-2la-ld-block-against-the-karyotype-rows}
 
-Open `chr2L` with the r² track of each population over the karyotype track of
-the same population.
+The figure also shows the extents of 2La and _Vgsc_ as a feature track, whose
+two features sit inline in the config:
 
-<Figure src="/img/ld/anopheles_2la.png" caption="Ag1000G arm 2L with the published extents of 2La and Vgsc above r² blocks for Cameroon and Gabon."/>
+```json addtrack
+{
+  "type": "FeatureTrack",
+  "trackId": "ag1000g_2l_loci",
+  "name": "2L loci",
+  "assemblyNames": ["anoGam3"],
+  "adapter": {
+    "type": "FromConfigAdapter",
+    "adapterId": "ag1000g_2l_loci",
+    "features": [
+      {
+        "uniqueId": "vgsc",
+        "refName": "chr2L",
+        "start": 2358158,
+        "end": 2431617,
+        "name": "Vgsc",
+        "type": "gene"
+      },
+      {
+        "uniqueId": "two_la",
+        "refName": "chr2L",
+        "start": 20524058,
+        "end": 42165532,
+        "name": "2La",
+        "type": "inversion"
+      }
+    ]
+  }
+}
+```
 
-The block's edges line up with the published breakpoint coordinates.
+Open `chr2L` with that track on top and the r² track of each population over the
+karyotype track of the same population.
 
-- A second block, at the low-coordinate end of the arm in both populations, is
-  _Vgsc_, a sodium channel gene whose codon-995 substitutions confer pyrethroid
-  insecticide resistance
-  ([Clarkson et al. 2021](https://doi.org/10.1111/mec.15845)).
-- Gabon is near-fixed for the standard arrangement, so 2La is rare enough that
-  the variants tagging it fall below the `--maf` cutoff.
+<Figure src="/img/ld/anopheles_2la.png" caption="Ag1000G arm 2L with the extents of 2La and Vgsc above r² blocks for Cameroon and Gabon."/>
 
 ## Reproduce it end to end
 
@@ -287,13 +311,11 @@ each choice it makes from there:
   population, mean D' between variants more than 5 Mb apart inside the test
   window and outside it, because only a population with both arrangements can
   show the block.
-- The script keeps common variants, thins them to a grid, and writes each
-  panel's r² and D' table.
-- The script bins D' to distant partners along the whole arm. The steps up and
-  down are the inversion's breakpoints, recovered from the data alone.
-- The script scores each mosquito's karyotype from the tag SNPs, prints the
-  score histogram, which has to come out with three peaks, and writes the
-  `<INV>` calls and a `config.json` opening on the inversion.
+- Common variants are kept, thinned to a grid, and written as each panel's r²
+  and D' table.
+- Each mosquito's karyotype is scored from the tag SNPs, and the score histogram
+  is printed, which has to come out with three peaks. The `<INV>` calls and a
+  `config.json` opening on the inversion are written.
 
 ```bash
 curl -fO https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/build_ag1000g_ld.sh
@@ -314,8 +336,6 @@ npx --yes serve ag1000g_ld_build/jbrowse2
 
 - Anopheles gambiae 1000 Genomes Consortium (2020).
   [Genome variation and population structure among 1142 mosquitoes of the African malaria vector species Anopheles gambiae and Anopheles coluzzii](https://doi.org/10.1101/gr.262790.120)
-- Clarkson et al. (2021).
-  [The genetic architecture of target-site resistance to pyrethroid insecticides in the African malaria vectors Anopheles gambiae and Anopheles coluzzii](https://doi.org/10.1111/mec.15845)
 - Love et al. (2019).
   [In silico karyotyping of chromosomally polymorphic malaria mosquitoes in the Anopheles gambiae complex](https://doi.org/10.1534/g3.119.400445)
 - Sharakhov et al. (2006).
