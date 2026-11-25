@@ -7,8 +7,6 @@ import {
   awaitViewInitialized,
 } from '@jbrowse/core/svg/svgReady'
 import { wrapSvgExport } from '@jbrowse/core/svg/wrapSvgExport'
-import { LEGEND_ROW_HEIGHT } from '@jbrowse/core/ui/SvgColorLegend'
-import { resolvePalette } from '@jbrowse/core/ui/palette'
 import { getSession, max } from '@jbrowse/core/util'
 import {
   SVGStackedRow,
@@ -22,7 +20,11 @@ import {
 
 import { SvgConnectionKey } from '../components/ConnectionKey.tsx'
 import Overlay from '../components/Overlay.tsx'
-import { drawnConnectionKey } from '../components/overlayUtils.tsx'
+import {
+  CONNECTION_KEY_INSET,
+  exportedConnectionKey,
+  exportedOverlayTrackIds,
+} from './pageSubject.ts'
 import { getTrackOffsets } from './util.ts'
 
 import type { BreakpointViewModel } from '../model.ts'
@@ -112,13 +114,13 @@ export async function renderToSvg(model: BSV, opts: ExportSvgOptions) {
     fontFamily,
     session,
   })
+  // the connection key sits beside the first row and each track's key beside
+  // its track, all in one gutter right of the stack
+  const key = exportedConnectionKey(model, theme, opts)
   const w =
     width +
     trackLabelOffset +
-    max(
-      rowTracks.map(r => r.legendWidth),
-      0,
-    )
+    max([...rowTracks.map(r => r.legendWidth), key.gutterWidth], 0)
   const physicalWidth = parsePhysicalWidth(opts.pageWidth ?? '')
   const margins = exportMargins(
     rowTracks.flatMap(r => r.tracks.map(track => track.displays[0]!)),
@@ -129,21 +131,9 @@ export async function renderToSvg(model: BSV, opts: ExportSvgOptions) {
   // anchors that view's overlay ribbons, and ends as the total content height,
   // so the canvas size, the rendered bodies and the ribbons share one source of
   // truth.
-  // A track minimized in one row still links the rows that show it, as on
-  // screen: the overlay skips every pair touching the minimized row.
-  const overlayTrackIds = model.overlayTracks
-    .map(track => track.configuration.trackId)
-    .filter(id =>
-      rowTracks.some(r => r.tracks.some(t => t.configuration.trackId === id)),
-    )
-  const keyRows = drawnConnectionKey(
-    model,
-    resolvePalette({ configTheme: theme }),
-    overlayTrackIds,
-  )
-  const keyBand =
-    keyRows.length > 0 ? keyRows.length * LEGEND_ROW_HEIGHT + 4 : 0
-  let y = keyBand
+  // The overlay skips every pair touching a row where its track is minimized.
+  const overlayTrackIds = exportedOverlayTrackIds(model)
+  let y = 0
   const rows = views.map((view, idx) => {
     const top = y
     y += heights[idx]!
@@ -173,9 +163,11 @@ export async function renderToSvg(model: BSV, opts: ExportSvgOptions) {
     Wrapper,
     children: (
       <>
-        {keyBand > 0 ? (
-          <SvgConnectionKey rows={keyRows} canvasWidth={margins.left + w + 4} />
-        ) : null}
+        <SvgConnectionKey
+          rows={key.rows}
+          x={margins.left + trackLabelOffset + width + CONNECTION_KEY_INSET}
+          maxHeight={key.maxHeight}
+        />
         {rows.map(({ view, top }, idx) => (
           <SVGStackedRow
             key={view.id}

@@ -4,7 +4,7 @@ import { connectedVariantJunctions } from './connectedJunctions.ts'
 import {
   drawnConnectionKey,
   drawnConnectionKeySections,
-} from './overlayUtils.tsx'
+} from './drawnConnectionKey.ts'
 
 import type { BreakpointViewModel } from '../model.ts'
 

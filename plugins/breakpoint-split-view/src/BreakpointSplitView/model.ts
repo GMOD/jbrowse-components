@@ -44,6 +44,7 @@ import {
   layoutReadChains,
   throughHiddenStyle,
 } from './readChains.ts'
+import { breakpointPageSubject } from './svgcomponents/pageSubject.ts'
 import {
   VIEW_DIVIDER_HEIGHT,
   computeOverlayY,
@@ -355,7 +356,7 @@ export default function stateModelFactory(pluginManager: PluginManager) {
       async exportSvg(opts: ExportSvgOptions = {}): Promise<string> {
         const model = self as BreakpointViewModel
         return exportLaidOut(
-          { node: model, views: model.views },
+          breakpointPageSubject(model, opts),
           opts,
           stackLayout(model),
           laidOut =>
@@ -1115,7 +1116,13 @@ export default function stateModelFactory(pluginManager: PluginManager) {
                   handleClose,
                   figureLayout: {
                     pageLayout: (opts: ExportSvgOptions) =>
-                      pageLayout({ node: self, views: self.views }, opts),
+                      pageLayout(
+                        breakpointPageSubject(
+                          self as BreakpointViewModel,
+                          opts,
+                        ),
+                        opts,
+                      ),
                   },
                 },
               ])

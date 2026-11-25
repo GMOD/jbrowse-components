@@ -15,6 +15,7 @@ import type { AbstractViewContainer } from '@jbrowse/core/util/types'
 // reaches this module by lazy import, so nothing here changes what the app
 // bundles.
 export { renderToSvg } from './BreakpointSplitView/svgcomponents/SVGBreakpointSplitView.tsx'
+export { breakpointPageSubject } from './BreakpointSplitView/svgcomponents/pageSubject.ts'
 export type { BreakpointViewModel } from './BreakpointSplitView/model.ts'
 export type {
   BreakpointSplitViewInitView,

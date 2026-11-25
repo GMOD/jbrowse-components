@@ -29,7 +29,10 @@ minimized track, and `notifySkippedSvgTracks` names it. It is one call,
   legitimate empty render.
 - A body draws no key. The exporting view sets each display's `SvgLegend` in a
   gutter right of the plot, which `renderViewTracks` sizes from the keys that
-  exist, so a figure with no key has no empty strip.
+  exist, so a figure with no key has no empty strip. A view's own key (the
+  synteny view's, the breakpoint split view's connection key) goes in the same
+  gutter beside the first row, and the view's page subject (`legendWidth`)
+  carries its width into a page export's chrome.
 
 **The export canvas width is `view.width`**, not `renderState.canvasWidth`
 (`view.trackWidthPx`, 2px narrower); reusing the on-screen width clips the last

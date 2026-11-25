@@ -20,7 +20,10 @@ import {
   trackModifierNames,
 } from '@jbrowse/launch-args/displaySettings'
 import { destroy } from '@jbrowse/mobx-state-tree'
-import { renderToSvg as renderBreakpointToSvg } from '@jbrowse/plugin-breakpoint-split-view'
+import {
+  breakpointPageSubject,
+  renderToSvg as renderBreakpointToSvg,
+} from '@jbrowse/plugin-breakpoint-split-view'
 import { renderToSvg as renderCircularToSvg } from '@jbrowse/plugin-circular-view'
 import { renderToSvg as renderDotplotToSvg } from '@jbrowse/plugin-dotplot-view'
 import {
@@ -724,18 +727,19 @@ const renderBreakpoint: ModeRenderer = async ctx => {
       },
       opts.view,
     )
+  const svgOpts = {
+    ...baseSvgOpts(opts),
+    trackLabels: opts.trackLabels,
+    showGridlines: opts.showGridlines,
+    ...pageOpts(opts),
+  }
   const svg = await renderBreakpointToSvg(
     view,
     await pageSvgOpts(
-      { node: view, views: view.views },
+      breakpointPageSubject(view, svgOpts),
       stackLayout(view).layOutAt,
       view.views,
-      {
-        ...baseSvgOpts(opts),
-        trackLabels: opts.trackLabels,
-        showGridlines: opts.showGridlines,
-        ...pageOpts(opts),
-      },
+      svgOpts,
       model.session,
     ),
   )

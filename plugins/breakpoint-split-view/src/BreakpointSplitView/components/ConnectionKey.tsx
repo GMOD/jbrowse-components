@@ -3,10 +3,10 @@ import SvgColorLegend from '@jbrowse/core/ui/SvgColorLegend'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { observer } from 'mobx-react'
 
-import { drawnConnectionKeySections } from './overlayUtils.tsx'
+import { drawnConnectionKeySections } from './drawnConnectionKey.ts'
 
 import type { BreakpointViewModel } from '../model.ts'
-import type { drawnConnectionKey } from './overlayUtils.tsx'
+import type { drawnConnectionKey } from './drawnConnectionKey.ts'
 
 const useStyles = makeStyles()(theme => ({
   key: {
@@ -73,14 +73,18 @@ const ConnectionKey = observer(function ConnectionKey({
 
 export function SvgConnectionKey({
   rows,
-  canvasWidth,
+  x,
+  maxHeight,
 }: {
   rows: ReturnType<typeof drawnConnectionKey>
-  canvasWidth: number
+  x: number
+  maxHeight: number
 }) {
   return (
     <SvgColorLegend
-      canvasWidth={canvasWidth}
+      canvasWidth={x}
+      x={x}
+      maxHeight={maxHeight}
       testid="connection-key"
       entries={rows}
     />
