@@ -19,8 +19,7 @@ which only some have. We:
 - load the alignment between the strains as a synteny track, and stack the
   strains in a linear synteny view
 - load the variants pggb calls from the graph against K12 as a variant track,
-  one row per strain
-- load the graph's whole-genome alignment as a MAF track on K12
+  one row per strain, and the graph's whole-genome alignment as a MAF track
 - plot depth as a quantitative track and per-strain presence as a heatmap
 - load the graph itself as a graph track you browse by locus
 
