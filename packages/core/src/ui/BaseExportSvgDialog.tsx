@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 
 import {
   MenuItem,
@@ -9,7 +9,7 @@ import {
 } from '@mui/material'
 import { observer } from 'mobx-react'
 
-import { getSession } from '../util/index.ts'
+import { getSession, isAbortException } from '../util/index.ts'
 import ControlRow from './ControlRow.tsx'
 import ErrorBanner from './ErrorBanner.tsx'
 import ExternalLink from './ExternalLink.tsx'
@@ -26,6 +26,7 @@ export interface BaseExportSvgOptions {
   filename: string
   themeName: string
   fontFamily: string
+  signal: AbortSignal
 }
 
 type ExportFormat = BaseExportSvgOptions['format'] | 'r'
@@ -81,6 +82,7 @@ export default observer(function BaseExportSvgDialog({
   )
   const rasterizeLayers = offscreenCanvas && rasterizePreference
   const [loading, setLoading] = useState(false)
+  const exportController = useRef<AbortController>(undefined)
   const [error, setError] = useState<unknown>()
   // The stored format is shared by every view's dialog, and only some views
   // offer R, so a view without it reads a stored `r` as SVG.
@@ -120,8 +122,13 @@ export default observer(function BaseExportSvgDialog({
       open
       title="Export image"
       submitDisabled={loading || submitDisabled}
-      onCancel={handleClose}
+      onCancel={() => {
+        exportController.current?.abort()
+        handleClose()
+      }}
       onSubmit={async () => {
+        const controller = new AbortController()
+        exportController.current = controller
         setLoading(true)
         setError(undefined)
         try {
@@ -134,12 +141,15 @@ export default observer(function BaseExportSvgDialog({
               filename,
               themeName,
               fontFamily: fontFamily === DEFAULT_FONT ? '' : fontFamily,
+              signal: controller.signal,
             })
           }
           handleClose()
         } catch (e) {
-          console.error(e)
-          setError(e)
+          if (!isAbortException(e)) {
+            console.error(e)
+            setError(e)
+          }
         } finally {
           setLoading(false)
         }

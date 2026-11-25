@@ -88,6 +88,39 @@ test('the R format hands the filename to exportR and hides the image options', a
   expect(exportSvg).not.toHaveBeenCalled()
 })
 
+test('Cancel during an export aborts it, closes the dialog and shows no error', async () => {
+  const signals: AbortSignal[] = []
+  const exportSvg = jest.fn(
+    ({ signal }: { signal: AbortSignal }) =>
+      new Promise<never>((_, reject) => {
+        signals.push(signal)
+        signal.addEventListener('abort', () => {
+          reject(new DOMException('This operation was aborted', 'AbortError'))
+        })
+      }),
+  )
+  const handleClose = jest.fn()
+  const { getByRole, queryByText } = render(
+    <BaseExportSvgDialog
+      model={stubModel('default')}
+      handleClose={handleClose}
+      exportSvg={exportSvg}
+    />,
+  )
+  fireEvent.click(getByRole('button', { name: 'Submit' }))
+  await waitFor(() => {
+    expect(exportSvg).toHaveBeenCalled()
+  })
+  fireEvent.click(getByRole('button', { name: 'Cancel' }))
+
+  expect(signals[0]?.aborted).toBe(true)
+  expect(handleClose).toHaveBeenCalledTimes(1)
+  await waitFor(() => {
+    expect(queryByText(/Creating SVG/)).toBeNull()
+  })
+  expect(queryByText(/aborted/i)).toBeNull()
+})
+
 // The format and filename are stored once for every view's dialog, and only
 // the linear genome view offers R.
 test('a stored R format exports an SVG from a dialog without exportR', async () => {
