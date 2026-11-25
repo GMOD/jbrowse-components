@@ -202,17 +202,14 @@ function fieldSteps(
   return { steps, unmapped }
 }
 
-// A note says the same thing on every track it applies to, so a recipe prints
-// it at its first step only.
 function notesOnce(steps: RecipeStep[], seen = new Set<string>()): RecipeStep[] {
   return steps.map(({ note, substeps, ...step }) => {
-    const fresh = note !== undefined && !seen.has(note)
-    if (note !== undefined) {
-      seen.add(note)
-    }
+    const fresh = (note?.split(/(?<=[.!?]) (?=[A-Z*`])/) ?? []).filter(
+      sentence => !seen.has(sentence) && seen.add(sentence),
+    )
     return {
       ...step,
-      ...(fresh ? { note } : {}),
+      ...(fresh.length ? { note: fresh.join(' ') } : {}),
       ...(substeps ? { substeps: notesOnce(substeps, seen) } : {}),
     }
   })

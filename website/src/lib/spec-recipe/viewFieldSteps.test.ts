@@ -160,3 +160,27 @@ test('a note repeated on several tracks prints at the first one only', () => {
   expect(settings).toHaveLength(2)
   expect(settings.filter(step => step.note !== undefined)).toHaveLength(1)
 })
+
+test('a note repeats none of the sentences an earlier note said', () => {
+  const pinned = (trackId: string, domainMax: number) => ({
+    trackId,
+    encoding: { y: { scale: { domainMin: 0, domainMax } } },
+  })
+  const recipe = recipeOf([
+    {
+      type: 'LinearGenomeView',
+      assembly: 'volvox',
+      tracks: [
+        pinned('volvox_microarray', 1),
+        pinned('volvox_microarray_line', 40),
+      ],
+    },
+  ])
+  const notes = (recipe?.steps ?? [])
+    .flatMap(step => step.substeps ?? [])
+    .flatMap(step => step.note ?? [])
+  expect(notes).toEqual([
+    'Pins the axis: Min 0 and Max 1. A field left empty follows the data in view.',
+    'Pins the axis: Min 0 and Max 40.',
+  ])
+})
