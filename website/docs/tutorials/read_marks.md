@@ -18,9 +18,9 @@ NA12878's reads on chromosome 20 we:
 - bin the long-insert pairs to scan the whole chromosome for clusters
 
 The plots use JBrowse's mark display, which maps feature fields to plot
-channels. In [grammar-of-graphics](/docs/config_guides/mark_display) terms, a
-`mark` is the shape drawn and `encoding.y` the y scale. The mark display is
-experimental and its config shape may change.
+channels. It is experimental and its config shape may change. In
+[grammar-of-graphics](/docs/config_guides/mark_display) terms, a `mark` is the
+shape drawn and `encoding.y` the y scale.
 
 ## Prerequisites
 
@@ -59,7 +59,7 @@ rebuild those results. The marks and the scan step take your own CRAM or BAM.
 | NA12878's 30x CRAM, index beside it    | [NA12878.final.cram](https://s3.amazonaws.com/1000genomes/1000G_2504_high_coverage/data/ERR3239334/NA12878.final.cram) |
 | UCSC's GRCh38 cytoband table, rehosted | [cytoBand.txt](https://jbrowse.org/genomes/GRCh38/cytoBand.txt)                                                        |
 
-## Loading hg38
+## Load the GRCh38 assembly
 
 JBrowse decodes the CRAM against the assembly the track is added to, so the
 assembly must be the GRCh38 sequence the reads were aligned to.
@@ -98,10 +98,9 @@ The figures also show NCBI's RefSeq genes as a track:
 }
 ```
 
-## Plotting read depth as bars over the EFCAB8 deletion
+## Plot read depth over the EFCAB8 deletion
 
-The window covers 30 kb of an _EFCAB8_ intron on chromosome 20, where the
-callset records one copy of a 3.9 kb deletion in NA12878.
+The window covers 30 kb of an _EFCAB8_ intron on chromosome 20.
 
 ```json addtrack loc=chr20:32,925,000-32,955,000
 {
@@ -130,13 +129,13 @@ Open the track at `chr20:32,925,000-32,955,000`.
 
 <Figure src="/img/read_marks/depth.png" caption="An EFCAB8 intron in NA12878, the read depth as bars." />
 
-## Plotting insert size as one point per read pair
+## Plot each pair's insert size
 
 A mark display has one y axis, and depth runs in the tens while an insert size
 runs in the thousands, so the insert goes on a second track over the same file.
 Its `filter` keeps the leftmost mate, where the template length is positive, so
-each pair counts once, and drops the few over 8 kb. On an alignments track
-`score` is the mapping quality, and the track colors the points by it.
+each pair counts once, and drops pairs over 8 kb. On an alignments track `score`
+is the mapping quality, and the track colors the points by it.
 
 ```json addtrack
 {
@@ -182,10 +181,9 @@ Open it under the depth track in the same window.
 
 <Figure src="/img/read_marks/insert_size.png" caption="The same window, depth as bars above and each pair's insert size as a point below." />
 
-Each pair in the upper group straddles the missing 3.9 kb. Click a point to open
-its read.
+Click a point to open its read.
 
-## Scanning chromosome 20 for clusters of long-insert pairs
+## Scan chromosome 20 for clusters of long-insert pairs
 
 A whole chromosome's reads exceed the track's size limit, so we cut the long
 pairs out once, one row per pair, into a BED with a header naming its columns.
@@ -209,8 +207,8 @@ tabix -f -C -p bed NA12878.chr20.discordant_pairs.bed.gz
 The BED holds few enough rows to fetch whole at any zoom, and two tracks read
 it:
 
-- the point track's `filter` drops inserts of 20 kb and over, which keeps the
-  megabase inserts at the centromere off the axis
+- the point track's `filter` drops inserts of 20 kb and over, so the
+  centromere's megabase inserts stay off the axis
 - the count track's axis is pinned at 60, so the bins at the centromere saturate
   and the bin over a deletion stays tall enough to see
 
@@ -294,9 +292,6 @@ bin edges from the `bin` step above it.
 Open both tracks on the whole of `chr20`.
 
 <Figure src="/img/read_marks/chromosome.png" caption="Chromosome 20: every pair with an insert under 20 kb as a point, and red bars counting the 2 to 10 kb pairs per bin." />
-
-The bar at 34.2 Mb is a homozygous deletion, and the one at 32.9 Mb is the
-_EFCAB8_ deletion.
 
 ## Reproduce it end to end
 
