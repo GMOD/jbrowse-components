@@ -131,6 +131,22 @@ test('only the first row of a synteny view says how a track is added', () => {
   expect(second).toMatch(/^Add the next track the same way\./)
 })
 
+test('a later pane picks a genome an earlier pane opened instead of opening it again', () => {
+  const pane = { type: 'LinearGenomeView', assembly: 'volvox', tracks: ['volvox_cram'] }
+  const recipe = recipeOf({ views: [pane, pane] })
+  const genomeSteps = recipe.steps.map(step => step.substeps?.[0]?.title)
+  expect(genomeSteps[0]).toMatch(/^Open your genome/)
+  expect(genomeSteps[1]).toBe("Pick the same genome in the new view's import form.")
+})
+
+test('a track with inline features is pasted as JSON, not opened from a file', () => {
+  const recipe = recipeOf({
+    views: [{ type: 'LinearGenomeView', assembly: 'volvox', tracks: ['arc_track'] }],
+  })
+  expect(recipe.steps[1]?.title).toContain('**Add track from pasted JSON**')
+  expect(recipe.steps[1]?.title).not.toContain('Needs')
+})
+
 test('a breakpoint split view opens from the first panel, and a later panel adds only its own tracks', () => {
   const recipe = recipeOf({
     views: [

@@ -1,4 +1,5 @@
 import { deriveAddTrack, deriveAddTrackJson } from '../derive-add-track.ts'
+import { DESKTOP_UI_LABELS } from '../derive-desktop-steps.ts'
 import {
   defaultDisplay,
   fileKind,
@@ -275,7 +276,12 @@ function addTrackTitle(
   viaTrackSelector: boolean | undefined,
   repeat: boolean | undefined,
 ) {
-  const needs = kind ? ` Needs ${kind}.` : ''
+  const needs =
+    info?.adapterType === 'FromConfigAdapter'
+      ? ` Its features sit inline in its config: choose **${DESKTOP_UI_LABELS.pasteJson}** and paste the track.`
+      : kind
+        ? ` Needs ${kind}.`
+        : ''
   return info?.type === 'ReferenceSequenceTrack'
     ? `Show the sequence: check **${info.name}** in the track selector.`
     : band
@@ -485,6 +491,9 @@ function viewSteps(
   viewType = view.type,
   // shared by the rows of one view, so only the first says how to add a track
   told = { addTrack: false },
+  // the genomes an earlier pane opened, which a later pane picks in its own
+  // import form rather than opening again
+  genomes = new Set<string>(),
 ): { steps: RecipeStep[]; unmapped: string[] } {
   const steps: RecipeStep[] = []
   const unmapped: string[] = []
@@ -493,11 +502,19 @@ function viewSteps(
   if (view.assembly && !row) {
     const assembly = lookupAssembly(config, view.assembly)
     const kind = assembly ? fileKind(assembly.adapterType) : undefined
-    steps.push({
-      title:
-        'Open your genome: **Open your own genome** in JBrowse Desktop, or `jbrowse add-assembly` for JBrowse Web.',
-      example: `This figure uses ${view.assembly}${kind ? `, loaded from ${kind}` : ''}.`,
-    })
+    steps.push(
+      genomes.has(view.assembly)
+        ? {
+            title: "Pick the same genome in the new view's import form.",
+            example: `This figure uses ${view.assembly}.`,
+          }
+        : {
+            title:
+              'Open your genome: **Open your own genome** in JBrowse Desktop, or `jbrowse add-assembly` for JBrowse Web.',
+            example: `This figure uses ${view.assembly}${kind ? `, loaded from ${kind}` : ''}.`,
+          },
+    )
+    genomes.add(view.assembly)
   }
 
   // A linear view goes to its region before its tracks go in, so a step that
@@ -550,6 +567,7 @@ function viewSteps(
       viaTrackSelector,
       firstPanel.type ?? rowViewType(view.type),
       told,
+      genomes,
     )
     steps.push(...first.steps, {
       title: launched.opener,
@@ -598,6 +616,7 @@ function viewSteps(
       true,
       subView.type ?? rowViewType(view.type),
       told,
+      genomes,
     )
     steps.push(...(label ? groupSteps(label, sub.steps) : sub.steps))
     unmapped.push(...sub.unmapped)
@@ -686,8 +705,18 @@ export function buildRecipe(
   const { base, config, spec } = decoded
   const sessionTracks = spec.sessionTracks as RawTrack[] | undefined
   const views = spec.views ?? []
+  const genomes = new Set<string>()
   const collected = views.map(view =>
-    viewSteps(view, config, sessionTracks, undefined, views.length > 1),
+    viewSteps(
+      view,
+      config,
+      sessionTracks,
+      undefined,
+      views.length > 1,
+      view.type,
+      undefined,
+      genomes,
+    ),
   )
   const specJson = JSON.stringify(spec, null, 2)
   const configUrl = new URL(config, base).href
