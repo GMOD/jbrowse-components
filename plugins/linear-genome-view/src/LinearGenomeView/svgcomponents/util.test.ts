@@ -103,16 +103,20 @@ test.each(fontSizes)(
   },
 )
 
-// Without one, the row keeps the layout every synteny export was built around:
-// the assembly label on the alphabetic baseline at the origin, nothing else
-// above the ruler, and a band of exactly the ink above that baseline.
-test('a row header without a scalebar reserves the ink above its baseline', () => {
-  expect(getRowHeaderLayout({ fontSize: 13, showScalebar: false })).toEqual({
-    assemblyLabelBaselineY: 0,
-    scalebarLineY: undefined,
-    bandHeight: labelBaselineFromTop(0, 13),
-  })
-})
+// Without one, the name's descenders would otherwise meet the bold refName
+// label that starts at the ruler's top, at the same x, and read as one label.
+test.each(fontSizes)(
+  'a row header without a scalebar ends the assembly name 4px above the ruler at fontSize %i',
+  fontSize => {
+    const d = descent(fontSize)
+    const ink = labelInkHeight(fontSize)
+    const { assemblyLabelBaselineY, scalebarLineY, bandHeight } =
+      getRowHeaderLayout({ fontSize, showScalebar: false })
+    expect(scalebarLineY).toBeUndefined()
+    expect(assemblyLabelBaselineY - (ink - d)).toBe(-bandHeight)
+    expect(assemblyLabelBaselineY + d).toBe(-4)
+  },
+)
 
 // The header stacks assembly name, scalebar and ruler by ink box, not by
 // fontSize: reserving only fontSize clipped the assembly name's ascenders

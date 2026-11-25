@@ -227,11 +227,11 @@ export function insetLabelBaselineY(fontSize: number) {
 // sits above the ruler is drawn at negative y, into a band the caller reserves
 // between this row and the one above. `bandHeight` is that reservation.
 //
-// A row with no scalebar keeps the layout it has always had — the assembly label
-// on the alphabetic baseline at the origin, its ink box in the caller's band —
-// so the height of a synteny stack does not move.
+// Above the ruler, top to bottom: the assembly name, then (with a scalebar) the
+// bar and its bp label. Each is placed by ink box with ROW_GAP between it and
+// what is below it, so the name's descenders clear the ruler, or the bar's top
+// cap, which is a vertical line at the same x the name starts at.
 //
-// With one, the bar and its bp label go between the assembly name and the ruler.
 // A stacked export is several loci a reader is asked to compare, and without a
 // scale in each row the only thing saying whether two rows are at the same zoom
 // is their ruler coordinates, which are unreadable at the size a figure is
@@ -252,26 +252,14 @@ export function getRowHeaderLayout({
   const scalebarLineY = showScalebar
     ? -(ROW_GAP + label + SVG_SCALEBAR_CAP)
     : undefined
-  // the assembly name's ink box ends a gap above the bar's top cap, which is a
-  // vertical line at the same x the name starts at. Everything here is placed by
-  // ink box rather than by baseline, because the gaps are fixed while a font's
-  // descent is not: laying the label out from its baseline instead put its
-  // descenders through that cap at the larger export fonts.
-  // without a scalebar the name sits on its baseline at the origin, its
-  // descenders into the ruler's top, so only the ink above the baseline counts
-  const assemblyInkTop =
-    scalebarLineY === undefined
-      ? -labelBaselineFromTop(0, fontSize)
-      : scalebarLineY - SVG_SCALEBAR_CAP - ROW_GAP - label
+  const belowAssemblyName =
+    scalebarLineY === undefined ? 0 : scalebarLineY - SVG_SCALEBAR_CAP
+  const assemblyInkTop = belowAssemblyName - ROW_GAP - label
   return {
     // undefined rather than an unused number: a row without a scalebar has no
     // line to place, and the caller draws nothing
     scalebarLineY,
-    // 0 is the pre-scalebar placement, kept exactly so a synteny stack doesn't
-    // move
-    assemblyLabelBaselineY: showScalebar
-      ? labelBaselineFromTop(assemblyInkTop, fontSize)
-      : 0,
+    assemblyLabelBaselineY: labelBaselineFromTop(assemblyInkTop, fontSize),
     bandHeight: -assemblyInkTop,
   }
 }
