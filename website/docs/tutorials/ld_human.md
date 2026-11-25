@@ -11,8 +11,8 @@ tutorial_category: Population genomics
 Selection for lactase persistence in Europe swept one haplotype around the
 lactase gene _LCT_ to high frequency, and the variants on it are still inherited
 together as one long block of linkage disequilibrium (LD). PLINK correlates the
-phased genotypes of the 1000 Genomes samples, and JBrowse draws the correlation
-of every pair of variants as a triangle. Across the _LCT_ block on chr2, we:
+genotypes of the 1000 Genomes samples, and JBrowse draws the correlation of
+every pair of variants as a triangle. Across the _LCT_ block on chr2, we:
 
 - load PLINK's r² table for the European samples as an LD track
 - add Fst, a deCODE recombination map and a second LD track over the pooled
@@ -205,11 +205,12 @@ per variant pair) PLINK wrote:
 
 In [grammar-of-graphics](/docs/config_guides/mark_display) terms,
 `encoding.color` is a color scale, and
-[`encoding.color.field`](/docs/config/ldcolor/#slot-field) sets its input to r²
-or D' (a second LD measure), and this table has both. For your own table, swap
-`uri` for the `.ld.gz` that `tabix` indexed, with its `.csi` beside it.
+[`encoding.color.field`](/docs/config/ldcolor/#slot-field), set under the
+track's `displayDefaults`, sets its input to r² or D' (a second LD measure),
+which this table both holds. For your own table, swap `uri` for the `.ld.gz`
+that `tabix` indexed, with its `.csi` beside it.
 
-## Read the LCT block's edges against Fst and deCODE
+## Add Fst, recombination rate and the pooled LD track
 
 The [Fst bigWig](#compute-fst-per-variant-with-plink2) loads first. Its track
 config sets a lower `resolutionMultiplier` on the adapter. Zoomed out, JBrowse
@@ -241,8 +242,8 @@ differentiated variants among the many around them:
 }
 ```
 
-Over 40 Mb of chr2, as [`build_lct_fst_scan.sh`](#reproduce-it-end-to-end) runs
-it, the Fst step gives a wide scan that loads the same way:
+The wide scan from [`build_lct_fst_scan.sh`](#reproduce-it-end-to-end), over 40
+Mb of chr2, loads the same way:
 
 ```json addtrack
 {
@@ -335,15 +336,8 @@ triangles:
 
 <Figure src="/img/ld/lct_sweep_two_scales.png" caption="Top: Fst per variant across chr2. Bottom: two LD triangles at one locus, differing only in which samples went in." links="Wide scan=ld/lct_fst_scan,The two triangles=ld/lct_pooled_vs_panel"/>
 
-- In the Fst track at the top, the sites with the highest Fst in the window sit
-  inside the block.
-- The block fills the flat span of the
-  [deCODE map](https://doi.org/10.1126/science.aau1043). The map is built from
-  crossovers counted in sequenced families, so it is a check on the triangle
-  that is independent of LD. The HapMap and 1000 Genomes recombination maps in
-  the UCSC hg38 hub are estimated from LD, so they are not independent of LD.
-- The pooled triangle is lighter, because it adds populations the sweep never
-  reached to the swept European samples.
+The [deCODE map](https://doi.org/10.1126/science.aau1043) is built from
+crossovers counted in sequenced families.
 
 ## Cluster LCT haplotypes by genotype {#clustering-lct-haplotypes-by-genotype}
 
@@ -359,22 +353,18 @@ equal-width columns, one row per chromosome:
   "assemblyNames": ["hg38"],
   "uri": "https://jbrowse.org/demos/popgen/lct_1kg38_chr2_6pop.vcf.gz",
   "csi": true,
-  "displays": [
-    {
-      "type": "LinearVariantDisplay",
-      "variantLayout": "columns",
-      "rows": "haplotype",
-      "filter": [{ "field": "minorAlleleFrequency", "gte": 0.35 }],
-      "forceLoad": true,
-      "height": 700
-    }
-  ]
+  "displayDefaults": {
+    "variantLayout": "columns",
+    "rows": "haplotype",
+    "filter": [{ "field": "minorAlleleFrequency", "gte": 0.35 }],
+    "forceLoad": true,
+    "height": 700
+  }
 }
 ```
 
-Over the whole release each haplotype row falls below a pixel, so this VCF holds
-the same number of samples from each population. The script behind it centers on
-one `bcftools` call over a list of sample IDs, one per line:
+A subsample of the same size per population keeps each haplotype row visible.
+One `bcftools` call over a list of sample IDs, one per line, makes it:
 
 <!-- from: scripts/build_lct_haploblock.sh -->
 
@@ -400,15 +390,12 @@ record:
 
 Cluster the rows by genotype two ways:
 
-- from the track menu, **Clustering** → **Cluster rows by genotype...**
+- from the track menu, **Clustering → Cluster rows by genotype...**
 - baked into a session with the
   [`runClustering`](/docs/models/treesidebarmixin/) and
   [`clusterRegion`](/docs/models/treesidebarmixin/) model properties
 
 <Figure src="/img/ld/lct_haploblock.png" caption="An LD triangle over the haplotypes it summarises, one row per chromosome, clustered by genotype."/>
-
-In file order the matrix is a plaid. Clustering puts near-identical chromosomes
-together, so a swept haplotype forms one slab.
 
 ## Draw each population's allele frequency at LCT {#allele-frequency-per-population}
 
@@ -503,12 +490,6 @@ Open it over `chr2:135,844,000-135,858,000`, the stretch of _MCM6_ that holds
 
 <Figure src="/img/ld/lct_population_af.png" caption="Alternate allele frequency in the 1000 Genomes populations, a row each on one axis. The highlight marks rs4988235."/>
 
-- At `rs4988235` the allele is common in the two northern European populations
-  (CEU, FIN) and rarer in PJL (Punjabi) and TSI (Tuscan), the spread
-  [Bersaglieri et al. (2004)](https://doi.org/10.1086/421051) describe.
-- The YRI (Yoruba) and CHB (Han Chinese) rows have common variants elsewhere in
-  the window, at sites where the other four are low.
-
 ## Reproduce it end to end
 
 [`build_lct_ld.sh`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/build_lct_ld.sh)
@@ -540,10 +521,8 @@ Three more scripts build the other files:
 - [`build_lct_haploblock.sh`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/build_lct_haploblock.sh)
   builds the
   [subsampled haplotype matrix](#clustering-lct-haplotypes-by-genotype) from the
-  same number of unrelated samples in each population, which span the
-  lactase-persistence allele from common to absent, so none outweighs the rest
-  in the clustering. It prints the allele's frequency in each, over the release
-  and over the subsample.
+  same number of unrelated samples in each population, and prints the allele's
+  frequency in each, over the release and over the subsample.
 - [`build_lct_population_af.sh`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/build_lct_population_af.sh)
   builds the [per-population frequencies](#allele-frequency-per-population) from
   every unrelated sample of the populations in the pooled slice, and prints the
@@ -571,14 +550,12 @@ bash build_lct_population_af.sh       # builds ./lct_population_af_build
 - [](/docs/tutorials/analyze_trio)
 - [](/docs/user_guides/variant_track)
 - [](/docs/user_guides/gwas_track)
-- [Variant track configuration](/docs/config_guides/variant_track#linkage-disequilibrium-ld-display)
+- [](/docs/config_guides/variant_track)
 
 ## Citations
 
 - 1000 Genomes Project Consortium (2015).
   [A global reference for human genetic variation](https://doi.org/10.1038/nature15393)
-- Bersaglieri et al. (2004).
-  [Genetic signatures of strong recent positive selection at the lactase gene](https://doi.org/10.1086/421051)
 - Byrska-Bishop et al. (2022).
   [High-coverage whole-genome sequencing of the expanded 1000 Genomes Project cohort including 602 trios](https://doi.org/10.1016/j.cell.2022.08.004)
 - Halldorsson et al. (2019).
