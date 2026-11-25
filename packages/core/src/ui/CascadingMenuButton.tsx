@@ -44,6 +44,8 @@ const CascadingMenuButton = observer(function CascadingMenuButton({
     disabled?: boolean
     children?: React.ReactNode
     'aria-label'?: string
+    'aria-haspopup'?: 'menu'
+    'aria-expanded'?: boolean
   }>
   anchorOrigin?: PopoverOrigin
   transformOrigin?: PopoverOrigin
@@ -64,6 +66,8 @@ const CascadingMenuButton = observer(function CascadingMenuButton({
       <MaybeTooltip title={tooltip} disabled={isDisabled}>
         <ButtonComponent
           aria-label={tooltip}
+          aria-haspopup="menu"
+          aria-expanded={open}
           onClick={event => {
             if (stopPropagation) {
               event.stopPropagation()

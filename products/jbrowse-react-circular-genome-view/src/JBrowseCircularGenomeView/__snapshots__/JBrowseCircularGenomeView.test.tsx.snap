@@ -559,6 +559,8 @@ exports[`<JBrowseCircularGenomeView /> 1`] = `
             class="css-HASH"
           >
             <button
+              aria-expanded="false"
+              aria-haspopup="menu"
               aria-label="View menu"
               class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeSmall css-HASH-MuiButtonBase-root-MuiIconButton-root"
               data-mui-internal-clone-element="true"

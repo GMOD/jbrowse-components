@@ -22,6 +22,7 @@ import MaybeTooltip from './MaybeTooltip.tsx'
 import { MenuItemTrailing } from './MenuItemTrailing.tsx'
 import { resolveSubMenu, staysOpenOnClick } from './MenuTypes.ts'
 import { hasMenuItemAdornment } from './menuItemAdornment.ts'
+import { resendContextMenu } from './resendContextMenu.ts'
 import { isAimedAtPanel } from './submenuAim.ts'
 import { submenuOrigins, submenuSide } from './submenuSide.ts'
 import { HELP_ROW_TESTID, usePlacedMenuFocus } from './usePlacedMenuFocus.ts'
@@ -797,7 +798,14 @@ const CascadingMenu = observer(function CascadingMenu({
       style={style}
       slotProps={{
         transition: { onEntering },
-        backdrop: { onMouseMove: onBackdropMouseMove },
+        backdrop: {
+          onMouseMove: onBackdropMouseMove,
+          onContextMenu: event => {
+            event.preventDefault()
+            onClose()
+            resendContextMenu(event.currentTarget, event.clientX, event.clientY)
+          },
+        },
       }}
       onKeyDown={event => {
         // Ctrl+Arrow pans a view and Alt+Arrow is the browser's history
