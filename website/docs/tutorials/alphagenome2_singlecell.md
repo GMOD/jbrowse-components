@@ -7,13 +7,13 @@ guide_category: Tutorials
 tutorial_category: Epigenomics & single cell
 ---
 
-An inflammatory bowel disease association on chromosome 21 fine-maps to seven
-SNPs in 1.2 kb of gene desert, 289 kb from the _ETS2_ promoter. AlphaGenome 2
-predicts a variant's effect on expression and on chromatin accessibility
-separately for each cell type it was trained on. Drawn per cell type along the
-chromosome, those predictions show which SNP has an effect, on which gene, and
-in which cell types, following DeepMind's own worked example. At _ETS2_ and the
-enhancer between _ETS2_ and _PSMG1_, we:
+An inflammatory bowel disease association on chromosome 21 fine-maps to a set of
+SNPs in a gene desert, 289 kb from the _ETS2_ promoter. AlphaGenome 2 predicts a
+variant's effect on expression and on chromatin accessibility separately for
+each cell type it was trained on. Drawn per cell type along the chromosome,
+those predictions show which SNP has an effect, on which gene, and in which cell
+types, following DeepMind's own worked example. At _ETS2_ and the enhancer
+between _ETS2_ and _PSMG1_, we:
 
 - load the credible set as a variant track
 - load each SNP's predicted effect on each gene from one BED, faceted into a
@@ -35,7 +35,6 @@ for this locus.
 
 ## Prerequisites
 
-- nothing beyond a web browser to follow the page
 - to make the tracks for your own variants, an
   [AlphaGenome API key](https://www.alphagenomedocs.com/installation.html) and
   Python 3.10 or later with `pip install "alphagenome==2.0.*" pyBigWig pysam`
@@ -71,11 +70,10 @@ The genes are NCBI's curated RefSeq set from the
 
 ## Load the credible set as a variant track
 
-The credible set is the seven SNPs SuSiE kept from the IBD GWAS (study
-GCST004133) in Stankey et al. (2024). The VCF has each SNP's posterior inclusion
-probability (PIP) and GWAS effect in `INFO`, so clicking a SNP shows both. The
-reference allele is the risk allele at every SNP, and the alternate is
-protective:
+The credible set is the SNPs SuSiE kept from the IBD GWAS (study GCST004133) in
+Stankey et al. (2024). The VCF has each SNP's posterior inclusion probability
+(PIP) and GWAS effect in `INFO`, so clicking a SNP shows both. The reference
+allele is the risk allele at every SNP, and the alternate is protective:
 
 ```json addtrack loc=chr21:39,093,000..39,095,400
 {
@@ -89,8 +87,8 @@ protective:
 ## Facet each SNP's expression effect by cell type
 
 `score_variants` predicts each SNP's effect on every gene within half a
-megabase, once per cell type. The ileum conditions are the seven immune cell
-types the notebook uses, and each is a tissue and Cell Ontology pair such as
+megabase, once per cell type. The ileum conditions are the immune cell types the
+notebook uses, and each is a tissue and Cell Ontology pair such as
 `UBERON:0002116_CL:0000235` for ileum macrophages:
 
 <!-- from: scripts/build_alphagenome2_singlecell.sh -->
@@ -284,29 +282,18 @@ chr21:38,700,000-39,330,000
 
 <Figure caption="Predicted expression effects from ETS2 to BRWD1: rs2836882 in each ileum cell type, each credible-set SNP in macrophages, and the input gradient of ETS2 in macrophages." src="/img/alphagenome2/ets2_expression_effects.png" />
 
-_ETS2_ is red, a lower predicted expression with the protective allele, in the
-macrophage and monocyte sections and white in the lymphoid ones. Of the genes
-nearer the SNPs, _PSMG1_ is pale in the myeloid sections and _BRWD1_ stays
-white. In the macrophage track _ETS2_ is deep red in the rs2836882 section, pale
-pink in the rs9808651 section and white in the other five, although rs2836878
-has the highest PIP.
-
-The input gradient's tallest bar in the whole megabase is at rs2836882, 289 kb
-from _ETS2_, taller than any at the _ETS2_ promoter.
-
 ## Compare enhancer accessibility across cell types
 
-The variant prediction behind the BigWigs below is `predict_variants` with
-`OutputType.SC_ATAC`, one call per cell type, which returns the predicted scATAC
-for the reference and the alternate sequence. The script keeps the 10x Cell
-Ranger track, as the notebook does, and writes the reference and the alternate
-minus the reference as two BigWigs per cell type.
+The script writes two BigWigs per cell type, the reference and the alternate
+minus the reference. It calls `predict_variants` with `OutputType.SC_ATAC`, once
+per cell type, which returns the predicted scATAC for the reference and the
+alternate sequence, and keeps the 10x Cell Ranger track, as the notebook does.
 
 AlphaGenome 2 was trained on single-cell expression from these ileum cell types
 but on no scATAC from them. `supported_conditions()` lists the mode of each cell
 type's prediction for each output, and for ileum scATAC it is
 `imputed_supported`, and the track names include it. The change track's axis is
-pinned symmetric, so zero sits mid-row. The fence lists three of its seven rows:
+pinned symmetric, so zero sits mid-row. The fence lists three of its rows:
 
 ```json addtrack loc=chr21:39,094,144..39,095,144
 {
@@ -353,13 +340,9 @@ pinned symmetric, so zero sits mid-row. The fence lists three of its seven rows:
 }
 ```
 
-`ag2_ets2_atac_reference` in the hosted config holds the risk allele's predicted
-scATAC the same way, from `atac_reference_<Cell_type>.bw`, with an axis from
-zero. Under both goes measured scATAC from blood: the monocyte rows of the 10x
-PBMC pseudobulk track of [](/docs/tutorials/scrna_pseudobulk), whose hosted
-config has all twelve rows. Its cells are unstimulated blood monocytes, so it
-tests whether monocytes open this enhancer and cannot check the ileum
-predictions:
+Under it goes measured scATAC from blood: the monocyte rows of the 10x PBMC
+pseudobulk track. Its cells are unstimulated blood monocytes, so it tests
+whether monocytes open this enhancer and cannot check the ileum predictions:
 
 ```json addtrack
 {
@@ -398,11 +381,6 @@ chr21:39,094,144-39,095,144
 
 <Figure caption="Predicted scATAC around rs2836882 in each ileum cell type for the risk allele and for the protective allele minus the risk allele, over measured scATAC from blood CD14 and CD16 monocytes." src="/img/alphagenome2/ets2_enhancer_atac.png" />
 
-Predicted accessibility is near zero outside the macrophage and monocyte rows,
-and in those two rows the protective allele lowers it across the enhancer, most
-near rs2836882. Stankey et al. measured the same direction in primary
-macrophages, where the risk allele has higher accessibility and PU.1 binding.
-
 ## Score every base change at the enhancer
 
 In silico mutagenesis (ISM) scores every single-base change in a window, here
@@ -421,8 +399,7 @@ ism = model.score_ism_variants(
 
 The script writes one BigWig per base mutated to, `ism_A.bw` to `ism_T.bw`, and
 a `MultiQuantitativeTrack` draws them as a heatmap of four rows. A base's own
-row stays empty, since changing a base to itself has no effect. The figure shows
-the forward strand of the Reference sequence track, `hg38-refseq`, above it:
+row stays empty, since changing a base to itself has no effect:
 
 ```json addtrack loc=chr21:39,094,602..39,094,686
 {
@@ -469,20 +446,17 @@ the forward strand of the Reference sequence track, `hg38-refseq`, above it:
 }
 ```
 
-<Figure caption="The predicted effect on ETS2 expression in ileum macrophages of each base change in the 64 bases around rs2836882, one row per base mutated to, under the reference sequence." src="/img/alphagenome2/ets2_enhancer_ism.png" />
+The figure shows the forward strand of the Reference sequence track above it.
 
-Every change at the seven bases `TGCGTCA`, rs2836882's G the fourth of them,
-lowers _ETS2_. The notebook identifies them as an AP-1-like motif from the same
-scores. The largest single effect, T to A at 39,094,626, is in a second stretch
-of red 15 to 25 bases to the left, which the notebook does not discuss.
+<Figure caption="The predicted effect on ETS2 expression in ileum macrophages of each base change in the 64 bases around rs2836882, one row per base mutated to, under the reference sequence." src="/img/alphagenome2/ets2_enhancer_ism.png" />
 
 ## Reproduce it end to end
 
 [`build_alphagenome2_singlecell.sh`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/build_alphagenome2_singlecell.sh)
 writes every track on this page with your API key. It:
 
-- scores the seven credible-set SNPs against the seven ileum cell types and
-  writes one BED line per gene, SNP and cell type
+- scores the credible-set SNPs against the ileum cell types and writes one BED
+  line per gene, SNP and cell type
 - predicts scATAC around rs2836882 for both alleles in each cell type, every
   base change around it, and the input gradient of _ETS2_
 - predicts scATAC at six PBMC marker loci for
