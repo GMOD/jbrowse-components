@@ -7,26 +7,25 @@ guide_category: Tutorials
 tutorial_category: Population genomics
 ---
 
-The [BXD mice](https://genenetwork.org) are about 200 recombinant-inbred strains
-bred down from two parents, C57BL/6J (B6, the "B" parent) and DBA/2J (the "D"
-parent), so each strain is a mosaic of blocks from one or the other. A
-GeneNetwork QTL scan of coat color marks the region linked to variation in that
-trait. We:
+The [BXD mice](https://genenetwork.org) are recombinant-inbred strains bred down
+from two parents, C57BL/6J (B6, the "B" parent) and DBA/2J (the "D" parent), so
+each strain is a mosaic of blocks from one or the other. A GeneNetwork QTL scan
+of coat color marks the region linked to variation in that trait. We:
 
 - load GeneNetwork's BXD genotype file as a BED track and paint each strain's B
   and D blocks, one row per strain
 - load the coat-color scan as a Manhattan track above the strains
 - facet the strains by coat color and open the chr4 peak at _Tyrp1_
-- open the chr9 peak at _Myo5a_ with the same sections
+- repeat the facets at the chr9 peak at _Myo5a_
 
 ## Prerequisites
 
 - `curl`, to fetch GeneNetwork's QTL scan
-- `jq`, to reshape it
+- [`jq`](https://jqlang.org/), to reshape it
 - `python3`, for the painting
 - htslib (`bgzip`, `tabix`), for the painting
 - `node`, for the [JBrowse CLI](/docs/cli)'s `sort-bed`
-- A JBrowse instance to add the tracks to
+- a JBrowse instance to add the tracks to
   ([web quickstart](/docs/quickstart_web) or
   [desktop quickstart](/docs/quickstart_desktop))
 
@@ -48,14 +47,15 @@ npm install -g @jbrowse/cli@next
 BXD consensus genotypes and QTL scans from GeneNetwork
 ([Wang et al. 2016](https://doi.org/10.1038/ncomms10464)).
 
-The page's commands build local files from these, and the tracks over those read
-them from disk; every other track reads a hosted copy. The
-[build script](#reproduce-it-end-to-end) fetches everything itself. The painting
-script reads GeneNetwork's `.geno` format.
+The page's commands build local files from these. The Manhattan track reads the
+local file they write, and the painting and gene tracks read hosted copies. The
+[build script](#reproduce-it-end-to-end) fetches everything itself, or run the
+commands on files of your own. The painting script reads GeneNetwork's `.geno`
+format.
 
 | What it is                                                           | File                                                                                            |
 | -------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------- |
-| The BXD consensus genotypes, 198 strains                             | [BXD.geno](https://gn1.genenetwork.org/genotypes/BXD.geno)                                      |
+| The BXD consensus genotypes                                          | [BXD.geno](https://gn1.genenetwork.org/genotypes/BXD.geno)                                      |
 | The coat-color scan (trait 11280), from GeneNetwork's mapping API    | [mapping](https://genenetwork.org/api/v_pre1/mapping?db=BXDPublish&method=gemma&trait_id=11280) |
 | The coat-color scores per strain, from GeneNetwork's sample-data API | [11280](https://genenetwork.org/api/v_pre1/sample_data/BXDPublish/11280)                        |
 
@@ -105,6 +105,8 @@ tabix -p bed bxd_painting.bed.gz
 [`sort-bed`](/docs/cli#jbrowse-sort-bed) keeps the `#` header on top and sorts
 the rest under `LC_ALL=C`, so the adapter reads the column names off the file
 whatever your locale.
+
+## Load the mm10 assembly
 
 The painting and Manhattan tracks both use the `mm10` assembly, whose chromosome
 names the marker positions follow:
@@ -250,12 +252,10 @@ Manhattan score ([GWAS track guide](/docs/config_guides/gwas_track)):
 
 ## Facet the strains by coat color at Tyrp1
 
-The scan has a plateau of tied markers on chr4, whose interval contains _Tyrp1_,
-the brown coat-color gene, and a lower peak on chr9. GeneNetwork scores coat
-color on a four-step scale: black is 4, grey 3, brown 2 and DBA/2's dilute
-brown 1. We'll fetch each strain's score and turn the four values into four
-sections of painting rows, so the rows are ordered by phenotype and the painted
-genotypes may or may not agree with it.
+GeneNetwork scores coat color on a four-step scale: black is 4, grey 3, brown 2
+and DBA/2's dilute brown 1. We'll fetch each strain's score and turn the four
+values into four sections of painting rows, so the rows are ordered by
+phenotype.
 
 The scores come from GeneNetwork's sample-data API. `jq` turns them into one
 [`rows.groups`](/docs/config/markrows/#slot-groups) entry per score, a regex
@@ -278,7 +278,13 @@ jq '{ "4": ["black", "rgb(30,30,30)"], "3": ["grey", "rgb(150,150,160)"],
 ```
 
 Put `groups` and `color` inside the painting's `rows`, and add `facet: "group"`
-beside it:
+beside it. This `jq` call prints the keys in the shape the display entry takes,
+ready to paste into **Advanced → Edit plot...** in the painting's track menu,
+which shows the display's keys as text and applies edits live:
+
+```bash
+jq '{ facet: "group", rows: ({ field: "sample" } + .) }' coatColor.json
+```
 
 - `rows.groups` tags each strain with its coat color as its `group`.
 - `facet: "group"` splits the display into one section per `group`, black at the
@@ -288,57 +294,8 @@ beside it:
   strain's coat color. The blocks keep their genotype colors, and the unscored
   strains, with no group, get no color.
 
-The fence below holds those keys as the display entry takes them, `groups` and
-`color` inside `rows` and `facet` added.
 `https://jbrowse.org/code/jb2/main/test_data/config_bxd.json` holds the whole
 track, as `bxd_chromosome_painting_mm10`.
-
-**Advanced → Edit plot...** in the track menu shows these keys as text and
-applies edits live.
-
-<details>
-<summary>The coat-color keys on the display entry</summary>
-
-```json
-{
-  "facet": "group",
-  "rows": {
-    "field": "sample",
-    "color": {
-      "field": "group",
-      "scale": {
-        "domain": ["black", "grey", "brown", "dilute brown"],
-        "range": [
-          "rgb(30,30,30)",
-          "rgb(150,150,160)",
-          "rgb(130,80,40)",
-          "rgb(210,175,130)"
-        ]
-      }
-    },
-    "groups": [
-      {
-        "match": "^(BXD100|BXD105|BXD109|BXD11|BXD110|BXD116|BXD119|BXD120|BXD121|BXD123|BXD124|BXD125|BXD128a|BXD131|BXD133|BXD136|BXD14|BXD142|BXD145|BXD148|BXD149|BXD151|BXD152|BXD153|BXD154|BXD156|BXD165|BXD171|BXD173|BXD186|BXD190|BXD191|BXD199|BXD2|BXD20|BXD204|BXD207|BXD210|BXD217|BXD218|BXD219|BXD23|BXD31|BXD32|BXD34|BXD35|BXD42|BXD43|BXD48|BXD48a|BXD50|BXD51|BXD56|BXD86|BXD87)$",
-        "group": "black"
-      },
-      {
-        "match": "^(BXD101|BXD117|BXD12|BXD122|BXD130|BXD135|BXD139|BXD141|BXD144|BXD146|BXD147|BXD155|BXD157|BXD16|BXD162|BXD169|BXD172|BXD174|BXD175|BXD176|BXD178|BXD18|BXD180|BXD181|BXD183|BXD184|BXD19|BXD198|BXD202|BXD205|BXD208|BXD211|BXD212|BXD215|BXD22|BXD29|BXD33|BXD38|BXD39|BXD40|BXD49|BXD5|BXD6|BXD76|BXD79|BXD8|BXD94)$",
-        "group": "grey"
-      },
-      {
-        "match": "^(BXD102|BXD104|BXD106|BXD108|BXD111|BXD114|BXD115|BXD126|BXD127|BXD128|BXD13|BXD132|BXD134|BXD15|BXD150|BXD177|BXD192|BXD193|BXD194|BXD195|BXD196|BXD197|BXD200|BXD203|BXD209|BXD24|BXD24a|BXD25|BXD27|BXD28|BXD36|BXD52|BXD53|BXD55|BXD59|BXD60|BXD62|BXD65|BXD65a|BXD66|BXD68|BXD72|BXD74|BXD78|BXD88)$",
-        "group": "brown"
-      },
-      {
-        "match": "^(BXD1|BXD107|BXD112|BXD113|BXD138|BXD160|BXD161|BXD168|BXD170|BXD187|BXD188|BXD189|BXD201|BXD206|BXD21|BXD216|BXD220|BXD30|BXD44|BXD45|BXD61|BXD63|BXD64|BXD65b|BXD67|BXD69|BXD70|BXD71|BXD73|BXD73a|BXD73b|BXD75|BXD77|BXD81|BXD83|BXD84|BXD85|BXD89|BXD9|BXD90|BXD91|BXD93|BXD95|BXD98|BXD99)$",
-        "group": "dilute brown"
-      }
-    ]
-  }
-}
-```
-
-</details>
 
 With the coat-color sections in place:
 
@@ -348,17 +305,13 @@ With the coat-color sections in place:
 
 <Figure src="/img/qtl/bxd_tyrp1_locus.png" caption="chr4 with the painting's rows banded by coat color, B in blue and D in red."/>
 
-Under the peak, black and grey strains have B6's copy of _Tyrp1_ and brown and
-dilute brown strains have DBA/2's; the rest of chr4 is the control, with no
-coat-color gene.
-
-## Open the chr9 peak at Myo5a with the same bands
+## Repeat the coat-color facets at the chr9 peak
 
 The chr9 peak falls on _Myo5a_, the dilute locus (its mutation lightens coat
 color). Open chr9 with the same grouped painting, and filter the gene track to
-_Myo5a_ the same way, where the sections split the other way:
+_Myo5a_ the same way:
 
-<Figure src="/img/qtl/bxd_myo5a_locus.png" caption="chr9, banded the same way. Under the peak the black and brown bands are blue, the grey and dilute brown bands red."/>
+<Figure src="/img/qtl/bxd_myo5a_locus.png" caption="chr9, banded the same way."/>
 
 ## Reproduce it end to end
 
@@ -379,7 +332,8 @@ bash bxd_build_demo.sh            # builds ./bxd_demo/jbrowse2
 npx --yes serve bxd_demo/jbrowse2 # then open the printed URL
 ```
 
-Any GeneNetwork trait id works in place of `11280`.
+Any GeneNetwork trait id works in place of `11280` for the scan; the coat-color
+groups and facets are specific to that trait.
 
 ## See also
 
