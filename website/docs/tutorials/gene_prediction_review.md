@@ -67,12 +67,12 @@ takes your own prediction, annotation and genome in their place.
 
 </details>
 
-## Load both annotations at the IL17REL-TTLL8 merge
+## Load both annotations over a merged model
 
 We'll load the GRCh38 sequence the predictions were made on, then the two
-annotations. Each annotation is a GFF3 that is bgzipped, sorted and
-tabix-indexed with its `.tbi` beside it
-([prep](/docs/quickstart_web#gff3-and-gtf)), and uses the assembly's refNames.
+annotations. Each annotation is a GFF3
+[bgzipped, sorted and tabix-indexed](/docs/quickstart_web#gff3-and-gtf) with its
+`.tbi` beside it, and uses the assembly's refNames.
 
 ```json addassembly genome=hg38
 {
@@ -107,11 +107,9 @@ genes, so the `geneLike` filter keeps the genes and their transcripts:
 }
 ```
 
-Open the two annotations together at `chr22:49,987,402-50,067,759`. Tiberius
-predicts one model, `g14001.t1`, across most of the window, where GENCODE
-annotates two genes with a gap between them. GENCODE's gene features have
-`gene_name` and no `Name`, so the track labels them by accession,
-`ENSG00000188263` for _IL17REL_ and `ENSG00000138892` for _TTLL8_.
+Open the two annotations together at `chr22:49,987,402-50,067,759`. GENCODE's
+gene features have `gene_name` and no `Name`, so the track labels them by
+accession, `ENSG00000188263` for _IL17REL_ and `ENSG00000138892` for _TTLL8_.
 
 <Figure src="/img/gene_prediction_merge.png" caption="One Tiberius model spans IL17REL and TTLL8, which GENCODE annotates as two genes." />
 
@@ -129,14 +127,13 @@ classes of disagreement. Only the four disagreement classes get a card.
 | Novel locus        | predicted where the reference annotates nothing                   | 12<!--m:tiberius-chr22-classes.novel-locus.models-->       | assess, then create      |
 | Novel coding       | predicted coding where the reference has only non-coding features | 119<!--m:tiberius-chr22-classes.novel-coding.models-->     | assess coding potential  |
 
-The portal applies these rules, and _PI4KA_ is the control that tests them:
+The portal applies these rules:
 
 - **A shared junction** is an intron of one of the gene's transcripts.
 - **Exons are compared** with genes on the same strand.
 - **A merge** counts only when the genes it joins do not overlap each other.
   _PI4KA_ is on the minus strand with _SERPIND1_ inside one of its introns on
-  the plus strand; Tiberius predicts _PI4KA_ correctly, and the portal leaves it
-  off the list.
+  the plus strand, and the portal leaves it off the list.
 - **GENCODE readthrough genes** (one transcript spanning two neighbours) such as
   `CHKB-CPT1B` overlap the genes they join, so the portal skips them.
 
@@ -162,9 +159,9 @@ or a URL; for the chr22 example, pass the three URLs from the data table:
 # add --aliases <file> when the annotations and the FASTA name chromosomes
 #   differently (chr22 against 22)
 node bin/make-portal.mjs \
-  --prediction predictions.gff3.gz \
-  --reference reference.gff3.gz \
-  --fasta genome.fa.gz \
+  --prediction https://jbrowse.org/genomes/GRCh38/tiberius_grch38.gff.gz \
+  --reference https://jbrowse.org/genomes/GRCh38/gencode/gencode.v47.chr_patch_hapl_scaff.annotation.sorted.gff3.gz \
+  --fasta https://jbrowse.org/genomes/GRCh38/fasta/hg38.prefix.fa.gz \
   --assembly hg38 --region chr22 --max 3 \
   --with-app --out ./portal
 ```
@@ -177,8 +174,9 @@ and in the links; repeat it for more BAMs, and label each with `--rnaseq-name`.
 Reads across the exons of a novel locus support it as a gene.
 
 The [example portal](https://jbrowse.org/demos/tiberius_review/) is this build
-run against the hg38 hub's GENCODE 49, with `--rnaseq` on Human Brain Reference
-and Universal Human Reference BAMs from the
+run against the hg38 hub's GENCODE 49, so its counts differ from the table's,
+with `--rnaseq` on Human Brain Reference and Universal Human Reference BAMs from
+the
 [Griffith lab's RNA-seq course data](https://genomedata.org/rnaseq-tutorial/results/alignments/hisat/).
 
 ## Review each card and record a verdict
@@ -201,15 +199,15 @@ The page keeps verdicts in your browser. **Export** writes them out as TSV, and
 ## Read the moved junctions in the Disagreements track
 
 Every capture and live link has a **Disagreements** track under the prediction,
-with one box per junction that differs from the reference, labelled with what
+with one box per junction that differs from the reference, labeled with what
 moved:
 
 ```text
 g13605.t1:donor-1048
 ```
 
-`g13605.t1` covers _CCDC116_ with two exons. Its acceptor matches GENCODE, and
-its donor is 1,048 bp from any _CCDC116_ donor.
+The label reads donor-1048: the donor is 1,048 bp from the nearest reference
+donor.
 
 The track reads `data/conflicts.bed`, plain BED6 that `bedtools` also reads. The
 file also lists junction edits in models filed as Agrees (a model sharing four
