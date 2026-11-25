@@ -7,12 +7,9 @@ guide_category: Tutorials
 tutorial_category: Cancer genomics
 ---
 
-Breast tumors of one subtype tend to have point mutations in the same genes. The
-[copy-number cohort](/docs/tutorials/tcga_cohort_cnv) sorts the TCGA breast
-tumors by amplification; the groups the segments do not separate show in their
-point mutations. We turn the project's somatic mutation calls into one matrix,
-each column a distinct mutation and each row a tumor, and read it at _CDH1_ and
-_PIK3CA_. We:
+A cohort's somatic point mutations read well as one matrix, each column a
+distinct mutation and each row a tumor. We turn the TCGA-BRCA somatic mutation
+calls into that matrix and read it at _CDH1_ and _PIK3CA_. We:
 
 - load the cohort VCF, merged from the GDC's mutation files, as a multi-sample
   variant track in matrix layout
@@ -58,8 +55,9 @@ own calls.
 
 ## Load the cohort VCF into JBrowse
 
-Add the assembly first. The hosted FASTA names its contigs bare (`1`) while the
-VCF uses `chr1`, so pass the alias file to map one onto the other.
+We'll start by adding the assembly. The hosted FASTA names its contigs bare
+(`1`) while the VCF uses `chr1`, so we pass the alias file to map one onto the
+other.
 
 ```json addassembly genome=hg38
 {
@@ -122,8 +120,6 @@ Its columns come from three places:
 - `subtype` is derived from those three; a tumor whose receptor calls do not
   resolve it stays `unknown`
 
-The table lists more tumors than the mutation track draws.[^unmatched]
-
 The cohort is a `VariantTrack` whose adapter reads the clinical TSV, shown in
 the multi-sample matrix display:
 
@@ -131,7 +127,7 @@ the multi-sample matrix display:
 {
   "type": "VariantTrack",
   "trackId": "tcga_brca_mutations",
-  "name": "TCGA-BRCA somatic mutations (979 primary tumors)",
+  "name": "TCGA-BRCA somatic mutations",
   "assemblyNames": ["hg38"],
   "category": ["TCGA"],
   "adapter": {
@@ -142,27 +138,16 @@ the multi-sample matrix display:
       "uri": "https://jbrowse.org/demos/tcga/tcga_brca_clinical.tsv"
     }
   },
-  "displays": [
-    {
-      "type": "LinearVariantDisplay",
-      "variantLayout": "columns",
-      "height": 1010,
-      "encoding": { "color": "impact" }
-    }
-  ]
+  "displayDefaults": {
+    "variantLayout": "columns",
+    "height": 1010,
+    "encoding": { "color": "impact" }
+  }
 }
 ```
 
-The track config sets three things:
-
-- [`variantLayout: 'columns'`](/docs/user_guides/multivariant_track#matrix-best-for-snpindel-patterns)
-  uses one column per mutation, so a gene's mutations pack together however far
-  apart they sit, with a connector band from each column to its position
-- [`encoding.color`](/docs/config/variantcellencoding/#slot-color) is a color
-  scale, and its `field` set to `impact` colors each cell by its VEP impact tier
-  from `CSQ`, the same as **Color by → Consequence impact** in the track menu
-- [`samplesTsvLocation`](/docs/config/vcftabixadapter/#slot-samplestsvlocation)
-  makes the clinical columns available to facet and color rows by
+[`samplesTsvLocation`](/docs/config/vcftabixadapter/#slot-samplestsvlocation)
+makes the clinical columns available to facet and color rows by.
 
 The display divides [`height`](/docs/config/linearvariantdisplay/#slot-height)
 among the rows, so each row is about a pixel tall and a band's mutation density
@@ -183,7 +168,7 @@ row's label bar, so the gutter shows the matching color strip.
 {
   "type": "VariantTrack",
   "trackId": "tcga_brca_mutations",
-  "name": "TCGA-BRCA somatic mutations (979 primary tumors)",
+  "name": "TCGA-BRCA somatic mutations",
   "assemblyNames": ["hg38"],
   "category": ["TCGA"],
   "adapter": {
@@ -194,17 +179,14 @@ row's label bar, so the gutter shows the matching color strip.
       "uri": "https://jbrowse.org/demos/tcga/tcga_brca_clinical.tsv"
     }
   },
-  "displays": [
-    {
-      "type": "LinearVariantDisplay",
-      "variantLayout": "columns",
-      "height": 450,
-      "connectors": { "height": 130 },
-      "encoding": { "color": "impact" },
-      "facet": { "field": "histology", "sort": ["ductal", "lobular"] },
-      "rows": { "color": "histology" }
-    }
-  ]
+  "displayDefaults": {
+    "variantLayout": "columns",
+    "height": 450,
+    "connectors": { "height": 130 },
+    "encoding": { "color": "impact" },
+    "facet": { "field": "histology", "sort": ["ductal", "lobular"] },
+    "rows": { "color": "histology" }
+  }
 }
 ```
 
@@ -217,21 +199,16 @@ We open the matrix over _CDH1_'s exons (see [](/docs/user_guides/gene_track)):
 
 <Figure caption="CDH1's exons, rows grouped and colored by histology, cells colored by VEP impact." src="/img/tcga/mutations_cdh1_histology.png" />
 
-Loss of E-cadherin, the protein _CDH1_ encodes, is the defining lesion of
-lobular breast cancer
-([Ciriello et al. 2015](https://doi.org/10.1016/j.cell.2015.09.033)).
-
-## Facet rows by receptor subtype
+## Facet the rows by receptor subtype
 
 With `facet` and `rows.color` set to `subtype` instead, the rows form bands by
-receptor status ([TCGA 2012](https://doi.org/10.1038/nature11412)), with the
-HR+/HER2- band first in `sort`:
+receptor status, with the HR+/HER2- band first in `sort`:
 
 ```json addtrack loc=chr3:179,148,000-179,240,500
 {
   "type": "VariantTrack",
   "trackId": "tcga_brca_mutations",
-  "name": "TCGA-BRCA somatic mutations (979 primary tumors)",
+  "name": "TCGA-BRCA somatic mutations",
   "assemblyNames": ["hg38"],
   "category": ["TCGA"],
   "adapter": {
@@ -242,28 +219,23 @@ HR+/HER2- band first in `sort`:
       "uri": "https://jbrowse.org/demos/tcga/tcga_brca_clinical.tsv"
     }
   },
-  "displays": [
-    {
-      "type": "LinearVariantDisplay",
-      "variantLayout": "columns",
-      "height": 450,
-      "connectors": { "height": 130 },
-      "encoding": { "color": "impact" },
-      "facet": {
-        "field": "subtype",
-        "sort": ["HR+/HER2-", "HER2+", "triple-negative"]
-      },
-      "rows": { "color": "subtype" }
-    }
-  ]
+  "displayDefaults": {
+    "variantLayout": "columns",
+    "height": 450,
+    "connectors": { "height": 130 },
+    "encoding": { "color": "impact" },
+    "facet": {
+      "field": "subtype",
+      "sort": ["HR+/HER2-", "HER2+", "triple-negative"]
+    },
+    "rows": { "color": "subtype" }
+  }
 }
 ```
 
 The bottom band is the tumors whose receptor calls do not resolve a subtype.
 
-With its introns collapsed the same way, _PIK3CA_ shows its calls piled on three
-columns: H1047R in the kinase domain, and E542K and E545K side by side in the
-helical domain. All three run through every band, densest in HR+/HER2-.
+Collapse _PIK3CA_'s introns the same way.
 
 <Figure caption="PIK3CA's exons, rows banded and colored by receptor subtype." src="/img/tcga/mutations_pik3ca_grouped.png" />
 
@@ -272,9 +244,7 @@ helical domain. All three run through every band, densest in HR+/HER2-.
 The bands above differ in height, so their darkness does not compare as a rate.
 [`mutation_recurrence.py`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/mutation_recurrence.py)
 writes one interval per gene, valued as the percent of each group with a
-mutation. It takes the same `SAMPLES.tsv:COLUMN` group spec as the copy-number
-cohort's
-[`cnv_recurrence.py`](/docs/tutorials/tcga_cohort_cnv#add-a-recurrence-track):
+mutation. It takes a `SAMPLES.tsv:COLUMN` group spec:
 
 <!-- from: scripts/build_tcga_cohort_mutations.sh -->
 
@@ -314,17 +284,13 @@ per group.
 }
 ```
 
-Across the genome, each row's spikes are the genes mutated most often in that
-subtype.
-
 <Figure caption="Mutation rate per gene across the genome, one row per receptor subtype." src="/img/tcga/mutation_recurrence_genome.png" />
 
 Open the track above the matrix to read each band's rate over it.
 
 `--impact` sets what counts as a hit, defaulting to the HIGH and MODERATE tiers
-of the consequence impact that colors the matrix. The rate has no background
-model, and gene length enters directly: _TTN_, a very long gene, ranks near the
-top on passenger mutations alone.
+of the consequence impact that colors the matrix. A long gene such as _TTN_
+collects more hits.
 
 On the matrix:
 
@@ -411,7 +377,3 @@ project.
 - [GDC Data Portal](https://portal.gdc.cancer.gov/)
 - [GDC MAF format](https://docs.gdc.cancer.gov/Data/File_Formats/MAF_Format/)
 - [TCGA publication guidelines](https://www.cancer.gov/ccg/research/genome-sequencing/tcga/using-tcga-data/citing)
-
-[^unmatched]:
-    A case with no mutation calls still has receptor status. JBrowse reports the
-    unmatched tumors when the track loads.
