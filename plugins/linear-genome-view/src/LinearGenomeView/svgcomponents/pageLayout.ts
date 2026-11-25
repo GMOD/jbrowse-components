@@ -58,24 +58,26 @@ function isSvgExportable<T extends object>(
 
 /**
  * The px an export keeps clear around its tracks. A figure sized for a page
- * keeps its left margin only for a y axis drawn there and a thin edge
- * elsewhere, where one sized in px keeps `exportMargin` on every side.
+ * keeps a thin edge, where one sized in px keeps `exportMargin` on every side.
+ * The left margin also holds whatever part of a y axis the track-label gutter
+ * `labelGutter` does not: an exported left axis stands its spine on the
+ * plot's edge and grows its gutter out over the label gutter, then the margin.
  */
 export function exportMargins(
   displays: SvgExportTrack['displays'],
   forPage: boolean,
+  labelGutter = 0,
 ) {
+  const edge = forPage ? PAGE_EDGE_PX : exportMargin
   const axisGutter = max(
     displays.map(display => leftAxisGutterWidth(display.axes ?? [])),
     0,
   )
-  return forPage
-    ? {
-        left: Math.max(PAGE_EDGE_PX, axisGutter),
-        right: PAGE_EDGE_PX,
-        bottom: PAGE_EDGE_PX,
-      }
-    : { left: exportMargin, right: exportMargin, bottom: exportMargin }
+  return {
+    left: Math.max(edge, axisGutter - labelGutter),
+    right: edge,
+    bottom: edge,
+  }
 }
 
 /**
@@ -89,7 +91,6 @@ function exportChromeWidth(subject: PageLayoutSubject, opts: ExportSvgOptions) {
   const theme = session.getActiveThemeOptions?.(opts.themeName)
   const tracks = subject.views.flatMap(renderedTracks)
   const displays = tracks.map(track => track.displays[0]!)
-  const margins = exportMargins(displays, true)
   const labelGutter = trackLabelLeftOffset({
     tracks,
     trackLabels,
@@ -97,6 +98,7 @@ function exportChromeWidth(subject: PageLayoutSubject, opts: ExportSvgOptions) {
     fontFamily: opts.fontFamily,
     session,
   })
+  const margins = exportMargins(displays, true, labelGutter)
   const legendGutter = max(
     [
       ...displays.map(display =>

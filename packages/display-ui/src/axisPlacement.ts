@@ -74,24 +74,30 @@ export function axisGutterWidth(axis: Pick<YAxis, 'ticks' | 'caption'>) {
 }
 
 /**
- * Px the export's left margin holds for these axes, 0 when no left-side axis
- * draws. `axisGutterLeft` puts every left axis's outer edge this far out, a
- * wider gutter growing inward over the plot, so a sidebar the export parks left
- * of the figure sits past this strip.
+ * Px left of the plot an export's left-side axes take, 0 when none draws: the
+ * widest of their gutters, since `axisGutterLeft` stands each one's spine on
+ * the plot's edge with its gutter growing outward. A sidebar the export parks
+ * left of the figure sits past this strip.
  */
 export function leftAxisGutterWidth(
-  axes: readonly Pick<YAxis, 'side' | 'height' | 'bandTops' | 'showAxis'>[],
+  axes: readonly Pick<
+    YAxis,
+    'side' | 'height' | 'bandTops' | 'showAxis' | 'ticks' | 'caption'
+  >[],
 ) {
-  return axes.some(axis => axis.side !== 'right' && axisDrawn(axis))
-    ? AXIS_GUTTER_WIDTH_PX
-    : 0
+  return Math.max(
+    0,
+    ...axes
+      .filter(axis => axis.side !== 'right' && axisDrawn(axis))
+      .map(axisGutterWidth),
+  )
 }
 
 /**
  * Whether an axis's numbers grow rightward from its spine: on screen every
  * axis's do, facing the plot, and in an export a right-side axis's do, inside
- * the plot's right edge. An exported left-side axis grows them leftward into
- * the export margin, which is the gutter, with the panel parked past it.
+ * the plot's right edge. An exported left-side axis grows them leftward, out
+ * of the plot, with the panel parked past its gutter.
  */
 export function numbersGrowRight(axis: Pick<YAxis, 'side'>, exported = false) {
   return axis.side === 'right' || !exported
@@ -156,9 +162,9 @@ export const AXIS_RIGHT_INSET_PX = 4
  * gutter inside the plot's right edge, less `rightInset` (the vertical
  * scrollbar a display may mount on screen; a margin in an export). A left-side
  * axis takes the gutter at the display's left edge, past whatever panel the
- * scale's `left` reserves and `ONSCREEN_LEFT_AXIS_INSET_PX` — except in an export, whose margin is the gutter:
- * the export parks that panel left of the margin, so the axis sits between
- * the two with its numbers outside the plot.
+ * scale's `left` reserves and `ONSCREEN_LEFT_AXIS_INSET_PX` — except in an
+ * export, where the gutter ends at the plot's edge, the spine on that edge
+ * and the numbers outside the plot, and the export parks the panel past it.
  */
 export function axisGutterLeft(
   axis: Pick<YAxis, 'side' | 'left' | 'ticks' | 'caption'>,
@@ -170,6 +176,6 @@ export function axisGutterLeft(
     return width - rightInset - axisGutterWidth(axis)
   }
   return exportContentLeft !== undefined
-    ? exportContentLeft - AXIS_GUTTER_WIDTH_PX
+    ? exportContentLeft - axisGutterWidth(axis)
     : (axis.left ?? 0) + ONSCREEN_LEFT_AXIS_INSET_PX
 }

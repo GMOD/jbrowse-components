@@ -1,4 +1,5 @@
 import { measureText } from '@jbrowse/core/util'
+import { AXIS_GUTTER_WIDTH_PX } from '@jbrowse/display-ui'
 
 import { SVG_SCALEBAR_CAP } from '../consts.ts'
 import {
@@ -177,6 +178,29 @@ describe('trackLabelLeftOffset', () => {
         session,
       }),
     ).toBe(120)
+  })
+
+  it('reserves a left name its gap and the y axis between it and the body', () => {
+    const axis = {
+      domain: [0, 10] as [number, number],
+      scaleType: 'linear' as const,
+      height: 40,
+      ticks: { items: [], yTop: 0, yBottom: 40 },
+      bandTops: [0],
+    }
+    expect(
+      trackLabelLeftOffset({
+        tracks: [
+          {
+            configuration: { name: 'coverage' } as never,
+            displays: [{ axes: [axis] }],
+          },
+        ],
+        trackLabels: 'left',
+        fontSize: 13,
+        session,
+      }),
+    ).toBe(width('coverage') + AXIS_GUTTER_WIDTH_PX)
   })
 
   it('is 0 with no tracks', () => {

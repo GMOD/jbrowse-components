@@ -1,6 +1,9 @@
+import { exportMargin } from '@jbrowse/core/svg/constants'
+import { AXIS_GUTTER_WIDTH_PX } from '@jbrowse/display-ui'
+import { axisGutterWidth } from '@jbrowse/display-ui/axisPlacement'
 import { types } from '@jbrowse/mobx-state-tree'
 
-import { exportLaidOut } from './pageLayout.ts'
+import { exportLaidOut, exportMargins } from './pageLayout.ts'
 
 const SCREEN_WIDTH = 800
 const EXPORT_WIDTH = 500
@@ -116,4 +119,43 @@ test('an export aborted while it lays out never waits on its render', async () =
 
   await expect(exported).rejects.toMatchObject({ name: 'AbortError' })
   expect(layout.layOutAt.mock.calls).toEqual([[EXPORT_WIDTH], [SCREEN_WIDTH]])
+})
+
+function axisDisplay(caption?: string) {
+  const axis = {
+    domain: [0, 1_000_000] as [number, number],
+    scaleType: 'linear' as const,
+    height: 40,
+    ticks: {
+      items: [{ value: 1_000_000, y: 0, label: '1,000,000' }],
+      yTop: 0,
+      yBottom: 40,
+    },
+    bandTops: [0],
+    caption,
+  }
+  return { height: 40, axes: [axis], gutter: axisGutterWidth(axis) }
+}
+
+test('a page export keeps a left margin for a y axis only where no label gutter holds it', () => {
+  const displays = [axisDisplay()]
+  expect(exportMargins(displays, true).left).toBe(AXIS_GUTTER_WIDTH_PX)
+  expect(exportMargins(displays, true, 30).left).toBe(AXIS_GUTTER_WIDTH_PX - 30)
+  expect(exportMargins(displays, true, 120)).toEqual({
+    left: 8,
+    right: 8,
+    bottom: 8,
+  })
+  expect(exportMargins([{ height: 40 }], true).left).toBe(8)
+})
+
+test('an export sized in px keeps its margin on every side, widened for a captioned axis no gutter holds', () => {
+  expect(exportMargins([axisDisplay()], false, 120)).toEqual({
+    left: exportMargin,
+    right: exportMargin,
+    bottom: exportMargin,
+  })
+  const captioned = axisDisplay('depth')
+  expect(captioned.gutter).toBeGreaterThan(exportMargin)
+  expect(exportMargins([captioned], false).left).toBe(captioned.gutter)
 })

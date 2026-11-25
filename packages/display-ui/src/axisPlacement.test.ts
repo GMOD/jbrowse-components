@@ -1,4 +1,10 @@
-import { numbersGrowRight, rightAxisStackInsets } from './axisPlacement.ts'
+import {
+  axisGutterLeft,
+  axisGutterWidth,
+  leftAxisGutterWidth,
+  numbersGrowRight,
+  rightAxisStackInsets,
+} from './axisPlacement.ts'
 import { AXIS_GUTTER_WIDTH_PX } from './yScaleTicks.ts'
 
 import type { AxisSide } from './valueScale.ts'
@@ -47,4 +53,38 @@ test('every axis grows its numbers right on screen, and an exported left-side ax
   }
   expect(numbersGrowRight({ side: 'left' }, true)).toBe(false)
   expect(numbersGrowRight({ side: 'right' }, true)).toBe(true)
+})
+
+const wideTicks = {
+  items: [
+    { value: 0, y: 40 },
+    { value: 1_000_000, y: 0, label: '1,000,000' },
+  ],
+  yTop: 0,
+  yBottom: 40,
+}
+
+function captioned(side: AxisSide) {
+  return { ...axis(side, [0]), ticks: wideTicks, caption: 'coverage' }
+}
+
+test('an exported left-side axis stands its spine on the plot edge however wide its gutter', () => {
+  const contentLeft = 30
+  const wide = captioned('left')
+  expect(axisGutterWidth(wide)).toBeGreaterThan(AXIS_GUTTER_WIDTH_PX)
+  for (const a of [axis('left', [0]), wide]) {
+    expect(axisGutterLeft(a, 800, 4, contentLeft) + axisGutterWidth(a)).toBe(
+      contentLeft,
+    )
+  }
+})
+
+test('the left gutter an export holds is the widest drawn left-side axis', () => {
+  expect(leftAxisGutterWidth([axis('left', [0]), captioned('left')])).toBe(
+    axisGutterWidth(captioned('left')),
+  )
+  expect(leftAxisGutterWidth([axis('left', [0])])).toBe(AXIS_GUTTER_WIDTH_PX)
+  expect(leftAxisGutterWidth([captioned('right'), axis('left', [0], 20)])).toBe(
+    0,
+  )
 })

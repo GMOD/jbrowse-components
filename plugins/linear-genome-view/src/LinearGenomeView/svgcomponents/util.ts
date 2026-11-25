@@ -1,6 +1,7 @@
 import { svgTrackName } from '@jbrowse/core/svg/trackNames'
 import { max, measureText, sum } from '@jbrowse/core/util'
 import { exportedHeight } from '@jbrowse/display-kit/renderDisplaySvg'
+import { leftAxisGutterWidth } from '@jbrowse/display-ui/axisPlacement'
 
 import {
   HEADER_BAR_HEIGHT,
@@ -43,7 +44,7 @@ export interface LgvSvgChromeView {
 type SidebarDisplay = Pick<
   LgvSvgExportable,
   'svgSidebarWidth' | 'svgControlsStrip'
->
+> & { axes?: YAxis[] }
 
 interface TrackHeights {
   displays: ({ height: number; prefersOffset?: boolean } & SidebarDisplay)[]
@@ -56,7 +57,6 @@ interface TrackHeights {
  */
 type SvgRowDisplay = {
   height: number
-  axes?: YAxis[]
   regionTooLarge?: boolean
   drawsGenomicCoordinates?: boolean
   prefersOffset?: boolean
@@ -354,14 +354,21 @@ interface SidebarTrack {
   displays: SidebarDisplay[]
 }
 
-// Gap between a 'left' track label's right edge and the track body.
-// SVGTrackLabel right-aligns its text at `trackLabelOffset - TRACK_LABEL_GAP`,
-// so it and trackLabelLeftOffset must agree or the widest name overflows the
-// gutter it was measured for.
+// Gap between a 'left' track label's right edge and the track body, or the y
+// axis drawn left of it. SVGTrackLabel right-aligns its text at
+// `trackLabelOffset - trackLeftAxisWidth - TRACK_LABEL_GAP`, so it and
+// trackLabelLeftOffset must agree or the widest name overflows the gutter it
+// was measured for.
 export const TRACK_LABEL_GAP = 40
 
+// Px a track's y axes take left of its body.
+export function trackLeftAxisWidth(track: { displays: SidebarDisplay[] }) {
+  return leftAxisGutterWidth(track.displays[0]?.axes ?? [])
+}
+
 // Horizontal gutter left of the track bodies: the widest of each track's
-// sidebar and of each name drawn 'left', plus TRACK_LABEL_GAP. Takes an
+// sidebar and of each name drawn 'left' plus TRACK_LABEL_GAP and the track's
+// left axis. Takes an
 // already-minimized-filtered track list, so the reserved width matches the
 // labels that actually get drawn.
 //
@@ -416,7 +423,9 @@ export function trackLabelGutterWidth({
       Math.max(
         trackSidebarWidth(track, { fontSize, fontFamily }),
         trackLabelMode(track, trackLabels) === 'left'
-          ? measureText(name, fontSize, fontFamily) + TRACK_LABEL_GAP
+          ? measureText(name, fontSize, fontFamily) +
+              TRACK_LABEL_GAP +
+              trackLeftAxisWidth(track)
           : 0,
       ),
     ),

@@ -12,7 +12,7 @@ import type { TrackLabelMode } from '../types.ts'
 
 // Where the label sits, per mode. 'left' right-aligns in the gutter
 // trackLabelLeftOffset reserved (hence the shared TRACK_LABEL_GAP), beside the
-// first row. The other modes hang off the leftmost visible content
+// first row and clear of the y axis left of the body. The other modes hang off the leftmost visible content
 // at `x`, either just above the track body ('offset') or inset over it
 // ('overlapping').
 //
@@ -24,19 +24,21 @@ import type { TrackLabelMode } from '../types.ts'
 function labelPosition({
   trackLabels,
   trackLabelOffset,
+  leftAxisWidth,
   textHeight,
   fontSize,
   x,
 }: {
   trackLabels: TrackLabelMode
   trackLabelOffset: number
+  leftAxisWidth: number
   textHeight: number
   fontSize: number
   x: number
 }): { x: number; y: number; textAnchor?: 'end' } {
   if (trackLabels === 'left') {
     return {
-      x: trackLabelOffset - TRACK_LABEL_GAP,
+      x: trackLabelOffset - leftAxisWidth - TRACK_LABEL_GAP,
       y: insetLabelBaselineY(fontSize),
       textAnchor: 'end',
     }
@@ -57,6 +59,7 @@ export default function SVGTrackLabel({
   fontSize,
   textHeight,
   trackLabelOffset,
+  leftAxisWidth,
   x,
 }: {
   // already run through svgTrackName (HTML stripped)
@@ -65,6 +68,7 @@ export default function SVGTrackLabel({
   fontSize: number
   textHeight: number
   trackLabelOffset: number
+  leftAxisWidth: number
   x: number
 }) {
   const palette = usePalette()
@@ -74,6 +78,7 @@ export default function SVGTrackLabel({
   const pos = labelPosition({
     trackLabels,
     trackLabelOffset,
+    leftAxisWidth,
     textHeight,
     fontSize,
     x,

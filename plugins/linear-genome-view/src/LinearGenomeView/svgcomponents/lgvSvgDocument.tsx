@@ -61,6 +61,7 @@ export function lgvSvgDocument({
   const margins = exportMargins(
     rows.map(row => row.track.displays[0]!),
     physicalWidth !== undefined,
+    trackLabelOffset,
   )
   return wrapSvgExport({
     theme,

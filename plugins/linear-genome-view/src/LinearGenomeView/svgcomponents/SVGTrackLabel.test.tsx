@@ -21,7 +21,11 @@ const TRACK_LABEL_OFFSET = 200
 // leftmost visible content, which the non-gutter modes hang off
 const CONTENT_X = 7
 
-function renderedTexts(trackLabels: TrackLabelMode, fontSize = FONT_SIZE) {
+function renderedTexts(
+  trackLabels: TrackLabelMode,
+  fontSize = FONT_SIZE,
+  leftAxisWidth = 0,
+) {
   const { container } = render(
     <ThemeProvider theme={createJBrowseTheme()}>
       <svg>
@@ -31,6 +35,7 @@ function renderedTexts(trackLabels: TrackLabelMode, fontSize = FONT_SIZE) {
           fontSize={fontSize}
           textHeight={defaultTextHeight(fontSize)}
           trackLabelOffset={TRACK_LABEL_OFFSET}
+          leftAxisWidth={leftAxisWidth}
           x={CONTENT_X}
         />
       </svg>
@@ -63,6 +68,13 @@ test('left right-aligns into the gutter trackLabelLeftOffset reserved', () => {
     String(TRACK_LABEL_OFFSET - TRACK_LABEL_GAP),
   )
   expect(text?.getAttribute('text-anchor')).toBe('end')
+})
+
+test('left ends its gap short of a y axis left of the body', () => {
+  const text = renderedTexts('left', FONT_SIZE, 50).at(-1)
+  expect(text?.getAttribute('x')).toBe(
+    String(TRACK_LABEL_OFFSET - 50 - TRACK_LABEL_GAP),
+  )
 })
 
 // The regression: 'left' used to sit at a hardcoded y=20 on a hanging baseline,

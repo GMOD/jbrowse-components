@@ -7,7 +7,12 @@ import {
 
 import SVGRegionSeparators from './SVGRegionSeparators.tsx'
 import SVGTrackLabel from './SVGTrackLabel.tsx'
-import { labelOffset, trackBoxOffsets, trackLabelMode } from './util.ts'
+import {
+  labelOffset,
+  trackBoxOffsets,
+  trackLabelMode,
+  trackLeftAxisWidth,
+} from './util.ts'
 
 import type { TrackLabelMode } from '../types.ts'
 import type { LgvSvgChromeView, SvgTrackRow } from './util.ts'
@@ -86,6 +91,7 @@ export function SVGTrackRows({
               textHeight={textHeight}
               trackLabels={trackLabelMode(track, trackLabels)}
               trackLabelOffset={trackLabelOffset}
+              leftAxisWidth={trackLeftAxisWidth(track)}
               x={x + trackLabelOffset}
             />
           </g>

@@ -1,10 +1,16 @@
 import { createJBrowseTheme } from '@jbrowse/core/ui'
+import { measureText } from '@jbrowse/core/util'
+import { leftAxisGutterWidth } from '@jbrowse/display-ui/axisPlacement'
 import { createTestSession } from '@jbrowse/web/testUtils'
 import { ThemeProvider } from '@mui/material'
 import { render } from '@testing-library/react'
 
 import { SVGTrackRows } from './SVGTracks.tsx'
-import { TRACK_LABEL_GAP, sessionTrackRows } from './util.ts'
+import {
+  TRACK_LABEL_GAP,
+  sessionTrackRows,
+  trackLabelGutterWidth,
+} from './util.ts'
 
 jest.mock('@jbrowse/web/makeWorkerInstance', () => () => {})
 
@@ -141,4 +147,39 @@ test('a track with no room for a key draws none', () => {
     ],
   })
   expect(container.querySelector('[data-testid="color-legend"]')).toBeNull()
+})
+
+// An exported left axis takes the gutter's last px before the body, its tick
+// labels and caption reaching out to the axis's full width
+test('a left track name ends clear of the y axis left of its body', () => {
+  const axes = [
+    {
+      domain: [0, 10_000] as [number, number],
+      scaleType: 'linear' as const,
+      height: 40,
+      ticks: {
+        items: [{ value: 10_000, y: 0, label: '10,000' }],
+        yTop: 0,
+        yBottom: 40,
+      },
+      bandTops: [0],
+      caption: 'depth',
+    },
+  ]
+  const trackLabelOffset = trackLabelGutterWidth({
+    rows: [{ track: { displays: [{ axes }] }, name: 't0' }],
+    trackLabels: 'left',
+    fontSize: 10,
+  })
+  const label = drawTracks({
+    trackLabels: 'left',
+    trackLabelOffset,
+    textHeight: 20,
+    displays: [{ axes }],
+  }).querySelector('text')!
+  const end = Number(label.getAttribute('x'))
+  expect(end + TRACK_LABEL_GAP).toBeLessThanOrEqual(
+    trackLabelOffset - leftAxisGutterWidth(axes),
+  )
+  expect(end - measureText('t0', 10)).toBeGreaterThanOrEqual(0)
 })
