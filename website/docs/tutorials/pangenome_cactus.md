@@ -10,11 +10,10 @@ tutorial_subcategory: Building a graph
 
 We build a pangenome graph of five _E. coli_ strains with Minigraph-Cactus,
 which lays the other strains onto a backbone from one reference, and turn its
-outputs into tracks on the K12 genome.
-[The pggb tutorial](/docs/tutorials/pangenome_ecoli) builds the same strains
-with no reference and takes them through the same sections, so the two builders
-can be compared section by section. One `cactus-pangenome` run writes the graph,
-a VCF, an odgi file, a HAL alignment and short-read indexes. We:
+outputs into tracks on the K12 genome. The same strains built with pggb go
+through the same sections, so the two builders can be compared section by
+section. One `cactus-pangenome` run writes the graph, a VCF, an odgi file, a HAL
+alignment and short-read indexes. We:
 
 - load the synteny, variants, whole-genome alignment (MAF), depth and per-strain
   presence as tracks on K12, and set both builders' depth in one track
@@ -74,15 +73,15 @@ build local files from them; run [the build script](#reproduce-it-end-to-end)
 first, or follow the same commands on your own assemblies. The script fetches
 the short reads too, and the graph track reads our hosted copy.
 
-| What it is                                                         | File                                                                                                                  |
-| ------------------------------------------------------------------ | --------------------------------------------------------------------------------------------------------------------- |
-| K12                                                                | [GCF_000005845.2_ASM584v2/](https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/000/005/845/GCF_000005845.2_ASM584v2/)       |
-| Sakai                                                              | [GCF_000008865.2_ASM886v2/](https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/000/008/865/GCF_000008865.2_ASM886v2/)       |
-| CFT073                                                             | [GCF_000007445.1_ASM744v1/](https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/000/007/445/GCF_000007445.1_ASM744v1/)       |
-| NCTC86                                                             | [GCF_002007705.1_ASM200770v1/](https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/002/007/705/GCF_002007705.1_ASM200770v1/) |
-| IAI39                                                              | [GCF_000026345.1_ASM2634v1/](https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/000/026/345/GCF_000026345.1_ASM2634v1/)     |
-| KTa004 short reads mapped through the finished graph, forward mate | [DRR063408_1.fastq.gz](https://ftp.sra.ebi.ac.uk/vol1/fastq/DRR063/DRR063408/DRR063408_1.fastq.gz)                    |
-| KTa004 short reads, reverse mate                                   | [DRR063408_2.fastq.gz](https://ftp.sra.ebi.ac.uk/vol1/fastq/DRR063/DRR063408/DRR063408_2.fastq.gz)                    |
+| What it is                                                                | File                                                                                                                  |
+| ------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------- |
+| K12                                                                       | [GCF_000005845.2_ASM584v2/](https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/000/005/845/GCF_000005845.2_ASM584v2/)       |
+| Sakai                                                                     | [GCF_000008865.2_ASM886v2/](https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/000/008/865/GCF_000008865.2_ASM886v2/)       |
+| CFT073                                                                    | [GCF_000007445.1_ASM744v1/](https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/000/007/445/GCF_000007445.1_ASM744v1/)       |
+| NCTC86                                                                    | [GCF_002007705.1_ASM200770v1/](https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/002/007/705/GCF_002007705.1_ASM200770v1/) |
+| IAI39                                                                     | [GCF_000026345.1_ASM2634v1/](https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/000/026/345/GCF_000026345.1_ASM2634v1/)     |
+| KTa004 short reads mapped through the finished graph, forward mate, 80 MB | [DRR063408_1.fastq.gz](https://ftp.sra.ebi.ac.uk/vol1/fastq/DRR063/DRR063408/DRR063408_1.fastq.gz)                    |
+| KTa004 short reads, reverse mate, 95 MB                                   | [DRR063408_2.fastq.gz](https://ftp.sra.ebi.ac.uk/vol1/fastq/DRR063/DRR063408/DRR063408_2.fastq.gz)                    |
 
 <details>
 <summary>Read by URL (no download needed)</summary>
@@ -279,17 +278,14 @@ load unchanged as a [`VariantTrack`](/docs/config_guides/variant_track):
   "name": "MC graph: pangenome variants (vs K12)",
   "uri": "mc/ecoli.vcf.gz",
   "assemblyNames": ["K12"],
-  "displays": [
-    {
-      "type": "LinearVariantDisplay",
-      "variantLayout": "columns",
-      "rows": "haplotype"
-    }
-  ]
+  "displayDefaults": {
+    "variantLayout": "columns",
+    "rows": { "field": "haplotype" }
+  }
 }
 ```
 
-With `rows: "haplotype"` the track draws one row per strain, and with
+With `rows.field: "haplotype"` the track draws one row per strain, and with
 `variantLayout: "columns"` it draws one column per variant. The
 [multi-sample variant track guide](/docs/user_guides/multivariant_track) covers
 columns versus genomic positions, the genotype colors, and clustering samples by
@@ -444,8 +440,9 @@ folds the rrnC and rrnB operons onto each other, and Minigraph-Cactus keeps them
 apart.
 
 To compare the two builders, load both depth curves as rows of one track on a
-fixed axis, and type `chr:3,935,000-3,955,000`, the rrnC operon (a ribosomal RNA
-gene copy):
+fixed axis. `ecoli_pggb_depth.bw` is the depth bigWig the pggb tutorial writes,
+and the track reads our hosted copy. Type `chr:3,935,000-3,955,000`, the rrnC
+operon (a ribosomal RNA gene copy):
 
 ```json addtrack
 {
@@ -475,9 +472,6 @@ gene copy):
 ```
 
 <Figure caption="odgi depth over the rrnC operon against each builder's graph, on one axis." src="/img/pangenome_cactus/builders.png" />
-
-pggb's curve doubles to about 10 over the operon. Minigraph-Cactus's curve sits
-near 4 across the whole window, with no rise over the operon.
 
 ## Map a new isolate through the graph
 
@@ -545,7 +539,7 @@ The result loads as an ordinary alignments track:
 
 Turn on **K12 genes** and type `chr:555,000-595,000`. KTa004's reads cover K12
 on either side of the prophage that begins at _intD_ and nearly vanish across
-it, because the prophage is sequence K12 has and KTa004 lacks.
+it.
 
 <Figure caption="KTa004's short reads, mapped through the graph and surjected onto K12, across the prophage that begins at intD." src="/img/pangenome_cactus/reads.png" />
 
@@ -556,8 +550,7 @@ the two derived files before re-mapping.
 ## Load the graph as a graph track {#opening-the-graph-in-the-graph-genome-view}
 
 The [graph genome view plugin](/docs/user_guides/graph_genome_view) draws the
-graph as a track of the linear view. [](/docs/tutorials/pangenome_prepare_graph)
-covers installing the plugin and the commands that index a graph for it.
+graph as a track of the linear view.
 
 ### Index the graph
 
@@ -599,7 +592,10 @@ coarse tier; the `uri` below is our hosted copy.
 Turned on, the track draws the window as a graph on K12's coordinates; **Display
 types → Feature display** in its menu draws the segments as a row.
 
-<Video src="/media/pangenome_cactus/subgraph_launch.mp4" caption="Adding the graph track to an empty K12 session with Open track... → Add pangenome graph track." />
+**File → Open track... → Add pangenome graph track** adds the same track from an
+empty session:
+
+<Video src="/media/pangenome_cactus/subgraph_launch.mp4" caption="Adding the graph track to an empty K12 session with File → Open track... → Add pangenome graph track." />
 
 The index holds an `SB:H:` bitmask of the strains that pass through each
 segment, and a feature track over the same files colors each segment by their
@@ -664,15 +660,13 @@ horizontal axis.
 
 <Figure caption="The graph drawn by odgi viz, one row per strain, on graph node order. The gold band marks the locus the next figure opens." src="/img/pangenome_cactus/graph.png" />
 
-The `odgi pav` track contains the same paths. Drawn on K12's coordinates, in the
-raster's row order and colors, they differ only on the horizontal axis. The gold
-band marks `chr:1,000,000-1,100,000` in both.
+The `odgi pav` track contains the same paths, drawn on K12's coordinates. The
+gold band marks `chr:1,000,000-1,100,000` in both.
 
 <Figure caption="The same paths and colors on K12's coordinates." src="/img/pangenome_cactus/graph_correspondence.png" />
 
 The graph axis is in pangenome bases, so a locus where other strains have
-sequence K12 lacks takes up more of it. The band contains Sakai's _stx2_
-prophage and a second Sakai-only stretch.
+sequence K12 lacks takes up more of it.
 
 ## Reproduce it end to end
 
