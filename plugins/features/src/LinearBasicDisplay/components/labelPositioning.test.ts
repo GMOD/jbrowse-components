@@ -12,6 +12,7 @@ import {
   labelCullBand,
   labelScrollBucket,
   labelStackHeightPx,
+  labelsWithinEdges,
   viewportBand,
 } from './labelPositioning.ts'
 
@@ -737,4 +738,40 @@ describe('the reservation and the ink agree', () => {
       }
     },
   )
+})
+
+describe('labelsWithinEdges', () => {
+  const name = (labelX: number): ResolvedLabel => ({
+    label: { text: 'GENE1', textWidth: 30 },
+    labelX,
+    labelY: 0,
+    fontSize: 11,
+    kind: 'name',
+    color: 'black',
+  })
+  const badge = (labelX: number): ResolvedLabel => ({
+    label: { text: '+3', textWidth: 10, hidden: 3, expanded: false },
+    labelX,
+    labelY: 0,
+    kind: 'more',
+    color: 'grey',
+  })
+  const edges = { right: 100, bottom: 50 }
+  const nameWidth = measureText('GENE1', 11, 'sans-serif')
+
+  test('keeps a name and badge that end inside the edges', () => {
+    const labels = [name(0), badge(nameWidth + 4)]
+    expect(labelsWithinEdges(labels, edges, 11, 'sans-serif')).toEqual(labels)
+  })
+
+  test('drops the badge with a name the right edge would cut', () => {
+    expect(
+      labelsWithinEdges(
+        [name(100 - nameWidth / 2), badge(0)],
+        edges,
+        11,
+        'sans-serif',
+      ),
+    ).toEqual([])
+  })
 })

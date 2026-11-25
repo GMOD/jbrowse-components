@@ -1,3 +1,4 @@
+import { measureText } from '@jbrowse/core/util/measureText'
 import { originTailId } from '@jbrowse/core/util/originCut'
 import { makeBpMapper } from '@jbrowse/render-core/canvas2dUtils'
 
@@ -5,6 +6,7 @@ import {
   LABEL_EDGE_GUTTER_PX,
   LABEL_PADDING_PX,
   LABEL_TOP_GAP_PX,
+  MORE_ISOFORMS_FONT_SCALE,
   OVERLAY_LABEL_MIN_FONT_PX,
   renderedTextWidth,
 } from '../../RenderFeatureDataRPC/constants.ts'
@@ -383,6 +385,37 @@ export function placeFeatureLabels(
     add(subfeatureLabel, 0, 'sub')
   }
   return out
+}
+
+/**
+ * The labels whose box, measured in `fontFamily`, ends inside `right` and
+ * `bottom`, the export's mirror of `placeFeatureLabels` dropping a label that
+ * would start left of the view: a figure has no scrolling to bring a cut label
+ * whole, so it draws none. A badge goes with its name.
+ */
+export function labelsWithinEdges(
+  labels: ResolvedLabel[],
+  { right, bottom }: { right: number; bottom: number },
+  fontSize: number,
+  fontFamily: string,
+) {
+  let nameKept = false
+  return labels.filter(placed => {
+    const size =
+      placed.kind === 'more'
+        ? fontSize * MORE_ISOFORMS_FONT_SCALE
+        : placed.fontSize
+    const lineSize = placed.kind === 'more' ? fontSize : placed.fontSize
+    const width = measureText(placed.label.text, size, fontFamily)
+    const kept =
+      placed.labelX + width < right + 0.5 &&
+      placed.labelY + lineSize < bottom + 0.5 &&
+      (placed.kind !== 'more' || nameKept)
+    if (placed.kind === 'name') {
+      nameKept = kept
+    }
+    return kept
+  })
 }
 
 export function forEachRenderedLabel(

@@ -1,6 +1,7 @@
 import React from 'react'
 
 import { createJBrowseTheme, legendSpecOf } from '@jbrowse/core/ui'
+import { measureText } from '@jbrowse/core/util/measureText'
 import { SvgLegend } from '@jbrowse/display-kit/renderDisplaySvg'
 import { ThemeProvider } from '@mui/material'
 import { renderToString } from 'react-dom/server'
@@ -448,7 +449,7 @@ describe('renderSvg', () => {
           makeFlatbushItem({ featureId, startBp: 1400, endBp: 1600 }),
         ),
         floatingLabelsData: labelsMap({
-          a: at('a', 90, 'AT-EDGE'),
+          a: at('a', 70, 'AT-EDGE'),
           b: at('b', 300, 'BELOW-FOLD'),
           c: at('c', 1000, 'FAR-BELOW'),
         }),
@@ -474,5 +475,48 @@ describe('renderSvg', () => {
     expect(scrolled).not.toContain('AT-EDGE')
     expect(scrolled).toContain('>Q<')
     expect(scrolled).not.toContain('>W<')
+  })
+
+  // 1000bp over 800px: a feature at 1900-1960bp spans 720-768px, and a name
+  // the baked width says fits it runs past the view's 800px right edge in the
+  // export's font. One at 80px below a 100px display starts 2px from the
+  // bottom. Neither is drawn cut.
+  it('drops a label the right or bottom edge of the export would cut', async () => {
+    const cutRight = 'CUT AT THE RIGHT EDGE OF THE VIEW'
+    expect(
+      720 + measureText(cutRight, LABEL_FONT_SIZE, 'sans-serif'),
+    ).toBeGreaterThan(800)
+    const feature = (
+      featureId: string,
+      minX: number,
+      maxX: number,
+      topY: number,
+      text: string,
+    ) => ({
+      featureId,
+      minX,
+      maxX,
+      topY,
+      featureHeight: 10,
+      nameLabel: { text, textWidth: 40 },
+    })
+    const data = makeFeatureData({
+      ...packFixtureRects([{ startBp: 1400, endBp: 1600 }]),
+      flatbushItems: ['whole', 'right', 'bottom'].map(featureId =>
+        makeFlatbushItem({ featureId, startBp: 1400, endBp: 1600 }),
+      ),
+      floatingLabelsData: labelsMap({
+        whole: feature('whole', 1400, 1600, 0, 'WHOLE'),
+        right: feature('right', 1900, 1960, 0, cutRight),
+        bottom: feature('bottom', 1400, 1600, 80, 'CUT AT THE BOTTOM'),
+      }),
+      featureCount: 3,
+    })
+    const html = renderResult(
+      await renderSvg(makeModel({ laidOutDataMap: new Map([[0, data]]) })),
+    )
+    expect(html).toContain('WHOLE')
+    expect(html).not.toContain(cutRight)
+    expect(html).not.toContain('CUT AT THE BOTTOM')
   })
 })

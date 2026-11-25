@@ -11,6 +11,7 @@ import { labelColors } from './components/labelColors.ts'
 import {
   exactCullBand,
   forEachDisplayLabel,
+  labelsWithinEdges,
   viewportBand,
 } from './components/labelPositioning.ts'
 import { paintLabels } from './components/paintLabels.ts'
@@ -78,6 +79,7 @@ function FeaturesSvgBody({
   )
   const labelBand = exactCullBand(scrollY, height, fontSize)
   const peptideBand = viewportBand(scrollY, height)
+  const labelEdges = { right: canvasWidth, bottom: scrollY + height }
 
   return (
     <>
@@ -111,7 +113,12 @@ function FeaturesSvgBody({
               model.laidOutDataMap,
               labelContext,
               (_, labels) => {
-                paintLabels(ctx, labels, fontSize, fontFamily)
+                paintLabels(
+                  ctx,
+                  labelsWithinEdges(labels, labelEdges, fontSize, fontFamily),
+                  fontSize,
+                  fontFamily,
+                )
               },
               labelBand,
             )
