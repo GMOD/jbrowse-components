@@ -20,13 +20,14 @@ We:
   verdict on each
 - render a three-chromosome rearrangement with `jb2export breakpoint`
 - open a call in JBrowse from its manifest row
+- render the calls of other SV callers
 
 ## Prerequisites
 
 - [`@jbrowse/img`](/docs/jbrowse-img), which puts `jb2export` on your PATH
 - [variant-review-portal](https://github.com/cmdcolin/variant-review-portal),
-  cloned and installed with `pnpm install`, for the review page
-- a JBrowse for [the last section](#opening-a-call-in-the-browser)
+  cloned and installed as below, for the review page
+- a JBrowse for [opening a call in the browser](#opening-a-call-in-the-browser)
   ([Web](/docs/quickstart_web) or [Desktop](/docs/quickstart_desktop))
 
 <!-- BEGIN GENERATED TUTORIAL_INSTALL jbrowse-img -->
@@ -37,13 +38,18 @@ npm install -g @jbrowse/img@next
 
 <!-- END GENERATED TUTORIAL_INSTALL jbrowse-img -->
 
+```bash
+git clone https://github.com/cmdcolin/variant-review-portal
+(cd variant-review-portal && pnpm install)
+```
+
 ## The data
 
 The COLO829 somatic SV callset comes from the ONT open-data release's
 `wf-somatic-variation` run
 ([Valle-Inclán et al. 2022](https://doi.org/10.1016/j.xgen.2022.100139)),
-rehosted alongside the [cancer SV demo](/docs/tutorials/cancer_sv). The first
-command downloads the VCF, and every command streams the reads by URL.
+rehosted on jbrowse.org. The first command downloads the VCF, and every command
+streams the reads by URL.
 
 | What it is                                | File                                                                                       |
 | ----------------------------------------- | ------------------------------------------------------------------------------------------ |
@@ -107,8 +113,8 @@ jb2export batch --sites COLO829.somatic-sv.vcf.gz \
 
 <Figure caption="Rows of the two batch directories, tumor on the left and normal on the right, each labelled with its file name." src="/img/jbrowse-img/sv_callset_sheet.png" />
 
-The caller filed `009_chr1_168055349-chr19_23850381` as somatic, but the normal
-has split reads joining the same two ends, so the junction is germline.
+In the sheet, `009_chr1_168055349-chr19_23850381` has split reads in the normal
+image too.
 
 ## Review the calls as a queue
 
@@ -157,14 +163,11 @@ Each `manifest.tsv` row holds the fields of one image:
   opens the same windows in JBrowse.
 - **`line`** is the record's line in the VCF, to join a row back to the callset.
 
-A dense fan in a region of ragged coverage is usually a repeat, since the view
-draws an arc for a read mismapped there as for any other.
-
 ## Render a three-chromosome rearrangement
 
 COLO829's der(3) contains pieces of chr3, chr10 and chr12, and its reads align
 to all three. We'll render it with `jb2export breakpoint`, one `--loc` per
-panel, then run the same command with `COLO829BL_normal_ont` as the control:
+panel:
 
 ```bash
 # featureHeight:super-compact draws each read 1 px tall
@@ -177,10 +180,19 @@ jb2export breakpoint \
   --width 1000 --out der3_tumor.png
 ```
 
-<Figure caption="COLO829's der(3) loci in separate panels with tumor and normal nanopore reads, and the same loci as one reconstructed contig on the right." src="/img/jbrowse-img/sv_review_pair.png" />
+Run it again with `COLO829BL_normal_ont` as the control:
 
-The [complex rearrangements tutorial](/docs/tutorials/cancer_sv) builds the
-reconstructed contig on the right.
+```bash
+jb2export breakpoint \
+  --config https://jbrowse.org/demos/cancer_sv/config.json --assembly hg38 \
+  --track COLO829BL_normal_ont height:167 force:true featureHeight:super-compact \
+  --loc chr3:25,358,511-25,359,711 \
+  --loc chr10:58,716,962-58,718,162 \
+  --loc chr12:72,272,512-72,273,712 \
+  --width 1000 --out der3_normal.png
+```
+
+<Figure caption="COLO829's der(3) loci in separate panels with tumor and normal nanopore reads, and the same loci as one reconstructed contig on the right." src="/img/jbrowse-img/sv_review_pair.png" />
 
 ## Open a call in the browser {#opening-a-call-in-the-browser}
 
