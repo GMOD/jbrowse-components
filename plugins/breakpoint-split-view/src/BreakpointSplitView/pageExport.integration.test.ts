@@ -58,3 +58,15 @@ test('a px export keeps its window width and margins', async () => {
   const root = rootOf(await view.exportSvg({ save: false }))
   expect(root).toContain('width="900"')
 })
+
+test('an export with no panels fails instead of saving a blank figure', async () => {
+  const session = createTestSession()
+  const view = (await session.launchView(
+    'BreakpointSplitView',
+    {},
+  )) as BreakpointViewModel
+  expect(view.initialized).toBe(true)
+  await expect(view.exportSvg({ save: false })).rejects.toThrow(
+    'Cannot export: no regions are displayed',
+  )
+})

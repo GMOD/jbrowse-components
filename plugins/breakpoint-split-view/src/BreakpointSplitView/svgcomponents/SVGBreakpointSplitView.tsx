@@ -32,6 +32,9 @@ type BSV = BreakpointViewModel
 
 // render LGV to SVG
 export async function renderToSvg(model: BSV, opts: ExportSvgOptions) {
+  if (!model.hasSomethingToShow) {
+    throw new Error('Cannot export: no regions are displayed')
+  }
   await awaitViewInitialized(model)
   // The panels too: the split view's own launch turns its recipe into
   // sub-views and clears in the same tick, so `model.initialized` holds while
