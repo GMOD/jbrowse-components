@@ -52,7 +52,7 @@ swapping `uri`, as
 shows.
 
 <details>
-<summary>The files</summary>
+<summary>Read by URL (no download needed)</summary>
 
 | What it is                                                                                                                                                                                                         | File                                                                                                                                                                     |
 | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
@@ -62,7 +62,7 @@ shows.
 
 </details>
 
-## Load GRCh38
+## Load the GRCh38 assembly
 
 The track's `assemblyNames` has to name the assembly the reads were aligned to,
 GRCh38.
@@ -141,11 +141,11 @@ The
 [alignments track guide](/docs/user_guides/alignments_track#modifications-and-methylation)
 covers both modes and the probability and cytosine-context filters.
 
-<Video src="/media/methylation/open_modbam.mp4" caption="The modBAM opened by URL and colored from its track menu with Color by → Modifications and Show unmethylated in blue." />
+<Video src="/media/methylation/open_modbam.mp4" caption="The modBAM opened by URL and colored from its track menu." />
 
 <Figure caption="HG002 ONT reads over the SNRPN CpG island in both modification color modes. The bottom mode fills every unmarked CpG in blue." src="/img/methylation/hg002_snrpn_mod_modes.png" links="Modified only=methylation/hg002_snrpn_marked_only,Every CpG=methylation/hg002_snrpn_fill_unmarked" />
 
-## Aggregate methylation with modkit bedMethyl
+## Tally the calls into a bedMethyl track with modkit
 
 [modkit pileup](https://nanoporetech.github.io/modkit/) tallies the per-read
 calls into a bedMethyl file with one row per CpG per modification type, each
@@ -170,8 +170,8 @@ Two `modkit pileup` options set the output:
 - `--phased` writes one file per haplotype from the reads' `HP` tags, and this
   dataset uses it
 
-With `--phased` the output argument is a directory, which gets `hp1.bedmethyl`,
-`hp2.bedmethyl` and `combined.bedmethyl`:
+With `--phased` the output argument is a directory, which gets one bedMethyl per
+haplotype and a combined one:
 
 ```bash
 modkit pileup sample.bam hp_bedmethyl/ --ref reference.fa \
@@ -261,9 +261,8 @@ share one scale, so an unmethylated row stays flat:
 
 <Figure caption="The SNRPN CpG island: the per-haplotype profile on top, the reads grouped by HP below." src="/img/methylation/hg002_snrpn_combined.png" />
 
-Reads of your own without an `HP` tag get one from `whatshap haplotag`, which
-reads a phased VCF. The
-[alignments track guide](/docs/user_guides/alignments_track#grouping-reads)
+For reads without an `HP` tag, `whatshap haplotag` writes one from a phased VCF.
+The [alignments track guide](/docs/user_guides/alignments_track#grouping-reads)
 covers the Group-by dialog:
 
 ```bash
@@ -359,12 +358,9 @@ _SNRPN_, each in a row with its raw values under a moving average:
 }
 ```
 
-The display draws two marks over the same rows:
-
-- **the `point` mark** plots each CpG's `score`, its percent methylated, in grey
-- **the `line` mark** plots `meth`, which the `window` step writes: each CpG's
-  mean over the 50 CpGs on either side, weighted by `n_valid_cov`, the read
-  depth modkit counted there
+The `line` mark plots `meth`, which the `window` step writes: each CpG's mean
+over the 50 CpGs on either side, weighted by `n_valid_cov`, the read depth
+modkit counted there.
 
 Three more settings configure the track:
 
@@ -381,8 +377,8 @@ promoter and the stretch of _SNHG14_ downstream of it:
 <Figure caption="HG002 5mC by haplotype over SNRPN and SNHG14, each CpG in grey under its moving average." src="/img/methylation/hg002_imprinted_smoothed.png" />
 
 **Edit marks...** in the track menu opens the marks. In the line's `window`
-step, set **rows before** and **rows after** to 500 for a 1,001-CpG average,
-then type `chr15:22,200,000-26,900,000` to take in the whole imprinted domain:
+step, set **rows before** and **rows after** to 500 for a wider average, then
+type `chr15:22,200,000-26,900,000` to take in the whole imprinted domain:
 
 <Figure caption="The same track across the Prader-Willi and Angelman domain with a wider moving average." src="/img/methylation/hg002_imprinted_domain.png" />
 

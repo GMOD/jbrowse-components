@@ -140,7 +140,7 @@ per row. It loads through `BedTabixAdapter` as a `MultiQuantitativeTrack` with
 one subtrack per modification type; see
 [Loading bedMethyl as a multi-quantitative track](/docs/config_guides/quantitative_track#loading-bedmethyl-as-a-multi-quantitative-track)
 for the file and the adapter config, and the
-[methylation tutorial](/docs/tutorials/methylation#aggregate-methylation-with-modkit-bedmethyl)
+[methylation tutorial](/docs/tutorials/methylation#tally-the-calls-into-a-bedmethyl-track-with-modkit)
 for a worked run. For the per-read view of the same calls, see
 [Color by base modifications](/docs/user_guides/alignments_track#modifications-and-methylation)
 on the alignments track.
