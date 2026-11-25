@@ -34,6 +34,7 @@ import {
   multiLevelRowMenuItems,
   pageLayout,
   stackLayout,
+  stackTrackLabels,
 } from '@jbrowse/plugin-linear-genome-view'
 import {
   DiagonalizeProgressMixin,
@@ -356,6 +357,14 @@ export default function stateModelFactory(pluginManager: PluginManager) {
           self.views.length > 1 &&
           self.views.every(view => view.initialized || !!view.error)
         )
+      },
+      /**
+       * #getter
+       * the track label mode the rows share, which the export dialog opens
+       * on; `offset` when they differ
+       */
+      get effectiveTrackLabels() {
+        return stackTrackLabels(self.views)
       },
       /**
        * #getter

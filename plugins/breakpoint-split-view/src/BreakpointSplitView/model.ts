@@ -31,6 +31,7 @@ import {
   rowLabels,
   searchBoxMenuItems,
   stackLayout,
+  stackTrackLabels,
   storedSearchBoxPrefs,
 } from '@jbrowse/plugin-linear-genome-view'
 import CropFreeIcon from '@mui/icons-material/CropFree'
@@ -260,6 +261,14 @@ export default function stateModelFactory(pluginManager: PluginManager) {
           this.pendingLaunch === undefined &&
           self.views.every(v => v.initialized)
         )
+      },
+      /**
+       * #getter
+       * the track label mode the panels share, which the export dialog opens
+       * on; `offset` when they differ
+       */
+      get effectiveTrackLabels() {
+        return stackTrackLabels(self.views)
       },
 
       /**
