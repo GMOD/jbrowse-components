@@ -4,7 +4,7 @@
 // react-refresh.
 
 import { usePalette } from '../ui/PaletteContext.tsx'
-import { stripAlpha } from '../util/svgColorProps.ts'
+import { getFillProps, stripAlpha } from '../util/svgColorProps.ts'
 import {
   ExportFontFamilyContext,
   exportFontFamily,
@@ -83,7 +83,8 @@ export function SVGExportRoot({
 
 // Informational box for a soft terminal state (region too large). Keeps the
 // track's reserved height and labels a state that would otherwise export as a
-// silent blank.
+// silent blank. A faint wash of the text color over the figure's background,
+// as the on-screen banner is, so it follows the export's theme.
 //
 // There is deliberately no error counterpart. A failed track fails the export
 // (`throwOnExportErrors`) rather than painting its error into the figure, so the
@@ -97,10 +98,22 @@ export function SVGMessageBox({
   width: number
   height: number
 }) {
+  const palette = usePalette()
   return (
     <>
-      <rect x={0} y={0} width={width} height={height} fill="#f2f2f2" />
-      <text x={10} y={height / 2} fill="#555555" fontSize={14}>
+      <rect
+        x={0}
+        y={0}
+        width={width}
+        height={height}
+        {...getFillProps(palette.action.hover)}
+      />
+      <text
+        x={10}
+        y={height / 2}
+        fontSize={14}
+        {...getFillProps(palette.text.secondary)}
+      >
         {message}
       </text>
     </>
