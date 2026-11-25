@@ -11,8 +11,8 @@ tutorial_category: Grammar of graphics
 RepeatMasker annotates Alu, a primate-specific repeat family, and its `milliDiv`
 column holds each copy's divergence from its subfamily consensus, in tenths of a
 percent. Divergence grows with time, so the column is an age, and the subfamily
-name (AluJ, AluS, AluY, oldest to youngest) is a coarser one. We ask where along
-chromosome 1 the young copies sit. We:
+name (AluJ, AluS, AluY, oldest to youngest) is a coarser one. To see where along
+chromosome 1 the young copies sit, we:
 
 - load the Alu rows of a RepeatMasker BED as a `LinearMarkDisplay`, one bar per
   copy with `milliDiv` as its height and its lineage as its color
@@ -58,8 +58,8 @@ npm install -g @jbrowse/cli@next
 ## The data
 
 UCSC's hg38 RepeatMasker table, rehosted by
-[genomes.jbrowse.org's hg38](https://genomes.jbrowse.org/ucsc/hg38/) with the
-Alu rows cut out.
+[genomes.jbrowse.org's hg38](https://genomes.jbrowse.org/ucsc/hg38/). The
+commands below cut the Alu rows out of it.
 
 You don't need these files to follow the page: the track configs below read the
 hosted results. The [build script](#reproduce-it-end-to-end) fetches them to
@@ -245,9 +245,8 @@ Add the bigWig as a track:
 ```
 
 The red AluY count is too small to read against a total that varies between
-bins. A script instead writes a BED with two log2 columns: the AluY share per
-megabase against the genome-wide share, and the plus-strand share against one
-half as a control that should show no pattern.
+bins. A script instead writes the AluY share per megabase, against the
+genome-wide share, as a log2 column of a BED.
 
 Fetch the script:
 
@@ -259,15 +258,15 @@ curl -fO https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/
 
 ```bash
 # columns: copies, young, plus, youngShare, youngLog2, strandLog2, one row per
-# 1 Mb bin holding at least 50 copies; also prints the Spearman rank correlation
-# of each share against copies per bin
+# 1 Mb bin holding at least 50 copies
 python3 alu_young_share.py Alu.bed.gz Alu.young_share.bed AluY
 bgzip -f Alu.young_share.bed
 tabix -f -C -p bed Alu.young_share.bed.gz
 ```
 
 **Advanced → Edit plot...** in the track menu opens an editor that applies edits
-to the cut, colors and key names live. The config below sets them in the track:
+to the threshold, colors and key names live. The config below sets them in the
+track:
 
 ```json addtrack
 {
@@ -309,7 +308,7 @@ to the cut, colors and key names live. The config below sets them in the track:
 }
 ```
 
-<Figure src="/img/alu_age/young_share.png" caption="Top: chromosome 1, Alu copies per kilobase above the AluY share per megabase. Below: the copies track over the same AluY share, copies per bin in grey and AluY in red." links="Chromosome 1=alu_age/chromosome,The stretch under the wedge=alu_age/binned" />
+<Figure src="/img/alu_age/young_share.png" caption="Top: chromosome 1, Alu copies per kilobase above the AluY share per megabase. Below: the copies track over the same AluY share, copies per bin in grey and AluY in red." links="Chromosome 1=alu_age/chromosome,The binned view=alu_age/binned" />
 
 ## Reproduce it end to end
 
@@ -347,8 +346,6 @@ and `FAMILY` and `YOUNG` pick another family and its youngest lineage.
   [Alu repeats and human genomic diversity](https://doi.org/10.1038/nrg798), the
   subfamily lineages and their ages.
 - Lander et al. (2001).
-  [Initial sequencing and analysis of the human genome](https://doi.org/10.1038/35057062),
-  where the distribution of young against old Alu copies along the genome was
-  first described.
+  [Initial sequencing and analysis of the human genome](https://doi.org/10.1038/35057062)
 - Smit, Hubley and Green (2013-2015).
   [RepeatMasker Open-4.0](https://www.repeatmasker.org)
