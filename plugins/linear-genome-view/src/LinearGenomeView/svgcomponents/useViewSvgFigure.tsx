@@ -24,6 +24,7 @@ import { renderViewTracks } from './renderViewTracks.ts'
 import {
   defaultTextHeight,
   getRowHeaderLayout,
+  lgvSvgLayoutOptions,
   trackLabelLeftOffset,
 } from './util.ts'
 
@@ -399,7 +400,7 @@ export function useViewSvgFigure(
   view: LinearGenomeViewModel,
   {
     fontSize = 12,
-    rulerHeight = 30,
+    rulerHeight = lgvSvgLayoutOptions({}).rulerHeight,
     trackLabels = 'offset',
     showGridlines = true,
     showScalebar = true,

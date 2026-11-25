@@ -12,9 +12,9 @@ import {
 } from '@jbrowse/display-kit/renderDisplaySvg'
 import {
   SVGStackedRow,
-  defaultTextHeight,
   exportMargins,
   getRowHeaderLayout,
+  lgvSvgLayoutOptions,
   notifySkippedSvgTracks,
   renderViewTracks,
   trackLabelLeftOffset,
@@ -35,17 +35,9 @@ export async function renderToSvg(
   opts: ExportSvgOptions,
 ) {
   await awaitViewInitialized(model)
-  const {
-    fontSize = 13,
-    // destructured after fontSize so the label band can scale with it
-    textHeight = defaultTextHeight(fontSize),
-    rulerHeight = 30,
-    trackLabels = 'offset',
-    showGridlines = false,
-    Wrapper,
-    themeName,
-    fontFamily,
-  } = opts
+  const { fontSize, textHeight, rulerHeight, trackLabels, showGridlines } =
+    lgvSvgLayoutOptions(opts)
+  const { Wrapper, themeName, fontFamily } = opts
   const session = getSession(model)
   const theme = session.getActiveThemeOptions?.(themeName)
   const { views, levels } = model

@@ -64,3 +64,25 @@ test('a page too narrow for its text is refused before the rows are resized', as
   ).rejects.toThrow('widen the figure or lower the text size')
   expect(view.views.map(row => row.width)).toEqual([800, 800])
 })
+
+test("each row's ruler numbers clear the refName label above them", async () => {
+  const view = await launch()
+  const svg = await view.exportSvg({ save: false })
+  const baselines = (pattern: RegExp) =>
+    [...svg.matchAll(pattern)].map(match => Number(match[1]))
+  const refNameBaselines = baselines(
+    /<text[^>]*y="([\d.]+)"[^>]*font-weight="bold"/g,
+  )
+  const tickNumberBaselines = baselines(
+    /<text[^>]*y="([\d.]+)" text-anchor="middle" font-size="11"/g,
+  )
+  const elevenPxAscent = 10
+  const elevenPxDescent = 3
+  expect(refNameBaselines).toHaveLength(2)
+  expect(tickNumberBaselines.length).toBeGreaterThan(0)
+  expect(
+    Math.min(...tickNumberBaselines) -
+      elevenPxAscent -
+      (Math.max(...refNameBaselines) + elevenPxDescent),
+  ).toBeGreaterThanOrEqual(2)
+})
