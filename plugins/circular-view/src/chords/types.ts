@@ -1,4 +1,5 @@
 import type { ChordCell } from './chordMarks.ts'
+import type { ChordStage } from './chordStage.ts'
 import type { ChordLayerDisplay, Shape } from './shapes.ts'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { TooLargeSource } from '@jbrowse/display-kit/chromeOverlaySlots'
@@ -41,9 +42,10 @@ export interface ShapeDisplayModel
   hoveredFeatureId: string | undefined
   /** the drawn records whose shapes dim, undefined while none do */
   dimmedFeatureIds?: ReadonlySet<string>
-  bezierRadius: number
+  figureStage: ChordStage
+  stageAt: (radiusPx: number) => ChordStage
   shapeAlpha: number
-  shapes: readonly Shape[]
+  shapesAt: (stage: ChordStage) => readonly Shape[]
   shapesTestId: string
   shapeFor: (featureId: string) => Shape | undefined
 }

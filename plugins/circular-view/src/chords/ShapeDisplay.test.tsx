@@ -8,7 +8,8 @@ import ShapeDisplay from './ShapeDisplay.tsx'
 import ShapePaths from './ShapePaths.tsx'
 
 import type { ChordCell } from './chordMarks.ts'
-import type { ChordShape, RibbonShape } from './shapes.ts'
+import type { ChordStage } from './chordStage.ts'
+import type { ChordShape, RibbonShape, Shape } from './shapes.ts'
 import type { ShapeDisplayModel } from './types.ts'
 import type { DisplayStatusPhase } from '@jbrowse/render-core/displayPhase'
 
@@ -19,9 +20,23 @@ const configuration = configSchemaF(new PluginManager()).create({
 
 const TESTID = 'shapeRenderer'
 
+type ModelOverrides = Partial<ShapeDisplayModel> & {
+  shapes?: readonly Shape[]
+}
+
+function stageAt(radiusPx: number): ChordStage {
+  return {
+    radiansPerBp: 1,
+    gapRadians: 0,
+    offsetRadians: 0,
+    radiusPx,
+    bezierRadiusPx: radiusPx / 2,
+  }
+}
+
 function model(
   phase: DisplayStatusPhase,
-  overrides: Partial<ShapeDisplayModel> = {},
+  { shapes = [], ...overrides }: ModelOverrides = {},
 ): ShapeDisplayModel {
   return {
     id: 'sv',
@@ -35,11 +50,10 @@ function model(
     ready: phase === 'ready',
     displayPhase: phase,
     svgReady: phase !== 'loading',
-    drawnCount: overrides.shapes?.length ?? 0,
-    shapes: [],
+    drawnCount: shapes.length,
+    shapesAt: () => shapes,
     shapesTestId: TESTID,
-    shapeFor: id =>
-      (overrides.shapes ?? []).find(shape => shape.feature.id() === id),
+    shapeFor: id => shapes.find(shape => shape.feature.id() === id),
     chordCell: undefined,
     hitAt: () => undefined,
     shapeAlpha: 1,
@@ -47,7 +61,8 @@ function model(
     hoveredFeatureId: undefined,
     configuration,
     radiusPx: 100,
-    bezierRadius: 50,
+    figureStage: stageAt(100),
+    stageAt,
     clickFeature: () => {},
     shapeLabel: () => 'a shape',
     regionTooLarge: phase === 'tooLarge',
@@ -277,7 +292,7 @@ test('a loading chord track says which phase it is in, and how far', () => {
 })
 
 test('an indeterminate phase reads as its label, and no status as Loading', () => {
-  const textOf = (overrides: Partial<ShapeDisplayModel>) =>
+  const textOf = (overrides: ModelOverrides) =>
     renderPastLoadingDelay(
       <svg>
         <ShapeDisplay display={model('loading', overrides)} />
@@ -360,7 +375,7 @@ test('on screen the renderer group spans its disc with nothing highlighted', () 
   expect(g.querySelectorAll('path')).toHaveLength(0)
 })
 
-function exported(overrides: Partial<ShapeDisplayModel>) {
+function exported(overrides: ModelOverrides) {
   const { container } = render(
     <svg>
       <ShapePaths
@@ -385,7 +400,7 @@ test('the export leaves a hovered or selected ribbon in its resting fill', () =>
 })
 
 test('the export dims the chords in the dimmed set, and with no set none', () => {
-  const opacities = (overrides: Partial<ShapeDisplayModel>) =>
+  const opacities = (overrides: ModelOverrides) =>
     exported({
       shapes: chordsOf(bnd('a', 100, 900), bnd('b', 200, 800)),
       ...overrides,
@@ -413,7 +428,7 @@ test("the export draws each chord at the display's opacity, over its color's alp
   ])
 })
 
-function pairModel(overrides: Partial<ShapeDisplayModel>) {
+function pairModel(overrides: ModelOverrides) {
   const [shared] = chordsOf(bnd('a', 100, 900))
   return model('ready', {
     shapes: [shared!],

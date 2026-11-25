@@ -168,6 +168,15 @@ export function layoutRings(
   return rings
 }
 
+/**
+ * Where the chords start: a gap inside the innermost ring, or at the ruler
+ * when there is none.
+ */
+export function chordRadiusInside(rings: readonly Ring[], radiusPx: number) {
+  const last = rings.at(-1)
+  return last ? last.innerPx - RING_GAP_PX : radiusPx
+}
+
 /** The radial distance two labelled ticks of a ring's axis keep apart. */
 export const RING_AXIS_LABEL_GAP_PX = 11
 
@@ -630,8 +639,7 @@ export const RingHost = types
      * there is none.
      */
     get chordRadiusPx() {
-      const last = this.rings.at(-1)
-      return last ? last.innerPx - RING_GAP_PX : self.view.radiusPx
+      return chordRadiusInside(this.rings, self.view.radiusPx)
     },
     /**
      * One ring's upload payload, while its display has a painted canvas: none

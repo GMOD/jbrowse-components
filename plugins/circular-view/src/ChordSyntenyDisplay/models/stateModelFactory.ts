@@ -33,7 +33,7 @@ import { ribbonLabel } from '../../chords/ribbonLabel.ts'
 
 import type { PlacedEnd } from '../../chords/BaseChordDisplay.ts'
 import type { ChordCell } from '../../chords/chordMarks.ts'
-import type { RibbonLanes } from '../../chords/chordStage.ts'
+import type { ChordStage, RibbonLanes } from '../../chords/chordStage.ts'
 import type { PaintRun } from '../../chords/ideogramPaint.ts'
 import type { PartnerSpan } from '../../chords/partnerShares.ts'
 import type { RibbonShape } from '../../chords/shapes.ts'
@@ -432,18 +432,18 @@ const stateModelFactory = (configSchema: ChordSyntenyDisplayConfigModel) => {
       },
       /**
        * #method
-       * lane `i` as the SVG side draws it, on the unrotated figure
+       * lane `i` as the SVG side draws it, on `stage`
        */
-      shapeAt(i: number): RibbonShape {
+      shapeAt(i: number, stage: ChordStage): RibbonShape {
         const lanes = this.ribbonLanes
         const { chordThinFadeFloor } = self.view
         return {
           kind: 'ribbon',
           feature: lanes.features[i]!,
-          angles: ribbonAnglesAt(lanes, i, self.figureStage),
+          angles: ribbonAnglesAt(lanes, i, stage),
           fill: abgrToHex(lanes.color[i]!),
           opacity:
-            (ribbonFadeAt(lanes, i, self.figureStage, chordThinFadeFloor) *
+            (ribbonFadeAt(lanes, i, stage, chordThinFadeFloor) *
               abgrAlpha(lanes.color[i]!)) /
             255,
         }

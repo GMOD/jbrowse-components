@@ -1,5 +1,6 @@
 import { exportFontFamily } from '@jbrowse/core/svg/constants'
 import { createTestSession } from '@jbrowse/web/testUtils'
+import { createCanvas, loadImage } from '@napi-rs/canvas'
 import { when } from 'mobx'
 
 import {
@@ -178,6 +179,79 @@ test('the key sits in a gutter right of the circle, and no key adds no gutter', 
   expect(keyX).toBeGreaterThan(height)
   expect(width).toBeGreaterThan(keyX)
 }, 20000)
+
+function addRingTrack(
+  session: ReturnType<typeof createTestSession>,
+  trackId: string,
+  count: number,
+  displayConf: Record<string, unknown> = {},
+) {
+  session.addSessionTrackConf({
+    trackId,
+    type: 'FeatureTrack',
+    name: trackId,
+    assemblyNames: ['volvox'],
+    adapter: {
+      type: 'FromConfigAdapter',
+      features: Array.from({ length: count }, (_, i) => ({
+        uniqueId: `${trackId}${i}`,
+        refName: 'ctgA',
+        start: i * 30,
+        end: i * 30 + 20,
+      })),
+    },
+    displays: [
+      {
+        type: 'LinearBasicDisplay',
+        displayId: `${trackId}-LinearBasicDisplay`,
+        ...displayConf,
+      },
+    ],
+  })
+}
+
+const decodeSvg = async (markup: string) =>
+  (await loadImage(Buffer.from(markup))) as unknown as CanvasImageSource
+
+function chordRadiusIn(svg: string) {
+  const [, x, y] = /data-testid="chord-sv1"[^>]*d="M ?(-?[\d.]+)[ ,](-?[\d.]+)/
+    .exec(svg)!
+    .map(Number)
+  return Math.hypot(x!, y!)
+}
+
+test('a ring left out as too large leaves no empty band: the chords take its room', async () => {
+  const exportChordRadius = async (tracks: string[]) => {
+    const session = createTestSession()
+    addVolvoxConf(session)
+    addRingTrack(session, 'genes', 3)
+    addRingTrack(session, 'dense', 400, { maxFeatureScreenDensity: 0.001 })
+    const view = (await session.launchView('CircularView', {
+      assembly: 'volvox',
+      tracks,
+    })) as CircularViewModel
+    view.setWidth(800)
+    await session.assemblyManager.waitForAssembly('volvox')
+    await when(() => view.initialized && view.tracks.length === tracks.length)
+    const svg = await renderToSvg(view, {
+      decodeSvg,
+      createCanvas: createCanvas as unknown as (
+        width: number,
+        height: number,
+      ) => HTMLCanvasElement,
+    })
+    return { svg, view }
+  }
+  const alone = await exportChordRadius(['genes', 'sv'])
+  const beside = await exportChordRadius(['genes', 'dense', 'sv'])
+  const [, dense] = beside.view.ringDisplays
+  expect(dense && 'displayPhase' in dense ? dense.displayPhase : '').toBe(
+    'tooLarge',
+  )
+  expect(beside.view.chordRadiusPx).toBeLessThan(alone.view.chordRadiusPx - 10)
+  expect(chordRadiusIn(beside.svg)).toBeCloseTo(chordRadiusIn(alone.svg), 1)
+  expect(chordRadiusIn(alone.svg)).toBeCloseTo(alone.view.chordRadiusPx, 1)
+}, 30000)
 
 test('exporting with nothing displayed says so instead of saving a blank', async () => {
   const { view } = await setup()

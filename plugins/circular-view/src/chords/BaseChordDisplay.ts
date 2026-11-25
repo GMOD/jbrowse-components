@@ -212,19 +212,28 @@ export function BaseChordDisplay() {
         return hover?.display.id === self.id ? hover.feature.id() : undefined
       },
       /**
-       * #getter
-       * the polar stage on the unrotated figure, which the view's SVG turns:
-       * what the export, the highlight paths and the hit tests are placed on
+       * #method
+       * the polar stage on the unrotated figure with the chords starting at
+       * `radiusPx`: an export whose rings differ from the screen's lays its
+       * chords out on its own
        */
-      get figureStage(): ChordStage {
+      stageAt(radiusPx: number): ChordStage {
         const { radiansPerBp, gapRadians } = this.view.chordScale
         return {
           radiansPerBp,
           gapRadians,
           offsetRadians: 0,
-          radiusPx: this.radiusPx,
-          bezierRadiusPx: this.bezierRadius,
+          radiusPx,
+          bezierRadiusPx: radiusPx * (1 - this.curveDepth),
         }
+      },
+      /**
+       * #getter
+       * the polar stage on the unrotated figure, which the view's SVG turns:
+       * what the highlight paths and the hit tests are placed on
+       */
+      get figureStage(): ChordStage {
+        return this.stageAt(this.radiusPx)
       },
     }))
     .views(() => ({
@@ -237,10 +246,10 @@ export function BaseChordDisplay() {
       },
       /**
        * #method
-       * Overridable hook: lane `i` as the SVG side draws it, on the unrotated
-       * figure; undefined where it draws nothing
+       * Overridable hook: lane `i` as the SVG side draws it, on `stage`;
+       * undefined where it draws nothing
        */
-      shapeAt(_i: number): Shape | undefined {
+      shapeAt(_i: number, _stage: ChordStage): Shape | undefined {
         return undefined
       },
       /**
@@ -275,21 +284,28 @@ export function BaseChordDisplay() {
        */
       shapeFor(featureId: string) {
         const i = self.laneIndexById.get(featureId)
-        return i === undefined ? undefined : self.shapeAt(i)
+        return i === undefined ? undefined : self.shapeAt(i, self.figureStage)
       },
       /**
-       * #getter
-       * every drawn shape, as the export draws it
+       * #method
+       * every drawn shape on `stage`, as the export draws it
        */
-      get shapes(): Shape[] {
+      shapesAt(stage: ChordStage): Shape[] {
         const out: Shape[] = []
         for (let i = 0; i < self.drawnLanes.count; i++) {
-          const shape = self.shapeAt(i)
+          const shape = self.shapeAt(i, stage)
           if (shape) {
             out.push(shape)
           }
         }
         return out
+      },
+      /**
+       * #getter
+       * every drawn shape on the figure's own stage
+       */
+      get shapes(): Shape[] {
+        return this.shapesAt(self.figureStage)
       },
       /**
        * #method

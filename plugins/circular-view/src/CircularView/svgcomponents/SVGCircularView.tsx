@@ -15,8 +15,10 @@ import { legendEntries } from '@jbrowse/core/ui/legendSpec'
 import { resolveStyleTheme } from '@jbrowse/core/ui/styleTheme'
 import { getSession, radToDeg } from '@jbrowse/core/util'
 
+import { ExportChordRadiusContext } from '../../chords/ShapePaths.tsx'
 import { RingAxes } from '../../rings/RingAxes.tsx'
 import { RingOverlay } from '../../rings/RingOverlay.tsx'
+import { chordRadiusInside, layoutRings } from '../../rings/ringHost.ts'
 import {
   RING_TOO_LARGE_REASON,
   canRasterizeRings,
@@ -170,8 +172,22 @@ export async function renderToSvg(
     radiusPx,
     offsetRadians,
     staticSlices,
+    namesFeaturesOutside,
     effectivePaddingPx: paddingPx,
   } = model
+
+  // the screen keeps a band for a ring it cannot draw, to say why; the export
+  // names it in a notice instead, so the drawn rings and the chords close up
+  const rings = layoutRings(
+    ringBodies.map(b => b.display),
+    radiusPx,
+  )
+  const chordRadiusPx = chordRadiusInside(rings, radiusPx)
+  const exportRingHost = {
+    rings,
+    width: ringHost.width,
+    stripRadiusPx: ringHost.stripRadiusPx,
+  }
 
   // the export grows to its labels where the screen clips them
   const gutterPx = Math.max(
@@ -180,11 +196,13 @@ export async function renderToSvg(
   )
   const figureSize = 2 * (radiusPx + gutterPx)
   const center = radiusPx + gutterPx
-  const rings = await paintRingsSvg(ringHost, ringBodies, opts, theme, {
-    size: figureSize,
-    center,
-    offsetRadians,
-  })
+  const ringRaster = await paintRingsSvg(
+    exportRingHost,
+    ringBodies,
+    opts,
+    theme,
+    { size: figureSize, center, offsetRadians },
+  )
 
   return wrapSvgExport({
     theme,
@@ -197,26 +215,29 @@ export async function renderToSvg(
     Wrapper,
     children: (
       <>
-        {rings}
+        {ringRaster}
         <g
           transform={`translate(${center},${center}) rotate(${radToDeg(offsetRadians)})`}
         >
           <Rulers model={model} />
           <RingAxes
-            model={{
-              ringHost: {
-                rings: ringHost.rings.filter(
-                  r => !undrawnIds.includes(r.display.id),
-                ),
-              },
-              offsetRadians,
-              staticSlices,
-            }}
+            model={{ ringHost: exportRingHost, offsetRadians, staticSlices }}
           />
-          <RingOverlay model={model} exporting />
-          {displayResults.map(({ id, result }) => (
-            <Fragment key={id}>{result}</Fragment>
-          ))}
+          <RingOverlay
+            model={{
+              id: model.id,
+              offsetRadians,
+              radiusPx,
+              namesFeaturesOutside,
+              ringHost: exportRingHost,
+            }}
+            exporting
+          />
+          <ExportChordRadiusContext value={chordRadiusPx}>
+            {displayResults.map(({ id, result }) => (
+              <Fragment key={id}>{result}</Fragment>
+            ))}
+          </ExportChordRadiusContext>
         </g>
         <SvgCircularLegend
           model={model}

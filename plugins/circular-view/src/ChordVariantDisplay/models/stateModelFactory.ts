@@ -51,7 +51,7 @@ import { CHORD_DEFAULT_COLOR } from './chordColorConfigSchema.ts'
 import { DEFAULT_CHORD_OPACITY } from './chordOpacityConfigSchema.ts'
 
 import type { ChordCell } from '../../chords/chordMarks.ts'
-import type { ChordLanes } from '../../chords/chordStage.ts'
+import type { ChordLanes, ChordStage } from '../../chords/chordStage.ts'
 import type { ChordShape } from '../../chords/shapes.ts'
 import type { ChordVariantDisplayConfigModel } from './configSchema.ts'
 import type { MenuItem } from '@jbrowse/core/ui'
@@ -347,13 +347,13 @@ const stateModelFactory = (configSchema: ChordVariantDisplayConfigModel) => {
       },
       /**
        * #method
-       * lane `i` as the SVG side draws it, on the unrotated figure; undefined
-       * for a chord whose ends are under a pixel apart
+       * lane `i` as the SVG side draws it, on `stage`; undefined for a chord
+       * whose ends are under a pixel apart
        */
-      shapeAt(i: number): ChordShape | undefined {
+      shapeAt(i: number, stage: ChordStage): ChordShape | undefined {
         const lanes = this.chordLanes
         const feature = lanes.features[i]!
-        const ends = chordEndsAt(lanes, i, self.figureStage)
+        const ends = chordEndsAt(lanes, i, stage)
         return ends
           ? {
               kind: 'chord',

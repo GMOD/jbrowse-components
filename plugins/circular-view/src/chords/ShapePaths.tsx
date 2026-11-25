@@ -1,3 +1,5 @@
+import { createContext, use } from 'react'
+
 import { usePalette } from '@jbrowse/core/ui/PaletteContext'
 import { alpha, darken } from '@jbrowse/core/ui/palette'
 import { getFillProps, getStrokeProps } from '@jbrowse/core/util'
@@ -8,6 +10,15 @@ import { shapePath } from './shapePath.ts'
 
 import type { Shape } from './shapes.ts'
 import type { ShapeDisplayModel } from './types.ts'
+
+/**
+ * The radius an export starts its chords at, which differs from the screen's
+ * where the export leaves a ring out: the circle settles which rings it draws
+ * only after its chord displays have handed over their paths.
+ */
+export const ExportChordRadiusContext = createContext<number | undefined>(
+  undefined,
+)
 
 type ShapeState = 'resting' | 'hovered' | 'selected'
 
@@ -79,13 +90,19 @@ const ShapePaths = observer(function ShapePaths({
   testid: string
   only: 'highlighted' | 'all'
 }) {
-  const { radiusPx, bezierRadius, dimmedFeatureIds } = display
+  const { dimmedFeatureIds } = display
   const palette = usePalette()
+  const exportRadiusPx = use(ExportChordRadiusContext)
+  const stage =
+    exportRadiusPx === undefined
+      ? display.figureStage
+      : display.stageAt(exportRadiusPx)
+  const { radiusPx, bezierRadiusPx } = stage
   // a hover and a selection say where the reader's pointer was, so the export
   // draws every shape resting
   const drawn: readonly { shape: Shape; state: ShapeState }[] =
     only === 'all'
-      ? display.shapes.map(shape => ({ shape, state: 'resting' }))
+      ? display.shapesAt(stage).map(shape => ({ shape, state: 'resting' }))
       : highlightedShapes(display)
   const alpha = only === 'all' ? display.shapeAlpha : 1
   return (
@@ -110,7 +127,7 @@ const ShapePaths = observer(function ShapePaths({
           <path
             key={shape.feature.id()}
             data-testid={testId(shape)}
-            d={shapePath(shape, radiusPx, bezierRadius)}
+            d={shapePath(shape, radiusPx, bezierRadiusPx)}
             opacity={opacity === 1 ? undefined : opacity}
             {...paintProps(shape, state, palette.highlight.main)}
           >
