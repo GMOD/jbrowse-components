@@ -26,7 +26,7 @@ function svReviewHalf(trackId: string) {
     'hg38',
     '--track',
     trackId,
-    'height:130',
+    'height:167',
     'force:true',
     'featureHeight:super-compact',
     '--loc',
@@ -538,7 +538,7 @@ export const jbrowseImgSpecs: CliSpec[] = [
   cliSpec('sv_review_tumor', svReviewHalf('COLO829_tumor_ont')),
   cliSpec('sv_review_normal', svReviewHalf('COLO829BL_normal_ont')),
 
-  // The heights make this panel as tall as the sample panels (679 px), so
+  // The heights make this panel as tall as the sample panels (680 px), so
   // `+append` pads nothing and the three captions stay on one line. Check the
   // rendered height after a change: a track's box is not its `height:` plus a
   // constant.
@@ -552,7 +552,7 @@ export const jbrowseImgSpecs: CliSpec[] = [
     'height:128',
     '--track',
     'reads_vs_der3',
-    'height:440',
+    'height:441',
     '--loc',
     'der3_RARB_BICC1_TRHDE:1-39,549',
     '--width',

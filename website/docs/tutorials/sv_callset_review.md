@@ -170,7 +170,7 @@ panel, then run the same command with `COLO829BL_normal_ont` as the control:
 # featureHeight:super-compact draws each read 1 px tall
 jb2export breakpoint \
   --config https://jbrowse.org/demos/cancer_sv/config.json --assembly hg38 \
-  --track COLO829_tumor_ont height:130 force:true featureHeight:super-compact \
+  --track COLO829_tumor_ont height:167 force:true featureHeight:super-compact \
   --loc chr3:25,358,511-25,359,711 \
   --loc chr10:58,716,962-58,718,162 \
   --loc chr12:72,272,512-72,273,712 \
