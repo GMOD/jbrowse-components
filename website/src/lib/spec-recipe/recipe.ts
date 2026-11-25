@@ -70,6 +70,8 @@ export interface Recipe {
   config: string
   configUrl: string
   specJson: string
+  // the figure is one linear view, the one **File → Open track...** adds to
+  oneLinearView: boolean
   steps: RecipeStep[]
   // absent when a view needs a plugin the widget cannot load from the config
   python?: string
@@ -713,6 +715,7 @@ export function buildRecipe(
     config,
     configUrl,
     specJson,
+    oneLinearView: views.length === 1 && views[0]?.type === 'LinearGenomeView',
     steps,
     python: plugin ? undefined : pythonSnippet(configUrl, spec),
     embed: plugin ? undefined : embedSnippet(configUrl, spec),
