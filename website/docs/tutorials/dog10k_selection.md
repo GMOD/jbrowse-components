@@ -26,7 +26,7 @@ on chr15, we:
 
 ## Prerequisites
 
-- the `UU_Cfam_GSD_1.0` dog assembly (UCSC's canFam4) set up in JBrowse. The
+- the `UU_Cfam_GSD_1.0` dog assembly (UCSC's canFam4), loaded below. The
   [canFam4 hub on genomes.jbrowse.org](https://genomes.jbrowse.org/ucsc/canFam4/)
   is a config that loads it with its gene and repeat tracks, and the
   [assemblies guide](/docs/config_guides/assemblies) shows how to build one by
@@ -59,7 +59,7 @@ directly over HTTP with no local copy of either callset.
 The tracks below read local files that the
 [build script](#reproduce-it-end-to-end) writes from these, so run it first, or
 rerun the scan and the slice with groups and regions of your own, as _Reproduce
-it end to end_ lists. The script fetches everything itself.
+it end to end_ lists.
 
 | What it is                                                                             | File                                                                                                                                                            |
 | -------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -166,10 +166,10 @@ display lays the autosomes out side by side. The red line is a rule on
 `encoding.y`, the y scale; **Y axis... → Reference lines** adds one to a track
 already open.
 
-For the lower half of the figure below, we reran the same script over one region
-to rebin it: the same panel and the same estimator at 20 kb over two megabases,
-where the peak resolves into a sweep. `WINDOW` is the bin width, `REGIONS` any
-`bcftools -r` target, and `OUTBED` the output name:
+To rebin one region, as in the lower half of the figure below, set `WINDOW`,
+`REGIONS` and `OUTBED`. `WINDOW` is the bin width, `REGIONS` any `bcftools -r`
+target, and `OUTBED` the output name. This run uses the same panel and estimator
+at 20 kb over two megabases:
 
 ```bash
 curl -fO https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/build_dog10k_size_fst.sh
@@ -184,20 +184,16 @@ Fst has no p-value, so the cutoff is a
 [reference line](/docs/config/ychannel/#slot-rules) at the 99.9th percentile of
 the scan's windows, which the build script prints beside the ranked
 windows.[^drift] The percentile depends on the window size, so a rebinned scan
-needs a new one. The tallest labelled peak, on chr10, is _HMGA2_, one of the six
-variants [Rimbault et al. 2013](https://doi.org/10.1101/gr.157339.113) fit to
-about half the size variation across breeds.
+needs a new one.
 
-## Slice the IGF1 window out of the SNV callset
+## Slice the IGF1 locus out of the SNV callset
 
 Small breeds share a haplotype at _IGF1_ that large breeds largely lack
 ([Sutter et al. 2007](https://doi.org/10.1126/science.1137045)). The samples are
 the two groups the scan compared plus the Greek gray wolves, taken from the
-Dog10K sample table by breed name. They include whole breeds, because several
-breeds depart from the pattern one animal at a time and the clustering below has
-to show that variation. The SNV callset is a single large VCF over every
-sequenced canid with a tabix index beside it, and `bcftools` reads only the
-window:
+Dog10K sample table by breed name. The SNV callset is a single large VCF over
+every sequenced canid with a tabix index beside it, and `bcftools` reads only
+the window:
 
 <!-- from: scripts/build_dog10k_igf1.sh -->
 
@@ -215,8 +211,14 @@ tabix -C -p vcf dog10k_igf1.vcf.gz
 ```
 
 `igf1.samples` lists one sample name per line, the first column of the samples
-TSV below without its header. A site that is reference in every animal is drawn
-as an empty column, so the second `bcftools view` drops it.
+TSV below without its header:
+
+```bash
+tail -n +2 dog10k_igf1_samples.tsv | cut -f1 > igf1.samples
+```
+
+A site that is reference in every animal is drawn as an empty column, so the
+second `bcftools view` drops it.
 
 ## Load the IGF1 slice with a sample-metadata TSV
 
@@ -290,6 +292,10 @@ with `clusterRegion` beside `runClustering`, as the figure below does:
         "loc": "chr15:41,348,000-41,752,000",
         "tracks": [
           {
+            "type": "GWASTrack",
+            "configuration": "dog10k_igf1_fst"
+          },
+          {
             "type": "VariantTrack",
             "configuration": "dog10k_igf1_haplotype",
             "displays": [
@@ -310,31 +316,49 @@ with `clusterRegion` beside `runClustering`, as the figure below does:
 
 <Video src="/media/dog10k/igf1_cluster_route.mp4" caption="Clustering the rows from the track menu over the peak's core." />
 
-## Read the IGF1 block against per-site Fst
+## Add per-site Fst above the clustered rows
 
 The build script also scores Fst one site at a time over the slice, with the
 scan's estimator and size classes, and writes it as `dog10k_igf1_fst.bed.gz`. It
-loads like the genome scan, as a `GWASTrack` whose `GWASAdapter` takes
-`scoreColumn` `fst` and `columnNames` `chrom`, `chromStart`, `chromEnd`, `name`,
-`fst`, `freqToySmall`, `freqGiant`.
+loads like the genome scan:
+
+```json addtrack
+{
+  "type": "GWASTrack",
+  "trackId": "dog10k_igf1_fst",
+  "name": "Fst per site, toy/small vs giant breeds",
+  "assemblyNames": ["UU_Cfam_GSD_1.0"],
+  "adapter": {
+    "type": "GWASAdapter",
+    "uri": "dog10k_igf1_fst.bed.gz",
+    "csi": true,
+    "columnNames": [
+      "chrom",
+      "chromStart",
+      "chromEnd",
+      "name",
+      "fst",
+      "freqToySmall",
+      "freqGiant"
+    ],
+    "scoreColumn": "fst"
+  },
+  "displayDefaults": {
+    "encoding": {
+      "y": { "axis": { "title": "Hudson Fst" } }
+    }
+  }
+}
+```
 
 Open `chr15:41,348,000-41,752,000` with that Fst track above the clustered
-variant track:
+variant track, as the session above does:
 
 <Figure caption="SNVs across IGF1 as a matrix, one row per canid with its size class as the sidebar swatch, under per-site Fst." src="/img/dog10k-igf1-haplotype.png" />
 
-Reading the matrix against the Fst track above it:
-
-- Clustering on genotypes alone recovers the size split. Both ends of the block
-  fall inside the window, and the block is a run of columns where one class is
-  enriched, since the classes differ by a shift in allele frequency.
-- The Fst track has one point per matrix column. The matrix gives each record
-  equal width and the Fst track keeps genomic spacing, so sloped lines tie each
-  column to its coordinate.
-- Some animals cluster with the other size class: single orange rows sit within
-  the toy and small cluster and single blue rows within the giant one.
-- The wolves form a contiguous band directly below the toy and small block, and
-  have part of its haplotype.
+The Fst track has one point per matrix column. The matrix gives each record
+equal width and the Fst track keeps genomic spacing, so sloped lines tie each
+column to its coordinate.
 
 ## Reproduce it end to end
 
@@ -349,7 +373,7 @@ Two scripts, in order:
   scan's estimator.
 
 The two scripts take their breed groups from the Dog10K sample table by breed
-name, so a sample's class never depends on its genotype.
+name.
 
 ```bash
 BASE=https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts
@@ -368,9 +392,6 @@ region, so any trait in the sample table can substitute. To scan another trait:
   above.
 - Add a column to the samples TSV to color by.
 
-Schall and Kidd (2025) list structural variants whose frequencies track breed
-clades, and those slice from their SV callsets the same way.
-
 ## See also
 
 - [](/docs/tutorials/dog10k_lof)
@@ -388,10 +409,6 @@ clades, and those slice from their SV callsets the same way.
   [Estimating and interpreting FST: the impact of rare variants](https://doi.org/10.1101/gr.154831.113)
 - Hudson et al. (1992).
   [Estimation of levels of gene flow from DNA sequence data](https://doi.org/10.1093/genetics/132.2.583)
-- Rimbault et al. (2013).
-  [Derived variants at six genes explain nearly half of size reduction in dog breeds](https://doi.org/10.1101/gr.157339.113)
-- Schall & Kidd (2025).
-  [Integrative genotyping and analysis of canine structural variation using long-read and short-read data](https://doi.org/10.1093/gbe/evaf173)
 - Sutter et al. (2007).
   [A single IGF1 allele is a major determinant of small size in dogs](https://doi.org/10.1126/science.1137045)
 - Meadows et al. (2023).
