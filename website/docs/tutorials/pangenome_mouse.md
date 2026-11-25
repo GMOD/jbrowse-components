@@ -104,9 +104,9 @@ strains' intact gene is an insertion. To see it:
 
 <Figure caption="Nnt with the RefSeq genes and the bubbles track above the force-directed graph track. The bubble inside Nnt is the sequence the other strains have and C57BL/6J lacks." src="/img/pangenome/graph_mouse_nnt_halos.png" />
 
-The graph records each strain's allele as a segment, not a path, so we read
-which strains have the exons from mm39's liftOver chains, one lane per strain
-assembly. We'll open them at the same gene:
+The graph records each strain's allele as a segment, so we read which strains
+have the exons from mm39's liftOver chains, one lane per strain assembly. We'll
+open them at the same gene:
 
 - Open
   [mm39 on staging.genomes.jbrowse.org](https://staging.genomes.jbrowse.org/ucsc/mm39/)
