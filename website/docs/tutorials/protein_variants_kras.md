@@ -10,7 +10,7 @@ tutorial_category: Transcriptomics & proteins
 tutorial_subcategory: Variants on protein structures
 ---
 
-_KRAS_ encodes a small G protein that switches growth signalling on while it
+_KRAS_ encodes a small G protein that switches growth signaling on while it
 holds GTP. In tumors its missense mutations cluster at a few codons: glycine 12,
 glycine 13 and glutamine 61. A change at any of them keeps the protein in its
 GTP-bound, active state. The drug sotorasib binds KRAS G12C covalently at the

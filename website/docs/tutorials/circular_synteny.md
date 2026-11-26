@@ -265,6 +265,8 @@ both genomes' densities go into one bigWig.
 
 ```bash
 # one chrom.sizes and one GFF3 for the pair, every contig prefixed by genome
+: > hg38ToMm39.chrom.sizes
+: > hg38ToMm39.genes.gff
 for g in hg38 mm39; do
   awk -v g="$g" -F'\t' -v OFS='\t' '{print g "." $1, $2}' "$g.chrom.sizes" >> hg38ToMm39.chrom.sizes
   gzip -dc "$g.genes.gff.gz" | awk -v g="$g" -F'\t' -v OFS='\t' '/^#/ {next} {$1 = g "." $1; print}' >> hg38ToMm39.genes.gff
