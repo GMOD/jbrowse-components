@@ -37,6 +37,20 @@ describe('a pileup that fits', () => {
     )
   })
 
+  it('has none where fitted rows of a fractional pitch fill the box', () => {
+    const pitch = 100 / 22
+    const fitted = {
+      pileupTop: 0,
+      pileupHeight: 22 * pitch,
+      rowsHeight: 22 * pitch,
+      ceilingClipped: false,
+    }
+    expect(exportPileupCut([fitted], pitch, ungrouped(100))).toEqual({
+      cutY: 100,
+      caption: '',
+    })
+  })
+
   it('has none where a drag padded the band past the box but the rows fit', () => {
     expect(
       exportPileupCut(

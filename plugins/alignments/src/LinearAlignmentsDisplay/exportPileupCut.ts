@@ -7,6 +7,9 @@ import type { ScrollModel } from './components/sectionScreen.ts'
 /** Px of the line under the cut that holds its caption. */
 export const CUT_CAPTION_LINE_PX = 13
 
+/** A fitted pitch is fractional, so rows filling the box can sum a hair short of it. */
+const FLOAT_SLACK_ROWS = 1e-6
+
 export interface PileupCutSection {
   pileupTop: number
   pileupHeight: number
@@ -39,7 +42,10 @@ function sectionRows(
     scroll,
   )
   const rowsTo = (y: number) =>
-    Math.min(rows, Math.max(0, Math.floor((y - rowBase) / rowHeight)))
+    Math.min(
+      rows,
+      Math.max(0, Math.floor((y - rowBase) / rowHeight + FLOAT_SLACK_ROWS)),
+    )
   const above = rowsTo(Math.max(0, clipTop))
   const through = Math.max(above, rowsTo(Math.min(limit, bandBottom)))
   return {
