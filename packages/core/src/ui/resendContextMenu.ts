@@ -32,5 +32,5 @@ export function resendContextMenu(
         }),
       )
     }
-  })
+  }, 0)
 }
