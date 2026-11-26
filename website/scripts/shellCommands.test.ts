@@ -142,6 +142,10 @@ test('shell builtins and quickstart plumbing are skipped', () => {
   )
 })
 
+test('the null builtin that empties a file is skipped, spaced or not', () => {
+  expect(toolsAndFlags(': > a.tsv\n: >"$PAIR.gff"')).toEqual([])
+})
+
 test('a brace group is its commands, not a tool called }', () => {
   // Regression: `}` parsed as a tool the build script "does not run", on a
   // fence whose commands all came straight out of it.

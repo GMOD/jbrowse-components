@@ -17,6 +17,7 @@ const IGNORED = new Set([
   // goes. The opening `{` is stepped over in toolsAndFlags instead, since the
   // command it groups follows it on the same line.
   '}',
+  ':',
   'cd',
   'echo',
   'export',
