@@ -5,7 +5,7 @@ import { types } from '@jbrowse/mobx-state-tree'
 
 import { containingHost } from './foundationView.ts'
 
-import type { figureLegendConfigSchema } from './hiddenLegendConfigSchema.ts'
+import type { figureLegendConfigSchema } from './figureLegendConfigSchema.ts'
 import type { ConfigModelForFields } from '@jbrowse/core/configuration'
 import type { ColorScale } from '@jbrowse/core/ui/colorScale'
 import type { LegendSpec } from '@jbrowse/core/ui/legendSpec'

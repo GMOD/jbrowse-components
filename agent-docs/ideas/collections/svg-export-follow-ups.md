@@ -1,6 +1,6 @@
 ---
 name: svg-export-follow-ups
-description: "Small SVG export leftovers from the 2026-11 audit, none needing a ruling: SvgCanvas signatures that let dropped calls compile, pileup label fits measured in sans-serif, feature labels cut at a scrolled track's top, the dotplot export's font held on the view model, a dotplot corner label beside a tick, the breakpoint plugin's copies of two display-kit values, thin golden coverage, callout text outside the circular figure gutter."
+description: "SVG export leftovers from the 2026-11 audit: SvgCanvas signatures letting dropped calls compile, sans-serif pileup label fits, labels cut at a scrolled track's top, the dotplot export font on the view model, a dotplot corner label, duplicated breakpoint values, thin golden coverage, circular callout text."
 ---
 
 # SVG export follow-ups

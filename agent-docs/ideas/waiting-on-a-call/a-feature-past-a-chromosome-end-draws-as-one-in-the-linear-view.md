@@ -1,6 +1,6 @@
 ---
 name: a-feature-past-a-chromosome-end-draws-as-one-in-the-linear-view
-description: The linear view draws a feature crossing a circular origin as two pieces at opposite chromosome ends, and a read's soft clip past the end of a chromosome with no N padding (T2T, de novo assemblies, telomeres) has nowhere to draw. Decide whether either wants a padded or wrapped coordinate range, or stays cut.
+description: A feature crossing a circular origin draws as two pieces at opposite chromosome ends, and a soft clip past an unpadded chromosome end (T2T, de novo, telomeres) has nowhere to draw. Decide whether either wants a padded or wrapped range, or stays cut.
 ---
 
 # A feature past a chromosome end draws as one in the linear view

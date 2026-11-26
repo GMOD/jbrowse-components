@@ -1,6 +1,6 @@
 ---
 name: the-synteny-ramp-key-is-opaque-over-faded-ribbons
-description: A synteny identity or numeric ramp in the key is drawn at full color while the ribbons it explains are faded over the band ground, so a ribbon cannot be matched to a value. Blending the ramp stops fixes the view and breaks parity with the R tables' key, so it lands together with a ggjbrowse change.
+description: A synteny key's ramp is drawn at full color while its ribbons are faded, so a ribbon cannot be matched to a value. Blending the ramp fixes the view but breaks parity with the R tables' key, so it waits on a ggjbrowse change.
 ---
 
 # The synteny ramp key is opaque over faded ribbons
