@@ -23,7 +23,6 @@ export async function renderMultiWaySvg(
 
 function MultiWaySvgBody({
   model,
-  height,
   canvasWidth,
   opts,
 }: LgvSvgBodyProps<MultiWaySyntenyDisplayModel>) {
@@ -44,15 +43,16 @@ function MultiWaySvgBody({
   // track's, with the bands on the export theme's page, which need not be the
   // session's
   const figure = model.figureAt(canvasWidth, palette.background.paper)
+  // drawn as the screen lays it out, less the key row's band above
   return (
-    <>
+    <g transform={`translate(0 ${-model.svgControlsStrip.height})`}>
       <MarkSvgLayer
         marks={MULTIWAY_MARKS}
         regions={figure.cells}
         blocks={multiwayBlocks(state)}
         state={state}
         width={canvasWidth}
-        height={height}
+        height={model.height}
         opts={opts}
       />
       <g transform={`translate(0 ${-model.scrollTop})`}>
@@ -90,6 +90,6 @@ function MultiWaySvgBody({
           </SvgHaloText>
         ))}
       </g>
-    </>
+    </g>
   )
 }

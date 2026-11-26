@@ -2,7 +2,10 @@ import { setConf } from '@jbrowse/core/configuration'
 import { SvgThemeProviders } from '@jbrowse/core/svg/SvgThemeProviders'
 import { SimpleFeature, getSession } from '@jbrowse/core/util'
 import { withFreshSvgClipIds } from '@jbrowse/core/util/SvgCanvas'
-import { SvgLegend } from '@jbrowse/display-kit/renderDisplaySvg'
+import {
+  SvgLegend,
+  exportedHeight,
+} from '@jbrowse/display-kit/renderDisplaySvg'
 import { renderViewTracks } from '@jbrowse/plugin-linear-genome-view'
 import { bandGroundColor, bandInk } from '@jbrowse/synteny-core'
 import { render } from '@testing-library/react'
@@ -328,6 +331,57 @@ test('the export draws each lane color as a bar before its label, in both placem
       'red',
     ])
   }
+})
+
+function drawnY(node: Element) {
+  let y = Number(node.getAttribute('y') ?? 0)
+  for (let el = node.parentElement; el; el = el.parentElement) {
+    const shift = /translate\([-\d.e]+[ ,]+([-\d.e]+)\)/.exec(
+      el.getAttribute('transform') ?? '',
+    )
+    y += Number(shift?.[1] ?? 0)
+  }
+  return y
+}
+
+// The key row is the screen's, an HTML row the export does not draw: its key
+// stands in a gutter of its own, so no empty band opens above the anchor lane
+test('the export leaves out the band the key row stands in on screen', async () => {
+  const display = createDisplay()
+  await when(() => display.anchorRecordsLoaded, { timeout: 5000 })
+  display.setFeatures([
+    new SimpleFeature({
+      uniqueId: 'r1',
+      name: 'galF',
+      refName: 'ctgA',
+      start: 100,
+      end: 200,
+      strand: 1,
+      mate: {
+        assemblyName: 'volvox_random',
+        refName: 'ctgB',
+        start: 100,
+        end: 200,
+      },
+    }),
+  ])
+  await when(() => display.svgReady, { timeout: 5000 })
+  const anchorNameY = async () => {
+    const { container } = render(<svg>{await display.renderSvg()}</svg>)
+    const names = [...container.querySelectorAll('text')].filter(text =>
+      text.textContent.startsWith('volvox  '),
+    )
+    expect(names.length).toBeGreaterThan(0)
+    return drawnY(names[0]!)
+  }
+  const band = display.keyBandPx
+  expect(band).toBeGreaterThan(0)
+  expect(exportedHeight(display)).toBe(display.height - band)
+  const keyed = await anchorNameY()
+  display.setShowLegend(false)
+  expect(display.keyBandPx).toBe(0)
+  expect(exportedHeight(display)).toBe(display.height)
+  expect(await anchorNameY()).toBe(keyed)
 })
 
 // The track's canvas is 2px narrower than the view, which is the export's

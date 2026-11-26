@@ -314,6 +314,7 @@ import type {
   HighlightRect,
   HighlightStyle,
 } from '@jbrowse/display-kit/highlightHost'
+import type { SvgControlsStrip } from '@jbrowse/display-kit/renderDisplaySvg'
 import type { ExportSvgDisplayOptions } from '@jbrowse/display-kit/types'
 import type { ValueRamp } from '@jbrowse/display-kit/valueRamp'
 import type { Instance } from '@jbrowse/mobx-state-tree'
@@ -1229,6 +1230,14 @@ export function stateModelFactory(
        */
       get keyBandPx(): number {
         return this.keyRows * KEY_LINE_PX
+      },
+      /**
+       * #getter
+       * the key row's band as far as it shows above the scroll, which the
+       * SVG export leaves out, keying in a gutter of its own
+       */
+      get svgControlsStrip(): SvgControlsStrip {
+        return { top: 0, height: Math.max(0, this.keyBandPx - self.scrollTop) }
       },
     }))
     .views(self => ({
