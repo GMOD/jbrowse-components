@@ -337,6 +337,15 @@ export function findFeatureViewLevel(
   return undefined
 }
 
+// `configuration.trackId` is `any` through the config model's index signature;
+// reading it as `unknown` first keeps the any out of every caller
+export function trackIdOf({
+  configuration,
+}: Pick<OverlayTrack, 'configuration'>) {
+  const trackId: unknown = configuration.trackId
+  return String(trackId)
+}
+
 // The first row's entries whose key every other row holds too.
 export function inEveryRow<T>(rows: T[][], key: (t: T) => string) {
   const [first = [], ...rest] = rows

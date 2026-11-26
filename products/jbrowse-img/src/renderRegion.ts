@@ -295,7 +295,7 @@ function reportConfigProblems(session: Model['session']) {
 // stderr, since stdout may be carrying the SVG
 function printSkippedSvgNotices(session: Model['session']) {
   addMiddleware(session, (call, next) => {
-    const [message] = call.args
+    const message: unknown = call.args[0]
     if (
       call.name === 'notify' &&
       typeof message === 'string' &&

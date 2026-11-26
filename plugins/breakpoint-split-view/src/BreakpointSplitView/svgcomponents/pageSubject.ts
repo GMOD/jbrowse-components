@@ -1,4 +1,4 @@
-import { awaitSvgReady } from '@jbrowse/core/svg/svgReady'
+import { awaitGateReady } from '@jbrowse/core/svg/svgReady'
 import { svgColorLegendWidth } from '@jbrowse/core/ui/SvgColorLegend'
 import { resolvePalette } from '@jbrowse/core/ui/palette'
 import {
@@ -7,6 +7,7 @@ import {
 } from '@jbrowse/plugin-linear-genome-view'
 
 import { drawnConnectionKey } from '../components/drawnConnectionKey.ts'
+import { trackIdOf } from '../util.ts'
 
 import type { BreakpointViewModel } from '../model.ts'
 import type { ExportSvgOptions } from '../types.ts'
@@ -21,21 +22,19 @@ export const CONNECTION_KEY_INSET = 10
  * minimized in one row still links the rows that show it.
  */
 export function exportedOverlayTrackIds(model: BreakpointViewModel) {
-  return model.overlayTracks
-    .map(track => track.configuration.trackId)
-    .filter(id =>
-      model.views.some(view =>
-        view.tracks.some(t => {
-          const display = t.displays[0]
-          return (
-            t.configuration.trackId === id &&
-            !t.minimized &&
-            display !== undefined &&
-            'renderSvg' in display
-          )
-        }),
-      ),
-    )
+  return model.overlayTracks.map(trackIdOf).filter(id =>
+    model.views.some(view =>
+      view.tracks.some(t => {
+        const display = t.displays[0]
+        return (
+          trackIdOf(t) === id &&
+          !t.minimized &&
+          display !== undefined &&
+          'renderSvg' in display
+        )
+      }),
+    ),
+  )
 }
 
 /**
@@ -80,13 +79,9 @@ export function breakpointPageSubject(
     legendWidth: (theme, fontFamily) =>
       exportedConnectionKey(model, theme, { ...opts, fontFamily }).gutterWidth,
     settled: () =>
-      awaitSvgReady({
-        get svgReady() {
-          return model.overlaySvgReady
-        },
-        get error() {
-          return model.overlayError
-        },
+      awaitGateReady({
+        ready: () => model.overlaySvgReady,
+        error: () => model.overlayError,
       }),
   }
 }

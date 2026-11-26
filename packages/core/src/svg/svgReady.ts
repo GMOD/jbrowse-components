@@ -119,24 +119,53 @@ export async function awaitSvgReady(
   model: Pick<SvgExportable, 'svgReady' | 'error' | 'fetchCanceled'>,
   timeoutMs = SVG_READY_TIMEOUT_MS,
 ) {
+  await awaitReadiness(
+    {
+      ready: () => model.svgReady,
+      error: () => model.error,
+      fetchCanceled: () => model.fetchCanceled,
+    },
+    timeoutMs,
+  )
+}
+
+/**
+ * `awaitSvgReady` for a gate that is not a display: the caller names its
+ * readiness and error reads instead of declaring an `svgReady` getter, which
+ * is the shape that marks a display's own phase.
+ */
+export function awaitGateReady(gate: {
+  ready: () => boolean
+  error: () => unknown
+}) {
+  return awaitReadiness({ ...gate, fetchCanceled: () => false })
+}
+
+async function awaitReadiness(
+  gate: {
+    ready: () => boolean
+    error: () => unknown
+    fetchCanceled: () => boolean | undefined
+  },
+  timeoutMs = SVG_READY_TIMEOUT_MS,
+) {
   // Only the bound is rewritten. A `svgReady` getter that throws rejects here
   // too, and that error is the caller's answer, not a timeout.
-  await when(() => model.svgReady, { timeout: timeoutMs }).catch(
-    (e: unknown) => {
-      throw e instanceof Error && e.message === 'WHEN_TIMEOUT'
-        ? new Error(
-            `a display never became ready to export, after ${Math.round(timeoutMs / 60_000)} minutes. ` +
-              'Every wait here ends on data, an error or a cancel, so this is ' +
-              'none of the three: a gate that cannot converge. Pass a longer ' +
-              'timeoutMs if this export really does take longer than that.',
-          )
-        : e
-    },
-  )
+  await when(gate.ready, { timeout: timeoutMs }).catch((e: unknown) => {
+    throw e instanceof Error && e.message === 'WHEN_TIMEOUT'
+      ? new Error(
+          `a display never became ready to export, after ${Math.round(timeoutMs / 60_000)} minutes. ` +
+            'Every wait here ends on data, an error or a cancel, so this is ' +
+            'none of the three: a gate that cannot converge. Pass a longer ' +
+            'timeoutMs if this export really does take longer than that.',
+        )
+      : e
+  })
+  const error = gate.error()
   throwOnExportErrors([
-    model.error == null && model.fetchCanceled
+    error == null && gate.fetchCanceled()
       ? new Error('data loading was canceled — Retry the track, then export')
-      : model.error,
+      : error,
   ])
 }
 

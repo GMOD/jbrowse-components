@@ -61,6 +61,7 @@ import {
   placeOnRow,
   readSourceOf,
   inEveryRow,
+  trackIdOf,
 } from './util.ts'
 import { getVariantJunctions } from './variantJunctions.ts'
 
@@ -389,7 +390,7 @@ export default function stateModelFactory(pluginManager: PluginManager) {
       get matchedTracks(): OverlayTrack[] {
         return inEveryRow(
           self.views.map(view => view.tracks as OverlayTrack[]),
-          t => t.configuration.trackId,
+          trackIdOf,
         )
       },
 
@@ -468,7 +469,7 @@ export default function stateModelFactory(pluginManager: PluginManager) {
       get overlayFetchKey(): OverlayFetchKey {
         const { tracks, regionsPerView, jexlFilters } = this.overlayFetchInputs
         return {
-          trackIds: tracks.map(track => track.configuration.trackId),
+          trackIds: tracks.map(trackIdOf),
           regionsPerView: regionsPerView.map(blocks =>
             blocks.map(({ assemblyName, refName, start, end }) => ({
               assemblyName,
@@ -714,8 +715,8 @@ export default function stateModelFactory(pluginManager: PluginManager) {
        */
       get variantJunctionsByTrack(): Map<string, Feature[][]> {
         const result = new Map<string, Feature[][]>()
-        for (const { configuration } of this.fetchedTracks) {
-          const trackId = configuration.trackId
+        for (const track of this.fetchedTracks) {
+          const trackId = trackIdOf(track)
           const featureArrays = self.matchedTrackFeatures[trackId]
           if (!featureArrays) {
             continue
@@ -740,7 +741,7 @@ export default function stateModelFactory(pluginManager: PluginManager) {
         const result = new Map<string, ReadChain[]>()
         for (const track of this.overlayTracks) {
           if (overlayKind(track.type) === 'alignment') {
-            const trackId = track.configuration.trackId
+            const trackId = trackIdOf(track)
             result.set(
               trackId,
               buildReadChains(this.readSources(trackId), self.assemblies),
@@ -1010,7 +1011,7 @@ export default function stateModelFactory(pluginManager: PluginManager) {
                 tracks.map(
                   async (track, i) =>
                     [
-                      track.configuration.trackId,
+                      trackIdOf(track),
                       await getBlockFeatures(
                         track,
                         regionsPerView,
