@@ -1,14 +1,13 @@
 ---
 id: hiddenlegend
 title: HiddenLegend
-description: "The legend of a display whose key is off until asked for, a matrix's color ramp or the reads' fill."
+description: "The legend of a display whose key is off until asked for, the reads' fill."
 sidebar_label: Display setting -> HiddenLegend
 ---
 
 Auto-generated from the config schema in the source. See the [config guide](/docs/config_guide) for concepts. Built into JBrowse core. [View source](https://github.com/GMOD/jbrowse-components/blob/main/packages/display-kit/src/hiddenLegendConfigSchema.ts).
 
-The `legend` of a display whose key is off until asked for, a matrix's
-color ramp or the reads' fill.
+The `legend` of a display whose key is off until asked for, the reads' fill.
 
 ## Related links
 

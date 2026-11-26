@@ -19,6 +19,7 @@ session forgets.
 
 ## Related links
 
+- **Extended by:** [FigureLegend](../figurelegend)
 - **Extended by:** [HiddenLegend](../hiddenlegend)
 
 ## Config slots

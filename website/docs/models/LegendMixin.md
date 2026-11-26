@@ -7,13 +7,14 @@ sidebar_label: Mixin -> LegendMixin
 
 Auto-generated from the @jbrowse/mobx-state-tree model in the source. See the [developer guide](/docs/developer_guide/) for concepts. Built into JBrowse core. [View source](https://github.com/GMOD/jbrowse-components/blob/main/packages/display-kit/src/LegendMixin.ts).
 
-The legend, whole. A display declares the color scales it paints with (`colorScales`, a getter hook, and `colorScalesIn` where they follow the theme) and the mixin derives the key from them (`legendSpec`, and `legendSpecIn` for the SVG export, through `legendSpecOf`), keeps the `legend.show` slot's getter and setter (`showLegend`, `setShowLegend`), dismisses sections one at a time (`dismissLegendSection`, undone by re-showing the legend), and answers whether there is a key to offer (`hasLegendKey`). `DisplayChrome` draws the on-screen key and the exporting view the exported one, in a gutter right of the plot, so a display places neither
+The legend, whole. A display declares the color scales it paints with (`colorScales`, a getter hook, and `colorScalesIn` where they follow the theme) and the mixin derives the key from them (`legendSpec`, and `legendSpecIn` for the SVG export, through `legendSpecOf`), keeps the `legend.show` slot's getters and setter (`showLegend`, `showLegendInExport`, `setShowLegend`), dismisses sections one at a time (`dismissLegendSection`, undone by re-showing the legend), and answers whether there is a key to offer (`hasLegendKey`). `DisplayChrome` draws the on-screen key and the exporting view the exported one, in a gutter right of the plot, so a display places neither
 
 A key derived from the scales the painter resolves colors through lists only
 colors that were painted. A legend hand-built from a second copy of the rules
 can list a color nothing painted. Each display declares the `legend` slot,
-`legendConfigSchema` or `hiddenLegendConfigSchema` by its default, so this
-mixin supplies the accessors over it and never the slot.
+`legendConfigSchema`, `hiddenLegendConfigSchema` or
+`figureLegendConfigSchema` by its default, so this mixin supplies the
+accessors over it and never the slot.
 
 ## Volatiles
 
@@ -28,6 +29,7 @@ mixin supplies the accessors over it and never the slot.
 | Member | Description |
 | --- | --- |
 | <span id="getter-showlegend">**showLegend**</span><br><code>boolean</code> | Whether the legend is drawn. |
+| <span id="getter-showlegendinexport">**showLegendInExport**</span><br><code>boolean</code> | Whether an SVG export draws the key: `showLegend`, except that a `legend.show` left unset draws it. |
 | <span id="getter-colorscales">**colorScales**</span><br><code>ColorScale[]</code> | Overridable hook (default none): the color scales this display paints with, in the order the key lists them. Each becomes one section of the legend, so a display with two vocabularies (genotype colors and sample groups) declares two. |
 | <span id="getter-legendright">**legendRight**</span><br><code>number</code> | Overridable hook (default 0): px the on-screen key is pushed left from the key's inset, for a display that draws a column of text down its right edge — the multi-way lanes' scales. Not read by the export. |
 | <span id="getter-legendtop">**legendTop**</span><br><code>number</code> | Overridable hook (default 0): px the on-screen key is pushed down from the key's inset, for a display whose top rows hold the data a reader reads the rest against — the multi-way anchor lane. Not read by the export. |

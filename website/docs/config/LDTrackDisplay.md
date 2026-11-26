@@ -65,7 +65,7 @@ Display slots go on a display entry: `"displays": [{ "type": "LDTrackDisplay", .
 | <span id="slot-connectorsshow">**connectors.show**</span><br>[`boolean`](/docs/config_guides/slot_types#boolean) = <code>true</code> | draw the connector lines and the names above the triangle |
 | <span id="slot-connectorsheight">**connectors.height**</span><br>[`number`](/docs/config_guides/slot_types#number) = <code>100</code> | height of the connector band in pixels, taken from the triangle's; its seam drag writes it |
 | <span id="slot-encoding">**encoding**</span><br>[LDEncoding](../ldencoding) | The cells' channels: `encoding.color`, the statistic the cells show, `field` `r2` or `dprime`, and the linear ramp it paints through over the statistic's 0 to 1. |
-| <span id="slot-legend">**legend**</span><br>[HiddenLegend](../hiddenlegend) | The color ramp's key, off until asked for. |
+| <span id="slot-legend">**legend**</span><br>[FigureLegend](../figurelegend) | The color ramp's key, off on screen until asked for and drawn in an SVG export unless turned off. |
 | <span id="slot-labels">**labels**</span><br>[LDLabels sub-schema](#slot-labelsname) | The text drawn at each variant's tick mark. |
 | <span id="slot-labelsname">**labels.name**</span><br>[LDNameLabel sub-schema](#slot-labelsnameshow) | Each variant's name, above its tick mark. No `field`: an LD SNP carries only the id its file names, its position and its MAF, so the id is the one text there is to draw. |
 | <span id="slot-labelsnameshow">**labels.name.show**</span><br>[`boolean`](/docs/config_guides/slot_types#boolean) = <code>false</code> | draw each variant name above its tick mark<br>_advanced_ |

@@ -124,7 +124,7 @@ From [BaseDisplay](../basedisplay): <span id="getter-parenttrack">[`parentTrack`
 | Member | Description |
 | --- | --- |
 | <span id="method-isvisible">**isVisible**</span><br><code>(feature: Feature) =&gt; boolean</code> | whether `visibleFeatureIds` leaves a record drawn |
-| <span id="method-shapeat">**shapeAt**</span><br><code>(i: number) =&gt; ChordShape &#124; undefined</code> | lane `i` as the SVG side draws it, on the unrotated figure; undefined for a chord whose ends are under a pixel apart |
+| <span id="method-shapeat">**shapeAt**</span><br><code>(i: number, stage: ChordStage) =&gt; ChordShape &#124; undefined</code> | lane `i` as the SVG side draws it, on `stage`; undefined for a chord whose ends are under a pixel apart |
 | <span id="method-laneat">**laneAt**</span><br><code>(x: number, y: number) =&gt; number &#124; undefined</code> | the chord passing nearest a figure point, within `CHORD_HIT_PX` |
 | <span id="method-shapelabel">**shapeLabel**</span><br><code>(feature: Feature) =&gt; string</code> |  |
 | <span id="method-swatchcolor">**swatchColor**</span><br><code>(color: string) =&gt; string</code> | a key swatch for `encoding.color`, faded as the chords draw it |
@@ -132,11 +132,11 @@ From [BaseDisplay](../basedisplay): <span id="getter-parenttrack">[`parentTrack`
 | <span id="method-trackmenuitems">**trackMenuItems**</span><br><code>() =&gt; MenuItem[]</code> | Color by and Advanced → Edit plot..., which the circular view shows under its Tracks menu |
 
 <details class="inherited-members" data-pagefind-ignore>
-<summary>16 inherited methods from 4 models</summary>
+<summary>18 inherited methods from 4 models</summary>
 
 From [ParkedColorMixin](../parkedcolormixin): <span id="method-parkedcolorof">[`parkedColorOf`](../parkedcolormixin#method-parkedcolorof)</span>
 
-From [BaseChordDisplay](../basechorddisplay): <span id="method-shapefor">[`shapeFor`](../basechorddisplay#method-shapefor)</span>, <span id="method-shapepathfor">[`shapePathFor`](../basechorddisplay#method-shapepathfor)</span>, <span id="method-hitat">[`hitAt`](../basechorddisplay#method-hitat)</span>, <span id="method-assemblyof">[`assemblyOf`](../basechorddisplay#method-assemblyof)</span>, <span id="method-canonicalrefname">[`canonicalRefName`](../basechorddisplay#method-canonicalrefname)</span>, <span id="method-placeend">[`placeEnd`](../basechorddisplay#method-placeend)</span>, <span id="method-axisslice">[`axisSlice`](../basechorddisplay#method-axisslice)</span>
+From [BaseChordDisplay](../basechorddisplay): <span id="method-stageat">[`stageAt`](../basechorddisplay#method-stageat)</span>, <span id="method-shapefor">[`shapeFor`](../basechorddisplay#method-shapefor)</span>, <span id="method-shapesat">[`shapesAt`](../basechorddisplay#method-shapesat)</span>, <span id="method-shapepathfor">[`shapePathFor`](../basechorddisplay#method-shapepathfor)</span>, <span id="method-hitat">[`hitAt`](../basechorddisplay#method-hitat)</span>, <span id="method-assemblyof">[`assemblyOf`](../basechorddisplay#method-assemblyof)</span>, <span id="method-canonicalrefname">[`canonicalRefName`](../basechorddisplay#method-canonicalrefname)</span>, <span id="method-placeend">[`placeEnd`](../basechorddisplay#method-placeend)</span>, <span id="method-axisslice">[`axisSlice`](../basechorddisplay#method-axisslice)</span>
 
 From [RegionTooLargeMixin](../regiontoolargemixin): <span id="method-gatefetchstate">[`gateFetchState`](../regiontoolargemixin#method-gatefetchstate)</span>, <span id="method-resolvedbytelimit">[`resolvedByteLimit`](../regiontoolargemixin#method-resolvedbytelimit)</span>
 

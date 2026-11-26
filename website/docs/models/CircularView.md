@@ -208,7 +208,7 @@ From [BaseViewModel](../baseviewmodel): <span id="getter-rendersdisplays">[`rend
 | <span id="method-bandcenter">**bandCenter**</span><br><code>(key: string) =&gt; [number, number] &#124; undefined</code> | the middle of the ideogram band `key` names, CSS px from the circle's centre in the screen frame: the point `bandAt` answers `key` for |
 | <span id="method-lineartracksfor">**linearTracksFor**</span><br><code>(assemblyName: string) =&gt; TrackInit[]</code> | the tracks a linear view of one genome on this circle opens with: each track on that genome but the synteny tracks, a ring as its display and a chord track as the linear view's own |
 | <span id="method-tracksmenuitem">**tracksMenuItem**</span><br><code>() =&gt; MenuItem</code> | each track's own menu, which on a linear view hangs off its label and on the circle has nowhere else to go |
-| <span id="method-legendspecin">**legendSpecIn**</span><br><code>(palette?: JBrowsePalette) =&gt; LegendSpec</code> | `legendSpec` in another theme, the SVG export's |
+| <span id="method-legendspecin">**legendSpecIn**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>(palette?, undrawnIds?) =&gt; LegendSpec</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>(palette?: JBrowsePalette, undrawnIds?: readonly string[]) =&gt; LegendSpec</code></pre></dialog></span> | `legendSpec` in another theme, the SVG export's, without the tracks whose displays the export left out |
 | <span id="method-menuitems">**menuItems**</span><br><code>() =&gt; MenuItem[]</code> | return the view menu items |
 
 <details class="inherited-members" data-pagefind-ignore>

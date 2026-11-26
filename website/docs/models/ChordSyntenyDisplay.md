@@ -116,7 +116,7 @@ From [BaseDisplay](../basedisplay): <span id="getter-parenttrack">[`parentTrack`
 <!-- prettier-ignore -->
 | Member | Description |
 | --- | --- |
-| <span id="method-shapeat">**shapeAt**</span><br><code>(i: number) =&gt; RibbonShape</code> | lane `i` as the SVG side draws it, on the unrotated figure |
+| <span id="method-shapeat">**shapeAt**</span><br><code>(i: number, stage: ChordStage) =&gt; RibbonShape</code> | lane `i` as the SVG side draws it, on `stage` |
 | <span id="method-shapelabel">**shapeLabel**</span><br><code>(feature: Feature) =&gt; string</code> |  |
 | <span id="method-alignmentsbetween">**alignmentsBetween**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>(referenceAssembly, currentAssembly) =&gt; AlignmentData[]</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>(referenceAssembly: string, currentAssembly: string) =&gt; AlignmentData[]</code></pre></dialog></span> | the held alignments joining two assemblies on the circle, in canonical refNames and oriented reference side first, which is what the view's reorder reads instead of fetching the file again |
 | <span id="method-partnerspans">**partnerSpans**</span><br><code>(index: number) =&gt; PartnerSpan[]</code> | each drawn alignment's stretch on slice `index`, named by the chromosome at its other end |
@@ -125,9 +125,9 @@ From [BaseDisplay](../basedisplay): <span id="getter-parenttrack">[`parentTrack`
 | <span id="method-trackmenuitems">**trackMenuItems**</span><br><code>() =&gt; MenuItem[]</code> |  |
 
 <details class="inherited-members" data-pagefind-ignore>
-<summary>15 inherited methods from 3 models</summary>
+<summary>17 inherited methods from 3 models</summary>
 
-From [BaseChordDisplay](../basechorddisplay): <span id="method-shapefor">[`shapeFor`](../basechorddisplay#method-shapefor)</span>, <span id="method-shapepathfor">[`shapePathFor`](../basechorddisplay#method-shapepathfor)</span>, <span id="method-hitat">[`hitAt`](../basechorddisplay#method-hitat)</span>, <span id="method-assemblyof">[`assemblyOf`](../basechorddisplay#method-assemblyof)</span>, <span id="method-canonicalrefname">[`canonicalRefName`](../basechorddisplay#method-canonicalrefname)</span>, <span id="method-placeend">[`placeEnd`](../basechorddisplay#method-placeend)</span>, <span id="method-axisslice">[`axisSlice`](../basechorddisplay#method-axisslice)</span>
+From [BaseChordDisplay](../basechorddisplay): <span id="method-stageat">[`stageAt`](../basechorddisplay#method-stageat)</span>, <span id="method-shapefor">[`shapeFor`](../basechorddisplay#method-shapefor)</span>, <span id="method-shapesat">[`shapesAt`](../basechorddisplay#method-shapesat)</span>, <span id="method-shapepathfor">[`shapePathFor`](../basechorddisplay#method-shapepathfor)</span>, <span id="method-hitat">[`hitAt`](../basechorddisplay#method-hitat)</span>, <span id="method-assemblyof">[`assemblyOf`](../basechorddisplay#method-assemblyof)</span>, <span id="method-canonicalrefname">[`canonicalRefName`](../basechorddisplay#method-canonicalrefname)</span>, <span id="method-placeend">[`placeEnd`](../basechorddisplay#method-placeend)</span>, <span id="method-axisslice">[`axisSlice`](../basechorddisplay#method-axisslice)</span>
 
 From [RegionTooLargeMixin](../regiontoolargemixin): <span id="method-gatefetchstate">[`gateFetchState`](../regiontoolargemixin#method-gatefetchstate)</span>, <span id="method-resolvedbytelimit">[`resolvedByteLimit`](../regiontoolargemixin#method-resolvedbytelimit)</span>
 

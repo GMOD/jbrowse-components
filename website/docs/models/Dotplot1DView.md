@@ -26,8 +26,9 @@ ref https://mobx-state-tree.js.org/concepts/volatiles on volatile state used her
 | <span id="getter-refnamelabels">**refNameLabels**</span><br><code>Map&lt;string, string&gt;</code> | refName -> the string the axis prints for it. Off displayedRegions rather than the visible blocks, so panning and zooming can't change a label, and handed to `labelMarginPx` so the margin is sized against the very strings drawn. |
 | <span id="getter-ticks">**ticks**</span><br><code>Tick[]</code> |  |
 | <span id="getter-visibletickpositions">**visibleTickPositions**</span><br><code>VisibleTick[]</code> | The ticks inside the drawn axis, thinned to what can be read and flagged for labelling. Clipped before thinning: spacing is a question about what is on screen, and offscreen ticks (staticBlocks run a screen past each edge) would otherwise claim slots from visible ones. |
-| <span id="getter-blocklabelkeystohide">**blockLabelKeysToHide**</span><br><code>Set&lt;string&gt;</code> | Block-label keys whose labels would overlap, and are hidden |
 | <span id="getter-regionsignature">**regionSignature**</span><br><code>string</code> | Signature of the displayed-region order and orientation, which a diagonalize reorder/flip changes and a zoom or pan does not. Its own primitive-valued computed so every display's fetch key reads it without rebuilding a string per region on each wheel step. |
+| <span id="getter-blocklabelkeystohide">**blockLabelKeysToHide**</span><br><code>Set&lt;string&gt;</code> | Block-label keys whose labels would overlap, and are hidden |
+| <span id="getter-refnamelabelstartspx">**refNameLabelStartsPx**</span><br><code>number[]</code> | Where each drawn refName label starts along the axis, which no tick label prints over |
 
 ## Actions
 

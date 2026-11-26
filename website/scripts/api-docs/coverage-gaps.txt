@@ -48,7 +48,7 @@ Dotplot1DView
 LinearSyntenyViewHelper
 TimeTraveller
 
-# model members with no description (1228)
+# model members with no description (1238)
 # fix: write a sentence under the member’s #property/#volatile/#getter/#method/#action tag
 AddTrackModel.adapterHint
 AddTrackModel.altAssemblyName
@@ -363,6 +363,7 @@ DotplotView.initializeDisplayedRegions
 DotplotView.initialized
 DotplotView.menuItems
 DotplotView.setAssemblyNames
+DotplotView.setAxisFontFamily
 DotplotView.setAxisGrid
 DotplotView.setAxisLabels
 DotplotView.setCursorMode
@@ -968,6 +969,8 @@ MultiWaySyntenyDisplay.anchorLocString
 MultiWaySyntenyDisplay.anchorRecordsLoaded
 MultiWaySyntenyDisplay.anchorReversed
 MultiWaySyntenyDisplay.anchorRule
+MultiWaySyntenyDisplay.anchorRuleAt
+MultiWaySyntenyDisplay.anchorTickXs
 MultiWaySyntenyDisplay.anchorlessGroups
 MultiWaySyntenyDisplay.animating
 MultiWaySyntenyDisplay.awaitingDependentData
@@ -1015,6 +1018,7 @@ MultiWaySyntenyDisplay.hoveredGroupKey
 MultiWaySyntenyDisplay.inlineLaneNames
 MultiWaySyntenyDisplay.laneAssemblyConfs
 MultiWaySyntenyDisplay.laneBoxNames
+MultiWaySyntenyDisplay.laneCells
 MultiWaySyntenyDisplay.laneDecisions
 MultiWaySyntenyDisplay.laneDescriptions
 MultiWaySyntenyDisplay.laneDragPx
@@ -1027,8 +1031,10 @@ MultiWaySyntenyDisplay.laneGlyphCells
 MultiWaySyntenyDisplay.laneHeaderRows
 MultiWaySyntenyDisplay.laneLabel
 MultiWaySyntenyDisplay.laneLayerCells
+MultiWaySyntenyDisplay.laneLayerCellsOn
 MultiWaySyntenyDisplay.laneLayerData
 MultiWaySyntenyDisplay.laneLayerHeights
+MultiWaySyntenyDisplay.laneLayerPlacements
 MultiWaySyntenyDisplay.laneLayerSources
 MultiWaySyntenyDisplay.laneLayerTemplates
 MultiWaySyntenyDisplay.laneLayerTitles
@@ -1037,6 +1043,7 @@ MultiWaySyntenyDisplay.laneMaps
 MultiWaySyntenyDisplay.laneMotionClockMs
 MultiWaySyntenyDisplay.laneMotionHalfway
 MultiWaySyntenyDisplay.lanePairs
+MultiWaySyntenyDisplay.laneStack
 MultiWaySyntenyDisplay.laneTransitions
 MultiWaySyntenyDisplay.lanesBeingDescribed
 MultiWaySyntenyDisplay.layerPx
@@ -1062,6 +1069,7 @@ MultiWaySyntenyDisplay.ribbonColor
 MultiWaySyntenyDisplay.ribbonColorAttributes
 MultiWaySyntenyDisplay.ribbonColorDomain
 MultiWaySyntenyDisplay.ribbonColorField
+MultiWaySyntenyDisplay.ribbonGeometry
 MultiWaySyntenyDisplay.ribbonPaint
 MultiWaySyntenyDisplay.ribbonPickState
 MultiWaySyntenyDisplay.rowFrames
@@ -1094,6 +1102,7 @@ MultiWaySyntenyDisplay.showLaneTicks
 MultiWaySyntenyDisplay.starAnchor
 MultiWaySyntenyDisplay.startRenderingBackend
 MultiWaySyntenyDisplay.tickGeometry
+MultiWaySyntenyDisplay.tickGeometryAt
 MultiWaySyntenyDisplay.tickIntervalBp
 MultiWaySyntenyDisplay.trackAssemblyNames
 MultiWaySyntenyDisplay.trackMenuItems
