@@ -207,7 +207,8 @@ displays or a display's parts, with the ruling on each.
 - CONFIG_SPELLINGS.md's "Open differences" list is empty, each entry ruled
   as kept or respelled. Each ruling pins its variants' members, so a changed
   member stops `pnpm autogen` until its why is re-read. A display that moves
-  between two existing variants passes the pin.
+  between two existing variants passes the pin. Held on 2026-11-26: the list
+  reads "None."
 - The meter shows no shared-path change, respell, addition or removal, past
   the last one "Measuring churn" lists.
 - Every `retired` key, `retiredState` key and `retiredTypes` entry maps a
@@ -244,6 +245,7 @@ displays or a display's parts, with the ruling on each.
   `release.ts` prepends to `CHANGELOG.md`) reaches main. Sessions edit it as
   features land; a sweep at the release candidate adds what never got a line
   and moves its `changelog-through` marker, which `check-release-drafts.ts`
-  counts from (swept through 3309aa781e on 2026-11-23). The migration
+  counts from (swept through 69cd512933 on 2026-11-25, with two fact-check rounds
+  against main). The migration
   table it can point at is generated
   (`website/docs/config_guides/v4_config_migration.md`).
