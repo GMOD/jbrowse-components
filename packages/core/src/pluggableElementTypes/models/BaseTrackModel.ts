@@ -34,9 +34,6 @@ import {
 import { isSessionModelWithConfigEditing } from '../../util/types/index.ts'
 import { ElementId } from '../../util/types/mst.ts'
 import { displayTypesFedBy } from './baseTrackConfig.ts'
-import { stringifyBED } from './saveTrackFileTypes/bed.ts'
-import { stringifyGBK } from './saveTrackFileTypes/genbank.ts'
-import { stringifyGFF3 } from './saveTrackFileTypes/gff3.ts'
 
 import type PluginManager from '../../PluginManager.ts'
 import type { Assembly } from '../../assemblyManager/assembly.ts'
@@ -551,13 +548,17 @@ export function createBaseTrackModel<SCHEMA extends AnyConfigurationSchemaType>(
           gff3: {
             name: 'GFF3',
             extension: 'gff3',
-            callback: stringifyGFF3,
+            callback: async arg =>
+              (await import('./saveTrackFileTypes/gff3.ts')).stringifyGFF3(arg),
             wholeAcrossOrigin: true,
           },
           genbank: {
             name: 'GenBank',
             extension: 'gbk',
-            callback: stringifyGBK,
+            callback: async arg =>
+              (await import('./saveTrackFileTypes/genbank.ts')).stringifyGBK(
+                arg,
+              ),
             wholeAcrossOrigin: true,
             helpText:
               'Note: GenBank format export is experimental. The generated output may not fully conform to the GenBank specification and should be validated before use in production workflows.',
@@ -565,7 +566,8 @@ export function createBaseTrackModel<SCHEMA extends AnyConfigurationSchemaType>(
           bed: {
             name: 'BED',
             extension: 'bed',
-            callback: stringifyBED,
+            callback: async arg =>
+              (await import('./saveTrackFileTypes/bed.ts')).stringifyBED(arg),
           },
         }
       },
