@@ -377,7 +377,7 @@ track, so the tumour render has them and the normal render has none.
 ```bash
 jb2export breakpoint --config https://jbrowse.org/demos/cancer_sv/config.json \
   --assembly hg38 \
-  --track COLO829_tumor_ont height:130 force:true featureHeight:super-compact \
+  --track COLO829_tumor_ont height:167 force:true featureHeight:super-compact \
   --loc chr3:25,358,511-25,359,711 --loc chr10:58,716,962-58,718,162 \
   --loc chr12:72,272,512-72,273,712 --width 1000 --out sv_review_tumor.png
 ```
@@ -391,7 +391,7 @@ Then the same command with the other sample's track:
 ```bash
 jb2export breakpoint --config https://jbrowse.org/demos/cancer_sv/config.json \
   --assembly hg38 \
-  --track COLO829BL_normal_ont height:130 force:true featureHeight:super-compact \
+  --track COLO829BL_normal_ont height:167 force:true featureHeight:super-compact \
   --loc chr3:25,358,511-25,359,711 --loc chr10:58,716,962-58,718,162 \
   --loc chr12:72,272,512-72,273,712 --width 1000 --out sv_review_normal.png
 ```
@@ -416,7 +416,7 @@ an assembly in the same config, so only the `--assembly` argument changes.
 ```bash
 jb2export --config https://jbrowse.org/demos/cancer_sv/config.json \
   --assembly der3_RARB_BICC1_TRHDE --track der3_segments height:128 \
-  --track reads_vs_der3 height:440 --loc der3_RARB_BICC1_TRHDE:1-39,549 \
+  --track reads_vs_der3 height:441 --loc der3_RARB_BICC1_TRHDE:1-39,549 \
   --width 1000 --out sv_review_derivative.png
 ```
 
