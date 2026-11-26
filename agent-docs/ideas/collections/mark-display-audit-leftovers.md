@@ -1,17 +1,17 @@
 ---
-name: mark-display-audit
-description: "An audit of LinearMarkDisplay (plugins/marks, the worker encoder, Edit plot, hover, legend, export) on 2026-11-21, its checked and hover items fixed: the interval bins the fused kernel leaves unclipped await a ruling, and two link-identity pointers are unread."
+name: mark-display-audit-leftovers
+description: "What the 2026-11-21 LinearMarkDisplay audit left: the interval bins ADR-197's fused kernel leaves unclipped still cut a long feature at any zoom and await a ruling, and two link-identity bugs across assemblies are read, not run."
 ---
 
-# Mark display audit
+# Mark display audit leftovers
 
 A pass over `plugins/marks/src/LinearMarkDisplay`, the worker side in
 `packages/core/src/util` (`markEncoding.ts`, `featureTransforms.ts`,
 `stepTables.ts`) and the hover, legend and export path. Three Opus readers took
 a slice each; the main session read `model.ts`, `markConfigViews.ts`,
 `markResolveViews.ts`, `markRequest.ts`, `markList.ts` and the default-plot
-scan, and found those sound. The items it checked were fixed on this stack,
-each with a test; what is below is left.
+scan, and found those sound. The items it checked were fixed, each with a
+test; what is below is left, re-read against main on 2026-11-26.
 
 Each item says how far it was checked. "Checked" means the main session read
 the cited code after the reader reported it; "traced" means a reviewer followed
@@ -31,7 +31,8 @@ it through the code.
     matches the draw;
   - a fused pair in a layer's own steps followed by any step `isRowwise`
     (`stepOutputs.ts`) says is not row-wise or that writes `refName`, `start`
-    or `end`, or a pair right after `cells`.
+    or `end`, or a pair right after a `cells` it fuses with (since
+    `9c93d06f4e` a `cells` that cannot fuse clips).
 
 ## Pointers from the hover fix, read, not run
 

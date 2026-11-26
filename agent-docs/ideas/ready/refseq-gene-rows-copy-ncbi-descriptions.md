@@ -1,6 +1,6 @@
 ---
-name: refseq-gene-descriptions
-description: "Description lines on the hosted UCSC-converted RefSeq gene tracks: a one-transcript gene reads its transcript's product, a variant name included, and a multi-transcript gene reads nothing. NCBI's GFF has a short description on every gene, which the converter could copy onto gene rows."
+name: refseq-gene-rows-copy-ncbi-descriptions
+description: "A multi-transcript gene on the hosted UCSC-converted RefSeq tracks draws no description line, and a one-transcript gene reads its transcript's product. jb2hubs' converter can copy NCBI's short gene description onto gene rows; this repo needs no change."
 ---
 
 # RefSeq gene descriptions

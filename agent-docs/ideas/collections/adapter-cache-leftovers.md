@@ -1,6 +1,6 @@
 ---
 name: adapter-cache-leftovers
-description: "What a reviewed audit of dataAdapterCache still leaves open: claims nothing releases on worker drivers, the tables trim's weight total, credential churn that needs a generation number, an unmeasured rehash of unstamped configs, lane layers and two nits."
+description: "What the 2026-11-21 dataAdapterCache audit left open, none of it wrong data: claims nothing releases on worker drivers, the tables trim forgetting a held adapter's whole-file bytes, credential churn needing a generation number, an unmeasured config rehash, lane layers, nits."
 ---
 
 # Adapter cache leftovers
@@ -14,7 +14,7 @@ None of what is left returns wrong data in the shipped app. A hand-set
 that is kept, and the FromConfig slot descriptions and the agent docs now say
 to leave the slot unset.
 
-## Next
+## Higher
 
 - **Claims nothing releases, on worker drivers.** `fetchSeq.ts` and LGV's
   `fetchSequence.ts` call under the literal `'getSequence'`, the

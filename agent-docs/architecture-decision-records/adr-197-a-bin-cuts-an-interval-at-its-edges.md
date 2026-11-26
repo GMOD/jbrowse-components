@@ -129,7 +129,7 @@ for the interval case as an explicit spelling.
   step follows still cut a row along its whole length, into length over step
   pieces at any zoom: a mark's `maxBpPerPx` bounds only how far out the view
   goes, not a long feature at a close zoom. These stay open in
-  [mark-display-audit](../handoffs/mark-display-audit.md), and the warning for
+  [mark-display-audit-leftovers](../ideas/collections/mark-display-audit-leftovers.md), and the warning for
   a fine `step` stays declined for them too; no rule guesses which feature is
   long.
 - The `marks_maf_identity` track in the volvox marks config declares the

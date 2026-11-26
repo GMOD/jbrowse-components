@@ -914,7 +914,7 @@ three pools that share no space, each under one setting, `limit`
   neither it nor `clearCache()` evicts an adapter another claim still holds, so
   that adapter counts toward no total while it stays cached; what that leaves
   open is in
-  [handoffs/adapter-cache-leftovers.md](../handoffs/adapter-cache-leftovers.md).
+  [ideas/collections/adapter-cache-leftovers.md](../ideas/collections/adapter-cache-leftovers.md).
 - **Every tables lookup passes the sequence adapter** through `tablesAdapter` or
   `tablesFeatureAdapter` (`@jbrowse/core/data_adapters/getFeatureAdapter`); lint
   enforces it, since core keys a BAM, SAM or CRAM on it.

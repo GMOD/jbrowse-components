@@ -44,7 +44,14 @@ once per display that embeds it, so read the trend, not the size.
 surface on one page, its first table each path whose members differ between
 displays or a display's parts, with the ruling on each.
 
-- The last shared-path change is the wiggle display's byte gate
+- The last shared-path change is `piece` on the multi-way lanes (2026-11-25,
+  +2 shared, b15d7dcefc): `MultiWaySyntenyDisplay.rows.field` and the `rows`
+  shorthand take `piece`, giving each further piece a haplotype source places
+  a lane of its own. Additive.
+- Before it, `samplesTsvLocation` on BedGraphAdapter and BedGraphTabixAdapter
+  (2026-11-24, +24 shared, e78316f146), per-sample attributes for a bedGraph's
+  value columns as a multi-BigWig's has. Additive.
+- Before it, the wiggle display's byte gate
   (2026-11-23, +2 shared, 27068f9c00): `LinearWiggleDisplay.fetchSizeLimit`
   and `forceLoad`, the shared gate fields spelled as every other gated
   display spells them, so a zoomed-out GC track asks before reading the

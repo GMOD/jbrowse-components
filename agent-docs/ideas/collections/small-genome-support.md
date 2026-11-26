@@ -1,6 +1,6 @@
 ---
 name: small-genome-support
-description: "Bacterial, viral and mitochondrial genomes after the GenBank reader, the open-genome form and the export fixes landed and deep amplicon BAMs were measured: a feature track beside a GenBank genome, and a ruling on a search hit that crosses a circular origin."
+description: "Bacterial, viral and mitochondrial genome follow-ups left after the GenBank reader and open-genome form landed: a feature track from a GenBank in the form, a ruling on a search hit crossing a circular origin, deep-reads doc pointers, retired GenBank qualifiers."
 ---
 
 # Small-genome support
@@ -11,7 +11,7 @@ around `4d6355a975`). Already filed elsewhere, not repeated here:
 in `packages/core/src/util/originCut.ts` (origin cuts outside GFF3, a wrapping
 locstring).
 
-## Next
+## Open
 
 - **Deep amplicon reads: the passage is in `config_guides/tracks.md` only.**
   `website/docs/tutorials/genomes_basics.md` and the BAM and CRAM adapter docs
