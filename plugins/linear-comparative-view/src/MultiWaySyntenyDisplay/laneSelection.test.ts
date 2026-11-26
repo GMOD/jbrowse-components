@@ -1,6 +1,6 @@
 import { SimpleFeature } from '@jbrowse/core/util'
 
-import { fileUnderCopies } from './copyLane.ts'
+import { fileUnderCopies, fileUnderPieces, lanesPlacedIn } from './copyLane.ts'
 import { laneOrderAfterDrop, sortAfterDrop } from './laneDrag.ts'
 import {
   anchorRowOf,
@@ -36,25 +36,38 @@ test('a hide appends to the hidden lanes once, by key', () => {
 })
 
 test('a show unhides, and joins the lanes in force where they leave it out', () => {
+  const lanes = ['a', 'b']
   expect(
-    withLaneShown({ kept: [], hidden: ['a'], configured: [] }, 'A', keyOf),
+    withLaneShown(
+      { kept: [], hidden: ['a'], configured: [], lanes },
+      'A',
+      keyOf,
+    ),
   ).toEqual({ kept: [], hidden: [] })
   expect(
     withLaneShown(
-      { kept: ['a', 'b'], hidden: ['a'], configured: [] },
+      { kept: ['a', 'b'], hidden: ['a'], configured: [], lanes },
       'a',
       keyOf,
     ),
   ).toEqual({ kept: ['a', 'b'], hidden: [] })
   expect(
-    withLaneShown({ kept: ['b'], hidden: [], configured: [] }, 'a', keyOf),
+    withLaneShown(
+      { kept: ['b'], hidden: [], configured: [], lanes },
+      'a',
+      keyOf,
+    ),
   ).toEqual({ kept: ['b', 'a'], hidden: [] })
   // the configured lanes are the choice in force when none is written
   expect(
-    withLaneShown({ kept: [], hidden: [], configured: ['b'] }, 'a', keyOf),
+    withLaneShown(
+      { kept: [], hidden: [], configured: ['b'], lanes },
+      'a',
+      keyOf,
+    ),
   ).toEqual({ kept: ['b', 'a'], hidden: [] })
   expect(
-    withLaneShown({ kept: [], hidden: [], configured: [] }, 'a', keyOf),
+    withLaneShown({ kept: [], hidden: [], configured: [], lanes }, 'a', keyOf),
   ).toEqual({ kept: [], hidden: [] })
 })
 
@@ -483,6 +496,85 @@ describe('the lane dialog with copy lanes', () => {
         keyOf,
       ),
     ).toEqual(['grape', '{grape}chr11', '{grape}chr4'])
+  })
+})
+
+// a reload files the piece afresh, so it returns under its new first base
+describe('a piece hidden or kept under the name an earlier filing gave it', () => {
+  const { groups } = fileUnderPieces(
+    groupFeatures(
+      ['HG00097.1', 'HG00099.1'].map(
+        (assemblyName, i) =>
+          new SimpleFeature({
+            uniqueId: `r${i}`,
+            refName: 'chr1',
+            start: 0,
+            end: 5000,
+            name: `g${i}`,
+            mate: {
+              assemblyName,
+              refName: 'CM094061.1',
+              start: 21_917_106,
+              end: 21_922_106,
+            },
+          }),
+      ),
+    ),
+    0,
+  )
+  const lanes = [...lanesPlacedIn(groups)]
+  const piece = '{HG00097.1}CM094061.1[21917106]'
+  const earlier = '{HG00097.1}CM094061.1[21912395]'
+  const other = '{HG00099.1}CM094061.1[21917106]'
+  const viewOf = (selection: string[] | undefined, hidden: string[]) => ({
+    rows: laneRowsOf({
+      groups,
+      placeless: [],
+      anchor: 'hg38',
+      preferred: [],
+      selection,
+      hidden,
+      keyOf,
+    }),
+    drawn: laneUniverseOf({
+      anchor: 'hg38',
+      mateNames: lanes,
+      declared: [],
+      trackAssemblies: [],
+      keyOf,
+      labelOf: name => name,
+      selection,
+      hidden,
+      featuresLoaded: true,
+      landedLanes: undefined,
+    }).flatMap(lane => (lane.drawn ? [lane.name] : [])),
+  })
+
+  test('hidden, it stays out of the rows and the dialog, and showing its piece unhides it', () => {
+    expect(lanes.toSorted()).toEqual([piece, other])
+    const hidden = viewOf(undefined, [earlier])
+    expect(hidden.rows).toEqual([other])
+    expect(hidden.drawn).toEqual(hidden.rows)
+    expect(
+      withLaneShown(
+        { kept: [], hidden: [earlier], configured: [], lanes },
+        piece,
+        keyOf,
+      ),
+    ).toEqual({ kept: [], hidden: [] })
+  })
+
+  test('kept, it draws in the rows and the dialog, and showing its piece leaves rows.kept as written', () => {
+    const kept = viewOf([earlier], [])
+    expect(kept.rows).toEqual([piece])
+    expect(kept.drawn).toEqual(kept.rows)
+    expect(
+      withLaneShown(
+        { kept: [earlier], hidden: [], configured: [], lanes },
+        piece,
+        keyOf,
+      ),
+    ).toEqual({ kept: [earlier], hidden: [] })
   })
 })
 

@@ -669,6 +669,7 @@ export function laneSelectionActions(self: LaneSelectionActionsHost) {
           kept: choice,
           hidden: self.hiddenLanes,
           configured: self.configuredLanes,
+          lanes: self.laneUniverse.map(lane => lane.name),
         },
         assemblyName,
         self.laneKey,

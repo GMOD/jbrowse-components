@@ -81,16 +81,42 @@ function chosenLaneTest(
 }
 
 /**
- * Whether a lane draws: chosen by the selection in force, and hidden neither
- * by its own name nor, for a copy lane, by its genome's
+ * The lanes among `lanes` that a name `rows.kept` or the hidden lanes hold
+ * stands for: the lane holding it, else, for a piece no lane holds, named by
+ * another filing, its contig's pieces where kept and the one whose first base
+ * is nearest the name's where hidden
+ */
+function heldLaneNamesIn(lanes: readonly string[], keyOf: KeyOf) {
+  const held = new Set(lanes.map(keyOf))
+  const contigFiledElsewhere = (name: string) =>
+    held.has(keyOf(name)) ? undefined : pieceContig(name)
+  return {
+    kept: (name: string) => {
+      const contig = contigFiledElsewhere(name)
+      return contig === undefined
+        ? [name]
+        : lanes.filter(lane => pieceContig(lane) === contig)
+    },
+    hidden: (name: string) =>
+      contigFiledElsewhere(name) === undefined
+        ? name
+        : (nearestPiece(name, lanes) ?? name),
+  }
+}
+
+/**
+ * Whether a lane among `lanes` draws: chosen by the selection in force, and
+ * hidden neither by its own name nor, for a copy lane, by its genome's
  */
 function drawnLaneTest(
   selection: readonly string[] | undefined,
   hidden: readonly string[],
+  lanes: readonly string[],
   keyOf: KeyOf,
 ) {
-  const chosen = chosenLaneTest(selection, keyOf)
-  const hiddenKeys = new Set(hidden.map(keyOf))
+  const names = heldLaneNamesIn(lanes, keyOf)
+  const chosen = chosenLaneTest(selection?.flatMap(names.kept), keyOf)
+  const hiddenKeys = new Set(hidden.map(name => keyOf(names.hidden(name))))
   return (name: string) =>
     chosen(name) &&
     !hiddenKeys.has(keyOf(name)) &&
@@ -201,21 +227,6 @@ export function laneColorOf(
   )
 }
 
-/** a piece no row holds, named by another fetch, stands for its contig's rows */
-function heldPieces(
-  selection: readonly string[] | undefined,
-  rows: readonly string[],
-  keyOf: KeyOf,
-) {
-  const held = new Set(rows.map(keyOf))
-  return selection?.flatMap(name => {
-    const contig = pieceContig(name)
-    return contig === undefined || held.has(keyOf(name))
-      ? [name]
-      : rows.filter(row => pieceContig(row) === contig)
-  })
-}
-
 /**
  * The mate lanes the stack draws, in order: `preferred` first, then by their
  * heaviest contig's group weight, then each lane `placeless` names that no
@@ -247,14 +258,7 @@ export function laneRowsOf({
     keyOf,
     placeless,
   )
-  const held = new Set(rows.map(keyOf))
-  const drawn = drawnLaneTest(
-    heldPieces(selection, rows, keyOf),
-    hidden.flatMap(name =>
-      held.has(keyOf(name)) ? [name] : [nearestPiece(name, rows) ?? name],
-    ),
-    keyOf,
-  )
+  const drawn = drawnLaneTest(selection, hidden, rows, keyOf)
   return rows.filter(name => keyOf(name) !== anchorKey && drawn(name))
 }
 
@@ -338,7 +342,7 @@ export function laneUniverseOf({
   const placed = new Set(
     mateNames.flatMap(name => [keyOf(name), keyOf(laneGenome(name))]),
   )
-  const drawn = drawnLaneTest(selection, hidden, keyOf)
+  const drawn = drawnLaneTest(selection, hidden, mateNames, keyOf)
   const answered = answeredLaneTest(featuresLoaded, landedLanes, keyOf)
   const out = new Map<string, LaneChoice>()
   const offer = (lane: DeclaredLane) => {
@@ -399,26 +403,34 @@ export function withLaneHidden(
   return has(hidden, keyOf(name), keyOf) ? hidden : [...hidden, name]
 }
 
-/** A show unhides the lane and, where a choice in force leaves it out, joins it to `kept`. */
+/**
+ * A show unhides the lane and, where a choice in force leaves it out, joins it
+ * to `kept`, each name standing for what it holds among `lanes`
+ */
 export function withLaneShown(
   {
     kept,
     hidden,
     configured,
+    lanes,
   }: {
     kept: readonly string[]
     hidden: readonly string[]
     configured: readonly string[]
+    lanes: readonly string[]
   },
   name: string,
   keyOf: KeyOf,
 ): { kept: readonly string[]; hidden: readonly string[] } {
   const key = keyOf(name)
+  const names = heldLaneNamesIn(lanes, keyOf)
   const selection = lanesInForce(kept, configured)
   return {
     kept:
-      selection && !has(selection, key, keyOf) ? [...selection, name] : kept,
-    hidden: hidden.filter(n => keyOf(n) !== key),
+      selection && !has(selection.flatMap(names.kept), key, keyOf)
+        ? [...selection, name]
+        : kept,
+    hidden: hidden.filter(n => keyOf(names.hidden(n)) !== key),
   }
 }
 
