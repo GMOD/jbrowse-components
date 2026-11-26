@@ -1433,6 +1433,7 @@
     "@jbrowse/core/svg/svgReady": {
       "package": "@jbrowse/core",
       "names": [
+        "awaitGateReady",
         "awaitSvgReady",
         "awaitSvgRenders",
         "awaitViewInitialized",
@@ -1454,6 +1455,7 @@
     "@jbrowse/core/svg/trackNames": {
       "package": "@jbrowse/core",
       "names": [
+        "isSkippedSvgNotice",
         "notifySkippedSvgTracks",
         "svgTrackName"
       ],
@@ -5182,6 +5184,7 @@
     "@jbrowse/display-kit/hiddenLegendConfigSchema": {
       "package": "@jbrowse/display-kit",
       "names": [
+        "figureLegendConfigSchema",
         "hiddenLegendConfigSchema"
       ],
       "worker": "real"

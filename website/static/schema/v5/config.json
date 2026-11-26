@@ -13566,6 +13566,26 @@
       },
       "additionalProperties": false
     },
+    "FigureLegend": {
+      "title": "FigureLegend",
+      "type": "object",
+      "x-closed": true,
+      "properties": {
+        "show": {
+          "description": "draw the key; unset draws it in an SVG export and not on screen.",
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "boolean"
+          }
+        }
+      },
+      "patternProperties": {
+        "^_+comment": {}
+      },
+      "additionalProperties": false
+    },
     "LDNameLabel": {
       "title": "LDNameLabel",
       "type": "object",
@@ -13670,7 +13690,7 @@
             "type": "null"
           },
           "else": {
-            "$ref": "#/$defs/HiddenLegend"
+            "$ref": "#/$defs/FigureLegend"
           }
         },
         "labels": {
@@ -15762,7 +15782,7 @@
             "type": "null"
           },
           "else": {
-            "$ref": "#/$defs/HiddenLegend"
+            "$ref": "#/$defs/FigureLegend"
           }
         },
         "data": {

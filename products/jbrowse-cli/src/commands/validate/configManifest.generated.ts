@@ -7670,14 +7670,14 @@ export const configManifest: ConfigManifest = {
         },
         {
           "name": "legend",
-          "type": "HiddenLegendConfigurationSchema",
+          "type": "FigureLegendConfigurationSchema",
           "subSlots": [
             {
               "name": "show",
-              "type": "boolean"
+              "type": "(boolean | undefined)"
             }
           ],
-          "schema": "HiddenLegend",
+          "schema": "FigureLegend",
           "writes": "members"
         },
         {
@@ -9135,14 +9135,14 @@ export const configManifest: ConfigManifest = {
         },
         {
           "name": "legend",
-          "type": "HiddenLegendConfigurationSchema",
+          "type": "FigureLegendConfigurationSchema",
           "subSlots": [
             {
               "name": "show",
-              "type": "boolean"
+              "type": "(boolean | undefined)"
             }
           ],
-          "schema": "HiddenLegend",
+          "schema": "FigureLegend",
           "writes": "members"
         },
         {

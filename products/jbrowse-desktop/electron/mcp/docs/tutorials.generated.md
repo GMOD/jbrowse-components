@@ -16,7 +16,7 @@ Page: https://jbrowse.org/jb2/docs/tutorials/agent_synteny/
 - https://hgdownload.soe.ucsc.edu/hubs/GCF/016/746/395/GCF_016746395.2/GCF_016746395.2.fa.gz
 - https://jbrowse.org/demos/fly_agent_synteny/config.json
 
-## Synteny visualization (all-vs-all minimap2)
+## Synteny from an all-vs-all minimap2 alignment (E. coli strains)
 
 Stack strains in a linear synteny view from one all-vs-all PAF
 
@@ -350,7 +350,7 @@ Page: https://jbrowse.org/jb2/docs/tutorials/hg002_haplotypes/
 - https://s3-us-west-2.amazonaws.com/human-pangenomics/T2T/HG002/assemblies/annotation/JHULiftoff/v0.6/hg002v1.1.PAT.loff.v0.6.gff.gz
 - https://s3-us-west-2.amazonaws.com/human-pangenomics/T2T/HG002/assemblies/hg002v1.2.fasta.gz
 
-## Synteny from liftOver chains (hg38 and eight vertebrates)
+## Synteny from liftOver chains (hg38 and other vertebrates)
 
 Stack UCSC genomes under a human locus from the liftOver chains UCSC already publishes, one indexed alignment per genome composed into one track
 
@@ -380,7 +380,7 @@ Page: https://jbrowse.org/jb2/docs/tutorials/hic_structural_variants/
 - https://jbrowse.org/code/jb2/main/test_data/config_demo.json
 - https://jbrowse.org/genomes/GRCh38/fasta/hg38.prefix.fa.gz
 
-## Synteny visualization (a polyploid against itself)
+## Synteny from a polyploid against itself (oat subgenomes)
 
 Draw hexaploid oat against itself from syntenic anchors, colored by the selection pressure between each pair of copies
 
@@ -432,7 +432,7 @@ Page: https://jbrowse.org/jb2/docs/tutorials/ld_human/
 
 ## LD across an inversion (mosquitoes)
 
-Read precomputed PLINK LD over a 22 Mb inversion, and load the same inversion genotyped per mosquito
+Read precomputed PLINK LD over an inversion, and load the same inversion genotyped per mosquito
 
 Page: https://jbrowse.org/jb2/docs/tutorials/ld_mosquitoes/
 
@@ -446,7 +446,7 @@ Page: https://jbrowse.org/jb2/docs/tutorials/ld_mosquitoes/
 - https://jbrowse.org/ucsc/anoGam3/ensGene.gff.gz
 - https://jbrowse.org/ucsc/anoGam3/ensGene.gff.gz.csi
 
-## Local ancestry (Dog10K)
+## Local ancestry of wolfdog breeds (Dog10K)
 
 Paint wolf-derived haplotype blocks in wolfdog breeds, against other breeds and held-out wolves, from the Dog10K phased panel
 
@@ -472,6 +472,7 @@ Page: https://jbrowse.org/jb2/docs/tutorials/mappability_qc/
 - https://hgdownload.soe.ucsc.edu/gbdb/hg38/problematic/grcExclusions.bb
 - https://hgdownload.soe.ucsc.edu/goldenPath/hs1/bigZips/hs1.2bit
 - https://jbrowse.org/code/jb2/main/test_data/hg38_hs1_synteny/config.json
+- https://jbrowse.org/genomes/GRCh38/fasta/hg38.prefix.fa.gz
 - https://jbrowse.org/ucsc/hg38/config.json
 - https://jbrowse.org/ucsc/hg38/liftOver/hg38ToHs1.over.pif.gz
 - https://s3.amazonaws.com/1000g-ont/PROCESSED_DATA/ALIGNED_TO_CHM13/MINIMAP2_ALIGNED_BAMS/GM18501-ONT-chm13-R9-LSK110-guppy-sup-5mC.phased.bam
@@ -507,7 +508,7 @@ Page: https://jbrowse.org/jb2/docs/tutorials/methylation/
 - https://ont-open-data.s3.amazonaws.com/giab_2025.01/analysis/wf-human-variation/sup/HG002/PAW70337/output/SAMPLE.wf_mods.2.bedmethyl.gz
 - https://s3.amazonaws.com/jbrowse.org/genomes/GRCh38/ncbi_refseq/GRCh38_latest_genomic.sort.gff.gz
 
-## Synteny from an ortholog table (grape, peach, cacao)
+## Synteny from MCScan blocks (grape, peach, cacao)
 
 Stack N genomes from a jcvi MCScan .blocks file
 
@@ -534,7 +535,7 @@ Page: https://jbrowse.org/jb2/docs/tutorials/organelle_map/
 
 - https://jbrowse.org/code/jb2/main/test_data/human_mito/config.json
 
-## Synteny visualization (OrthoFinder orthogroups)
+## Synteny from OrthoFinder orthogroups
 
 Stack genomes on OrthoFinder orthogroups, built from protein homology, and find each genome duplication as one region against two or three copies
 
@@ -783,7 +784,7 @@ Page: https://jbrowse.org/jb2/docs/tutorials/protein_domains/
 
 ## Variants on protein structures part 2: degenerative myelopathy in dogs
 
-Open dog SOD1 on codon 40 beside a crystal structure of the E40K protein that causes degenerative myelopathy, then read the allele across breed dogs, village dogs and wild canids from the Dog10K callset
+Open dog SOD1 on codon 40 beside a crystal structure of the E40K protein that causes degenerative myelopathy, then draw the Dog10K callset's genotypes under the gene, one row per animal
 
 Page: https://jbrowse.org/jb2/docs/tutorials/protein_variants_dog_myelopathy/
 
@@ -813,9 +814,9 @@ Page: https://jbrowse.org/jb2/docs/tutorials/protein_variants_met_exon14/
 - https://jbrowse.org/demos/metex14/NCI-H596_RNA.bam
 - https://jbrowse.org/ucsc/hg38/config.json
 
-## Variants on protein structures part 1: sickle cell from GWAS hit to haemoglobin S
+## Variants on protein structures part 1: sickle cell from GWAS hit to hemoglobin S
 
-Follow the sickle cell allele of HBB from its GWAS Catalog associations and its 1000 Genomes genotypes to the residue it changes in the crystal structure of sickle haemoglobin
+Follow the sickle cell allele of HBB from its GWAS Catalog associations and its 1000 Genomes genotypes to the residue it changes in the crystal structure of sickle hemoglobin
 
 Page: https://jbrowse.org/jb2/docs/tutorials/protein_variants_sickle_cell/
 
@@ -859,6 +860,7 @@ Page: https://jbrowse.org/jb2/docs/tutorials/rnaseq/
 - https://jbrowse.org/demos/circrna/SRR1637089.slice.bam
 - https://jbrowse.org/demos/circrna/config.json
 - https://jbrowse.org/demos/rnaseq/rnaseq_junctions.bed.gz
+- https://jbrowse.org/genomes/GRCh38/fasta/hg38.prefix.fa.gz
 - https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz
 - https://jbrowse.org/ucsc/hg19/cytoBandIdeo.bed.gz
 - https://s3.amazonaws.com/jbrowse.org/genomes/hg19/alzheimers_isoseq/hq_isoforms.fasta.bam
@@ -891,7 +893,7 @@ Page: https://jbrowse.org/jb2/docs/tutorials/scrna_pseudobulk/
 
 ## Selection pressure between two genomes (dN/dS)
 
-Color an ortholog track by the ratio of non-synonymous to synonymous substitution, and read selection pressure off a gene neighbourhood
+Color an ortholog track by the ratio of non-synonymous to synonymous substitution, and read selection pressure off a gene neighborhood
 
 Page: https://jbrowse.org/jb2/docs/tutorials/selection_pressure/
 
@@ -944,10 +946,12 @@ Page: https://jbrowse.org/jb2/docs/tutorials/sv_visualization_cgiab/
 - https://jbrowse.org/demos/cgiab/HG008-T_chr10_CUZD1_deletion.bam.bai
 - https://jbrowse.org/demos/cgiab/config.json
 - https://jbrowse.org/genomes/GRCh38/cgiab/GRCh38_HG008-T-V0.5_somatic-stvar_PASS.draftbenchmark.vcf.gz
+- https://jbrowse.org/ucsc/hg38/ncbiRefSeq.gff.gz
+- https://jbrowse.org/ucsc/hg38/ncbiRefSeq.gff.gz.csi
 - https://nist-giab.s3.us-east-1.amazonaws.com/giab_tumor-normal/analysis/HG008/NIST_asm_dev/HG008N_v6.3/HG008N_v6.3.fasta.gz
 - https://nist-giab.s3.us-east-1.amazonaws.com/giab_tumor-normal/analysis/HG008/NIST_asm_dev/HG008T_v3.2/HG008T_v3.2.fasta.gz
 
-## Synteny visualization (pairwise minimap2)
+## Synteny from pairwise minimap2 alignments (H. pylori strains)
 
 Align two assemblies with minimap2 and compare them in the dotplot and linear synteny views
 
@@ -963,7 +967,7 @@ Page: https://jbrowse.org/jb2/docs/tutorials/synteny_visualization/
 - https://jbrowse.org/hubs/genark/GCF/000/307/795/GCF_000307795.1/GCF_000307795.1_ASM30779v1_genomic.gff.gz
 - https://jbrowse.org/hubs/genark/GCF/000/307/795/GCF_000307795.1/GCF_000307795.1_ASM30779v1_genomic.gff.gz.csi
 
-## Rearrangements between genomes by type (SyRI)
+## Synteny from SyRI rearrangement calls (Arabidopsis)
 
 Load the SyRI classification of the differences between assembled genomes, so each syntenic, inverted, translocated or duplicated region is a ribbon colored by its type, in a stack of Arabidopsis accessions and as lanes in the reference coordinates
 

@@ -13998,6 +13998,26 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       },
       "additionalProperties": false
     },
+    "FigureLegend": {
+      "title": "FigureLegend",
+      "type": "object",
+      "x-closed": true,
+      "properties": {
+        "show": {
+          "description": "draw the key; unset draws it in an SVG export and not on screen.",
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "boolean"
+          }
+        }
+      },
+      "patternProperties": {
+        "^_+comment": {}
+      },
+      "additionalProperties": false
+    },
     "LDNameLabel": {
       "title": "LDNameLabel",
       "type": "object",
@@ -14105,7 +14125,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "type": "null"
           },
           "else": {
-            "$ref": "#/$defs/HiddenLegend"
+            "$ref": "#/$defs/FigureLegend"
           }
         },
         "labels": {
@@ -16281,7 +16301,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "type": "null"
           },
           "else": {
-            "$ref": "#/$defs/HiddenLegend"
+            "$ref": "#/$defs/FigureLegend"
           }
         },
         "data": {
