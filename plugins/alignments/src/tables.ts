@@ -76,7 +76,7 @@ import {
 import { visibleRegionJunctions } from './features/junctions/computeOverlay.ts'
 import {
   junctionClass,
-  junctionSource,
+  sourceOfJunction,
 } from './features/junctions/junctionClass.ts'
 import {
   mergeJunctions,
@@ -633,7 +633,7 @@ function junctions(
     count: merged.map(j => j.count),
     class: merged.map(j => junctionClass(j.split)),
     level: merged.map(j => (j.split ? arcLevelOf(j.split) : '')),
-    source: merged.map(j => junctionSource(junctionClass(j.split))),
+    source: merged.map(j => sourceOfJunction(j.split, j.inRead)),
     strand: merged.map(j => j.strand),
     motif: merged.map(j => spliceMotifLabel(j.motif) ?? ''),
     color: merged.map(j => paint.junction(j)),

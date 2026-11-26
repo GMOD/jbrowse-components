@@ -2,7 +2,10 @@ import { SAM_FLAG_SECONDARY } from '@jbrowse/cigar-utils'
 import { adapterRefNameText } from '@jbrowse/core/util'
 
 import { arcSlotCategory } from '../../shaders/palettes.ts'
-import { GAP_SKIP } from '../../shaders/slang/gap.consts.generated.ts'
+import {
+  GAP_DELETION,
+  GAP_SKIP,
+} from '../../shaders/slang/gap.consts.generated.ts'
 import { isArcSplitCategory } from '../arcs/arcSplitCategory.ts'
 import { forEachSplitJunction } from './splitJunctions.ts'
 
@@ -22,6 +25,9 @@ export interface LaneJunction {
   end: number
   // the split class of a split junction, unset for an N gap
   split?: JunctionSplitClass
+  // a deletion the reads carry as a CIGAR gap, whose supporting reads hold
+  // that gap and no split
+  inRead?: boolean
 }
 
 /**
@@ -72,7 +78,8 @@ export function sameLaneJunction(a?: HoveredJunction, b?: HoveredJunction) {
       a.refName === b.refName &&
       a.start === b.start &&
       a.end === b.end &&
-      a.split === b.split)
+      a.split === b.split &&
+      a.inRead === b.inRead)
   )
 }
 
@@ -89,14 +96,19 @@ type ReadFields = Pick<
   | 'readAlignedBases'
 >
 
-function skipGapReads(data: ReadFields, start: number, end: number) {
+function gapReads(
+  data: ReadFields,
+  start: number,
+  end: number,
+  gapType: number,
+) {
   const { gapPositions, gapTypes, gapReadIndices } = data
   const reads: number[] = []
   for (let i = 0; i < gapTypes.length; i++) {
     if (
       gapPositions[i * 2] === start &&
       gapPositions[i * 2 + 1] === end &&
-      gapTypes[i] === GAP_SKIP
+      gapTypes[i] === gapType
     ) {
       reads.push(gapReadIndices[i]!)
     }
@@ -159,8 +171,9 @@ function splitReads(
 
 /**
  * The slots of the reads supporting this junction, in every region of its
- * lane on its refName: those whose skip gap it is, or for a split junction
- * those whose segment it joins to the next. A read reaching two regions has a
+ * lane on its refName: those whose skip gap or SV-size deletion gap it is,
+ * or for a split junction those whose segment it joins to the next. A read
+ * reaching two regions has a
  * slot in each, so a junction spanning two collapsed-intron exons lights both
  * halves.
  */
@@ -173,13 +186,15 @@ export function junctionSupportingReadSlots(
   junction: HoveredJunction & { groupKey: string },
   canonicalRefName: CanonicalRefName = adapterRefNameText,
 ) {
-  const { groupKey, start, end, split } = junction
+  const { groupKey, start, end, split, inRead } = junction
   const slots: ReadSlot[] = []
   for (const { displayedRegionIndex, refName, data } of regions) {
     if (refName === junction.refName) {
-      for (const idx of split
-        ? splitReads(data, junction, split, canonicalRefName)
-        : skipGapReads(data, start, end)) {
+      for (const idx of inRead
+        ? gapReads(data, start, end, GAP_DELETION)
+        : split
+          ? splitReads(data, junction, split, canonicalRefName)
+          : gapReads(data, start, end, GAP_SKIP)) {
         slots.push({ displayedRegionIndex, groupKey, idx })
       }
     }

@@ -15,7 +15,7 @@ import {
   ARC_SHAPE_FLAT,
   isUnplacedArcShape,
 } from '../../features/arcs/shapes.ts'
-import { SPLIT_JUNCTION_NAMES } from '../../features/junctions/junctionClass.ts'
+import { splitJunctionName } from '../../features/junctions/junctionClass.ts'
 import { spliceMotifLabel } from '../../features/junctions/motif.ts'
 import { forEachSAEntry } from '../../features/junctions/splitJunctions.ts'
 import { arcSlotCategory } from '../../shaders/palettes.ts'
@@ -440,10 +440,10 @@ export function formatModificationTooltip(
 export function formatJunctionTooltip(
   junction: Omit<MergedJunction, 'key'>,
 ): JunctionTooltipPayload {
-  const { start, end, count, strand, refName, motif, split } = junction
+  const { start, end, count, strand, refName, motif, split, inRead } = junction
   return {
     type: 'junctions',
-    name: split ? SPLIT_JUNCTION_NAMES[split] : 'Intron/Skip',
+    name: split ? splitJunctionName(split, inRead) : 'Intron/Skip',
     start,
     end,
     score: count,

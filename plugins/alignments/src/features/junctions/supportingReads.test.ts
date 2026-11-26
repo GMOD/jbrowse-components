@@ -41,6 +41,21 @@ test('finds the reads whose skip gap is exactly the junction', () => {
   ).toEqual([slot(0, 0), slot(0, 3)])
 })
 
+test('an in-read deletion lights the reads whose deletion gap is exactly it', () => {
+  const data = region([
+    [100, 500, GAP_SKIP, 0],
+    [100, 500, GAP_DELETION, 1],
+    [100, 501, GAP_DELETION, 2],
+    [100, 500, GAP_DELETION, 3],
+  ])
+  expect(
+    junctionSupportingReadSlots(
+      [{ displayedRegionIndex: 0, refName: 'chr1', data }],
+      { ...JUNCTION, split: 'splitForward', inRead: true },
+    ),
+  ).toEqual([slot(0, 1), slot(0, 3)])
+})
+
 test('finds a read in every region of its refName, and in no other', () => {
   const data = region([[100, 500, GAP_SKIP, 0]])
   expect(

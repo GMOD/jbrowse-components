@@ -86,6 +86,7 @@ describe('mergeJunctions', () => {
         strand: 1,
         motif: 0,
         split: undefined,
+        inRead: false,
       },
     ])
   })
@@ -163,6 +164,7 @@ describe('mergeJunctions', () => {
           strand: 0,
           motif: SPLICE_MOTIF_NON_CANONICAL,
           split: undefined,
+          inRead: false,
         },
       ])
     }

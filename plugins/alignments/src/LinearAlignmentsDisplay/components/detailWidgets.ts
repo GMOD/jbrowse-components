@@ -6,7 +6,7 @@ import {
 import { openFeatureWidget } from '@jbrowse/core/util'
 
 import {
-  SPLIT_JUNCTION_NAMES,
+  splitJunctionName,
   junctionClass,
 } from '../../features/junctions/junctionClass.ts'
 import { spliceMotifLabel } from '../../features/junctions/motif.ts'
@@ -122,7 +122,7 @@ export function openJunctionWidget(
   junction: Omit<MergedJunction, 'key'>,
   groupKey: string,
 ) {
-  const { split } = junction
+  const { split, inRead } = junction
   const location = {
     uniqueId: junctionFeatureId(groupKey, junction),
     refName: junction.refName,
@@ -139,8 +139,8 @@ export function openJunctionWidget(
     split
       ? {
           ...location,
-          name: SPLIT_JUNCTION_NAMES[split],
-          type: `split_${junctionClass(split)}`,
+          name: splitJunctionName(split, inRead),
+          type: inRead ? 'deletion' : `split_${junctionClass(split)}`,
         }
       : {
           ...location,

@@ -22,7 +22,11 @@
 // as regions scroll in and out of view.
 
 import { passesCategory } from '../../shared/readCategoryFilters.ts'
-import { junctionClass, splitClassOf } from './junctionClass.ts'
+import {
+  isInReadDeletionCode,
+  junctionClass,
+  splitClassOf,
+} from './junctionClass.ts'
 import {
   classifyEncodedSpliceMotif,
   DINUCLEOTIDE_UNKNOWN,
@@ -53,15 +57,18 @@ export type JunctionsPlacement = (typeof JUNCTIONS_PLACEMENTS)[number]
 // number line — without it, chr1:10k-50k and chr2:30k-70k read as one junction's
 // worth of interleaving and reserved a strip no arc was ever bound for. A
 // split junction keys its class too, so a split read's deletion and an N gap
-// over the same span stay two junctions.
+// over the same span stay two junctions, and a deletion the reads carry as a
+// CIGAR gap keys its spelling, so it and a split junction on its coordinates
+// each keep their own count.
 export function junctionKey(
   refName: string,
   start: number,
   end: number,
   split?: JunctionSplitClass,
+  inRead = false,
 ) {
   return split
-    ? `${refName}:${start}:${end}:${split}`
+    ? `${refName}:${start}:${end}:${inRead ? 'gap' : split}`
     : `${refName}:${start}:${end}`
 }
 
@@ -74,8 +81,10 @@ export interface MergedJunction {
   count: number
   strand: number
   motif: number
-  /** The split class of a junction counted from split reads, undefined for an N gap. */
+  /** The split class a junction draws as, undefined for an N gap. */
   split: JunctionSplitClass | undefined
+  /** A deletion counted from CIGAR gaps of `SV_INDEL_MIN_BP` or more, not split reads. */
+  inRead: boolean
 }
 
 // The same junction mid-merge, before the two motif halves are a motif and the
@@ -92,6 +101,7 @@ interface JunctionAccumulator {
   donor: number
   acceptor: number
   split: JunctionSplitClass | undefined
+  inRead: boolean
 }
 
 // Which strand tints a junction whose reads disagree. Only tagged reads vote:
@@ -186,8 +196,10 @@ function accumulateJunctions(regions: Iterable<RegionJunctions>) {
       const acceptor = junctionAcceptors[i]!
       const start = junctionX1[i]!
       const end = junctionX2[i]!
-      const split = splitClassOf(junctionSplitClass[i]!)
-      const key = junctionKey(refName, start, end, split)
+      const code = junctionSplitClass[i]!
+      const split = splitClassOf(code)
+      const inRead = isInReadDeletionCode(code)
+      const key = junctionKey(refName, start, end, split, inRead)
       const prev = out.get(key)
       if (prev === undefined) {
         out.set(key, {
@@ -201,6 +213,7 @@ function accumulateJunctions(regions: Iterable<RegionJunctions>) {
           donor,
           acceptor,
           split,
+          inRead,
         })
       } else {
         // A dinucleotide is a property of the coordinate, so every copy that
@@ -257,6 +270,7 @@ export function mergeJunctions(
     donor,
     acceptor,
     split,
+    inRead,
   } of accumulateJunctions(regions).values()) {
     const motif = classifyEncodedSpliceMotif(donor, acceptor)
     if (passesJunctionFilter({ count, motif, split }, filter)) {
@@ -269,6 +283,7 @@ export function mergeJunctions(
         strand: split ? 0 : junctionStrand(fwd, rev, motif),
         motif,
         split,
+        inRead,
       })
     }
   }

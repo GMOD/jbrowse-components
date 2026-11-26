@@ -23,6 +23,7 @@ function junction(
     strand: split ? 0 : -1,
     motif: 0,
     split,
+    inRead: false,
   }
 }
 

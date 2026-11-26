@@ -6,7 +6,10 @@ import {
 import { updateStatus } from '@jbrowse/core/util'
 import { checkAbortSignal } from '@jbrowse/core/util/aborting'
 
-import { computeJunctions } from '../features/junctions/compute.ts'
+import {
+  computeJunctions,
+  inReadDeletionJunctions,
+} from '../features/junctions/compute.ts'
 import {
   computeBisulfiteCoverage,
   computeModificationCoverage,
@@ -146,7 +149,9 @@ export async function runCoveragePipeline({
   const junctionArrays = computeJunctions(
     junctions ? gaps : [],
     junctionReference,
-    splitJunctions,
+    junctions
+      ? [...(splitJunctions ?? []), ...inReadDeletionJunctions(gaps, features)]
+      : splitJunctions,
   )
 
   return {

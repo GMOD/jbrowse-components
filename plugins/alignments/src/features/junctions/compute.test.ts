@@ -1,5 +1,5 @@
-import { computeJunctions } from './compute.ts'
-import { splitClassCode } from './junctionClass.ts'
+import { computeJunctions, inReadDeletionJunctions } from './compute.ts'
+import { IN_READ_DELETION_CODE, splitClassCode } from './junctionClass.ts'
 import { mergeJunctions } from './junctions.ts'
 import {
   DINUCLEOTIDE_UNKNOWN,
@@ -85,12 +85,62 @@ test('keeps distinct junctions apart', () => {
   expect([...junctionCounts]).toEqual([4, 7])
 })
 
-test('ignores deletion gaps', () => {
+test('a deletion gap is no splice junction', () => {
   const gaps = [
     { start: 100, end: 200, type: 'deletion', strand: 1, featureStrand: 1 },
     { start: 100, end: 200, type: 'skip', strand: 1, featureStrand: 1 },
   ] as CoverageGap[]
   expect([...computeJunctions(gaps).junctionCounts]).toEqual([1])
+})
+
+const PRIMARY = { flags: 0 }
+const SECONDARY = { flags: 256 }
+
+function deletion(readIndex: number, start: number, end: number) {
+  return { readIndex, start, end, type: 'deletion' as const }
+}
+
+test('reads carrying one deletion to the base share a junction', () => {
+  expect(
+    inReadDeletionJunctions(
+      [deletion(0, 100, 400), deletion(1, 100, 400), deletion(2, 101, 400)],
+      [PRIMARY, PRIMARY, PRIMARY],
+    ),
+  ).toEqual([
+    { start: 100, end: 400, splitClass: IN_READ_DELETION_CODE, n: 2 },
+    { start: 101, end: 400, splitClass: IN_READ_DELETION_CODE, n: 1 },
+  ])
+})
+
+test('a deletion under 50 bp, a skip and a secondary read count nothing', () => {
+  expect(
+    inReadDeletionJunctions(
+      [
+        deletion(0, 100, 149),
+        deletion(0, 200, 250),
+        { readIndex: 0, start: 300, end: 900, type: 'skip' },
+        deletion(1, 200, 250),
+      ],
+      [PRIMARY, SECONDARY],
+    ),
+  ).toEqual([{ start: 200, end: 250, splitClass: IN_READ_DELETION_CODE, n: 1 }])
+})
+
+test('a gapped and a split deletion on one span stay two junctions', () => {
+  const data = computeJunctions([], undefined, [
+    { start: 100, end: 400, splitClass: splitClassCode('splitForward'), n: 6 },
+    { start: 100, end: 400, splitClass: IN_READ_DELETION_CODE, n: 32 },
+  ])
+  const out = [
+    ...mergeJunctions([{ refName: 'chr1', data }], { minReads: 0 }).values(),
+  ]
+  expect(
+    out.map(j => ({ count: j.count, split: j.split, inRead: j.inRead })),
+  ).toEqual([
+    { count: 6, split: 'splitForward', inRead: false },
+    { count: 32, split: 'splitForward', inRead: true },
+  ])
+  expect(new Set(out.map(j => j.key)).size).toBe(2)
 })
 
 test('an untagged junction is unknown, not reverse', () => {
