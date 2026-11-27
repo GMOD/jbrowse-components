@@ -141,6 +141,25 @@ test('a pair across two assemblies draws from one region', () => {
   expect([lane(out, 0), lane(out, 1)]).toEqual([[1], [LINK_ELSEWHERE]])
 })
 
+test('a pair across two assemblies that spell a contig differently draws once', () => {
+  const q = { refName: '1', start: 0, end: 1000, assemblyName: 'Q' }
+  const p1 = { refName: 'chr1', start: 0, end: 1000, assemblyName: 'P' }
+  const p2 = { refName: 'chr2', start: 0, end: 1000, assemblyName: 'P' }
+  const out = createLinkOwners()(
+    new Map([
+      [0, payload([{ x: 500, x2: 100, ref: 'chr2', region: 2 }])],
+      [1, payload([{ x: 500, x2: 100, ref: 'chr2', region: 2 }])],
+      [2, payload([{ x: 100, x2: 500, ref: 'chr1', region: 0 }])],
+    ]),
+    [q, p1, p2],
+  )
+  expect([lane(out, 0), lane(out, 1), lane(out, 2)]).toEqual([
+    [2],
+    [2],
+    [LINK_ELSEWHERE],
+  ])
+})
+
 test('a region whose drawn set did not move keeps its payload', () => {
   const owners = createLinkOwners()
   const a = payload([{ x: 100, x2: 3000, ref: 'ctgB', region: 1 }])

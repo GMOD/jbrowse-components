@@ -124,17 +124,14 @@ function linkKeys(
   const near = `${region.assemblyName}:${region.refName}`
   const keys = new Array<string>(layer.count)
   for (let i = 0; i < layer.count; i++) {
-    const farAssembly =
-      regions[x2Region[i]!]?.assemblyName ?? region.assemblyName
+    const placed = regions[x2Region[i]!]
+    const farFoot = placed
+      ? `${placed.assemblyName}:${placed.refName}`
+      : `${region.assemblyName}:${far[x2Ref[i]!]!}`
     keys[i] = linkKey(
       layer,
       i,
-      footKey(
-        near,
-        layer.x[i]!,
-        `${farAssembly}:${far[x2Ref[i]!]!}`,
-        layer.x2[i]!,
-      ),
+      footKey(near, layer.x[i]!, farFoot, layer.x2[i]!),
     )
   }
   return keys

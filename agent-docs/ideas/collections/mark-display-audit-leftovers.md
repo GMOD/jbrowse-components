@@ -1,6 +1,6 @@
 ---
 name: mark-display-audit-leftovers
-description: "What the 2026-11-21 LinearMarkDisplay audit left: a link's far foot on no displayed region hovers under an unrecorded assembly's spelling, read, not run."
+description: "What the 2026-11-21 LinearMarkDisplay audit left: a link's far foot placed in another assembly's region that covers its position, and one on no displayed region hovering under an unrecorded assembly's spelling."
 ---
 
 # Mark display audit leftovers
@@ -16,6 +16,19 @@ test; what is below is left, re-read against main on 2026-11-26.
 Each item says how far it was checked. "Checked" means the main session read
 the cited code after the reader reported it; "traced" means a reviewer followed
 it through the code.
+
+## Open
+
+- **A far foot lands in another assembly's region that covers its position**,
+  even when its own assembly has the contig off screen. `withMateRegions`
+  takes the block's own region if it holds the foot, else any displayed
+  region on any of the track's assemblies that does (`onRef.find(holds)`).
+  A reviewer's probe reproduced it (2026-11-27): a track on P (`chr1`) and Q (`1`) showing P
+  `chr1:0-1000` and Q `1:4000-6000` draws P's pair `chr1:100`–`5000` into
+  Q's region, at a position in the other assembly's coordinates. Nothing on a
+  record says it crosses assemblies, so preferring the own assembly's regions
+  looks right, but `badee04f11` chose the cross-assembly search on purpose;
+  read why before changing it.
 
 ## Pointers from the hover fix, read, not run
 
