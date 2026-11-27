@@ -36,7 +36,7 @@ has been re-checked since the cut.
 - **WebGL2 context losses** (ARCHITECTURAL_LIMITS): an interim fallback to
   Canvas2D after K losses.
 - **EAGER_BUNDLE:** retry the Desktop start-screen split; Material UI holders in the SVG export path and
-  `session.theme`; a proportional ratchet for the examples-site budget.
+  `session.theme`.
 - **R export** (R_EXPORT): bisulfite C→T needs a reference walk;
   `shownModifications` filtering; phased-HP PS hue flattens to the secondary
   color; the multi-wiggle pos/neg split and group/cluster tree order.

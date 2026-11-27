@@ -147,14 +147,6 @@ adjacent), and the key is the read's `N`-op list, which
 user. A group-by nobody has asked for costs a settings row forever, so this
 waits on a feature request rather than on any code.
 
-**Differential transcript usage** — two ways in, and they are different
-products. A table join reads per-transcript counts from a spreadsheet and
-colors a transcript track from a column, which is the SV inspector's shape
-applied to gene models. A numeric ramp skips the table and colors from a score
-already on the feature. The join answers the real question and needs a whole
-UI; the ramp is cheap and answers a narrower one. Picking between them is the
-first move, and neither is started.
-
 **Junction labels as a fraction, with a depth-proof floor** — a junction arc
 carries its supporting read count today. A fraction of local depth is more
 honest (40 reads across a junction means different things at 50x and 5000x) but

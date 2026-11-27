@@ -138,14 +138,6 @@ If they could, it is a user guide wearing a tutorial's clothes."
   gene is the closing check. ACTB and IsoSeq become one figure each if they
   answer something that spine raised. Alternatively move it to `user_guides/`,
   where `alignments_track` already covers half of it.
-- **`genomes_proteins.md`**: the launchers now read as a progression (the page
-  picks, then you pick), and the comparison table is gone. What fails is the
-  closing "More protein browser sessions" gallery: figures with no instruction
-  before them, built from session-only settings (cameras, `color.values`,
-  structure filters) no menu reaches, where a protein figure should be a state a
-  reader reaches through menus
-  ([reference/PROTEIN_FIGURES.md](../../reference/PROTEIN_FIGURES.md)).
-  Move it to a showcase page or cut it to the states a reader can reach.
 
 **On `ld_human` vs `ld_mosquitoes`: keep two pages.** This is the "second dataset
 the first raised the question for" case — `ld_human` establishes live r² from a
