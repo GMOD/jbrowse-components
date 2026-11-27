@@ -1,6 +1,6 @@
 ---
 name: graph-figures-after-plugin-10-8
-description: "Graph figures not yet squared with graph plugin 10.8.0 (live 2026-11-23): the fly thread section and its ada-only walk file, three published figures that reshoot differently, three failing E. coli rGFA specs, thirteen unreviewed reshoots. The paper's figures are unaffected."
+description: "Graph figures not yet squared with graph plugin 10.8.0 (live 2026-11-23): the fly thread section and its ada-only walk file, three published figures that reshoot differently, three failing E. coli rGFA specs, the unreviewed reshoots, the 2026-11-27 RefSeq sweep's graph figures among them. The paper's figures are unaffected."
 ---
 
 # Graph figures after plugin 10.8.0
@@ -65,15 +65,21 @@ were not reshot, so the gene-label item below is unchecked for them.
   edge, `pangenome/rgfa_strain_launch` never shows "Open in CFT073" (which
   blocks the `pangenome/rgfa_launch_roundtrip` compose), and
   `pangenome/rgfa_hover_sync` never shows `graph-node-highlight`.
-- **Thirteen reshoots came back changed and nobody has looked at them**:
+- **Reshoots came back changed and nobody has looked at them**:
   `maf_hprc_pangenome`, `multiway_synteny/ecoli_one_vs_all`,
   `pangenome/graph_context_none`, `pangenome/graph_context_hop1`,
   `pangenome/graph_kiv2_walks`, `pangenome/hprc_c4_panels`,
   `pangenome/hprc_c4_threads`, `pangenome/hprc_graph_anatomy`,
   `pangenome/hprc_graph_vs_callset`, `pangenome/hprc_haplotype_launch`,
   `pangenome/hprc_lpa_kiv2`, `pangenome/mouse_dock2` and
-  `pangenome/rgfa_paa_bubble`. A callout pointing at the wrong place shoots
-  without error. Read each against its published copy before a publish.
+  `pangenome/rgfa_paa_bubble`. The 2026-11-27 RefSeq reshoot on main added
+  `pangenome/bovine_bola`, `_kit`, `_tas2r46`, `pangenome/fly_*` and
+  `pangenome/hprc_cfh_graph_launch` (rGFA strips and node colours a continuous
+  rainbow, or panes relaid out with node-length labels and a WALKS legend), and
+  failed `pangenome/hprc_abca7_repeat_units` and
+  `pangenome/hprc_amylase_walk_rows` on the top-level `color` the branch
+  respells. A callout pointing at the wrong place shoots without error. Read
+  each against its published copy before a publish.
 
 ## Not this thread
 
