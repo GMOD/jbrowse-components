@@ -18,9 +18,7 @@ Reviewing a flagged site as a de novo mutation needs the
 [genotype-quality masking](../ready/genotype-quality-masks-a-call-as-no-call.md)
 first, since on low-coverage calls most such sites are genotyping
 errors. Compound hets (two hets in one gene, one from each parent) are analysis
-for an outside tool whose output loads as a track. The parked follow-ups are
-[parent-of-origin coloring](../waiting-on-a-call/parent-of-origin-haplotype-coloring.md)
-and
+for an outside tool whose output loads as a track. The parked follow-up is
 [stacking the trio's reads](../ready/stack-the-trios-reads-under-the-vcf.md).
 
 **Local haplotype-block coloring (the mosaic a dendrogram cannot show).** Clustering
