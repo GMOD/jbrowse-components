@@ -5,6 +5,7 @@ import {
 } from '@jbrowse/browser-test-utils'
 
 import { chordPoint, ideogramPoint } from './chordAnchor.ts'
+import { openMenuRows } from './openMenuRows.ts'
 
 import type {
   ActionAnchor,
@@ -594,9 +595,9 @@ export async function runAction(page: Page, action: ScreenshotAction) {
     await waitForVisible(page, action.selector, {
       hidden: action.hidden,
       timeout: action.timeout,
-    }).catch(() => {
+    }).catch(async () => {
       throw new Error(
-        `waitForSelector: ${action.hidden ? 'still visible' : 'never found'} "${action.selector}"`,
+        `waitForSelector: ${action.hidden ? `still visible "${action.selector}"` : `never found "${action.selector}"${await openMenuRows(page)}`}`,
       )
     })
   } else if (action.type === 'waitForAppSettled') {
@@ -621,9 +622,9 @@ export async function runAction(page: Page, action: ScreenshotAction) {
     await waitForVisible(page, textSelector(action.text), {
       hidden: action.hidden,
       timeout: action.timeout,
-    }).catch(() => {
+    }).catch(async () => {
       throw new Error(
-        `waitForText: ${action.hidden ? 'text still visible' : 'never found visible text'} "${action.text}"`,
+        `waitForText: ${action.hidden ? `text still visible "${action.text}"` : `never found visible text "${action.text}"${await openMenuRows(page)}`}`,
       )
     })
   } else {
