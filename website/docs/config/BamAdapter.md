@@ -9,6 +9,11 @@ Auto-generated from the config schema in the source. See the [config guide](/doc
 
 Reads BAM alignment files, with a BAI or CSI index.
 
+Thousands of reads over a genome a few tens of kilobases long can keep a
+BAI-indexed track at "Zoom in to see more features" at any zoom:
+[deep reads over a small genome](/docs/config_guides/tracks#deep-reads-over-a-small-genome)
+covers the CSI index and `fetchSizeLimit` that fix it.
+
 Note: `sequenceAdapter` does **not** need to be specified manually — JBrowse
 automatically supplies it from the enclosing assembly's sequence track.
 

@@ -12,6 +12,9 @@ region through the `.crai` index. Decoding happens against the enclosing
 assembly's sequence, so it has to be the reference the file was compressed
 against; a mismatched one isn't rejected, it just decodes into mismatches.
 
+For thousands of reads over a genome a few tens of kilobases long, see
+[deep reads over a small genome](/docs/config_guides/tracks#deep-reads-over-a-small-genome).
+
 JBrowse fills in `sequenceAdapter` from the enclosing assembly's sequence
 track, so a config never specifies it.
 
