@@ -112,12 +112,18 @@ no em-dashes.
   script that re-derives the figure's claim from the file.
 - `pangenome_ecoli` and `pangenome_cactus` take the same strains through the
   same sections on purpose, so a reader can compare the two graph builders.
+- `ld_human` and `ld_mosquitoes` stay two pages: the mosquito inversion is past
+  what live LD computation reaches, so it reads a precomputed PLINK table.
 
 ### Voice
 
 - Describe what the data shows and stop at the observation. Cut a thesis
   paragraph, a sentence that answers an objection the reader never raised, and
   moral framing ("the honest outcome").
+- Keep a caveat that changes how a reader reads the same result from their own
+  data: `population_genomics`' `--window-pi` over a variant-sites-only VCF
+  (`[^pixy]`), `dog10k_selection`'s percentile cutoff and `[^drift]`, and
+  `ld_human`'s deCODE map as counted from families, independent of LD.
 - **Each heading names a step toward the page's goal**, phrased as what the
   reader does (`Scale up to the whole panel with one Zarr store`), so the
   headings read in order as the route to the result. A heading naming a locus

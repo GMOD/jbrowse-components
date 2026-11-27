@@ -14,9 +14,7 @@ tracks left unwritten. The four ideas Colin ranked first have their own files:
 is [TUTORIAL_DEMAND.md](../../reference/TUTORIAL_DEMAND.md).
 
 **The corpus has more than doubled since the audit**, so a gap named below may
-have been filled; check `website/docs/tutorials/` before writing to it. The
-corpus's own state is measured in
-[tutorial-corpus-audit.md](tutorial-corpus-audit.md).
+have been filled; check `website/docs/tutorials/` before writing to it.
 
 ## The pool: hosted tracks nothing names
 
