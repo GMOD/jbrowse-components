@@ -1,6 +1,6 @@
 ---
 name: a-lane-opens-a-linear-genome-view-that-follows-it
-description: A multiway lane hosts one annotation, so a reader wanting a real track on its genome opens a separate view that does not follow the anchor. An "Open ⟨assembly⟩ at the matching region" that follows the lane's frame would give a full LGV as the drill-down.
+description: A multiway lane hosts one annotation, so a reader wanting a real track on its genome opens a separate view that does not follow the anchor. An "Open ⟨assembly⟩ at the matching region" that follows the lane's frame gives a full LGV drill-down.
 ---
 
 # A lane opens a linear genome view that follows it
