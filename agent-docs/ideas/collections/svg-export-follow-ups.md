@@ -69,11 +69,9 @@ or a ring (the circular golden runs in jsdom, which cannot decode an image,
 so it holds no ring; only `ringSvg.test.tsx` covers that path). The
 rasterized alignments test asserts only that an `<image` exists.
 
-**Callout text is not counted in the circular figure's gutter.** This adds
-the cause to "a long name can clip in a square export" in
-[circular-view-open-items](circular-view-open-items.md): neither
-`figureGutterPx` nor `fitLayout`'s `calloutPx` measures callout text
-(`ringCallouts.ts`, `rulerLabels.ts`). A callout near 3 or 9 o'clock runs
+**Callout text is not counted in the circular figure's gutter**, so a long
+name can clip in a square export: neither `figureGutterPx` nor `fitLayout`'s
+`calloutPx` measures callout text (`ringCallouts.ts`, `rulerLabels.ts`). A callout near 3 or 9 o'clock runs
 level, about 48 px past the ruler arc, with about 37 px before the figure
 edge on a one-contig circle. Measuring `ringCallouts(...)` in the export font
 and widening the figure to the widest fixes it.

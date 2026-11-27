@@ -203,7 +203,8 @@ const RingCallouts = observer(function RingCallouts({
  * What each ring display draws over its canvas rather than into it, which the
  * ring's resampling of the canvas never sees: its highlights, and its labels
  * at the ring's own size. In the figure's rotated frame, on screen and in the
- * export alike.
+ * export alike. A facet section gets no label on a ring, by the maintainer's
+ * call.
  */
 export const RingOverlay = observer(function RingOverlay({
   model,

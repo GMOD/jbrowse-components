@@ -193,6 +193,8 @@ const stateModelFactory = (configSchema: ChordVariantDisplayConfigModel) => {
             feet.xGaps[i] = start.gaps
             feet.x2Gaps[i] = endBlock.gaps
             // by refName, not slice: an elided slice holds many contigs
+            // a <DEL> and a <DUP> at the same two loci share this key and draw
+            // as one chord, left so until real data hits it
             const own = `${ownEnd.refName}:${feature.get('start')}`
             const far = `${farEnd.refName}:${end.position}`
             feet.junction[i] = own < far ? `${own}|${far}` : `${far}|${own}`
