@@ -1,6 +1,6 @@
 ---
 name: figures-blocked-on-data
-description: Figures nobody can shoot until someone builds, hosts or pays for their data or makes a call, among them a dotplot set at one genomic scale, a genome-wide wolf-ancestry sweep, a selection scan over a multi-genome track and cancer SV datasets, plus dead ends recorded so nobody re-checks them.
+description: Figures nobody can shoot until someone builds, hosts or pays for their data or makes a call, among them a dotplot set at one genomic scale, a genome-wide wolf-ancestry sweep, a selection scan over a multi-genome track and cancer SV datasets, plus recorded dead ends.
 ---
 
 # Figures blocked on data, a cost or a call

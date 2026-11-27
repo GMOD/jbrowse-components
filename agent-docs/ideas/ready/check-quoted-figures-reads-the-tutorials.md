@@ -1,6 +1,6 @@
 ---
 name: check-quoted-figures-reads-the-tutorials
-description: The website rule against numbers that assert a result has a checker built for it, but `check-quoted-figures` only reads pages with a measurement block, none of them a tutorial; widening its scope to `tutorials/`, ratcheted per page, enforces the rule where the hand-copied run results are.
+description: The website rule against numbers that assert a result has a checker, but `check-quoted-figures` only reads pages with a measurement block, none of them a tutorial; widening its scope to `tutorials/`, ratcheted per page, enforces the rule where the hand-copied run results are.
 ---
 
 # `check-quoted-figures` reads the tutorials

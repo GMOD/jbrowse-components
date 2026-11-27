@@ -1,6 +1,6 @@
 ---
 name: a-synteny-group-id-gives-a-block-one-identity-across-rows
-description: A synteny feature knows only its one `mate`, so a block in a view of several genomes cannot keep one color, highlight in every row on hover, or be filtered to "present in all". An optional adapter-provided `syntenyGroupId` beside `mate` gives all three without touching the pairwise geometry.
+description: A synteny feature knows only its one `mate`, so a block in a view of several genomes cannot keep one color, highlight in every row on hover, or be filtered to "present in all". An optional adapter-provided `syntenyGroupId` beside `mate` gives all three.
 ---
 
 # A synteny group id gives a block one identity across rows

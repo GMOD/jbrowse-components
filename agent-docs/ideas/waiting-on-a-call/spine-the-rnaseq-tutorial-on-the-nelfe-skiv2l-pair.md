@@ -1,6 +1,6 @@
 ---
 name: spine-the-rnaseq-tutorial-on-the-nelfe-skiv2l-pair
-description: The RNA-seq tutorial walks four loci whose sections could be reordered without breaking; spining it on the NELFE/SKIV2L pair it already ends its strand section on would make it one line of work, and its strand tour waits on that call.
+description: The RNA-seq tutorial walks four loci whose sections could be reordered without breaking; building it on the NELFE/SKIV2L pair it already ends its strand section on would make it one line of work, and its strand tour waits on that call.
 ---
 
 # Spine the RNA-seq tutorial on the NELFE/SKIV2L pair

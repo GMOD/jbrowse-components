@@ -1,6 +1,6 @@
 ---
 name: an-arc-click-opens-the-breakpoint-split-view
-description: The read-connection band is the first SV evidence a reader sees and no gesture on an arc leads anywhere; a left click could open the split view at the junction, a right-click could offer the mate and the far side, and the hover could name the VCF record that calls it.
+description: The read-connection band is the first SV evidence a reader sees and no gesture on an arc leads anywhere; a left click could open the split view at the junction, a right-click could offer the mate, and the hover could name the VCF record.
 ---
 
 # An arc click opens the breakpoint split view

@@ -1,6 +1,6 @@
 ---
 name: reference-trim-leftovers
-description: "Small open items the 2026-09-30 pare-down of reference/ cut from their docs, re-checked against main on 2026-11-27: a dead MST node returned as a live Region, no Canvas2D fallback after repeated context losses, all-or-nothing WebGPU pipeline compiles, two bpToPx, a BAM name pair to move upstream."
+description: "Open items the 2026-09-30 pare-down of reference/ cut, re-checked on 2026-11-27: a dead MST node returned as a live Region, no Canvas2D fallback after repeated context losses, all-or-nothing WebGPU pipeline compiles, two bpToPx, a BAM name pair to move upstream."
 ---
 
 # Reference trim leftovers

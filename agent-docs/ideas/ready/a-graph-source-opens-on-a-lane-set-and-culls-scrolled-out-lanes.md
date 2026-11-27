@@ -1,6 +1,6 @@
 ---
 name: a-graph-source-opens-on-a-lane-set-and-culls-scrolled-out-lanes
-description: A multiway track over a graph source whose header declares hundreds of haplotypes opens on every lane the window places, and `renderLayers` draws every lane's layers whether scrolled into view or not. A refusal with the picker open past a lane count, and culling in `renderLayers`, come before anyone opens a hundred lanes.
+description: A multiway track over a graph source whose header declares hundreds of haplotypes opens on every lane the window places, and `renderLayers` draws every lane's layers whether scrolled into view or not. The fix is a lane-count refusal that opens the picker, and culling.
 ---
 
 # A graph source opens on a lane set and culls scrolled-out lanes

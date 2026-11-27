@@ -1,6 +1,6 @@
 ---
 name: synteny-hover-picks-the-wrong-feature-past-16-7m-instances
-description: The synteny shaders carry `featureId` as a Float32, so past 2^24 instances in one RPC response adjacent ids collide and hover or click highlights the wrong ribbon. The fix is a uint attribute and uniforms; it waits on a real dense all-vs-all file that reaches the cap.
+description: The synteny shaders carry `featureId` as a Float32, so past 2^24 instances in one RPC response adjacent ids collide and hover or click highlights the wrong ribbon. The fix is a uint attribute and uniforms; it waits on a real file that reaches the cap.
 ---
 
 # Synteny hover picks the wrong feature past 16.7M instances

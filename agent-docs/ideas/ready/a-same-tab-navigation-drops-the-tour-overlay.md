@@ -1,6 +1,6 @@
 ---
 name: a-same-tab-navigation-drops-the-tour-overlay
-description: A video tour step that navigates its own tab loses the drawn cursor and captions while the .vtt still ships every line, and nothing reports it; a `navigates` step that re-injects the overlay, as `opensTab` does, fixes it and opens tours that start from no config.
+description: A video tour step that navigates its own tab loses the drawn cursor and captions while the .vtt still ships every line, and nothing reports it; a `navigates` step that re-injects the overlay, as `opensTab` does, fixes it.
 ---
 
 # A same-tab navigation drops the tour overlay
