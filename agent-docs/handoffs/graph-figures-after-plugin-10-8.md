@@ -1,6 +1,6 @@
 ---
 name: graph-figures-after-plugin-10-8
-description: "Graph figures not yet squared with graph plugin 10.8.0 (live 2026-11-23): the fly thread section and its ada-only walk file, three published figures that reshoot differently, three failing E. coli rGFA specs, the unreviewed reshoots, the 2026-11-27 RefSeq sweep's graph figures among them. The paper's figures are unaffected."
+description: "Graph figures not yet squared with graph plugin 10.8.0 (live 2026-11-23): the fly thread section and its ada-only walk file, three published figures that reshoot differently, three failing E. coli rGFA specs, the unreviewed reshoots, the 2026-11-27 RefSeq sweep's among them. Not the paper's figures."
 ---
 
 # Graph figures after plugin 10.8.0
