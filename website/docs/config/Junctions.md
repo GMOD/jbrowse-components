@@ -9,13 +9,18 @@ Auto-generated from the config schema in the source. See the [config guide](/doc
 
 The alignments display's `junctions` setting: the junction arcs, over the
 coverage band or in a strip above or below it, and in a strip of their own
-while `coverage.show` is off. The band counts each splice junction from the reads'
-N gaps and each same-reference join of a split read's segments by its class
-(`junction.class`: `deletion`, `duplication`, which a circRNA back-splice
-is, or `inversion`), once per pair of read-adjacent segments as the read
-arcs count support. A split junction always takes its class's read-arc
-color. Which junctions draw is the display's `filter`,
-by its `junction` fields.
+while `coverage.show` is off. The band counts each splice junction from the
+reads' N gaps, each deletion of 50 bp or more the reads carry as a D inside
+one record (secondary alignments left out), and each same-reference join of
+a split read's segments by its class (`junction.class`: `deletion`,
+`duplication`, which a circRNA back-splice is, or `inversion`), once per
+pair of read-adjacent segments as the read arcs count support. One junction
+is one exact span of one kind, so a gapped and a split deletion on the same
+span count apart. A split junction takes its class's read-arc color and a
+gapped deletion the deletion-type one. Which junctions draw is the
+display's `filter`, by its `junction` fields: `junction.source: gap` keeps
+splices and gapped deletions, `junction.class: deletion` both spellings of
+a deletion.
 
 ## Example usage
 
