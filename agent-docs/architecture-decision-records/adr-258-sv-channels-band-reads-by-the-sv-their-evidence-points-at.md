@@ -112,6 +112,15 @@ reads outnumber the ones the rule moves: 824 against 559 reads holding an
 insertion junction on Sequel, 967 against 53 on Revio, 1,385 against 562 on
 ONT, 680, 850 and 1,094 of them in the partner band.
 
+Amended 2026-11-27 by
+[ADR-288](adr-288-the-junctions-band-counts-a-deletion-the-reads-carry-as-a-gap.md):
+the junctions band above the coverage no longer holds exactly the read arcs'
+junctions. It also counts a deletion of `SV_INDEL_MIN_BP` or more that reads
+carry as a gap inside one record, which no read arc draws. The Decision's "every
+junction drew twice" now holds for split junctions only. The preset still turns
+the junctions band off: under SV channels those reads file as `deletionType`,
+and their gaps and the coverage dip draw in that band.
+
 ## Context
 
 - **SV channels was a short-read arrangement.** The preset faceted by

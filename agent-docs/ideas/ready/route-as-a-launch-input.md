@@ -157,7 +157,7 @@ shipped with the tool, and none belongs in core:
 Every in-app proposal that computes a route from reads, and ADR-137 says why:
 reference-concatenated bases on the derivative panel, reads projected onto the
 allele (reverted, `e7b4f2b29b`), deriving from partial spanners, and grouping
-an in-CIGAR deletion as a junction. Each makes JBrowse a caller.
+an in-CIGAR deletion as a hop in a route. Each makes JBrowse a caller.
 
 ## Order of work
 

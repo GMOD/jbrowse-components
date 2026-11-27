@@ -1,6 +1,6 @@
 ---
 status: Accepted
-summary: "A curved arc that says something draws its breakend feet, in the read-connections and junctions bands: outward for a deletion-type junction, inward for a duplication-type, parallel for an inversion. Concordant pairs, read clouds, splice junctions and split insertions draw none. Amends ADR-170"
+summary: "A curved arc that says something draws its breakend feet, in the read-connections and junctions bands: outward for a deletion-type junction, inward for a duplication-type, parallel for an inversion. Concordant pairs, read clouds, splice junctions, gap deletions and split insertions draw none. Amends ADR-170"
 ---
 
 # ADR-286: A junction arc draws its breakend feet
@@ -11,6 +11,18 @@ Accepted (2026-11-23), Colin's call on the COLO829 foldback at
 chr3:26,622,430. Amends
 [ADR-170](adr-170-the-read-connections-band-is-a-marks-list.md), whose
 "Breakend feet stay on interchromosomal arcs" this replaces.
+
+Amended 2026-11-27 by
+[ADR-288](adr-288-the-junctions-band-counts-a-deletion-the-reads-carry-as-a-gap.md):
+a deletion the reads carry as a gap draws as a junctions-band arc with no feet,
+as a splice draws none, since its orientation is never in doubt. The Context's
+"there is no fan to crowd" does not hold in a tandem repeat: at HG002 ONT
+chr17:43,250,000-43,266,000 (the RNU2 repeat) 139 reads spell one deletion
+of about 8 kb as 337 distinct gaps, 101 of them shared by two or more reads, so
+it draws as about a hundred arcs. ADR-170's Rejected row on giving every arc its
+feet rests on the same premise from the other side ("the fan over a
+well-supported junction is already dense"), and there it holds; no feet draw on
+that fan, since gap deletions take none. Split junctions keep their feet.
 
 ## Context
 

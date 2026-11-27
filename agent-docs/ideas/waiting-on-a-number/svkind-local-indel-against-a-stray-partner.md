@@ -11,7 +11,7 @@ or ONT primary with `500M2000D500M300S` and an SA piece at MAPQ 30 on another
 contig files `elsewhere`, though its own CIGAR holds a 2 kb deletion.
 [ADR-258](../../architecture-decision-records/adr-258-sv-channels-band-reads-by-the-sv-their-evidence-points-at.md)
 ranks a local event over a partner elsewhere, but applies the rank among
-junctions only. Band and arc agree today: a CIGAR deletion draws no arc, and
+junctions only. Band and arc agree today: a CIGAR deletion draws no read arc, and
 the junction draws a tick.
 
 ## The fix that survived review
