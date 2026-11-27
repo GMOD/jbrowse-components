@@ -309,6 +309,7 @@ export const qcSpecs: ScreenshotSpec[] = [
                   // With every transcript, GTF2H2's ~25 grow this lane past
                   // 400 px and push the ribbon band out of frame.
                   geneGlyphMode: 'representative',
+                  labels: { description: { show: false } },
                   heightMode: 'fixed',
                   height: 120,
                 },
