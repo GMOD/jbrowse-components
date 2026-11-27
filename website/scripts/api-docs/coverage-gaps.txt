@@ -48,7 +48,7 @@ Dotplot1DView
 LinearSyntenyViewHelper
 TimeTraveller
 
-# model members with no description (1238)
+# model members with no description (1237)
 # fix: write a sentence under the member’s #property/#volatile/#getter/#method/#action tag
 AddTrackModel.adapterHint
 AddTrackModel.altAssemblyName
@@ -1036,7 +1036,6 @@ MultiWaySyntenyDisplay.laneLayerData
 MultiWaySyntenyDisplay.laneLayerHeights
 MultiWaySyntenyDisplay.laneLayerPlacements
 MultiWaySyntenyDisplay.laneLayerSources
-MultiWaySyntenyDisplay.laneLayerTemplates
 MultiWaySyntenyDisplay.laneLayerTitles
 MultiWaySyntenyDisplay.laneLayersFetchSpecs
 MultiWaySyntenyDisplay.laneMaps
