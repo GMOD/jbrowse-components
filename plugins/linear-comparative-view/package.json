@@ -63,7 +63,7 @@
   "sideEffects": false,
   "devDependencies": {
     "@jbrowse/display-test-utils": "workspace:^",
-    "@napi-rs/canvas": "^1.2.0"
+    "@napi-rs/canvas": "^1.2.1"
   },
   "exports": {
     ".": "./src/index.ts",
