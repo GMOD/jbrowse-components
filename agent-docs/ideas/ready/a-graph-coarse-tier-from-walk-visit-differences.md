@@ -11,7 +11,10 @@ Use the visit difference where no walk revisits a node, and compare bases over
 the revisit spans only. Where nothing revisits, the cheap path's coarse CIGAR is
 byte-identical to the base-compared one (CFH and MICB).
 
-Measured on HPRC v2.1 windows; nothing is built.
+Measured on HPRC v2.1 windows; nothing is built. The graph plugin's
+`GbzBaseSyntenyAdapter.pairFeatures` aligns walks on the nodes both visit with no
+base compared, which is the shared-node chaining the next section shows failing
+at a revisit, not this tally.
 
 ## Shared nodes assert under half of what aligns
 
