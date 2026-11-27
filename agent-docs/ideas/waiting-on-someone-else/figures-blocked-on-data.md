@@ -1,6 +1,6 @@
 ---
 name: figures-blocked-on-data
-description: Figures nobody can shoot until someone builds, hosts or pays for their data or makes a call, among them a dotplot set at one genomic scale, a genome-wide wolf-ancestry sweep and cancer SV datasets, plus dead ends recorded so nobody re-checks them.
+description: Figures nobody can shoot until someone builds, hosts or pays for their data or makes a call, among them a dotplot set at one genomic scale, a genome-wide wolf-ancestry sweep, a selection scan over a multi-genome track and cancer SV datasets, plus dead ends recorded so nobody re-checks them.
 ---
 
 # Figures blocked on data, a cost or a call
@@ -36,6 +36,23 @@ review, the last out of the 2026-08 tutorial-focus pass.
   than the ~3.5 the 11-animal run implied. Compelling if a depleted region lands
   on something known — but with eight animals the noise is real: describe it, do
   not call it selection.
+
+## A selection scan over a multi-genome track
+
+The figure `MultiWaySyntenyDisplay` was pitched from, Jiao & Schneeberger 2020
+Fig 3d: a diversity or selection statistic as a wiggle above, the lanes naming
+which genomes explain it below, both on one anchor. No hosted
+GWAS, Fst or selection track sits on the same anchor as a multi-genome track.
+Candidates, by data readiness:
+
+- **Arabidopsis 1001/MPIPZ accessions** over Col-0: assemblies and annotations
+  exist; the statistic must be computed.
+- **Dog10K**: the wolf-ancestry sweep above would be the top panel, but there is
+  one dog reference, not per-sample assemblies, so the lanes would need the SV
+  callset as a placement source.
+- **DEST Drosophila**: statistics hosted, no per-population assemblies.
+
+None is an afternoon, and each needs `deploy-demo.sh` hosting.
 
 ## Cancer SV datasets not yet shot
 

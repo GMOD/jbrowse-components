@@ -9,10 +9,10 @@ The feature is "stack the genomes so the ones that agree sit next to each
 other", and two of its constraints are not visible from the feature
 description.
 
-The lane-selection half — which of 464 haplotypes to draw at all — is in
-[multiway-synteny-lgv-track](../collections/multiway-synteny-lgv-track.md) under "HPRC at
-scale", and it lands on the wave VCF's genotype matrix rather than the
-alignment. This file is the ORDER of whatever set that picks.
+The lane-selection half — which of 464 haplotypes to draw at all — is
+[MULTIWAY_SYNTENY_DISPLAY.md](../../reference/MULTIWAY_SYNTENY_DISPLAY.md)
+§"Suitability for graph pangenomes", and it lands on the genotype matrix rather
+than the alignment. This file is the ORDER of whatever set that picks.
 
 ## The display side is done
 

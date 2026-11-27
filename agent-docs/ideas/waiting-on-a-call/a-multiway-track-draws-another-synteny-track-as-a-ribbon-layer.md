@@ -50,8 +50,7 @@ through each lane's frame:
   stay readable on top of their blocks.
 - No zoom switch: the layer draws at every zoom. Drawing blocks only past a
   zoom threshold was declined on 2026-09-21 as flicker
-  ([multiway-synteny-lgv-track](../collections/multiway-synteny-lgv-track.md),
-  "Collinear runs as block ribbons").
+  ([collinear-gene-ribbons-merge-into-block-ribbons](collinear-gene-ribbons-merge-into-block-ribbons.md)).
 
 ## Calls to make
 
@@ -70,8 +69,9 @@ through each lane's frame:
 Sources with no chained file: an OrthoFinder gene table, or a whole-genome
 alignment such as the hosted `Brapa_to_TAIR10.pif.gz`, whose three
 *B. rapa* copies of Arabidopsis Chr5:3–7 Mb draw as hatching at 4 Mb. Those
-need chaining, in the display ("Collinear runs as block ribbons" in the
-collection) or in the file
+need chaining, in the display
+([collinear-gene-ribbons-merge-into-block-ribbons](collinear-gene-ribbons-merge-into-block-ribbons.md))
+or in the file
 ([block-level-synteny-from-external-tools](../ready/block-level-synteny-from-external-tools.md)).
 A layer is the cheaper first step where a tool already chained the blocks,
 and its chaining is the tool's own.
