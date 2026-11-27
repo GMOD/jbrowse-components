@@ -25,7 +25,6 @@ export interface LaneJunction {
   end: number
   // the split class of a split junction, unset for any other
   split?: JunctionSplitClass
-  // what made the junction, unset on a read-connection arc
   kind?: JunctionKind
 }
 

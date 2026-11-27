@@ -74,9 +74,8 @@ export interface JunctionTooltipPayload {
   start: number
   end: number
   score: number
-  // what `score` counts
   countLabel: string
-  // absent for a split junction, which no transcript strand votes on
+  // a splice's alone, the one kind a transcript strand votes on
   strand?: string
   refName: string
   // 'GT-AG (canonical)' / 'GC-AG (canonical)' / 'AT-AC (canonical)' /

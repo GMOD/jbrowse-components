@@ -220,6 +220,19 @@ describe('the More filters... layer sections', () => {
     },
   )
 
+  test.each(['only' as const, 'exclude' as const])(
+    'choosing all junctions after %s leaves no junction filter',
+    split => {
+      const model = makeModel({ showJunctions: true })
+      submit(model, s => ({ ...s, junctions: { ...s.junctions!, split } }))
+      submit(model, s => ({
+        ...s,
+        junctions: { ...s.junctions!, split: undefined },
+      }))
+      expect(model.filterPredicates).toEqual([])
+    },
+  )
+
   test('a written class of deletion is no split-read choice', () => {
     const model = makeModel({
       filter: [{ field: 'junction.class', equal: 'deletion' }],

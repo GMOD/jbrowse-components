@@ -1,4 +1,7 @@
-import { SAM_FLAG_SECONDARY } from '@jbrowse/cigar-utils'
+import {
+  SAM_FLAG_SECONDARY,
+  SAM_FLAG_SUPPLEMENTARY,
+} from '@jbrowse/cigar-utils'
 
 import { makePileupDataResult } from '../../RenderAlignmentDataRPC/pileupData.fixture.ts'
 import {
@@ -56,7 +59,7 @@ test('a gap deletion lights the primary and supplementary reads whose deletion g
       [100, 500, GAP_DELETION, 3],
       [100, 500, GAP_DELETION, 4],
     ],
-    [0, 0, 0, 0, SAM_FLAG_SECONDARY],
+    [0, 0, 0, SAM_FLAG_SUPPLEMENTARY, SAM_FLAG_SECONDARY],
   )
   expect(
     junctionSupportingReadSlots(

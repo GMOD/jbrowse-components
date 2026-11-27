@@ -98,13 +98,14 @@ export function splitJunctionsCategory(
       : undefined
 }
 
-/** Each choice clears `junction.class`; only and hide write `junction.source`. */
 export function splitJunctionsPatch(
   value: CategoryFilter | undefined,
 ): JunctionFilterPatch {
-  return value === undefined
-    ? { classes: undefined }
-    : { classes: undefined, sources: [value === 'only' ? 'split' : 'gap'] }
+  return {
+    classes: undefined,
+    sources:
+      value === undefined ? undefined : [value === 'only' ? 'split' : 'gap'],
+  }
 }
 
 /**

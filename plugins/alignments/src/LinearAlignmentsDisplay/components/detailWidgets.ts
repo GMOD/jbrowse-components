@@ -118,7 +118,6 @@ export function openCoverageWidget(
   openFeatureWidget(model, featureData)
 }
 
-/** The feature a junction's widget shows. */
 export function junctionWidgetFeature(
   junction: Omit<MergedJunction, 'key'>,
   groupKey: string,
@@ -130,14 +129,14 @@ export function junctionWidgetFeature(
     start: junction.start,
     end: junction.end,
   }
+  const scored = { ...location, score: junction.count }
   const motif = spliceMotifLabel(junction.motif)
   // Named like its siblings (openIndicatorWidget, openCigarWidget) so the
   // widget has a heading; without one it opened titled by nothing, leaving the
   // bare `type: 'skip'` to explain what had been clicked.
   return kind === 'splice'
     ? {
-        ...location,
-        score: junction.count,
+        ...scored,
         name: 'Splice junction',
         type: 'skip',
         strand: junction.strand,
@@ -145,14 +144,13 @@ export function junctionWidgetFeature(
       }
     : kind === 'gapDeletion'
       ? {
-          ...location,
-          [junctionCountLabel(kind)]: junction.count,
+          ...scored,
           name: junctionName(kind),
           type: 'deletion',
+          description: `${junctionCountLabel(kind)}: ${junction.count}`,
         }
       : {
-          ...location,
-          score: junction.count,
+          ...scored,
           name: junctionName(kind),
           type: `split_${junctionClass(kind)}`,
         }

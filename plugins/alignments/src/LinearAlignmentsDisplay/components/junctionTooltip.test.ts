@@ -46,13 +46,12 @@ describe('a gap deletion', () => {
   })
 
   it('names itself and counts the reads carrying its gap in the widget', () => {
-    const feature = junctionWidgetFeature(junction('gapDeletion'), 'g')
-    expect(feature).toMatchObject({
+    expect(junctionWidgetFeature(junction('gapDeletion'), 'g')).toMatchObject({
       name: 'Deletion (gapped reads)',
       type: 'deletion',
-      'Reads with exactly this gap': 5,
+      score: 5,
+      description: 'Reads with exactly this gap: 5',
     })
-    expect(feature).not.toHaveProperty('score')
     expect(junctionWidgetFeature(junction('splitForward'), 'g')).toMatchObject({
       name: 'Split junction (deletion-type)',
       type: 'split_deletion',

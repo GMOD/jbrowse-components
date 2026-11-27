@@ -37,12 +37,10 @@ export function splitClassCode(split: JunctionSplitClass) {
   return JUNCTION_KINDS.indexOf(split)
 }
 
-/** The split class of a junction split reads made, undefined for any other. */
 export function splitClassOf(kind: JunctionKind) {
   return kind === 'splice' || kind === 'gapDeletion' ? undefined : kind
 }
 
-/** The split class whose read-arc color a junction takes, none for a splice. */
 export function junctionColorClass(kind: JunctionKind) {
   return kind === 'gapDeletion' ? 'splitForward' : splitClassOf(kind)
 }
@@ -78,12 +76,10 @@ export const GAP_DELETION_NAME = 'Deletion (gapped reads)'
 
 export const GAP_AND_SPLIT_DELETION_NAME = 'Deletion (gapped and split reads)'
 
-/** What the tooltip and feature widget call a junction other than a splice. */
 export function junctionName(kind: Exclude<JunctionKind, 'splice'>) {
   return kind === 'gapDeletion' ? GAP_DELETION_NAME : SPLIT_JUNCTION_NAMES[kind]
 }
 
-/** How the tooltip and feature widget word a junction's read count. */
 export function junctionCountLabel(kind: JunctionKind) {
   return kind === 'gapDeletion'
     ? 'Reads with exactly this gap'

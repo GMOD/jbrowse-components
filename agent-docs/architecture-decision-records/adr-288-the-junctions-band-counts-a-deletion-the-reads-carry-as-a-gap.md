@@ -80,11 +80,14 @@ draws no feet, and a tandem repeat is a fan).
   reads no splice motif (canonical to the motif filter) and strand 0, as a split
   junction does.
 - **Named** "Deletion (gapped reads)" in the tooltip, the feature widget and the
-  legend, and its count reads as reads that carry exactly this gap. The legend
+  legend, and its count reads as reads that carry exactly this gap. The widget
+  keeps the count in `score`, as every junction's does. The legend
   keeps one row per colour: "Deletion (gapped reads)" with gap deletions only,
   the split label with split deletions only, "Deletion (gapped and split
-  reads)" with both. A window with no split read shows no "Split" label for
-  this colour.
+  reads)" with both. Where the read arcs already key the colour, their row
+  ("Split read (deletion-type)") stays in the arcs section and the junctions
+  section names the gap deletions alone. A window with no split read shows no
+  "Split" label for this colour.
 - **Hovering the arc boxes the reads its count used**: the records holding that
   `GAP_DELETION` at that start and end, secondaries excluded.
 - **The junctions table's** `class`, `source` and `shown` agree with the
