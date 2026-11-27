@@ -1,6 +1,6 @@
 ---
 name: the-alignments-display-draws-secondary-alignments-by-default
-description: The default read filter drops only unmapped, QC-failed and duplicate reads, so secondary alignments count in coverage and fill the pileup; in an HG002 ONT tandem repeat they tripled the apparent depth and pushed the reads carrying the deletion out of the visible rows. Should the default hide them, or stack them below primary reads?
+description: The default read filter keeps secondary alignments, so they count in coverage and fill the pileup; in one HG002 ONT tandem repeat they tripled the apparent depth. Should the default hide them, or stack them below primary reads?
 ---
 
 # The alignments display draws secondary alignments by default

@@ -1,6 +1,6 @@
 ---
 status: Accepted
-summary: "The junctions band counts a CIGAR `D` of `SV_INDEL_MIN_BP` or more as a junction of its own kind, `junction.class: deletion` with `junction.source: gap`, one per exact start and end, secondaries excluded, under the default floor of 2 reads. It stays apart from split junctions, merges nothing by tolerance and draws no feet; a tandem repeat draws one deletion as many arcs. Amends ADR-231, ADR-258 and ADR-286"
+summary: "The junctions band counts a CIGAR `D` of `SV_INDEL_MIN_BP` or more as its own kind, `junction.class: deletion` with `junction.source: gap`, per exact start and end. It merges nothing by tolerance and draws no feet. Amends ADR-231, ADR-258 and ADR-286"
 ---
 
 # ADR-288: The junctions band counts a deletion the reads carry as a gap
