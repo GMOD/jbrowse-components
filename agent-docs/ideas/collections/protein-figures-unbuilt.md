@@ -1,6 +1,6 @@
 ---
 name: protein-figures-unbuilt
-description: "Protein-browser figures the data supports and nobody has built: genome evidence driving the structure, the painted fold as support, and VHL, SOD1, DCLRE1C, PTPN11, PTEN. Read before proposing one."
+description: "Protein-browser figures the data supports and nobody has built: genome evidence driving the structure, the painted fold as support, and VHL, SOD1, DCLRE1C. Read before proposing one."
 ---
 
 # Protein figures not yet built
@@ -29,7 +29,6 @@ changing each residue"):
   Funk's validated exonic splice SNVs (codons 199 and 137) with the skipped
   exon colored on the fold.
 - **Figures the data supports**: VHL hydroxyproline pocket (1LM8 with VH032
-  4W9H, the SGE S111/H115 allelic series), SOD1 H81R, DCLRE1C H35D, PTPN11,
-  PTEN.
+  4W9H, the SGE S111/H115 allelic series), SOD1 H81R, DCLRE1C H35D.
 - **Occlusion** is subtle in software GL at figure size; a headed capture
   decides whether `occlusion: true` stays on.
