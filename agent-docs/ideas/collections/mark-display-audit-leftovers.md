@@ -1,6 +1,6 @@
 ---
 name: mark-display-audit-leftovers
-description: "What the 2026-11-21 LinearMarkDisplay audit left: the interval bins ADR-197's fused kernel leaves unclipped still cut a long feature at any zoom and await a ruling, and two link-identity bugs across assemblies are read, not run."
+description: "What the 2026-11-21 LinearMarkDisplay audit left: a link's far foot on no displayed region hovers under an unrecorded assembly's spelling, read, not run."
 ---
 
 # Mark display audit leftovers
@@ -17,28 +17,8 @@ Each item says how far it was checked. "Checked" means the main session read
 the cited code after the reader reported it; "traced" means a reviewer followed
 it through the code.
 
-## Open
-
-- **An interval `bin` the fused kernel does not clip still cuts a row along
-  its whole length.** A fused bin and aggregate keeps only the fetched
-  region's bins (ADR-197); these still make length over step pieces at any
-  zoom, and a mark's `maxBpPerPx` does not bound them:
-  - an unfused interval `bin`;
-  - a `bin` in the display's shared steps with its `aggregate` in a mark's
-    list (`lastBinEdges(sharedSteps)`, `markRequest.ts`), which never fuses;
-  - a fused pair in the display's shared steps, the facet's own steps or
-    ahead of a facet split, which never clips so a click's one-layer rerun
-    matches the draw;
-  - a fused pair in a layer's own steps followed by any step `isRowwise`
-    (`stepOutputs.ts`) says is not row-wise or that writes `refName`, `start`
-    or `end`, or a pair right after a `cells` it fuses with (since
-    `9c93d06f4e` a `cells` that cannot fuse clips).
-
 ## Pointers from the hover fix, read, not run
 
-- **`linkOwners.ts` keys a link's feet by refName and bp with no assembly**
-  (`footKey`, `linkKeys`), so two identical-looking links on hg38 chr1 and hs1
-  chr1 regions in one row would merge into one curve.
 - **A far foot on no displayed region hovers with no assembly.** In
   `withMateRegions`, when the track's own assembly has no region of that name,
   `x2CanonicalRefNames` takes another assembly's spelling and which one is not

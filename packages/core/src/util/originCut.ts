@@ -9,7 +9,12 @@ const TAIL_SUFFIX = '-origin'
  * The linear view reads across the origin with the tail and head typed as two
  * regions, `NC_012920.1:15,000-16,569 NC_012920.1:1-2,000`, where the two
  * pieces abut in one row. A locstring that wraps past the origin, or a menu
- * item, would save the typing; neither was built (2026-10-14).
+ * item, would save the typing; neither was built (2026-10-14). A text-index
+ * hit across the origin, which the GFF3 indexer writes with an end past the
+ * contig, navigates to the piece before the origin alone. Writing both pieces
+ * from the indexer was declined (2026-11-27): `landsInAssembly`, `spanOf`,
+ * `highlightSearchResultFeature`, `RefNameAutocomplete` and jbrowse-img each
+ * read a hit as one locstring, for a case the two typed regions already show.
  */
 export function originTailId(id: string) {
   return `${id}${TAIL_SUFFIX}`

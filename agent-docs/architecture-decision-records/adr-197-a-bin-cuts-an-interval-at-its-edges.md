@@ -128,10 +128,12 @@ for the interval case as an explicit spelling.
   or ahead of a facet split, and a fused pair a cross-row or position-moving
   step follows still cut a row along its whole length, into length over step
   pieces at any zoom: a mark's `maxBpPerPx` bounds only how far out the view
-  goes, not a long feature at a close zoom. These stay open in
-  [mark-display-audit-leftovers](../ideas/collections/mark-display-audit-leftovers.md), and the warning for
-  a fine `step` stays declined for them too; no rule guesses which feature is
-  long.
+  goes, not a long feature at a close zoom. These stay unclipped (ruled
+  2026-11-27): clipping any of them changes an answer inside the region, and
+  the cost is the unclipped figure above, tens of milliseconds a fetch for a
+  feature megabases long, with no track measured slower for it. The warning
+  for a fine `step` stays declined for them too; no rule guesses which feature
+  is long.
 - The `marks_maf_identity` track in the volvox marks config declares the
   identity heatmap: `cells`, then a span over `bin: auto` by `fields` and the
   weighted mean of `match`.

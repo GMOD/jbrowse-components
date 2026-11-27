@@ -211,6 +211,7 @@ scores <- import(
 - [](/docs/user_guides/quantitative_track)
 - [](/docs/user_guides/hub_url)
 - [](/docs/agents_hosted_data)
+- [](/docs/config_guides/tracks#deep-reads-over-a-small-genome)
 
 ## External links
 
