@@ -72,7 +72,7 @@ const PROTEIN_LAUNCH_SESSION = sessionSpec(UCSC_HG38_CONFIG, {
 
 const OPEN_PROTEIN_LAUNCH_MENU: ScreenshotAction[] = [
   { type: 'rightclick', anchor: PROTEIN_LAUNCH_ANCHOR },
-  { type: 'waitForText', text: 'Launch protein view' },
+  ...menuCascade(['Launch', 'Launch protein view']),
   { type: 'click', text: 'Launch protein view' },
   // the dialog enables Launch once UniProt has answered
   {

@@ -2,7 +2,11 @@ import { readFileSync } from 'node:fs'
 import { fileURLToPath } from 'node:url'
 import { deflateSync } from 'node:zlib'
 
-import { UCSC_HG38_CONFIG, sessionSpec } from '../screenshot-spec-helpers.ts'
+import {
+  UCSC_HG38_CONFIG,
+  menuCascade,
+  sessionSpec,
+} from '../screenshot-spec-helpers.ts'
 
 import type {
   ScreenshotAction,
@@ -156,7 +160,7 @@ export const msaSpecs: ScreenshotSpec[] = [
       {
         actions: [
           RIGHT_CLICK_NLRP1,
-          { type: 'waitForText', text: 'Launch MSA view' },
+          ...menuCascade(['Launch', 'Launch MSA view']),
         ],
         // An unresolved anchor throws, so these boxes also assert that
         // genomes.jbrowse.org still offers both launchers, as the tutorial says.

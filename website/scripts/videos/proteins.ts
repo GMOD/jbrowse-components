@@ -177,6 +177,7 @@ export const proteinVideos: VideoSpec[] = [
         say: 'Right-click TP53 and launch its protein structure',
         hold: 900,
       },
+      { type: 'hover', selector: '[data-testid="cascading-submenu-launch"]' },
       { type: 'waitForText', text: 'Launch protein view' },
       { type: 'click', text: 'Launch protein view' },
       // off camera while the dialog fills itself from UniProt and AlphaFold
@@ -241,6 +242,7 @@ export const proteinVideos: VideoSpec[] = [
         say: "Align TP53 with 15 of its orthologs from the gene's menu",
         hold: 900,
       },
+      { type: 'hover', selector: '[data-testid="cascading-submenu-launch"]' },
       { type: 'waitForText', text: 'Launch MSA view' },
       { type: 'click', text: 'Launch MSA view' },
       { type: 'waitForText', text: 'Orthologs' },
@@ -277,6 +279,7 @@ export const proteinVideos: VideoSpec[] = [
         say: 'Then launch its AlphaFold structure the same way',
         hold: 900,
       },
+      { type: 'hover', selector: '[data-testid="cascading-submenu-launch"]' },
       { type: 'waitForText', text: 'Launch protein view' },
       { type: 'click', text: 'Launch protein view' },
       {
@@ -344,6 +347,7 @@ export const proteinVideos: VideoSpec[] = [
         say: 'Open a view whose genome is the protein itself',
         hold: 900,
       },
+      { type: 'hover', selector: '[data-testid="cascading-submenu-launch"]' },
       { type: 'waitForText', text: 'Launch protein view' },
       { type: 'click', text: 'Launch protein view' },
       {
