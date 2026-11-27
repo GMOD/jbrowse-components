@@ -79,7 +79,10 @@ interface CachedAdapter {
 
 // The browser sets no size bound: an adapter whose track stays open lives as
 // long as its worker. A host with no tracks to close bounds it with
-// keepAdapters.
+// keepAdapters. One cache per page, not per driver or plugin manager:
+// getAdapter, keepAdapters and clearAdapterCache take no driver, and each
+// jb2export batch record has its own plugin manager, so adapters would stop
+// being reused across records.
 let adapterCache = new Map<string, CachedAdapter>()
 let requests = 0
 let builds = 0

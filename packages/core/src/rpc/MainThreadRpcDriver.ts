@@ -7,7 +7,10 @@ import type { RpcHandles } from './RpcRegistry.ts'
  * RPC driver that runs RPC functions in-band on the main thread, filling the
  * page's one adapter cache. It has no worker to terminate, so `destroy` frees
  * every session it ran, and each call still running frees its session again
- * when it settles. ADR-086.
+ * when it settles. ADR-086. Releasing claims before `rpcManager.destroy()`
+ * instead was declined: ADR-069 runs the disposers a task later, they cover
+ * only counted claims, and engines sharing one namespace would still evict
+ * each other.
  */
 export default class MainThreadRpcDriver extends BaseRpcDriver {
   name = 'MainThreadRpcDriver'

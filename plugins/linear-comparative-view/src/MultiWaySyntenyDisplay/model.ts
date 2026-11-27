@@ -1811,7 +1811,11 @@ export function stateModelFactory(
       },
     }))
     .views(self => ({
-      /** #getter */
+      /**
+       * #getter
+       * READS_REFERENCE also admits BAM, CRAM and MultiWiggleAdapter, none of
+       * which computes from the reference; kept, since no config uses one
+       */
       get laneLayerTemplates(): (Record<string, unknown> | undefined)[] {
         const { pluginManager } = getEnv(self)
         return self.configuration.laneLayers.map(layer => {

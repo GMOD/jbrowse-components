@@ -1,6 +1,6 @@
 ---
 name: adapter-cache-leftovers
-description: "What the 2026-11-21 dataAdapterCache audit left open, none of it wrong data: claims nothing releases on worker drivers, tables totals counting the whole page cache, credential churn needing a generation number, an unmeasured config rehash, lane layers, nits."
+description: "What the 2026-11-21 dataAdapterCache audit left open, none of it wrong data: claims nothing releases on worker drivers, tables totals counting the whole page cache, credential churn needing a generation number, an unmeasured config rehash, nits."
 ---
 
 # Adapter cache leftovers
@@ -52,28 +52,9 @@ to leave the slot unset.
   (`unclaimedAdapter`), so their decoded-bytes charge waits for GC, the failure
   `freeAdapterResources`' comment names. The window is one request outliving
   its track.
-- **Lane layers.** `laneLayerTemplates` (`MultiWaySyntenyDisplay/model.ts`)
-  admits any `READS_REFERENCE` adapter as a per-lane template, reading it as
-  "computes from the reference". That admits BAM and CRAM, and since
-  `fd3f2e0e76` a `MultiWiggleAdapter`, whose bigWig members would be read on
-  every lane's genome. No config does either; the slot's description names
-  adapters that compute from the sequence. Kept as is.
 - Nits: `releaseClaim` scans the whole cache per release (quadratic in a
   cascade); `getAdapter` returns the live `sessionIds` Set (removing it is a
   plugin-ABI change, `reference/PLUGIN_ABI_STABILITY.md`); an awaited eviction
   still passes a throwing `freeResources` up, so one in the tables trim replaces
   a successful call's result; the claim `'tables'` is a repeated literal the
   trim relies on matching.
-
-## Settled; don't re-propose
-
-- **A cache per driver or per plugin manager** instead of claim namespaces.
-  `getAdapter`, `keepAdapters`, `cachedAdapterCount` and `clearAdapterCache`
-  take no driver, GC reclaim skips `freeResources`, and each jb2export batch
-  record has its own plugin manager, which would undo `d0ae99f72e`'s adapter
-  reuse across records.
-- **Releasing claims before `rpcManager.destroy()`.** ADR-069 keeps the
-  disposers a task later, it covers only counted claims, and engines sharing
-  one namespace would still evict each other.
-- **Namespacing in `RpcManager.call`.** A call made while serializing reuses
-  `args.sessionId`; see the ADR-086 amendment.
