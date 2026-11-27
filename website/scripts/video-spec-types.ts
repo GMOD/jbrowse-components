@@ -56,7 +56,9 @@ export interface VideoSpec {
   // `pangenome/pggb_subgraph_launch` -> static/media/pangenome/pggb_subgraph_launch.mp4
   name: string
   // Session URL, the same form as a screenshot spec's: a query string served
-  // against the local jbrowse-web build, or an absolute url.
+  // against the local jbrowse-web build, or an absolute url. There is no
+  // embedded mode like a screenshot spec's: the only tours it would reach
+  // (embed_linear_genome_view, the react-LGV UMAP example) carry no route.
   url: string
   // Capture viewport in CSS px. Filmed at deviceScaleFactor 1 — `page.screencast`
   // hands back frames at the viewport's CSS size whatever the page was laid out
