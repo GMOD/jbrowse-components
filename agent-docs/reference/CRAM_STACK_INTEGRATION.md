@@ -72,7 +72,7 @@ The slice worker pool speeds the decode alone 2-4x (`@gmod/cram`
 deep short-read render shows the slice workers starved, not saturated, and the
 RPC worker spending a visible share in GC. The byte gate refuses a pileup well
 before the pool's win grows. Whether allocation is the lever is parked in
-[ideas/collections/alignments.md](../ideas/collections/alignments.md).
+[ideas/waiting-on-a-number/per-record-allocation-may-be-the-cram-lever.md](../ideas/waiting-on-a-number/per-record-allocation-may-be-the-cram-lever.md).
 
 ## Measuring this stack: one arm per process
 
