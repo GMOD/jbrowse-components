@@ -14,10 +14,9 @@ has been re-checked since the cut.
 
 - **`renameRegions.ts`** returns a dead MST node typed as a live `Region`
   (CORE_UTIL_AUDIT).
-- **`JBrowseModel.addTrackConf`** (the config catalog's action;
-  `addTrackConf` on the session dedupes) has no dedupe, so a repeat or race can
-  leave two catalog entries with one `trackId`. A non-admin `deleteTrackConf` dereferences every
-  open view and removes nothing (TRACK_REGISTRATION).
+- **A non-admin `deleteTrackConf`** dereferences every open view and removes
+  nothing (TRACK_REGISTRATION); the neighbouring catalog bug is
+  [the-config-catalog-adds-two-tracks-under-one-track-id](../ready/the-config-catalog-adds-two-tracks-under-one-track-id.md).
 - **Worker sort/layout loops** emit no progress (PROGRESS_REPORTING).
 
 ## Unbuilt follow-ups
