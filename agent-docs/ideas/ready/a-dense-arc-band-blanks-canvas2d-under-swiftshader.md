@@ -1,6 +1,6 @@
 ---
 name: a-dense-arc-band-blanks-canvas2d-under-swiftshader
-description: A headless Canvas2D capture under SwiftShader loses an alignments display's coverage and pileup once its arc band strokes thousands of arcs. The fix is in the capture harness, which stops pairing the Canvas2D pin with SwiftShader.
+description: A headless Canvas2D capture under SwiftShader loses an alignments display's coverage and pileup once its arc band strokes thousands of arcs. The fix is in the screenshot launcher, which still pairs the Canvas2D pin with SwiftShader; the browser-test runner already does not.
 ---
 
 # A dense arc band blanks Canvas2D under SwiftShader
@@ -8,10 +8,11 @@ description: A headless Canvas2D capture under SwiftShader loses an alignments d
 ## Ruling
 
 Fix it in the capture harness, not the painter: a capture pinned to
-`renderer=canvas2d` launches Chrome without `--use-angle=swiftshader`, since
-the table below shows Chrome's software canvas draws the frame. The launchers
-are `website/scripts/screenshot-browser.ts` and
-`products/jbrowse-web/browser-tests/runner.ts`; re-run the replay through the
+`renderer=canvas2d` launches Chrome without SwiftShader, since the table
+below shows Chrome's software canvas draws the frame.
+`products/jbrowse-web/browser-tests/runner.ts` already does (`--disable-gpu`
+for `canvas2d`); `website/scripts/screenshot-browser.ts` still launches every
+capture with `--enable-unsafe-swiftshader`. Re-run the replay through the
 changed launch to confirm. Stroking same-color arcs as one path is declined: it
 would change stroke z-order where arcs of different colors cross.
 
@@ -54,9 +55,9 @@ yet.
 
 ## The options
 
-- **In the harness (ruled):** stop pairing the Canvas2D pin with
-  `--use-angle=swiftshader`, since Chrome's software canvas draws the frame.
-  Untested in the app.
+- **In the harness (ruled):** stop pairing the Canvas2D pin with SwiftShader
+  in `screenshot-browser.ts`, as the browser-test runner already does, since
+  Chrome's software canvas draws the frame. Untested in the app.
 - **In the painter (declined):** stroke same-style arcs as one path. It
   reorders strokes where arcs of different colors cross, and is untested
   against this defect.

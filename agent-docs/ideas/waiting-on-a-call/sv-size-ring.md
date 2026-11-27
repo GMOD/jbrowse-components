@@ -19,7 +19,7 @@ therefore has nothing to say about most of a real callset:
 | median DUP span | 148 kb |
 | median INS span | 0 |
 
-The spokes those 171 records used to draw are gone (`chordControlRadius`), and
+The spokes those 171 records used to draw are gone, and
 the legend now counts them so the reader knows they exist. Neither puts them on
 the plot.
 

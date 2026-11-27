@@ -11,7 +11,7 @@ The coverage track is already a decomposition
 engine, not a flat depth bar: `snpCoverage` partitions a column's depth by base,
 `modCoverage` by modification proportion, `interbaseCoverage` flags insertions/clips.
 `runCoveragePipeline.ts` is a list of "compute layer → pack → draw" steps and
-`modCoverage` (compute + packGpu + drawCanvas + `.slang`) is a complete template — so
+`modCoverage` (a `compute.ts` step the shared marks draw) is a complete template — so
 new decomposition modes are new modes on an existing scaffold, not a new subsystem.
 The input data (MAPQ, pair orientation/discordancy, tags, per-base quality) is mostly
 already extracted in the worker for the existing color-by features.

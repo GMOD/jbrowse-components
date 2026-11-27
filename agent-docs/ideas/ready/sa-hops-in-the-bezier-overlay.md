@@ -22,7 +22,8 @@ line JBrowse draws. It did NOT go through
 `unpairedReadChain`, as this file and the backlog both once proposed — `SegAln`
 carries no route back to the `ReadEntry`, and the overlay needs the entry at
 both ends for its `readYs` row and `displayedRegionIndex`, so it takes its
-own clip window (`hiddenSegments`, `readGroupConnections.ts`), which the
+own clip window (`hiddenSegmentsBetween`,
+`packages/alignments-core/src/readGroupConnections.ts`), which the
 breakpoint split view now reads too. The same-strand case, which
 `isNormal` routed to the straight-line pass, is fixed too: that pass leaves any
 pair with hidden segments to the overlay (`isGpuLinkedReadLine`).
@@ -40,9 +41,9 @@ it proposed routes at ordinary loci and took copy counts from read edges. An
 allele is drawn only when a tool outside JBrowse built it
 ([route-as-a-launch-input](../ready/route-as-a-launch-input.md)).
 
-**What the fusion contig is built from** is settled in both directions. Offline,
-`scripts/sv_multihop.py derive` polishes the spanning reads into a consensus and
-realigns them onto it. In-app, nothing is built: `projectReadsOntoDerivative`
+**What the fusion contig is built from** is settled in both directions. Offline, a
+consensus polished from the spanning reads and realigned onto it settles it
+(`scripts/sv_multihop.py` went in ADR-140). In-app, nothing is built: `projectReadsOntoDerivative`
 placed each supporting read onto the path and was reverted in `e7b4f2b29b`,
 because its evidence was the same chains the path came from.
 

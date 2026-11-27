@@ -14,7 +14,8 @@ hosted star tracks (`hubtools/src/multiwayStarTrack.ts`,
 
 - [ADR-180](../../architecture-decision-records/adr-180-a-multiway-lane-is-a-layer-list-under-its-frame.md)'s
   stage 2 moves the gene glyphs and placement boxes onto `encodeFeatures`,
-  gated on measuring the encoder at 40 lanes. Until then a gene layer has no
+  which ADR-180's measurement has taken (the encoder's floor is a third of
+  this display's packer); the call is what remains. Until then a gene layer has no
   annotation fallback, gene adapter or label row, so `laneGeneTracks` cannot
   be a `laneLayers` entry without being a second spelling of it.
 - At the fold, `laneGeneTracks` lifts through the display's `retired` table

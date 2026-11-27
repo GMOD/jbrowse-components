@@ -5,7 +5,7 @@ description: An alignments track has no way to step from one real SNP to the nex
 
 # Jump to the next significant variant in view
 
-`findSignificantInBin` (`packages/alignments-core/src/positionIndex.ts`)
+`findSignificantInBin` (`packages/alignments-core/src/coverageDownsampling.ts`)
 already answers "is there a real SNP in this bp range" against the local depth.
 It exists for the hover tooltip at wide bpPerPx, so wiring it to a menu item
 and a keyboard shortcut gives variant-to-variant navigation off data already on

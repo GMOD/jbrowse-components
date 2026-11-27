@@ -22,8 +22,9 @@ the release-2 files, and why CHM13 is the only donor worth loading.
   `StableCoordinate.strand` reaches the node popup while nothing draws it — so the
   one structural event a graph shows better than any linear view is invisible in
   ours. Arrowheads or a reversed-node treatment makes AMY1, 15q13/HERC2, 10q23 and
-  LCR22 read as inversions on sight. Same missing data as the `computeEdgeCurves`
-  reverse-complement bug, so the two land together.
+  LCR22 read as inversions on sight. Same missing data as the edge-curve
+  reverse-complement bug in the graph plugin's `graphViews.ts`, so the two land
+  together.
 - **"240 kb that GRCh38 does not have."** `chr16:74,406,294-74,406,329` is a 35 bp
   anchor with a 239,774 bp allele; `chr1:248,122,398-248,180,452` is 18 segments
   and a clean 0 → 247,631 presence/absence over an olfactory-receptor cluster. The

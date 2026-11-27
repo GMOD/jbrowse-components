@@ -1,6 +1,6 @@
 ---
 name: screenshot-anchors-for-reads-arcs-blocks-and-cells
-description: Screenshot callouts and clicks still guess a fraction of a track for reads, arcs, synteny blocks, MSA cells, wiggle values and unlabelled VCF records, because no anchor beyond `feature` and `row` names them.
+description: Screenshot callouts and clicks still guess a fraction of a track for reads, arcs, synteny blocks, MSA cells, wiggle values and unlabelled VCF records, because no anchor names them (the `feature`, `row`, dotplot, graph and structure anchors exist).
 ---
 
 # Anchors for what `feature` and `row` cannot name
@@ -32,7 +32,8 @@ say where it drew one, the way `featuresNamed` does, resolved through capture's
 - **An alignments group band** (`methylation/hg002_snrpn_grouped`, held by a
   `text` stopgap).
 - **The dotplot drag** in `synteny_from_dotplot_view` wants its corners as
-  `hLoc`/`vLoc` loci, which clicks already accept.
+  `hLoc`/`vLoc` loci, which `dotplotAnchor.ts` already takes, so only the spec
+  needs converting.
 
 One record anchor needs no new kind: `videos/sv.ts`'s HGSV_1821 click becomes
 `{ trackId, feature: 'HGSV_1821' }` when that tour is next filmed.

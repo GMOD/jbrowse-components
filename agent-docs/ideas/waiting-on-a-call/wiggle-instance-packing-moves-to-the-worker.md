@@ -17,7 +17,8 @@ Wiggle packs one instance record per rendering (`packFillInstances`,
 `packLineInstances`, `packLineCenterInstances`, `packBandInstances` in
 `wiggleInstanceBuffer.ts`, wired through `wiggleMarks.ts`) on the main thread
 as each region arrives. The single `pack` they replaced **measured ~98ms**,
-landing mid-frame; re-measure the split packers before quoting it. A zoom
+landing mid-frame; the split packers measure 9-515 ms at 1000 sources in
+[wiggle-instance-records-carry-per-row-constants](../ready/wiggle-instance-records-carry-per-row-constants.md). A zoom
 across a BigWig tier
 already refetches (ADR-125), so a worker-side pack rides along free there.
 MAF went the other way: eaad8cd6a6 moved its GPU encode to the main thread,

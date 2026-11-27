@@ -1,6 +1,6 @@
 ---
 name: lazy-hover-and-picker-ui-in-tree
-description: "16 in-tree files deep-import the eager BaseTooltip, so @floating-ui (about 7 KB gzipped, 3% run) loads with every track, and react-colorful rides along the same way. Lazy versions cost a chunk load on the first hover or picker open."
+description: "In-tree files deep-import the eager BaseTooltip, so @floating-ui (about 7 KB gzipped, 3% run) loads with every track, and react-colorful rides along the same way. Lazy versions cost a chunk load on the first hover or picker open."
 ---
 
 # Lazy hover and picker UI in tree
