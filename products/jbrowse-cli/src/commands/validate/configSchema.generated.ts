@@ -14993,7 +14993,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         },
         "fetchSizeLimit": {
           "description": "bytes a region may fetch before the display asks first; an adapter that sets its own limit takes precedence over this.",
-          "default": 1000000,
+          "default": 5000000,
           "if": {
             "type": "null"
           },

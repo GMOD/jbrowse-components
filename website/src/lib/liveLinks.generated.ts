@@ -1628,7 +1628,7 @@ export const figureFrames: Record<
   },
   "protein/annotation_1d": {
     "width": 1500,
-    "height": 1500,
+    "height": 1545,
     "timeout": 120000
   },
   "protein/tp53_hotspot": {
@@ -2117,7 +2117,7 @@ export const figureFrames: Record<
   },
   "scrna/percell_lyz": {
     "width": 1500,
-    "height": 1110,
+    "height": 1125,
     "timeout": 120000
   },
   "sv_inspector_importform_loaded": {
