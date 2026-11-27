@@ -42,7 +42,7 @@ const RIGHT_CLICK_NLRP1: ScreenshotAction = {
 
 // Submit stays disabled until the transcript's protein sequence arrives.
 const OPEN_LAUNCH_DIALOG: ScreenshotAction[] = [
-  { type: 'click', text: 'Launch MSA view' },
+  { type: 'click', text: 'MSA view...' },
   { type: 'waitForText', text: 'Orthologs' },
   {
     type: 'waitForSelector',
@@ -158,15 +158,12 @@ export const msaSpecs: ScreenshotSpec[] = [
     url: NLRP1_SESSION,
     stages: [
       {
-        actions: [
-          RIGHT_CLICK_NLRP1,
-          ...menuCascade(['Launch', 'Launch MSA view']),
-        ],
+        actions: [RIGHT_CLICK_NLRP1, ...menuCascade(['Launch', 'MSA view...'])],
         // An unresolved anchor throws, so these boxes also assert that
         // genomes.jbrowse.org still offers both launchers, as the tutorial says.
         annotations: [
-          { type: 'box', anchor: { text: 'Launch MSA view' } },
-          { type: 'box', anchor: { text: 'Launch protein view' } },
+          { type: 'box', anchor: { text: 'MSA view...' } },
+          { type: 'box', anchor: { text: 'Protein view...' } },
         ],
         viewportHeight: 540,
       },

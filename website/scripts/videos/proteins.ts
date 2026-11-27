@@ -178,8 +178,8 @@ export const proteinVideos: VideoSpec[] = [
         hold: 900,
       },
       { type: 'hover', selector: '[data-testid="cascading-submenu-launch"]' },
-      { type: 'waitForText', text: 'Launch protein view' },
-      { type: 'click', text: 'Launch protein view' },
+      { type: 'waitForText', text: 'Protein view...' },
+      { type: 'click', text: 'Protein view...' },
       // off camera while the dialog fills itself from UniProt and AlphaFold
       {
         type: 'waitForSelector',
@@ -243,8 +243,8 @@ export const proteinVideos: VideoSpec[] = [
         hold: 900,
       },
       { type: 'hover', selector: '[data-testid="cascading-submenu-launch"]' },
-      { type: 'waitForText', text: 'Launch MSA view' },
-      { type: 'click', text: 'Launch MSA view' },
+      { type: 'waitForText', text: 'MSA view...' },
+      { type: 'click', text: 'MSA view...' },
       { type: 'waitForText', text: 'Orthologs' },
       // fewer than the dialog's 100, which also reads better a third of the
       // screen wide
@@ -280,8 +280,8 @@ export const proteinVideos: VideoSpec[] = [
         hold: 900,
       },
       { type: 'hover', selector: '[data-testid="cascading-submenu-launch"]' },
-      { type: 'waitForText', text: 'Launch protein view' },
-      { type: 'click', text: 'Launch protein view' },
+      { type: 'waitForText', text: 'Protein view...' },
+      { type: 'click', text: 'Protein view...' },
       {
         type: 'waitForSelector',
         selector: 'button:not([disabled])::-p-text(Launch)',
@@ -348,8 +348,8 @@ export const proteinVideos: VideoSpec[] = [
         hold: 900,
       },
       { type: 'hover', selector: '[data-testid="cascading-submenu-launch"]' },
-      { type: 'waitForText', text: 'Launch protein view' },
-      { type: 'click', text: 'Launch protein view' },
+      { type: 'waitForText', text: 'Protein view...' },
+      { type: 'click', text: 'Protein view...' },
       {
         type: 'waitForSelector',
         selector: 'button:not([disabled])::-p-text(Launch)',
