@@ -154,8 +154,9 @@ tetraploid, a haplodiploid male, a ZW female or a yeast mitochondrion.
   autosome, so the default would report false errors on yeast.
 - **Parent-of-origin coloring per haplotype cell.** On trio-phased data HP1 is
   paternal by construction (KHV: 82,679 vs 1,030 informative sites), so it
-  cannot show crossovers, and it needs a per-cell path; parked
-  (`ideas/waiting-on-a-call/parent-of-origin-haplotype-coloring.md`).
+  cannot show crossovers, and it needs a per-cell path. The one use left is
+  checking a read-backed phasing (WhatsHap output beside a pedigree), which
+  would need that per-cell value and goes to an outside tool for now.
 
 ## Amended 2026-11-20: a `relationship` attribute and `rows.subtitle`
 
