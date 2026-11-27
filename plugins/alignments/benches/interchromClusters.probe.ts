@@ -1,4 +1,4 @@
-// The two numbers ideas/collections/arc-band-open-calls.md says nobody has read, off the
+// The two numbers ideas/waiting-on-a-call/one-mark-per-interchromosomal-cluster.md says nobody has read, off the
 // HG002 300x BAM over HTTP range requests:
 //
 //   node plugins/alignments/benches/interchromClusters.probe.ts [ref] [start] [end]

@@ -56,7 +56,7 @@ draws no feet, and a tandem repeat is a fan).
     file says, and neither a view nor a converter decides what a genome did.
   - ADR-258's Consequences: telling a real event from a library chimera among
     the partner ticks is SV calling.
-  - [ideas/collections/arc-band-open-calls.md](../ideas/collections/arc-band-open-calls.md):
+  - [ideas/waiting-on-a-call/one-mark-per-interchromosomal-cluster.md](../ideas/waiting-on-a-call/one-mark-per-interchromosomal-cluster.md):
     the `arcKey` rule refuses to merge distinct junctions on a tolerance, since
     five events inside 2.3 kb are five events.
 - **A kind of its own.** The junction reads as `junction.class: deletion` and
