@@ -1,6 +1,6 @@
 ---
 name: figures-behind-app-changes
-description: "59 published figures that draw the hosted RefSeq tracks differ from a 2026-11-27 reshoot for reasons other than RefSeq's new gene descriptions: four specs fail, two drifts look like regressions, and the rest is app and plugin drift waiting on a reviewed sweep."
+description: "Published figures that draw the hosted RefSeq tracks and differ from a 2026-11-27 reshoot for reasons other than RefSeq's new gene descriptions: four graph specs fail, highlight and wedge colours moved, and the rest is app and plugin drift waiting on a reviewed sweep."
 ---
 
 # Figures behind app changes
@@ -14,22 +14,13 @@ too; publishing them means reviewing that drift, not the RefSeq change.
 
 ## Specs that fail
 
-- `protein/annotation_1d` and `genomes_msa/launch_sequence` time out at
-  `waitForText` on "Launch protein view" and "Launch MSA view": the feature
-  menu now nests those under a "Launch ›" submenu.
 - `pangenome/hprc_abca7_repeat_units`, `pangenome/hprc_amylase_walk_rows`,
   `pangenome/graph_kiv2_walk_rows` and `pangenome/graph_mouse_nnt_halos` fail
   on `LinearGraphDisplay … ignored unknown key(s): color`, the respelling
   `handoffs/graph-figures-after-plugin-10-8.md` holds.
 
-## Drifts that may be regressions
+## Colours that moved
 
-- `pangenome/bovine_whole_chromosome`: the variability track shows "Requested
-  too much data (1.8 MB)… FORCE LOAD" over chr23 where it drew bars.
-- `scrna/percell_lyz`: the per-cell track colours by score where it coloured
-  by cell type. `65b8c5c6f3` ("the multi-row display draws what its config
-  states") likely made that a config question for
-  `test_data/scrna_pbmc5k/config.json`.
 - Highlights are magenta or salmon where they were yellow
   (`protein/tp53_hotspot`, `protein/tp53_nmr_ensemble`, `protein/connected`),
   and synteny insertion wedges white where they were blue or yellow
@@ -46,8 +37,8 @@ too; publishing them means reviewing that drift, not the RefSeq change.
   `synteny_hg38_hs1_tnnt3`, which can publish on a look.
 - **Graph plugin**: rGFA strips and node colours now a continuous rainbow, or
   graph panes relaid out with node-length labels and a WALKS legend; the
-  `pangenome/bovine_*`, `pangenome/fly_*`, `pangenome/hprc_c4_*`,
-  `pangenome/graph_kiv2_walks`, `pangenome/hprc_lpa_kiv2`,
+  `pangenome/bovine_bola`, `_kit` and `_tas2r46`, `pangenome/fly_*`,
+  `pangenome/hprc_c4_*`, `pangenome/graph_kiv2_walks`, `pangenome/hprc_lpa_kiv2`,
   `pangenome/hprc_graph_anatomy`, `pangenome/hprc_graph_vs_callset`,
   `pangenome/hprc_cfh_graph_launch`, `pangenome/hprc_haplotype_launch` and
   `pangenome/mouse_dock2` figures.
