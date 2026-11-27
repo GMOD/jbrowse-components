@@ -105,10 +105,11 @@ On any gene the protein browser opens:
 - add `residue=N` to the link to open on the seed alignment of the Pfam family
   the residue falls in, distant relatives from many species, in place of the
   gene's orthologs
-- **Launch protein view** in a gene's right-click menu picks another structure,
-  such as 4OBE, KRAS bound to GDP with glycine at 12. The chain picker in the
-  protein view's header chooses among the copies in a crystal, and a structure
-  may leave your residue unmodelled, which shows as a break in the cartoon
+- **Protein view...** under **Launch** in a gene's right-click menu picks
+  another structure, such as 4OBE, KRAS bound to GDP with glycine at 12. The
+  chain picker in the protein view's header chooses among the copies in a
+  crystal, and a structure may leave your residue unmodelled, which shows as a
+  break in the cartoon
 - the highlight list's menu imports a BED file, so a list of hotspot codons
   highlights in one step
 

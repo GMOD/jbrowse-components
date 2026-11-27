@@ -519,10 +519,10 @@ Open melanogaster at the `l(2)gl` gene:
 }
 ```
 
-Right-click `l(2)gl`, pick **Launch MSA view**, and submit the **Pre-loaded MSA
-datasets** tab. The view opens beside the genome with a row per fly under
-OrthoFinder's tree for the orthogroup, and a click in the alignment moves the
-genome view to that codon.
+Right-click `l(2)gl`, pick **MSA view...** under **Launch**, and submit the
+**Pre-loaded MSA datasets** tab. The view opens beside the genome with a row per
+fly under OrthoFinder's tree for the orthogroup, and a click in the alignment
+moves the genome view to that codon.
 
 `MSA=1` builds this with the rest of a set, from the same OrthoFinder run as its
 synteny tracks:

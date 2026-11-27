@@ -214,9 +214,9 @@ Each step on this page works on any gene the protein browser opens:
   assemblies.
   [](/docs/tutorials/genomes_proteins#an-alphafold-model-colored-by-plddt) reads
   a grapevine gene on an AlphaFold model
-- **Launch protein view** in a gene's right-click menu lets you pick the
-  structure, and its **File or URL** tab takes a PDB or mmCIF of your own, such
-  as a ColabFold or AlphaFold model
+- **Protein view...** under **Launch** in a gene's right-click menu lets you
+  pick the structure, and its **File or URL** tab takes a PDB or mmCIF of your
+  own, such as a ColabFold or AlphaFold model
 - any multi-sample VCF, bgzipped and tabix-indexed, adds the genotype layer as a
   variant track configured like the 1000 Genomes track above, and **Sort rows by
   genotype here** gathers the genomes with whichever variant you right-click.

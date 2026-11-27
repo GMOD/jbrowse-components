@@ -19,8 +19,8 @@ beside a crystal structure of the E40K protein itself, then read the allele
 across the Dog10K collection. We:
 
 - launch structure 7WX0 and an ortholog alignment from the _SOD1_ gene's
-  right-click menu on the canFam4 dog assembly, with **Launch protein view** and
-  **Launch MSA view**
+  right-click menu on the canFam4 dog assembly, with **Launch → Protein
+  view...** and **Launch → MSA view...**
 - slice _SOD1_ out of the Dog10K SNV callset with `bcftools`, and write a sample
   sheet of each animal's category
 - add the slice as a variant track, one row per animal, with the rows colored by
@@ -82,11 +82,11 @@ and:
 
 - type `chr31:27123013-27123103` into the location box
 - in the track selector, tick **NCBI RefSeq - RefSeq Curated**
-- right-click the _SOD1_ transcript and choose **Launch protein view**. On the
-  **PDB search** tab pick 7WX0, then choose **Open side by side** from the arrow
-  beside **Launch**
-- right-click the transcript again and choose **Launch MSA view**, which opens
-  on its **Orthologs** tab; press **Submit**
+- right-click the _SOD1_ transcript and choose **Launch → Protein view...**. On
+  the **PDB search** tab pick 7WX0, then choose **Open side by side** from the
+  arrow beside **Launch**
+- right-click the transcript again and choose **Launch → MSA view...**, which
+  opens on its **Orthologs** tab; press **Submit**
 - click **Reset Zoom**, the circular arrow at the top right of the structure, to
   fit the whole structure
 - hover column 40 of the `dog_query` row in the alignment

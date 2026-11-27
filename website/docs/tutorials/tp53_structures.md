@@ -134,10 +134,10 @@ the canvas, to fit the whole ensemble.
 
 The protein3d plugin is in the [plugin store](/docs/user_guides/plugin_store):
 install **Protein3d** from the Tools menu, then right-click a gene and choose
-**Launch protein view** to open its AlphaFold model. For several structures at
-once, write the view as a session spec. This is the spec behind the
-three-structure link. Swap the UniProt accession, the PDB ids, the transcript
-and the locus for your gene's, and name a gene track your config has:
+**Protein view...** under **Launch** to open its AlphaFold model. For several
+structures at once, write the view as a session spec. This is the spec behind
+the three-structure link. Swap the UniProt accession, the PDB ids, the
+transcript and the locus for your gene's, and name a gene track your config has:
 
 ```json live config=test_data/protein3d_config.json
 {

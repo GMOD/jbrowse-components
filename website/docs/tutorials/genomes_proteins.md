@@ -24,10 +24,10 @@ We:
 - change what the session opens on: a domain, a residue, a partner, a structure
   or a coloring, and color _VviAGL11_'s AlphaFold model by its confidence
 - add the protein3d and msaview plugins to your own JBrowse, then launch a
-  structure from the gene's right-click menu with **Launch protein view**,
+  structure from the gene's right-click menu with **Launch → Protein view...**,
   choosing the structure source and the isoform
-- launch an ortholog alignment of _NLRP1_ with **Launch MSA view**, then read
-  NCBI's conserved domains on it and UniProt's domains as a genome track
+- launch an ortholog alignment of _NLRP1_ with **Launch → MSA view...**, then
+  read NCBI's conserved domains on it and UniProt's domains as a genome track
 
 ## Prerequisites
 
@@ -187,9 +187,9 @@ right-click menu, in any JBrowse with the protein3d and msaview plugins, lets
 you pick both, and starts from a gene already on screen.
 
 Open [hg38 on genomes.jbrowse.org](https://genomes.jbrowse.org), type `TP53`
-into the location box, and right-click the gene. The menu has **Launch protein
-view** from protein3d and **Launch MSA view** from msaview. Choose **Launch
-protein view**.
+into the location box, and right-click the gene. Its **Launch** submenu has
+**Protein view...** from protein3d and **MSA view...** from msaview. Choose
+**Launch → Protein view...**.
 
 The dialog opens on its **AlphaFoldDB search** tab:
 
@@ -258,11 +258,11 @@ structure in three columns.
 
 ## Launch an ortholog alignment of NLRP1
 
-**Launch MSA view** builds an alignment from the orthologs NCBI publishes for
-most annotated genes, one per species, with the rows and the aligner yours to
-choose. We'll use _NLRP1_, an inflammasome sensor whose domain architecture
+**Launch → MSA view...** builds an alignment from the orthologs NCBI publishes
+for most annotated genes, one per species, with the rows and the aligner yours
+to choose. We'll use _NLRP1_, an inflammasome sensor whose domain architecture
 varies between mammals. Type `NLRP1` into the location box, right-click the gene
-and choose **Launch MSA view**. The dialog opens on its **Orthologs** tab:
+and choose **Launch → MSA view...**. The dialog opens on its **Orthologs** tab:
 
 - **Query species** is the species the gene came from, free text resolved
   against NCBI's taxonomy: a scientific name, a common name or a taxon id
