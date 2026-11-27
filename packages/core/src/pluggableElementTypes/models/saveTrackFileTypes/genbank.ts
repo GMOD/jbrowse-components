@@ -620,7 +620,8 @@ const ORGANELLES = new Map([
 
 // The source key's qualifiers in the Feature Table Definition 11.4, and those
 // it retired from new entries that older records still carry, as NCBI's
-// NC_000913.3 still writes /sub_strain
+// NC_000913.3 still writes /sub_strain; a new-submission validator flags those,
+// and keeping them is what lets an older record round-trip
 const SOURCE_QUALIFIERS = new Set([
   'altitude',
   'bio_material',
@@ -679,7 +680,9 @@ const SOURCE_QUALIFIERS = new Set([
 ])
 
 // NCBI's flatfile puts these in parentheses on SOURCE, as NC_001802.1's GFF3
-// gb-synonym=HIV-1 and NC_045512.2's gb-acronym=SARS-CoV-2
+// gb-synonym=HIV-1 and NC_045512.2's gb-acronym=SARS-CoV-2. With both, the
+// second becomes a /note, and import ignores SOURCE, so a synonym is lost on a
+// round trip
 const COMMON_NAMES = new Set(['gb-synonym', 'gb-acronym'])
 
 function sourceKeys(source: Feature | undefined) {
