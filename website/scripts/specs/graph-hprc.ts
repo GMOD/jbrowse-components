@@ -355,6 +355,8 @@ export const hprcGraphSpecs: ScreenshotSpec[] = [
             {
               trackId: 'hprc_bubble_score',
               type: 'LinearWiggleDisplay',
+              // chr1's bubble rows are 5.5 MB, past the 5 MB budget
+              forceLoad: true,
               height: 110,
             },
             {

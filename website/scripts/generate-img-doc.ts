@@ -108,22 +108,25 @@ function syncImages(names: Set<string>) {
 }
 
 const { md, names } = generate()
-const staleImages = syncImages(names)
-
-if (check && staleImages.length > 0) {
-  console.error(
-    `images out of date in ${imgDestDir}: ${staleImages.join(', ')}. Run \`pnpm autogen\` to regenerate.`,
-  )
-  process.exit(1)
+if (process.argv.includes('--images')) {
+  const staleImages = syncImages(names)
+  if (staleImages.length > 0) {
+    if (check) {
+      console.error(
+        `images out of date in ${imgDestDir}: ${staleImages.join(', ')}. Run \`pnpm autogen\` to regenerate.`,
+      )
+      process.exit(1)
+    } else {
+      console.log(
+        `copied ${staleImages.length} image(s) to ${imgDestDir}: ${staleImages.join(', ')}`,
+      )
+    }
+  }
+} else {
+  checkOrWrite({
+    path: outPath,
+    content: md,
+    label: 'jbrowse-img.md',
+    staleHint: 'run `pnpm autogen`',
+  })
 }
-if (!check && staleImages.length > 0) {
-  console.log(
-    `copied ${staleImages.length} image(s) to ${imgDestDir}: ${staleImages.join(', ')}`,
-  )
-}
-checkOrWrite({
-  path: outPath,
-  content: md,
-  label: 'jbrowse-img.md',
-  staleHint: 'run `pnpm autogen`',
-})

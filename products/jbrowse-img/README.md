@@ -258,7 +258,7 @@ jb2export --genome hg38 --track hg38-ncbiRefSeqCurated height:55 \
   --out alignments_readgroup.png
 ```
 
-![PacBio HiFi reads over CUZD1, sorted by the base at the center position](https://jbrowse.org/jb2-figures/jbrowse-img/alignments_readgroup.2b5affa6c1bf.png)
+![PacBio HiFi reads over CUZD1, sorted by the base at the center position](https://jbrowse.org/jb2-figures/jbrowse-img/alignments_readgroup.6e0197cdb0cc.png)
 
 `facet=tags.HP` splits the pileup into one stacked sub-track per haplotype. This
 HG002 ultralong-ONT example (hg19, streamed from the GIAB FTP) groups and colors

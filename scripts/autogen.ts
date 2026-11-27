@@ -145,12 +145,16 @@ const GENERATORS: Generator[] = [
   {
     name: 'jbrowse-img README commands',
     argv: web('sync-img-readme.ts'),
-    figureDependent: true,
   },
   {
-    // Mirrors the README the entry above rewrites.
+    // Mirrors the README the entry above rewrites, from tracked files alone.
     name: 'jbrowse-img doc',
     argv: web('generate-img-doc.ts'),
+    needs: ['jbrowse-img README commands'],
+  },
+  {
+    name: 'jbrowse-img doc images',
+    argv: [...web('generate-img-doc.ts'), '--images'],
     needs: ['jbrowse-img README commands'],
     figureDependent: true,
     figureRoot: 'products/jbrowse-img/img',

@@ -140,9 +140,13 @@ Each of these produces a plausible figure rather than an error:
 - **`figures.ts status` "modified" is not stale.** `--filter` implies `--force`
   (`screenshot-options.ts`), so every matched PNG is rewritten and listed as
   modified. Copy the published set aside after `figures pull`, shoot, and
-  `compare -metric AE -fuzz 5% old new null:` per file: under ~30,000 differing
-  pixels on a 3000 px figure is antialiasing, a real change runs to millions.
-  Publish only what moved, `push --exact --filter`.
+  `compare -metric AE -fuzz 5% old new diff.png` per file. A layout change runs
+  to millions of differing pixels on a 3000 px figure and zero means unchanged,
+  but a small count does not mean antialiasing: a new line of label text or a
+  reworded chip is a few thousand pixels (the RefSeq description lines,
+  2026-11-27). Read `diff.png` for any nonzero count: antialiasing is specks
+  along existing edges, a real change is a cluster. Publish only what moved,
+  `push --exact --filter`.
 
 ### Verifying
 
