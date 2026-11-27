@@ -63,8 +63,7 @@ export function interleaveInstances(data: SyntenyInstanceData) {
     // collide and hover/click highlights the wrong feature (visual only).
     // Genome-size-independent; likeliest to surface on dense all-vs-all PAF.
     // Fix = make featureId a uint attribute+uniform. See
-    // agent-docs/ideas/collections/synteny-comparative.md §"Synteny featureId instance
-    // ceiling".
+    // agent-docs/ideas/waiting-on-someone-else/synteny-hover-picks-the-wrong-feature-past-16-7m-instances.md
     f[off + INSTANCE_OFFSET_F32.featureId] = instanceFeatureIdx[i]! + 1
     f[off + INSTANCE_OFFSET_F32.kind] = kinds[i]!
   }

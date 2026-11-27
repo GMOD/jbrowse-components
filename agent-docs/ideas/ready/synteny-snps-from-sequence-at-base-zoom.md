@@ -43,6 +43,6 @@ error.
 
 The fetch unit is still the whole alignment, so a chain-scale fine row
 downloads its multi-MB CIGAR to draw a small window whether or not SNPs are
-drawn. That is the "no intra-record slicing" item in
-[synteny-comparative.md](../collections/synteny-comparative.md) and a chunked fine tier is
-its fix; this proposal sits on top of it, not instead of it.
+drawn. That is
+[a-fine-pif-row-fetches-its-whole-cigar-for-any-window](../waiting-on-a-number/a-fine-pif-row-fetches-its-whole-cigar-for-any-window.md),
+and a chunked fine tier is its fix; this proposal sits on top of it, not instead of it.

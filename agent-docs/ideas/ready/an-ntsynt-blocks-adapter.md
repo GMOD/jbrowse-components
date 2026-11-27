@@ -20,7 +20,8 @@ indel_flag`); one `block_id` groups one row per genome.
   pairwise tracks, with no renderer change.
 - `adapterHint` only, since `.tsv` is generic.
 - It is not native N-way blocks as the primitive, which
-  [synteny-comparative](../collections/synteny-comparative.md) rules out: it
+  [MULTIWAY_SYNTENY_DISPLAY.md](../../reference/MULTIWAY_SYNTENY_DISPLAY.md)
+  rules out: it
   emits pairwise features like every other adapter.
 
 ## Demo data

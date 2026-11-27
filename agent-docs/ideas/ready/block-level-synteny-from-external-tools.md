@@ -5,8 +5,6 @@ description: Whole-genome synteny overviews draw thousands of raw minimap2 ribbo
 
 # Block-level synteny data from external tools
 
-Split out of the synteny-comparative collection on 2026-09-27.
-
 A coarse LOD *tier* (Route B's tiering architecture) ships —
 [SYNTENY_LOD.md](../../reference/SYNTENY_LOD.md) — and true cross-row block
 **chaining** (Route B's algorithm) does not.

@@ -26,6 +26,11 @@ alignments over one locus. It is the wrong frame, unmodified, for more than one
 block of content per contig and for cohorts of hundreds of haplotypes, where
 every cost is linear in lanes.
 
+Pairwise records stay the primitive, not native N-way blocks: each pair fetches
+and zooms on its own, and a missing alignment empties one lane, not the stack.
+A transitive placement comes precomputed offline (IMPG), not from a live walk
+over a PIF, which pays one dependent tabix round trip per hop.
+
 ## Settled invariants — do not re-fix
 
 - **Alignment records split at large indels.** `SPLIT_AT_GAP_BP` rides the anchor
