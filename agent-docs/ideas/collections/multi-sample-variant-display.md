@@ -1,6 +1,6 @@
 ---
 name: multi-sample-variant-display
-description: De novo and compound-het review, haplotype-block coloring, frequency-weighted clustering and connector-line hover for the multi-sample variant displays.
+description: Haplotype-block coloring, frequency-weighted clustering and a richer, cheaper connector-line hover for the multi-sample variant display.
 ---
 
 # Multi-sample variant display
@@ -9,17 +9,6 @@ Ideas from an analysis of `LinearVariantDisplay`'s genotype rows in both their
 layouts (`plugins/variants/src/LinearVariantDisplay/model.ts`). Read
 `plugins/variants/src/CLAUDE.md` first — hot-loop rules and the fetch/layout/render
 invalidation tiers constrain all of these.
-
-**De novo and compound-het review on the pedigree.** `pedigreeLocation` is
-built; the per-site Mendelian check moved to bcftools `+mendelian2`, whose
-`INFO/MERR` the display colors and filters like any INFO field
-([ADR-279](../../architecture-decision-records/adr-279-a-pedigree-feeds-a-per-site-mendelian-check-and-the-assembly-states-transmission.md)).
-Reviewing a flagged site as a de novo mutation needs the
-[genotype-quality masking](../ready/genotype-quality-masks-a-call-as-no-call.md)
-first, since on low-coverage calls most such sites are genotyping
-errors. Compound hets (two hets in one gene, one from each parent) are analysis
-for an outside tool whose output loads as a track. The parked follow-up is
-[stacking the trio's reads](../ready/stack-the-trios-reads-under-the-vcf.md).
 
 **Local haplotype-block coloring (the mosaic a dendrogram cannot show).** Clustering
 asks for one distance over the whole window, but a haplotype is a mosaic of segments
@@ -40,11 +29,6 @@ independently); require a minimum block size in *both* variants and rows, painti
 below-threshold blocks grey; and ship the cheap single-donor variant first — pick one
 row as reference and paint every other row by match-length to it, which is one color
 ramp, trivially computed, and already shows where each row's shared segment ends.
-
-The principled version of the whole problem is that there is no one tree, there is an
-ARG. A tree-sequence adapter (tsinfer / ARG-Needle `.trees`) supplying the local tree
-at the view centre would let the existing sidebar render it unchanged, updating as you
-pan.
 
 **Frequency weighting for the clustering distance.** Every variant contributes equally
 to the genotype-matrix distance, so the largest LD block in the window numerically
