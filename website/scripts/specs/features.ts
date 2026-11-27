@@ -565,6 +565,6 @@ export const featuresSpecs: ScreenshotSpec[] = [
     ],
     // the launch leaves the cursor over the new view's tracks
     tooltip: 'hide',
-    viewportHeight: 1500,
+    viewportHeight: 1545,
   },
 ]

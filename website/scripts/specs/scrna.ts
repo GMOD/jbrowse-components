@@ -114,6 +114,6 @@ export const scrnaSpecs: ScreenshotSpec[] = [
     // label bars name the cell types.
     readyTimeout: 120000,
     // the monocyte block is the per-cell track's last; a shorter frame cuts it
-    viewportHeight: 1110,
+    viewportHeight: 1125,
   },
 ]
