@@ -332,7 +332,7 @@ any is active.
 Junction arcs draw automatically over spliced alignments (`N` in the CIGAR), so
 RNA-seq and Iso-Seq junctions appear with no setup; on RNA-seq this layer is the
 sashimi plot. The [RNA-seq tutorial](/docs/tutorials/rnaseq) works them on real
-data. Each arc has a strand and a splice motif:
+data. Each splice arc has a strand and a splice motif:
 
 - **Strand:** from the aligner's strand tag. `XS` or `TS` give the transcript
   strand, and minimap2's `ts` is relative to the read and combined with the
@@ -342,6 +342,13 @@ data. Each arc has a strand and a splice motif:
   reference and classifies the splice motif as GT-AG, GC-AG or AT-AC on either
   strand, or non-canonical, shown in the arc's tooltip. This needs a sequence
   adapter on the assembly.
+
+A deletion of 50 bp or more that reads carry as a gap inside one alignment (`D`
+in the CIGAR) draws an arc too, gold as a deletion's split-read arc is and named
+**Deletion (gapped reads)** in its tooltip. Its thickness follows the number of
+reads carrying exactly that gap, so reads that agree to the base share one arc.
+In a repeat the reads can place the gap at different positions, and several arcs
+draw over one deletion; the coverage dip under them shows it as one.
 
 **Show → Show junctions** turns them on and off, and **Show → Show junction read
 counts** prints each junction's supporting-read count on its arc. While the arcs
@@ -353,8 +360,8 @@ draw:
   non-canonical junctions** keeps just those, for checking an aligner's output.
 - The Junctions section of **Filter by → More filters...** shows, hides or keeps
   only the **Split-read junctions** that split alignments (SA tag) imply beside
-  the N-gap splices, and **Min reads at a junction** drops the junctions with
-  fewer reads.
+  the arcs from gaps, the N-gap splices and gapped deletions, and **Min reads at
+  a junction** drops the junctions with fewer reads.
 - **Advanced → Junction placement** sets where the arcs sit
   ([`junctions.placement`](/docs/config/junctions/#slot-placement)):
   - **Over coverage** (`overlay`, the default) draws them on the coverage

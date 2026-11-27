@@ -334,13 +334,13 @@ synteny view. [](/docs/tutorials/cancer_sv) does that with COLO829's der(3).
 
 ## Signatures by SV type
 
-| SV type            | Read pairs                            | Coverage                                                 | Clipping and arcs                                                                                               |
-| ------------------ | ------------------------------------- | -------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------- |
-| Deletion           | red, insert larger than expected      | drops between the breakpoints, halves for a heterozygote | clipped reads at both edges, unusually long arcs, gold split-read arcs                                          |
-| Insertion          | pink, insert smaller than expected    | unchanged                                                | clipped reads at one site, a purple insertion indicator, mates unmapped once the insertion outruns the fragment |
-| Inversion          | green LL and navy RR at the junctions | unchanged                                                | clipped reads at both breakpoints, green and navy split-read arcs                                               |
-| Tandem duplication | teal RL                               | elevated over the duplicated segment                     | teal split-read arcs jumping back upstream across the junction                                                  |
-| Translocation      | rust, mate on another chromosome      | unchanged                                                | a cluster of rust reads at one end, arcs drawn as verticals at the view edge                                    |
+| SV type            | Read pairs                            | Coverage                                                 | Clipping and arcs                                                                                                             |
+| ------------------ | ------------------------------------- | -------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------- |
+| Deletion           | red, insert larger than expected      | drops between the breakpoints, halves for a heterozygote | clipped reads at both edges, unusually long arcs, gold split-read arcs, a gold junction arc from reads that carry it as a gap |
+| Insertion          | pink, insert smaller than expected    | unchanged                                                | clipped reads at one site, a purple insertion indicator, mates unmapped once the insertion outruns the fragment               |
+| Inversion          | green LL and navy RR at the junctions | unchanged                                                | clipped reads at both breakpoints, green and navy split-read arcs                                                             |
+| Tandem duplication | teal RL                               | elevated over the duplicated segment                     | teal split-read arcs jumping back upstream across the junction                                                                |
+| Translocation      | rust, mate on another chromosome      | unchanged                                                | a cluster of rust reads at one end, arcs drawn as verticals at the view edge                                                  |
 
 Any one column has artifacts that produce it, and in segmental duplications and
 repeats all of them are common, so combine several before calling. Zoomed inside
