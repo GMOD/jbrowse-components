@@ -115,6 +115,32 @@ test('one record fetched into two regions draws from the region holding its foot
   expect([lane(out, 0), lane(out, 1)]).toEqual([[1], [LINK_ELSEWHERE]])
 })
 
+test('the same feet on two assemblies are two curves, and both draw', () => {
+  const hg38 = { ...A, refName: 'chr1', assemblyName: 'hg38' }
+  const hs1 = { ...hg38, assemblyName: 'hs1' }
+  const out = createLinkOwners()(
+    new Map([
+      [0, payload([{ x: 100, x2: 900, ref: 'chr1', region: 0 }])],
+      [1, payload([{ x: 100, x2: 900, ref: 'chr1', region: 1 }])],
+    ]),
+    [hg38, hs1],
+  )
+  expect([lane(out, 0), lane(out, 1)]).toEqual([[0], [1]])
+})
+
+test('a pair across two assemblies draws from one region', () => {
+  const hg38 = { ...A, refName: 'chr1', assemblyName: 'hg38' }
+  const hs1 = { ...hg38, assemblyName: 'hs1' }
+  const out = createLinkOwners()(
+    new Map([
+      [0, payload([{ x: 100, x2: 900, ref: 'chr1', region: 1 }])],
+      [1, payload([{ x: 900, x2: 100, ref: 'chr1', region: 0 }])],
+    ]),
+    [hg38, hs1],
+  )
+  expect([lane(out, 0), lane(out, 1)]).toEqual([[1], [LINK_ELSEWHERE]])
+})
+
 test('a region whose drawn set did not move keeps its payload', () => {
   const owners = createLinkOwners()
   const a = payload([{ x: 100, x2: 3000, ref: 'ctgB', region: 1 }])

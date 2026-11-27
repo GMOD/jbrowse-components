@@ -112,17 +112,29 @@ function linkKey(layer: StoredLayer, i: number, feet: string) {
   return `${layer.row?.[i] ?? 0}#${feet}`
 }
 
-function linkKeys(layer: StoredLayer, region: OwnerRegion) {
+function linkKeys(
+  layer: StoredLayer,
+  region: OwnerRegion,
+  regions: readonly OwnerRegion[],
+) {
   const { x2Ref, x2CanonicalRefNames: far, x2Region } = layer
   if (!x2Ref || !far || !x2Region) {
     return undefined
   }
+  const near = `${region.assemblyName}:${region.refName}`
   const keys = new Array<string>(layer.count)
   for (let i = 0; i < layer.count; i++) {
+    const farAssembly =
+      regions[x2Region[i]!]?.assemblyName ?? region.assemblyName
     keys[i] = linkKey(
       layer,
       i,
-      footKey(region.refName, layer.x[i]!, far[x2Ref[i]!]!, layer.x2[i]!),
+      footKey(
+        near,
+        layer.x[i]!,
+        `${farAssembly}:${far[x2Ref[i]!]!}`,
+        layer.x2[i]!,
+      ),
     )
   }
   return keys
@@ -175,7 +187,7 @@ export function createLinkOwners() {
         continue
       }
       const perLayer = data.layers.map((layer, li) => {
-        const keys = linkKeys(layer, region)
+        const keys = linkKeys(layer, region, regions)
         if (keys) {
           for (let i = 0; i < keys.length; i++) {
             const x = layer.x[i]!
