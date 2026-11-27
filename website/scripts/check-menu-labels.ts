@@ -114,6 +114,8 @@ const EXTERNAL_PLUGIN_PAGES = new Map([
   ['tutorials/pangenome_prepare_graph.md', GRAPH_SRC],
   ...[
     'tutorials/genomes_proteins.md',
+    'tutorials/tp53_structures.md',
+    'tutorials/orthofinder_synteny.md',
     ...readdirSync(join(docsDir, 'tutorials'))
       .filter(f => f.startsWith('protein_variants_') && f.endsWith('.md'))
       .map(f => `tutorials/${f}`),
