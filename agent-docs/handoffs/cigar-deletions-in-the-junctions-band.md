@@ -1,6 +1,6 @@
 ---
 name: cigar-deletions-in-the-junctions-band
-description: "Every arc at a deletion counts only its split reads, so a deletion most reads carry as a CIGAR gap draws as weak evidence (COLO829 PTEN: 7 split, 33 gapped). Plan: the junctions band counts SV-size CIGAR deletions beside split joins. Waits on two measurements, then the build."
+description: "A deletion arc counts only split reads, so a deletion most reads carry as a CIGAR gap draws as weak evidence (COLO829 PTEN: 7 split, 33 gapped). Plan: the junctions band counts SV-size CIGAR deletions too; waits on two measurements."
 ---
 
 # CIGAR deletions in the junctions band
