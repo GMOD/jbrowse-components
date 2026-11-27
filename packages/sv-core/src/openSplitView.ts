@@ -41,6 +41,8 @@ import type { AbstractViewContainer } from '@jbrowse/core/util'
  * Only on a built view: a reused one already has them, and re-showing would put
  * back a track the reader had closed. A trackId the session cannot resolve
  * throws, and one stale id should not cost the reader the whole launch.
+ * View-as-pairs stays off in these panels (declined 2026-10-04): the chain unit
+ * would swap the colored evidence curves for a grey hairline and grey out sort.
  */
 export async function openDefaultTracks(
   views: { launchTrack: (trackId: string) => Promise<unknown> }[],
