@@ -118,7 +118,6 @@ const held = (): CacheUse => ({
  * under `limit` beside those kept.
  */
 async function trim() {
-  const named = new Set<string>()
   const inUse = Math.min(lastCall, running[0] ?? lastCall)
   let kept = 0
   await keepAdapters('tables', (adapter, lastRequest) => {
@@ -126,18 +125,10 @@ async function trim() {
     const keep = lastRequest > inUse || kept + weight <= limit
     if (keep) {
       kept += weight
-      for (const url of urlsIn(adapter)) {
-        named.add(url)
-      }
     }
     return keep
   })
   parsed = kept
-  for (const url of wholeFileBytes.keys()) {
-    if (!named.has(url)) {
-      wholeFileBytes.delete(url)
-    }
-  }
 }
 
 function applyLimit(bytes: number) {

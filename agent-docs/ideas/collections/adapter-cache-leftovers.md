@@ -1,6 +1,6 @@
 ---
 name: adapter-cache-leftovers
-description: "What the 2026-11-21 dataAdapterCache audit left open, none of it wrong data: claims nothing releases on worker drivers, the tables trim forgetting a held adapter's whole-file bytes, credential churn needing a generation number, an unmeasured config rehash, lane layers, nits."
+description: "What the 2026-11-21 dataAdapterCache audit left open, none of it wrong data: claims nothing releases on worker drivers, tables totals counting the whole page cache, credential churn needing a generation number, an unmeasured config rehash, lane layers, nits."
 ---
 
 # Adapter cache leftovers
@@ -22,14 +22,10 @@ to leave the slot unset.
   `MafSequenceWidget` calls under the adapter's key with no retain. A
   main-thread driver now frees these at destroy; a worker driver keeps them
   until its workers end. One sequence adapter per assembly, so low cost.
-- **The tables trim's weight total leaves out an adapter it declined but
-  another claim still holds** (a kept BAM's FASTA, a same-page browser's
-  adapter), and `trim` in `packages/tables/src/cache.ts` deletes that adapter's
-  `wholeFileBytes` record, so asked for again it weighs `MIN_ADAPTER_BYTES`. A
-  whole-file sequence adapter under a BAM is the case with real bytes. Not
-  pruning `wholeFileBytes` in `trim`, only in `clear()`, is the cheap fix; read,
-  not run. `held().adapters` and `clear()`'s "empties every cache" likewise
-  count the whole page cache, which tables alone no longer owns.
+- **The tables totals count the whole page cache.** `held().adapters` and
+  `clear()`'s "empties every cache" include adapters another claim holds (a
+  kept BAM's FASTA, a same-page browser's adapter), which tables alone no
+  longer owns.
 
 ## Lower
 

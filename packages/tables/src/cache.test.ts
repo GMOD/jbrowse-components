@@ -1,7 +1,8 @@
 import { tablesAdapter } from '@jbrowse/core/data_adapters/getFeatureAdapter'
 
 import { RESOLVED_ASSEMBLIES } from './assembly.ts'
-import { engineCache } from './cache.ts'
+import { wholeFileBytes } from './bareHost.ts'
+import { MIN_ADAPTER_BYTES, engineCache } from './cache.ts'
 import {
   DEFAULT_CACHE_LIMIT,
   createTablesEngine,
@@ -150,4 +151,20 @@ test('a budget is a number of bytes, Infinity for none', async () => {
       engine.cache({ limit: limit as unknown as number }),
     ).rejects.toThrow(`a cache limit is a number of bytes, not ${limit}`)
   }
+})
+
+test('an adapter trimmed while another adapter holds it keeps its weight', async () => {
+  const sequence = {
+    sequenceAdapter: BAM.sequenceAdapter,
+    region: { refName: 'ctgA', start: 0, end: 100 },
+  }
+  await engine.cache({ limit: 2 * MIN_ADAPTER_BYTES })
+  wholeFileBytes.set(BAM.sequenceAdapter.faiLocation.uri, MIN_ADAPTER_BYTES)
+  await engine.sequence(sequence)
+  const weight = (await engine.cache()).parsed
+  expect(weight).toBeGreaterThan(2 * MIN_ADAPTER_BYTES)
+  await engine.alignments(BAM)
+  await engine.variants(DOG_VCF)
+  await engine.sequence(sequence)
+  expect((await engine.cache()).parsed).toBe(weight)
 })
