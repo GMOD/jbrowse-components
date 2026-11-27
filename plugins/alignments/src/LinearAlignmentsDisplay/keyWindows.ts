@@ -14,9 +14,9 @@ import type {
   PileupLayoutArrays,
   WorkerPileupData,
 } from '../RenderAlignmentDataRPC/types.ts'
-import type { ArcSplitCategory } from '../features/arcs/arcSplitCategory.ts'
 import type { CrossRegionArc } from '../features/arcs/arcTypes.ts'
 import type { ArcsUploadData } from '../features/arcs/types.ts'
+import type { JunctionKind } from '../features/junctions/junctionClass.ts'
 import type { MergedJunction } from '../features/junctions/junctions.ts'
 import type { CigarMarkKind } from '../shared/legendUtils.ts'
 import type { ReadColorCategory } from './colorUtils.ts'
@@ -367,28 +367,28 @@ export function junctionInWindows(
 }
 
 /**
- * The splice junction strands and split junction classes a junctions key
- * rows: those of the junctions touching a window. A split junction has no
+ * The splice junction strands and the other junction kinds a junctions key
+ * rows: those of the junctions touching a window. Only a splice has a
  * transcript strand.
  */
 export function junctionKeyOf(
   junctions: Iterable<
-    Pick<MergedJunction, 'refName' | 'start' | 'end' | 'strand' | 'split'>
+    Pick<MergedJunction, 'refName' | 'start' | 'end' | 'strand' | 'kind'>
   >,
   windows: readonly KeyWindow[],
 ) {
   const strands = new Set<number>()
-  const splitClasses = new Set<ArcSplitCategory>()
+  const kinds = new Set<JunctionKind>()
   for (const j of junctions) {
     if (junctionInWindows(j, windows)) {
-      if (j.split) {
-        splitClasses.add(j.split)
-      } else {
+      if (j.kind === 'splice') {
         strands.add(j.strand)
+      } else {
+        kinds.add(j.kind)
       }
     }
   }
-  return { strands, splitClasses }
+  return { strands, kinds }
 }
 
 /**

@@ -384,7 +384,7 @@ export function useAlignmentsBase(model: LinearAlignmentsDisplayModel) {
   function hoverStateForResult(result: MarkHitResult): HoverState {
     switch (result.type) {
       case 'junctions': {
-        const { refName, start, end, split, inRead } = result.junction
+        const { refName, start, end, split, kind } = result.junction
         return {
           overCigarItem: true,
           featureIdUnderMouse: undefined,
@@ -396,7 +396,7 @@ export function useAlignmentsBase(model: LinearAlignmentsDisplayModel) {
             start,
             end,
             split,
-            inRead,
+            kind,
           },
         }
       }

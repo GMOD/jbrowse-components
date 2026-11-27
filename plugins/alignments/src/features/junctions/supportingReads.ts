@@ -14,7 +14,7 @@ import type { ReadSlot } from '../../shared/readSlot.ts'
 import type { ArcSplitCategory } from '../arcs/arcSplitCategory.ts'
 import type { CanonicalRefName } from '../arcs/arcTypes.ts'
 import type { ArcBandHit } from '../arcs/bandFeed.ts'
-import type { JunctionSplitClass } from './junctionClass.ts'
+import type { JunctionKind, JunctionSplitClass } from './junctionClass.ts'
 import type { AdapterRefName } from '@jbrowse/core/util'
 
 /** A junction as one lane draws it: what a hovered junction arc names. */
@@ -23,11 +23,10 @@ export interface LaneJunction {
   refName: string
   start: number
   end: number
-  // the split class of a split junction, unset for an N gap
+  // the split class of a split junction, unset for any other
   split?: JunctionSplitClass
-  // a deletion the reads carry as a CIGAR gap, whose supporting reads hold
-  // that gap and no split
-  inRead?: boolean
+  // what made the junction, unset on a read-connection arc
+  kind?: JunctionKind
 }
 
 /**
@@ -79,7 +78,7 @@ export function sameLaneJunction(a?: HoveredJunction, b?: HoveredJunction) {
       a.start === b.start &&
       a.end === b.end &&
       a.split === b.split &&
-      a.inRead === b.inRead)
+      a.kind === b.kind)
   )
 }
 
@@ -102,15 +101,17 @@ function gapReads(
   end: number,
   gapType: number,
 ) {
-  const { gapPositions, gapTypes, gapReadIndices } = data
+  const { gapPositions, gapTypes, gapReadIndices, readFlags } = data
   const reads: number[] = []
   for (let i = 0; i < gapTypes.length; i++) {
+    const read = gapReadIndices[i]!
     if (
       gapPositions[i * 2] === start &&
       gapPositions[i * 2 + 1] === end &&
-      gapTypes[i] === gapType
+      gapTypes[i] === gapType &&
+      (gapType !== GAP_DELETION || !(readFlags[read]! & SAM_FLAG_SECONDARY))
     ) {
-      reads.push(gapReadIndices[i]!)
+      reads.push(read)
     }
   }
   return reads
@@ -171,9 +172,9 @@ function splitReads(
 
 /**
  * The slots of the reads supporting this junction, in every region of its
- * lane on its refName: those whose skip gap or SV-size deletion gap it is,
- * or for a split junction those whose segment it joins to the next. A read
- * reaching two regions has a
+ * lane on its refName: those whose skip gap it is, the primary and
+ * supplementary records whose deletion gap it is, or for a split junction
+ * those whose segment it joins to the next. A read reaching two regions has a
  * slot in each, so a junction spanning two collapsed-intron exons lights both
  * halves.
  */
@@ -186,11 +187,11 @@ export function junctionSupportingReadSlots(
   junction: HoveredJunction & { groupKey: string },
   canonicalRefName: CanonicalRefName = adapterRefNameText,
 ) {
-  const { groupKey, start, end, split, inRead } = junction
+  const { groupKey, start, end, split, kind } = junction
   const slots: ReadSlot[] = []
   for (const { displayedRegionIndex, refName, data } of regions) {
     if (refName === junction.refName) {
-      for (const idx of inRead
+      for (const idx of kind === 'gapDeletion'
         ? gapReads(data, start, end, GAP_DELETION)
         : split
           ? splitReads(data, junction, split, canonicalRefName)

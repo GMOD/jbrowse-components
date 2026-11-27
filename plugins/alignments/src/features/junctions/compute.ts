@@ -1,6 +1,6 @@
 import { SAM_FLAG_SECONDARY, SV_INDEL_MIN_BP } from '@jbrowse/cigar-utils'
 
-import { IN_READ_DELETION_CODE } from './junctionClass.ts'
+import { GAP_DELETION_CODE } from './junctionClass.ts'
 import { DINUCLEOTIDE_UNKNOWN, spliceMotifDinucleotides } from './motif.ts'
 
 import type { SplitJunction } from './splitJunctions.ts'
@@ -13,15 +13,9 @@ export interface JunctionReference {
   start: number
 }
 
-/**
- * The deletions the reads carry inside one record, as a CIGAR `D` of
- * `SV_INDEL_MIN_BP` or more: one junction per (start, end), counted per
- * record as a split join counts. An aligner spells one deletion as a gap or
- * as a split by its own settings, so both spellings draw. Reads agreeing to
- * the base share a junction and nothing merges two that differ. Secondary
- * alignments are another mapping of the same bases and count nothing.
- */
-export function inReadDeletionJunctions(
+// One junction per exact (start, end) of a CIGAR `D` of `SV_INDEL_MIN_BP` or
+// more, counted per primary or supplementary record.
+export function gapDeletionJunctions(
   gaps: readonly (Pick<CoverageGap, 'start' | 'end' | 'type'> & {
     readIndex: number
   })[],
@@ -39,7 +33,7 @@ export function inReadDeletionJunctions(
       if (junction) {
         junction.n++
       } else {
-        byKey.set(key, { start, end, splitClass: IN_READ_DELETION_CODE, n: 1 })
+        byKey.set(key, { start, end, splitClass: GAP_DELETION_CODE, n: 1 })
       }
     }
   }

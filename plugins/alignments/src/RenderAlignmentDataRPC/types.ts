@@ -319,7 +319,7 @@ export interface WorkerPileupData {
   junctionRev: Uint32Array // of those, reads tagged reverse-strand
   junctionDonors: Uint8Array // encoded donor dinucleotide (features/junctions/motif.ts)
   junctionAcceptors: Uint8Array // encoded acceptor dinucleotide
-  junctionSplitClass: Uint8Array // 0 for an N gap, else a split class (features/junctions/junctionClass.ts)
+  junctionSplitClass: Uint8Array // a JUNCTION_KINDS index (features/junctions/junctionClass.ts)
 
   // All detected modification types in this region (detected during feature processing)
   detectedModifications: string[]

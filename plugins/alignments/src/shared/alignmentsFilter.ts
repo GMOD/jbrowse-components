@@ -16,7 +16,6 @@ import {
 import {
   JUNCTION_CLASSES,
   JUNCTION_SOURCES,
-  junctionSource,
 } from '../features/junctions/junctionClass.ts'
 import {
   BREAKPOINT_READS,
@@ -36,7 +35,6 @@ import {
   isReadField,
 } from './filterFields.ts'
 
-import type { JunctionClass } from '../features/junctions/junctionClass.ts'
 import type {
   CategoryFilter,
   ConnectionFilter,
@@ -212,26 +210,17 @@ export function floorEntries(
 
 // ---- the main thread's rows ----
 
-function junctionClassLane(
+// The values of `values` one field's entries admit, undefined when they test
+// nothing.
+function admittedOf<T extends string>(
+  predicates: readonly FieldPredicate[],
   field: string,
-): PredicateLane<JunctionClass> | undefined {
-  return field === JUNCTION_CLASS
-    ? { kind: 'get', get: c => c }
-    : field === JUNCTION_SOURCE
-      ? { kind: 'get', get: junctionSource }
-      : undefined
-}
-
-// The `junction.class` and `junction.source` entries as the classes they
-// admit, undefined when they test nothing.
-function junctionClassesOf(predicates: readonly FieldPredicate[]) {
-  const admits = compilePredicates(
-    predicates.filter(
-      p => p.field === JUNCTION_CLASS || p.field === JUNCTION_SOURCE,
-    ),
-    junctionClassLane,
-  )
-  return admits && JUNCTION_CLASSES.filter(admits)
+  values: readonly T[],
+) {
+  const lane = (f: string): PredicateLane<T> | undefined =>
+    f === field ? { kind: 'get', get: v => v } : undefined
+  const admits = compilePredicates(entriesOn(predicates, field), lane)
+  return admits && values.filter(admits)
 }
 
 /** The junctions drawn, as the junctions and tables code test them. */
@@ -240,7 +229,8 @@ export function junctionFilterOf(
 ): JunctionFilter {
   const canonical = categoryOf(predicates, JUNCTION_CANONICAL)
   return {
-    classes: junctionClassesOf(predicates),
+    classes: admittedOf(predicates, JUNCTION_CLASS, JUNCTION_CLASSES),
+    sources: admittedOf(predicates, JUNCTION_SOURCE, JUNCTION_SOURCES),
     minReads: countFloorOf(predicates, JUNCTION_READS) ?? 1,
     nonCanonical:
       canonical === 'only'
@@ -251,11 +241,7 @@ export function junctionFilterOf(
   }
 }
 
-/**
- * `junctionFilterOf`'s members as the entries they are. `classes` writes
- * `junction.class` and clears `junction.source`, whose reading it folds in;
- * `sources` writes `junction.source` alone.
- */
+/** `junctionFilterOf`'s members as the entries they are. */
 export function junctionEntries(
   patch: JunctionFilterPatch,
   written: readonly FieldPredicate[] = [],
@@ -290,7 +276,6 @@ export function junctionEntries(
             JUNCTION_CLASSES.every(c => classes.includes(c))
               ? []
               : [{ field: JUNCTION_CLASS, oneOf: [...classes] }],
-          [JUNCTION_SOURCE]: [],
         }
       : {}),
     ...('sources' in patch

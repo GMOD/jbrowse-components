@@ -266,7 +266,7 @@ export function themedViews(self: ThemedHost) {
         junctionLegend: junctionLegend(
           self.junctionLegendKeys.strands,
           theme.alignmentFill,
-          { classes: self.junctionLegendKeys.splitClasses, palette },
+          { kinds: self.junctionLegendKeys.kinds, palette },
         ),
         cigarMarks: cigarMarkLegendItems(self.cigarMarkKinds, palette),
       })

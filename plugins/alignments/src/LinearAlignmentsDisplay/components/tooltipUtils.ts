@@ -15,7 +15,10 @@ import {
   ARC_SHAPE_FLAT,
   isUnplacedArcShape,
 } from '../../features/arcs/shapes.ts'
-import { splitJunctionName } from '../../features/junctions/junctionClass.ts'
+import {
+  junctionCountLabel,
+  junctionName,
+} from '../../features/junctions/junctionClass.ts'
 import { spliceMotifLabel } from '../../features/junctions/motif.ts'
 import { forEachSAEntry } from '../../features/junctions/splitJunctions.ts'
 import { arcSlotCategory } from '../../shaders/palettes.ts'
@@ -66,11 +69,13 @@ export interface ModificationTooltipPayload extends ModificationHitResult {
 
 export interface JunctionTooltipPayload {
   type: 'junctions'
-  // 'Intron/Skip', or a split junction's read-arc label
+  // 'Intron/Skip', or the name of the junction's kind
   name: string
   start: number
   end: number
   score: number
+  // what `score` counts
+  countLabel: string
   // absent for a split junction, which no transcript strand votes on
   strand?: string
   refName: string
@@ -440,20 +445,21 @@ export function formatModificationTooltip(
 export function formatJunctionTooltip(
   junction: Omit<MergedJunction, 'key'>,
 ): JunctionTooltipPayload {
-  const { start, end, count, strand, refName, motif, split, inRead } = junction
+  const { start, end, count, strand, refName, motif, kind } = junction
   return {
     type: 'junctions',
-    name: split ? splitJunctionName(split, inRead) : 'Intron/Skip',
+    name: kind === 'splice' ? 'Intron/Skip' : junctionName(kind),
     start,
     end,
     score: count,
+    countLabel: junctionCountLabel(kind),
     refName,
-    ...(split
-      ? {}
-      : {
+    ...(kind === 'splice'
+      ? {
           strand: strand === 1 ? '+' : strand === -1 ? '-' : 'unknown',
           motif: spliceMotifLabel(motif),
-        }),
+        }
+      : {}),
   }
 }
 

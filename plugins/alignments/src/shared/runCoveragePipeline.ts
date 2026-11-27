@@ -8,7 +8,7 @@ import { checkAbortSignal } from '@jbrowse/core/util/aborting'
 
 import {
   computeJunctions,
-  inReadDeletionJunctions,
+  gapDeletionJunctions,
 } from '../features/junctions/compute.ts'
 import {
   computeBisulfiteCoverage,
@@ -150,7 +150,7 @@ export async function runCoveragePipeline({
     junctions ? gaps : [],
     junctionReference,
     junctions
-      ? [...(splitJunctions ?? []), ...inReadDeletionJunctions(gaps, features)]
+      ? [...(splitJunctions ?? []), ...gapDeletionJunctions(gaps, features)]
       : splitJunctions,
   )
 

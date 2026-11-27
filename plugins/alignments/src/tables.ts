@@ -76,7 +76,7 @@ import {
 import { visibleRegionJunctions } from './features/junctions/computeOverlay.ts'
 import {
   junctionClass,
-  sourceOfJunction,
+  junctionSource,
 } from './features/junctions/junctionClass.ts'
 import {
   mergeJunctions,
@@ -603,13 +603,13 @@ function interbase(d: WorkerPileupData, paint: MarkColors) {
 }
 
 /**
- * The junctions the reads' skips and split reads support, merged as the
- * junctions band merges them: each once, with its supporting-read count, its
- * `class` and `source` as the filter's `junction` fields name them, a split
- * junction's `level` (the `insertSizeAndOrientation` level its color paints,
- * '' for a splice junction), the
+ * The junctions the reads' skips, deletions of `SV_INDEL_MIN_BP` or more and
+ * split reads support, merged as the junctions band merges them: each once,
+ * with its supporting-read count, its `class` and `source` as the filter's
+ * `junction` fields name them, a split junction's `level` (the
+ * `insertSizeAndOrientation` level its color paints, '' for any other), the
  * strand its reads' tags or its splice motif give a splice junction (0 where
- * neither says, and for a split junction), and the motif where the reference
+ * neither says, and for any other), and the motif where the reference
  * was read. Every junction, down to a single
  * read, with `shown` false where the display's `junction` filter fields hide it; a
  * junction whose motif was never read counts as canonical, as the display
@@ -620,20 +620,20 @@ function interbase(d: WorkerPileupData, paint: MarkColors) {
  * junctions band merges it, and `startRegion` and `endRegion` name the region
  * holding each foot, -1 where none does.
  */
-function junctions(
+export function junctionColumns(
   merged: MergedJunction[],
   regionInfos: RegionInfo[],
-  paint: MarkColors,
-  thresholds: MarkThresholds,
+  paint: Pick<MarkColors, 'junction'>,
+  thresholds: Pick<MarkThresholds, 'junctions'>,
   bandOf: (junction: MergedJunction) => JunctionBand,
 ) {
   return {
     start: merged.map(j => j.start),
     end: merged.map(j => j.end),
     count: merged.map(j => j.count),
-    class: merged.map(j => junctionClass(j.split)),
+    class: merged.map(j => junctionClass(j.kind)),
     level: merged.map(j => (j.split ? arcLevelOf(j.split) : '')),
-    source: merged.map(j => sourceOfJunction(j.split, j.inRead)),
+    source: merged.map(j => junctionSource(j.kind)),
     strand: merged.map(j => j.strand),
     motif: merged.map(j => spliceMotifLabel(j.motif) ?? ''),
     color: merged.map(j => paint.junction(j)),
@@ -1153,7 +1153,7 @@ function laidOutTables(
       order.map(({ key, label }) => ({
         columns: { section: label },
         tables: {
-          junctions: junctions(
+          junctions: junctionColumns(
             junctionsBySection.get(key)!,
             regionInfos,
             paint,
@@ -1327,7 +1327,7 @@ function markLegends(
   const keyedBases = paint.muted ? [] : BASES.filter(b => bases.has(b))
   const junctionItems = junctionLegendItems(
     junctionLegend(junctionKey.strands, theme.alignmentFill, {
-      classes: junctionKey.splitClasses,
+      kinds: junctionKey.kinds,
       palette: paint.palette,
     }),
   )

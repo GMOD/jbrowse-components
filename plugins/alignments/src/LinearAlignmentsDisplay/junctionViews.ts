@@ -108,7 +108,7 @@ export function junctionViews(self: JunctionViewsHost) {
 
     /**
      * #getter
-     * The splice junction strands and split junction classes drawn in
+     * The splice junction strands and other junction kinds drawn in
      * `keyWindows`, one key row each (`junctionKeyOf`). Read off the
      * merged junctions and the settled window rather than the projected
      * arcs, so a pan's frames do not rebuild the legend.

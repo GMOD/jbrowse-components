@@ -6,9 +6,10 @@ import {
 } from '@jbrowse/display-kit/categoryFilter'
 
 import {
-  JUNCTION_CLASSES,
+  JUNCTION_KINDS,
   junctionSource,
 } from '../../features/junctions/junctionClass.ts'
+import { admitsJunctionKind } from '../../features/junctions/junctions.ts'
 import {
   DEFAULT_MIN_INTERCHROM_READS,
   DEFAULT_MIN_JUNCTION_READS,
@@ -84,18 +85,15 @@ export interface LayerFiltersModel {
   setBases?: (patch: BasesPatch) => void
 }
 
-const SPLIT_CLASSES = JUNCTION_CLASSES.filter(
-  c => junctionSource(c) === 'split',
-)
-
-/** The split-read junctions as a category: hidden when no split class is drawn. */
-export function splitJunctionsCategory({
-  classes,
-}: JunctionFilter): CategoryFilter | undefined {
-  const split = classes?.filter(c => SPLIT_CLASSES.includes(c)) ?? SPLIT_CLASSES
+/** The split-read junctions as a category, over the kinds the filter admits. */
+export function splitJunctionsCategory(
+  filter: JunctionFilter,
+): CategoryFilter | undefined {
+  const admitted = JUNCTION_KINDS.filter(k => admitsJunctionKind(filter, k))
+  const split = admitted.filter(k => junctionSource(k) === 'split')
   return split.length === 0
     ? 'exclude'
-    : classes !== undefined && split.length === classes.length
+    : split.length === admitted.length
       ? 'only'
       : undefined
 }

@@ -1,5 +1,5 @@
-import { computeJunctions, inReadDeletionJunctions } from './compute.ts'
-import { IN_READ_DELETION_CODE, splitClassCode } from './junctionClass.ts'
+import { computeJunctions, gapDeletionJunctions } from './compute.ts'
+import { GAP_DELETION_CODE, splitClassCode } from './junctionClass.ts'
 import { mergeJunctions } from './junctions.ts'
 import {
   DINUCLEOTIDE_UNKNOWN,
@@ -102,19 +102,19 @@ function deletion(readIndex: number, start: number, end: number) {
 
 test('reads carrying one deletion to the base share a junction', () => {
   expect(
-    inReadDeletionJunctions(
+    gapDeletionJunctions(
       [deletion(0, 100, 400), deletion(1, 100, 400), deletion(2, 101, 400)],
       [PRIMARY, PRIMARY, PRIMARY],
     ),
   ).toEqual([
-    { start: 100, end: 400, splitClass: IN_READ_DELETION_CODE, n: 2 },
-    { start: 101, end: 400, splitClass: IN_READ_DELETION_CODE, n: 1 },
+    { start: 100, end: 400, splitClass: GAP_DELETION_CODE, n: 2 },
+    { start: 101, end: 400, splitClass: GAP_DELETION_CODE, n: 1 },
   ])
 })
 
 test('a deletion under 50 bp, a skip and a secondary read count nothing', () => {
   expect(
-    inReadDeletionJunctions(
+    gapDeletionJunctions(
       [
         deletion(0, 100, 149),
         deletion(0, 200, 250),
@@ -123,22 +123,22 @@ test('a deletion under 50 bp, a skip and a secondary read count nothing', () => 
       ],
       [PRIMARY, SECONDARY],
     ),
-  ).toEqual([{ start: 200, end: 250, splitClass: IN_READ_DELETION_CODE, n: 1 }])
+  ).toEqual([{ start: 200, end: 250, splitClass: GAP_DELETION_CODE, n: 1 }])
 })
 
 test('a gapped and a split deletion on one span stay two junctions', () => {
   const data = computeJunctions([], undefined, [
     { start: 100, end: 400, splitClass: splitClassCode('splitForward'), n: 6 },
-    { start: 100, end: 400, splitClass: IN_READ_DELETION_CODE, n: 32 },
+    { start: 100, end: 400, splitClass: GAP_DELETION_CODE, n: 32 },
   ])
   const out = [
     ...mergeJunctions([{ refName: 'chr1', data }], { minReads: 0 }).values(),
   ]
   expect(
-    out.map(j => ({ count: j.count, split: j.split, inRead: j.inRead })),
+    out.map(j => ({ count: j.count, kind: j.kind, split: j.split })),
   ).toEqual([
-    { count: 6, split: 'splitForward', inRead: false },
-    { count: 32, split: 'splitForward', inRead: true },
+    { count: 6, kind: 'splitForward', split: 'splitForward' },
+    { count: 32, kind: 'gapDeletion', split: undefined },
   ])
   expect(new Set(out.map(j => j.key)).size).toBe(2)
 })

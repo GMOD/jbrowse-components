@@ -1,6 +1,7 @@
 import { readModCovSegments, readSnpSegments } from '@jbrowse/alignments-core'
 import { packAbgr } from '@jbrowse/core/util/colorBits'
 
+import { junctionKindOf } from '../features/junctions/junctionClass.ts'
 import { runCoveragePipeline } from './runCoveragePipeline.ts'
 
 import type { StrandBaseCounts } from './calculateModificationCounts.ts'
@@ -136,6 +137,30 @@ test('the junctions run without the coverage band, unless asked not to', async (
   expect(kept.coverage.depths.length).toBe(0)
   expect(Array.from(kept.junctionArrays.junctionX1)).toEqual([20])
   expect((await run(false)).junctionArrays.junctionX1.length).toBe(0)
+})
+
+test('a deletion of SV size the reads carry is a junction of its own', async () => {
+  const deletion = (readIndex: number): GapData => ({
+    readIndex,
+    start: 20,
+    end: 80,
+    type: 'deletion',
+    strand: 1,
+    featureStrand: 1,
+  })
+  const { junctionArrays } = await runCoveragePipeline({
+    ...baseArgs,
+    gaps: [deletion(0), deletion(1)],
+    showCoverage: false,
+  })
+  expect([
+    ...junctionArrays.junctionX1,
+    ...junctionArrays.junctionX2,
+    ...junctionArrays.junctionCounts,
+  ]).toEqual([20, 80, 2])
+  expect(junctionKindOf(junctionArrays.junctionSplitClass[0]!)).toBe(
+    'gapDeletion',
+  )
 })
 
 describe('runCoveragePipeline bisulfite mod coverage', () => {

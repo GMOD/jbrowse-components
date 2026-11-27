@@ -34,8 +34,13 @@ import {
 } from '../features/arcs/arcSplitCategory.ts'
 import { junctionArcColor } from '../features/junctions/computeOverlay.ts'
 import {
+  GAP_AND_SPLIT_DELETION_NAME,
+  GAP_DELETION_NAME,
+  JUNCTION_KINDS,
   SPLIT_JUNCTION_CLASSES,
   SPLIT_JUNCTION_NAMES,
+  junctionColorClass,
+  splitClassOf,
 } from '../features/junctions/junctionClass.ts'
 import { arcCategoryColor } from '../shaders/palettes.ts'
 import {
@@ -67,8 +72,7 @@ import type {
   SwatchCategory,
 } from '../LinearAlignmentsDisplay/colorUtils.ts'
 import type { ReadConnectionsMode } from '../LinearAlignmentsDisplay/constants.ts'
-import type { ArcSplitCategory } from '../features/arcs/arcSplitCategory.ts'
-import type { JunctionSplitClass } from '../features/junctions/junctionClass.ts'
+import type { JunctionKind } from '../features/junctions/junctionClass.ts'
 import type { ColorPalette, PaletteColorKey } from '../shaders/colors.ts'
 import type { ArcCategory } from '../shaders/palettes.ts'
 import type { DeclaredReadLabels } from './alignmentsColor.ts'
@@ -381,30 +385,40 @@ export function titledReadColorKey(
   }
 }
 
-// A junctions split row whose color the read arcs key already moves into the
-// arcs' rows under their wording, where `oneRowPerSplitTwin` folds it with its
-// pair twin: one color, one row. The rest stay in the junctions section.
+function splitClassAmong(kinds: readonly JunctionKind[]) {
+  return kinds.map(splitClassOf).find(c => c !== undefined)
+}
+
+// The split reads of a junctions row whose color the read arcs key already
+// move into the arcs' rows under their wording, where `oneRowPerSplitTwin`
+// folds them with their pair twin: one color, one row. Gap deletions, and the
+// rows the arcs do not color, stay in the junctions section.
 function keyJunctionSplitsWithArcs(
   drawnArcs: LegendItem[],
-  { strands, splits }: JunctionLegend,
+  { strands, rows }: JunctionLegend,
 ) {
   const arcColors = new Set(
     drawnArcs.flatMap(i => legendSwatches(i).map(s => s.color)),
   )
   const keyed = new Set(drawnArcs.map(legendKey))
   const arcs = [...drawnArcs]
-  const own: JunctionLegend['splits'] = []
-  for (const s of splits) {
-    if (arcColors.has(s.color)) {
-      const row = { color: s.color, label: ARC_SPLIT_LABELS[s.split] }
-      if (!keyed.has(legendKey(row))) {
-        arcs.push(row)
+  const own: JunctionLegend['rows'] = []
+  for (const row of rows) {
+    const split = splitClassAmong(row.kinds)
+    if (split && arcColors.has(row.color)) {
+      const arcRow = { color: row.color, label: ARC_SPLIT_LABELS[split] }
+      if (!keyed.has(legendKey(arcRow))) {
+        arcs.push(arcRow)
+      }
+      const gapped = row.kinds.filter(k => !splitClassOf(k))
+      if (gapped.length > 0) {
+        own.push({ ...row, kinds: gapped })
       }
     } else {
-      own.push(s)
+      own.push(row)
     }
   }
-  return { arcs, junctions: junctionLegendItems({ strands, splits: own }) }
+  return { arcs, junctions: junctionLegendItems({ strands, rows: own }) }
 }
 
 // Transcript strand, from the XS/TS tag or the splice motif — not the read's
@@ -419,19 +433,19 @@ const JUNCTION_STRAND_LABELS = [
 export const JUNCTION_LEGEND_TITLE = 'Junctions'
 
 /**
- * The junction strands and the split classes the junctions band draws, each
- * split class in its read-arc color.
+ * The junction strands and the other junction kinds the junctions band draws,
+ * one row per read-arc color with the kinds painted in it.
  */
 export interface JunctionLegend {
   strands: LegendItem[]
-  splits: { split: JunctionSplitClass; color: string }[]
+  rows: { kinds: JunctionKind[]; color: string }[]
 }
 
 export function junctionLegend(
   strands: ReadonlySet<number>,
   fill: Pick<AlignmentFill, 'read'>,
-  split?: {
-    classes: ReadonlySet<ArcSplitCategory>
+  other?: {
+    kinds: ReadonlySet<JunctionKind>
     palette: Pick<ColorPalette, 'readCategoryColors'>
   },
 ): JunctionLegend {
@@ -442,25 +456,36 @@ export function junctionLegend(
       color: junctionArcColor(strand, fill),
       label,
     })),
-    splits: split
-      ? SPLIT_JUNCTION_CLASSES.filter(c => split.classes.has(c)).map(c => ({
-          split: c,
-          color: rgb255(arcCategoryColor(split.palette, c)),
-        }))
+    rows: other
+      ? SPLIT_JUNCTION_CLASSES.map(c => ({
+          kinds: JUNCTION_KINDS.filter(
+            k => other.kinds.has(k) && junctionColorClass(k) === c,
+          ),
+          color: rgb255(arcCategoryColor(other.palette, c)),
+        })).filter(row => row.kinds.length > 0)
       : [],
   }
 }
 
-/** The junctions key's rows on their own: the strands, then the split classes. */
+function junctionRowLabel(kinds: readonly JunctionKind[]) {
+  const split = splitClassAmong(kinds)
+  return split === undefined
+    ? GAP_DELETION_NAME
+    : kinds.includes('gapDeletion')
+      ? GAP_AND_SPLIT_DELETION_NAME
+      : SPLIT_JUNCTION_NAMES[split]
+}
+
+/** The junctions key's rows on their own: the strands, then the other kinds. */
 export function junctionLegendItems({
   strands,
-  splits,
+  rows,
 }: JunctionLegend): LegendItem[] {
   return [
     ...strands,
-    ...splits.map(({ split, color }) => ({
+    ...rows.map(({ kinds, color }) => ({
       color,
-      label: SPLIT_JUNCTION_NAMES[split],
+      label: junctionRowLabel(kinds),
     })),
   ]
 }

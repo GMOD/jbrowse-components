@@ -1,4 +1,4 @@
-import { splitClassCode } from './junctionClass.ts'
+import { JUNCTION_KINDS } from './junctionClass.ts'
 import { junctionKey, mergeJunctions, stripJunctionKeys } from './junctions.ts'
 import {
   DINUCLEOTIDE_UNKNOWN,
@@ -7,7 +7,7 @@ import {
 } from './motif.ts'
 
 import type { CategoryFilter, JunctionFilter } from '../../shared/types.ts'
-import type { JunctionSplitClass } from './junctionClass.ts'
+import type { JunctionKind } from './junctionClass.ts'
 import type { RegionJunctions, JunctionsPlacement } from './junctions.ts'
 
 // [start, end, count] per junction, plus whatever this test cares about of the
@@ -18,7 +18,7 @@ interface JunctionDetail {
   rev?: number
   donor?: string
   acceptor?: string
-  split?: JunctionSplitClass
+  kind?: JunctionKind
 }
 type Spec = [number, number, number] | [number, number, number, JunctionDetail]
 
@@ -46,7 +46,7 @@ function region(refName: string, junctions: Spec[]): RegionJunctions {
         details.map(d => dinucleotide(d.acceptor)),
       ),
       junctionSplitClass: new Uint8Array(
-        details.map(d => (d.split ? splitClassCode(d.split) : 0)),
+        details.map(d => JUNCTION_KINDS.indexOf(d.kind ?? 'splice')),
       ),
     },
   }
@@ -85,8 +85,8 @@ describe('mergeJunctions', () => {
         count: 8,
         strand: 1,
         motif: 0,
+        kind: 'splice',
         split: undefined,
-        inRead: false,
       },
     ])
   })
@@ -163,8 +163,8 @@ describe('mergeJunctions', () => {
           count: 40,
           strand: 0,
           motif: SPLICE_MOTIF_NON_CANONICAL,
+          kind: 'splice',
           split: undefined,
-          inRead: false,
         },
       ])
     }
@@ -233,7 +233,7 @@ describe('split junctions', () => {
       [
         region('chr1', [
           [100, 500, 6, { fwd: 6 }],
-          [100, 500, 3, { split: 'splitForward' }],
+          [100, 500, 3, { kind: 'splitForward' }],
         ]),
       ],
       keep(),
@@ -250,8 +250,8 @@ describe('split junctions', () => {
     const merged = mergeJunctions(
       [
         region('chr1', [
-          [100, 500, 2, { split: 'splitInvLL' }],
-          [100, 500, 4, { split: 'splitInvRR' }],
+          [100, 500, 2, { kind: 'splitInvLL' }],
+          [100, 500, 4, { kind: 'splitInvRR' }],
         ]),
       ],
       keep(),
@@ -266,8 +266,8 @@ describe('split junctions', () => {
     const regions = [
       region('chr1', [
         [100, 500, 6],
-        [200, 900, 3, { split: 'splitBack' }],
-        [300, 400, 3, { split: 'splitForward' }],
+        [200, 900, 3, { kind: 'splitBack' }],
+        [300, 400, 3, { kind: 'splitForward' }],
       ]),
     ]
     const drawn = (classes?: JunctionFilter['classes']) => [
@@ -281,11 +281,53 @@ describe('split junctions', () => {
     expect(drawn([])).toEqual([])
   })
 
+  test('the filter tests each junction by its own class and source', () => {
+    const regions = [
+      region('chr1', [
+        [100, 500, 6],
+        [200, 300, 3, { kind: 'gapDeletion' }],
+        [200, 300, 3, { kind: 'splitForward' }],
+        [200, 900, 3, { kind: 'splitBack' }],
+      ]),
+    ]
+    const drawn = (filter: Omit<JunctionFilter, 'minReads'>) => [
+      ...mergeJunctions(regions, { minReads: 0, ...filter }).keys(),
+    ]
+    expect(drawn({ sources: ['gap'] })).toEqual([
+      'chr1:100:500',
+      'chr1:200:300:gapDeletion',
+    ])
+    expect(drawn({ classes: ['deletion'] })).toEqual([
+      'chr1:200:300:gapDeletion',
+      'chr1:200:300:splitForward',
+    ])
+    expect(drawn({ classes: ['deletion'], sources: ['gap'] })).toEqual([
+      'chr1:200:300:gapDeletion',
+    ])
+    expect(drawn({ sources: ['split'] })).toEqual([
+      'chr1:200:300:splitForward',
+      'chr1:200:900:splitBack',
+    ])
+  })
+
+  test('a gap deletion two regions report counts once, at the larger count', () => {
+    const merged = mergeJunctions(
+      [
+        region('chr1', [[200, 300, 3, { kind: 'gapDeletion' }]]),
+        region('chr1', [[200, 300, 5, { kind: 'gapDeletion' }]]),
+      ],
+      keep(),
+    )
+    expect(
+      [...merged.values()].map(j => [j.key, j.count, j.strand, j.split]),
+    ).toEqual([['chr1:200:300:gapDeletion', 5, 0, undefined]])
+  })
+
   test('a split junction follows the placement like any other', () => {
     const regions = [
       region('chr1', [
         [100, 500, 20],
-        [300, 700, 2, { split: 'splitBack' }],
+        [300, 700, 2, { kind: 'splitBack' }],
       ]),
     ]
     expect(down(regions, 'overlay').size).toBe(0)

@@ -162,13 +162,12 @@ export interface JunctionFilter {
   nonCanonical?: CategoryFilter
   // The `junction.class` values drawn, every one when unset
   classes?: readonly JunctionClass[]
-}
-
-/** A junction filter write: `JunctionFilter`'s members, and `sources` writing `junction.source`. */
-export interface JunctionFilterPatch extends Partial<JunctionFilter> {
-  // every source when unset
+  // The `junction.source` values drawn, every one when unset
   sources?: readonly JunctionSource[]
 }
+
+/** A junction filter write: `JunctionFilter`'s members. */
+export interface JunctionFilterPatch extends Partial<JunctionFilter> {}
 
 /** The connections the display draws: its `connection` and `breakpoint` filter fields, read as `connectionFilter`. */
 export interface ConnectionFilter {

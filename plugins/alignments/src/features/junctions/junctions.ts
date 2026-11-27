@@ -23,8 +23,9 @@
 
 import { passesCategory } from '../../shared/readCategoryFilters.ts'
 import {
-  isInReadDeletionCode,
   junctionClass,
+  junctionKindOf,
+  junctionSource,
   splitClassOf,
 } from './junctionClass.ts'
 import {
@@ -36,7 +37,7 @@ import {
 
 import type { WorkerPileupData } from '../../RenderAlignmentDataRPC/types.ts'
 import type { JunctionFilter } from '../../shared/types.ts'
-import type { JunctionSplitClass } from './junctionClass.ts'
+import type { JunctionKind, JunctionSplitClass } from './junctionClass.ts'
 
 // Junction placement, owned here because it selects the assignment algorithm
 // below (the display imports it via constants.ts): 'overlay' draws every arc
@@ -56,20 +57,17 @@ export type JunctionsPlacement = (typeof JUNCTIONS_PLACEMENTS)[number]
 // two chromosomes on screen at once (a fusion view) share nothing but a bp
 // number line — without it, chr1:10k-50k and chr2:30k-70k read as one junction's
 // worth of interleaving and reserved a strip no arc was ever bound for. A
-// split junction keys its class too, so a split read's deletion and an N gap
-// over the same span stay two junctions, and a deletion the reads carry as a
-// CIGAR gap keys its spelling, so it and a split junction on its coordinates
-// each keep their own count.
+// junction other than a splice keys its kind too, so junctions of two kinds
+// over one span stay two junctions.
 export function junctionKey(
   refName: string,
   start: number,
   end: number,
-  split?: JunctionSplitClass,
-  inRead = false,
+  kind: JunctionKind = 'splice',
 ) {
-  return split
-    ? `${refName}:${start}:${end}:${inRead ? 'gap' : split}`
-    : `${refName}:${start}:${end}`
+  return kind === 'splice'
+    ? `${refName}:${start}:${end}`
+    : `${refName}:${start}:${end}:${kind}`
 }
 
 // One junction, merged across every region that re-emitted it.
@@ -81,10 +79,9 @@ export interface MergedJunction {
   count: number
   strand: number
   motif: number
-  /** The split class a junction draws as, undefined for an N gap. */
+  kind: JunctionKind
+  /** `kind`'s split class, undefined for a junction no split read made. */
   split: JunctionSplitClass | undefined
-  /** A deletion counted from CIGAR gaps of `SV_INDEL_MIN_BP` or more, not split reads. */
-  inRead: boolean
 }
 
 // The same junction mid-merge, before the two motif halves are a motif and the
@@ -100,8 +97,7 @@ interface JunctionAccumulator {
   rev: number
   donor: number
   acceptor: number
-  split: JunctionSplitClass | undefined
-  inRead: boolean
+  kind: JunctionKind
 }
 
 // Which strand tints a junction whose reads disagree. Only tagged reads vote:
@@ -196,10 +192,8 @@ function accumulateJunctions(regions: Iterable<RegionJunctions>) {
       const acceptor = junctionAcceptors[i]!
       const start = junctionX1[i]!
       const end = junctionX2[i]!
-      const code = junctionSplitClass[i]!
-      const split = splitClassOf(code)
-      const inRead = isInReadDeletionCode(code)
-      const key = junctionKey(refName, start, end, split, inRead)
+      const kind = junctionKindOf(junctionSplitClass[i]!)
+      const key = junctionKey(refName, start, end, kind)
       const prev = out.get(key)
       if (prev === undefined) {
         out.set(key, {
@@ -212,8 +206,7 @@ function accumulateJunctions(regions: Iterable<RegionJunctions>) {
           rev: junctionRev[i]!,
           donor,
           acceptor,
-          split,
-          inRead,
+          kind,
         })
       } else {
         // A dinucleotide is a property of the coordinate, so every copy that
@@ -237,20 +230,31 @@ function accumulateJunctions(regions: Iterable<RegionJunctions>) {
 }
 
 // What the merge drops: junctions under the read-support floor, those of a
-// class `classes` leaves out, and those the `nonCanonical` category filters, a
-// junction's motif being non-canonical only where it is known to be none of
-// GT-AG / GC-AG / AT-AC. An unread motif counts as canonical, so
-// `nonCanonical: 'only'` drops it: with no sequence adapter every junction
-// goes, and with one, any junction whose donor or acceptor lies past the
-// fetched reference. A split junction reads no motif, so it is canonical here.
+// class `classes` or a source `sources` leaves out, and those the
+// `nonCanonical` category filters, a junction's motif being non-canonical
+// only where it is known to be none of GT-AG / GC-AG / AT-AC. An unread motif
+// counts as canonical, so `nonCanonical: 'only'` drops it: with no sequence
+// adapter every junction goes, and with one, any junction whose donor or
+// acceptor lies past the fetched reference. A junction other than a splice
+// reads no motif, so it is canonical here.
 export function passesJunctionFilter(
-  j: Pick<MergedJunction, 'count' | 'motif' | 'split'>,
-  { minReads, nonCanonical, classes }: JunctionFilter,
+  j: Pick<MergedJunction, 'count' | 'motif' | 'kind'>,
+  filter: JunctionFilter,
 ) {
   return (
-    j.count >= minReads &&
-    (!classes || classes.includes(junctionClass(j.split))) &&
-    passesCategory(isNonCanonicalSpliceMotif(j.motif), nonCanonical)
+    j.count >= filter.minReads &&
+    admitsJunctionKind(filter, j.kind) &&
+    passesCategory(isNonCanonicalSpliceMotif(j.motif), filter.nonCanonical)
+  )
+}
+
+export function admitsJunctionKind(
+  { classes, sources }: Pick<JunctionFilter, 'classes' | 'sources'>,
+  kind: JunctionKind,
+) {
+  return (
+    (!classes || classes.includes(junctionClass(kind))) &&
+    (!sources || sources.includes(junctionSource(kind)))
   )
 }
 
@@ -269,21 +273,20 @@ export function mergeJunctions(
     rev,
     donor,
     acceptor,
-    split,
-    inRead,
+    kind,
   } of accumulateJunctions(regions).values()) {
     const motif = classifyEncodedSpliceMotif(donor, acceptor)
-    if (passesJunctionFilter({ count, motif, split }, filter)) {
+    if (passesJunctionFilter({ count, motif, kind }, filter)) {
       out.set(key, {
         key,
         refName,
         start,
         end,
         count,
-        strand: split ? 0 : junctionStrand(fwd, rev, motif),
+        strand: kind === 'splice' ? junctionStrand(fwd, rev, motif) : 0,
         motif,
-        split,
-        inRead,
+        kind,
+        split: splitClassOf(kind),
       })
     }
   }

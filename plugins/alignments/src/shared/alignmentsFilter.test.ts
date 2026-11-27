@@ -142,27 +142,31 @@ describe('the junction and connection tests', () => {
   })
 
   test.each([
-    [[{ field: 'junction.class', equal: 'duplication' }], ['duplication']],
+    [
+      [{ field: 'junction.class', equal: 'duplication' }],
+      { classes: ['duplication'], sources: undefined },
+    ],
     [
       [{ field: 'junction.class', oneOf: ['splice', 'inversion'] }],
-      ['splice', 'inversion'],
+      { classes: ['splice', 'inversion'], sources: undefined },
     ],
     [
       [{ field: 'junction.source', equal: 'split' }],
-      ['deletion', 'duplication', 'inversion'],
+      { classes: undefined, sources: ['split'] },
     ],
     [
       [
-        { field: 'junction.source', equal: 'split' },
-        { field: 'junction.class', oneOf: ['splice', 'deletion'] },
+        { field: 'junction.source', equal: 'gap' },
+        { field: 'junction.class', equal: 'deletion' },
       ],
-      ['deletion'],
+      { classes: ['deletion'], sources: ['gap'] },
     ],
-    [[{ field: 'junction.class' }], undefined],
+    [[{ field: 'junction.class' }], { classes: undefined, sources: undefined }],
   ])(
-    'junction.class and junction.source lower to classes: %j',
-    (written, classes) => {
-      expect(junctionFilterOf(merged(written)).classes).toEqual(classes)
+    'junction.class lowers to classes and junction.source to sources: %j',
+    (written, expected) => {
+      const { classes, sources } = junctionFilterOf(merged(written))
+      expect({ classes, sources }).toEqual(expected)
     },
   )
 
@@ -174,27 +178,29 @@ describe('the junction and connection tests', () => {
     expect(junctionFilterOf(list)).toMatchObject(patch)
   })
 
-  test('a source write lowers to its classes and clears with every source', () => {
+  test('a source write reads back and clears with every source', () => {
     const gapOnly = withFields([], junctionEntries({ sources: ['gap'] }))
     expect(gapOnly).toEqual([{ field: 'junction.source', oneOf: ['gap'] }])
-    expect(junctionFilterOf(merged(gapOnly)).classes).toEqual(['splice'])
+    expect(junctionFilterOf(merged(gapOnly))).toMatchObject({
+      classes: undefined,
+      sources: ['gap'],
+    })
     expect(
       withFields(gapOnly, junctionEntries({ sources: ['gap', 'split'] })),
     ).toEqual([])
+  })
+
+  test('a class write leaves junction.source alone', () => {
+    const gapOnly = [{ field: 'junction.source', equal: 'gap' }]
     expect(
-      withFields(
-        gapOnly,
-        junctionEntries({
-          classes: ['splice', 'deletion', 'duplication', 'inversion'],
-        }),
-      ),
-    ).toEqual([])
+      withFields(gapOnly, junctionEntries({ classes: ['deletion'] })),
+    ).toEqual([...gapOnly, { field: 'junction.class', oneOf: ['deletion'] }])
   })
 
   test('a class write of every class, or none, writes nothing', () => {
     expect(
       withFields(
-        [{ field: 'junction.source', equal: 'gap' }],
+        [{ field: 'junction.class', equal: 'splice' }],
         junctionEntries({ classes: undefined }),
       ),
     ).toEqual([])

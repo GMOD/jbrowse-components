@@ -1,3 +1,5 @@
+import { JUNCTION_KINDS } from '../../features/junctions/junctionClass.ts'
+import { admitsJunctionKind } from '../../features/junctions/junctions.ts'
 import {
   junctionEntries,
   junctionFilterOf,
@@ -195,7 +197,35 @@ describe('the More filters... layer sections', () => {
       ...s,
       junctions: { ...s.junctions!, split: 'exclude' },
     }))
-    expect(model.junctionFilter.classes).toEqual(['splice'])
+    expect(model.filterPredicates).toEqual([
+      { field: 'junction.source', oneOf: ['gap'] },
+    ])
+  })
+
+  test.each([
+    ['exclude' as const, ['splice', 'gapDeletion']],
+    [
+      'only' as const,
+      ['splitForward', 'splitBack', 'splitInvLL', 'splitInvRR'],
+    ],
+  ])(
+    'the split-read junctions choice %s reads back, a gap deletion going with the splices',
+    (split, kinds) => {
+      const model = makeModel({ showJunctions: true })
+      submit(model, s => ({ ...s, junctions: { ...s.junctions!, split } }))
+      expect(
+        JUNCTION_KINDS.filter(k => admitsJunctionKind(model.junctionFilter, k)),
+      ).toEqual(kinds)
+      expect(layerFilterStateOf(model).junctions?.split).toBe(split)
+    },
+  )
+
+  test('a written class of deletion is no split-read choice', () => {
+    const model = makeModel({
+      filter: [{ field: 'junction.class', equal: 'deletion' }],
+      showJunctions: true,
+    })
+    expect(layerFilterStateOf(model).junctions?.split).toBeUndefined()
   })
 
   test('reads with no mate in view is a category on `alone`', () => {

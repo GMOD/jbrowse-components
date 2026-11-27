@@ -1,3 +1,5 @@
+import { SAM_FLAG_SECONDARY } from '@jbrowse/cigar-utils'
+
 import { makePileupDataResult } from '../../RenderAlignmentDataRPC/pileupData.fixture.ts'
 import {
   GAP_DELETION,
@@ -5,11 +7,15 @@ import {
 } from '../../shaders/slang/gap.consts.generated.ts'
 import { junctionSupportingReadSlots } from './supportingReads.ts'
 
-function region(gaps: [number, number, number, number][]) {
+function region(
+  gaps: [number, number, number, number][],
+  readFlags?: number[],
+) {
   return makePileupDataResult({
     gapPositions: new Uint32Array(gaps.flatMap(([s, e]) => [s, e])),
     gapTypes: new Uint8Array(gaps.map(([, , t]) => t)),
     gapReadIndices: new Uint32Array(gaps.map(([, , , r]) => r)),
+    ...(readFlags ? { readFlags: new Uint16Array(readFlags) } : {}),
   })
 }
 
@@ -41,17 +47,21 @@ test('finds the reads whose skip gap is exactly the junction', () => {
   ).toEqual([slot(0, 0), slot(0, 3)])
 })
 
-test('an in-read deletion lights the reads whose deletion gap is exactly it', () => {
-  const data = region([
-    [100, 500, GAP_SKIP, 0],
-    [100, 500, GAP_DELETION, 1],
-    [100, 501, GAP_DELETION, 2],
-    [100, 500, GAP_DELETION, 3],
-  ])
+test('a gap deletion lights the primary and supplementary reads whose deletion gap is exactly it', () => {
+  const data = region(
+    [
+      [100, 500, GAP_SKIP, 0],
+      [100, 500, GAP_DELETION, 1],
+      [100, 501, GAP_DELETION, 2],
+      [100, 500, GAP_DELETION, 3],
+      [100, 500, GAP_DELETION, 4],
+    ],
+    [0, 0, 0, 0, SAM_FLAG_SECONDARY],
+  )
   expect(
     junctionSupportingReadSlots(
       [{ displayedRegionIndex: 0, refName: 'chr1', data }],
-      { ...JUNCTION, split: 'splitForward', inRead: true },
+      { ...JUNCTION, kind: 'gapDeletion' },
     ),
   ).toEqual([slot(0, 1), slot(0, 3)])
 })

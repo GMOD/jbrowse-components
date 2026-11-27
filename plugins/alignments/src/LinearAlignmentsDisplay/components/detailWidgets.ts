@@ -6,8 +6,9 @@ import {
 import { openFeatureWidget } from '@jbrowse/core/util'
 
 import {
-  splitJunctionName,
   junctionClass,
+  junctionCountLabel,
+  junctionName,
 } from '../../features/junctions/junctionClass.ts'
 import { spliceMotifLabel } from '../../features/junctions/motif.ts'
 import { getModificationCallName } from '../../shared/modificationData.ts'
@@ -117,39 +118,52 @@ export function openCoverageWidget(
   openFeatureWidget(model, featureData)
 }
 
-export function openJunctionWidget(
-  model: IAnyStateTreeNode,
+/** The feature a junction's widget shows. */
+export function junctionWidgetFeature(
   junction: Omit<MergedJunction, 'key'>,
   groupKey: string,
 ) {
-  const { split, inRead } = junction
+  const { kind } = junction
   const location = {
     uniqueId: junctionFeatureId(groupKey, junction),
     refName: junction.refName,
     start: junction.start,
     end: junction.end,
-    score: junction.count,
   }
   const motif = spliceMotifLabel(junction.motif)
   // Named like its siblings (openIndicatorWidget, openCigarWidget) so the
   // widget has a heading; without one it opened titled by nothing, leaving the
   // bare `type: 'skip'` to explain what had been clicked.
-  openFeatureWidget(
-    model,
-    split
+  return kind === 'splice'
+    ? {
+        ...location,
+        score: junction.count,
+        name: 'Splice junction',
+        type: 'skip',
+        strand: junction.strand,
+        ...(motif === undefined ? {} : { splice_motif: motif }),
+      }
+    : kind === 'gapDeletion'
       ? {
           ...location,
-          name: splitJunctionName(split, inRead),
-          type: inRead ? 'deletion' : `split_${junctionClass(split)}`,
+          [junctionCountLabel(kind)]: junction.count,
+          name: junctionName(kind),
+          type: 'deletion',
         }
       : {
           ...location,
-          name: 'Splice junction',
-          type: 'skip',
-          strand: junction.strand,
-          ...(motif === undefined ? {} : { splice_motif: motif }),
-        },
-  )
+          score: junction.count,
+          name: junctionName(kind),
+          type: `split_${junctionClass(kind)}`,
+        }
+}
+
+export function openJunctionWidget(
+  model: IAnyStateTreeNode,
+  junction: Omit<MergedJunction, 'key'>,
+  groupKey: string,
+) {
+  openFeatureWidget(model, junctionWidgetFeature(junction, groupKey))
 }
 
 // Per-read modification details, parallel to openCigarWidget for a mismatch.

@@ -2,6 +2,7 @@ import { normalizedRgbToABGR } from '@jbrowse/core/util/colorBits'
 import { linkFeet } from '@jbrowse/render-core/marks'
 
 import { arcCategoryColor } from '../../shaders/palettes.ts'
+import { junctionColorClass } from './junctionClass.ts'
 
 import type { ColorPalette } from '../../shaders/colors.ts'
 import type { RegionInfo } from '../arcs/arcTypes.ts'
@@ -124,14 +125,16 @@ export type JunctionColors = Pick<
 
 // A splice junction is tinted like the reads supporting it, and an unstranded
 // one takes the unpaired-read grey. A split junction takes its class's read-arc
-// color in every `readConnections` color field (`junctionsConfigSchema`).
+// color in every `readConnections` color field (`junctionsConfigSchema`), and
+// a gap deletion the deletion-type one.
 export function junctionColor(
-  j: Pick<MergedJunction, 'strand' | 'split'>,
+  j: Pick<MergedJunction, 'strand' | 'kind'>,
   colors: JunctionColors,
 ) {
+  const colorClass = junctionColorClass(j.kind)
   return normalizedRgbToABGR(
-    ...(j.split
-      ? arcCategoryColor(colors, j.split)
+    ...(colorClass
+      ? arcCategoryColor(colors, colorClass)
       : j.strand === 1
         ? colors.colorFwdStrand
         : j.strand === -1
@@ -143,17 +146,17 @@ export function junctionColor(
 /**
  * A split junction's breakend feet, from its class: the side each foot's
  * junction keeps, outward for a deletion-type, inward for a duplication-type,
- * both left or both right for an inversion. A splice junction and a split
- * insertion, whose feet share a base, draw none.
+ * both left or both right for an inversion. A splice and a gap deletion, whose
+ * orientation is never in doubt, draw none.
  */
-export function junctionFeet(j: Pick<MergedJunction, 'split'>) {
-  return j.split === 'splitForward'
+export function junctionFeet(j: Pick<MergedJunction, 'kind'>) {
+  return j.kind === 'splitForward'
     ? linkFeet(-1, 1)
-    : j.split === 'splitBack'
+    : j.kind === 'splitBack'
       ? linkFeet(1, -1)
-      : j.split === 'splitInvLL'
+      : j.kind === 'splitInvLL'
         ? linkFeet(-1, -1)
-        : j.split === 'splitInvRR'
+        : j.kind === 'splitInvRR'
           ? linkFeet(1, 1)
           : 0
 }

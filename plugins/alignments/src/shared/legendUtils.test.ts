@@ -10,6 +10,7 @@ import {
 } from '../LinearAlignmentsDisplay/colorUtils.ts'
 import { makeTestPalette } from '../LinearAlignmentsDisplay/testUtils.ts'
 import { qualityRampCss } from '../features/perBaseQuality/colors.ts'
+import { arcCategoryColor } from '../shaders/palettes.ts'
 import {
   OVERLAP_MATES,
   OVERLAP_SEGMENTS,
@@ -957,7 +958,7 @@ describe('getAlignmentsColorScales', () => {
     legendItems: () => reads,
     arcLegendTitle: 'Arc colors',
     arcLegendItems: () => arcs,
-    junctionLegend: { strands: [], splits: [] },
+    junctionLegend: { strands: [], rows: [] },
   })
   const entries = (scale: ColorScale | undefined) =>
     scale?.kind === 'categorical' ? scale.entries : []
@@ -1456,7 +1457,7 @@ describe('junctionLegendItems', () => {
       junctionLegend(
         new Set([1]),
         { read: '#d3d3d3' },
-        { classes: new Set(['splitBack', 'splitForward']), palette },
+        { kinds: new Set(['splitBack', 'splitForward']), palette },
       ),
     )
     const arcRows = getArcLegendItems(
@@ -1469,6 +1470,25 @@ describe('junctionLegendItems', () => {
       'Split junction (duplication-type)',
     ])
     expect(items.slice(1).map(i => i.color)).toEqual(arcRows.map(i => i.color))
+  })
+
+  test.each([
+    [['gapDeletion'], 'Deletion (gapped reads)'],
+    [['splitForward'], 'Split junction (deletion-type)'],
+    [['gapDeletion', 'splitForward'], 'Deletion (gapped and split reads)'],
+  ] as const)('keys the deletion color once for %j, as %s', (kinds, label) => {
+    const palette = makeTestPalette()
+    expect(
+      junctionLegendItems(
+        junctionLegend(
+          new Set(),
+          { read: '#d3d3d3' },
+          { kinds: new Set(kinds), palette },
+        ),
+      ),
+    ).toEqual([
+      { color: rgb255(arcCategoryColor(palette, 'splitForward')), label },
+    ])
   })
 })
 
@@ -1483,14 +1503,14 @@ describe('the junctions section', () => {
   const junctions = junctionLegend(
     new Set([-1]),
     { read: '#d3d3d3' },
-    { classes: new Set(['splitBack', 'splitForward']), palette },
+    { kinds: new Set(['splitBack', 'splitForward']), palette },
   )
-  const scalesWith = (arcs: LegendItem[]) =>
+  const scalesWith = (arcs: LegendItem[], junctionLegend = junctions) =>
     getAlignmentsColorScales({
       legendItems: () => [],
       arcLegendTitle: 'Arc colors',
       arcLegendItems: () => arcs,
-      junctionLegend: junctions,
+      junctionLegend,
     })
   const rows = (scales: ColorScale[], id: string) => {
     const scale = scales.find(s => s.id === id)
@@ -1527,9 +1547,9 @@ describe('the junctions section', () => {
   test('adds no row of a color the read arcs key already', () => {
     const arcs = getArcLegendItems(new Set(['pairRL', 'splitForward']), palette)
     const scales = scalesWith(arcs)
-    const back = junctions.splits.find(s => s.split === 'splitBack')!.color
-    const forward = junctions.splits.find(
-      s => s.split === 'splitForward',
+    const back = junctions.rows.find(r => r.kinds.includes('splitBack'))!.color
+    const forward = junctions.rows.find(r =>
+      r.kinds.includes('splitForward'),
     )!.color
     expect(rows(scales, 'junctions')).toEqual([
       ['Reverse transcript strand', expect.any(String)],
@@ -1538,6 +1558,41 @@ describe('the junctions section', () => {
     expect(arcRows).toContainEqual(['RL pair or duplication-type split', back])
     expect(arcRows.filter(([, color]) => color === back)).toHaveLength(1)
     expect(arcRows.filter(([, color]) => color === forward)).toEqual([
+      ['Split read (deletion-type)', forward],
+    ])
+  })
+
+  test('keys gap deletions as their own whatever the read arcs key, and never as split reads', () => {
+    const gapped = junctionLegend(
+      new Set(),
+      { read: '#d3d3d3' },
+      { kinds: new Set(['gapDeletion']), palette },
+    )
+    const forward = gapped.rows[0]!.color
+    const withoutSplits = scalesWith(
+      getArcLegendItems(new Set(['normalInsert']), palette),
+      gapped,
+    )
+    expect(rows(withoutSplits, 'junctions')).toEqual([
+      ['Deletion (gapped reads)', forward],
+    ])
+    expect(
+      rows(withoutSplits, 'arcs').filter(([label]) =>
+        String(label).startsWith('Split'),
+      ),
+    ).toEqual([])
+    const withSplits = scalesWith(
+      getArcLegendItems(new Set(['splitForward']), palette),
+      junctionLegend(
+        new Set(),
+        { read: '#d3d3d3' },
+        { kinds: new Set(['gapDeletion', 'splitForward']), palette },
+      ),
+    )
+    expect(rows(withSplits, 'junctions')).toEqual([
+      ['Deletion (gapped reads)', forward],
+    ])
+    expect(rows(withSplits, 'arcs')).toEqual([
       ['Split read (deletion-type)', forward],
     ])
   })
