@@ -1,6 +1,6 @@
 ---
 name: tutorial-ideas-audit
-description: Unwritten tutorial ideas, many built on hosted tracks no page names yet, from sequence tools and GWAS fine-mapping to somatic review. The four priority tutorials have their own files in ready/.
+description: Unwritten tutorial ideas, many built on hosted tracks no page names yet, from sequence tools, GWAS fine-mapping and GenArk to somatic review and two missing build-your-own examples. The four priority tutorials have their own files in ready/.
 ---
 
 # Tutorial ideas
@@ -75,20 +75,13 @@ already say so.
 **Mobile element insertions.** `MEI_Callset_GRCh38.ALL.20241211`,
 `Ortho_MEI_GRCh38.ALL.20241211`, `MEI_Callset_T2T-CHM13.ALL.20241211` and the
 NA12878 ALU / LINE1 / SVA callsets, all unused. Reference-anchored point
-annotations, so they escape the non-reference problem tandem repeats have.
-
-**UniProt protein features on the genome.** 34 genomic-coordinate bigBeds (17
-hg19, 17 hg38; the hg38 hub carries `hg38-unipDomain` and fourteen more):
-domains, disulfide bonds, transmembrane segments, modified residues, chains,
-isoforms. They lay directly under the gene, and `protein_structure.md`'s "How
-positions are mapped" is the next click. The variant-interpretation tutorial
-uses them; a page of their own would need a control such as a variant in an
-unannotated loop.
+annotations, so they read in a linear view without a graph.
 
 **HGSVC 2024.** A whole family unused on hg38 and CHM13 — SNV, indel, symbolic
 insdel, inversions, a complex-event BED, `vamos.VNTR` and the PanGenie
-genotypes. Enough for "one sample, five callsets, which do you believe",
-overlapping `sv_multisamples.md`.
+genotypes. `population_cnv` loads the HGSVC3 SV calls; the rest is enough for
+"one sample, five callsets, which do you believe", overlapping
+`sv_multisamples.md`.
 
 ## Workflow
 
@@ -118,25 +111,7 @@ in the faceted track selector". The first two are tutorials in `ready/`; the
 faceted-selector one belongs with the portal-operator audience in the serving
 tutorial.
 
-## genomes.jbrowse.org
-
-**The hub configs name a MafViewer plugin that core also carries.**
-`@jbrowse/plugin-maf` is in `products/jbrowse-web/src/corePlugins.ts` since
-33dff33a71, which is not in v4.3.0, what production launches point at. So the
-`plugins[]` entry is required today. When v5 ships it becomes a bundle fetch on
-the critical path of every hosted launch for something core already has, and
-`plugins[].url` is the one field that can error-page a whole session. The names
-differ (`MafPlugin` vs `MafViewerPlugin`), so PluginManager's name-match guard
-does not dedupe them, and the registry's first-wins guard means the core copy
-would win anyway. Re-verify against the hosted builds before acting.
-
-## Parked
-
-**Tandem repeats and expansions.** `vamos.VNTR`, `sgdp_memstrs` and
-`chm13v2.0_rmsk` are hosted, but per Colin this is not our strength: the
-interesting alleles are non-reference and an expansion is hard to read in a
-linear view. Revisit only with a rendering answer first (a graph projection or
-a per-allele length encoding).
+## The build-your-own examples site
 
 **Two bring-your-own examples nobody has written** (`064dd09cca`): linked
 views and base-level sequence. None of the pages under
