@@ -1,6 +1,6 @@
 ---
 name: refseq-reshoot-held-figures
-description: "Figures the 2026-11-27 RefSeq reshoot held back because something besides the gene descriptions moved: four isoform-chip figures to publish on a look, highlight and wedge colours to trace in git log, and app drift to review per figure. Graph figures are graph-figures-after-plugin-10-8's."
+description: "Figures the 2026-11-27 RefSeq reshoot held back because something besides the gene descriptions moved: app drift to review per figure before publishing. The isoform-chip, highlight and wedge figures are published. Graph figures are graph-figures-after-plugin-10-8's."
 ---
 
 # Figures held back from the RefSeq reshoot
@@ -15,22 +15,19 @@ The graph figures this reshoot held, the specs failing on the top-level
 `color` key and the graph plugin's drift, are listed in
 [graph-figures-after-plugin-10-8](graph-figures-after-plugin-10-8.md).
 
+## Published since
+
+Eleven went out on 2026-11-27 at main `00091ba717`: the four whose other
+change was the "MANE Select" chip, and the seven whose colours moved on
+purpose. A synteny indel is a see-through gap unless the view paints indels
+(ADR-277, `2a7e8f7981`), and the protein figures' genome band takes the
+structure's magenta, which the specs' callouts already name.
+
 ## Next
 
-- **Publish the isoform-chip figures on a look.** The chip reads "MANE Select"
-  where it read "Longest isoform", correctly: the RefSeq transcripts gained
-  `tag=MANE Select` on 2026-10-28. It is the only other change in
-  `genomes_msa/genomic_domains`, `ld/lct_fst_scan`,
-  `genomes_basics/multiz_alignment` and `synteny_hg38_hs1_tnnt3`.
-- **Trace two colour changes in `git log` before calling either a bug.**
-  Highlights are magenta or salmon where they were yellow
-  (`protein/tp53_hotspot`, `protein/tp53_nmr_ensemble`, `protein/connected`);
-  synteny insertion wedges are white where they were blue or yellow
-  (`synteny_te_picalm_alu`, `synteny_human_chimp_cigar_modes`,
-  `genomes_synteny/launch_sequence`, `multiway_synteny/hprc_amylase_stack`).
 - **Review the app drift figure by figure**, then publish:
   - Multi-way lanes gain "vs hg38" chips, "drawn opposite" titles and a legend
-    strip: `multiway_synteny/*`, `pangenome/hprc_cfhr_lanes`,
+    strip: `multiway_synteny/*` (`hprc_amylase_stack` is published), `pangenome/hprc_cfhr_lanes`,
     `pangenome/hprc_inversion`, `pangenome/hprc_igl_deletion_lanes`,
     `genomes_synteny/mouse_strains_nnt`,
     `genomes_synteny/human_17q21_haplotypes`.
