@@ -78,8 +78,7 @@ import type { Instance } from '@jbrowse/mobx-state-tree'
  *
  * #example
  * RNA-seq — junction arcs placed to avoid crossings, labelled with their read
- * counts, dropping junctions under five reads, the non-canonical ones and the
- * split-read joins:
+ * counts, keeping only splices of five reads or more with a canonical motif:
  * ```js
  * {
  *   type: 'AlignmentsTrack',
@@ -93,7 +92,7 @@ import type { Instance } from '@jbrowse/mobx-state-tree'
  *     filter: [
  *       { field: 'junction.reads', gte: 5 },
  *       { field: 'junction.canonical', equal: true },
- *       { field: 'junction.source', equal: 'gap' },
+ *       { field: 'junction.class', equal: 'splice' },
  *     ],
  *   },
  * }

@@ -86,10 +86,12 @@ export const baseLinearAlignmentsDisplayConfigSchema = ConfigurationSchema(
      * aligned to both and a pair with a mate on each; a read's strand is
      * `flags.REVERSE`. A facet on a category gives its own coverage.
      * `junction.reads`,
-     * `junction.canonical` (a split junction reads no motif and counts as
-     * canonical, so `equal: false` hides it), `junction.class` (`splice` for an N gap, or a
-     * split read's `deletion`, `duplication` or `inversion`) and
-     * `junction.source` (`gap` or `split`) test the junctions band's arcs, on
+     * `junction.canonical` (a junction other than a splice reads no motif
+     * and counts as canonical, so `equal: false` hides it), `junction.class`
+     * (`splice`, `deletion`, `duplication` or `inversion`) and
+     * `junction.source` (`gap` for a CIGAR `N` or a `D` of 50 bp or more
+     * inside one record, `split` for a join between a split read's segments)
+     * test the junctions band's arcs, each on its own, on
      * LinearAlignmentsDisplay only, since LGVSyntenyDisplay has no junctions
      * band. `connection.interchrom`, `connection.offscreen` and
      * `breakpoint.reads` test the connections the arcs, the read cloud and

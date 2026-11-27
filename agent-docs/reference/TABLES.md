@@ -138,13 +138,15 @@ a quiet region.
   `indicators` and `junctions`. It resolves a base through `effectiveBaseColors`,
   so under a `modifications` or `bisulfite` layer every base is the muted grey.
 - `baseLegend` (empty while the bases are muted), `junctionLegend` (the junctions
-  band's own strand and split-class key, over the junctions shown that touch the
+  band's own strand and junction-kind key, over the junctions shown that touch the
   window, as `junctionInWindows` tests them, empty while the band is hidden) and `interbaseLegend` come back as `legend` does, each with its
   title, keying only what the tables paint.
 - `junctions` has `level`, the `insertSizeAndOrientation` level a split junction's
   color paints, as the arcs table names it (`splitSameStrand`, `RL`, `LL`, `RR`;
-  '' for a splice junction). `class` calls both inversion classes `inversion`;
-  `level` tells them apart.
+  '' for a splice junction and a gapped deletion). `class` calls both inversion
+  classes `inversion`; `level` tells them apart. A gapped deletion, a CIGAR `D`
+  of 50 bp or more, is `class` `deletion` and `source` `gap`, a row apart from a
+  split deletion on the same span.
 - `junctions` has `shown`, true where the junction passes the `junction` filter
   fields (the browser counts a junction whose motif it never read as canonical),
   `arcHeight` (`junctionArcHeightFraction`) and `strokeWidth`
