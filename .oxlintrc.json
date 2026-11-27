@@ -59,6 +59,7 @@
     "typescript/consistent-type-exports": "error",
     "typescript/dot-notation": "error",
     "typescript/no-confusing-void-expression": "error",
+    "typescript/no-meaningless-void-operator": "off",
     "typescript/no-mixed-enums": "error",
     "typescript/no-unnecessary-boolean-literal-compare": "error",
     "typescript/no-unnecessary-template-expression": "error",
