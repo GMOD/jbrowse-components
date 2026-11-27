@@ -235,6 +235,12 @@ export const DISPLAY_TIERS = [
       'PlinkLDTabixAdapter, which declares none, so this is the whole budget',
   },
   {
+    name: 'LinearWiggleDisplay',
+    file: 'plugins/wiggle/src/LinearWiggleDisplay/configSchema.ts',
+    applies:
+      'every inheriting adapter under a quantitative track, such as a tabix or bigBed feature file plotted by score',
+  },
+  {
     name: 'GCContentTrack',
     file: 'plugins/gccontent/src/GCContentTrack/gcWiggleConfigSchema.ts',
     applies:
@@ -268,7 +274,7 @@ export const GATE_OPT_IN_SITES: Record<string, string> = {
   'plugins/variants/src/LinearVariantDisplay/model.ts':
     'VcfTabixAdapter/SplitVcfTabixAdapter declare 5 Mb',
   'plugins/wiggle/src/LinearWiggleDisplay/model.ts':
-    "GCContentTrack: its LinearWiggleDisplay raises the budget to 10 Mb; elsewhere the wiggle display spreads regionTooLargeConfigSchemaFields at 1 Mb, which MultiWiggleAdapter's subadapters inherit, and a bigWig answers no estimate",
+    "LinearWiggleDisplay at the feature display's 5 Mb, which MultiWiggleAdapter's subadapters inherit; the GC track's raises it to 10 Mb, and a bigWig answers no estimate",
   'plugins/circular-view/src/ChordVariantDisplay/models/stateModelFactory.ts':
     'VcfTabixAdapter/SplitVcfTabixAdapter declare 5 Mb, measured over the whole fetch since the circle holds every region',
 }

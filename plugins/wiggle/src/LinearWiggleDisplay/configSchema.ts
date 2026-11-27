@@ -144,6 +144,17 @@ const linearWiggleDisplayConfigSchema = ConfigurationSchema(
     ...trackHeightConfigSchemaFields(),
     ...regionTooLargeConfigSchemaFields,
     /**
+     * #slot
+     * The feature display's budget: a quantitative track over a tabix or
+     * bigBed feature file reads the same bytes a feature track would, and
+     * draws them as one bar each. A bigWig answers no estimate and is never
+     * asked.
+     */
+    fetchSizeLimit: {
+      ...regionTooLargeConfigSchemaFields.fetchSizeLimit,
+      defaultValue: 5_000_000,
+    },
+    /**
      * #slot encoding
      * The channels the marks paint through. `encoding.color` is one CSS
      * color in `value`, the score through a `scale` — `threshold` for solid
