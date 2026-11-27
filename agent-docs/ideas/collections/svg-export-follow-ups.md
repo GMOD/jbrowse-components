@@ -1,24 +1,12 @@
 ---
 name: svg-export-follow-ups
-description: "SVG export leftovers from the 2026-11 audit: SvgCanvas signatures letting dropped calls compile, sans-serif pileup label fits, labels cut at a scrolled track's top, the dotplot export font on the view model, a dotplot corner label, duplicated breakpoint values, thin golden coverage, circular callout text."
+description: "SVG export leftovers from the 2026-11 audit: sans-serif pileup label fits, labels cut at a scrolled track's top, a dotplot corner label, duplicated breakpoint values, thin golden coverage, circular callout text, raster rings, growing jbrowse-img pileups, the pinned-highlight box."
 ---
 
 # SVG export follow-ups
 
 Each is a known gap the 2026-11 export audit found and its fixes left open.
 None waits on a decision; each is small and independent.
-
-**`SvgCanvas` accepts calls it then drops.** `clip(..._args: unknown[])` and
-`drawImage(..._args: unknown[])` (`packages/core/src/util/SvgCanvas.ts`) let
-`ctx.clip(path2d)`, `ctx.clip('evenodd')` and `drawImage` compile against
-`Ctx2D`; in vector mode they clip to the current path or draw nothing.
-`clearRect` is a silent no-op (`features/gap/mark.ts` records being bitten).
-`fillStyle` is typed to take a `CanvasGradient`, which would serialize as
-`[object CanvasGradient]`. No caller hits any of them today; only
-`circular-view/ringShape.ts` uses `drawImage`, behind a guard. Narrowing
-`clip()` to no arguments and the style setters to `string`, and removing the
-other two from the type, turns each into a compile error. It needs a typecheck
-loop over every draw function.
 
 **Pileup label fits are measured in sans-serif.** The mismatch letters and
 indel counts now export as text in the export's font, but
@@ -38,14 +26,6 @@ the edge cuts are dropped (`labelsWithinEdges`, `forEachExportLabel`,
 `exactCullBand` still admits a label from a feature scrolled just above the
 top. The records band's labels (`paintFeatureBand.ts`) do not go through
 `labelsWithinEdges` at all.
-
-**The dotplot export holds its font on the view model.** `renderToSvg` calls
-`model.setAxisFontFamily(fontFamily)` and resets it in a `finally`, so the
-axis borders are laid out in the export's font. Only monospace measures
-differently, so only a monospace export re-lays out the on-screen view. The
-dotplot is not behind `exportLaidOut`'s queue, so two overlapping exports with
-different fonts would reset each other's. Putting the dotplot export behind
-the same queue closes it.
 
 **A dotplot axis label pinned at the viewport corner sits beside a tick.**
 In `dotplot_snapshot.svg` the rotated `ctgA` on the horizontal axis, pinned at
@@ -69,9 +49,10 @@ or a ring (the circular golden runs in jsdom, which cannot decode an image,
 so it holds no ring; only `ringSvg.test.tsx` covers that path). The
 rasterized alignments test asserts only that an `<image` exists.
 
-**Callout text is not counted in the circular figure's gutter**, so a long
-name can clip in a square export: neither `figureGutterPx` nor `fitLayout`'s
-`calloutPx` measures callout text (`ringCallouts.ts`, `rulerLabels.ts`). A callout near 3 or 9 o'clock runs
+**Callout text is not counted in the circular figure's gutter.** A long
+feature name can clip in a square circular export because neither
+`figureGutterPx` nor `fitLayout`'s `calloutPx` measures callout text
+(`ringCallouts.ts`, `rulerLabels.ts`). A callout near 3 or 9 o'clock runs
 level, about 48 px past the ruler arc, with about 37 px before the figure
 edge on a one-contig circle. Measuring `ringCallouts(...)` in the export font
 and widening the figure to the widest fixes it.
@@ -88,11 +69,11 @@ circular view never awaits its assembly and would hang on a failed load. The
 audit read `CircularView.error` as folding assembly errors in now; nobody has
 checked whether the extra `assembly.error` read is still needed.
 
-**`jbrowse-img` could let an alignments track grow to its reads.** A headless
-figure has no scrollbar, so `applyTrackOpts.ts` could default alignments to
-`heightMode: 'grow'`, as it already defaults `sortAt`. The export now ends a
-deep pileup on a whole row and captions the rows it leaves out, which covers
-the reader; this would instead show them.
+**`jbrowse-img` could let every alignments track grow to its reads.** A
+headless figure has no scrollbar, and `applyTrackOpts.ts` already sets
+`heightMode: 'grow'` when `sortAt` is given; it could default to it without
+`sortAt` too. The export now ends a deep pileup on a whole row and captions the
+rows it leaves out, which covers the reader; this would instead show them.
 
 **The pinned-highlight box does not follow a label the export moved.**
 `featureHighlightInk.ts` builds its label box from `placeFeatureLabels`, so a
