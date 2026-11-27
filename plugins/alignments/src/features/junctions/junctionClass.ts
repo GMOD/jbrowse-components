@@ -66,6 +66,7 @@ export function junctionSource(kind: JunctionKind): JunctionSource {
   return splitClassOf(kind) ? 'split' : 'gap'
 }
 
+/** What the tooltip, feature widget and junction key call a split junction. */
 export const SPLIT_JUNCTION_NAMES: Record<JunctionSplitClass, string> = {
   splitForward: 'Split junction (deletion-type)',
   splitBack: 'Split junction (duplication-type)',
