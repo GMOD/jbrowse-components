@@ -704,10 +704,10 @@ a script pass a category through from a variable that may be empty.
 
 Overlays & subtracks:
 
-| Modifier         | Example             | Description                                                                           |
-| ---------------- | ------------------- | ------------------------------------------------------------------------------------- |
-| `arcs:mode`      | `arcs:cloud`        | Read-connection arcs / read-cloud panel (`off`, `overlay`, `above`, `below`, `cloud`) |
-| `junctions:mode` | `junctions:overlay` | Splice and split-read junction arcs (`off`, `overlay`, `above`, `below`, `auto`)      |
+| Modifier         | Example             | Description                                                                                       |
+| ---------------- | ------------------- | ------------------------------------------------------------------------------------------------- |
+| `arcs:mode`      | `arcs:cloud`        | Read-connection arcs / read-cloud panel (`off`, `overlay`, `above`, `below`, `cloud`)             |
+| `junctions:mode` | `junctions:overlay` | Splice, gapped-deletion and split-read junction arcs (`off`, `overlay`, `above`, `below`, `auto`) |
 
 Layout & sizing:
 
