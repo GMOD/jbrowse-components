@@ -1,135 +1,26 @@
 ---
 name: reference-trim-leftovers
-description: Open items and findings the 2026-09-30 pare-down of reference/ cut from their docs because they were backlog, not reference — per-subsystem bugs, unbuilt follow-ups and unmeasured questions — each worth a look before a session re-derives it.
+description: "Small open items the 2026-09-30 pare-down of reference/ cut from their docs, re-checked against main on 2026-11-27: a dead MST node returned as a live Region, no Canvas2D fallback after repeated context losses, all-or-nothing WebGPU pipeline compiles, two bpToPx, a BAM name pair to move upstream."
 ---
 
 # Reference trim leftovers
 
-The 2026-09-30 pass cut `reference/` to rules and mechanisms. These items were
-open work or one-off findings rather than reference, so they live here. Each
-names the doc it came from; verify against the code before acting, since none
-has been re-checked since the cut.
+The 2026-09-30 pass cut `reference/` to rules and mechanisms, and these were
+open work rather than reference. Each still held on 2026-11-27.
 
-## Bugs and gaps worth a ticket
-
-- **`renameRegions.ts`** returns a dead MST node typed as a live `Region`
-  (CORE_UTIL_AUDIT).
-- **A non-admin `deleteTrackConf`** dereferences every open view and removes
-  nothing (TRACK_REGISTRATION); the neighbouring catalog bug is
-  [the-config-catalog-adds-two-tracks-under-one-track-id](../ready/the-config-catalog-adds-two-tracks-under-one-track-id.md).
-- **Worker sort/layout loops** emit no progress (PROGRESS_REPORTING).
-
-## Unbuilt follow-ups
-
-- **ABI** (PLUGIN_ABI_STABILITY): derive `preservedExports`; a runtime
-  deprecation wrapper; an API-version declaration with a load-time check;
-  generate the `ARCHITECTURE.md` membership lists; a `plugin-vite` symbol-set
-  assertion as an ABI gate. The dependency-boundary idea is
-  `a-dependency-bump-is-an-abi-event`.
-- **BAM** (BAM_STACK_INTEGRATION): measure wasm RSS before sharing a pool
-  channel (seam 1); move `nameLength`/`copyNameInto` onto `BamRecord` upstream
-  (seam 6); test the `stopIndex` fix against S3 and in a browser (seam 7); an
-  MD-skip design for the tag walk, unbuilt (seam 5).
-- **HAL hardening:** the `writeUniforms` contract, `Promise.allSettled` in
-  `resolvePipelines`, and a `MAX_UNIFORM_SLOTS` test.
-- **WebGL2 context losses** (ARCHITECTURAL_LIMITS): an interim fallback to
-  Canvas2D after K losses.
-- **EAGER_BUNDLE:** retry the Desktop start-screen split; Material UI holders in the SVG export path and
-  `session.theme`.
-- **R export** (R_EXPORT): bisulfite C→T needs a reference walk;
-  `shownModifications` filtering; phased-HP PS hue flattens to the secondary
-  color; the multi-wiggle pos/neg split and group/cluster tree order.
-- **Figure capture** (FIGURE_CAPTURE): about 10 full-canvas GPU passes per
-  figure on large multi-region views; whether hardware GL should default on or
-  be a per-spec `hardwareGl` opt-in; the ~32 s full-page synteny capture.
-- **INTERACTION_PERF:** scalebar churn, RNA-seq frame budget, main-thread
-  instance encoding, `setMouseCoord` re-renders,
-  and the measurements behind the wheel-backlog
-  redesign.
-- **MAF_LARGE_BLOCKS:** re-measure the Canvas2D row; only 2 of the 3
-  `MAF Track` tests pixel-compare.
-- **CROSS_BACKEND_GATE:** `Mark Display` scenes have no goldens in
-  `snapshots.lock`; refresh the drifted goldens on a quiet worktree.
-- **PANGENOME_GRAPHS:** per-carrier node rows, orientation arrowheads, an
-  `LO:Z:` layout tag, gbz-base `M` vs `X`, the KIV-2 anchored cut stall, the
-  demos/hprc rejected lane panel, HPRC figures to reshoot, ABCA7 partial-walk
-  rows, lane stacks cutting once per pair.
-- **SV_MULTIHOP:** seven HG008-T misses with reads present and no in-read
-  deletion are unexplained.
-- **DOG10K:** the HMGA2 and AP3B1 candidate loci.
-
-## Second pass (2026-09-30)
-
-Open items the second, harder trim removed from the docs.
-
-- **Config and catalog:** `bpUtils.bpToPx` shares a name with `Base1DUtils.bpToPx`
-  (CONFIG_PATTERN, TRACK_REGISTRATION).
-- **Synteny:** a coarse-tier ratio in the `#pif` header; a slimmer coarse row
-  without the minimap2 chaining tags; a per-pixel-column occupancy pass
-  (SYNTENY_LOD).
-- **BAM** (BAM_STACK_INTEGRATION): read-through-gaps and a per-host concurrency
-  cap are untested; `BgzfWorkerPoolClient` copies compressed input once more per
-  chunk, unmeasured; an end-to-end render measurement would reopen the fused tag
-  walk.
-- **Perf:** staggering the coarse tick across tracks and a wider gene-label
-  census fixture (INTERACTION_PERF); a canvas wider than the viewport, CSS-
-  translated during scroll, to pass the ~28 fps wheel-event cap (BENCHMARKING).
-- **Session spec:** CLI modifiers could lower onto slot names and remove a
-  parser dialect (SESSION_SPEC_FORMAT).
-- **GPU docs:** no GPU explainer for a non-specialist or paper audience remains
-  (GPU_GLOSSARY).
-- **Desktop capture** (FIGURE_CAPTURE): the app can die mid-run with
-  `NoSuchSessionError`; figures render on Canvas2D under `--disable-gpu`
-  (untested flag swap). Accessibility:
-  key bindings need a modifier, nothing covers zoom-to-region, the track menu or
-  search, and views on one assembly share a name via the `viewTitle` fallback.
-- **Modification tags** (MODIFICATION_TAGS): nothing exposes the third state for
-  `HTS_MOD_REPORT_UNCHECKED`; over-long MM tags clamp silently; an MM/MN length
-  mismatch drops the tag silently.
-- **Memory:** `@gmod/bgzf-filehandle` reaps idle pools, which reclaims resting
-  memory but not the peak.
-- **Datasets and demos** (DEMO_DATASETS, HPRC_RELEASE2): great ape HSA16
-  all-vs-all PAF (`-c` with `-P` runs out of memory); bovine pggb/cactus and
-  mouse `minigraph -cxasm --call` routes to real carriage; whether the K562 BCR-ABL1 acceptor is alternative splicing or an
-  alignment artefact is unestablished.
-- **Lint:** migrate oxlint-owned suppressions to `oxlint-disable` (TOOLCHAIN).
-- **MAF** (MAF_LARGE_BLOCKS): a per-line safety valve in the adapter that names
-  the oversized block instead of running out of memory; the fetch-cost work is
-  parked; the all-samples synteny stack is not offered; a `--max-ref-span` option on
-  `scripts/maf_to_bed.py`; an identity plot confined below the summary
-  threshold.
-- **Grammar** (GRAMMAR_OF_GRAPHICS): a stacked band per mark with a free y
-  (`ValueScale.bandTops`); a rule layer carrying `minBpPerPx`/`maxBpPerPx` and a
-  row field.
-- **Tree sidebar** (CLUSTERING_WORKFLOW): clade collapse, highlight, node labels,
-  extra panels.
-- **R export** (R_EXPORT): `GRanges` `[[` and label-decimation parity traps.
-
-## Third pass (2026-09-30)
-
-Items the whole-unit cuts removed. Same caveat: unverified since the cut.
-
-- **BAM** (BAM_STACK_INTEGRATION): remote 300x BAM fetches issue many range
-  requests (seam 7).
-- **Synteny** (SYNTENY_LOD): an unindexed-hull fix for all-vs-all picking;
-  three parked per-candidate picking ideas.
-- **View init** (VIEW_INIT): a synteny size guard; `connectedViewId` for
-  synteny; show the launcher when no synteny track is open.
-- **Pangenome** (PANGENOME_GRAPHS): a linearized deletion track; the abandoned
-  gfa-to-tabix lessons.
-- **Session and fetch** (SESSION_SPEC_FORMAT, REGION_TOO_LARGE): spreadsheet
-  rows leave the session snapshot silently and a local import cannot restore
-  them; no fetch prioritization or back-pressure; per-JS-context pools multiply
-  by the RPC worker count; the linear region walk has no cumulative index; no
-  keyboard path to features; no BigWig size estimate; the density-axis
-  extrapolation is non-monotone.
-- **Bundle** (EAGER_BUNDLE): a ~1% ratchet over the probe's own-graph figure;
-  verify ESM workers in Firefox; a synteny renderer behind its own `import()`.
-- **ABI** (PLUGIN_ABI_STABILITY): the removal list for the session,
-  `product-core` Session barrel and plugin `exports` objects; the `getReferring`
-  signature trap (takes a `trackId` string, not the config object);
-  `createTimeGate`, the shader `SOURCE`/`BINDINGS` and `releaseTargets` ledger
-  entries.
-- **Misc:** the Firefox WebGL2 context
-  ceiling; the per-base cancel-overrun figure is
-  stale (pre-ADR-122).
+- **`renameRegionIfNeeded`** (`packages/core/src/util/renameRegions.ts`)
+  returns a dead MST node as is, typed as a live `Region`, where a live one is
+  copied out with `getSnapshot` (CORE_UTIL_AUDIT).
+- **No Canvas2D fallback after repeated context losses.** Once
+  `RecoveryBudget` (`packages/render-core/src/recoveryBudget.ts`) gives up, a
+  display waits on the manual Retry button; dropping that display to Canvas2D
+  would keep it drawing while GPU capacity is short (ARCHITECTURAL_LIMITS).
+- **`resolvePipelines`** (`packages/render-core/src/hal/webgpuHal.ts`) awaits
+  every pass with `Promise.all`, so one pass's failed compile rejects the
+  display's whole pipeline set.
+- **Two exported `bpToPx`**: `packages/core/src/util/bpUtils.ts` and
+  `Base1DUtils.ts` take different arguments under one name (CONFIG_PATTERN,
+  TRACK_REGISTRATION).
+- **`nameLength` and `copyNameInto`** live on `BamSlightlyLazyFeature`
+  (`plugins/alignments/src/BamAdapter/`) and belong on `@gmod/bam`'s
+  `BamRecord` (BAM_STACK_INTEGRATION).
