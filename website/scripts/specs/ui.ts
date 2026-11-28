@@ -288,7 +288,7 @@ const rhdPanel = (sortRowsBy?: RowSortSpec) =>
             trackId: 'kgp_sv_matrix',
             forceLoad: true,
             sortRowsBy,
-            height: 290,
+            height: 460,
           },
           // The store covers only the windows scripts/build_1000g_cnv_zarr.sh
           // builds; a new locus needs a rebuild.

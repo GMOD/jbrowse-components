@@ -138,8 +138,8 @@ export const svVideos: VideoSpec[] = [
     goal: 'Order 3202 genomes by their genotype at the RHD deletion',
     url: unsortedRhdPanel,
     // SIZED TO THE FIGURE, which is the same four lanes: `multisv_rhd` measures
-    // them at 1230 and every one carries an explicit height (290 matrix, 330
-    // depth, 170 records, 120 genes), so the app stands as tall at 1920 wide as
+    // them at 1230 and every one carries an explicit height (460 for the matrix
+    // and its records band, 330 depth, 120 genes), so the app stands as tall at 1920 wide as
     // at that figure's 1500 — and nothing in the tour grows it.
     //
     // 1244 rather than that figure's 1230: the run measured the app at 1240,
